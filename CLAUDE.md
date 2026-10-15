@@ -99,6 +99,12 @@ Everything runs on localhost with free, open-source tools. Any paid or external 
 - Motion animates transform and opacity only and respects `prefers-reduced-motion` (`--motion-scale`).
 - Use conventional commits (`feat(auth): …`), enforced by commitlint and Husky.
 
+## Git workflow (owner's instruction)
+
+- Work directly on `main` for every phase; no feature branches or pull requests.
+- Before every push, run locally: `pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build`.
+- Push with `git push origin main`, then run the end-to-end suite (`pnpm test:e2e`) and confirm the GitHub Actions run for that commit is green (`gh run watch`). A red run is fixed immediately with a follow-up commit on `main`.
+
 ## Definition of done (every phase)
 
 1. Lint, format, typecheck, unit, API and end-to-end tests pass. The tenant-isolation and permission suites pass.
