@@ -1,0 +1,25 @@
+import { Schema, type InferSchemaType } from 'mongoose';
+import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
+
+export const FILE_PURPOSES = ['avatar', 'id_card', 'import_source'] as const;
+export type FilePurpose = (typeof FILE_PURPOSES)[number];
+
+const fileSchema = new Schema(
+  {
+    ownerId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
+    purpose: { type: String, enum: FILE_PURPOSES, required: true },
+    mime: { type: String, required: true },
+    size: { type: Number, required: true },
+    storageKey: { type: String, required: true },
+    sha256: { type: String, required: true },
+    scanStatus: { type: String, enum: ['skipped', 'clean', 'infected'], default: 'skipped' },
+    /** Retention: a purge job deletes the blob and this record after this time. */
+    deleteAfter: { type: Date, default: null },
+  },
+  { ...baseSchemaOptions, timestamps: { createdAt: true, updatedAt: false } },
+);
+fileSchema.index({ tenantId: 1, ownerId: 1, purpose: 1 });
+fileSchema.index({ tenantId: 1, deleteAfter: 1 });
+
+export type StoredFile = InferSchemaType<typeof fileSchema> & { _id: Schema.Types.ObjectId };
+export const FileModel = defineTenantModel('File', fileSchema);

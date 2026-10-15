@@ -25,5 +25,18 @@ export async function findTenantBySlug(slug: string): Promise<TenantRecord | nul
   cache.set(slug, { at: Date.now(), value: doc });
   return doc;
 }
-export const invalidateTenant = (slug: string): void => void cache.delete(slug);
+
+/** Cross-instance invalidation (Redis pub/sub). Without it, other instances refresh within TTL_MS. */
+let publish: ((slug: string) => void) | null = null;
+export function connectTenantCacheBus(bus: {
+  publish: (slug: string) => void;
+  subscribe: (onSlug: (slug: string) => void) => void;
+}): void {
+  publish = bus.publish;
+  bus.subscribe((slug) => cache.delete(slug));
+}
+export const invalidateTenant = (slug: string): void => {
+  cache.delete(slug);
+  publish?.(slug);
+};
 export const clearTenantCache = (): void => cache.clear();

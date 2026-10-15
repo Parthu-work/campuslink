@@ -51,6 +51,11 @@ export const envSchema = z.object({
   MAIL_FROM: z.string().default('CampusLink <no-reply@campuslink.localhost>'),
   /** `disabled` drops mail silently (end-to-end runs without Mailpit). Mail bodies are never logged: they contain tokens. */
   MAIL_DRIVER: z.enum(['smtp', 'disabled']).default('smtp'),
+  STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
+  STORAGE_LOCAL_DIR: z.string().min(1).default('./uploads'),
+  SMS_PROVIDER: z.enum(['disabled']).default('disabled'),
+  /** bullmq (Redis-backed, default) or inline (in-process; tests only). */
+  JOBS_DRIVER: z.enum(['bullmq', 'inline']).default('bullmq'),
   /** Multiplies every rate limit. Raised only for automated test runs; capped at 2 in production. */
   RATE_LIMIT_SCALE: z.coerce.number().positive().max(1000).default(1),
 });

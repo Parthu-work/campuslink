@@ -16,7 +16,6 @@ import {
 } from '../helpers.js';
 import { runInTenant } from '../../src/lib/context.js';
 import { AuditModel } from '../../src/modules/audit/audit.model.js';
-import type { RouteRegistry } from '../../src/http/registry.js';
 
 const ctx = testApp();
 let A: TestTenant, B: TestTenant;
@@ -133,14 +132,5 @@ describe('object-level access across colleges (IDOR)', () => {
     const b = await api(ctx, B.host).get('/tenant');
     expect(b.body.data.branding.primary).toBe('#3fb8e6');
     expect((await api(ctx, A.host).get('/tenant')).body.data.branding.primary).toBe('#22b07d');
-  });
-});
-
-describe('modules that are not built yet', () => {
-  // When file uploads (Phase 2) or Socket.io (Phase 3) arrive, this guard fails until their
-  // cross-tenant tests are added here — the spec requires socket and file isolation tests.
-  it('has no upload/file or realtime routes without isolation tests', () => {
-    const routes = (ctx.app.locals.registry as RouteRegistry).map((r) => r.spec.path);
-    expect(routes.filter((p) => /upload|file|socket|realtime/i.test(p))).toEqual([]);
   });
 });

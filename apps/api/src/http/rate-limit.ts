@@ -4,7 +4,17 @@ import type { Redis } from 'ioredis';
 import type { RequestHandler, Request } from 'express';
 import { ErrorCode } from '@campuslink/shared';
 
-export type LimiterName = 'global' | 'login' | 'mfa' | 'signup' | 'emailAction' | 'refresh' | 'adminWrite';
+export type LimiterName =
+  | 'global'
+  | 'login'
+  | 'mfa'
+  | 'signup'
+  | 'emailAction'
+  | 'refresh'
+  | 'adminWrite'
+  | 'verify'
+  | 'search'
+  | 'upload';
 
 const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: boolean }> = {
   global: { windowMs: 60_000, limit: 600 },
@@ -14,6 +24,9 @@ const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: bo
   emailAction: { windowMs: 60 * 60_000, limit: 5 },
   refresh: { windowMs: 15 * 60_000, limit: 120 },
   adminWrite: { windowMs: 60_000, limit: 60, perUser: true },
+  verify: { windowMs: 60 * 60_000, limit: 10, perUser: true },
+  search: { windowMs: 60_000, limit: 60, perUser: true },
+  upload: { windowMs: 60 * 60_000, limit: 20, perUser: true },
 };
 
 const key = (req: Request, perUser?: boolean) =>

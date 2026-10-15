@@ -14,6 +14,7 @@ import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import type { AuthState } from '../../types.js';
 import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthService } from '../auth/auth.service.js';
+import type { ProfilesService } from '../profiles/profiles.service.js';
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const ADMIN_FIELDS =
@@ -53,7 +54,10 @@ function assertCanActOn(actor: AuthState, targetRoles: string[]) {
 }
 
 export class UsersService {
-  constructor(private readonly auth: AuthService) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly profiles: ProfilesService,
+  ) {}
 
   async me(auth: AuthState): Promise<MeResponse> {
     const u = await UserModel.findById(auth.userId).select('name email locale').lean();
@@ -75,6 +79,7 @@ export class UsersService {
   async updateMe(auth: AuthState, patch: { name?: string | undefined; locale?: 'en' | 'te' | undefined }) {
     const set = Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined));
     if (Object.keys(set).length) await UserModel.updateOne({ _id: auth.userId }, { $set: set });
+    if (set.name) await this.profiles.sync(auth.userId);
     return this.me(auth);
   }
 
@@ -126,6 +131,7 @@ export class UsersService {
     const update: Record<string, unknown> = { roles: unique };
     if (!unique.includes(Role.STUDENT)) update.capabilities = [];
     await UserModel.updateOne({ _id: id }, { $set: update });
+    await this.profiles.sync(id);
     await audit.record(
       {
         action: 'user.roles_changed',
@@ -169,6 +175,7 @@ export class UsersService {
       { $set: { status }, ...(status === 'suspended' ? { $inc: { tokenVersion: 1 } } : {}) },
     );
     if (status === 'suspended') await this.auth.revokeAllSessions(id, 'suspended');
+    await this.profiles.sync(id);
     await audit.record(
       {
         action: status === 'suspended' ? 'user.suspended' : 'user.reactivated',

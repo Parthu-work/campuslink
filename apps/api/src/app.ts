@@ -27,6 +27,21 @@ import { tenantRoutes } from './modules/tenants/tenants.routes.js';
 import { auditRoutes } from './modules/audit/audit.routes.js';
 import { PlatformService } from './modules/platform/platform.service.js';
 import { platformRoutes } from './modules/platform/platform.routes.js';
+import { uploader } from './http/upload.js';
+import { safeFetch } from './lib/safe-fetch.js';
+import { LocalDiskStorage, S3StorageStub, type StorageProvider } from './lib/storage.js';
+import { InlineJobQueue, type JobQueue } from './lib/jobs.js';
+import { DisabledSmsProvider } from './lib/sms.js';
+import { FilesService } from './modules/files/files.service.js';
+import { fileRoutes } from './modules/files/files.routes.js';
+import { ImportsService, IMPORT_JOB } from './modules/imports/imports.service.js';
+import { WhitelistService } from './modules/imports/whitelist.service.js';
+import { importRoutes } from './modules/imports/imports.routes.js';
+import { ProfilesService } from './modules/profiles/profiles.service.js';
+import { profileRoutes } from './modules/profiles/profiles.routes.js';
+import { InvitesService } from './modules/verification/invites.service.js';
+import { VerificationService } from './modules/verification/verification.service.js';
+import { verificationRoutes } from './modules/verification/verification.routes.js';
 
 export interface AppDeps {
   env: Env;
@@ -37,9 +52,24 @@ export interface AppDeps {
   /** Multiplies every rate limit (tests use a large value except where limits are under test). */
   rateLimitScale?: number;
   fetchImpl?: typeof fetch;
+  storage?: StorageProvider;
+  jobs?: JobQueue;
+  /** SSRF-safe fetcher used for remote imports (injected in tests). */
+  fetcher?: typeof safeFetch;
 }
 
-export function createApp({ env, logger, readiness, mailer, redis, rateLimitScale = 1, fetchImpl }: AppDeps) {
+export function createApp({
+  env,
+  logger,
+  readiness,
+  mailer,
+  redis,
+  rateLimitScale = 1,
+  fetchImpl,
+  storage,
+  jobs,
+  fetcher = safeFetch,
+}: AppDeps) {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', env.TRUST_PROXY_HOPS);
@@ -52,6 +82,7 @@ export function createApp({ env, logger, readiness, mailer, redis, rateLimitScal
   const registry: RouteRegistry = [];
   const pipeline: PipelineDeps = {
     registry,
+    uploader,
     limiters,
     authenticate: authenticate(tokens),
     csrf: csrfProtection(isAllowedOrigin),
@@ -67,8 +98,29 @@ export function createApp({ env, logger, readiness, mailer, redis, rateLimitScal
     hibpEnabled: env.HIBP_ENABLED,
     ...(fetchImpl ? { fetchImpl } : {}),
   });
-  const usersService = new UsersService(authService);
+  const store =
+    storage ??
+    (env.STORAGE_DRIVER === 's3' ? new S3StorageStub() : new LocalDiskStorage(env.STORAGE_LOCAL_DIR));
+  const queue = jobs ?? new InlineJobQueue();
+  const filesService = new FilesService(store);
+  const profilesService = new ProfilesService(cipher, filesService);
+  const usersService = new UsersService(authService, profilesService);
   const platformService = new PlatformService(authService);
+  const invitesService = new InvitesService(cipher, mailer, authService);
+  const verificationService = new VerificationService({
+    cipher,
+    mailer,
+    sms: new DisabledSmsProvider(),
+    profiles: profilesService,
+    files: filesService,
+    invites: invitesService,
+  });
+  const importsService = new ImportsService({ files: filesService, cipher, jobs: queue, fetcher });
+  const whitelistService = new WhitelistService(cipher);
+  authService.onEmailVerified = (userId, email, meta) =>
+    verificationService.onEmailVerified(userId, email, meta);
+  authService.onUserCreated = (userId) => profilesService.sync(userId);
+  queue.register(IMPORT_JOB, (data, progress) => importsService.run(String(data.jobId), progress));
   const cookie = {
     secure: env.COOKIE_SECURE ?? env.NODE_ENV === 'production',
     refreshTtlSec: env.JWT_REFRESH_TTL_SECONDS,
@@ -105,6 +157,16 @@ export function createApp({ env, logger, readiness, mailer, redis, rateLimitScal
   );
   app.use(API_PREFIX, defineModule('audit', auditRoutes(), pipeline));
   app.use(API_PREFIX, defineModule('platform', platformRoutes(platformService, readiness), pipeline));
+  app.use(API_PREFIX, defineModule('files', fileRoutes(filesService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('imports', importRoutes(importsService, whitelistService, invitesService), pipeline),
+  );
+  app.use(
+    API_PREFIX,
+    defineModule('verification', verificationRoutes(verificationService, invitesService), pipeline),
+  );
+  app.use(API_PREFIX, defineModule('profiles', profileRoutes(profilesService), pipeline));
 
   const openapi = buildOpenApi(registry);
   app.get(`${API_PREFIX}/openapi.json`, (_req, res) => res.json(openapi));
@@ -112,6 +174,17 @@ export function createApp({ env, logger, readiness, mailer, redis, rateLimitScal
   app.use(notFoundHandler);
   app.use(errorHandler(logger));
   app.locals.registry = registry;
-  app.locals.services = { auth: authService, users: usersService, platform: platformService, tokens, cipher };
+  app.locals.services = {
+    auth: authService,
+    users: usersService,
+    platform: platformService,
+    tokens,
+    cipher,
+    files: filesService,
+    imports: importsService,
+    verification: verificationService,
+    profiles: profilesService,
+    queue,
+  };
   return app;
 }

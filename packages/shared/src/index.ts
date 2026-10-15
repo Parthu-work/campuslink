@@ -8,3 +8,4 @@ export * from './schemas/common.js';
 export * from './schemas/auth.js';
 export * from './schemas/tenant.js';
 export * from './schemas/users.js';
+export * from './schemas/people.js';

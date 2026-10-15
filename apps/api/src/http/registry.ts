@@ -15,6 +15,13 @@ export interface HandlerResult {
   status?: number;
   data: unknown;
   meta?: ApiSuccess<unknown>['meta'];
+  /** Non-JSON response (file downloads). Headers are set verbatim. */
+  raw?: { body: Buffer | string; headers: Record<string, string> };
+}
+
+export interface UploadSpec {
+  field: string;
+  maxBytes: number;
 }
 
 export interface RouteSpec<
@@ -35,12 +42,15 @@ export interface RouteSpec<
   limiter?: LimiterName;
   /** Cookie-authenticated endpoint: requires the double-submit CSRF token and an allowed Origin. */
   csrf?: boolean;
+  /** multipart/form-data with one file; parsed only after authorization. Other form fields land in `body`. */
+  upload?: UploadSpec;
   handler: (ctx: {
     req: Request;
     res: Response;
     body: z.output<B>;
     query: z.output<Q>;
     params: z.output<P>;
+    file: Express.Multer.File | undefined;
   }) => Promise<HandlerResult>;
 }
 
@@ -51,6 +61,7 @@ export type RouteRegistry = { module: string; spec: AnyRouteSpec }[];
 
 export interface PipelineDeps {
   registry: RouteRegistry;
+  uploader: (spec: UploadSpec) => RequestHandler;
   limiters: Record<LimiterName, RequestHandler>;
   authenticate: RequestHandler;
   csrf: RequestHandler;
@@ -75,6 +86,7 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
     if (spec.csrf) chain.push(deps.csrf);
     if (spec.access.kind !== 'public') chain.push(deps.authenticate);
     if (spec.access.kind === 'permission') chain.push(authorize(spec.access.permission));
+    if (spec.upload) chain.push(deps.uploader(spec.upload));
     chain.push(async (req, res) => {
       const ctx = {
         req,
@@ -82,8 +94,13 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
         body: parse(spec.body, req.body),
         query: parse(spec.query, req.query),
         params: parse(spec.params, req.params),
+        file: req.file,
       };
       const result = await spec.handler(ctx as never);
+      if (result.raw) {
+        for (const [k, v] of Object.entries(result.raw.headers)) res.setHeader(k, v);
+        return void res.status(result.status ?? 200).send(result.raw.body);
+      }
       if (result.status === 204) return void res.status(204).end();
       res
         .status(result.status ?? 200)

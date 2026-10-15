@@ -1,0 +1,10 @@
+Hall Ticket No,Candidate Name,Dept,Year of Passing,Email ID,Mobile No
+25DP1A0501,Akhil Varma,Computer Science and Engineering,2029,akhil.varma@dpit.example,9000000001
+25DP1A0502,Bhavana Rao,CSE,2029,bhavana.rao@dpit.example,
+24DP1A0401,Charan Teja,ECE,2028,charan.teja@dpit.example,9000000003
+24DP1A0201,Divya Sri,Electrical & Electronics,2028,,9000000004
+19DP1A0301,Eshwar Goud,Mechanical,2023,eshwar.goud@dpit.example,
+18DP1A0101,Farida Shaik,Civil,2022,farida.shaik@dpit.example,
+18DP1A0102,Gopi Krishna,CIVIL,2022,not-an-email,
+,Harsha (missing roll number),CSE,2029,,
+25DP1A0501,Akhil Varma (duplicate row),CSE,2029,,

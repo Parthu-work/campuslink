@@ -56,6 +56,11 @@ const genericLoginError = () =>
 const invalidLink = () => badRequest('This link is invalid or has expired. Request a new one.');
 
 export class AuthService {
+  /** Set by the app: lets verification react when someone proves their email (invites, list matches). */
+  onEmailVerified: ((userId: string, email: string, meta: ClientMeta) => Promise<void>) | null = null;
+  /** Set by the app: creates the member's profile record whenever an account is created. */
+  onUserCreated: ((userId: string) => Promise<void>) | null = null;
+
   constructor(private readonly d: AuthDeps) {}
 
   /** https://<slug>.<root>:<port>/path — built from WEB_ORIGIN, never from request headers. */
@@ -176,6 +181,7 @@ export class AuthService {
       throw err;
     }
     await consentService.recordMany(user._id, consents, 'signup');
+    await this.onUserCreated?.(String(user._id));
     const token = await this.issueToken(user._id, 'email_verify', EMAIL_VERIFY_TTL_MS);
     await this.sendMail(
       tenant,
@@ -213,6 +219,8 @@ export class AuthService {
       },
       meta,
     );
+    const u = await UserModel.findById(t.userId).select('email').lean();
+    if (u && this.onEmailVerified) await this.onEmailVerified(String(t.userId), u.email, meta);
   }
 
   async resendVerification(tenant: TenantRecord, email: string): Promise<void> {

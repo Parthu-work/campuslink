@@ -1766,6 +1766,1416 @@
         },
         "x-permission": "platform:health"
       }
+    },
+    "/api/v1/files/{id}": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Download a file you are allowed to see (avatars; your own or reviewable ID cards)",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "files_get_files_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/admin/imports/preview/upload": {
+      "post": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Upload a CSV or XLSX and get headers, sample rows and a suggested column mapping",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "imports_post_admin_imports_preview_upload",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/admin/imports/preview/remote": {
+      "post": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Preview a Google Sheet (shared link) or a REST/JSON source",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "imports_post_admin_imports_preview_remote",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "gsheet"
+                      },
+                      "url": {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "url"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "rest"
+                      },
+                      "url": {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      },
+                      "recordsPath": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"
+                      },
+                      "bearerToken": {
+                        "type": "string",
+                        "minLength": 8,
+                        "maxLength": 2000
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "url"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/admin/imports": {
+      "post": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Start an import (or a dry run) from a preview with a column mapping",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "imports_post_admin_imports",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "previewId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "mapping": {
+                    "type": "object",
+                    "properties": {
+                      "columns": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "enum": [
+                            "rollNumber",
+                            "name",
+                            "branch",
+                            "gradYear",
+                            "email",
+                            "phone",
+                            "kind"
+                          ]
+                        },
+                        "additionalProperties": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        }
+                      },
+                      "defaultKind": {
+                        "default": "derive",
+                        "type": "string",
+                        "enum": [
+                          "derive",
+                          "student",
+                          "alumni"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "columns"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dryRun": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "previewId",
+                  "mapping"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      },
+      "get": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Recent imports with status and counts",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college.",
+        "operationId": "imports_get_admin_imports",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/admin/imports/{id}": {
+      "get": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Import progress, counts and the first row errors",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college.",
+        "operationId": "imports_get_admin_imports_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/admin/imports/{id}/errors.csv": {
+      "get": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Download the row-level error report (row, field, problem — no personal values)",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college.",
+        "operationId": "imports_get_admin_imports_id_errors.csv",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/admin/imports/{id}/rollback": {
+      "post": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Undo the most recent import (claimed records are kept)",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "imports_post_admin_imports_id_rollback",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/admin/whitelist": {
+      "get": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "The verification list (contact details masked)",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college.",
+        "operationId": "imports_get_admin_whitelist",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 60
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "unclaimed",
+                "claimed"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      },
+      "post": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Add one person to the verification list (optionally email them an invite)",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "imports_post_admin_whitelist",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "rollNumber": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "branch": {
+                    "type": "string",
+                    "enum": [
+                      "CSE",
+                      "IT",
+                      "ECE",
+                      "EEE",
+                      "MECH",
+                      "CIVIL",
+                      "CHEM",
+                      "AIML",
+                      "DS",
+                      "OTHER"
+                    ]
+                  },
+                  "gradYear": {
+                    "type": "integer",
+                    "minimum": 1950,
+                    "maximum": 2032
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "student",
+                      "alumni"
+                    ]
+                  },
+                  "sendInvite": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "rollNumber",
+                  "name",
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/admin/whitelist/{id}": {
+      "delete": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Remove an unclaimed record from the verification list",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "imports_delete_admin_whitelist_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/verification": {
+      "get": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "My verification status",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "verification_get_verification",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/verification/roll": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Match my roll number against the college list and send a code to the email on record",
+        "description": "Any signed-in user. Host scope: college. Rate limit: verify.",
+        "operationId": "verification_post_verification_roll",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "rollNumber": {
+                    "type": "string"
+                  },
+                  "gradYear": {
+                    "type": "integer",
+                    "minimum": 1950,
+                    "maximum": 2032
+                  }
+                },
+                "required": [
+                  "rollNumber"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/verification/roll/confirm": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Confirm the 6-digit code to claim my college record",
+        "description": "Any signed-in user. Host scope: college. Rate limit: verify.",
+        "operationId": "verification_post_verification_roll_confirm",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "challengeId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  }
+                },
+                "required": [
+                  "challengeId",
+                  "code"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/verification/id-card": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Ask an admin to verify me from a college ID photo",
+        "description": "Any signed-in user. Host scope: college. Rate limit: upload.",
+        "operationId": "verification_post_verification_id_card",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "rollNumber": {
+                    "type": "string"
+                  },
+                  "gradYear": {
+                    "type": "integer",
+                    "minimum": 1950,
+                    "maximum": 2032
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "rollNumber"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/verification/company": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Alumni: send a code to my work email for a “currently at” badge",
+        "description": "Requires permission `mentorship:mentor` (Accept mentees, set availability and request caps). Host scope: college. Rate limit: verify.",
+        "operationId": "verification_post_verification_company",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "company": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  }
+                },
+                "required": [
+                  "email",
+                  "company"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:mentor"
+      }
+    },
+    "/api/v1/verification/company/confirm": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Confirm the work-email code",
+        "description": "Requires permission `mentorship:mentor` (Accept mentees, set availability and request caps). Host scope: college. Rate limit: verify.",
+        "operationId": "verification_post_verification_company_confirm",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "challengeId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  }
+                },
+                "required": [
+                  "challengeId",
+                  "code"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:mentor"
+      }
+    },
+    "/api/v1/admin/verification": {
+      "get": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Verification requests waiting for review (or decided)",
+        "description": "Requires permission `verification:review` (Review verification requests). Host scope: college.",
+        "operationId": "verification_get_admin_verification",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "pending",
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "verification:review"
+      }
+    },
+    "/api/v1/admin/verification/{id}/decision": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Approve or reject an ID verification request",
+        "description": "Requires permission `verification:review` (Review verification requests). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "verification_post_admin_verification_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "verification:review"
+      }
+    },
+    "/api/v1/admin/users/{id}/unverify": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Revoke a member’s verification and free their list record",
+        "description": "Requires permission `verification:review` (Review verification requests). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "verification_post_admin_users_id_unverify",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "verification:review"
+      }
+    },
+    "/api/v1/admin/invites": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Invite people by email (invitees are verified when they sign up with that email)",
+        "description": "Requires permission `users:invite` (Invite users). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "verification_post_admin_invites",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "emails": {
+                    "minItems": 1,
+                    "maxItems": 200,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 254,
+                      "format": "email",
+                      "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                    }
+                  }
+                },
+                "required": [
+                  "emails"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "users:invite"
+      }
+    },
+    "/api/v1/me/profile": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "My profile with visibility settings",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "profiles_get_me_profile",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "put": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Update my profile and who can see each field",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "profiles_put_me_profile",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "headline": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "company": {
+                    "type": "string",
+                    "maxLength": 80
+                  },
+                  "jobTitle": {
+                    "type": "string",
+                    "maxLength": 80
+                  },
+                  "location": {
+                    "type": "string",
+                    "maxLength": 80
+                  },
+                  "bio": {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  "skills": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40,
+                      "pattern": "^[^<>{}$]+$"
+                    }
+                  },
+                  "topics": {
+                    "maxItems": 15,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40,
+                      "pattern": "^[^<>{}$]+$"
+                    }
+                  },
+                  "languages": {
+                    "maxItems": 8,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40,
+                      "pattern": "^[^<>{}$]+$"
+                    }
+                  },
+                  "links": {
+                    "maxItems": 5,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "enum": [
+                            "linkedin",
+                            "github",
+                            "portfolio",
+                            "other"
+                          ]
+                        },
+                        "url": {
+                          "type": "string",
+                          "maxLength": 2000,
+                          "format": "uri"
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "url"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "phone": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string",
+                        "const": ""
+                      }
+                    ]
+                  },
+                  "visibility": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "enum": [
+                        "headline",
+                        "company",
+                        "jobTitle",
+                        "location",
+                        "skills",
+                        "topics",
+                        "languages",
+                        "bio",
+                        "links",
+                        "email",
+                        "phone",
+                        "branch",
+                        "gradYear"
+                      ]
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "enum": [
+                        "members",
+                        "alumni_staff",
+                        "only_me"
+                      ]
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/me/avatar": {
+      "post": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Upload a profile photo (re-encoded, metadata removed)",
+        "description": "Any signed-in user. Host scope: college. Rate limit: upload.",
+        "operationId": "profiles_post_me_avatar",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/directory": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Browse verified members (filters, cursor pagination)",
+        "description": "Requires permission `directory:read` (Browse the people directory). Host scope: college. Rate limit: search.",
+        "operationId": "profiles_get_directory",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 80
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALUMNI",
+                "STUDENT",
+                "FACULTY",
+                "TPO"
+              ]
+            }
+          },
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "batchFrom",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1950,
+              "maximum": 2032
+            }
+          },
+          {
+            "name": "batchTo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1950,
+              "maximum": 2032
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "directory:read"
+      }
+    },
+    "/api/v1/profiles/{userId}": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "A member’s profile (only the fields you are allowed to see)",
+        "description": "Requires permission `directory:read` (Browse the people directory). Host scope: college.",
+        "operationId": "profiles_get_profiles_userId",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "directory:read"
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Command-palette search (people for now)",
+        "description": "Requires permission `directory:read` (Browse the people directory). Host scope: college. Rate limit: search.",
+        "operationId": "profiles_get_search",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 80
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "directory:read"
+      }
     }
   }
 }

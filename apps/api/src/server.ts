@@ -3,17 +3,37 @@ import { Redis } from 'ioredis';
 import { loadEnv } from './config/env.js';
 import { createLogger } from './lib/logger.js';
 import { MemoryMailProvider, SmtpMailProvider } from './lib/mailer.js';
+import { BullJobQueue, InlineJobQueue } from './lib/jobs.js';
+import { runRetention } from './lib/maintenance.js';
+import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
 import { createApp } from './app.js';
 import { syncIndexes } from './db/connect.js';
+import type { FilesService } from './modules/files/files.service.js';
 
 const env = loadEnv();
 const logger = createLogger(env.LOG_LEVEL);
 const redis = new Redis(env.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: 2 });
+// BullMQ needs its own connection with unlimited retries; pub/sub needs a dedicated subscriber.
+const bullConnection = new Redis(env.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: null });
+const subscriber = new Redis(env.REDIS_URL, { lazyConnect: true });
 
 async function main() {
-  await Promise.all([mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 }), redis.connect()]);
+  await Promise.all([
+    mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 }),
+    redis.connect(),
+    bullConnection.connect(),
+    subscriber.connect(),
+  ]);
   await syncIndexes();
   logger.info('connected to MongoDB and Redis');
+
+  connectTenantCacheBus({
+    publish: (slug) => void redis.publish('tenant:invalidate', slug),
+    subscribe: (onSlug) => {
+      void subscriber.subscribe('tenant:invalidate');
+      subscriber.on('message', (_ch, slug) => onSlug(slug));
+    },
+  });
 
   const readiness = {
     mongo: async () => mongoose.connection.readyState === 1,
@@ -31,13 +51,36 @@ async function main() {
           },
           env.MAIL_FROM,
         );
-  const app = createApp({ env, logger, readiness, mailer, redis, rateLimitScale: env.RATE_LIMIT_SCALE });
-  const server = app.listen(env.API_PORT, () => logger.info({ port: env.API_PORT }, 'api listening'));
+  const jobs = env.JOBS_DRIVER === 'inline' ? new InlineJobQueue() : new BullJobQueue(bullConnection, logger);
+  const app = createApp({
+    env,
+    logger,
+    readiness,
+    mailer,
+    redis,
+    jobs,
+    rateLimitScale: env.RATE_LIMIT_SCALE,
+  });
+  const server = app.listen(env.API_PORT, () =>
+    logger.info({ port: env.API_PORT, jobs: env.JOBS_DRIVER }, 'api listening'),
+  );
+
+  const files = (app.locals.services as { files: FilesService }).files;
+  const retention = () =>
+    runRetention(files, logger).catch((err: unknown) => logger.error({ err }, 'retention failed'));
+  setTimeout(retention, 30_000).unref();
+  setInterval(retention, 6 * 3600_000).unref();
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, 'shutting down');
     server.close(async () => {
-      await Promise.allSettled([mongoose.disconnect(), redis.quit()]);
+      await jobs.close().catch(() => undefined);
+      await Promise.allSettled([
+        mongoose.disconnect(),
+        redis.quit(),
+        bullConnection.quit(),
+        subscriber.quit(),
+      ]);
       process.exit(0);
     });
     setTimeout(() => process.exit(1), 10_000).unref();

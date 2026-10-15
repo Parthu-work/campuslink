@@ -59,3 +59,38 @@ Scope so far: Phase 1 (tenancy, auth, RBAC, audit, consent, branding, platform c
 - **Phase 8:** no WebAuthn yet.
 - **Phase 2:** no CAPTCHA (the `BotProtection` adapter is planned).
 - **Phase 2:** in-memory rate limiting is used only in unit tests; dev and prod use Redis.
+
+---
+
+# Phase 2: People (imports, verification, profiles, directory, uploads)
+
+**New assets:** the college's whitelist (roll numbers, names, emails, phones), ID-card photos, profiles.
+
+## Imports
+
+|     | Threat                                                                             | Mitigation                                                                                                                                                                                                       |
+| --- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T   | Malicious spreadsheet (formula injection when the error report is opened in Excel) | Error report holds only row numbers, field names and messages (no values); every cell starting with `= + - @ \t \r` is prefixed with `'`                                                                         |
+| D   | XLSX zip bomb or huge files                                                        | 5 MB upload cap; central-directory pre-scan rejects more than 50 MB uncompressed or a compression ratio above 100; 20,000-row cap                                                                                |
+| I   | SSRF via a Google Sheets or REST URL                                               | `safeFetch`: https only, DNS resolved and pinned, private, loopback, link-local, CGNAT, multicast and ULA ranges blocked, redirects re-validated (max 3), 10 s timeout, 5 MB cap; Sheets limited to Google hosts |
+| T   | Re-import silently overwrites a claimed identity                                   | Claimed records keep roll number, name and graduation year; conflicting rows are reported, not applied                                                                                                           |
+| R   | Who imported or rolled back what                                                   | Audit `import.started`, `import.completed`, `import.rolled_back` with counts                                                                                                                                     |
+| E   | Job data is used to switch tenant                                                  | The job payload's `tenantId` is set server-side from the request context; the worker re-enters `runInTenant`                                                                                                     |
+
+## Verification
+
+|     | Threat                                              | Mitigation                                                                                                                                                                  |
+| --- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S   | Claiming someone else's roll number                 | The OTP goes to the email on the college's record (not the claimant's); records can be claimed once (atomic); every claim is audited; admins can revoke                     |
+| S   | Brute-forcing the OTP                               | 6 digits, 10-minute TTL, 5 attempts per challenge, 5 challenges per user per day, rate limit                                                                                |
+| I   | Enumerating roll numbers to harvest names           | Responses never reveal names, only a masked email when matched; rate limits plus audit                                                                                      |
+| I   | ID photo exposure                                   | Stored outside the web root; served only to the owner and holders of `verification:review` in the same college; `no-store`; deleted 30 days after the decision              |
+| T   | Polyglot upload (HTML or SVG disguised as an image) | Magic-byte sniffing (JPEG, PNG, WebP only); re-encoded with sharp (also strips EXIF/GPS); served with `nosniff`, a sandbox CSP and an attachment disposition for non-images |
+
+## Profiles and directory
+
+|     | Threat                             | Mitigation                                                                                                                                     |
+| --- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| I   | Contact details scraped by members | Contact fields default to "only me"; field-level visibility is applied server-side; directory search is rate-limited and requires verification |
+| I   | Cross-college search               | Tenant plugin; isolation tests for search, profiles and files                                                                                  |
+| T   | Stored XSS in bio or links         | Plain text only (React escapes); links must be https with a host allowlist pattern; no HTML accepted                                           |

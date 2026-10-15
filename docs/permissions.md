@@ -97,3 +97,30 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/platform/tenants` | `platform:tenants` | platform | adminWrite | Create a college and invite its first administrator |
 | `PATCH /api/v1/platform/tenants/:id` | `platform:tenants` | platform | adminWrite | Suspend or resume a college; update subscription |
 | `GET /api/v1/platform/health` | `platform:health` | platform | — | Platform health and aggregate counts |
+| `GET /api/v1/files/:id` | any signed-in user | college | — | Download a file you are allowed to see (avatars; your own or reviewable ID cards) |
+| `POST /api/v1/admin/imports/preview/upload` | `imports:manage` | college | adminWrite | Upload a CSV or XLSX and get headers, sample rows and a suggested column mapping |
+| `POST /api/v1/admin/imports/preview/remote` | `imports:manage` | college | adminWrite | Preview a Google Sheet (shared link) or a REST/JSON source |
+| `POST /api/v1/admin/imports` | `imports:manage` | college | adminWrite | Start an import (or a dry run) from a preview with a column mapping |
+| `GET /api/v1/admin/imports` | `imports:manage` | college | — | Recent imports with status and counts |
+| `GET /api/v1/admin/imports/:id` | `imports:manage` | college | — | Import progress, counts and the first row errors |
+| `GET /api/v1/admin/imports/:id/errors.csv` | `imports:manage` | college | — | Download the row-level error report (row, field, problem — no personal values) |
+| `POST /api/v1/admin/imports/:id/rollback` | `imports:manage` | college | adminWrite | Undo the most recent import (claimed records are kept) |
+| `GET /api/v1/admin/whitelist` | `imports:manage` | college | — | The verification list (contact details masked) |
+| `POST /api/v1/admin/whitelist` | `imports:manage` | college | adminWrite | Add one person to the verification list (optionally email them an invite) |
+| `DELETE /api/v1/admin/whitelist/:id` | `imports:manage` | college | adminWrite | Remove an unclaimed record from the verification list |
+| `GET /api/v1/verification` | any signed-in user | college | — | My verification status |
+| `POST /api/v1/verification/roll` | any signed-in user | college | verify | Match my roll number against the college list and send a code to the email on record |
+| `POST /api/v1/verification/roll/confirm` | any signed-in user | college | verify | Confirm the 6-digit code to claim my college record |
+| `POST /api/v1/verification/id-card` | any signed-in user | college | upload | Ask an admin to verify me from a college ID photo |
+| `POST /api/v1/verification/company` | `mentorship:mentor` | college | verify | Alumni: send a code to my work email for a “currently at” badge |
+| `POST /api/v1/verification/company/confirm` | `mentorship:mentor` | college | verify | Confirm the work-email code |
+| `GET /api/v1/admin/verification` | `verification:review` | college | — | Verification requests waiting for review (or decided) |
+| `POST /api/v1/admin/verification/:id/decision` | `verification:review` | college | adminWrite | Approve or reject an ID verification request |
+| `POST /api/v1/admin/users/:id/unverify` | `verification:review` | college | adminWrite | Revoke a member’s verification and free their list record |
+| `POST /api/v1/admin/invites` | `users:invite` | college | adminWrite | Invite people by email (invitees are verified when they sign up with that email) |
+| `GET /api/v1/me/profile` | any signed-in user | college | — | My profile with visibility settings |
+| `PUT /api/v1/me/profile` | any signed-in user | college | — | Update my profile and who can see each field |
+| `POST /api/v1/me/avatar` | any signed-in user | college | upload | Upload a profile photo (re-encoded, metadata removed) |
+| `GET /api/v1/directory` | `directory:read` | college | search | Browse verified members (filters, cursor pagination) |
+| `GET /api/v1/profiles/:userId` | `directory:read` | college | — | A member’s profile (only the fields you are allowed to see) |
+| `GET /api/v1/search` | `directory:read` | college | search | Command-palette search (people for now) |

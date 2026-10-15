@@ -79,6 +79,7 @@ export class PlatformService {
         },
         meta,
       );
+      await this.auth.onUserCreated?.(String(user._id));
       await this.auth.sendInvite(record, user._id, user.email, user.name);
       return user;
     });
