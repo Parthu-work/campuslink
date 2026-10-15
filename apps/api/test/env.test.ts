@@ -4,6 +4,12 @@ import { loadEnv } from '../src/config/env.js';
 describe('loadEnv', () => {
   it('refuses placeholder secrets in production', () => {
     expect(() => loadEnv({ NODE_ENV: 'production' })).toThrow(/placeholder secrets/);
+    expect(() =>
+      loadEnv({
+        NODE_ENV: 'production',
+        JWT_ACCESS_SECRET: 'change-me-access-secret-at-least-32-characters-long',
+      }),
+    ).toThrow(/JWT_ACCESS_SECRET/);
   });
 
   it('does not echo secret values in validation errors', () => {

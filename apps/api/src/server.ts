@@ -2,29 +2,33 @@ import mongoose from 'mongoose';
 import { Redis } from 'ioredis';
 import { loadEnv } from './config/env.js';
 import { createLogger } from './lib/logger.js';
+import { SmtpMailProvider } from './lib/mailer.js';
 import { createApp } from './app.js';
+import { syncIndexes } from './db/connect.js';
 
 const env = loadEnv();
 const logger = createLogger(env.LOG_LEVEL);
-
-mongoose.set('strictQuery', true);
-mongoose.set('sanitizeFilter', true);
-
 const redis = new Redis(env.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: 2 });
 
 async function main() {
   await Promise.all([mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 }), redis.connect()]);
+  await syncIndexes();
   logger.info('connected to MongoDB and Redis');
 
-  const app = createApp({
-    env,
-    logger,
-    readiness: {
-      mongo: async () => mongoose.connection.readyState === 1,
-      redis: async () => (await redis.ping()) === 'PONG',
+  const readiness = {
+    mongo: async () => mongoose.connection.readyState === 1,
+    redis: async () => (await redis.ping()) === 'PONG',
+  };
+  const mailer = new SmtpMailProvider(
+    {
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT,
+      secure: env.SMTP_SECURE,
+      ...(env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS ?? '' } : {}),
     },
-  });
-
+    env.MAIL_FROM,
+  );
+  const app = createApp({ env, logger, readiness, mailer, redis });
   const server = app.listen(env.API_PORT, () => logger.info({ port: env.API_PORT }, 'api listening'));
 
   const shutdown = (signal: string) => {

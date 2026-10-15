@@ -24,7 +24,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/consistent-type-imports': 'error',
       'no-console': ['error', { allow: ['warn', 'error'] }],
-      eqeqeq: ['error', 'always'],
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
     },
   },
   {
@@ -37,14 +37,31 @@ export default tseslint.config(
     },
   },
   {
-    // The API must never touch Mongoose models outside repositories (enforced from Phase 1).
+    // Tenancy guard rails (ADR 0002): raw driver access bypasses the tenant plugin.
     files: ['apps/api/src/**/*.ts'],
+    ignores: ['apps/api/src/db/**'],
     rules: {
       'no-restricted-syntax': [
         'error',
-        { selector: "CallExpression[callee.property.name='eval']", message: 'No eval.' },
+        {
+          selector: "CallExpression[callee.object.name='mongoose'][callee.property.name='model']",
+          message: 'Use defineTenantModel/definePlatformModel from db/models.ts.',
+        },
+        {
+          selector: "MemberExpression[property.name='collection'][object.name=/Model$/]",
+          message: 'Raw collection access bypasses tenant isolation.',
+        },
+        {
+          selector: "MemberExpression[object.property.name='connection'][property.name='db']",
+          message: 'Raw driver access bypasses tenant isolation.',
+        },
+        { selector: "CallExpression[callee.name='eval']", message: 'No eval.' },
       ],
     },
+  },
+  {
+    files: ['**/test/**/*.ts', '**/*.test.ts', '**/e2e/**/*.ts'],
+    rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
   },
   {
     files: ['scripts/**/*.mjs'],

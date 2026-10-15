@@ -27,7 +27,7 @@ export const envSchema = z.object({
   MONGODB_URI: z.string().startsWith('mongodb').default('mongodb://127.0.0.1:27017/campuslink'),
   REDIS_URL: z.string().startsWith('redis').default('redis://127.0.0.1:6379'),
   JWT_ACCESS_SECRET: secret.default('test-only-access-secret-xxxxxxxxxxxxxxxxxxxx'),
-  JWT_REFRESH_SECRET: secret.default('test-only-refresh-secret-xxxxxxxxxxxxxxxxxxx'),
+  JWT_TICKET_SECRET: secret.default('test-only-ticket-secret-xxxxxxxxxxxxxxxxxxxx'),
   JWT_ACCESS_TTL_SECONDS: z.coerce.number().int().positive().default(900),
   JWT_REFRESH_TTL_SECONDS: z.coerce.number().int().positive().default(1_209_600),
   FIELD_ENCRYPTION_KEY: z
@@ -37,6 +37,18 @@ export const envSchema = z.object({
     })
     .default('MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY='),
   HIBP_ENABLED: bool,
+  /** Defaults to true in production. Browsers treat *.localhost as secure, but we keep dev cookies plain for other hosts. */
+  COOKIE_SECURE: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === 'true')),
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
+  SMTP_HOST: z.string().default('127.0.0.1'),
+  SMTP_PORT: z.coerce.number().int().default(1025),
+  SMTP_SECURE: bool,
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  MAIL_FROM: z.string().default('CampusLink <no-reply@campuslink.localhost>'),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -52,7 +64,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   }
   const env = parsed.data;
   if (env.NODE_ENV === 'production') {
-    const weak = (['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'FIELD_ENCRYPTION_KEY'] as const).filter((k) =>
+    const weak = (['JWT_ACCESS_SECRET', 'JWT_TICKET_SECRET', 'FIELD_ENCRYPTION_KEY'] as const).filter((k) =>
       INSECURE_DEFAULT_MARKERS.some((m) => env[k].includes(m)),
     );
     if (weak.length)

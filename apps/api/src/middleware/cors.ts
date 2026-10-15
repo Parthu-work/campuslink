@@ -1,7 +1,9 @@
 import cors from 'cors';
 
 /** Convert allowlist entries (supporting a leading `*.` subdomain wildcard) into matchers. */
-export function buildOriginMatcher(allowed: string[]) {
+export type OriginMatcher = (origin: string | undefined) => boolean;
+
+export function buildOriginMatcher(allowed: string[]): OriginMatcher {
   const matchers = allowed.map((entry) => {
     const url = new URL(entry.replace('://*.', '://wildcard.'));
     if (!entry.includes('://*.')) return (o: URL) => o.origin === url.origin;

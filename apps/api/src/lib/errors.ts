@@ -16,3 +16,8 @@ export const notFound = (what = 'Resource') => new AppError(404, ErrorCode.NOT_F
 export const forbidden = () =>
   new AppError(403, ErrorCode.FORBIDDEN, 'You do not have permission to do that');
 export const unauthenticated = () => new AppError(401, ErrorCode.UNAUTHENTICATED, 'Please sign in');
+export const tooMany = (message = 'Too many attempts. Please wait a few minutes and try again.') =>
+  new AppError(429, ErrorCode.RATE_LIMITED, message);
+export const badRequest = (message: string, details?: unknown) =>
+  new AppError(400, ErrorCode.VALIDATION_FAILED, message, details);
+export const conflict = (message: string) => new AppError(409, ErrorCode.CONFLICT, message);
