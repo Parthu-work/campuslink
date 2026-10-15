@@ -49,6 +49,10 @@ export const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   MAIL_FROM: z.string().default('CampusLink <no-reply@campuslink.localhost>'),
+  /** `disabled` drops mail silently (end-to-end runs without Mailpit). Mail bodies are never logged: they contain tokens. */
+  MAIL_DRIVER: z.enum(['smtp', 'disabled']).default('smtp'),
+  /** Multiplies every rate limit. Raised only for automated test runs; capped at 2 in production. */
+  RATE_LIMIT_SCALE: z.coerce.number().positive().max(1000).default(1),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -69,6 +73,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     );
     if (weak.length)
       throw new Error(`Refusing to start in production with placeholder secrets: ${weak.join(', ')}`);
+    if (env.RATE_LIMIT_SCALE > 2) throw new Error('RATE_LIMIT_SCALE above 2 is not allowed in production');
+    if (env.MAIL_DRIVER === 'disabled') throw new Error('MAIL_DRIVER=disabled is not allowed in production');
   }
   return env;
 }

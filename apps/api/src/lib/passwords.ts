@@ -32,8 +32,20 @@ export interface StrengthResult {
   ok: boolean;
   feedback: string[];
 }
+/** Expand personal inputs so "DPIT College" also catches "dpitcollege" and "dpit", and emails their local part. */
+function expandInputs(inputs: string[]): string[] {
+  const out = new Set<string>();
+  for (const raw of inputs.filter(Boolean)) {
+    const v = raw.toLowerCase();
+    const local = v.split('@')[0] ?? v;
+    const parts = local.split(/[^a-z0-9]+/).filter((p) => p.length >= 3);
+    [v, local, local.replace(/[^a-z0-9]/g, ''), ...parts].forEach((x) => x && out.add(x));
+  }
+  return [...out];
+}
+
 export function checkStrength(plain: string, userInputs: string[]): StrengthResult {
-  const r = zxcvbn.check(plain, userInputs.filter(Boolean));
+  const r = zxcvbn.check(plain, expandInputs(userInputs));
   const feedback = [r.feedback.warning, ...r.feedback.suggestions].filter((s): s is string => !!s);
   return {
     ok: r.score >= 3,

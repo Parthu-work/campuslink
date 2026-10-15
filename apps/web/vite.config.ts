@@ -30,6 +30,18 @@ export default defineConfig({
       },
     }),
   ],
-  server: { host: true, port: 5173, strictPort: true, allowedHosts: ['.localhost'] },
+  server: {
+    host: true,
+    port: 5173,
+    strictPort: true,
+    allowedHosts: ['.localhost'],
+    // Same-origin API: the Host header (e.g. dpit.localhost:5173) is preserved so the API resolves the tenant.
+    proxy: { '/api': { target: 'http://127.0.0.1:4000', changeOrigin: false } },
+  },
+  preview: {
+    port: 4173,
+    allowedHosts: ['.localhost'],
+    proxy: { '/api': { target: 'http://127.0.0.1:4000', changeOrigin: false } },
+  },
   build: { target: 'es2022', sourcemap: true },
 });

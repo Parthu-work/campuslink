@@ -40,11 +40,27 @@ jobs:
       - run: pnpm test
       - name: Tenant isolation + permission suites (must pass; listed separately for visibility)
         run: pnpm --filter @campuslink/api exec vitest run test/isolation test/permissions.test.ts
+      - name: API coverage (security-critical modules ≥ 80%)
+        run: pnpm --filter @campuslink/api exec vitest run --coverage
       - run: pnpm build
 
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+    services:
+      mongo:
+        image: mongo:8.0
+        ports: ['27017:27017']
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      MONGODB_URI: mongodb://127.0.0.1:27017/campuslink_e2e?directConnection=true
+      REDIS_URL: redis://127.0.0.1:6379
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6

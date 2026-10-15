@@ -9,7 +9,8 @@
     "start": "node --env-file-if-exists=../../.env dist/server.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "seed": "node -e \"console.log('Seed script arrives in Phase 1 (needs tenancy + auth).')\""
+    "seed": "tsx --env-file-if-exists=../../.env src/scripts/seed.ts",
+    "docs:gen": "tsx src/scripts/gen-docs.ts"
   },
   "dependencies": {
     "@campuslink/shared": "workspace:*",
@@ -41,6 +42,7 @@
     "@types/nodemailer": "^8.0.2",
     "@types/qrcode": "^1.5.6",
     "@types/supertest": "^7.2.1",
+    "@vitest/coverage-v8": "5.0.4",
     "supertest": "^7.3.1",
     "tsx": "^4.23.15",
     "vitest": "^5.0.4"

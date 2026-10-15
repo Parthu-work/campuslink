@@ -335,3 +335,96 @@ describe('unknown hosts', () => {
     expect(r2.status).toBe(404);
   });
 });
+
+describe('signed-in account changes', () => {
+  it('change password keeps this device, signs out others, rejects a wrong current password', async () => {
+    const u = await makeUser(ctx, T, { roles: ['ALUMNI'] });
+    const other = await api(ctx, T.host).post('/auth/login').send({ email: u.email, password: PASSWORD });
+    const wrong = await api(ctx, T.host, u.token)
+      .post('/auth/password/change')
+      .send({ currentPassword: 'nope-nope-nope', newPassword: 'cobalt-heron-violin-64' });
+    expect(wrong.status).toBe(400);
+    const ok = await api(ctx, T.host, u.token)
+      .post('/auth/password/change')
+      .send({ currentPassword: PASSWORD, newPassword: 'cobalt-heron-violin-64' });
+    expect(ok.status).toBe(200);
+    expect((await api(ctx, T.host, ok.body.data.accessToken).get('/me')).status).toBe(200);
+    expect((await api(ctx, T.host, other.body.data.session.accessToken).get('/me')).status).toBe(401);
+  });
+
+  it('a non-admin can turn 2FA off with password + code; then sign-in needs no code', async () => {
+    const u = await makeUser(ctx, T, { roles: ['STUDENT'], mfa: true });
+    const bad = await api(ctx, T.host, u.token)
+      .post('/auth/mfa/disable')
+      .send({ password: 'wrong-password-1', code: '000000' });
+    expect(bad.status).toBe(400);
+    const r = await api(ctx, T.host, u.token)
+      .post('/auth/mfa/disable')
+      .send({ password: PASSWORD, code: await generate({ secret: u.mfaSecret! }) });
+    expect(r.status).toBe(204);
+    const login = await api(ctx, T.host).post('/auth/login').send({ email: u.email, password: PASSWORD });
+    expect(login.body.data.mfaRequired).toBe(false);
+  });
+
+  it('cannot start 2FA setup twice once enabled; wrong enrolment code is rejected', async () => {
+    const u = await makeUser(ctx, T, { roles: ['STUDENT'], mfa: true });
+    expect((await api(ctx, T.host, u.token).post('/auth/mfa/setup')).status).toBe(400);
+    const v = await makeUser(ctx, T, { roles: ['STUDENT'] });
+    expect((await api(ctx, T.host, v.token).post('/auth/mfa/enable').send({ code: '123456' })).status).toBe(
+      400,
+    );
+    await api(ctx, T.host, v.token).post('/auth/mfa/setup');
+    expect((await api(ctx, T.host, v.token).post('/auth/mfa/enable').send({ code: '000000' })).status).toBe(
+      400,
+    );
+  });
+
+  it('an expired or foreign MFA ticket is rejected', async () => {
+    const r = await api(ctx, T.host)
+      .post('/auth/login/mfa')
+      .send({ ticket: 'x'.repeat(40), code: '123456' });
+    expect(r.status).toBe(401);
+  });
+
+  it('updates my name and language; withdrawing required consent is refused', async () => {
+    const u = await makeUser(ctx, T, { roles: ['STUDENT'] });
+    const me = await api(ctx, T.host, u.token).patch('/me').send({ name: 'Renamed Person', locale: 'te' });
+    expect(me.body.data).toMatchObject({ name: 'Renamed Person', locale: 'te' });
+    expect(
+      (await api(ctx, T.host, u.token).post('/me/consents').send({ purpose: 'account', granted: false }))
+        .status,
+    ).toBe(400);
+    const c = await api(ctx, T.host, u.token)
+      .post('/me/consents')
+      .send({ purpose: 'email_digests', granted: true });
+    expect(c.body.data.find((x: { purpose: string }) => x.purpose === 'email_digests').granted).toBe(true);
+  });
+
+  it('students must use the college email domain when the college requires it', async () => {
+    const D = await makeTenant('domains');
+    const { TenantModel } = await import('../src/modules/tenants/tenant.model.js');
+    await TenantModel.updateOne({ _id: D._id }, { $set: { allowedEmailDomains: ['domains.ac.in'] } });
+    const r = await api(ctx, D.host)
+      .post('/auth/signup')
+      .send({
+        name: 'Some One',
+        email: 'someone@gmail.com',
+        password: 'quiet-river-lantern-91',
+        intent: 'STUDENT',
+        isAdult: true,
+        consents: ['account'],
+      });
+    expect(r.status).toBe(400);
+    const alum = await api(ctx, D.host)
+      .post('/auth/signup')
+      .send({
+        name: 'Some One',
+        email: 'someone@gmail.com',
+        password: 'quiet-river-lantern-91',
+        intent: 'ALUMNI',
+        isAdult: true,
+        consents: ['account'],
+      });
+    expect(alum.status).toBe(202);
+  });
+});

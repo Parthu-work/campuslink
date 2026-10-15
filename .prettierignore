@@ -5,3 +5,5 @@ pnpm-lock.yaml
 **/test-results
 **/dev-dist
 docs/design/prototype.html
+docs/permissions.md
+docs/api/openapi.json

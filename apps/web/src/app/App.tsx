@@ -1,30 +1,82 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { APP_NAME, SUPPORTED_LOCALES } from '@campuslink/shared';
+import { Building2, PauseCircle } from 'lucide-react';
+import { ApiError } from '../lib/api';
+import { TenantProvider } from '../lib/tenant';
+import { useTenantQuery } from '../lib/tenant-context';
+import { EmptyState } from '../components/ui/misc';
+import { Button } from '../components/ui/button';
+import { AppRouter } from './router';
+import { SessionBootstrap, Splash } from './guards';
 
-const LOCALE_LABELS: Record<(typeof SUPPORTED_LOCALES)[number], string> = { en: 'English', te: 'తెలుగు' };
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (n, e) => !(e instanceof ApiError && e.status >= 400 && e.status < 500) && n < 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+function TenantGate() {
+  const { t } = useTranslation();
+  const tenant = useTenantQuery();
+  if (tenant.isLoading) return <Splash />;
+  if (tenant.error || !tenant.data) {
+    const code = tenant.error instanceof ApiError ? tenant.error.code : null;
+    const demo = import.meta.env.DEV ? ['dpit', 'mrce', 'admin'] : [];
+    return (
+      <main className="gutter grid min-h-dvh place-items-center">
+        {code === 'TENANT_SUSPENDED' ? (
+          <EmptyState icon={<PauseCircle className="size-6" />} title={t('errors.suspendedTitle')}>
+            {t('errors.suspendedBody')}
+          </EmptyState>
+        ) : code === 'UNKNOWN_TENANT' ? (
+          <EmptyState icon={<Building2 className="size-6" />} title={t('errors.noCollegeTitle')}>
+            <p>{t('errors.noCollegeBody')}</p>
+            {demo.length > 0 && (
+              <ul className="mt-4 flex flex-wrap justify-center gap-2">
+                {demo.map((d) => (
+                  <li key={d}>
+                    <a
+                      className="font-mono text-sm text-brand-ink underline"
+                      href={`${location.protocol}//${d}.${location.host}`}
+                    >
+                      {d}.{location.host}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </EmptyState>
+        ) : (
+          <EmptyState
+            icon={<Building2 className="size-6" />}
+            title={t('errors.generic')}
+            action={<Button onClick={() => void tenant.refetch()}>{t('common.retry')}</Button>}
+          />
+        )}
+      </main>
+    );
+  }
+  return (
+    <TenantProvider tenant={tenant.data}>
+      <SessionBootstrap>
+        <AppRouter />
+      </SessionBootstrap>
+    </TenantProvider>
+  );
+}
 
 export function App() {
-  const { t, i18n } = useTranslation();
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col justify-center gap-6 px-4 py-16">
-      <p className="text-sm font-semibold tracking-widest text-accent uppercase">{APP_NAME}</p>
-      <h1 className="font-display text-4xl leading-tight font-bold text-balance sm:text-6xl">
-        {t('shell.headline')}
-      </h1>
-      <p className="text-lg text-muted">{t('shell.sub')}</p>
-      <div role="group" aria-label={t('shell.language')} className="flex gap-2">
-        {SUPPORTED_LOCALES.map((lng) => (
-          <button
-            key={lng}
-            type="button"
-            aria-pressed={i18n.language === lng}
-            onClick={() => void i18n.changeLanguage(lng)}
-            className="min-h-11 rounded-full border border-line px-4 text-sm aria-pressed:bg-brand aria-pressed:text-bg"
-          >
-            {LOCALE_LABELS[lng]}
-          </button>
-        ))}
-      </div>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <TenantGate />
+      <Toaster
+        position="bottom-center"
+        toastOptions={{ className: '!rounded-[var(--radius-md)] !bg-fg !text-bg !border-0 !font-semibold' }}
+      />
+    </QueryClientProvider>
   );
 }

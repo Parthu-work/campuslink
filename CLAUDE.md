@@ -49,14 +49,23 @@ docs/            architecture, ADRs, threat model, privacy, design brief
 ## Architecture rules
 
 - Use a modular monolith. Each module owns its routes, controller, service, repository, schemas and tests. Modules talk to each other through services, never through another module's repository.
-- Request flow: `route → validate (Zod) → authenticate → authorize → controller → service → repository`. Controllers stay thin. **Only repositories touch Mongoose models.**
+- Request flow: `rate limit → tenant scope → CSRF (cookie routes) → authenticate → authorize → validate (Zod) → handler → service`. Authorization runs before validation (ADR 0006).
+- Routes are declared as specs in `modules/<name>/<name>.routes.ts` via `defineModule()` (`http/registry.ts`). The registry generates OpenAPI and `docs/permissions.md` and drives the permission test. Handlers are the thin controllers and call services. Use `authOf(req)` and `tenantOf(req)`, never `req.auth!`.
+- Only services touch models, and models are created only through `defineTenantModel` or `definePlatformModel` (`db/models.ts`).
 - Responses use the envelope `{ ok: true, data, meta? }` or `{ ok: false, error: { code, message, requestId } }`. Error codes come from `@campuslink/shared`.
 - Everything is versioned under `/api/v1`. Feeds use cursor pagination. Sensitive writes accept an `Idempotency-Key`.
 - Swappable providers sit behind interfaces: `StorageProvider`, `VideoProvider`, `MailProvider`, `JobSourceAdapter`, `DataSourceAdapter`, `BotProtection`.
 
 ## Tenancy rule (non-negotiable)
 
-**No database access without tenant context.** Every tenant-owned document has `tenantId`. A Mongoose plugin reads the request-scoped tenant from AsyncLocalStorage and injects it into every query and aggregate, and stamps it on create. A query without tenant context **throws**. The only exceptions are explicitly named super-admin code paths (`withPlatformScope(...)`). Compound indexes always lead with `tenantId`. The tenant comes from the subdomain and must match the token's tenant claim. Every new tenant-owned collection gets cross-tenant read, write, update, delete and search tests.
+**No database access without tenant context.** Every tenant-owned document has `tenantId`. A Mongoose plugin reads the request-scoped tenant from AsyncLocalStorage and injects it into every query and aggregate, and stamps it on create. A query without tenant context **throws**. The only exceptions are explicitly named super-admin code paths (`withPlatformScope('area:reason', fn)`). Compound indexes always lead with `tenantId` (enforced by a test). The tenant comes from the subdomain and must match the token's tenant claim. Every new tenant-owned collection gets cross-tenant read, write, update, delete and search tests.
+
+Watch for these traps:
+
+- `runInTenant` and `withPlatformScope` await inside the context; never return an un-awaited query from elsewhere.
+- Get the tenant from `requireTenantId()` or `req.tenant`, never from a loaded document (a field selection can omit it).
+- `$lookup`, `$unionWith`, `bulkWrite` and `estimatedDocumentCount` are refused in tenant context.
+- `$text` only through `db/search.ts`.
 
 ## Security rules (OWASP ASVS-aligned)
 
@@ -65,7 +74,7 @@ docs/            architecture, ADRs, threat model, privacy, design brief
 - Auth: argon2id, short-lived access JWTs, and rotating refresh tokens in httpOnly, Secure, SameSite cookies with reuse detection. Use CSRF protection for cookie flows. TOTP 2FA is mandatory for admins.
 - Rate-limit (Redis-backed) auth, messaging, requests, referrals, uploads and search.
 - Uploads: sniff the type, cap the size, use random names, strip metadata, never serve from the app origin with execute rights, and leave an antivirus hook.
-- Defend against NoSQL injection (`sanitizeFilter`, strict schemas). Every server-side fetch goes through the SSRF-safe fetcher (blocks private ranges, enforces timeouts and size caps).
+- Defend against NoSQL injection: strict Zod schemas, `middleware/no-operators.ts` and `strictQuery` (not global `sanitizeFilter`; see ADR 0006). Every server-side fetch goes through the SSRF-safe fetcher (blocks private ranges, enforces timeouts and size caps).
 - Secrets come only from env. **Never log secrets or personal data** (Pino redaction is a safety net, not permission). Encrypt sensitive fields (such as phone numbers) with AES-256-GCM.
 - The audit log is append-only. Record admin actions, role changes, exports, logins and verification decisions in it.
 - The super admin never reads tenant private message content.
@@ -85,7 +94,8 @@ Everything runs on localhost with free, open-source tools. Any paid or external 
 - Strict TypeScript, with no `any` and no non-null `!` unless justified in a comment. Use `import type` for types.
 - Name files in kebab-case. Name React components in PascalCase. Prefer named exports.
 - Write no hard-coded UI strings; every string goes through i18next in both `en.json` and `te.json`.
-- Styling uses design tokens only (`bg-surface-1`, `text-muted`, `text-brand`), never raw hex values in components.
+- Styling uses design tokens only (`bg-surface-1`, `text-fg-2`, `text-brand-ink`), never raw hex values in components. Tenant colours apply at runtime via `applyBranding()`. Use `*-ink` tokens for coloured text; they are contrast-corrected to 5.5:1.
+- Web files that export components export only components (fast refresh): put hooks and helpers in `lib/`.
 - Motion animates transform and opacity only and respects `prefers-reduced-motion` (`--motion-scale`).
 - Use conventional commits (`feat(auth): …`), enforced by commitlint and Husky.
 

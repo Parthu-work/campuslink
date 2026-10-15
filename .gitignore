@@ -11,3 +11,4 @@ playwright-report
 test-results
 apps/api/uploads
 .DS_Store
+coverage

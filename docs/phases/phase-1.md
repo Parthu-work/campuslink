@@ -18,3 +18,17 @@
 - Verification against the roll-number whitelist is Phase 2. In Phase 1, new signups are `pending_verification` with read-only access.
 - Phone OTP and SMS are deferred (adapter in Phase 2). Email goes through Mailpit.
 - Socket and file cross-tenant tests ship with those modules (Phases 2 and 3). The isolation suite has placeholders that fail if those modules exist without tests.
+
+## Outcome (built)
+
+- **API:** 6 modules (tenants, auth, users, audit, consent, platform) with 33 endpoints, every one in the generated `docs/permissions.md`.
+- **Tests:**
+  - API: 100+ tests, including 36 database-layer isolation cases, 13 HTTP isolation cases, a registry-driven role × endpoint matrix, and escalation, auth and platform suites.
+  - Web: 18 Playwright journeys (phone and desktop) with axe checks.
+- **Web:** design system and tenant theming; landing; sign-up, sign-in, 2FA, verify and reset flows; settings (security, privacy, preferences); admin (people, branding, features, audit); platform console (colleges, health); English and Telugu.
+
+## Deviations from the plan
+
+- **Request order:** authorize runs before validate (ADR 0006).
+- **Injection defence:** global `sanitizeFilter` is replaced with edge-level operator rejection (ADR 0006).
+- **Super admins:** they live in a `platform` tenant (`admin.<root>`) rather than having no tenant. Everything stays tenant-scoped, and platform reads are explicit.

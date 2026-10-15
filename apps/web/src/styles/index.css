@@ -1,27 +1,105 @@
 @import 'tailwindcss';
 @import './tokens.css';
 
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 @theme inline {
   --color-bg: var(--bg);
   --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
-  --color-line: var(--border);
-  --color-ink: var(--text);
-  --color-muted: var(--text-muted);
-  --color-brand: var(--brand-primary);
-  --color-accent: var(--brand-accent);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-accent: var(--accent);
+  --color-brand-ink: var(--brand-ink);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-brand: var(--on-brand);
+  --color-on-accent: var(--on-accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-glass: var(--glass);
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --ease-spring: var(--ease-spring);
 }
 
-html {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  -webkit-text-size-adjust: 100%;
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 400 15px/1.55 var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  :root[lang='te'] body {
+    line-height: 1.68;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  [tabindex='-1']:focus {
+    outline: none;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--brand) 35%, transparent);
+  }
 }
 
-:focus-visible {
-  outline: 2px solid var(--brand-accent);
-  outline-offset: 3px;
+@utility eyebrow {
+  font: 500 11px/1.2 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+@utility glass {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+@utility gutter {
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(10px * var(--motion-scale)));
+  }
+}
+.screen-in {
+  animation: screen-in calc(380ms * var(--motion-scale)) var(--ease-out) both;
+}
+@keyframes drift {
+  to {
+    transform: translateX(-50%);
+  }
 }

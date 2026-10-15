@@ -78,7 +78,10 @@ export function createApp({ env, logger, readiness, mailer, redis, rateLimitScal
   app.use(pinoHttp({ logger, genReqId: (req) => String(req.id), autoLogging: env.NODE_ENV !== 'test' }));
   app.use(
     helmet({
-      contentSecurityPolicy: { directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } },
+      contentSecurityPolicy: {
+        useDefaults: false,
+        directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] },
+      },
       crossOriginResourcePolicy: { policy: 'same-site' },
       hsts: env.NODE_ENV === 'production',
     }),
