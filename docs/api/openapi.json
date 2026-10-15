@@ -230,6 +230,7 @@
                               "sessions:book",
                               "messages:send",
                               "ama:host",
+                              "mentorship:oversee",
                               "jobs:read",
                               "jobs:save",
                               "jobs:post",
@@ -296,6 +297,7 @@
                               "sessions:book",
                               "messages:send",
                               "ama:host",
+                              "mentorship:oversee",
                               "jobs:read",
                               "jobs:save",
                               "jobs:post",
@@ -355,7 +357,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "Create an account (college verification follows in Phase 2)",
+        "summary": "Create an account (college verification follows)",
         "description": "Public. Host scope: college. Rate limit: signup.",
         "operationId": "auth_post_auth_signup",
         "requestBody": {
@@ -1772,7 +1774,7 @@
         "tags": [
           "Files"
         ],
-        "summary": "Download a file you are allowed to see (avatars; your own or reviewable ID cards)",
+        "summary": "Download a file you are allowed to see (avatars, your own or reviewable ID cards, chat attachments)",
         "description": "Any signed-in user. Host scope: college.",
         "operationId": "files_get_files_id",
         "security": [
@@ -3175,6 +3177,2445 @@
           }
         },
         "x-permission": "directory:read"
+      }
+    },
+    "/api/v1/me/mentor": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "My mentor settings and availability",
+        "description": "Requires permission `mentorship:mentor` (Accept mentees, set availability and request caps). Host scope: college.",
+        "operationId": "mentorship_get_me_mentor",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:mentor"
+      },
+      "put": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Update mentor settings (accepting switch, weekly cap, session types, audience)",
+        "description": "Requires permission `mentorship:mentor` (Accept mentees, set availability and request caps). Host scope: college.",
+        "operationId": "mentorship_put_me_mentor",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "accepting": {
+                    "type": "boolean"
+                  },
+                  "weeklyCap": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30
+                  },
+                  "audience": {
+                    "type": "string",
+                    "enum": [
+                      "students",
+                      "alumni",
+                      "both"
+                    ]
+                  },
+                  "sessionTypes": {
+                    "minItems": 1,
+                    "maxItems": 4,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "quick_chat",
+                            "video_1on1",
+                            "mock_interview",
+                            "resume_review"
+                          ]
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "durationMin": {
+                          "anyOf": [
+                            {
+                              "type": "number",
+                              "const": 0
+                            },
+                            {
+                              "type": "number",
+                              "const": 15
+                            },
+                            {
+                              "type": "number",
+                              "const": 30
+                            },
+                            {
+                              "type": "number",
+                              "const": 45
+                            },
+                            {
+                              "type": "number",
+                              "const": 60
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "enabled",
+                        "durationMin"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "minNoticeHours": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 72
+                  },
+                  "horizonDays": {
+                    "type": "integer",
+                    "minimum": 7,
+                    "maximum": 60
+                  },
+                  "bufferMin": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "const": 0
+                      },
+                      {
+                        "type": "number",
+                        "const": 15
+                      },
+                      {
+                        "type": "number",
+                        "const": 30
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "accepting",
+                  "weeklyCap",
+                  "audience",
+                  "sessionTypes",
+                  "minNoticeHours",
+                  "horizonDays",
+                  "bufferMin"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:mentor"
+      }
+    },
+    "/api/v1/me/mentor/availability": {
+      "put": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Set weekly availability and date exceptions (in my timezone)",
+        "description": "Requires permission `mentorship:mentor` (Accept mentees, set availability and request caps). Host scope: college.",
+        "operationId": "mentorship_put_me_mentor_availability",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "timezone": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
+                  "weekly": {
+                    "maxItems": 7,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "day": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 6
+                        },
+                        "windows": {
+                          "minItems": 1,
+                          "maxItems": 4,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "start": {
+                                "type": "string",
+                                "pattern": "^(([01]\\d|2[0-3]):(00|15|30|45)|24:00)$"
+                              },
+                              "end": {
+                                "type": "string",
+                                "pattern": "^(([01]\\d|2[0-3]):(00|15|30|45)|24:00)$"
+                              }
+                            },
+                            "required": [
+                              "start",
+                              "end"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "day",
+                        "windows"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "exceptions": {
+                    "maxItems": 60,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+                        },
+                        "windows": {
+                          "maxItems": 4,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "start": {
+                                "type": "string",
+                                "pattern": "^(([01]\\d|2[0-3]):(00|15|30|45)|24:00)$"
+                              },
+                              "end": {
+                                "type": "string",
+                                "pattern": "^(([01]\\d|2[0-3]):(00|15|30|45)|24:00)$"
+                              }
+                            },
+                            "required": [
+                              "start",
+                              "end"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "windows"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "timezone",
+                  "weekly",
+                  "exceptions"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:mentor"
+      }
+    },
+    "/api/v1/me/mentor/impact": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "My impact card (people helped this month, sessions, rating)",
+        "description": "Requires permission `mentorship:mentor` (Accept mentees, set availability and request caps). Host scope: college.",
+        "operationId": "mentorship_get_me_mentor_impact",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:mentor"
+      }
+    },
+    "/api/v1/me/mentor/feedback": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Private feedback on my sessions",
+        "description": "Requires permission `mentorship:mentor` (Accept mentees, set availability and request caps). Host scope: college.",
+        "operationId": "mentorship_get_me_mentor_feedback",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:mentor"
+      }
+    },
+    "/api/v1/me/match-preferences": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "My private Alumni Match inputs (goals, target companies)",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college.",
+        "operationId": "mentorship_get_me_match_preferences",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      },
+      "put": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Update my Alumni Match inputs",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college.",
+        "operationId": "mentorship_put_me_match_preferences",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "goals": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40,
+                      "pattern": "^[^<>{}$]+$"
+                    }
+                  },
+                  "targetCompanies": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40,
+                      "pattern": "^[^<>{}$]+$"
+                    }
+                  }
+                },
+                "required": [
+                  "goals",
+                  "targetCompanies"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/mentors": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Browse mentors who are taking requests",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college. Rate limit: search.",
+        "operationId": "mentorship_get_mentors",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 80
+            }
+          },
+          {
+            "name": "topic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40,
+              "pattern": "^[^<>{}$]+$"
+            }
+          },
+          {
+            "name": "sessionType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "quick_chat",
+                "video_1on1",
+                "mock_interview",
+                "resume_review"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/mentors/match": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Alumni Match: mentors ranked for me, with the reasons",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college. Rate limit: search.",
+        "operationId": "mentorship_get_mentors_match",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/mentors/{userId}": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "A mentor’s card and session types",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college.",
+        "operationId": "mentorship_get_mentors_userId",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/mentors/{userId}/slots": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Free slots for a session type (UTC; both calendars considered)",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college.",
+        "operationId": "mentorship_get_mentors_userId_slots",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "quick_chat",
+                "video_1on1",
+                "mock_interview",
+                "resume_review"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 14,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 21
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/mentorship/requests": {
+      "post": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Send a structured mentorship request (rate-limited, idempotent)",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college. Rate limit: requests.",
+        "operationId": "mentorship_post_mentorship_requests",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "mentorId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "sessionType": {
+                    "type": "string",
+                    "enum": [
+                      "quick_chat",
+                      "video_1on1",
+                      "mock_interview",
+                      "resume_review"
+                    ]
+                  },
+                  "goal": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 300
+                  },
+                  "background": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 600
+                  },
+                  "need": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 600
+                  },
+                  "slotStart": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  }
+                },
+                "required": [
+                  "mentorId",
+                  "sessionType",
+                  "goal",
+                  "background",
+                  "need"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      },
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Requests I received or sent",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college.",
+        "operationId": "mentorship_get_mentorship_requests",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "box",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "received",
+                "sent"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "accepted",
+                "declined",
+                "withdrawn",
+                "expired"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/mentorship/requests/{id}": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "One request (participants only)",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college.",
+        "operationId": "mentorship_get_mentorship_requests_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/mentorship/requests/{id}/respond": {
+      "post": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Accept, accept at another time, or decline with a kind reply",
+        "description": "Requires permission `mentorship:mentor` (Accept mentees, set availability and request caps). Host scope: college.",
+        "operationId": "mentorship_post_mentorship_requests_id_respond",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "const": "accept"
+                      }
+                    },
+                    "required": [
+                      "action"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "const": "accept_other"
+                      },
+                      "slotStart": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "slotStart"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "const": "decline"
+                      },
+                      "template": {
+                        "type": "string",
+                        "enum": [
+                          "not_my_area",
+                          "fully_booked",
+                          "try_later",
+                          "suggest_other"
+                        ]
+                      },
+                      "note": {
+                        "type": "string",
+                        "maxLength": 300
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "template"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:mentor"
+      }
+    },
+    "/api/v1/mentorship/requests/{id}/withdraw": {
+      "post": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Withdraw a pending request I sent",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college.",
+        "operationId": "mentorship_post_mentorship_requests_id_withdraw",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/admin/mentorship/overview": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Mentorship activity for the college (last 30 days)",
+        "description": "Requires permission `mentorship:oversee` (See mentorship activity and private session feedback). Host scope: college.",
+        "operationId": "mentorship_get_admin_mentorship_overview",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:oversee"
+      }
+    },
+    "/api/v1/admin/mentorship/feedback": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "All session feedback (private to mentors and admins)",
+        "description": "Requires permission `mentorship:oversee` (See mentorship activity and private session feedback). Host scope: college.",
+        "operationId": "mentorship_get_admin_mentorship_feedback",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:oversee"
+      }
+    },
+    "/api/v1/bookings": {
+      "get": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "My upcoming or past sessions (as mentor or mentee)",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college.",
+        "operationId": "sessions_get_bookings",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "when",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "upcoming",
+              "type": "string",
+              "enum": [
+                "upcoming",
+                "past"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
+    "/api/v1/bookings/{id}": {
+      "get": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "One session (participants only)",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college.",
+        "operationId": "sessions_get_bookings_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
+    "/api/v1/bookings/{id}/reschedule": {
+      "post": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Move a session to another free slot (at most twice)",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college.",
+        "operationId": "sessions_post_bookings_id_reschedule",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "slotStart": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  }
+                },
+                "required": [
+                  "slotStart"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
+    "/api/v1/bookings/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Cancel an upcoming session (late cancellations are recorded)",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college.",
+        "operationId": "sessions_post_bookings_id_cancel",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 300
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
+    "/api/v1/bookings/{id}/join": {
+      "post": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Short-lived video link (participants, around the session time only)",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college.",
+        "operationId": "sessions_post_bookings_id_join",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
+    "/api/v1/bookings/{id}/ics": {
+      "get": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Calendar file for a session (no video link inside)",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college.",
+        "operationId": "sessions_get_bookings_id_ics",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
+    "/api/v1/bookings/{id}/no-show": {
+      "post": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Report that the other person did not join (within 48 hours)",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college.",
+        "operationId": "sessions_post_bookings_id_no_show",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
+    "/api/v1/bookings/{id}/feedback": {
+      "post": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Rate a completed session (mentee; private to the mentor and admins)",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college.",
+        "operationId": "sessions_post_bookings_id_feedback",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "rating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "tags": {
+                    "maxItems": 6,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "clear_advice",
+                        "actionable",
+                        "kind",
+                        "well_prepared",
+                        "ran_late",
+                        "not_relevant"
+                      ]
+                    }
+                  },
+                  "comment": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "rating",
+                  "tags"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
+    "/api/v1/conversations": {
+      "get": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "My conversations (opened by accepted mentorship requests)",
+        "description": "Requires permission `messages:send` (Message accepted mentors or mentees). Host scope: college.",
+        "operationId": "messaging_get_conversations",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "messages:send"
+      }
+    },
+    "/api/v1/conversations/unread": {
+      "get": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Unread message count (navigation badge)",
+        "description": "Requires permission `messages:send` (Message accepted mentors or mentees). Host scope: college.",
+        "operationId": "messaging_get_conversations_unread",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "messages:send"
+      }
+    },
+    "/api/v1/conversations/{id}": {
+      "get": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "One conversation (participants only)",
+        "description": "Requires permission `messages:send` (Message accepted mentors or mentees). Host scope: college.",
+        "operationId": "messaging_get_conversations_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "messages:send"
+      }
+    },
+    "/api/v1/conversations/{id}/messages": {
+      "get": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Messages, newest page first (participants only)",
+        "description": "Requires permission `messages:send` (Message accepted mentors or mentees). Host scope: college.",
+        "operationId": "messaging_get_conversations_id_messages",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "messages:send"
+      },
+      "post": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Send a message (rate-limited, idempotent)",
+        "description": "Requires permission `messages:send` (Message accepted mentors or mentees). Host scope: college. Rate limit: messages.",
+        "operationId": "messaging_post_conversations_id_messages",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "messages:send"
+      }
+    },
+    "/api/v1/conversations/{id}/attachments": {
+      "post": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Send an image or PDF (sniffed; images re-encoded; PDFs stripped of metadata and scripts)",
+        "description": "Requires permission `messages:send` (Message accepted mentors or mentees). Host scope: college. Rate limit: upload.",
+        "operationId": "messaging_post_conversations_id_attachments",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "messages:send"
+      }
+    },
+    "/api/v1/conversations/{id}/read": {
+      "post": {
+        "tags": [
+          "Messaging"
+        ],
+        "summary": "Read receipt up to a message",
+        "description": "Requires permission `messages:send` (Message accepted mentors or mentees). Host scope: college.",
+        "operationId": "messaging_post_conversations_id_read",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "messageId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "messages:send"
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "My notifications (90 days)",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "notifications_get_notifications",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "unread",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/notifications/unread-count": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Unread notification count",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "notifications_get_notifications_unread_count",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/notifications/read": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Mark notifications as read",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "notifications_post_notifications_read",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "all": {
+                        "type": "boolean",
+                        "const": true
+                      }
+                    },
+                    "required": [
+                      "all"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "ids": {
+                        "minItems": 1,
+                        "maxItems": 100,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{24}$"
+                        }
+                      }
+                    },
+                    "required": [
+                      "ids"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/me/notification-preferences": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Per-type channels and quiet hours",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "notifications_get_me_notification_preferences",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "put": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Update channels and quiet hours",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "notifications_put_me_notification_preferences",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "channels": {
+                    "type": "object",
+                    "properties": {
+                      "requests": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "sessions": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "reminders": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "messages": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "requests",
+                      "sessions",
+                      "reminders",
+                      "messages"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "quietHours": {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "start": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                      },
+                      "end": {
+                        "type": "string",
+                        "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                      },
+                      "timezone": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      }
+                    },
+                    "required": [
+                      "enabled",
+                      "start",
+                      "end",
+                      "timezone"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "channels",
+                  "quietHours"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/notifications/push/config": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Whether web push is available, and the VAPID public key",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "notifications_get_notifications_push_config",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/notifications/push/subscriptions": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Register this browser for push (known push services only)",
+        "description": "Any signed-in user. Host scope: college. Rate limit: push.",
+        "operationId": "notifications_post_notifications_push_subscriptions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "format": "uri"
+                  },
+                  "keys": {
+                    "type": "object",
+                    "properties": {
+                      "p256dh": {
+                        "type": "string",
+                        "minLength": 8,
+                        "maxLength": 200,
+                        "pattern": "^[A-Za-z0-9_-]+={0,2}$"
+                      },
+                      "auth": {
+                        "type": "string",
+                        "minLength": 8,
+                        "maxLength": 64,
+                        "pattern": "^[A-Za-z0-9_-]+={0,2}$"
+                      }
+                    },
+                    "required": [
+                      "p256dh",
+                      "auth"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "endpoint",
+                  "keys"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/notifications/push/unsubscribe": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Remove this browser’s push subscription",
+        "description": "Any signed-in user. Host scope: college. Rate limit: push.",
+        "operationId": "notifications_post_notifications_push_unsubscribe",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "endpoint": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "format": "uri"
+                  }
+                },
+                "required": [
+                  "endpoint"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/me/blocks": {
+      "get": {
+        "tags": [
+          "Safety"
+        ],
+        "summary": "People I blocked",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "moderation_get_me_blocks",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "post": {
+        "tags": [
+          "Safety"
+        ],
+        "summary": "Block someone (closes chat, withdraws requests, cancels future sessions)",
+        "description": "Any signed-in user. Host scope: college. Rate limit: reports.",
+        "operationId": "moderation_post_me_blocks",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "userId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/me/blocks/{userId}": {
+      "delete": {
+        "tags": [
+          "Safety"
+        ],
+        "summary": "Unblock someone",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "moderation_delete_me_blocks_userId",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/reports": {
+      "post": {
+        "tags": [
+          "Safety"
+        ],
+        "summary": "Report a person, message or request",
+        "description": "Requires permission `content:report` (Report content or people). Host scope: college. Rate limit: reports.",
+        "operationId": "moderation_post_reports",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "targetType": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "message",
+                      "request"
+                    ]
+                  },
+                  "targetId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "spam",
+                      "harassment",
+                      "inappropriate",
+                      "impersonation",
+                      "other"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "targetType",
+                  "targetId",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "content:report"
+      }
+    },
+    "/api/v1/admin/reports": {
+      "get": {
+        "tags": [
+          "Safety"
+        ],
+        "summary": "Reports to review (message reports carry a snapshot, never the conversation)",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college.",
+        "operationId": "moderation_get_admin_reports",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "open",
+              "type": "string",
+              "enum": [
+                "open",
+                "resolved"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/admin/reports/{id}/resolve": {
+      "post": {
+        "tags": [
+          "Safety"
+        ],
+        "summary": "Resolve a report (audited)",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "moderation_post_admin_reports_id_resolve",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "actioned",
+                      "dismissed"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "outcome"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
       }
     }
   }

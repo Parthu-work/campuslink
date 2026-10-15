@@ -30,7 +30,14 @@ export function corsMiddleware(allowed: string[]) {
     origin: (origin, cb) => cb(null, isAllowed(origin)),
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id', 'X-CSRF-Token', 'Idempotency-Key'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Request-Id',
+      'X-CSRF-Token',
+      'Idempotency-Key',
+      'X-Bot-Token',
+    ],
     maxAge: 600,
   });
 }

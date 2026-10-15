@@ -26,6 +26,15 @@ export async function findTenantBySlug(slug: string): Promise<TenantRecord | nul
   return doc;
 }
 
+/** Lookup by id (background jobs know the tenant id, not the host). Shares the slug cache. */
+export async function findTenantById(id: Types.ObjectId | string): Promise<TenantRecord | null> {
+  for (const v of cache.values())
+    if (v.value && String(v.value._id) === String(id) && Date.now() - v.at < TTL_MS) return v.value;
+  const doc = await TenantModel.findById(id).lean<TenantRecord>();
+  if (doc) cache.set(doc.slug, { at: Date.now(), value: doc });
+  return doc;
+}
+
 /** Cross-instance invalidation (Redis pub/sub). Without it, other instances refresh within TTL_MS. */
 let publish: ((slug: string) => void) | null = null;
 export function connectTenantCacheBus(bus: {

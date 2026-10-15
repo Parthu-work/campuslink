@@ -1,6 +1,7 @@
 import { lookup as dnsLookup } from 'node:dns/promises';
 import { Agent, fetch as undiciFetch } from 'undici';
 import ipaddr from 'ipaddr.js';
+import { APP_NAME } from '@campuslink/shared';
 
 export class SafeFetchError extends Error {
   constructor(message: string) {
@@ -28,6 +29,9 @@ export interface SafeFetchOptions {
   /** Injected for tests. */
   resolve?: (host: string) => Promise<string[]>;
   allowHttp?: boolean;
+  /** POST is used for push delivery and bot checks; redirects are never followed for POST. */
+  method?: 'GET' | 'POST';
+  body?: Buffer | string;
 }
 
 export interface SafeResponse {
@@ -60,7 +64,13 @@ export interface TransportResponse {
 export type Transport = (
   url: URL,
   pinnedIp: string,
-  init: { signal: AbortSignal; headers: Record<string, string>; timeoutMs: number },
+  init: {
+    signal: AbortSignal;
+    headers: Record<string, string>;
+    timeoutMs: number;
+    method: 'GET' | 'POST';
+    body?: Buffer | string | undefined;
+  },
 ) => Promise<TransportResponse>;
 
 export const undiciTransport: Transport = async (url, pinnedIp, init) => {
@@ -77,6 +87,8 @@ export const undiciTransport: Transport = async (url, pinnedIp, init) => {
     dispatcher: agent,
     signal: init.signal,
     headers: init.headers,
+    method: init.method,
+    ...(init.body !== undefined ? { body: init.body } : {}),
   }).catch(async (e: unknown) => {
     await agent.close();
     throw e;
@@ -138,12 +150,14 @@ export async function safeFetch(
       res = await transport(url, ips[0] as string, {
         signal: deadline,
         timeoutMs,
-        headers: { 'user-agent': 'CampusLink-Importer/1.0', ...opts.headers },
+        method: opts.method ?? 'GET',
+        body: opts.body,
+        headers: { 'user-agent': `${APP_NAME}-Fetcher/1.0`, ...opts.headers },
       });
     } catch {
       throw new SafeFetchError(deadline.aborted ? 'The request timed out' : 'Could not fetch that URL');
     }
-    if (res.status >= 300 && res.status < 400) {
+    if (res.status >= 300 && res.status < 400 && (opts.method ?? 'GET') === 'GET') {
       const loc = res.header('location');
       await res.cancel();
       if (!loc) throw new SafeFetchError('Redirect without location');

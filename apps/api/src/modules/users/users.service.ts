@@ -54,6 +54,8 @@ function assertCanActOn(actor: AuthState, targetRoles: string[]) {
 }
 
 export class UsersService {
+  /** Set by the app: closes a suspended member's live sockets. */
+  onSuspended: ((userId: string) => void) | null = null;
   constructor(
     private readonly auth: AuthService,
     private readonly profiles: ProfilesService,
@@ -174,7 +176,10 @@ export class UsersService {
       { _id: id },
       { $set: { status }, ...(status === 'suspended' ? { $inc: { tokenVersion: 1 } } : {}) },
     );
-    if (status === 'suspended') await this.auth.revokeAllSessions(id, 'suspended');
+    if (status === 'suspended') {
+      await this.auth.revokeAllSessions(id, 'suspended');
+      this.onSuspended?.(id);
+    }
     await this.profiles.sync(id);
     await audit.record(
       {

@@ -37,6 +37,7 @@ export const PERMISSIONS = {
   'sessions:book': 'Book mentoring sessions',
   'messages:send': 'Message accepted mentors or mentees',
   'ama:host': 'Host AMAs and office hours',
+  'mentorship:oversee': 'See mentorship activity and private session feedback',
   // Jobs
   'jobs:read': 'Browse jobs and openings',
   'jobs:save': 'Save jobs and track applications',
@@ -123,7 +124,7 @@ const COLLEGE_ADMIN: Permission[] = ALL_PERMISSIONS.filter((p) => !PLATFORM_PERM
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   SUPER_ADMIN: ['platform:tenants', 'platform:health', 'audit:read'],
   COLLEGE_ADMIN,
-  TPO: [...STAFF, 'ama:host', 'referrals:offer', 'analytics:tenant', 'reports:export'],
+  TPO: [...STAFF, 'ama:host', 'referrals:offer', 'analytics:tenant', 'reports:export', 'mentorship:oversee'],
   FACULTY: STAFF,
   ALUMNI,
   STUDENT,

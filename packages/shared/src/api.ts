@@ -18,6 +18,7 @@ export const ErrorCode = {
   EMAIL_NOT_VERIFIED: 'EMAIL_NOT_VERIFIED',
   CSRF_FAILED: 'CSRF_FAILED',
   WEAK_PASSWORD: 'WEAK_PASSWORD',
+  BOT_CHECK_FAILED: 'BOT_CHECK_FAILED',
   INTERNAL: 'INTERNAL',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

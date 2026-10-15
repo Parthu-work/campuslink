@@ -9,3 +9,5 @@ export * from './schemas/auth.js';
 export * from './schemas/tenant.js';
 export * from './schemas/users.js';
 export * from './schemas/people.js';
+export * from './schemas/mentorship.js';
+export * from './schemas/messaging.js';

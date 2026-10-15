@@ -1,6 +1,7 @@
 /**
  * MANDATORY tenant-isolation suite for Phase 2 surfaces: files, imports, the verification list,
  * verification requests, invites, profiles, directory and search. Blocks CI.
+ * (Realtime isolation lives in test/realtime.test.ts; mentorship surfaces in isolation/mentorship.test.ts.)
  */
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -166,13 +167,5 @@ describe('profiles, directory and search', () => {
   });
   it('B’s profile is not readable from A', async () => {
     expect((await api(ctx, A.host, studentA.token).get(`/profiles/${alumB.id}`)).status).toBe(404);
-  });
-});
-
-describe('modules that are not built yet', () => {
-  // Socket.io arrives with messaging (Phase 3); this guard fails until its isolation tests exist.
-  it('has no realtime routes without isolation tests', () => {
-    const routes = (ctx.app.locals.registry as { spec: { path: string } }[]).map((r) => r.spec.path);
-    expect(routes.filter((p) => /socket|realtime|messages/i.test(p))).toEqual([]);
   });
 });

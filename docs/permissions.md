@@ -30,6 +30,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `sessions:book` Book mentoring sessions | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `messages:send` Message accepted mentors or mentees | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `ama:host` Host AMAs and office hours | · | ✅ | ✅ | · | ✅ | · |
+| `mentorship:oversee` See mentorship activity and private session feedback | · | ✅ | ✅ | · | · | · |
 | `jobs:read` Browse jobs and openings | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `jobs:save` Save jobs and track applications | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `jobs:post` Publish openings | · | ✅ | ✅ | ✅ | ✅ | · |
@@ -68,7 +69,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `PUT /api/v1/tenant/branding` | `tenant:branding` | college | adminWrite | Update college branding |
 | `GET /api/v1/tenant/settings` | `tenant:settings` | college | — | Features, limits and permission overrides |
 | `PATCH /api/v1/tenant/settings` | `tenant:settings` | college | adminWrite | Update features, limits and permission overrides |
-| `POST /api/v1/auth/signup` | public | college | signup | Create an account (college verification follows in Phase 2) |
+| `POST /api/v1/auth/signup` | public | college | signup | Create an account (college verification follows) |
 | `POST /api/v1/auth/verify-email` | public | college | emailAction | Confirm an email address with the emailed token |
 | `POST /api/v1/auth/verify-email/resend` | public | college | emailAction | Send a new email confirmation link |
 | `POST /api/v1/auth/login` | public | any | login | Sign in with email and password |
@@ -97,7 +98,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/platform/tenants` | `platform:tenants` | platform | adminWrite | Create a college and invite its first administrator |
 | `PATCH /api/v1/platform/tenants/:id` | `platform:tenants` | platform | adminWrite | Suspend or resume a college; update subscription |
 | `GET /api/v1/platform/health` | `platform:health` | platform | — | Platform health and aggregate counts |
-| `GET /api/v1/files/:id` | any signed-in user | college | — | Download a file you are allowed to see (avatars; your own or reviewable ID cards) |
+| `GET /api/v1/files/:id` | any signed-in user | college | — | Download a file you are allowed to see (avatars, your own or reviewable ID cards, chat attachments) |
 | `POST /api/v1/admin/imports/preview/upload` | `imports:manage` | college | adminWrite | Upload a CSV or XLSX and get headers, sample rows and a suggested column mapping |
 | `POST /api/v1/admin/imports/preview/remote` | `imports:manage` | college | adminWrite | Preview a Google Sheet (shared link) or a REST/JSON source |
 | `POST /api/v1/admin/imports` | `imports:manage` | college | adminWrite | Start an import (or a dry run) from a preview with a column mapping |
@@ -124,3 +125,50 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/directory` | `directory:read` | college | search | Browse verified members (filters, cursor pagination) |
 | `GET /api/v1/profiles/:userId` | `directory:read` | college | — | A member’s profile (only the fields you are allowed to see) |
 | `GET /api/v1/search` | `directory:read` | college | search | Command-palette search (people for now) |
+| `GET /api/v1/me/mentor` | `mentorship:mentor` | college | — | My mentor settings and availability |
+| `PUT /api/v1/me/mentor` | `mentorship:mentor` | college | — | Update mentor settings (accepting switch, weekly cap, session types, audience) |
+| `PUT /api/v1/me/mentor/availability` | `mentorship:mentor` | college | — | Set weekly availability and date exceptions (in my timezone) |
+| `GET /api/v1/me/mentor/impact` | `mentorship:mentor` | college | — | My impact card (people helped this month, sessions, rating) |
+| `GET /api/v1/me/mentor/feedback` | `mentorship:mentor` | college | — | Private feedback on my sessions |
+| `GET /api/v1/me/match-preferences` | `mentorship:request` | college | — | My private Alumni Match inputs (goals, target companies) |
+| `PUT /api/v1/me/match-preferences` | `mentorship:request` | college | — | Update my Alumni Match inputs |
+| `GET /api/v1/mentors` | `mentorship:request` | college | search | Browse mentors who are taking requests |
+| `GET /api/v1/mentors/match` | `mentorship:request` | college | search | Alumni Match: mentors ranked for me, with the reasons |
+| `GET /api/v1/mentors/:userId` | `mentorship:request` | college | — | A mentor’s card and session types |
+| `GET /api/v1/mentors/:userId/slots` | `mentorship:request` | college | — | Free slots for a session type (UTC; both calendars considered) |
+| `POST /api/v1/mentorship/requests` | `mentorship:request` | college | requests | Send a structured mentorship request (rate-limited, idempotent) |
+| `GET /api/v1/mentorship/requests` | `mentorship:request` | college | — | Requests I received or sent |
+| `GET /api/v1/mentorship/requests/:id` | `mentorship:request` | college | — | One request (participants only) |
+| `POST /api/v1/mentorship/requests/:id/respond` | `mentorship:mentor` | college | — | Accept, accept at another time, or decline with a kind reply |
+| `POST /api/v1/mentorship/requests/:id/withdraw` | `mentorship:request` | college | — | Withdraw a pending request I sent |
+| `GET /api/v1/admin/mentorship/overview` | `mentorship:oversee` | college | — | Mentorship activity for the college (last 30 days) |
+| `GET /api/v1/admin/mentorship/feedback` | `mentorship:oversee` | college | — | All session feedback (private to mentors and admins) |
+| `GET /api/v1/bookings` | `sessions:book` | college | — | My upcoming or past sessions (as mentor or mentee) |
+| `GET /api/v1/bookings/:id` | `sessions:book` | college | — | One session (participants only) |
+| `POST /api/v1/bookings/:id/reschedule` | `sessions:book` | college | — | Move a session to another free slot (at most twice) |
+| `POST /api/v1/bookings/:id/cancel` | `sessions:book` | college | — | Cancel an upcoming session (late cancellations are recorded) |
+| `POST /api/v1/bookings/:id/join` | `sessions:book` | college | — | Short-lived video link (participants, around the session time only) |
+| `GET /api/v1/bookings/:id/ics` | `sessions:book` | college | — | Calendar file for a session (no video link inside) |
+| `POST /api/v1/bookings/:id/no-show` | `sessions:book` | college | — | Report that the other person did not join (within 48 hours) |
+| `POST /api/v1/bookings/:id/feedback` | `sessions:book` | college | — | Rate a completed session (mentee; private to the mentor and admins) |
+| `GET /api/v1/conversations` | `messages:send` | college | — | My conversations (opened by accepted mentorship requests) |
+| `GET /api/v1/conversations/unread` | `messages:send` | college | — | Unread message count (navigation badge) |
+| `GET /api/v1/conversations/:id` | `messages:send` | college | — | One conversation (participants only) |
+| `GET /api/v1/conversations/:id/messages` | `messages:send` | college | — | Messages, newest page first (participants only) |
+| `POST /api/v1/conversations/:id/messages` | `messages:send` | college | messages | Send a message (rate-limited, idempotent) |
+| `POST /api/v1/conversations/:id/attachments` | `messages:send` | college | upload | Send an image or PDF (sniffed; images re-encoded; PDFs stripped of metadata and scripts) |
+| `POST /api/v1/conversations/:id/read` | `messages:send` | college | — | Read receipt up to a message |
+| `GET /api/v1/notifications` | any signed-in user | college | — | My notifications (90 days) |
+| `GET /api/v1/notifications/unread-count` | any signed-in user | college | — | Unread notification count |
+| `POST /api/v1/notifications/read` | any signed-in user | college | — | Mark notifications as read |
+| `GET /api/v1/me/notification-preferences` | any signed-in user | college | — | Per-type channels and quiet hours |
+| `PUT /api/v1/me/notification-preferences` | any signed-in user | college | — | Update channels and quiet hours |
+| `GET /api/v1/notifications/push/config` | any signed-in user | college | — | Whether web push is available, and the VAPID public key |
+| `POST /api/v1/notifications/push/subscriptions` | any signed-in user | college | push | Register this browser for push (known push services only) |
+| `POST /api/v1/notifications/push/unsubscribe` | any signed-in user | college | push | Remove this browser’s push subscription |
+| `GET /api/v1/me/blocks` | any signed-in user | college | — | People I blocked |
+| `POST /api/v1/me/blocks` | any signed-in user | college | reports | Block someone (closes chat, withdraws requests, cancels future sessions) |
+| `DELETE /api/v1/me/blocks/:userId` | any signed-in user | college | — | Unblock someone |
+| `POST /api/v1/reports` | `content:report` | college | reports | Report a person, message or request |
+| `GET /api/v1/admin/reports` | `moderation:act` | college | — | Reports to review (message reports carry a snapshot, never the conversation) |
+| `POST /api/v1/admin/reports/:id/resolve` | `moderation:act` | college | adminWrite | Resolve a report (audited) |

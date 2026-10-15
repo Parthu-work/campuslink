@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { APP_NAME } from '@campuslink/shared';
 
 const bool = z
   .enum(['true', 'false'])
@@ -48,7 +49,7 @@ export const envSchema = z.object({
   SMTP_SECURE: bool,
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  MAIL_FROM: z.string().default('CampusLink <no-reply@campuslink.localhost>'),
+  MAIL_FROM: z.string().default(`${APP_NAME} <no-reply@campuslink.localhost>`),
   /** `disabled` drops mail silently (end-to-end runs without Mailpit). Mail bodies are never logged: they contain tokens. */
   MAIL_DRIVER: z.enum(['smtp', 'disabled']).default('smtp'),
   STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
@@ -58,6 +59,28 @@ export const envSchema = z.object({
   JOBS_DRIVER: z.enum(['bullmq', 'inline']).default('bullmq'),
   /** Multiplies every rate limit. Raised only for automated test runs; capped at 2 in production. */
   RATE_LIMIT_SCALE: z.coerce.number().positive().max(1000).default(1),
+  /** Video adapter: Jitsi (default, free) or the 100ms / Daily stubs. */
+  VIDEO_PROVIDER: z.enum(['jitsi', '100ms', 'daily']).default('jitsi'),
+  JITSI_BASE_URL: z.url({ protocol: /^https$/ }).default('https://meet.jit.si'),
+  /** Self-hosted Jitsi with token auth: links then carry a JWT that expires with the join window. */
+  JITSI_APP_ID: z.string().min(1).optional(),
+  JITSI_APP_SECRET: z.string().min(32).optional(),
+  /** Bot protection on sign-up and mentorship requests (Turnstile-style). Disabled locally. */
+  BOT_PROTECTION: z.enum(['none', 'turnstile']).default('none'),
+  TURNSTILE_SECRET: z.string().min(1).optional(),
+  /** Web push (VAPID). Without keys, push is reported as unavailable. Generate: pnpm --filter @campuslink/api vapid */
+  VAPID_PUBLIC_KEY: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{80,100}$/)
+    .optional(),
+  VAPID_PRIVATE_KEY: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{40,50}$/)
+    .optional(),
+  VAPID_SUBJECT: z
+    .string()
+    .regex(/^(mailto:|https:\/\/)/)
+    .default('mailto:no-reply@campuslink.localhost'),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -72,6 +95,12 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error(`Invalid environment configuration:\n${issues}`);
   }
   const env = parsed.data;
+  if (!!env.JITSI_APP_ID !== !!env.JITSI_APP_SECRET)
+    throw new Error('Set both JITSI_APP_ID and JITSI_APP_SECRET, or neither');
+  if (env.BOT_PROTECTION === 'turnstile' && !env.TURNSTILE_SECRET)
+    throw new Error('BOT_PROTECTION=turnstile needs TURNSTILE_SECRET');
+  if (!!env.VAPID_PUBLIC_KEY !== !!env.VAPID_PRIVATE_KEY)
+    throw new Error('Set both VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY, or neither');
   if (env.NODE_ENV === 'production') {
     const weak = (['JWT_ACCESS_SECRET', 'JWT_TICKET_SECRET', 'FIELD_ENCRYPTION_KEY'] as const).filter((k) =>
       INSECURE_DEFAULT_MARKERS.some((m) => env[k].includes(m)),

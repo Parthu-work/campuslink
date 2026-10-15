@@ -9,7 +9,8 @@ export function fileRoutes(svc: FilesService): AnyRouteSpec[] {
       method: 'get',
       path: '/files/:id',
       tag: 'Files',
-      summary: 'Download a file you are allowed to see (avatars; your own or reviewable ID cards)',
+      summary:
+        'Download a file you are allowed to see (avatars, your own or reviewable ID cards, chat attachments)',
       access: { kind: 'authenticated' },
       params: idParams,
       handler: async ({ req, params }) => {
@@ -20,7 +21,11 @@ export function fileRoutes(svc: FilesService): AnyRouteSpec[] {
             body: f.data,
             headers: {
               'Content-Type': f.mime,
-              'Content-Disposition': 'inline; filename="image.webp"',
+              // Chat attachments always download; images we re-encoded may render inline (sandboxed).
+              'Content-Disposition':
+                f.purpose === 'message_attachment'
+                  ? `attachment; filename="${(f.name ?? 'attachment').replace(/[^\x20-\x7e]|"/g, '_')}"; filename*=UTF-8''${encodeURIComponent(f.name ?? 'attachment')}`
+                  : 'inline; filename="image.webp"',
               'X-Content-Type-Options': 'nosniff',
               'Content-Security-Policy': "default-src 'none'; sandbox",
               'Cross-Origin-Resource-Policy': 'same-origin',

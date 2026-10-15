@@ -1,9 +1,10 @@
 import { Router, type Request, type Response, type RequestHandler } from 'express';
 import type { z } from 'zod';
 import { type ZodType } from 'zod';
-import { ErrorCode, type Permission, type ApiSuccess } from '@campuslink/shared';
+import { APP_NAME, ErrorCode, type Permission, type ApiSuccess } from '@campuslink/shared';
 import { AppError } from '../lib/errors.js';
 import type { LimiterName } from './rate-limit.js';
+import type { IdempotencyService } from '../modules/idempotency/idempotency.service.js';
 
 export type Access =
   | { kind: 'public' }
@@ -44,6 +45,10 @@ export interface RouteSpec<
   csrf?: boolean;
   /** multipart/form-data with one file; parsed only after authorization. Other form fields land in `body`. */
   upload?: UploadSpec;
+  /** Accepts `Idempotency-Key` (signed-in routes with JSON bodies only). */
+  idempotent?: boolean;
+  /** Requires a bot-protection token (`X-Bot-Token`) when bot protection is enabled. */
+  bot?: boolean;
   handler: (ctx: {
     req: Request;
     res: Response;
@@ -65,6 +70,8 @@ export interface PipelineDeps {
   limiters: Record<LimiterName, RequestHandler>;
   authenticate: RequestHandler;
   csrf: RequestHandler;
+  bot: RequestHandler;
+  idempotency: IdempotencyService;
 }
 
 const parse = <T extends ZodType>(schema: T | undefined, value: unknown): unknown =>
@@ -86,8 +93,24 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
     if (spec.csrf) chain.push(deps.csrf);
     if (spec.access.kind !== 'public') chain.push(deps.authenticate);
     if (spec.access.kind === 'permission') chain.push(authorize(spec.access.permission));
+    if (spec.bot) chain.push(deps.bot);
     if (spec.upload) chain.push(deps.uploader(spec.upload));
+    if (spec.idempotent && (spec.access.kind === 'public' || spec.upload))
+      throw new Error(`${spec.method} ${spec.path}: idempotency needs a signed-in JSON route`);
     chain.push(async (req, res) => {
+      const idem =
+        spec.idempotent && req.auth
+          ? await deps.idempotency.begin(
+              req.auth.userId,
+              req.get('idempotency-key'),
+              `${spec.method} ${spec.path} ${JSON.stringify(req.params)}`,
+              req.body,
+            )
+          : ({ kind: 'none' } as const);
+      if (idem.kind === 'replay') {
+        res.setHeader('Idempotent-Replayed', 'true');
+        return void res.status(idem.status).json(idem.response);
+      }
       const ctx = {
         req,
         res,
@@ -96,7 +119,17 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
         params: parse(spec.params, req.params),
         file: req.file,
       };
-      const result = await spec.handler(ctx as never);
+      let result: HandlerResult;
+      try {
+        result = await spec.handler(ctx as never);
+      } catch (e) {
+        if (idem.kind === 'fresh') await idem.abort();
+        throw e;
+      }
+      if (idem.kind === 'fresh') {
+        const envelope = { ok: true, data: result.data, ...(result.meta ? { meta: result.meta } : {}) };
+        await idem.finish(result.status ?? 200, envelope);
+      }
       if (result.raw) {
         for (const [k, v] of Object.entries(result.raw.headers)) res.setHeader(k, v);
         return void res.status(result.status ?? 200).send(result.raw.body);
@@ -119,7 +152,7 @@ export function requireScope(scope: 'college' | 'platform' | 'any'): RequestHand
         new AppError(
           404,
           ErrorCode.UNKNOWN_TENANT,
-          'This address does not belong to a college on CampusLink',
+          `This address does not belong to a college on ${APP_NAME}`,
         ),
       );
     }
@@ -128,7 +161,7 @@ export function requireScope(scope: 'college' | 'platform' | 'any'): RequestHand
         new AppError(
           403,
           ErrorCode.TENANT_SUSPENDED,
-          'This college’s CampusLink is paused. Contact your college administrator.',
+          `This college’s ${APP_NAME} is paused. Contact your college administrator.`,
         ),
       );
     }

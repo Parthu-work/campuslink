@@ -5,6 +5,7 @@ import {
   type ProfileBody,
   type ProfileField,
   type PublicProfile,
+  type PersonRef,
   type Role,
 } from '@campuslink/shared';
 import type { z } from 'zod';
@@ -187,6 +188,49 @@ export class ProfilesService {
       meta,
     );
     return { avatarFileId: file.id };
+  }
+
+  /** Names and avatars for lists (requests, bookings, conversations). Missing users read as "Former member". */
+  async refsFor(userIds: (string | Types.ObjectId)[]): Promise<Map<string, PersonRef>> {
+    const ids = [...new Set(userIds.map(String))];
+    const rows = await ProfileModel.find({ userId: { $in: ids } })
+      .select('userId name avatarFileId')
+      .lean<ProfileDoc[]>();
+    const map = new Map<string, PersonRef>();
+    for (const id of ids) map.set(id, { userId: id, name: 'Former member', avatarFileId: null });
+    for (const p of rows)
+      map.set(String(p.userId), {
+        userId: String(p.userId),
+        name: p.name,
+        avatarFileId: p.avatarFileId ? String(p.avatarFileId) : null,
+      });
+    return map;
+  }
+
+  /** What `viewer` may see of each verified, active member in `userIds` (visibility applied). */
+  async viewsFor(viewer: AuthState, userIds: (string | Types.ObjectId)[]): Promise<PublicProfile[]> {
+    if (!userIds.length) return [];
+    const rows = await ProfileModel.find({ userId: { $in: userIds }, verified: true })
+      .sort({ _id: -1 })
+      .lean<ProfileDoc[]>();
+    return rows.map((p) => this.present(p, viewer, null));
+  }
+
+  /** The viewer's own profile values (for matching): never shown to anyone else. */
+  async own(
+    userId: string,
+  ): Promise<{ branch: string | null; skills: string[]; languages: string[]; topics: string[] }> {
+    const p = await this.load(userId);
+    return {
+      branch: p.branch ?? null,
+      skills: p.skills ?? [],
+      languages: p.languages ?? [],
+      topics: p.topics ?? [],
+    };
+  }
+
+  async isActiveMember(userId: string): Promise<boolean> {
+    return !!(await ProfileModel.exists({ userId, verified: true }));
   }
 
   async setCompanyVerified(userId: string, company: string, domain: string) {

@@ -14,7 +14,11 @@ export type LimiterName =
   | 'adminWrite'
   | 'verify'
   | 'search'
-  | 'upload';
+  | 'upload'
+  | 'requests'
+  | 'messages'
+  | 'reports'
+  | 'push';
 
 const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: boolean }> = {
   global: { windowMs: 60_000, limit: 600 },
@@ -27,6 +31,10 @@ const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: bo
   verify: { windowMs: 60 * 60_000, limit: 10, perUser: true },
   search: { windowMs: 60_000, limit: 60, perUser: true },
   upload: { windowMs: 60 * 60_000, limit: 20, perUser: true },
+  requests: { windowMs: 60 * 60_000, limit: 10, perUser: true },
+  messages: { windowMs: 60_000, limit: 30, perUser: true },
+  reports: { windowMs: 60 * 60_000, limit: 20, perUser: true },
+  push: { windowMs: 60 * 60_000, limit: 20, perUser: true },
 };
 
 const key = (req: Request, perUser?: boolean) =>

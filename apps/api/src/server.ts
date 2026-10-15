@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { Redis } from 'ioredis';
+import { createAdapter } from '@socket.io/redis-adapter';
 import { loadEnv } from './config/env.js';
 import { createLogger } from './lib/logger.js';
 import { MemoryMailProvider, SmtpMailProvider } from './lib/mailer.js';
@@ -9,6 +10,7 @@ import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
 import { createApp } from './app.js';
 import { syncIndexes } from './db/connect.js';
 import type { FilesService } from './modules/files/files.service.js';
+import type { RealtimeGateway } from './http/realtime.js';
 
 const env = loadEnv();
 const logger = createLogger(env.LOG_LEVEL);
@@ -16,6 +18,9 @@ const redis = new Redis(env.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest
 // BullMQ needs its own connection with unlimited retries; pub/sub needs a dedicated subscriber.
 const bullConnection = new Redis(env.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: null });
 const subscriber = new Redis(env.REDIS_URL, { lazyConnect: true });
+// Socket.io Redis adapter: events reach users connected to any API instance.
+const ioPub = new Redis(env.REDIS_URL, { lazyConnect: true });
+const ioSub = new Redis(env.REDIS_URL, { lazyConnect: true });
 
 async function main() {
   await Promise.all([
@@ -23,6 +28,8 @@ async function main() {
     redis.connect(),
     bullConnection.connect(),
     subscriber.connect(),
+    ioPub.connect(),
+    ioSub.connect(),
   ]);
   await syncIndexes();
   logger.info('connected to MongoDB and Redis');
@@ -65,7 +72,9 @@ async function main() {
     logger.info({ port: env.API_PORT, jobs: env.JOBS_DRIVER }, 'api listening'),
   );
 
-  const files = (app.locals.services as { files: FilesService }).files;
+  const services = app.locals.services as { files: FilesService; realtime: RealtimeGateway };
+  services.realtime.attach(server, createAdapter(ioPub, ioSub));
+  const files = services.files;
   const retention = () =>
     runRetention(files, logger).catch((err: unknown) => logger.error({ err }, 'retention failed'));
   setTimeout(retention, 30_000).unref();
@@ -73,6 +82,7 @@ async function main() {
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, 'shutting down');
+    void services.realtime.close();
     server.close(async () => {
       await jobs.close().catch(() => undefined);
       await Promise.allSettled([
@@ -80,6 +90,8 @@ async function main() {
         redis.quit(),
         bullConnection.quit(),
         subscriber.quit(),
+        ioPub.quit(),
+        ioSub.quit(),
       ]);
       process.exit(0);
     });

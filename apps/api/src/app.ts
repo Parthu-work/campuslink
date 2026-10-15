@@ -29,6 +29,7 @@ import { PlatformService } from './modules/platform/platform.service.js';
 import { platformRoutes } from './modules/platform/platform.routes.js';
 import { uploader } from './http/upload.js';
 import { safeFetch } from './lib/safe-fetch.js';
+import { requireTenantId } from './lib/context.js';
 import { LocalDiskStorage, S3StorageStub, type StorageProvider } from './lib/storage.js';
 import { InlineJobQueue, type JobQueue } from './lib/jobs.js';
 import { DisabledSmsProvider } from './lib/sms.js';
@@ -42,6 +43,23 @@ import { profileRoutes } from './modules/profiles/profiles.routes.js';
 import { InvitesService } from './modules/verification/invites.service.js';
 import { VerificationService } from './modules/verification/verification.service.js';
 import { verificationRoutes } from './modules/verification/verification.routes.js';
+import { IdempotencyService } from './modules/idempotency/idempotency.service.js';
+import { botCheck } from './http/bot.middleware.js';
+import { disabledBotProtection, TurnstileBotProtection, type BotProtection } from './lib/bot.js';
+import { RealtimeGateway } from './http/realtime.js';
+import { JitsiVideoProvider, dailyVideoStub, hmsVideoStub, type VideoProvider } from './lib/video.js';
+import { WebPushSender, type PushSender } from './modules/notifications/push.js';
+import { DELIVER_JOB, NotificationsService } from './modules/notifications/notifications.service.js';
+import { notificationRoutes } from './modules/notifications/notifications.routes.js';
+import { SafetyService } from './modules/moderation/safety.service.js';
+import { moderationRoutes } from './modules/moderation/moderation.routes.js';
+import { MessagingService } from './modules/messaging/messaging.service.js';
+import { messagingRoutes } from './modules/messaging/messaging.routes.js';
+import { COMPLETE_JOB, REMINDER_JOB, SessionsService } from './modules/sessions/sessions.service.js';
+import { sessionRoutes } from './modules/sessions/sessions.routes.js';
+import { MentorsService } from './modules/mentorship/mentors.service.js';
+import { EXPIRE_JOB, RequestsService } from './modules/mentorship/requests.service.js';
+import { mentorshipRoutes } from './modules/mentorship/mentorship.routes.js';
 
 export interface AppDeps {
   env: Env;
@@ -54,8 +72,11 @@ export interface AppDeps {
   fetchImpl?: typeof fetch;
   storage?: StorageProvider;
   jobs?: JobQueue;
-  /** SSRF-safe fetcher used for remote imports (injected in tests). */
+  /** SSRF-safe fetcher used for remote imports, push and bot checks (injected in tests). */
   fetcher?: typeof safeFetch;
+  bot?: BotProtection;
+  video?: VideoProvider;
+  push?: PushSender;
 }
 
 export function createApp({
@@ -69,6 +90,9 @@ export function createApp({
   storage,
   jobs,
   fetcher = safeFetch,
+  bot,
+  video,
+  push,
 }: AppDeps) {
   const app = express();
   app.disable('x-powered-by');
@@ -80,13 +104,41 @@ export function createApp({
   const cipher = new FieldCipher(env.FIELD_ENCRYPTION_KEY);
   const limiters = createLimiters(redis, rateLimitScale);
   const registry: RouteRegistry = [];
+  const botProtection =
+    bot ??
+    (env.BOT_PROTECTION === 'turnstile' && env.TURNSTILE_SECRET
+      ? new TurnstileBotProtection(env.TURNSTILE_SECRET, fetcher)
+      : disabledBotProtection);
   const pipeline: PipelineDeps = {
     registry,
     uploader,
     limiters,
     authenticate: authenticate(tokens),
     csrf: csrfProtection(isAllowedOrigin),
+    bot: botCheck(botProtection),
+    idempotency: new IdempotencyService(),
   };
+  const realtime = new RealtimeGateway({ tokens, rootDomain: env.APP_ROOT_DOMAIN, isAllowedOrigin, logger });
+  const videoProvider =
+    video ??
+    (env.VIDEO_PROVIDER === '100ms'
+      ? hmsVideoStub()
+      : env.VIDEO_PROVIDER === 'daily'
+        ? dailyVideoStub()
+        : new JitsiVideoProvider(
+            env.JITSI_BASE_URL,
+            env.JITSI_APP_ID && env.JITSI_APP_SECRET
+              ? { appId: env.JITSI_APP_ID, secret: env.JITSI_APP_SECRET }
+              : undefined,
+          ));
+  const pushSender =
+    push ??
+    new WebPushSender(
+      env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY
+        ? { publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY, subject: env.VAPID_SUBJECT }
+        : null,
+      fetcher,
+    );
 
   const authService = new AuthService({
     tokens,
@@ -121,6 +173,64 @@ export function createApp({
     verificationService.onEmailVerified(userId, email, meta);
   authService.onUserCreated = (userId) => profilesService.sync(userId);
   queue.register(IMPORT_JOB, (data, progress) => importsService.run(String(data.jobId), progress));
+
+  // ── Mentorship (Phase 3) ─────────────────────────────
+  const tenantUrl = authService.tenantUrl.bind(authService);
+  const notificationsService = new NotificationsService({
+    mailer,
+    logger,
+    cipher,
+    push: pushSender,
+    realtime,
+    jobs: queue,
+    tenantUrl,
+  });
+  const safetyService = new SafetyService(profilesService);
+  const messagingService = new MessagingService({
+    cipher,
+    files: filesService,
+    profiles: profilesService,
+    notifications: notificationsService,
+    realtime,
+  });
+  const sessionsService = new SessionsService({
+    video: videoProvider,
+    jobs: queue,
+    profiles: profilesService,
+    notifications: notificationsService,
+    tenantUrl,
+  });
+  const mentorsService = new MentorsService({
+    profiles: profilesService,
+    safety: safetyService,
+    sessions: sessionsService,
+  });
+  const requestsService = new RequestsService({
+    mentors: mentorsService,
+    sessions: sessionsService,
+    messaging: messagingService,
+    profiles: profilesService,
+    notifications: notificationsService,
+    jobs: queue,
+  });
+  sessionsService.slotCheck = mentorsService.checkSlot;
+  filesService.registerAccess('message_attachment', (fileId, viewer) =>
+    messagingService.attachmentAccess(fileId, viewer),
+  );
+  safetyService.registerTarget('message', (viewer, id) => messagingService.reportTarget(viewer, id));
+  safetyService.registerTarget('request', (viewer, id) => requestsService.reportTarget(viewer, id));
+  safetyService.onBlock(async (a, b) => {
+    await messagingService.setBlocked(a, b, true);
+    await requestsService.onBlock(a, b);
+    await sessionsService.onBlock(a, b);
+  });
+  safetyService.onUnblock((a, b) => messagingService.setBlocked(a, b, false));
+  realtime.hooks.typingTarget = (auth, conversationId) => messagingService.typingTarget(auth, conversationId);
+  usersService.onSuspended = (userId) => realtime.disconnectUser(requireTenantId(), userId);
+  queue.register(DELIVER_JOB, (data) => notificationsService.deliver(data));
+  queue.register(REMINDER_JOB, (data) => sessionsService.onReminder(data));
+  queue.register(COMPLETE_JOB, (data) => sessionsService.onComplete(data));
+  queue.register(EXPIRE_JOB, (data) => requestsService.onExpire(data));
   const cookie = {
     secure: env.COOKIE_SECURE ?? env.NODE_ENV === 'production',
     refreshTtlSec: env.JWT_REFRESH_TTL_SECONDS,
@@ -167,6 +277,14 @@ export function createApp({
     defineModule('verification', verificationRoutes(verificationService, invitesService), pipeline),
   );
   app.use(API_PREFIX, defineModule('profiles', profileRoutes(profilesService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('mentorship', mentorshipRoutes(mentorsService, requestsService, sessionsService), pipeline),
+  );
+  app.use(API_PREFIX, defineModule('sessions', sessionRoutes(sessionsService), pipeline));
+  app.use(API_PREFIX, defineModule('messaging', messagingRoutes(messagingService), pipeline));
+  app.use(API_PREFIX, defineModule('notifications', notificationRoutes(notificationsService), pipeline));
+  app.use(API_PREFIX, defineModule('moderation', moderationRoutes(safetyService), pipeline));
 
   const openapi = buildOpenApi(registry);
   app.get(`${API_PREFIX}/openapi.json`, (_req, res) => res.json(openapi));
@@ -185,6 +303,13 @@ export function createApp({
     verification: verificationService,
     profiles: profilesService,
     queue,
+    realtime,
+    notifications: notificationsService,
+    messaging: messagingService,
+    sessions: sessionsService,
+    mentors: mentorsService,
+    requests: requestsService,
+    safety: safetyService,
   };
   return app;
 }

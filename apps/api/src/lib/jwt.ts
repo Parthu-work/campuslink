@@ -6,6 +6,10 @@ export interface AccessClaims {
   sid: string;
   ver: number;
 }
+export interface VerifiedAccessClaims extends AccessClaims {
+  /** Expiry, seconds since the epoch. */
+  exp: number;
+}
 export interface MfaTicketClaims {
   sub: string;
   tid: string;
@@ -37,7 +41,7 @@ export class TokenService {
       .sign(this.accessKey);
   }
 
-  async verifyAccess(token: string): Promise<AccessClaims | null> {
+  async verifyAccess(token: string): Promise<VerifiedAccessClaims | null> {
     try {
       const { payload } = await jwtVerify(token, this.accessKey, {
         issuer: ISSUER,
@@ -48,10 +52,11 @@ export class TokenService {
         typeof payload.sub !== 'string' ||
         typeof payload.tid !== 'string' ||
         typeof payload.sid !== 'string' ||
-        typeof payload.ver !== 'number'
+        typeof payload.ver !== 'number' ||
+        typeof payload.exp !== 'number'
       )
         return null;
-      return { sub: payload.sub, tid: payload.tid, sid: payload.sid, ver: payload.ver };
+      return { sub: payload.sub, tid: payload.tid, sid: payload.sid, ver: payload.ver, exp: payload.exp };
     } catch (e) {
       if (e instanceof errors.JOSEError) return null;
       throw e;

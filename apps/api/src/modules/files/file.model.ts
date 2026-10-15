@@ -1,7 +1,7 @@
 import { Schema, type InferSchemaType } from 'mongoose';
 import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
 
-export const FILE_PURPOSES = ['avatar', 'id_card', 'import_source'] as const;
+export const FILE_PURPOSES = ['avatar', 'id_card', 'import_source', 'message_attachment'] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 
 const fileSchema = new Schema(

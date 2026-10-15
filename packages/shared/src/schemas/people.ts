@@ -44,7 +44,7 @@ export const importMapping = z.strictObject({
 });
 export type ImportMapping = z.infer<typeof importMapping>;
 
-const httpsUrl = z.url({ protocol: /^https$/, error: 'Use an https:// link' }).max(2000);
+export const httpsUrl = z.url({ protocol: /^https$/, error: 'Use an https:// link' }).max(2000);
 export const importSourceBody = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('gsheet'), url: httpsUrl }),
   z.strictObject({
@@ -162,7 +162,7 @@ export const DEFAULT_VISIBILITY: Record<ProfileField, Audience> = {
   phone: 'only_me',
 };
 
-const tag = z
+export const tag = z
   .string()
   .trim()
   .min(1)

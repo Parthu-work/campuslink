@@ -4,6 +4,7 @@
  */
 import mongoose, { type Types } from 'mongoose';
 import {
+  APP_NAME,
   CONSENT_PURPOSE_KEYS,
   type Role,
   type Capability,
@@ -210,7 +211,7 @@ async function main() {
     slug: 'admin',
     kind: 'platform',
     branding: {
-      displayName: 'CampusLink Platform',
+      displayName: `${APP_NAME} Platform`,
       shortName: 'Platform',
       primary: '#3fb8e6',
       secondary: '#6d5ae6',

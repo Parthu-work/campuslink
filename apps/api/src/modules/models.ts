@@ -14,3 +14,14 @@ export {
   VerificationRequestModel,
   InviteModel,
 } from './verification/verification.model.js';
+export { IdempotencyModel } from './idempotency/idempotency.model.js';
+export { MentorProfileModel, MenteePrefsModel } from './mentorship/mentor.model.js';
+export { MentorshipRequestModel } from './mentorship/request.model.js';
+export { BookingModel, FeedbackModel } from './sessions/booking.model.js';
+export { ConversationModel, MessageModel } from './messaging/conversation.model.js';
+export {
+  NotificationModel,
+  NotificationPrefsModel,
+  PushSubscriptionModel,
+} from './notifications/notification.model.js';
+export { BlockModel, ReportModel } from './moderation/safety.model.js';

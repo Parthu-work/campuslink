@@ -40,9 +40,10 @@ export function authRoutes(
       method: 'post',
       path: '/auth/signup',
       tag: 'Auth',
-      summary: 'Create an account (college verification follows in Phase 2)',
+      summary: 'Create an account (college verification follows)',
       access: { kind: 'public' },
       limiter: 'signup',
+      bot: true,
       body: signupBody,
       handler: async ({ req, body }) => {
         await svc.signup(tenantOf(req), body, meta(req));
