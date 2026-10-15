@@ -1,0 +1,49 @@
+/*
+ * Design tokens. Tenant branding overrides --brand-* at runtime (Phase 1);
+ * every component reads tokens, never raw colors.
+ */
+:root {
+  /* Platform default (Palapitta blue / Tangedu gold). Phase 1 replaces with the full token set from docs/design/design-brief.md. */
+  --brand-primary: #3fb8e6;
+  --brand-accent: #f2b705;
+
+  --bg: #070a14;
+  --surface-1: #0d1222;
+  --surface-2: #141b30;
+  --border: rgb(170 190 255 / 0.11);
+  --text: #eef1fa;
+  --text-muted: #a6afc8;
+  --success: #34d399;
+  --danger: #fb7185;
+
+  --font-display: 'Bricolage Grotesque Variable', 'Noto Sans Telugu Variable', system-ui, sans-serif;
+  --font-body: 'Figtree Variable', 'Noto Sans Telugu Variable', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  --ease-spring: cubic-bezier(0.22, 1.2, 0.36, 1);
+  --motion-scale: 1;
+  --dur-fast: calc(140ms * var(--motion-scale));
+  --dur-base: calc(240ms * var(--motion-scale));
+}
+
+:root[data-theme='light'] {
+  --bg: #f3f5fa;
+  --surface-1: #ffffff;
+  --surface-2: #e9edf6;
+  --border: rgb(20 30 70 / 0.12);
+  --text: #0c1226;
+  --text-muted: #444e69;
+  --brand-primary: #0a6890;
+  --brand-accent: #855f00;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-scale: 0;
+  }
+}

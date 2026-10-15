@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented local-only placeholder values"
+paths = ['''\.env\.example''', '''apps/api/src/config/env\.ts''']
