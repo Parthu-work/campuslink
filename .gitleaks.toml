@@ -1,6 +1,14 @@
 [extend]
 useDefault = true
 
-[allowlist]
+[[allowlists]]
 description = "Documented local-only placeholder values"
 paths = ['''\.env\.example''', '''apps/api/src/config/env\.ts''']
+
+[[allowlists]]
+# Fictional passphrases used as test fixtures (word-word-word[-word]-NN). Scoped to test
+# directories AND this exact shape, so a real key pasted into a test still fails the scan.
+description = "Fictional passphrase fixtures in tests"
+condition = "AND"
+paths = ['''^apps/api/test/''', '''^apps/web/e2e/''']
+regexes = ['''^[A-Za-z]+(-[A-Za-z]+){2,3}-\d{2,4}$''']
