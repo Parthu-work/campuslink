@@ -1,12 +1,25 @@
 import { NavLink, Outlet } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { Building2, Home, LogOut, Settings, Shield, Activity, type LucideIcon } from 'lucide-react';
+import {
+  Building2,
+  Home,
+  LogOut,
+  Search,
+  Settings,
+  Shield,
+  Activity,
+  User,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
 import type { Permission } from '@campuslink/shared';
 import { Crest } from '../ui/misc';
 import { useTenant } from '../../lib/tenant-context';
 import { useMe } from '../../lib/me';
 import { useSignOut } from '../../lib/use-sign-out';
 import { cn } from '../../lib/cn';
+import { usePalette, usePaletteShortcut } from '../../lib/palette';
+import { CommandPalette } from './command-palette';
 
 interface NavItem {
   to: string;
@@ -21,6 +34,8 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
   const { t } = useTranslation();
   const { data: me } = useMe();
   const signOut = useSignOut();
+  const openPalette = usePalette((s) => s.setOpen);
+  usePaletteShortcut();
   const items: NavItem[] = platform
     ? [
         { to: '/platform', label: t('nav.platform'), icon: Building2 },
@@ -29,6 +44,8 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       ]
     : [
         { to: '/home', label: t('nav.home'), icon: Home },
+        { to: '/people', label: t('nav.people'), icon: Users, permission: 'directory:read' },
+        { to: '/profile', label: t('nav.profile'), icon: User },
         { to: '/settings', label: t('nav.settings'), icon: Settings },
         { to: '/admin', label: t('nav.admin'), icon: Shield, permission: 'users:read_admin' },
       ];
@@ -74,6 +91,18 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           </b>
         </div>
         {visible.map((i) => link(i, false))}
+        {!platform && (
+          <button
+            type="button"
+            onClick={() => openPalette(true)}
+            className="mt-3 flex min-h-11 items-center gap-2.5 rounded-[var(--radius-md)] border border-line bg-surface-1 px-3 text-sm text-fg-2 hover:text-fg"
+          >
+            <Search className="size-4" aria-hidden /> {t('palette.open')}
+            <kbd className="ml-auto rounded-md border border-line-strong bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-fg-2">
+              Ctrl K
+            </kbd>
+          </button>
+        )}
         <div className="mt-auto grid gap-2 border-t border-line pt-3">
           {me && (
             <p className="truncate px-3 text-sm">
@@ -93,10 +122,23 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       <header className="glass gutter fixed inset-x-0 top-0 z-40 flex items-center gap-2.5 border-b border-line pt-[calc(8px+env(safe-area-inset-top,0px))] pb-2 lg:hidden">
         <Crest monogram={tenant.branding.monogram} size={32} />
         <b className="font-display text-base font-semibold">{tenant.branding.shortName}</b>
+        {!platform && (
+          <button
+            type="button"
+            onClick={() => openPalette(true)}
+            className="ml-auto grid size-11 place-items-center rounded-full text-fg-2 hover:bg-surface-2"
+            aria-label={t('palette.open')}
+          >
+            <Search className="size-5" aria-hidden />
+          </button>
+        )}
         <button
           type="button"
           onClick={signOut}
-          className="ml-auto grid size-11 place-items-center rounded-full text-fg-2 hover:bg-surface-2"
+          className={cn(
+            'grid size-11 place-items-center rounded-full text-fg-2 hover:bg-surface-2',
+            platform && 'ml-auto',
+          )}
           aria-label={t('common.signOut')}
         >
           <LogOut className="size-5" aria-hidden />
@@ -111,6 +153,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           <Outlet />
         </div>
       </main>
+      {!platform && <CommandPalette />}
       <nav
         aria-label={t('nav.main')}
         className="glass fixed inset-x-0 bottom-0 z-40 grid border-t border-line px-[max(8px,env(safe-area-inset-left,0px))] pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom,0px))] lg:hidden"

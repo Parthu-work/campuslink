@@ -63,6 +63,11 @@ jobs:
         image: redis:7.4-alpine
         ports: ['6379:6379']
         options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 20
+      # e2e reads emailed verification codes through the Mailpit API.
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports: ['1025:1025', '8025:8025']
+        options: --health-cmd "/mailpit readyz" --health-interval 5s --health-timeout 3s --health-retries 20
     env:
       MONGODB_URI: mongodb://127.0.0.1:27017/campuslink_e2e?directConnection=true
       REDIS_URL: redis://127.0.0.1:6379

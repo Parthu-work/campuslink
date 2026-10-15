@@ -6,7 +6,7 @@
 
 - **College = Data Fiduciary.** The college decides why student and alumni data is processed (guidance, mentorship, placements) and answers to its students.
 - **CampusLink (platform) = Data Processor.** We process on the college's instructions under a data-processing agreement. Platform operators see aggregate counts only.
-- **Grievance officer:** each college names one (placeholder in tenant settings, Phase 2). Platform contact: `privacy@<deployment-domain>` (placeholder).
+- **Grievance officer:** each college names one (placeholder in tenant settings). Platform contact: `privacy@<deployment-domain>` (placeholder).
 
 ## Consent (implemented)
 
@@ -16,27 +16,36 @@
 
 ## Age
 
-Sign-up requires an 18+ declaration. Under-18 users are blocked on the client and the server. Edge cases (for example a first-year student who is 17) go to admin review once verification ships in Phase 2. Rationale: DPDP's verifiable-parental-consent requirements for children are out of scope for now.
+Sign-up requires an 18+ declaration. Under-18 users are blocked on the client and the server. **We do not collect minors' data:** a 17-year-old first-year is told to contact their college, and the admin invites them once they turn 18. Imported list records hold only what verification needs (roll number, name, branch, graduation year, email or phone); they do not create accounts. Rationale: DPDP's verifiable-parental-consent requirements for children are out of scope for now.
 
 ## Data minimisation (implemented)
 
 - IP addresses are reduced to /24 (IPv4) or /48 (IPv6) prefixes in sessions and audit.
 - The raw user agent is reduced to a coarse "Chrome on Android" label.
-- No third-party trackers or analytics. Contact details are hidden by default (enforced by the profiles module in Phase 2).
+- No third-party trackers or analytics.
+- Profiles have per-field visibility (members, alumni and staff, only me). Email and phone default to **only me**; the directory and search never return a field the viewer may not see.
+- List records store email and phone encrypted (AES-256-GCM) with a keyed blind index for matching. Admin screens show masked emails (`sa•••@dpit.example`).
+- Import error reports name the row, column and problem, never the cell's value.
+- Uploaded images are re-encoded, which strips EXIF data such as GPS location.
 
 ## Retention (implemented)
 
-| Data                                | Retention                                |
-| ----------------------------------- | ---------------------------------------- |
-| Email-verification and reset tokens | Deleted at expiry (TTL index)            |
-| Sessions                            | Deleted 30 days after expiry (TTL index) |
-| Audit log                           | Kept                                     |
+| Data                                | Retention                                                              |
+| ----------------------------------- | ---------------------------------------------------------------------- |
+| Email-verification and reset tokens | Deleted at expiry (TTL index)                                          |
+| Sessions                            | Deleted 30 days after expiry (TTL index)                               |
+| Verification codes (OTP)            | Deleted 24 hours after issue (TTL index)                               |
+| Invites                             | Deleted at expiry, 30 days (TTL index)                                 |
+| Import previews                     | Deleted after 2 hours (TTL index)                                      |
+| Import source files                 | Deleted right after the import runs; at most 24 hours if it never runs |
+| College ID photos                   | Deleted 30 days after the admin's decision                             |
+| Audit log                           | Kept                                                                   |
 
-Configurable per tenant: inactive accounts (default 3 years) and deleted-account grace (default 30 days). Purge jobs ship with BullMQ in Phase 2.
+File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable per tenant: inactive accounts (default 3 years) and deleted-account grace (default 30 days); those purges ship with the privacy release.
 
-## Rights (planned, Phase 2 and the privacy release)
+## Rights (planned, privacy release)
 
-Self-service export (JSON), correction, and deletion (soft delete → hard delete after the grace period) through background jobs.
+Correction is self-service now (profile editing). Self-service export (JSON) and deletion (soft delete → hard delete after the grace period) through background jobs.
 
 ## Residency and backups
 

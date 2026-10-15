@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { generate } from 'otplib';
-import { expectNoA11yViolations, PASSWORD, signIn } from './helpers';
+import { expectNoA11yViolations, signIn } from './helpers';
+import { adminSignIn } from './admin';
 
 test.describe('landing', () => {
   test('applies each college’s branding and passes axe in both themes', async ({ page }) => {
@@ -80,17 +80,9 @@ test.describe('signed-in journeys', () => {
   test('a college admin must enrol in 2FA, then can manage people and branding', async ({ page }, info) => {
     // Each project enrols a different admin (the seed has one per college).
     const host = info.project.name === 'mobile' ? 'mrce' : 'dpit';
-    await page.goto(`http://${host}.localhost:4173/sign-in`);
-    await page.getByLabel('Email', { exact: true }).fill(`admin@${host}.example`);
-    await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
-    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Turn on two-factor authentication' })).toBeVisible();
-    const secret = (await page.locator('code').innerText()).replace(/\s/g, '');
-    await page.getByLabel('Enter your 6-digit code 1').click();
-    await page.keyboard.type(await generate({ secret }));
-    await page.getByRole('button', { name: 'Turn on 2FA' }).click();
-    await expect(page.getByRole('heading', { name: 'Save your recovery codes' })).toBeVisible();
-    await page.getByRole('button', { name: 'I’ve saved these codes' }).click();
+    test.setTimeout(90_000); // may wait for a fresh TOTP step
+    // Enrols on first sign-in (or answers the TOTP prompt if another spec enrolled first).
+    await adminSignIn(page, host, `admin@${host}.example`);
 
     await page.goto(`http://${host}.localhost:4173/admin`);
     await expect(page.getByText('Srinivas Murthy')).toBeVisible();

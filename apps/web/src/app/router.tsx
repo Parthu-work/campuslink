@@ -30,6 +30,21 @@ const Admin = lazy(() => import('../features/admin/admin').then((m) => ({ defaul
 const Users = lazy(() => import('../features/admin/admin').then((m) => ({ default: m.UsersAdmin })));
 const Branding = lazy(() => import('../features/admin/admin').then((m) => ({ default: m.BrandingAdmin })));
 const Features = lazy(() => import('../features/admin/admin').then((m) => ({ default: m.FeaturesAdmin })));
+const Imports = lazy(() => import('../features/admin/imports').then((m) => ({ default: m.ImportsAdmin })));
+const ListAdmin = lazy(() => import('../features/admin/list-admin').then((m) => ({ default: m.ListAdmin })));
+const VerificationAdmin = lazy(() =>
+  import('../features/admin/list-admin').then((m) => ({ default: m.VerificationAdmin })),
+);
+const Directory = lazy(() =>
+  import('../features/people/directory').then((m) => ({ default: m.DirectoryPage })),
+);
+const ProfileView = lazy(() =>
+  import('../features/people/profile-view').then((m) => ({ default: m.ProfileView })),
+);
+const ProfileEdit = lazy(() =>
+  import('../features/profile/profile-edit').then((m) => ({ default: m.ProfileEdit })),
+);
+const Verify = lazy(() => import('../features/verify/verify').then((m) => ({ default: m.VerifyPage })));
 const Audit = lazy(() => import('../features/admin/admin').then((m) => ({ default: m.AuditAdmin })));
 const Tenants = lazy(() =>
   import('../features/platform/platform').then((m) => ({ default: m.PlatformTenants })),
@@ -121,6 +136,42 @@ function collegeRouter() {
       ),
       children: [
         { path: '/home', element: <HomePage /> },
+        {
+          path: '/verify',
+          element: (
+            <S>
+              <Verify />
+            </S>
+          ),
+        },
+        {
+          path: '/profile',
+          element: (
+            <S>
+              <ProfileEdit />
+            </S>
+          ),
+        },
+        {
+          path: '/people',
+          element: (
+            <RequirePermission permission="directory:read">
+              <S>
+                <Directory />
+              </S>
+            </RequirePermission>
+          ),
+        },
+        {
+          path: '/people/:userId',
+          element: (
+            <RequirePermission permission="directory:read">
+              <S>
+                <ProfileView />
+              </S>
+            </RequirePermission>
+          ),
+        },
         settingsRoutes,
         {
           path: 'admin',
@@ -138,6 +189,36 @@ function collegeRouter() {
                 <S>
                   <Users />
                 </S>
+              ),
+            },
+            {
+              path: 'imports',
+              element: (
+                <RequirePermission permission="imports:manage">
+                  <S>
+                    <Imports />
+                  </S>
+                </RequirePermission>
+              ),
+            },
+            {
+              path: 'list',
+              element: (
+                <RequirePermission permission="imports:manage">
+                  <S>
+                    <ListAdmin />
+                  </S>
+                </RequirePermission>
+              ),
+            },
+            {
+              path: 'verification',
+              element: (
+                <RequirePermission permission="verification:review">
+                  <S>
+                    <VerificationAdmin />
+                  </S>
+                </RequirePermission>
               ),
             },
             {

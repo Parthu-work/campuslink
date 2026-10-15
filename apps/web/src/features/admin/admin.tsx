@@ -30,8 +30,13 @@ export function AdminLayout() {
   const canBrand = useCan('tenant:branding');
   const canAudit = useCan('audit:read');
   const canSettings = useCan('tenant:settings');
+  const canImport = useCan('imports:manage');
+  const canReview = useCan('verification:review');
   const tabs = [
     ['/admin', t('admin.users'), true],
+    ['/admin/imports', t('admin.imports'), canImport],
+    ['/admin/list', t('admin.list'), canImport],
+    ['/admin/verification', t('admin.verification'), canReview],
     ['/admin/branding', t('admin.branding'), canBrand],
     ['/admin/features', t('admin.features'), canSettings],
     ['/admin/audit', t('admin.audit'), canAudit],
@@ -84,6 +89,7 @@ export function UsersAdmin() {
   const canRoles = useCan('roles:assign');
   const canManage = useCan('users:manage');
   const canGrant = useCan('capabilities:grant');
+  const canReview = useCan('verification:review');
   const [q, setQ] = useState('');
   const [role, setRole] = useState('');
   const dq = useDeferredValue(q);
@@ -104,6 +110,14 @@ export function UsersAdmin() {
   const mutate = useMutation({
     mutationFn: ({ id, path, body }: { id: string; path: string; body: unknown }) =>
       api.patch<AdminUser>(`/admin/users/${id}/${path}`, body),
+    onSuccess: () => {
+      toast.success(t('common.saved'));
+      void refresh();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const unverify = useMutation({
+    mutationFn: (id: string) => api.post(`/admin/users/${id}/unverify`),
     onSuccess: () => {
       toast.success(t('common.saved'));
       void refresh();
@@ -187,6 +201,13 @@ export function UsersAdmin() {
                     {u.capabilities.length ? t('admin.revokeContributor') : t('admin.grantContributor')}
                   </Button>
                 )}
+                {canReview &&
+                  u.verified &&
+                  !u.roles.some((r) => ['COLLEGE_ADMIN', 'TPO', 'FACULTY'].includes(r)) && (
+                    <Button size="sm" variant="ghost" onClick={() => unverify.mutate(u.id)}>
+                      {t('admin.unverify')}
+                    </Button>
+                  )}
                 {canManage && u.id !== me?.id && (
                   <Button
                     size="sm"
@@ -485,7 +506,7 @@ export function AuditAdmin() {
   if (!rows.length)
     return <EmptyState icon={<ScrollText className="size-6" />} title={t('admin.auditEmpty')} />;
   return (
-    <Card className="overflow-x-auto">
+    <Card className="overflow-x-auto" tabIndex={0} role="region" aria-label={t('admin.audit')}>
       <table className="w-full min-w-[620px] text-left text-sm">
         <thead className="border-b border-line text-xs text-fg-3">
           <tr>

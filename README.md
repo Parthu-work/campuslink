@@ -2,7 +2,7 @@
 
 A private guidance network for a college community, connecting students with alumni from their own college. It is multi-tenant: each college gets its own branded, isolated space.
 
-> Status: **Phase 1 (secure core)**: multi-tenancy, auth with 2FA, roles and permissions, audit, consent, college branding and the platform console. See `docs/phases/`.
+> Status: **Phase 2 (people)**: college-list imports (CSV, XLSX, Google Sheets, REST), verification, profiles with per-field privacy, the alumni directory and search, on top of the Phase 1 secure core (multi-tenancy, auth with 2FA, roles, audit, consent, branding, platform console). See `docs/phases/`.
 
 ## Quick start (under 5 minutes)
 
@@ -24,6 +24,12 @@ Demo sign-ins (password `Demo-Campus-Link-2026`, fictional people):
 | http://admin.localhost:5173 | `superadmin@campuslink.example`                                                | Platform console                                            |
 
 Emails (verification, reset, invites) land in Mailpit at http://localhost:8025.
+
+### Try Phase 2
+
+1. **Import:** sign in as `admin@dpit.example`, open Admin → Imports and upload `docs/samples/sample-students.csv`. Check the suggested column mapping, tick "dry run" if you like, and run it: 6 new records and 3 reported problems. Download the error report, or roll the import back.
+2. **Verify:** sign in as `newbie@dpit.example`, choose Verify now and enter roll number `24DP1A0577`. The 6-digit code goes to the email on the college's record; open it in Mailpit.
+3. **Browse:** open People to filter the directory, open a profile, and press Ctrl/Cmd+K to search. Edit your own profile under Profile; email and phone stay private unless you change their visibility.
 
 | Service             | URL                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------- |

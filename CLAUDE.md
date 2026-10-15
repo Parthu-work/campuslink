@@ -54,7 +54,10 @@ docs/            architecture, ADRs, threat model, privacy, design brief
 - Only services touch models, and models are created only through `defineTenantModel` or `definePlatformModel` (`db/models.ts`).
 - Responses use the envelope `{ ok: true, data, meta? }` or `{ ok: false, error: { code, message, requestId } }`. Error codes come from `@campuslink/shared`.
 - Everything is versioned under `/api/v1`. Feeds use cursor pagination. Sensitive writes accept an `Idempotency-Key`.
-- Swappable providers sit behind interfaces: `StorageProvider`, `VideoProvider`, `MailProvider`, `JobSourceAdapter`, `DataSourceAdapter`, `BotProtection`.
+- Swappable providers sit behind interfaces: `StorageProvider`, `VideoProvider`, `MailProvider`, `JobSourceAdapter`, `DataSourceAdapter`, `BotProtection`, `SmsProvider`.
+- Files go through `FilesService` only (sniff, re-encode, purpose-based access, `deleteAfter` retention). Declare uploads with `upload` on the route spec so multer runs after authorize.
+- Background work goes through `JobQueue` (`lib/jobs.ts`); handlers run inside `runInTenant`, so the tenancy rules hold in jobs too. Tests use `InlineJobQueue`.
+- The profile is a read model of the user: after changing a user's name, roles, status or verification, call `ProfilesService.sync()`. New import sources follow `docs/data-sources.md`.
 
 ## Tenancy rule (non-negotiable)
 

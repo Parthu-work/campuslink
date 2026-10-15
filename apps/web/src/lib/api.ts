@@ -66,7 +66,8 @@ export async function apiRequest<T>(
 ): Promise<{ data: T; meta?: { nextCursor?: string | null } }> {
   const token = useSession.getState().accessToken;
   const headers: Record<string, string> = {};
-  if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
+  const isForm = opts.body instanceof FormData;
+  if (opts.body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
   if (token) headers.Authorization = `Bearer ${token}`;
   if (opts.csrf) headers['X-CSRF-Token'] = readCookie('cl_csrf') ?? '';
 
@@ -76,7 +77,9 @@ export async function apiRequest<T>(
       method: opts.method ?? 'GET',
       headers,
       credentials: 'same-origin',
-      ...(opts.body !== undefined ? { body: JSON.stringify(opts.body) } : {}),
+      ...(opts.body !== undefined
+        ? { body: isForm ? (opts.body as FormData) : JSON.stringify(opts.body) }
+        : {}),
       ...(opts.signal ? { signal: opts.signal } : {}),
     });
   } catch {
@@ -93,7 +96,33 @@ export async function apiRequest<T>(
   return { data: body.data, ...(body.meta ? { meta: body.meta } : {}) };
 }
 
+/** Authenticated binary download (files, CSV reports): returns a Blob. */
+export async function apiBlob(path: string, retried = false): Promise<Blob> {
+  const token = useSession.getState().accessToken;
+  const res = await fetch(`${API_PREFIX}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: 'same-origin',
+  }).catch(() => {
+    throw new ApiError(0, 'NETWORK', 'You seem to be offline. Check your connection and try again.');
+  });
+  if (res.status === 401 && token && !retried && (await refreshSession())) return apiBlob(path, true);
+  if (!res.ok) throw new ApiError(res.status, 'NOT_FOUND', 'That file is not available.');
+  return res.blob();
+}
+
+/** Saves a Blob through a temporary link (works in normal browsing contexts). */
+export function saveBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export const api = {
+  upload: <T>(path: string, form: FormData) =>
+    apiRequest<T>(path, { method: 'POST', body: form }).then((r) => r.data),
   get: <T>(path: string, signal?: AbortSignal) =>
     apiRequest<T>(path, signal ? { signal } : {}).then((r) => r.data),
   page: <T>(path: string) => apiRequest<T>(path),

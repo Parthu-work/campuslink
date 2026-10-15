@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { BriefcaseBusiness, Lock, MessagesSquare, Newspaper, Orbit, ShieldCheck, Users } from 'lucide-react';
 import { Card, Skeleton } from '../../components/ui/misc';
+import { buttonVariants } from '../../components/ui/button-variants';
 import { useMe } from '../../lib/me';
 import { useTenant } from '../../lib/tenant-context';
 
@@ -35,6 +36,12 @@ export function HomePage() {
           <div>
             <h2 className="font-semibold">{t('home.unverifiedTitle')}</h2>
             <p className="text-sm text-fg-2">{t('home.unverifiedBody')}</p>
+            <Link
+              to="/verify"
+              className={buttonVariants({ variant: 'primary', size: 'sm', className: 'mt-3' })}
+            >
+              {t('home.verifyCta')}
+            </Link>
           </div>
         </Card>
       )}

@@ -33,3 +33,29 @@ Done when: an admin can import a sample CSV, map columns and run it; students an
 - **SMS:** no free SMS provider exists, so phone OTP and invites are behind `SmsProvider`, disabled locally. Records with only a phone number fall back to ID-photo verification.
 - **Under-18 edge cases:** we don't collect minors' data. The sign-up page tells them to contact their college, and admins can invite them once eligible. Documented in `privacy.md`.
 - **Retention:** import source files are deleted right after processing. ID photos are deleted 30 days after a decision.
+
+## Outcome (built)
+
+- **API:** 4 new modules (files, imports, verification, profiles) with 27 new endpoints (60 in total), all in the generated `docs/permissions.md` and covered by the role × endpoint matrix.
+- **Platform pieces:** `StorageProvider` (local disk, memory, S3 stub), upload pipeline with sniffing, re-encoding and a scanner hook, SSRF-safe fetcher, `JobQueue` (BullMQ, inline for tests), `SmsProvider` (disabled stub), tenant-cache invalidation over Redis pub/sub, retention purge every 6 hours.
+- **Imports:** CSV, XLSX, Google Sheets and REST/JSON adapters; preview with suggested mapping; dry run; background job with progress, duplicate and row-error reporting, downloadable error CSV, idempotent re-import and rollback. Guide: `docs/data-sources.md`.
+- **Verification:** roll number (plus graduation year for alumni) → emailed 6-digit code, or automatic when the record's email is the account's confirmed email; college-ID photo queue for admins; invite-based auto-verification; revoke; company-email badge for alumni.
+- **Profiles and directory:** per-field visibility with contact details private by default, avatar upload, links restricted to an allowlist of hosts, filters and cursor pagination, search, and a Ctrl/Cmd+K command palette.
+- **Web:** verify flow, directory, profile view and edit, admin imports wizard, college list, verification queue, and a revoke-verification action; English and Telugu.
+- **Tests:**
+  - API: 223 tests, including a people isolation suite (files, imports, list, requests, invites, profiles, search), import correctness, verification abuse cases, upload hardening, SSRF (with a fake transport) and real BullMQ. Coverage gate passes.
+  - Web: 26 Playwright journeys (phone and desktop) with axe, including import sample CSV → verify by emailed code → browse directory → edit profile. CI now runs Mailpit for the emailed codes.
+
+## Deviations from the plan
+
+- **Profiles are a read model.** `ProfilesService.sync()` copies name, roles, status and verification from the user on every change, so the directory and search never join users.
+- **Search** uses the Mongo text index through `db/search.ts`, with an escaped name-substring fallback when the text index finds nothing (partial names). A dedicated search engine is not needed at this scale.
+- **Bot protection** (Turnstile-style adapter) moves to Phase 3 with messaging; sign-up and verification are rate-limited meanwhile.
+- **Phone verification and phone invites** are wired to the disabled `SmsProvider`. Phone-only records fall back to the ID-photo queue, and the UI says so.
+
+## Gaps and next steps
+
+- No OAuth for Google Sheets; private sheets need "anyone with the link".
+- No production SMS or antivirus provider (hooks are in place).
+- Self-service data export and deletion remain for the privacy release.
+- Phase 3: mentorship requests, messaging (Socket.io with isolation tests), bot protection.
