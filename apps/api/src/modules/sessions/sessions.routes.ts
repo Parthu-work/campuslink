@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { bookingsQuery, cancelBody, feedbackBody, rescheduleBody } from '@campuslink/shared';
 import type { AnyRouteSpec } from '../../http/registry.js';
 import { idParams } from '../../http/validation.js';
@@ -29,6 +30,18 @@ export function sessionRoutes(svc: SessionsService): AnyRouteSpec[] {
       access: BOOK,
       params: idParams,
       handler: async ({ req, params }) => ({ data: await svc.get(authOf(req), params.id) }),
+    },
+    {
+      method: 'get',
+      path: '/bookings/:id/slots',
+      tag,
+      summary: 'Times this session can move to (both calendars considered)',
+      access: BOOK,
+      params: idParams,
+      query: z.strictObject({ days: z.coerce.number().int().min(1).max(21).default(14) }),
+      handler: async ({ req, params, query }) => ({
+        data: await svc.slotsFor(authOf(req), params.id, query.days),
+      }),
     },
     {
       method: 'post',

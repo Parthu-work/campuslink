@@ -51,8 +51,18 @@ export interface SessionsDeps {
   tenantUrl: (tenant: TenantRecord, path: string) => string;
 }
 
+/** Lists free slots for a pair; supplied by the mentorship module. */
+export type SlotList = (
+  mentorId: string,
+  menteeId: string,
+  type: SessionType,
+  days: number,
+  ignoreBookingId: string,
+) => Promise<{ timezone: string; durationMin: number; slots: string[] }>;
+
 export class SessionsService {
   slotCheck: SlotCheck | null = null;
+  slotList: SlotList | null = null;
   constructor(private readonly d: SessionsDeps) {}
 
   /** Busy holds of these people overlapping [from, to) (scheduled bookings only). */
@@ -269,6 +279,14 @@ export class SessionsService {
     await this.schedule(updated);
     await this.notifyOther(updated, viewer.userId, 'booking_rescheduled');
     return this.get(viewer, id);
+  }
+
+  /** Times either participant can move this session to. */
+  async slotsFor(viewer: AuthState, id: string, days: number) {
+    const b = await this.mine(viewer, id);
+    if (b.status !== 'scheduled') throw conflict('Only upcoming sessions can be moved');
+    if (!this.slotList) throw new Error('slot list not wired');
+    return this.slotList(String(b.mentorId), String(b.menteeId), b.sessionType as SessionType, days, id);
   }
 
   async cancel(viewer: AuthState, id: string, reason: string | undefined) {

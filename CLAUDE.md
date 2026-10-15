@@ -58,6 +58,10 @@ docs/            architecture, ADRs, threat model, privacy, design brief
 - Files go through `FilesService` only (sniff, re-encode, purpose-based access, `deleteAfter` retention). Declare uploads with `upload` on the route spec so multer runs after authorize.
 - Background work goes through `JobQueue` (`lib/jobs.ts`); handlers run inside `runInTenant`, so the tenancy rules hold in jobs too. Tests use `InlineJobQueue`.
 - The profile is a read model of the user: after changing a user's name, roles, status or verification, call `ProfilesService.sync()`. New import sources follow `docs/data-sources.md`.
+- Realtime: clients only send `typing`. Every other socket event is emitted by a service after an authorised REST write, to `userRoom(tenantId, userId)` (`http/realtime.ts`). New socket events need isolation tests in `test/realtime.test.ts`.
+- Notify people only through `NotificationsService.notify()`. Payloads carry ids, names, session types and times, never message or request text.
+- Bookings: never write `holds` by hand; use `holdsFor()` (`modules/mentorship/slots.ts`). The unique index on holds is what prevents double booking. Delayed jobs carry the booking `version` and must no-op when it changed.
+- Mark sensitive POSTs `idempotent: true` (signed-in JSON routes) and abuse-prone public or social writes `bot: true`.
 
 ## Tenancy rule (non-negotiable)
 

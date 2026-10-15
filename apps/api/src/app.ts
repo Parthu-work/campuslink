@@ -214,6 +214,8 @@ export function createApp({
     jobs: queue,
   });
   sessionsService.slotCheck = mentorsService.checkSlot;
+  sessionsService.slotList = (mentorId, menteeId, type, days, ignore) =>
+    mentorsService.slotsForPair(mentorId, menteeId, type, days, ignore);
   filesService.registerAccess('message_attachment', (fileId, viewer) =>
     messagingService.attachmentAccess(fileId, viewer),
   );

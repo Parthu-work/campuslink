@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from '@campuslink/shared';
+import { APP_NAME, DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from '@campuslink/shared';
 import en from './en.json';
 import te from './te.json';
 import { prefs } from '../lib/storage';
@@ -12,7 +12,8 @@ void i18n.use(initReactI18next).init({
   resources: { en: { translation: en }, te: { translation: te } },
   lng: initial,
   fallbackLng: 'en',
-  interpolation: { escapeValue: false },
+  // {{app}} in any string is the product name (single source: packages/shared/src/brand.ts).
+  interpolation: { escapeValue: false, defaultVariables: { app: APP_NAME } },
   returnNull: false,
 });
 document.documentElement.setAttribute('lang', initial);

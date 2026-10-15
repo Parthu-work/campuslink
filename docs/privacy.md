@@ -26,7 +26,12 @@ Sign-up requires an 18+ declaration. Under-18 users are blocked on the client an
 - Profiles have per-field visibility (members, alumni and staff, only me). Email and phone default to **only me**; the directory and search never return a field the viewer may not see.
 - List records store email and phone encrypted (AES-256-GCM) with a keyed blind index for matching. Admin screens show masked emails (`sa•••@dpit.example`).
 - Import error reports name the row, column and problem, never the cell's value.
-- Uploaded images are re-encoded, which strips EXIF data such as GPS location.
+- Uploaded images are re-encoded, which strips EXIF data such as GPS location. Chat PDFs are rebuilt from their pages, dropping document metadata.
+- **Messages** are visible only to the two participants and stored encrypted (AES-256-GCM). College admins and the platform operator have no endpoint that returns message content. Moderators see only the text of a message someone reported.
+- **Session feedback** is private to the mentor and college admins (`mentorship:oversee`).
+- **Alumni Match** uses only profile fields the mentee is allowed to see, plus the mentee's own goals and target companies, which nobody else sees.
+- **Notifications** (in-app, email, push) carry names, session types and times, never message or request text. Members choose channels per category and can set quiet hours.
+- **Blocking** is silent: the blocked person isn't told; the chat closes and future sessions are cancelled.
 
 ## Retention (implemented)
 

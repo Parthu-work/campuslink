@@ -3845,19 +3845,6 @@
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "type": "object",
                 "properties": {
-                  "mentorId": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{24}$"
-                  },
-                  "sessionType": {
-                    "type": "string",
-                    "enum": [
-                      "quick_chat",
-                      "video_1on1",
-                      "mock_interview",
-                      "resume_review"
-                    ]
-                  },
                   "goal": {
                     "type": "string",
                     "minLength": 10,
@@ -3873,6 +3860,19 @@
                     "minLength": 10,
                     "maxLength": 600
                   },
+                  "mentorId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "sessionType": {
+                    "type": "string",
+                    "enum": [
+                      "quick_chat",
+                      "video_1on1",
+                      "mock_interview",
+                      "resume_review"
+                    ]
+                  },
                   "slotStart": {
                     "type": "string",
                     "format": "date-time",
@@ -3880,11 +3880,11 @@
                   }
                 },
                 "required": [
-                  "mentorId",
-                  "sessionType",
                   "goal",
                   "background",
-                  "need"
+                  "need",
+                  "mentorId",
+                  "sessionType"
                 ],
                 "additionalProperties": false
               }
@@ -3995,6 +3995,52 @@
           }
         },
         "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/mentorship/requests/{id}/slots": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Times the mentor can offer instead (both calendars considered)",
+        "description": "Requires permission `mentorship:mentor` (Accept mentees, set availability and request caps). Host scope: college.",
+        "operationId": "mentorship_get_mentorship_requests_id_slots",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 14,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 21
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:mentor"
       }
     },
     "/api/v1/mentorship/requests/{id}/respond": {
@@ -4266,6 +4312,52 @@
             "schema": {
               "type": "string",
               "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
+    "/api/v1/bookings/{id}/slots": {
+      "get": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Times this session can move to (both calendars considered)",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college.",
+        "operationId": "sessions_get_bookings_id_slots",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 14,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 21
             }
           }
         ],

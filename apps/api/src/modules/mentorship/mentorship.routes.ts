@@ -23,6 +23,7 @@ const OVERSEE = { kind: 'permission', permission: 'mentorship:oversee' } as cons
 const tag = 'Mentorship';
 const userParams = z.strictObject({ userId: objectId });
 const cursorQuery = z.strictObject({ cursor: objectId.optional() });
+const daysQuery = z.strictObject({ days: z.coerce.number().int().min(1).max(21).default(14) });
 
 export function mentorshipRoutes(
   mentors: MentorsService,
@@ -181,6 +182,18 @@ export function mentorshipRoutes(
       access: REQUEST,
       params: idParams,
       handler: async ({ req, params }) => ({ data: await requests.get(authOf(req), params.id) }),
+    },
+    {
+      method: 'get',
+      path: '/mentorship/requests/:id/slots',
+      tag,
+      summary: 'Times the mentor can offer instead (both calendars considered)',
+      access: MENTOR,
+      params: idParams,
+      query: daysQuery,
+      handler: async ({ req, params, query }) => ({
+        data: await requests.slotsFor(authOf(req), params.id, query.days),
+      }),
     },
     {
       method: 'post',

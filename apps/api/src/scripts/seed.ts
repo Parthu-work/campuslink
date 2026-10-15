@@ -22,6 +22,12 @@ import { AuditModel } from '../modules/audit/audit.model.js';
 import { ProfileModel } from '../modules/profiles/profile.model.js';
 import { WhitelistModel } from '../modules/imports/whitelist.model.js';
 import { FieldCipher } from '../lib/crypto.js';
+import { MentorProfileModel } from '../modules/mentorship/mentor.model.js';
+import { MentorshipRequestModel } from '../modules/mentorship/request.model.js';
+import { BookingModel, FeedbackModel } from '../modules/sessions/booking.model.js';
+import { ConversationModel, MessageModel } from '../modules/messaging/conversation.model.js';
+import { holdsFor } from '../modules/mentorship/slots.js';
+import { randomRoomName } from '../lib/video.js';
 
 const env = loadEnv();
 if (env.NODE_ENV === 'production') throw new Error('Refusing to seed a production database');
@@ -200,6 +206,134 @@ async function addUser(
   return u._id;
 }
 
+const DAY = 24 * 3600_000;
+const evenings = [1, 2, 3, 4, 5].map((day) => ({ day, windows: [{ start: '18:00', end: '21:00' }] }));
+const weekend = [0, 6].map((day) => ({ day, windows: [{ start: '10:00', end: '13:00' }] }));
+const TYPES = [
+  { type: 'quick_chat', enabled: true, durationMin: 0 },
+  { type: 'video_1on1', enabled: true, durationMin: 30 },
+  { type: 'mock_interview', enabled: true, durationMin: 45 },
+  { type: 'resume_review', enabled: true, durationMin: 30 },
+];
+
+/** Demo mentorship data: fictional people, fictional conversations, clearly labelled as demo. */
+async function seedMentorship(ids: Map<string, Types.ObjectId>) {
+  const id = (local: string) => {
+    const v = ids.get(local);
+    if (!v) throw new Error(`seed: missing ${local}`);
+    return v;
+  };
+  for (const local of ['rahul', 'sneha', 'fatima', 'arjun']) {
+    await MentorProfileModel.create({
+      userId: id(local),
+      accepting: true,
+      weeklyCap: 5,
+      audience: local === 'arjun' ? 'students' : 'both',
+      sessionTypes: TYPES,
+      minNoticeHours: 4,
+      horizonDays: 30,
+      bufferMin: 15,
+      timezone: 'Asia/Kolkata',
+      // Fatima mentors around the clock in the demo so every slot test finds free times.
+      weekly:
+        local === 'fatima'
+          ? [0, 1, 2, 3, 4, 5, 6].map((day) => ({ day, windows: [{ start: '00:00', end: '24:00' }] }))
+          : [...evenings, ...weekend],
+      exceptions: [],
+    });
+  }
+  const pair = async (
+    mentor: string,
+    mentee: string,
+    sessionType: string,
+    opts: { status?: string; respondedAt?: Date } = {},
+  ) =>
+    MentorshipRequestModel.create({
+      mentorId: id(mentor),
+      menteeId: id(mentee),
+      sessionType,
+      goal: 'DEMO: get ready for backend interviews this placement season',
+      background: 'DEMO: third-year CSE student, comfortable with Java and SQL',
+      need: 'DEMO: a mock system-design round and honest feedback',
+      status: opts.status ?? 'accepted',
+      respondedAt: opts.respondedAt ?? new Date(),
+      expiresAt: new Date(Date.now() + 7 * DAY),
+    });
+
+  // Ananya ↔ Rahul: an accepted mentorship with a short demo chat and a session that starts soon
+  // (so "Join video" can be tried right after seeding).
+  const req = await pair('rahul', 'ananya', 'mock_interview');
+  const conv = await ConversationModel.create({
+    participants: [id('rahul'), id('ananya')],
+    pairKey: [String(id('rahul')), String(id('ananya'))].sort().join('|'),
+    lastMessageAt: new Date(),
+  });
+  const lines: [string, string][] = [
+    ['ananya', 'DEMO: Hi Rahul! Thanks for accepting. I shared my goal in the request.'],
+    ['rahul', 'DEMO: Happy to help, Ananya. Bring one system you have designed and we will go through it.'],
+    ['ananya', 'DEMO: Great, I will prepare the library-management project.'],
+  ];
+  for (const [who, text] of lines)
+    await MessageModel.create({ conversationId: conv._id, senderId: id(who), bodyEnc: cipher.encrypt(text) });
+  // Starts in 5 minutes, so the join window (10 minutes before the start) is already open.
+  const soon = new Date(Math.floor((Date.now() + 5 * 60_000) / 60_000) * 60_000);
+  const soonEnd = new Date(soon.getTime() + 60 * 60_000);
+  const booking = await BookingModel.create({
+    requestId: req._id,
+    mentorId: id('rahul'),
+    menteeId: id('ananya'),
+    participants: [id('rahul'), id('ananya')],
+    sessionType: 'mock_interview',
+    start: soon,
+    end: soonEnd,
+    holds: holdsFor(String(id('rahul')), String(id('ananya')), soon, soonEnd, 15),
+    room: randomRoomName(),
+    conversationId: conv._id,
+  });
+  await MentorshipRequestModel.updateOne(
+    { _id: req._id },
+    { $set: { bookingId: booking._id, slotStart: soon, conversationId: conv._id } },
+  );
+
+  // A past session with feedback, so Rahul's impact card is not empty.
+  const past = await pair('rahul', 'vikram', 'resume_review');
+  const pastStart = new Date(Date.now() - 3 * DAY);
+  const pastBooking = await BookingModel.create({
+    requestId: past._id,
+    mentorId: id('rahul'),
+    menteeId: id('vikram'),
+    participants: [id('rahul'), id('vikram')],
+    sessionType: 'resume_review',
+    start: pastStart,
+    end: new Date(pastStart.getTime() + 30 * 60_000),
+    status: 'completed',
+    completedAt: new Date(pastStart.getTime() + 30 * 60_000),
+    holds: holdsFor(
+      String(id('rahul')),
+      String(id('vikram')),
+      pastStart,
+      new Date(pastStart.getTime() + 30 * 60_000),
+      15,
+    ),
+    room: randomRoomName(),
+  });
+  await FeedbackModel.create({
+    bookingId: pastBooking._id,
+    mentorId: id('rahul'),
+    menteeId: id('vikram'),
+    rating: 5,
+    tags: ['clear_advice', 'actionable'],
+    comment: 'DEMO: very practical resume feedback.',
+  });
+  await ConversationModel.create({
+    participants: [id('rahul'), id('vikram')],
+    pairKey: [String(id('rahul')), String(id('vikram'))].sort().join('|'),
+  });
+
+  // A pending request waiting in Fatima's inbox.
+  await pair('fatima', 'vikram', 'quick_chat', { status: 'pending' });
+}
+
 async function main() {
   await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
   await mongoose.connection.dropDatabase();
@@ -237,12 +371,14 @@ async function main() {
       subscription: { plan: 'trial', seatLimit: 1000, renewalDate: null },
     });
     await runInTenant(t._id, async () => {
+      const ids = new Map<string, Types.ObjectId>();
       for (const p of PEOPLE) {
         const email = `${p.local}@${c.domain}`;
         const userId = await addUser(email, p.name, p.roles, hash, {
           ...(p.verified === false ? { verified: false } : {}),
           ...(p.capabilities ? { capabilities: p.capabilities } : {}),
         });
+        ids.set(p.local, userId);
         const roll = p.roll
           ? { ...p.roll, no: p.roll.no.replace('XX', c.slug.slice(0, 2).toUpperCase()) }
           : null;
@@ -296,6 +432,7 @@ async function main() {
           emailIndex: cipher.blindIndex(recEmail),
         });
       }
+      await seedMentorship(ids);
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
   }
@@ -309,6 +446,9 @@ async function main() {
     '\nTry verification: sign in as newbie@dpit.example, open Verify, enter roll number 24DP1A0577; the code arrives in Mailpit (http://localhost:8025).',
   );
   console.warn('Try an import: Admin → Imports → upload docs/samples/sample-students.csv');
+  console.warn(
+    'Try mentorship: ananya@dpit.example has a session with Rahul starting in a few minutes (Sessions → Join video) and a demo chat; sign in as rahul@dpit.example to see the mentor side.',
+  );
   console.warn(
     '\nOpen http://dpit.localhost:5173 or http://mrce.localhost:5173 (platform console: http://admin.localhost:5173)\n',
   );

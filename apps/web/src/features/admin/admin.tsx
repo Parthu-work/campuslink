@@ -32,11 +32,14 @@ export function AdminLayout() {
   const canSettings = useCan('tenant:settings');
   const canImport = useCan('imports:manage');
   const canReview = useCan('verification:review');
+  const canOversee = useCan('mentorship:oversee');
+  const canUsers = useCan('users:read_admin');
   const tabs = [
-    ['/admin', t('admin.users'), true],
+    ['/admin', t('admin.users'), canUsers],
     ['/admin/imports', t('admin.imports'), canImport],
     ['/admin/list', t('admin.list'), canImport],
     ['/admin/verification', t('admin.verification'), canReview],
+    ['/admin/mentorship', t('admin.mentorshipTab'), canOversee],
     ['/admin/branding', t('admin.branding'), canBrand],
     ['/admin/features', t('admin.features'), canSettings],
     ['/admin/audit', t('admin.audit'), canAudit],

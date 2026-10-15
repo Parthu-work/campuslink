@@ -51,10 +51,18 @@ export function PublicOnly({ children, home }: { children: ReactNode; home: stri
   return status === 'signed-in' ? <Navigate to={home} replace /> : <>{children}</>;
 }
 
-export function RequirePermission({ permission, children }: { permission: Permission; children: ReactNode }) {
+/** UX mirror of the API's authorization: any one of the permissions opens the page. */
+export function RequirePermission({
+  permission,
+  children,
+}: {
+  permission: Permission | Permission[];
+  children: ReactNode;
+}) {
   const { data: me } = useMe();
   const { t } = useTranslation();
-  if (!me?.permissions.includes(permission))
+  const wanted = Array.isArray(permission) ? permission : [permission];
+  if (!wanted.some((p) => me?.permissions.includes(p)))
     return <EmptyState icon={<ShieldAlert className="size-6" />} title={t('errors.forbidden')} />;
   return <>{children}</>;
 }

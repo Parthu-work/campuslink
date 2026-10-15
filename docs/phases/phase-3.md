@@ -29,3 +29,31 @@ Done when: a student can request mentorship, an alumnus can accept, and both can
 - **Web push** needs VAPID keys in env. Without them, push is reported as unavailable and in-app plus email still work. Generating keys is documented and free.
 - **Times** are stored in UTC. Availability is defined in the mentor's IANA timezone (default `Asia/Kolkata`) and shown in the viewer's timezone.
 - **Bot protection** stays disabled locally (no external calls). The Turnstile adapter is ready but needs a site key and secret.
+
+## Outcome (built)
+
+- **API:** 5 new modules (mentorship, sessions, messaging, notifications, moderation) with 49 new endpoints (109 in total), plus the Socket.io gateway. All endpoints are in the generated `docs/permissions.md` and covered by the role × endpoint matrix. New permission: `mentorship:oversee` (college admin, TPO).
+- **Platform pieces:** `Idempotency-Key` (replay store, 24 h), `BotProtection` (Turnstile adapter, disabled locally), delayed and cancellable jobs, `VideoProvider` (Jitsi with optional JWT; 100ms and Daily stubs), web push sender (VAPID through the safe fetcher), timezone maths on `Intl`.
+- **Mentorship:** mentor settings with the pause switch, weekly cap, audience, session types and durations, notice, horizon and buffer; weekly availability and days off in the mentor's timezone; slot engine (DST-aware). Structured requests with every abuse limit from the plan; accept, accept at another time, or decline with a kind template; expiry.
+- **Bookings:** double booking is impossible by construction (unique holds for both people). Reschedule (max 2, new room), cancel (late flag), reminders at 24 h and 1 h, automatic completion, no-show within 48 h, `.ics`, private feedback, impact card.
+- **Alumni Match:** score from branch, target company, goals, skills, languages and availability, with reasons; only visible fields are used.
+- **Chat:** encrypted bodies, read receipts, typing, images and rebuilt PDFs, pagination, live delivery.
+- **Notifications:** in-app (live), email and push; per-category channels; quiet hours (reminders exempt); message email throttle.
+- **Safety:** block (closes chat, withdraws requests, cancels sessions, hides both ways) and report (people, messages, requests) with snapshots; moderator list and resolve API (queue UI: Phase 4).
+- **Web:** Mentors (Alumni Match swipe deck with keyboard support, Browse), mentor page with slot picker and request form, Requests inbox, Sessions with a two-week strip, Messages, mentor dashboard with availability editor, Notifications page and bell, notification settings with push, admin Mentorship tab; a phone bottom bar with a More sheet; English and Telugu at full parity.
+- **Tests:** API 312 (Phase 3 isolation for all 13 new collections, realtime auth and delivery, concurrent booking, idempotency, bot check, PDF sanitising, push SSRF, quiet hours); e2e 32 journeys including request → accept → live chat with typing → join video, for both colleges, with axe on every new screen.
+
+## Deviations from the plan
+
+- **Availability is embedded** in the mentor profile instead of a separate collection: settings and hours change together.
+- **Request labels:** the request cards show neutral labels ("Goal", "What they need") so they read correctly for both sides.
+- **Join flow:** "Join video" opens a dialog with the link (new tab, `noopener`) rather than opening a window directly; popup blockers can't interfere and the link's expiry is shown.
+- **Product name:** removed the remaining hard-coded product names (API messages, fetch user agent, mail default, PWA manifest, page title, translations), which now come from `brand.ts`.
+
+## Gaps and next steps
+
+- Group mentoring (AMAs, office hours with RSVP and live Q&A) moves to Phase 7 with events.
+- The moderation queue UI for reports ships with Phase 4 (API exists).
+- Push needs VAPID keys (`pnpm --filter @campuslink/api vapid`); without them it's reported as unavailable.
+- Shareable impact image, mentor levels and Wall of Mentors: Phase 7.
+- Phase 4: feed and content (posts, reels, stories, Q&A, sources, ingestion, moderation queue, "One Useful Thing").

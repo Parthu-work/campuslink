@@ -139,13 +139,16 @@ const longText = (min: number, max: number) =>
   z.string().trim().min(min, `At least ${min} characters`).max(max, `At most ${max} characters`);
 export const slotStart = z.iso.datetime({ offset: true });
 
-export const mentorshipRequestBody = z
-  .strictObject({
+/** The structured message of a request (goal, background, what you need). */
+export const requestText = z.strictObject({
+  goal: longText(10, 300),
+  background: longText(10, 600),
+  need: longText(10, 600),
+});
+export const mentorshipRequestBody = requestText
+  .extend({
     mentorId: objectId,
     sessionType: z.enum(SESSION_TYPES),
-    goal: longText(10, 300),
-    background: longText(10, 600),
-    need: longText(10, 600),
     slotStart: slotStart.optional(),
   })
   .refine((b) => !isBookable(b.sessionType) || !!b.slotStart, {

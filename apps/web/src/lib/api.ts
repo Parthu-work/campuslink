@@ -57,6 +57,8 @@ interface RequestOptions {
   /** Send the CSRF header (cookie-authenticated endpoints). */
   csrf?: boolean;
   signal?: AbortSignal;
+  /** Sensitive writes: the API replays the first response for a repeated key. */
+  idempotencyKey?: string;
 }
 
 export async function apiRequest<T>(
@@ -70,6 +72,7 @@ export async function apiRequest<T>(
   if (opts.body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
   if (token) headers.Authorization = `Bearer ${token}`;
   if (opts.csrf) headers['X-CSRF-Token'] = readCookie('cl_csrf') ?? '';
+  if (opts.idempotencyKey) headers['Idempotency-Key'] = opts.idempotencyKey;
 
   let res: Response;
   try {
@@ -128,6 +131,9 @@ export const api = {
   page: <T>(path: string) => apiRequest<T>(path),
   post: <T>(path: string, body?: unknown, csrf = false) =>
     apiRequest<T>(path, { method: 'POST', body, csrf }).then((r) => r.data),
+  /** POST with an Idempotency-Key (create one per user action, reuse it on retry). */
+  postOnce: <T>(path: string, body: unknown, idempotencyKey: string) =>
+    apiRequest<T>(path, { method: 'POST', body, idempotencyKey }).then((r) => r.data),
   patch: <T>(path: string, body: unknown) =>
     apiRequest<T>(path, { method: 'PATCH', body }).then((r) => r.data),
   put: <T>(path: string, body: unknown) => apiRequest<T>(path, { method: 'PUT', body }).then((r) => r.data),

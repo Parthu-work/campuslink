@@ -20,7 +20,8 @@
     "copied": "Copied",
     "demo": "Demo",
     "skipToContent": "Skip to content",
-    "offline": "You’re offline. Changes will need a connection."
+    "offline": "You’re offline. Changes will need a connection.",
+    "open": "Open"
   },
   "nav": {
     "home": "Home",
@@ -30,10 +31,20 @@
     "health": "Health",
     "main": "Main",
     "people": "People",
-    "profile": "Profile"
+    "profile": "Profile",
+    "mentors": "Mentors",
+    "requests": "Requests",
+    "sessions": "Sessions",
+    "messages": "Messages",
+    "mentor": "Mentoring",
+    "notifications": "Notifications",
+    "notificationsUnread_one": "Notifications, {{count}} unread",
+    "notificationsUnread_other": "Notifications, {{count}} unread",
+    "more": "More",
+    "unread": "unread"
   },
   "landing": {
-    "eyebrow": "CampusLink · alumni guidance network",
+    "eyebrow": "{{app}} · alumni guidance network",
     "h1a": "Guidance from people who sat in ",
     "h1b": "your classrooms.",
     "sub": "Verified alumni of {{college}} mentor you, refer you, and show you the exact path from where you are to where they got.",
@@ -44,14 +55,14 @@
   },
   "auth": {
     "signInTitle": "Welcome back",
-    "signInSub": "Sign in to {{college}} on CampusLink.",
+    "signInSub": "Sign in to {{college}} on {{app}}.",
     "signInCta": "Sign in",
     "forgot": "Forgot password?",
     "noAccount": "New here?",
     "createAccount": "Create an account",
     "haveAccount": "Already have an account?",
     "mfaTitle": "Enter your 6-digit code",
-    "mfaSub": "Open your authenticator app for CampusLink.",
+    "mfaSub": "Open your authenticator app for {{app}}.",
     "mfaVerify": "Verify",
     "useRecovery": "Use a recovery code instead",
     "useTotp": "Use my authenticator app",
@@ -119,7 +130,12 @@
       "jobs": "Job Radar and alumni referrals",
       "galaxy": "Career Galaxy roadmaps"
     },
-    "verifyCta": "Verify now"
+    "verifyCta": "Verify now",
+    "mentorship": "Mentorship",
+    "nextSession": "Next session",
+    "noSession": "No sessions booked yet.",
+    "findMentor": "Find a mentor from your college",
+    "findMentorBody": "Alumni Match suggests people who fit your goals, and explains why."
   },
   "settings": {
     "title": "Settings",
@@ -148,7 +164,8 @@
     "motion": "Motion",
     "motionSystem": "Match device",
     "motionFull": "Full",
-    "motionReduce": "Reduced"
+    "motionReduce": "Reduced",
+    "notifications": "Notifications"
   },
   "admin": {
     "users": "People",
@@ -270,7 +287,18 @@
     "approved": "Approved",
     "rejected": "Rejected",
     "idPhoto": "ID photo",
-    "inviteCta": "Invite by email"
+    "inviteCta": "Invite by email",
+    "mentorshipTab": "Mentorship",
+    "mentorship": {
+      "intro": "Activity in the last 30 days. Conversations stay private; you see counts and session feedback only.",
+      "requests": "Requests",
+      "accepted": "Accepted",
+      "upcoming": "Upcoming sessions",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "noShows": "No-shows",
+      "feedback": "Session feedback"
+    }
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -310,7 +338,7 @@
   "errors": {
     "noCollegeTitle": "No college lives at this address",
     "noCollegeBody": "Check the link your college shared. Each college has its own address, like yourcollege.campuslink.",
-    "suspendedTitle": "This college’s CampusLink is paused",
+    "suspendedTitle": "This college’s {{app}} is paused",
     "suspendedBody": "Please contact your college administrator.",
     "generic": "Something went wrong. Please try again.",
     "forbidden": "You don’t have access to this page.",
@@ -416,5 +444,378 @@
     "switchLang": "Switch language · తెలుగు / English",
     "open": "Search",
     "label": "Command palette"
+  },
+  "session": {
+    "type": {
+      "quick_chat": "Quick chat",
+      "video_1on1": "1:1 video call",
+      "mock_interview": "Mock interview",
+      "resume_review": "Resume review"
+    },
+    "minutes": "{{n}} min",
+    "async": "Chat, no slot"
+  },
+  "slots": {
+    "day": "Day",
+    "time": "Time",
+    "inYourTime": "Times are in your timezone ({{tz}}).",
+    "none": "No free times right now",
+    "noneBody": "This mentor has no open slots in the next two weeks. Try a quick chat, or check back later."
+  },
+  "mentors": {
+    "title": "Mentors",
+    "match": "Alumni Match",
+    "browse": "Browse",
+    "search": "Search by name, company or topic",
+    "sessionType": "Session type",
+    "anyType": "Any session type",
+    "empty": "No mentors found",
+    "emptyBody": "Try a different search. Mentors appear here once they switch on requests.",
+    "full": "Full this week",
+    "fullBody": "This mentor’s requests are full for this week or paused. You can still look at their profile, or try another mentor.",
+    "back": "All mentors",
+    "notFound": "This mentor isn’t available",
+    "notFoundBody": "They may have paused requests.",
+    "fullProfile": "View full profile",
+    "requestCta": "Request mentorship"
+  },
+  "match": {
+    "intro": "Suggestions from your college’s alumni, ranked for you. Swipe or use the buttons.",
+    "prefs": "My goals",
+    "prefsTitle": "What are you aiming for?",
+    "prefsBody": "Only used to rank mentors for you. Nobody else sees this.",
+    "goals": "Goals and topics",
+    "goalsHint": "For example: Backend, GATE, Data. Press Enter after each.",
+    "companies": "Target companies",
+    "companiesHint": "Companies you’d like to work at.",
+    "why": "Why this match",
+    "noReasons": "No strong overlap yet. Add your goals to get better matches.",
+    "reason": {
+      "branch": "Same branch ({{value}})",
+      "company": "Works at {{value}}, one of your target companies",
+      "goals": "Guides on your goals: {{values}}",
+      "skills": "Shares your skills: {{values}}",
+      "languages": "Speaks {{values}}",
+      "available": "Has free time in the next two weeks"
+    },
+    "score": "Match score {{score}} out of 100",
+    "deck": "mentor suggestions",
+    "deckLabel": "{{name}}, {{left}} suggestions left. Left arrow to pass, right arrow to open.",
+    "pass": "Pass on {{name}}",
+    "passShort": "Pass",
+    "view": "Open {{name}}",
+    "viewShort": "Interested",
+    "keys": "Tip: ← pass · → open",
+    "done": "You’ve seen everyone for now",
+    "empty": "No suggestions yet",
+    "emptyBody": "Mentors appear as alumni switch on requests. Browse the full list meanwhile.",
+    "again": "Start again"
+  },
+  "request": {
+    "title": "Ask {{name}} for help",
+    "noColdDms": "No cold messages: a short, structured request helps mentors say yes. Chat opens once they accept.",
+    "sessionType": "Session type",
+    "pickTime": "Pick a time",
+    "pickFirst": "Pick a time to send the request.",
+    "goal": "Your goal",
+    "goalHint": "One or two sentences. What do you want to achieve?",
+    "background": "Your background",
+    "backgroundHint": "Year, branch, what you have tried so far.",
+    "need": "What you need from this session",
+    "needHint": "Be specific: a mock round, resume feedback, a career decision…",
+    "send": "Send request",
+    "sentTitle": "Request sent",
+    "sentBody": "{{name}} will see it in their inbox. You’ll be notified when they reply.",
+    "sentBodySlot": "{{name}} will see it in their inbox, with your preferred time {{time}}.",
+    "track": "Track my requests",
+    "received": "Received",
+    "sent": "Sent",
+    "emptyReceived": "No requests yet",
+    "emptySent": "You haven’t sent any requests",
+    "findMentor": "Find a mentor",
+    "status": {
+      "pending": "Waiting",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "withdrawn": "Withdrawn",
+      "expired": "Expired"
+    },
+    "sentAgo": "Sent {{when}}",
+    "expires": "expires {{when}}",
+    "accept": "Accept",
+    "otherTime": "Offer another time",
+    "otherTimeTitle": "Offer another time",
+    "otherTimeBody": "Pick a time that works for you and {{name}}. They’ll be notified.",
+    "acceptAt": "Accept at this time",
+    "declineAction": "Decline",
+    "declineTitle": "Decline kindly",
+    "declineBody": "Pick a reply. A short personal note is optional.",
+    "reply": "Reply",
+    "decline": {
+      "not_my_area": "Thanks for reaching out, {{name}}! This isn’t my area, so another mentor will help you more.",
+      "fully_booked": "Thanks, {{name}}! I’m fully booked for now. Please try me again in a few weeks.",
+      "try_later": "Thanks, {{name}}! I can’t take this on right now. Do ask me again later.",
+      "suggest_other": "Thanks, {{name}}! Someone else on the mentor list may be a better fit for this."
+    },
+    "addNote": "Personal note (optional)",
+    "sendReply": "Send reply",
+    "withdraw": "Withdraw",
+    "openChat": "Open chat",
+    "viewSession": "View session",
+    "label": {
+      "goal": "Goal",
+      "background": "Background",
+      "need": "What they need"
+    }
+  },
+  "sessions": {
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "calendar": "Next two weeks",
+    "allDays": "All",
+    "dayCount_one": "{{day}}: {{count}} session",
+    "dayCount_other": "{{day}}: {{count}} sessions",
+    "empty": "No upcoming sessions",
+    "emptyPast": "No past sessions yet",
+    "role": {
+      "mentor": "You’re mentoring",
+      "mentee": "Your mentor"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No-show"
+    },
+    "noShowBy": {
+      "mentor": "Mentor didn’t join",
+      "mentee": "Mentee didn’t join"
+    },
+    "late": "Late cancellation",
+    "moves_one": "Moved once",
+    "moves_other": "Moved {{count}} times",
+    "join": "Join video",
+    "joinOpens": "Opens at {{time}}",
+    "joinTitle": "Your video room",
+    "joinBody": "The room is private to the two of you. The link works only around the session time.",
+    "openCall": "Open video call",
+    "linkExpires": "This link stops working at {{time}}.",
+    "message": "Message",
+    "addToCalendar": "Add to calendar",
+    "reschedule": "Reschedule",
+    "rescheduleTitle": "Move this session",
+    "rescheduleBody_one": "You can move a session {{count}} more time.",
+    "rescheduleBody_other": "You can move a session {{count}} more times.",
+    "moveHere": "Move to this time",
+    "moved": "Session moved",
+    "cancel": "Cancel",
+    "cancelTitle": "Cancel this session?",
+    "cancelBody": "The other person will be notified.",
+    "lateWarning": "This is less than {{hours}} hours away, so it will be recorded as a late cancellation.",
+    "cancelReason": "Reason (optional, shared with the other person)",
+    "keep": "Keep it",
+    "cancelConfirm": "Cancel session",
+    "rate": "Rate session",
+    "feedbackTitle": "How was your session with {{name}}?",
+    "feedbackPrivate": "Only your mentor and the college admins see this.",
+    "rating": "Rating",
+    "stars_one": "{{count}} star",
+    "stars_other": "{{count}} stars",
+    "tags": "What stood out",
+    "tag": {
+      "clear_advice": "Clear advice",
+      "actionable": "Actionable next steps",
+      "kind": "Kind and patient",
+      "well_prepared": "Well prepared",
+      "ran_late": "Started late",
+      "not_relevant": "Not relevant to me"
+    },
+    "comment": "Anything else? (optional)",
+    "sendFeedback": "Send feedback",
+    "thanks": "Thanks for the feedback",
+    "reportNoShow": "Report a no-show",
+    "noShowTitle": "Report a no-show",
+    "noShowBody": "Only if {{name}} didn’t join at all. This is recorded and can’t be undone.",
+    "noShowConfirm": "Report no-show"
+  },
+  "messages": {
+    "intro": "Chats open when a mentor accepts a request.",
+    "empty": "No conversations yet",
+    "emptyBody": "Send a mentor a request. Once they accept, you can chat here.",
+    "new": "New conversation",
+    "closed": "Closed",
+    "unread_one": "{{count}} unread message",
+    "unread_other": "{{count}} unread messages",
+    "back": "All messages",
+    "notFound": "This conversation isn’t available",
+    "history": "Conversation with {{name}}",
+    "older": "Load earlier messages",
+    "start": "Say hello to {{name}}. Share your goal and anything they should read before the session.",
+    "seen": "Seen",
+    "typing": "{{name}} is typing…",
+    "closedBody": "This conversation is closed.",
+    "attach": "Attach an image or PDF",
+    "write": "Write a message",
+    "send": "Send",
+    "imageFrom": "Image: {{name}}",
+    "download": "Download"
+  },
+  "mentor": {
+    "impact": "Your impact",
+    "helped_one": "You helped {{count}} person this month",
+    "helped_other": "You helped {{count}} people this month",
+    "sessionsMonth": "Sessions this month",
+    "sessionsTotal": "All sessions",
+    "menteesTotal": "People mentored",
+    "rating": "Average rating",
+    "pending_one": "{{count}} request is waiting for your reply",
+    "pending_other": "{{count}} requests are waiting for your reply",
+    "accepting": "Taking requests",
+    "acceptingOn": "Students and alumni can send you requests.",
+    "acceptingOff": "Paused: nobody can send you new requests.",
+    "weeklyCap": "Requests per week",
+    "weeklyCapHint": "When you reach this, new requests wait until next week.",
+    "audience": "Who can ask",
+    "audiences": {
+      "students": "Students only",
+      "alumni": "Alumni only",
+      "both": "Students and alumni"
+    },
+    "notice": "Minimum notice",
+    "hours_one": "{{count}} hour",
+    "hours_other": "{{count}} hours",
+    "horizon": "Bookable up to",
+    "days_one": "{{count}} day ahead",
+    "days_other": "{{count}} days ahead",
+    "buffer": "Break after each session",
+    "noBuffer": "No break",
+    "sessionTypes": "Session types you offer",
+    "duration": "Length of {{type}}",
+    "availability": "Weekly availability",
+    "availabilityBody": "Set the hours you can mentor, in your own timezone. Mentees see them in theirs.",
+    "timezone": "Timezone",
+    "from": "{{day}} from",
+    "to": "{{day}} until",
+    "midnight": "24:00 (midnight)",
+    "addRange": "Add hours",
+    "removeRange": "Remove these {{day}} hours",
+    "unavailable": "Unavailable",
+    "exceptions": "Days off",
+    "exceptionsBody": "Dates when you’re not available, whatever your weekly hours say.",
+    "exceptionDate": "Date",
+    "offAllDay": "Off all day",
+    "addException": "Add a day off",
+    "removeException": "Remove this day off",
+    "rangeInvalid": "Each time range must end after it starts.",
+    "saveAvailability": "Save availability",
+    "feedback": "Feedback on your sessions",
+    "feedbackPrivate": "Private to you and the college admins.",
+    "noFeedback": "No feedback yet."
+  },
+  "notify": {
+    "request_received": {
+      "title": "New mentorship request",
+      "body": "{{name}} asked you for a {{type}}."
+    },
+    "request_accepted": {
+      "title": "Request accepted",
+      "body": "{{name}} accepted your {{type}} request."
+    },
+    "request_declined": {
+      "title": "Request update",
+      "body": "{{name}} can’t take your request right now."
+    },
+    "request_expired": {
+      "title": "Request expired",
+      "body": "Your request to {{name}} expired without a reply. You can ask another mentor."
+    },
+    "booking_rescheduled": {
+      "title": "Session moved",
+      "body": "{{name}} moved your {{type}} to {{time}}."
+    },
+    "booking_cancelled": {
+      "title": "Session cancelled",
+      "body": "Your {{type}} with {{name}} on {{time}} was cancelled."
+    },
+    "booking_reminder": {
+      "title": "Session reminder",
+      "body": "Your {{type}} with {{name}} starts {{time}}."
+    },
+    "session_completed": {
+      "title": "How did it go?",
+      "body": "Rate your {{type}} with {{name}}."
+    },
+    "feedback_received": {
+      "title": "New feedback",
+      "body": "A mentee rated your session."
+    },
+    "new_message": {
+      "title": "New message",
+      "body": "{{name}} sent you a message."
+    }
+  },
+  "notifications": {
+    "empty": "You’re all caught up",
+    "readAll": "Mark all read",
+    "unread": "unread",
+    "settings": "Notification settings",
+    "push": "Push notifications",
+    "pushBody": "Get alerts on this device even when the app is closed.",
+    "pushOn": "On for this device.",
+    "pushOff": "Not available here (this browser, or push isn’t set up for this college yet).",
+    "pushEnable": "Turn on",
+    "pushDisable": "Turn off",
+    "pushDenied": "Notifications are blocked in your browser settings.",
+    "pushUnavailable": "Push needs the installed app (service worker).",
+    "channels": "What you hear about, and how",
+    "category": "Type",
+    "channel": {
+      "inApp": "In app",
+      "email": "Email",
+      "push": "Push"
+    },
+    "cat": {
+      "requests": "Requests",
+      "sessions": "Sessions",
+      "reminders": "Reminders",
+      "messages": "Messages"
+    },
+    "catHint": {
+      "requests": "New requests, replies, expiries",
+      "sessions": "Moves, cancellations, feedback",
+      "reminders": "24 hours and 1 hour before",
+      "messages": "Only while you’re offline; at most one email per chat every 30 minutes"
+    },
+    "toggle": "{{channel}} for {{category}}",
+    "quiet": "Quiet hours",
+    "quietBody": "Hold email and push during these hours",
+    "quietFrom": "From",
+    "quietTo": "Until",
+    "quietNote": "Session reminders still arrive on time."
+  },
+  "safety": {
+    "menu": "Safety options for {{name}}",
+    "reportPerson": "Report this person",
+    "report_message": "Report this message",
+    "report_request": "Report this request",
+    "block": "Block {{name}}",
+    "blockTitle": "Block {{name}}?",
+    "blockBody": "You won’t see each other in mentor lists, your chat closes, open requests are withdrawn and future sessions are cancelled. They aren’t told that you blocked them.",
+    "blockConfirm": "Block",
+    "blocked": "{{name}} is blocked",
+    "reportTitle": "Report",
+    "reportBody": "College moderators review reports. For messages they see only the reported message, never the whole chat.",
+    "reason": "Reason",
+    "reasons": {
+      "spam": "Spam or scam",
+      "harassment": "Harassment or bullying",
+      "inappropriate": "Inappropriate content",
+      "impersonation": "Pretending to be someone else",
+      "other": "Something else"
+    },
+    "note": "Details (optional)",
+    "noteHint": "Helps moderators understand what happened.",
+    "send": "Send report",
+    "reported": "Thanks. Moderators will review it."
   }
 }

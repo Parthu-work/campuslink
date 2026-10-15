@@ -335,6 +335,20 @@ export class MentorsService {
     return { timezone: m.timezone, durationMin: r.durationMin, slots: r.slots };
   }
 
+  /** Free slots for a known pair (mentor answering a request, or either side rescheduling). */
+  async slotsForPair(
+    mentorId: string,
+    menteeId: string,
+    type: SessionType,
+    days: number,
+    ignoreBookingId?: string,
+  ): Promise<SlotsView> {
+    const m = await this.load(mentorId);
+    if (!m) throw conflict('This mentor is not taking sessions right now');
+    const r = await this.freeSlots(m, menteeId, type, new Date(), days, ignoreBookingId);
+    return { timezone: m.timezone, durationMin: r.durationMin, slots: r.slots };
+  }
+
   /** SessionsService hook: is this exact start still bookable for both people? */
   readonly checkSlot: SlotCheck = async ({ mentorId, menteeId, sessionType, start, ignoreBookingId }) => {
     const m = await this.load(mentorId);

@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { useTranslation } from 'react-i18next';
 import { Compass } from 'lucide-react';
+import type { Permission } from '@campuslink/shared';
 import { useTenant } from '../lib/tenant-context';
 import { AppShell } from '../components/layout/app-shell';
 import { EmptyState } from '../components/ui/misc';
@@ -45,6 +46,34 @@ const ProfileEdit = lazy(() =>
   import('../features/profile/profile-edit').then((m) => ({ default: m.ProfileEdit })),
 );
 const Verify = lazy(() => import('../features/verify/verify').then((m) => ({ default: m.VerifyPage })));
+const Mentors = lazy(() => import('../features/mentors/mentors').then((m) => ({ default: m.MentorsPage })));
+const MentorPage = lazy(() =>
+  import('../features/mentors/mentor-page').then((m) => ({ default: m.MentorPage })),
+);
+const Requests = lazy(() =>
+  import('../features/mentorship/requests').then((m) => ({ default: m.RequestsPage })),
+);
+const Sessions = lazy(() =>
+  import('../features/sessions/sessions').then((m) => ({ default: m.SessionsPage })),
+);
+const Messages = lazy(() =>
+  import('../features/messages/messages').then((m) => ({ default: m.MessagesPage })),
+);
+const Conversation = lazy(() =>
+  import('../features/messages/messages').then((m) => ({ default: m.ConversationPage })),
+);
+const MentorDashboard = lazy(() =>
+  import('../features/mentor/mentor-dashboard').then((m) => ({ default: m.MentorDashboard })),
+);
+const Notifications = lazy(() =>
+  import('../features/notifications/notifications').then((m) => ({ default: m.NotificationsPage })),
+);
+const NotificationSettings = lazy(() =>
+  import('../features/settings/notification-settings').then((m) => ({ default: m.NotificationSettings })),
+);
+const MentorshipAdmin = lazy(() =>
+  import('../features/admin/mentorship-admin').then((m) => ({ default: m.MentorshipAdmin })),
+);
 const Audit = lazy(() => import('../features/admin/admin').then((m) => ({ default: m.AuditAdmin })));
 const Tenants = lazy(() =>
   import('../features/platform/platform').then((m) => ({ default: m.PlatformTenants })),
@@ -92,8 +121,23 @@ const settingsRoutes = {
         </S>
       ),
     },
+    {
+      path: 'notifications',
+      element: (
+        <S>
+          <NotificationSettings />
+        </S>
+      ),
+    },
   ],
 };
+
+/** A lazily loaded page behind a permission (UX only; the API enforces it). */
+const gated = (permission: Permission | Permission[], el: ReactNode) => (
+  <RequirePermission permission={permission}>
+    <S>{el}</S>
+  </RequirePermission>
+);
 
 const auth = (home: string) => [
   {
@@ -172,25 +216,34 @@ function collegeRouter() {
             </RequirePermission>
           ),
         },
+        { path: '/mentors', element: gated('mentorship:request', <Mentors />) },
+        { path: '/mentors/:userId', element: gated('mentorship:request', <MentorPage />) },
+        { path: '/mentorship', element: gated('mentorship:request', <Requests />) },
+        { path: '/sessions', element: gated('sessions:book', <Sessions />) },
+        { path: '/messages', element: gated('messages:send', <Messages />) },
+        { path: '/messages/:conversationId', element: gated('messages:send', <Conversation />) },
+        { path: '/mentor', element: gated('mentorship:mentor', <MentorDashboard />) },
+        {
+          path: '/notifications',
+          element: (
+            <S>
+              <Notifications />
+            </S>
+          ),
+        },
         settingsRoutes,
         {
           path: 'admin',
           element: (
-            <RequirePermission permission="users:read_admin">
+            <RequirePermission permission={['users:read_admin', 'mentorship:oversee']}>
               <S>
                 <Admin />
               </S>
             </RequirePermission>
           ),
           children: [
-            {
-              index: true,
-              element: (
-                <S>
-                  <Users />
-                </S>
-              ),
-            },
+            { index: true, element: gated('users:read_admin', <Users />) },
+            { path: 'mentorship', element: gated('mentorship:oversee', <MentorshipAdmin />) },
             {
               path: 'imports',
               element: (

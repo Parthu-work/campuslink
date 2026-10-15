@@ -1,6 +1,6 @@
 # Threat model (STRIDE)
 
-Scope so far: Phase 1 (tenancy, auth, RBAC, audit, consent, branding, platform console). Each later phase adds its own section before code is written.
+Scope so far: Phases 1–3 (tenancy, auth, RBAC, audit, consent, branding, platform console; people; mentorship). Each phase adds its own section.
 
 **Assets:** personal data of students and alumni (names, emails, later phone numbers and roll numbers), credentials and sessions, admin capabilities, each college's isolation, and audit integrity.
 
@@ -55,10 +55,10 @@ Scope so far: Phase 1 (tenancy, auth, RBAC, audit, consent, branding, platform c
 
 ## Residual risks and planned work
 
-- **Phase 2:** the tenant cache (30 s TTL) means a suspension takes up to 30 s to apply on other instances. Plan: Redis pub/sub invalidation.
+- ~~Tenant cache lag after suspension~~: Redis pub/sub invalidation shipped in Phase 2.
 - **Phase 8:** no WebAuthn yet.
-- **Phase 2:** no CAPTCHA (the `BotProtection` adapter is planned).
-- **Phase 2:** in-memory rate limiting is used only in unit tests; dev and prod use Redis.
+- `BotProtection` (Turnstile-style) shipped in Phase 3 on sign-up and mentorship requests; it is disabled locally, so production must configure it.
+- In-memory rate limiting is used only in unit tests; dev and prod use Redis.
 
 ---
 
@@ -94,3 +94,63 @@ Scope so far: Phase 1 (tenancy, auth, RBAC, audit, consent, branding, platform c
 | I   | Contact details scraped by members | Contact fields default to "only me"; field-level visibility is applied server-side; directory search is rate-limited and requires verification |
 | I   | Cross-college search               | Tenant plugin; isolation tests for search, profiles and files                                                                                  |
 | T   | Stored XSS in bio or links         | Plain text only (React escapes); links must be https with a host allowlist pattern; no HTML accepted                                           |
+
+---
+
+# Phase 3: Mentorship (requests, bookings, chat, video, notifications)
+
+**New assets:** private 1:1 messages and attachments, session times and video rooms, private session feedback, notification and push endpoints, block lists and reports.
+
+## Requests and bookings
+
+|     | Threat                                                   | Mitigation                                                                                                                                                                                           | Test                                         |
+| --- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| D   | Request spam towards popular mentors                     | Mentor weekly cap, mentee limit of 3 open requests and the college's weekly limit, one open request per pair (unique index), `requests` rate limit, bot check, 7-day expiry                          | `mentorship.test.ts`                         |
+| E   | Cold DMs that bypass consent                             | Conversations are created only when a mentor accepts; no endpoint creates one otherwise                                                                                                              | `mentorship.test.ts`, `messaging.test.ts`    |
+| T   | Double booking through concurrent accepts                | Each booking holds a string per person and 15-minute block under a unique partial index (both people, mentor buffer included); the request is claimed atomically first and reverted if booking fails | `mentorship.test.ts` (concurrent accepts)    |
+| T   | Replayed or duplicated writes on flaky networks          | `Idempotency-Key` on request creation, responses, reschedules and messages: same key + body replays, a different body is refused (422)                                                               | `mentorship.test.ts`                         |
+| I   | Someone else's booking, request or feedback by id (IDOR) | Every lookup filters by participant; others get 404 (including admins for bookings and chats)                                                                                                        | `mentorship.test.ts`, `isolation/mentorship` |
+| I   | Mentor sees fields the mentee hid                        | Match scoring and mentor cards use the visibility-filtered profile; mentee goals and target companies are private match inputs                                                                       | `mentorship.test.ts` (Alumni Match)          |
+| R   | Disputes about cancellations and no-shows                | Late cancellation flag, who cancelled, single no-show record within 48 h, reschedule count                                                                                                           | `mentorship.test.ts`                         |
+
+## Chat and attachments
+
+|     | Threat                                             | Mitigation                                                                                                                                                                                             |
+| --- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| I   | Database dumps or operators reading messages       | Bodies are AES-256-GCM encrypted at rest; no admin or platform endpoint returns message content; moderators see only a snapshot of a reported message                                                  |
+| T   | Malicious PDF (JavaScript, auto-actions, payloads) | Magic-byte sniffing; the PDF is rebuilt from its pages only (document JavaScript, open actions, embedded files, forms, metadata and non-URI link actions are not carried over); encrypted PDFs refused |
+| I   | Attachment fetched by a non-participant            | Files with purpose `message_attachment` are served only after the messaging module confirms the viewer is a participant; always `Content-Disposition: attachment`, `nosniff`, sandbox CSP              |
+| D   | Message flooding                                   | `messages` rate limit (30/min/user), 2,000-character cap, idempotency against double sends                                                                                                             |
+| S   | Harassment continues after a block                 | A block closes the conversation, withdraws pending requests, cancels future sessions and hides both people from each other's mentor lists, in both directions                                          |
+
+## Realtime (Socket.io)
+
+|     | Threat                                        | Mitigation                                                                                                                           | Test               |
+| --- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
+| S   | Socket with a token from another college      | Same checks as HTTP (`authFromToken`): token tenant must match the Host's tenant; session, status and token version are live-checked | `realtime.test.ts` |
+| S   | Cross-site WebSocket hijacking                | Token in the handshake payload (no cookies); `Origin` must be on the allowlist                                                       | `realtime.test.ts` |
+| I   | Events delivered to the wrong user or college | Rooms are `u:<tenantId>:<userId>`; the server emits only after a REST write was authorised; clients can only send `typing`           | `realtime.test.ts` |
+| E   | Long-lived socket outlives revocation         | Socket closes at access-token expiry (≤ 15 min) and immediately on suspension                                                        | `realtime.test.ts` |
+| D   | Event floods                                  | 4 KB max payload; one typing event per second per socket; typing validated with a strict schema and participant check                | `realtime.test.ts` |
+
+## Video
+
+|     | Threat                          | Mitigation                                                                                                                                                                                                                                            |
+| --- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I   | Guessing or reusing a room link | 160-bit random room names per booking, rotated on reschedule; the link is handed out only to the two participants from 10 minutes before to 15 minutes after the session; with self-hosted Jitsi the link carries a JWT that expires with that window |
+| I   | Room link in calendar files     | `.ics` exports contain no video link                                                                                                                                                                                                                  |
+
+## Notifications and push
+
+|     | Threat                                    | Mitigation                                                                                                                                                                |
+| --- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I   | SSRF through a push subscription endpoint | Endpoint must be on a known push service (schema and sender check), delivery goes through `safeFetch` (public IPs only, pinned DNS, timeouts) and never follows redirects |
+| I   | Sensitive content in emails or pushes     | Payloads carry names, session types and times only, never message or request text                                                                                         |
+| I   | Push endpoint theft from the database     | Endpoint and keys encrypted at rest, blind index for uniqueness                                                                                                           |
+| D   | Notification fatigue / email flooding     | Per-category channel preferences, quiet hours, at most one message email per conversation per 30 minutes and only while offline                                           |
+
+## Residual risks (Phase 3)
+
+- Public `meet.jit.si` cannot enforce our link expiry; production should self-host Jitsi with JWT (see `docs/video.md`).
+- No malware scanning provider is configured (hook only); attachments rely on type checks and PDF rebuilding.
+- Bot protection is off locally; deployments must set `BOT_PROTECTION=turnstile`.

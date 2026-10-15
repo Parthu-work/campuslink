@@ -420,6 +420,29 @@ describe('bookings', () => {
     ).toBe(404);
   });
 
+  it('offers slots for the pair to the mentor (other time) and to both sides (reschedule)', async () => {
+    const m = await makeMentor(ctx, T);
+    const s = await makeUser(ctx, T, { roles: ['STUDENT'] });
+    const first = (await slotsOf(ctx, T, s, m.id))[0] as string;
+    const r = await sendRequest(ctx, T, s, m, 'video_1on1', first);
+    const offered = await as(m).get(`/mentorship/requests/${r.body.data.id}/slots?days=2`);
+    expect(offered.status).toBe(200);
+    expect(offered.body.data.slots).toContain(first);
+    expect((await as(s).get(`/mentorship/requests/${r.body.data.id}/slots`)).status).toBe(403);
+    expect((await as(mentor).get(`/mentorship/requests/${r.body.data.id}/slots`)).status).toBe(404);
+    const other = offered.body.data.slots[3] as string;
+    const acc = await as(m)
+      .post(`/mentorship/requests/${r.body.data.id}/respond`)
+      .send({ action: 'accept_other', slotStart: other });
+    expect(acc.body.data).toMatchObject({ status: 'accepted', slotStart: other });
+    const moveTo = await as(s).get(`/bookings/${acc.body.data.bookingId}/slots?days=2`);
+    // The session's own time is free to keep (its holds are ignored), others' bookings are not.
+    expect(moveTo.body.data.slots).toContain(other);
+    expect((await as(student).get(`/bookings/${acc.body.data.bookingId}/slots`)).status).toBe(404);
+    const q = await sendRequest(ctx, T, s, await makeMentor(ctx, T), 'quick_chat');
+    expect((await as(m).get(`/mentorship/requests/${q.body.data.id}/slots`)).status).toBe(404);
+  });
+
   it('cancels upcoming sessions (late flag) and frees the slot', async () => {
     const m = await makeMentor(ctx, T);
     const s = await makeUser(ctx, T, { roles: ['STUDENT'] });

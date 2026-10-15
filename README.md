@@ -2,7 +2,7 @@
 
 A private guidance network for a college community, connecting students with alumni from their own college. It is multi-tenant: each college gets its own branded, isolated space.
 
-> Status: **Phase 2 (people)**: college-list imports (CSV, XLSX, Google Sheets, REST), verification, profiles with per-field privacy, the alumni directory and search, on top of the Phase 1 secure core (multi-tenancy, auth with 2FA, roles, audit, consent, branding, platform console). See `docs/phases/`.
+> Status: **Phase 3 (mentorship)**: Alumni Match, structured mentorship requests, booking with timezone-aware availability, live chat, Jitsi video, feedback and notifications (in-app, email, push), on top of Phase 2 (imports, verification, profiles, directory) and the Phase 1 secure core. See `docs/phases/`.
 
 ## Quick start (under 5 minutes)
 
@@ -30,6 +30,15 @@ Emails (verification, reset, invites) land in Mailpit at http://localhost:8025.
 1. **Import:** sign in as `admin@dpit.example`, open Admin → Imports and upload `docs/samples/sample-students.csv`. Check the suggested column mapping, tick "dry run" if you like, and run it: 6 new records and 3 reported problems. Download the error report, or roll the import back.
 2. **Verify:** sign in as `newbie@dpit.example`, choose Verify now and enter roll number `24DP1A0577`. The 6-digit code goes to the email on the college's record; open it in Mailpit.
 3. **Browse:** open People to filter the directory, open a profile, and press Ctrl/Cmd+K to search. Edit your own profile under Profile; email and phone stay private unless you change their visibility.
+
+### Try Phase 3
+
+1. **Video:** right after `pnpm seed`, sign in as `ananya@dpit.example` and open Sessions. Her demo mock interview with Rahul starts in 5 minutes, so Join video is already open (it opens Jitsi in a new tab).
+2. **Request and accept:** as Ananya, open Mentors → Browse → Sneha Reddy, pick a 1:1 video call and a time, and send the request. In another browser (or a private window), sign in as `sneha@dpit.example`, open Requests and accept. Chat opens for both; messages and typing appear live.
+3. **Mentor side:** `rahul@dpit.example` → Mentoring shows the impact card, the pause switch, weekly hours and private feedback.
+4. **Push (optional):** run `pnpm --filter @campuslink/api vapid`, add the two keys to `.env`, and use the production build (`pnpm build && pnpm --filter @campuslink/web preview`) so the service worker is active. Then turn on push in Settings → Notifications.
+
+Video uses the public `meet.jit.si` locally; for production, self-host Jitsi with JWT (`docs/video.md`).
 
 | Service             | URL                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------- |

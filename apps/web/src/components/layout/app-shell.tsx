@@ -1,13 +1,21 @@
-import { NavLink, Outlet } from 'react-router';
+import { useState } from 'react';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
+  Activity,
+  Bell,
   Building2,
+  CalendarClock,
+  Compass,
+  HeartHandshake,
   Home,
+  Inbox,
   LogOut,
+  Menu,
+  MessagesSquare,
   Search,
   Settings,
   Shield,
-  Activity,
   User,
   Users,
   type LucideIcon,
@@ -20,12 +28,33 @@ import { useSignOut } from '../../lib/use-sign-out';
 import { cn } from '../../lib/cn';
 import { usePalette, usePaletteShortcut } from '../../lib/palette';
 import { CommandPalette } from './command-palette';
+import { Dialog } from '../ui/dialog';
+import { useRealtimeBridge } from '../../lib/use-realtime-bridge';
+import { useUnreadMessages, useUnreadNotifications } from '../../lib/unread';
 
 interface NavItem {
   to: string;
   label: string;
   icon: LucideIcon;
-  permission?: Permission;
+  permission?: Permission | Permission[];
+  /** Shown in the phone bottom bar (others live under "More"). */
+  primary?: boolean;
+  badge?: number;
+}
+
+function CountBadge({ n, label }: { n: number; label: string }) {
+  if (!n) return null;
+  return (
+    <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-brand px-1.5 font-mono text-[11px] leading-5 font-semibold text-on-brand">
+      {n > 99 ? '99+' : n}
+      <span className="sr-only"> {label}</span>
+    </span>
+  );
+}
+
+function RealtimeBridge() {
+  useRealtimeBridge();
+  return null;
 }
 
 /** Desktop: rail + content (+ optional right rail). Phones: glass top bar + bottom nav. */
@@ -36,6 +65,13 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
   const signOut = useSignOut();
   const openPalette = usePalette((s) => s.setOpen);
   usePaletteShortcut();
+  const unreadMessages = useUnreadMessages(!platform);
+  const unreadNotifications = useUnreadNotifications(!platform);
+  const [more, setMore] = useState(false);
+  const location = useLocation();
+  const can = (p?: Permission | Permission[]) =>
+    !p || (Array.isArray(p) ? p : [p]).some((x) => me?.permissions.includes(x));
+  const adminHome = can('users:read_admin') ? '/admin' : '/admin/mentorship';
   const items: NavItem[] = platform
     ? [
         { to: '/platform', label: t('nav.platform'), icon: Building2 },
@@ -43,13 +79,46 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         { to: '/settings', label: t('nav.settings'), icon: Settings },
       ]
     : [
-        { to: '/home', label: t('nav.home'), icon: Home },
+        { to: '/home', label: t('nav.home'), icon: Home, primary: true },
+        {
+          to: '/mentors',
+          label: t('nav.mentors'),
+          icon: Compass,
+          permission: 'mentorship:request',
+          primary: true,
+        },
+        {
+          to: '/sessions',
+          label: t('nav.sessions'),
+          icon: CalendarClock,
+          permission: 'sessions:book',
+          primary: true,
+        },
+        {
+          to: '/messages',
+          label: t('nav.messages'),
+          icon: MessagesSquare,
+          permission: 'messages:send',
+          primary: true,
+          badge: unreadMessages,
+        },
         { to: '/people', label: t('nav.people'), icon: Users, permission: 'directory:read' },
+        { to: '/mentorship', label: t('nav.requests'), icon: Inbox, permission: 'mentorship:request' },
+        { to: '/mentor', label: t('nav.mentor'), icon: HeartHandshake, permission: 'mentorship:mentor' },
+        { to: '/notifications', label: t('nav.notifications'), icon: Bell, badge: unreadNotifications },
         { to: '/profile', label: t('nav.profile'), icon: User },
         { to: '/settings', label: t('nav.settings'), icon: Settings },
-        { to: '/admin', label: t('nav.admin'), icon: Shield, permission: 'users:read_admin' },
+        {
+          to: adminHome,
+          label: t('nav.admin'),
+          icon: Shield,
+          permission: ['users:read_admin', 'mentorship:oversee'],
+        },
       ];
-  const visible = items.filter((i) => !i.permission || me?.permissions.includes(i.permission));
+  const visible = items.filter((i) => can(i.permission));
+  const bottom = platform ? visible : visible.filter((i) => i.primary).slice(0, 4);
+  const overflow = platform ? [] : visible.filter((i) => !bottom.includes(i));
+  const overflowBadge = overflow.reduce((n, i) => n + (i.badge ?? 0), 0);
   const link = (i: NavItem, compact: boolean) => (
     <NavLink
       key={i.to}
@@ -69,7 +138,22 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       }
     >
       <i.icon className="size-5" aria-hidden />
-      <span>{i.label}</span>
+      {compact ? (
+        <span className="relative">
+          {i.label}
+          {!!i.badge && (
+            <span className="absolute -top-7 left-[calc(50%+6px)] grid min-w-4 place-items-center rounded-full bg-brand px-1 font-mono text-[10px] leading-4 text-on-brand">
+              {i.badge > 99 ? '99+' : i.badge}
+              <span className="sr-only"> {t('nav.unread')}</span>
+            </span>
+          )}
+        </span>
+      ) : (
+        <span className="flex items-center">
+          {i.label}
+          <CountBadge n={i.badge ?? 0} label={t('nav.unread')} />
+        </span>
+      )}
     </NavLink>
   );
   return (
@@ -123,26 +207,44 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         <Crest monogram={tenant.branding.monogram} size={32} />
         <b className="font-display text-base font-semibold">{tenant.branding.shortName}</b>
         {!platform && (
+          <>
+            <button
+              type="button"
+              onClick={() => openPalette(true)}
+              className="ml-auto grid size-11 place-items-center rounded-full text-fg-2 hover:bg-surface-2"
+              aria-label={t('palette.open')}
+            >
+              <Search className="size-5" aria-hidden />
+            </button>
+            <Link
+              to="/notifications"
+              className="relative grid size-11 place-items-center rounded-full text-fg-2 hover:bg-surface-2"
+              aria-label={
+                unreadNotifications
+                  ? t('nav.notificationsUnread', { count: unreadNotifications })
+                  : t('nav.notifications')
+              }
+            >
+              <Bell className="size-5" aria-hidden />
+              {unreadNotifications > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute top-2 right-2 size-2.5 rounded-full bg-brand ring-2 ring-surface-1"
+                />
+              )}
+            </Link>
+          </>
+        )}
+        {platform && (
           <button
             type="button"
-            onClick={() => openPalette(true)}
+            onClick={signOut}
             className="ml-auto grid size-11 place-items-center rounded-full text-fg-2 hover:bg-surface-2"
-            aria-label={t('palette.open')}
+            aria-label={t('common.signOut')}
           >
-            <Search className="size-5" aria-hidden />
+            <LogOut className="size-5" aria-hidden />
           </button>
         )}
-        <button
-          type="button"
-          onClick={signOut}
-          className={cn(
-            'grid size-11 place-items-center rounded-full text-fg-2 hover:bg-surface-2',
-            platform && 'ml-auto',
-          )}
-          aria-label={t('common.signOut')}
-        >
-          <LogOut className="size-5" aria-hidden />
-        </button>
       </header>
       <main
         id="main"
@@ -154,13 +256,49 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         </div>
       </main>
       {!platform && <CommandPalette />}
+      {!platform && <RealtimeBridge />}
       <nav
         aria-label={t('nav.main')}
         className="glass fixed inset-x-0 bottom-0 z-40 grid border-t border-line px-[max(8px,env(safe-area-inset-left,0px))] pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom,0px))] lg:hidden"
-        style={{ gridTemplateColumns: `repeat(${visible.length}, minmax(0, 1fr))` }}
+        style={{
+          gridTemplateColumns: `repeat(${bottom.length + (overflow.length ? 1 : 0)}, minmax(0, 1fr))`,
+        }}
       >
-        {visible.map((i) => link(i, true))}
+        {bottom.map((i) => link(i, true))}
+        {overflow.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setMore(true)}
+            aria-current={overflow.some((i) => location.pathname.startsWith(i.to)) ? 'page' : undefined}
+            className="relative grid min-h-[52px] justify-items-center gap-0.5 rounded-[var(--radius-sm)] px-0.5 py-1.5 text-[11px] font-semibold text-fg-3 hover:text-fg aria-[current=page]:text-fg"
+          >
+            <Menu className="size-5" aria-hidden />
+            <span className="relative">
+              {t('nav.more')}
+              {overflowBadge > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute -top-6 left-[calc(50%+6px)] size-2.5 rounded-full bg-brand"
+                />
+              )}
+            </span>
+          </button>
+        )}
       </nav>
+      {overflow.length > 0 && (
+        <Dialog open={more} onOpenChange={setMore} title={t('nav.more')}>
+          <nav aria-label={t('nav.more')} className="grid gap-1" onClick={() => setMore(false)}>
+            {overflow.map((i) => link(i, false))}
+            <button
+              type="button"
+              onClick={signOut}
+              className="grid min-h-[46px] grid-cols-[24px_1fr] items-center gap-3 rounded-[var(--radius-sm)] px-3 text-left text-sm font-semibold text-fg-3 hover:bg-surface-2 hover:text-fg"
+            >
+              <LogOut className="size-5" aria-hidden /> {t('common.signOut')}
+            </button>
+          </nav>
+        </Dialog>
+      )}
     </div>
   );
 }

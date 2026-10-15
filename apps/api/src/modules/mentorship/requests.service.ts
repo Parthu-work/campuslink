@@ -241,6 +241,15 @@ export class RequestsService {
     return this.view(done as RequestDoc);
   }
 
+  /** Slots the mentor can offer instead ("accept at another time"). */
+  async slotsFor(viewer: AuthState, id: string, days: number) {
+    const r = await this.mine(viewer, id);
+    if (String(r.mentorId) !== viewer.userId) throw notFound('Request');
+    if (r.status !== 'pending' || !isBookable(r.sessionType as SessionType))
+      throw conflict('Only pending requests for a bookable session have times to choose');
+    return this.d.mentors.slotsForPair(viewer.userId, String(r.menteeId), r.sessionType as SessionType, days);
+  }
+
   async withdraw(viewer: AuthState, id: string) {
     const r = await this.mine(viewer, id);
     if (String(r.menteeId) !== viewer.userId) throw notFound('Request');

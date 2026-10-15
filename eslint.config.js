@@ -37,6 +37,11 @@ export default tseslint.config(
     },
   },
   {
+    // Service-worker scripts run in the worker global scope.
+    files: ['apps/web/public/**/*.js'],
+    languageOptions: { globals: { ...globals.serviceworker } },
+  },
+  {
     // Tenancy guard rails (ADR 0002): raw driver access bypasses the tenant plugin.
     files: ['apps/api/src/**/*.ts'],
     ignores: ['apps/api/src/db/**'],
