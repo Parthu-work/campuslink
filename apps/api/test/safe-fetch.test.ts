@@ -46,3 +46,83 @@ describe('safeFetch guards (no network needed)', () => {
     ).rejects.toThrow(/address is not allowed/);
   });
 });
+
+describe('safeFetch with a fake transport (redirects, size caps, pinning)', () => {
+  const PUBLIC = '93.184.216.34';
+  const resolve = async (h: string) => (h === 'internal.example' ? ['10.0.0.7'] : [PUBLIC]);
+  const reply = (status: number, headers: Record<string, string>, body = '') => ({
+    status,
+    header: (n: string) => headers[n.toLowerCase()] ?? null,
+    body: (async function* () {
+      if (body) yield new TextEncoder().encode(body);
+    })(),
+    cancel: async () => undefined,
+  });
+
+  it('returns the body and pins the vetted IP', async () => {
+    const seen: string[] = [];
+    const r = await safeFetch('https://data.example/x.csv', {
+      resolve,
+      transport: async (u, ip) => (
+        seen.push(`${u.host}@${ip}`),
+        reply(200, { 'content-type': 'text/csv' }, 'a,b')
+      ),
+    });
+    expect(r).toMatchObject({ status: 200, contentType: 'text/csv', finalUrl: 'https://data.example/x.csv' });
+    expect(r.body.toString()).toBe('a,b');
+    expect(seen).toEqual([`data.example@${PUBLIC}`]);
+  });
+
+  it('re-validates every redirect hop (redirect to a private host is refused)', async () => {
+    const transport = async (u: URL) =>
+      u.host === 'start.example'
+        ? reply(302, { location: 'https://internal.example/secret' })
+        : reply(200, {}, 'leak');
+    await expect(safeFetch('https://start.example/', { resolve, transport })).rejects.toThrow(
+      /address is not allowed/,
+    );
+    const toHttp = async () => reply(301, { location: 'http://plain.example/' });
+    await expect(safeFetch('https://start.example/', { resolve, transport: toHttp })).rejects.toThrow(
+      /Only https/,
+    );
+  });
+
+  it('follows a bounded number of safe redirects', async () => {
+    let n = 0;
+    const loop = async () => reply(302, { location: `https://hop${++n}.example/` });
+    await expect(
+      safeFetch('https://start.example/', { resolve, transport: loop, maxRedirects: 2 }),
+    ).rejects.toThrow(/Too many redirects/);
+    await expect(
+      safeFetch('https://start.example/', { resolve, transport: async () => reply(302, {}) }),
+    ).rejects.toThrow(/without location/);
+  });
+
+  it('caps size by header and by streamed bytes', async () => {
+    await expect(
+      safeFetch('https://big.example/', {
+        resolve,
+        maxBytes: 10,
+        transport: async () => reply(200, { 'content-length': '999' }),
+      }),
+    ).rejects.toThrow(/too large/);
+    await expect(
+      safeFetch('https://big.example/', {
+        resolve,
+        maxBytes: 10,
+        transport: async () => reply(200, {}, 'x'.repeat(50)),
+      }),
+    ).rejects.toThrow(/too large/);
+  });
+
+  it('maps transport failures to a safe message', async () => {
+    await expect(
+      safeFetch('https://down.example/', {
+        resolve,
+        transport: async () => {
+          throw new Error('ECONNRESET 10.0.0.1');
+        },
+      }),
+    ).rejects.toThrow('Could not fetch that URL');
+  });
+});

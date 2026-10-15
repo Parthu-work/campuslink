@@ -102,7 +102,7 @@ Everything runs on localhost with free, open-source tools. Any paid or external 
 ## Git workflow (owner's instruction)
 
 - Work directly on `main` for every phase; no feature branches or pull requests.
-- Before every push, run locally: `pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build`.
+- Before every push, run locally: `pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build`, the API coverage gate (`pnpm --filter @campuslink/api exec vitest run --coverage`) and the secret scan (`docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --config /repo/.gitleaks.toml --redact`; the same pinned version runs in CI).
 - Push with `git push origin main`, then run the end-to-end suite (`pnpm test:e2e`) and confirm the GitHub Actions run for that commit is green (`gh run watch`). A red run is fixed immediately with a follow-up commit on `main`.
 
 ## Definition of done (every phase)

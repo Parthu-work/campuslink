@@ -50,8 +50,71 @@ function hostAllowed(host: string, allow: readonly string[] | undefined): boolea
  * vetted IP (no DNS-rebinding window), re-validates each redirect hop, and caps time and size.
  * All server-side fetching of user-supplied URLs MUST go through this function.
  */
-export async function safeFetch(rawUrl: string, opts: SafeFetchOptions = {}): Promise<SafeResponse> {
-  const { maxBytes = 5 * 1024 * 1024, timeoutMs = 10_000, maxRedirects = 3, resolve = defaultResolve } = opts;
+/** One HTTP hop to an already-vetted, pinned address. Injectable so the guard logic is testable offline. */
+export interface TransportResponse {
+  status: number;
+  header(name: string): string | null;
+  body: AsyncIterable<Uint8Array> | null;
+  cancel(): Promise<void>;
+}
+export type Transport = (
+  url: URL,
+  pinnedIp: string,
+  init: { signal: AbortSignal; headers: Record<string, string>; timeoutMs: number },
+) => Promise<TransportResponse>;
+
+export const undiciTransport: Transport = async (url, pinnedIp, init) => {
+  const agent = new Agent({
+    connect: {
+      // Pin to the vetted address; TLS still verifies the original hostname (servername).
+      lookup: (_h, _o, cb) => cb(null, [{ address: pinnedIp, family: pinnedIp.includes(':') ? 6 : 4 }]),
+    },
+    headersTimeout: init.timeoutMs,
+    bodyTimeout: init.timeoutMs,
+  });
+  const res = await undiciFetch(url, {
+    redirect: 'manual',
+    dispatcher: agent,
+    signal: init.signal,
+    headers: init.headers,
+  }).catch(async (e: unknown) => {
+    await agent.close();
+    throw e;
+  });
+  async function* body() {
+    try {
+      for await (const chunk of res.body ?? []) yield chunk as Uint8Array;
+    } finally {
+      await agent.close();
+    }
+  }
+  return {
+    status: res.status,
+    header: (n) => res.headers.get(n),
+    body: res.body ? body() : null,
+    cancel: async () => {
+      await res.body?.cancel();
+      await agent.close();
+    },
+  };
+};
+
+/**
+ * SSRF-safe GET: validates scheme, host allowlist and every resolved IP, pins the connection to the
+ * vetted IP (no DNS-rebinding window), re-validates each redirect hop, and caps time and size.
+ * All server-side fetching of user-supplied URLs MUST go through this function.
+ */
+export async function safeFetch(
+  rawUrl: string,
+  opts: SafeFetchOptions & { transport?: Transport } = {},
+): Promise<SafeResponse> {
+  const {
+    maxBytes = 5 * 1024 * 1024,
+    timeoutMs = 10_000,
+    maxRedirects = 3,
+    resolve = defaultResolve,
+    transport = undiciTransport,
+  } = opts;
   let url: URL;
   try {
     url = new URL(rawUrl);
@@ -69,51 +132,49 @@ export async function safeFetch(rawUrl: string, opts: SafeFetchOptions = {}): Pr
     const ips = ipaddr.isValid(host) ? [host] : await resolve(host).catch(() => []);
     if (!ips.length) throw new SafeFetchError('Could not resolve host');
     if (!ips.every(isPublicAddress)) throw new SafeFetchError('Destination address is not allowed');
-    const pinned = ips[0] as string;
 
-    const agent = new Agent({
-      connect: {
-        // Pin to the vetted address; TLS still verifies the original hostname (servername).
-        lookup: (_h, _o, cb) => cb(null, [{ address: pinned, family: pinned.includes(':') ? 6 : 4 }]),
-      },
-      headersTimeout: timeoutMs,
-      bodyTimeout: timeoutMs,
-    });
+    let res: TransportResponse;
     try {
-      const res = await undiciFetch(url, {
-        redirect: 'manual',
-        dispatcher: agent,
+      res = await transport(url, ips[0] as string, {
         signal: deadline,
+        timeoutMs,
         headers: { 'user-agent': 'CampusLink-Importer/1.0', ...opts.headers },
       });
-      if (res.status >= 300 && res.status < 400) {
-        const loc = res.headers.get('location');
-        await res.body?.cancel();
-        if (!loc) throw new SafeFetchError('Redirect without location');
-        url = new URL(loc, url);
-        continue;
-      }
-      const declared = Number(res.headers.get('content-length') ?? 0);
-      if (declared > maxBytes) throw new SafeFetchError('Response is too large');
-      const chunks: Buffer[] = [];
-      let size = 0;
+    } catch {
+      throw new SafeFetchError(deadline.aborted ? 'The request timed out' : 'Could not fetch that URL');
+    }
+    if (res.status >= 300 && res.status < 400) {
+      const loc = res.header('location');
+      await res.cancel();
+      if (!loc) throw new SafeFetchError('Redirect without location');
+      url = new URL(loc, url);
+      continue;
+    }
+    if (Number(res.header('content-length') ?? 0) > maxBytes) {
+      await res.cancel();
+      throw new SafeFetchError('Response is too large');
+    }
+    const chunks: Buffer[] = [];
+    let size = 0;
+    try {
       for await (const chunk of res.body ?? []) {
-        size += (chunk as Uint8Array).byteLength;
-        if (size > maxBytes) throw new SafeFetchError('Response is too large');
-        chunks.push(Buffer.from(chunk as Uint8Array));
+        size += chunk.byteLength;
+        if (size > maxBytes) {
+          await res.cancel();
+          throw new SafeFetchError('Response is too large');
+        }
+        chunks.push(Buffer.from(chunk));
       }
-      return {
-        status: res.status,
-        contentType: res.headers.get('content-type') ?? '',
-        body: Buffer.concat(chunks),
-        finalUrl: url.toString(),
-      };
     } catch (e) {
       if (e instanceof SafeFetchError) throw e;
       throw new SafeFetchError(deadline.aborted ? 'The request timed out' : 'Could not fetch that URL');
-    } finally {
-      await agent.close();
     }
+    return {
+      status: res.status,
+      contentType: res.header('content-type') ?? '',
+      body: Buffer.concat(chunks),
+      finalUrl: url.toString(),
+    };
   }
   throw new SafeFetchError('Too many redirects');
 }
