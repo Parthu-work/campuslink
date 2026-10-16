@@ -43,6 +43,12 @@ export interface PostsDeps {
   fetcher: typeof safeFetch;
 }
 
+const RANK_FIELDS = 'authorId createdAt topics authorBranch authorAlumni announcement counts';
+export type PostRankFields = Pick<
+  PostDoc,
+  '_id' | 'authorId' | 'createdAt' | 'topics' | 'authorBranch' | 'authorAlumni' | 'announcement' | 'counts'
+>;
+
 export class PostsService {
   // ── Privacy ─────────────────────────────
   async exportFor(userId: string) {
@@ -522,6 +528,15 @@ export class PostsService {
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean<PostDoc[]>();
+  }
+
+  /** Ranking inputs only (no bodies or media), so For You can score hundreds of posts cheaply. */
+  async rankingCandidates(since: Date, until: Date, limit: number) {
+    return PostModel.find({ status: 'published', createdAt: { $gte: since, $lte: until } })
+      .select(RANK_FIELDS)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean<PostRankFields[]>();
   }
 
   async byIds(ids: string[]) {

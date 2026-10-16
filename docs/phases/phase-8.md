@@ -44,8 +44,8 @@ Phase 8 is done when:
 
 ### 5. Backup and restore drill
 
-- `scripts/backup.sh` streams an encrypted (`openssl` AES-256), compressed `mongodump`.
-- `scripts/restore.sh` restores it into a separate database.
+- `scripts/backup/backup.sh` writes a compressed `mongodump`, encrypted with age. The plan said `openssl` AES-256; see the outcome for why that changed.
+- `scripts/backup/restore.sh` restores it into a separate database.
 - A drill script verifies document counts per collection and records timings.
 - The runbook documents RPO and RTO.
 
@@ -72,3 +72,63 @@ Phase 8 is done when:
 - **Production providers:** S3 storage, SMS and video providers beyond Jitsi stay behind their adapters. The deployment guide names the configuration they need.
 - **Load-test scope:** the load test runs against a single API instance on this machine. The results show headroom and regressions, not production capacity, which the deployment guide sizes separately.
 - **Erasure:** erasure removes personal data. Aggregate counts already computed, such as analytics caches, expire within minutes.
+
+## Outcome
+
+### Built
+
+- **Privacy rights (DPDP):**
+  - Settings → Your data downloads one JSON file of everything held about the member (`GET /me/export`, rate-limited and audited).
+  - Deletion re-checks the password, starts a 30-day grace period (set per college), signs out every session and hides the profile.
+    - Signing back in shows a banner and allows cancelling.
+    - The daily retention run then erases the account through every module's eraser.
+  - 19 modules register with the privacy service: 18 with an exporter and an eraser, plus consents (export only; the records are kept as evidence).
+  - Privacy Policy and Terms drafts are in `docs/legal/`, marked as needing legal review.
+- **Security review:** [`security-review.md`](../security-review.md) walks every item in brief section 9 with files and tests. It found and fixed:
+  - **Production web headers:** `deploy/nginx/security-headers.conf`, tested; `vite preview` serves it, so all 62 end-to-end tests ran under the production CSP with no violations.
+  - **The access log** recorded headers (the CSRF and bot tokens in plain text), query strings, IPs and user agents. It is now an allowlist.
+  - **Missing tests** for the append-only audit log and the antivirus hook.
+- **Performance:**
+  - `pnpm loadtest`: 1,000 demo members, 5,000 posts, 20,000 notifications and 13 scenarios, with 0 errors. Results are in [`performance.md`](../performance.md).
+  - For You now ranks on a projection and loads only the page: 73 → 81–88 req/s at 50 connections, p50 114 ms at 10.
+- **Accessibility:**
+  - Focus moves to the main region after client-side navigation. Before the fix, Chrome kept the Tab starting point at the removed sign-in button.
+  - New keyboard-only, reduced-motion and 320 px reflow checks. Results are in [`accessibility.md`](../accessibility.md).
+- **Backups:**
+  - `scripts/backup/{backup,restore,drill}.sh` with age encryption.
+  - The drill restored 61 collections and 40,342 documents with 0 mismatches. A tampered file and a restore over the source are both refused.
+- **Deployment and operations:**
+  - [`deployment.md`](../deployment.md): AWS Mumbai with Hyderabad DR, data residency, sizing and monitoring.
+  - [`runbook.md`](../runbook.md): deploys, secrets, backups and restore, incidents, alerts and data requests.
+  - `deploy/api.Dockerfile` and `deploy/web.Dockerfile` were built and run. The API runs as non-root in production mode and reports ready; the web image serves the headers and the cache rules.
+- **PWA:**
+  - PNG and maskable icons and an Apple touch icon.
+  - The service worker is registered by the app with an "update available" prompt; the waiting worker activates on Reload.
+  - An offline banner.
+  - Covered by `e2e/pwa.spec.ts`.
+
+### Decisions
+
+- **age instead of `openssl enc` for backups.** `openssl enc` has no authenticated mode for files: CBC would restore a modified file silently. age is authenticated (ChaCha20-Poly1305). It also encrypts to public keys, so the backup host cannot read its own backups.
+- **Restore always decrypts fully before writing.** Streaming would restore the chunks that come before a tampered one.
+- **For You is not cached.** A per-college candidate cache would triple throughput, but a new post would take up to 15 seconds to appear. Measured headroom is more than 4× the estimated peak, so correctness won.
+- **The access log is an allowlist**, not a longer denylist, so a new header can never leak by default.
+- **The app registers its own service worker** (`injectRegister: false`) instead of the plugin's auto-register script, so `registerType: 'prompt'` has a real prompt.
+
+### Assumptions
+
+- Load-test figures come from one `tsx` process sharing a 4-vCPU machine with the database and the load generator: a regression baseline, not production capacity.
+- AWS prices are not quoted; they change. The deployment guide names the services to price.
+
+### Gaps (owners in the linked docs)
+
+- **Bot protection:** the Turnstile web widget (the server adapter exists). Until it ships, `BOT_PROTECTION` stays `none` in production.
+- **Missing adapters:** ClamAV (`MalwareScanner`) and S3 (`StorageProvider`).
+- **Key rotation:** `FIELD_ENCRYPTION_KEY` cannot be rotated yet (a key ring and re-encryption job are needed).
+- **Accessibility:** a screen-reader pass with assistive-technology users, light-theme axe on every spec, and a 200% text-zoom check.
+- **Before launch:** infrastructure as code, an external penetration test, and legal review of the policy drafts.
+
+### Next steps
+
+- Build the Turnstile widget and the ClamAV and S3 adapters, then run a staging deployment from `deployment.md`.
+- Add a Socket.io delivery scenario to the load test, and rerun it on the compiled build.

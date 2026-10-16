@@ -5,7 +5,7 @@ import { pinoHttp } from 'pino-http';
 import type { Redis } from 'ioredis';
 import { API_PREFIX } from '@campuslink/shared';
 import type { Env } from './config/env.js';
-import type { Logger } from './lib/logger.js';
+import { httpLogSerializers, type Logger } from './lib/logger.js';
 import { requestId } from './middleware/request-id.js';
 import { rejectOperatorKeys } from './middleware/no-operators.js';
 import { corsMiddleware, buildOriginMatcher } from './middleware/cors.js';
@@ -458,7 +458,14 @@ export function createApp({
   };
 
   app.use(requestId);
-  app.use(pinoHttp({ logger, genReqId: (req) => String(req.id), autoLogging: env.NODE_ENV !== 'test' }));
+  app.use(
+    pinoHttp({
+      logger,
+      genReqId: (req) => String(req.id),
+      autoLogging: env.NODE_ENV !== 'test',
+      serializers: httpLogSerializers,
+    }),
+  );
   app.use(
     helmet({
       contentSecurityPolicy: {

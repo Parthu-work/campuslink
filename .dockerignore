@@ -1,0 +1,13 @@
+# Build context for deploy/*.Dockerfile: sources and lockfile only.
+**/node_modules
+**/dist
+**/dev-dist
+**/coverage
+**/test-results
+**/playwright-report
+apps/api/uploads
+backups
+.git
+.env
+.env.*
+!.env.example

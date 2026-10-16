@@ -20,6 +20,8 @@
     "test": "turbo run test",
     "test:e2e": "pnpm --filter @campuslink/web test:e2e",
     "seed": "pnpm --filter @campuslink/api seed",
+    "loadtest": "pnpm --filter @campuslink/api loadtest",
+    "backup:drill": "scripts/backup/drill.sh",
     "audit": "pnpm audit --prod --audit-level=high",
     "prepare": "husky"
   },

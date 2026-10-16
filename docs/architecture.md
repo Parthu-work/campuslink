@@ -68,6 +68,25 @@ Socket.io at `/api/v1/realtime` (`http/realtime.ts`), with the Redis adapter for
 - **Analytics:** `AnalyticsService` composes aggregate methods that each module's service exposes (`AnalyticsSources`), caches per college for 5 minutes and suppresses small counts.
 - **Reminders:** delayed `events.reminder` jobs carry the event version.
 
+## Privacy rights
+
+- **Module:** `privacy` holds the export and deletion routes and the grace-period purge.
+- **Hooks:** every module that holds personal data registers an exporter and an eraser with `PrivacyService.register()` in `app.ts`. The privacy module never reads another module's models.
+- **Erasure:**
+  - private data is deleted;
+  - shared content is detached and shows as "Former member";
+  - message bodies the member sent are blanked;
+  - consent records and the audit log are kept, keyed by id only.
+- **Schedule:** the daily retention run calls `purgeDue()` in each college.
+
+## Production
+
+- **Images:**
+  - `deploy/api.Dockerfile`: the compiled API, run as non-root, with a health check;
+  - `deploy/web.Dockerfile`: the Vite build behind nginx.
+- **Headers:** the web security headers live in `deploy/nginx/security-headers.conf`. `vite preview` serves the same file, so the end-to-end suite runs under the production CSP.
+- **Topology:** AWS Mumbai (`ap-south-1`) with Hyderabad (`ap-south-2`) for disaster recovery. See `docs/deployment.md`, `docs/runbook.md` and `docs/performance.md`.
+
 ## Swappable providers
 
 | Interface           | Local                                          | Others                                                           |

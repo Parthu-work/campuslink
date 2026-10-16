@@ -67,6 +67,19 @@ Video uses the public `meet.jit.si` locally; for production, self-host Jitsi wit
 3. **Mentor impact:** as `rahul@dpit.example`, open Progress to see the Impact Score, download the impact card, and find yourself on the Wall of Mentors.
 4. **Analytics:** as `tpo@dpit.example` or `admin@dpit.example`, open Admin → Analytics; filter by branch and batch, export CSVs or print.
 
+### Try Phase 8
+
+1. **Your data:** as any member, open Settings → Your data:
+   - download everything the platform holds about you as one JSON file;
+   - schedule your account for deletion (30-day grace period), then sign back in and cancel it.
+2. **Install and offline:**
+   - with `pnpm dev` running (for the API), run `pnpm build && pnpm --filter @campuslink/web preview` and open http://dpit.localhost:4173;
+   - install the app from the browser;
+   - go offline to see the banner; a new build shows a "new version" prompt instead of reloading under you.
+3. **Load test:** `pnpm loadtest` seeds a separate database with 1,000 demo members and prints latency and throughput per route (`docs/performance.md`).
+4. **Backup drill:** `pnpm backup:drill` backs up, encrypts, restores and compares every collection (`docs/runbook.md`).
+5. **Production:** start with `docs/deployment.md` (AWS Mumbai and Hyderabad), `docs/runbook.md` and `docs/security-review.md`.
+
 | Service             | URL                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------- |
 | Web app             | http://dpit.localhost:5173, http://mrce.localhost:5173, platform: http://admin.localhost:5173 |
@@ -81,12 +94,21 @@ Video uses the public `meet.jit.si` locally; for production, self-host Jitsi wit
 pnpm lint && pnpm typecheck && pnpm test   # what CI runs, minus e2e
 pnpm test:e2e                              # Playwright plus axe accessibility checks
 pnpm build
+pnpm loadtest                              # 1,000-member load test on its own database
+pnpm backup:drill                          # encrypted backup → restore → compare
 pnpm infra:down                            # stop Docker services
 ```
 
 ## Repository layout
 
-`apps/web` (React PWA), `apps/api` (Express API), `packages/shared` (schemas, types, permissions), `docs/` (architecture, ADRs, security, privacy, design). See `CLAUDE.md` for rules and conventions.
+- `apps/web`: the React PWA.
+- `apps/api`: the Express API.
+- `packages/shared`: schemas, types and permissions.
+- `deploy/`: production images and nginx configuration.
+- `scripts/backup/`: encrypted backup, restore and drill.
+- `docs/`: architecture, ADRs, security, privacy, deployment, runbook and design.
+
+See `CLAUDE.md` for rules and conventions.
 
 ## Troubleshooting
 

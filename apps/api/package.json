@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=../../.env src/server.ts",
     "build": "tsc -p tsconfig.build.json",
@@ -14,7 +17,8 @@
     "vapid": "tsx src/scripts/vapid.ts",
     "feeds:verify": "tsx src/scripts/feeds-verify.ts",
     "jobs:verify": "tsx src/scripts/jobs-verify.ts",
-    "roadmaps:verify": "tsx src/scripts/roadmaps-verify.ts"
+    "roadmaps:verify": "tsx src/scripts/roadmaps-verify.ts",
+    "loadtest": "tsx --env-file-if-exists=../../.env src/scripts/loadtest.ts"
   },
   "dependencies": {
     "@campuslink/shared": "workspace:*",
@@ -53,6 +57,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/autocannon": "^7.12.7",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -64,6 +69,7 @@
     "@types/supertest": "^7.2.1",
     "@types/web-push": "^3.6.4",
     "@vitest/coverage-v8": "5.0.4",
+    "autocannon": "^8.0.0",
     "fflate": "^0.8.3",
     "socket.io-client": "^4.8.4",
     "supertest": "^7.3.1",

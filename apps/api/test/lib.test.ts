@@ -6,6 +6,7 @@ import { ipPrefix, deviceLabel } from '../src/lib/request-meta.js';
 import { TokenService } from '../src/lib/jwt.js';
 import { renderEmail, MemoryMailProvider } from '../src/lib/mailer.js';
 import { slugFromHost } from '../src/http/tenant.middleware.js';
+import { httpLogSerializers } from '../src/lib/logger.js';
 
 const KEY = Buffer.alloc(32, 7).toString('base64');
 
@@ -132,5 +133,21 @@ describe('email rendering', () => {
     await m.send({ to: 'a@b.c', subject: 's', text: 't' });
     expect(m.lastTo('a@b.c')?.subject).toBe('s');
     expect(m.lastTo('nobody@b.c')).toBeUndefined();
+  });
+});
+
+describe('access-log serializers', () => {
+  it('log only id, method, path and status: no headers, query, IP or user agent', () => {
+    const req = {
+      id: 'req-1',
+      method: 'GET',
+      url: '/api/v1/directory?q=private-search',
+      headers: { authorization: 'Bearer t', cookie: 'c', 'x-csrf-token': 'csrf', 'user-agent': 'UA' },
+      remoteAddress: '203.0.113.7',
+    };
+    expect(httpLogSerializers.req(req)).toEqual({ id: 'req-1', method: 'GET', path: '/api/v1/directory' });
+    expect(httpLogSerializers.res({ statusCode: 200, headers: { 'set-cookie': 'x' } } as never)).toEqual({
+      statusCode: 200,
+    });
   });
 });

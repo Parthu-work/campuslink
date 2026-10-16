@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import type { FeedEntry, feedQuery } from '@campuslink/shared';
 import type { PostDoc } from './post.model.js';
 import type { ItemDoc } from '../content-sources/source.model.js';
-import type { PostsService } from './posts.service.js';
+import type { PostRankFields, PostsService } from './posts.service.js';
 import type { FollowsService } from './social.service.js';
 import type { ContentSourcesService } from '../content-sources/sources.service.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
@@ -68,6 +68,9 @@ export function decodeCursor(raw: string | undefined): { a: number; o: number } 
 type Candidate =
   | { kind: 'post'; doc: PostDoc; at: Date; score: number }
   | { kind: 'item'; doc: ItemDoc; at: Date; score: number };
+type Ranked =
+  | { kind: 'post'; doc: PostRankFields; at: Date; score: number }
+  | { kind: 'item'; doc: ItemDoc; at: Date; score: number };
 
 export class FeedService {
   constructor(
@@ -123,7 +126,7 @@ export class FeedService {
     const followedSources = new Set(follows.sources);
     const interests = new Set<string>([...follows.topics]);
     const [posts, items] = await Promise.all([
-      this.d.posts.recent(new Date(asOf.getTime() - POST_WINDOW), asOf, 400),
+      this.d.posts.rankingCandidates(new Date(asOf.getTime() - POST_WINDOW), asOf, 400),
       this.d.sources.recentItems({
         since: new Date(asOf.getTime() - ITEM_WINDOW),
         until: asOf,
@@ -134,10 +137,10 @@ export class FeedService {
           : {}),
       }),
     ]);
-    const candidates: Candidate[] = [
+    const candidates: Ranked[] = [
       ...posts
         .filter((p) => !hidden.has(String(p.authorId)))
-        .map((p): Candidate => {
+        .map((p): Ranked => {
           const counts = p.counts ?? { helpful: 0, insightful: 0, celebrate: 0, comments: 0, saves: 0 };
           return {
             kind: 'post',
@@ -163,7 +166,7 @@ export class FeedService {
             ),
           };
         }),
-      ...items.map((i): Candidate => ({
+      ...items.map((i): Ranked => ({
         kind: 'item',
         doc: i,
         at: i.publishedAt,
@@ -188,9 +191,20 @@ export class FeedService {
         b.at.getTime() - a.at.getTime() ||
         String(b.doc._id).localeCompare(String(a.doc._id)),
     );
-    const page = candidates.slice(offset, offset + limit);
+    const ranked = candidates.slice(offset, offset + limit);
     const next =
       offset + limit < candidates.length ? encodeCursor({ a: asOf.getTime(), o: offset + limit }) : null;
+    // Full posts only for the page being returned.
+    const full = new Map(
+      (await this.d.posts.byIds(ranked.filter((r) => r.kind === 'post').map((r) => String(r.doc._id)))).map(
+        (p) => [String(p._id), p],
+      ),
+    );
+    const page = ranked.flatMap((r): Candidate[] => {
+      if (r.kind === 'item') return [r];
+      const doc = full.get(String(r.doc._id));
+      return doc ? [{ ...r, doc }] : [];
+    });
     return { items: await this.hydrate(viewer, page), nextCursor: next };
   }
 

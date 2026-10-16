@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouteFocus } from '../../lib/route-focus';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -79,6 +80,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
   const unreadNotifications = useUnreadNotifications(!platform);
   const [more, setMore] = useState(false);
   const location = useLocation();
+  useRouteFocus(location.pathname);
   const can = (p?: Permission | Permission[]) =>
     !p || (Array.isArray(p) ? p : [p]).some((x) => me?.permissions.includes(x));
   const adminHome = can('users:read_admin')
@@ -303,7 +305,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       <main
         id="main"
         tabIndex={-1}
-        className="gutter min-w-0 pt-[calc(64px+env(safe-area-inset-top,0px))] pb-[calc(96px+env(safe-area-inset-bottom,0px))] lg:py-8"
+        className="gutter min-w-0 outline-none pt-[calc(64px+env(safe-area-inset-top,0px))] pb-[calc(96px+env(safe-area-inset-bottom,0px))] lg:py-8"
       >
         <div className="screen-in mx-auto grid max-w-[880px] gap-5">
           {me?.deletionPurgeAt && (

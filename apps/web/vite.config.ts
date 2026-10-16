@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { APP_NAME } from '@campuslink/shared';
+import { previewSecurityHeaders } from './security-headers';
 
 /** Same-origin API proxy. Sockets that close mid-flight (tab closed) are normal, not errors. */
 const apiProxy = {
@@ -25,7 +26,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icons/icon.svg'],
+      // src/lib/pwa.ts registers the worker and shows the update prompt.
+      injectRegister: false,
+      includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: APP_NAME,
         short_name: APP_NAME,
@@ -34,7 +37,12 @@ export default defineConfig({
         background_color: '#070a14',
         display: 'standalone',
         start_url: '/',
-        icons: [{ src: '/icons/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }],
+        icons: [
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/icons/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+        ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
@@ -58,6 +66,8 @@ export default defineConfig({
   },
   preview: {
     port: 4173,
+    // The production CSP and friends (deploy/nginx), so the end-to-end suite runs under them.
+    headers: previewSecurityHeaders(),
     allowedHosts: ['.localhost'],
     proxy: apiProxy,
   },

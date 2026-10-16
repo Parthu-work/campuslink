@@ -14,18 +14,20 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 
 ## Commands
 
-| Task                                        | Command                                                                 |
-| ------------------------------------------- | ----------------------------------------------------------------------- |
-| Start everything (infrastructure, API, web) | `pnpm dev`                                                              |
-| Infrastructure only, up or down             | `pnpm infra:up`, `pnpm infra:down`                                      |
-| Lint, format check                          | `pnpm lint`, `pnpm format:check`                                        |
-| Typecheck                                   | `pnpm typecheck`                                                        |
-| Unit and API tests                          | `pnpm test`                                                             |
-| End-to-end tests (Playwright plus axe)      | `pnpm test:e2e` (set `PW_CHROMIUM_PATH` to use a preinstalled Chromium) |
-| Build                                       | `pnpm build`                                                            |
-| Seed demo data                              | `pnpm seed` (Phase 1 onwards)                                           |
-| Dependency audit                            | `pnpm audit`                                                            |
-| Check roadmap library links                 | `pnpm --filter @campuslink/api roadmaps:verify`                         |
+| Task                                         | Command                                                                 |
+| -------------------------------------------- | ----------------------------------------------------------------------- |
+| Start everything (infrastructure, API, web)  | `pnpm dev`                                                              |
+| Infrastructure only, up or down              | `pnpm infra:up`, `pnpm infra:down`                                      |
+| Lint, format check                           | `pnpm lint`, `pnpm format:check`                                        |
+| Typecheck                                    | `pnpm typecheck`                                                        |
+| Unit and API tests                           | `pnpm test`                                                             |
+| End-to-end tests (Playwright plus axe)       | `pnpm test:e2e` (set `PW_CHROMIUM_PATH` to use a preinstalled Chromium) |
+| Build                                        | `pnpm build`                                                            |
+| Seed demo data                               | `pnpm seed` (Phase 1 onwards)                                           |
+| Dependency audit                             | `pnpm audit`                                                            |
+| Check roadmap library links                  | `pnpm --filter @campuslink/api roadmaps:verify`                         |
+| Load test (1,000 demo members, own database) | `pnpm loadtest`                                                         |
+| Backup and restore drill                     | `pnpm backup:drill`                                                     |
 
 ## Folder structure
 
@@ -44,7 +46,9 @@ apps/web/src/
   i18n/          en.json, te.json
 apps/web/e2e/    Playwright specs
 packages/shared/src/  schemas, permissions, constants
-docs/            architecture, ADRs, threat model, privacy, design brief
+docs/            architecture, ADRs, threat model, privacy, design brief, deployment, runbook
+deploy/          production Dockerfiles and nginx (security headers live here)
+scripts/backup/  encrypted backup, restore and drill
 ```
 
 ## Architecture rules
@@ -72,6 +76,8 @@ docs/            architecture, ADRs, threat model, privacy, design brief
 - Notify people only through `NotificationsService.notify()`. Payloads carry ids, names, session types and times, never message or request text.
 - Bookings: never write `holds` by hand; use `holdsFor()` (`modules/mentorship/slots.ts`). The unique index on holds is what prevents double booking. Delayed jobs carry the booking `version` and must no-op when it changed.
 - Mark sensitive POSTs `idempotent: true` (signed-in JSON routes) and abuse-prone public or social writes `bot: true`.
+- Privacy rights: every module that stores personal data exposes `exportFor(userId)` and `eraseFor(userId)` on its service and registers them with `PrivacyService.register()` in `app.ts`. Erasure deletes private data and detaches shared content ("Former member"); consent records and the audit log are kept. New collections get a case in `test/privacy.test.ts`.
+- Web security headers (CSP, HSTS and the rest) live only in `deploy/nginx/security-headers.conf`. `vite preview` serves the same file, so the end-to-end suite runs under the production CSP. Anything that needs a new source (a script, frame or connection) changes that file and its test.
 
 ## Tenancy rule (non-negotiable)
 
@@ -92,7 +98,7 @@ Watch for these traps:
 - Rate-limit (Redis-backed) auth, messaging, requests, referrals, uploads and search.
 - Uploads: sniff the type, cap the size, use random names, strip metadata, never serve from the app origin with execute rights, and leave an antivirus hook.
 - Defend against NoSQL injection: strict Zod schemas, `middleware/no-operators.ts` and `strictQuery` (not global `sanitizeFilter`; see ADR 0006). Every server-side fetch goes through the SSRF-safe fetcher (blocks private ranges, enforces timeouts and size caps).
-- Secrets come only from env. **Never log secrets or personal data** (Pino redaction is a safety net, not permission). Encrypt sensitive fields (such as phone numbers) with AES-256-GCM.
+- Secrets come only from env. **Never log secrets or personal data** (Pino redaction is a safety net, not permission). The access log is an allowlist (`httpLogSerializers`: id, method, path, status); keep it that way. Encrypt sensitive fields (such as phone numbers) with AES-256-GCM.
 - The audit log is append-only. Record admin actions, role changes, exports, logins and verification decisions in it.
 - The super admin never reads tenant private message content.
 

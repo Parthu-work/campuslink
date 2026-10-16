@@ -2104,5 +2104,10 @@
       "events": "Events"
     },
     "active7": "{{value}} in the last 7 days"
+  },
+  "pwa": {
+    "updateTitle": "A new version is ready",
+    "updateBody": "Reload to get the latest fixes. Finish anything you’re typing first.",
+    "reload": "Reload"
   }
 }

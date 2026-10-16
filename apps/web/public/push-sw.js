@@ -13,7 +13,7 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(title, {
       body: typeof data.body === 'string' ? data.body.slice(0, 240) : '',
       tag: typeof data.tag === 'string' ? data.tag : undefined,
-      icon: '/icons/icon.svg',
+      icon: '/icons/icon-192.png',
       badge: '/icons/icon.svg',
       data: {
         url:

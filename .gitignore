@@ -12,3 +12,6 @@ test-results
 apps/api/uploads
 .DS_Store
 coverage
+
+# Local encrypted backups (scripts/backup)
+backups/

@@ -9,6 +9,7 @@ import { EmptyState } from '../components/ui/misc';
 import { Button } from '../components/ui/button';
 import { AppRouter } from './router';
 import { SessionBootstrap, Splash } from './guards';
+import { AppStatus } from '../components/layout/app-status';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +73,7 @@ function TenantGate() {
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <AppStatus />
       <TenantGate />
       <Toaster
         position="bottom-center"
