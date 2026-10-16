@@ -264,9 +264,9 @@ describe('two-factor authentication', () => {
     const setup = await api(ctx, T.host, u.token).post('/auth/mfa/setup');
     expect(setup.body.data.qrSvg).toContain('<svg');
     const secret: string = setup.body.data.secret;
-    const enable = await api(ctx, T.host, u.token)
-      .post('/auth/mfa/enable')
-      .send({ code: await generate({ secret }) });
+    // Reuse the exact enrolment code: a fresh one could fall in the next 30-second step.
+    const enrolCode = await generate({ secret });
+    const enable = await api(ctx, T.host, u.token).post('/auth/mfa/enable').send({ code: enrolCode });
     expect(enable.status).toBe(200);
     expect(enable.body.data.recoveryCodes).toHaveLength(10);
 
@@ -277,7 +277,7 @@ describe('two-factor authentication', () => {
     // The code used for enrolment cannot be replayed for sign-in within the same step.
     const replay = await api(ctx, T.host)
       .post('/auth/login/mfa')
-      .send({ ticket: step1.body.data.ticket, code: await generate({ secret }) });
+      .send({ ticket: step1.body.data.ticket, code: enrolCode });
     expect(replay.status).toBe(401);
 
     const recovery = await api(ctx, T.host)
