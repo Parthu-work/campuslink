@@ -48,4 +48,23 @@ To add another source, implement `target`, `attribution` and `fetch`, returning 
 
 ### Verification results
 
-(Recorded from the CI run after this phase is pushed.)
+GitHub Actions run of 2026-10-16 (`feeds` workflow, job `boards`, commit d27f6bb):
+
+| Board           | Result                          | Status                |
+| --------------- | ------------------------------- | --------------------- |
+| gh-rubrik       | pass: 133 postings, 33 in India | verified 2026-10-16   |
+| gh-druva        | pass: 34 postings, 12 in India  | verified 2026-10-16   |
+| lv-cred         | pass: 7 postings, 7 in India    | verified 2026-10-16   |
+| lv-meesho       | pass: 58 postings, 58 in India  | verified 2026-10-16   |
+| lv-zeta         | pass: 24 postings, 21 in India  | verified 2026-10-16   |
+| ab-atlan        | pass: 7 postings, 4 in India    | verified 2026-10-16   |
+| sr-servicenow   | pass: 100 postings, 7 in India  | verified 2026-10-16   |
+| sr-bosch        | pass: 100 postings, 14 in India | verified 2026-10-16   |
+| gh-postman      | failed: board not found         | removed from the list |
+| gh-phonepe      | failed: board not found         | removed from the list |
+| gh-browserstack | failed: board not found         | removed from the list |
+| gh-thoughtspot  | failed: board not found         | removed from the list |
+| lv-razorpay     | failed: board not found         | removed from the list |
+| sr-visa         | failed: no postings returned    | removed from the list |
+
+Those employers may use another ATS or board name; an admin can add their current board after testing it.

@@ -37,3 +37,43 @@ Done when: a student finds openings in Job Radar (posted by alumni and staff, or
 - **Starter boards** (Indian employers on these ATSs) are verified in GitHub Actions like news feeds (`jobs:verify`) and stay disabled until they pass. This container cannot reach those hosts.
 - **Experience level** is inferred from the title and text (intern/fresher/junior/senior keywords and "N+ years"). It's a best effort, so it is shown as "about".
 - **No in-app applications:** applying happens on the employer's site. The tracker is a personal list that nobody else sees.
+
+## Outcome
+
+**Built:** everything in the plan above.
+
+- **API:**
+  - Modules `jobs`, `job-sources` and `referrals`, with six adapters (Greenhouse, Lever, Ashby, SmartRecruiters, Adzuna and RSS).
+  - Job Radar, the tracker and alerts.
+  - Referrals with résumé PDFs.
+- **Web:** Job Radar, job detail, the posting form, My applications with alerts, Referrals (received, sent and settings), and admin Job sources. Jobs is in the phone bottom bar; English and Telugu throughout.
+- **Seed:** three DEMO openings at fictional companies; Rahul and Sneha accept referrals.
+
+**Tests:**
+
+- API: 475 tests, including adapters against recorded response shapes, jobs, referrals, job sources and a 17-case isolation suite for the 6 new collections and résumé files. Coverage is 92%.
+- Playwright: 46 end-to-end tests with axe, including post → find → save → apply → track, and ask for a referral → refer.
+- Checked at 360 px and desktop widths: no horizontal overflow.
+
+**Board verification:** done in GitHub Actions. 8 of 14 candidate boards are verified (2026-10-16). Five were not found under the guessed board name and one returned no postings, so those 6 were removed. See `docs/job-sources.md`.
+
+**Decisions:**
+
+- Referrals are opt-in and counted against the alumnus's own weekly cap.
+- "Alumni at this company" respects profile visibility.
+- ATS boards are authoritative: a delisted job closes.
+- Imported levels are labelled "about".
+- Alerts run with the member's current permissions (`backgroundAuth`).
+
+**Bugs found and fixed while testing:**
+
+- Greenhouse descriptions are entity-escaped, so they are now decoded before stripping.
+- "Graduate Engineer Trainee" was not recognised as fresher-level.
+- Short search terms ("Mech") now fall back to a word-prefix match.
+- `.env.example` was missing `INGESTION_ENABLED` (Phase 4).
+
+**Gaps:**
+
+- No in-app applications by design.
+- Adzuna is off without keys.
+- Government job feeds need an admin to add a working RSS URL; none are verified starters.
