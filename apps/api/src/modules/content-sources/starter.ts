@@ -37,7 +37,7 @@ export const STARTER_SOURCES: StarterSource[] = [
     topics: ['tech-news'],
     branches: ['CSE', 'IT'],
     intervalMin: 360,
-    verifiedAt: null,
+    verifiedAt: '2026-10-16',
   },
   {
     key: 'freecodecamp-news',
@@ -47,7 +47,7 @@ export const STARTER_SOURCES: StarterSource[] = [
     topics: ['web-dev', 'dsa'],
     branches: ['CSE', 'IT'],
     intervalMin: 360,
-    verifiedAt: null,
+    verifiedAt: '2026-10-16',
   },
   {
     key: 'mozilla-hacks',
@@ -57,7 +57,7 @@ export const STARTER_SOURCES: StarterSource[] = [
     topics: ['web-dev'],
     branches: ['CSE', 'IT'],
     intervalMin: 720,
-    verifiedAt: null,
+    verifiedAt: '2026-10-16',
   },
   {
     key: 'aws-news-blog',
@@ -67,7 +67,7 @@ export const STARTER_SOURCES: StarterSource[] = [
     topics: ['cloud-devops'],
     branches: ['CSE', 'IT'],
     intervalMin: 720,
-    verifiedAt: null,
+    verifiedAt: '2026-10-16',
   },
   {
     key: 'ieee-spectrum',
@@ -77,17 +77,7 @@ export const STARTER_SOURCES: StarterSource[] = [
     topics: ['tech-news', 'electronics'],
     branches: ['ECE', 'EEE', 'CSE'],
     intervalMin: 360,
-    verifiedAt: null,
-  },
-  {
-    key: 'mit-news-engineering',
-    name: 'MIT News: Engineering',
-    publisher: 'Massachusetts Institute of Technology',
-    url: 'https://news.mit.edu/rss/topic/engineering',
-    topics: ['tech-news', 'higher-studies'],
-    branches: [],
-    intervalMin: 720,
-    verifiedAt: null,
+    verifiedAt: '2026-10-16',
   },
   {
     key: 'sciencedaily-computers',
@@ -97,7 +87,7 @@ export const STARTER_SOURCES: StarterSource[] = [
     topics: ['tech-news', 'ai-ml'],
     branches: ['CSE'],
     intervalMin: 720,
-    verifiedAt: null,
+    verifiedAt: '2026-10-16',
   },
   {
     key: 'nasa-news',
@@ -110,16 +100,6 @@ export const STARTER_SOURCES: StarterSource[] = [
     verifiedAt: null,
   },
   {
-    key: 'pib-releases',
-    name: 'PIB: Press Releases',
-    publisher: 'Press Information Bureau, Government of India',
-    url: 'https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3',
-    topics: ['govt-schemes'],
-    branches: [],
-    intervalMin: 180,
-    verifiedAt: null,
-  },
-  {
     key: 'the-hindu-education',
     name: 'The Hindu: Education',
     publisher: 'The Hindu',
@@ -127,16 +107,6 @@ export const STARTER_SOURCES: StarterSource[] = [
     topics: ['education-news'],
     branches: [],
     intervalMin: 180,
-    verifiedAt: null,
-  },
-  {
-    key: 'indian-express-education',
-    name: 'The Indian Express: Education',
-    publisher: 'The Indian Express',
-    url: 'https://indianexpress.com/section/education/feed/',
-    topics: ['education-news'],
-    branches: [],
-    intervalMin: 180,
-    verifiedAt: null,
+    verifiedAt: '2026-10-16',
   },
 ];

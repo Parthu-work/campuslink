@@ -3,7 +3,7 @@ import { extractHashtags, plainText, snippet } from '../src/lib/text.js';
 import { readMp4, stripMp4Metadata } from '../src/lib/mp4.js';
 import { parseRobots, robotsAllows } from '../src/lib/robots.js';
 import { linkPreview } from '../src/lib/link-preview.js';
-import { parseFeed, FeedParseError } from '../src/modules/content-sources/rss.js';
+import { declaresDtd, parseFeed, FeedParseError } from '../src/modules/content-sources/rss.js';
 import { canonicalUrl, contentHash, urlHash } from '../src/modules/content-sources/canonical.js';
 import { judge } from '../src/modules/content-sources/quality.js';
 import { autoTags } from '../src/modules/content-sources/tagging.js';
@@ -123,6 +123,22 @@ describe('feed parsing', () => {
       ),
     ).toThrow(FeedParseError);
     expect(() => parseFeed('<html><body>hi</body></html>')).toThrow(/not an RSS or Atom/);
+    // A DTD anywhere in the markup is refused, not only near the top.
+    expect(() =>
+      parseFeed(
+        `<rss><channel><title>${'x'.repeat(5000)}</title><!DOCTYPE y [<!ENTITY b "b">]></channel></rss>`,
+      ),
+    ).toThrow(FeedParseError);
+    // A comment cannot hide one either.
+    expect(declaresDtd('<!-- note --><!DOCTYPE z><rss/>')).toBe(true);
+  });
+
+  it('accepts feeds whose articles quote a doctype inside CDATA or comments', () => {
+    const f = parseFeed(
+      `<?xml version="1.0"?><rss version="2.0"><channel><title>Blog</title><!-- <!DOCTYPE note> --><item><title>Shipping HTML email templates</title><link>https://blog.example/p</link><description><![CDATA[<p>Start every template with <code><!DOCTYPE html></code> and avoid <!ENTITY tricks.</p>]]></description></item></channel></rss>`,
+    );
+    expect(f.items[0]?.title).toBe('Shipping HTML email templates');
+    expect(f.items[0]?.snippet).toContain('Start every template with');
   });
 });
 

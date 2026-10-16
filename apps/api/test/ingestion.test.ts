@@ -265,6 +265,22 @@ describe('starter list', () => {
     if (unverified)
       expect((await as(admin).post(`/admin/sources/starter/${unverified.key}`).send({})).status).toBe(409);
     expect((await as(admin).post('/admin/sources/starter/not-a-feed').send({})).status).toBe(404);
+    const verified = STARTER_SOURCES.find((s) => s.verifiedAt);
+    if (verified) {
+      const origin = new URL(verified.url).origin;
+      fake.routes[`${origin}/robots.txt`] = { status: 404 };
+      fake.routes[verified.url] = {
+        body: rss([{ title: 'Starter feed headline for the demo', link: `${origin}/x` }]),
+      };
+      const r = await as(admin).post(`/admin/sources/starter/${verified.key}`).send({});
+      expect(r.status).toBe(201);
+      expect(r.body.data).toMatchObject({ name: verified.name, url: verified.url });
+      expect((await as(admin).post(`/admin/sources/starter/${verified.key}`).send({})).status).toBe(409);
+      const again = (await as(admin).get('/admin/sources/starter')).body.data.find(
+        (x: { key: string }) => x.key === verified.key,
+      );
+      expect(again.added).toBe(true);
+    }
   });
 });
 

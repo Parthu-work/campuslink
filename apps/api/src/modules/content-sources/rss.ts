@@ -53,12 +53,21 @@ function date(s: string, now: Date): Date {
 }
 
 /**
+ * True when the document declares a DTD or entities anywhere in its markup. CDATA sections and
+ * comments are text, so they are removed first (articles often quote `<!DOCTYPE html>` there);
+ * outside them a literal `<!` can only be markup.
+ */
+export function declaresDtd(xml: string): boolean {
+  const markup = xml.replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, '').replace(/<!--[\s\S]*?-->/g, '');
+  return /<!DOCTYPE|<!ENTITY/i.test(markup);
+}
+
+/**
  * RSS 2.0 / Atom 1.0. Documents with a DOCTYPE or ENTITY declaration are refused outright (no DTD
  * processing at all: no XXE, no entity expansion bombs). Only snippets are kept, never full articles.
  */
 export function parseFeed(xml: string, now = new Date()): ParsedFeed {
-  if (/<!DOCTYPE|<!ENTITY/i.test(xml.slice(0, 4096)) || /<!ENTITY/i.test(xml))
-    throw new FeedParseError('Feeds with DTDs are not supported');
+  if (declaresDtd(xml)) throw new FeedParseError('Feeds with DTDs are not supported');
   let doc: Node;
   try {
     doc = parser.parse(xml) as Node;

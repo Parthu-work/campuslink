@@ -32,9 +32,22 @@ Health states: **new** (never fetched), **ok**, **failing** (last attempt failed
 
 ### Verification results
 
-| Key                      | Publisher | Result | Date |
-| ------------------------ | --------- | ------ | ---- |
-| (filled from the CI run) |           |        |      |
+GitHub Actions run of 2026-10-16 (`feeds` workflow, run 38842261299):
+
+| Feed                     | Result                                                              | Status                                                                     |
+| ------------------------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| stackoverflow-blog       | pass: RSS, 40 items, newest 0 days old                              | verified 2026-10-16                                                        |
+| freecodecamp-news        | pass: RSS, 10 items, newest 1 day old                               | verified 2026-10-16                                                        |
+| mozilla-hacks            | pass: RSS, 20 items, newest 52 days old                             | verified 2026-10-16                                                        |
+| aws-news-blog            | pass: RSS, 20 items, newest 1 day old                               | verified 2026-10-16                                                        |
+| ieee-spectrum            | pass: RSS, 30 items, newest 0 days old                              | verified 2026-10-16                                                        |
+| sciencedaily-computers   | pass: RSS, 60 items, newest 2 days old                              | verified 2026-10-16                                                        |
+| the-hindu-education      | pass: RSS, 60 items, newest 1 day old                               | verified 2026-10-16                                                        |
+| github-blog              | failed: our DTD guard fired (likely a doctype quoted in an article) | parser fixed (CDATA and comments are ignored); re-verified in the next run |
+| nasa-news                | failed: 429, rate-limited on the shared runner IP                   | stays unverified; retried weekly                                           |
+| mit-news-engineering     | failed: newest item 203 days old                                    | removed from the list (stale)                                              |
+| pib-releases             | failed: 403 for our bot                                             | removed: the publisher refuses automated fetching                          |
+| indian-express-education | failed: 403 for our bot                                             | removed: the publisher refuses automated fetching                          |
 
 ## Terms and attribution
 
