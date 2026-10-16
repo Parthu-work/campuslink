@@ -46,7 +46,8 @@ jobs:
       - name: Tenant isolation + permission suites (must pass; listed separately for visibility)
         run: pnpm --filter @campuslink/api exec vitest run test/isolation test/permissions.test.ts
       - name: API coverage (security-critical modules ≥ 80%)
-        run: pnpm --filter @campuslink/api exec vitest run --coverage
+        # The github-actions reporter turns any failing test into a readable annotation.
+        run: pnpm --filter @campuslink/api exec vitest run --coverage --reporter=default --reporter=github-actions
       - run: pnpm build
 
   e2e:

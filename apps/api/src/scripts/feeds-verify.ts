@@ -11,7 +11,7 @@ import { STARTER_SOURCES } from '../modules/content-sources/starter.js';
 const RECENT_DAYS = 120;
 
 async function main() {
-  const rows: { key: string; ok: boolean; verified: boolean; detail: string }[] = [];
+  const rows: { key: string; ok: boolean; verified: boolean; retry: boolean; detail: string }[] = [];
   for (const s of STARTER_SOURCES) {
     const r = await fetchFeed(s.url, safeFetch);
     if (r.kind !== 'ok') {
@@ -19,6 +19,8 @@ async function main() {
         key: s.key,
         ok: false,
         verified: !!s.verifiedAt,
+        // 429/503: the source asked us to slow down; inconclusive, retried on the next run.
+        retry: r.kind === 'error' && r.retryAfterSec !== null,
         detail: 'message' in r ? r.message : 'not modified',
       });
       continue;
@@ -30,6 +32,7 @@ async function main() {
       key: s.key,
       ok,
       verified: !!s.verifiedAt,
+      retry: false,
       detail: `${r.feed.format}, ${r.feed.items.length} items, newest ${ageDays} days old${ok ? '' : ' (stale or empty)'}`,
     });
   }
@@ -39,7 +42,9 @@ async function main() {
     '',
     '| Feed | Result | Detail |',
     '| --- | --- | --- |',
-    ...rows.map((r) => `| ${r.key} | ${r.ok ? 'pass' : 'FAIL'} | ${r.detail.replace(/\|/g, '/')} |`),
+    ...rows.map(
+      (r) => `| ${r.key} | ${r.ok ? 'pass' : r.retry ? 'RETRY' : 'FAIL'} | ${r.detail.replace(/\|/g, '/')} |`,
+    ),
   ].join('\n');
   console.warn(md);
   console.warn(
@@ -52,12 +57,12 @@ async function main() {
   // One annotation with every result: readable through the REST API (check-run annotations) even
   // where log downloads are not reachable.
   if (process.env.GITHUB_ACTIONS) {
-    const lines = rows.map((r) => `${r.ok ? 'pass' : 'FAIL'} ${r.key}: ${r.detail}`);
+    const lines = rows.map((r) => `${r.ok ? 'pass' : r.retry ? 'RETRY' : 'FAIL'} ${r.key}: ${r.detail}`);
     const enc = (v: string) => v.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
     process.stdout.write(`::notice title=Starter feed verification ${date}::${enc(lines.join('\n'))}\n`);
   }
-  // Red only when a verified feed regresses; failing candidates simply stay unverified.
-  if (rows.some((r) => r.verified && !r.ok)) process.exitCode = 1;
+  // Red only when a verified feed definitely regresses (rate limits are retried next run).
+  if (rows.some((r) => r.verified && !r.ok && !r.retry)) process.exitCode = 1;
 }
 
 main().catch((err: unknown) => {
