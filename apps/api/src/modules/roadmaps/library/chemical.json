@@ -1,0 +1,266 @@
+{
+  "key": "chemical",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Chemical Engineer (Core)",
+  "category": "core-engineering",
+  "branches": ["CHEM"],
+  "summary": "Chemical engineers design and run processes that turn raw materials into fuels, chemicals, medicines and food. This path suits students who like balances, thermodynamics and simulating a plant before it is built.",
+  "outcomes": [
+    "Process Engineer",
+    "Production / Plant Engineer",
+    "Process Simulation Engineer",
+    "PSU Executive Trainee"
+  ],
+  "sources": [
+    {
+      "title": "GATE 2027 Chemical Engineering (CH) syllabus – IIT Madras",
+      "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CH_GATE2027_Syllabus.pdf"
+    },
+    {
+      "title": "DWSIM – A Chemical Process Simulator – FOSSEE",
+      "url": "https://fossee.in/node/27"
+    },
+    {
+      "title": "IIChE Rules and Regulations",
+      "url": "https://iiche.org.in/pdfs/RulesandRegulations.pdf"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "process-calculations",
+      "title": "Process calculations: material and energy balances",
+      "kind": "skill",
+      "summary": "Learn units, single and multi-unit material balances, recycle and bypass, reactions and energy balances. This is the language of every chemical plant and the first CH topic in GATE.",
+      "prerequisites": [],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Material & Energy Balance Computations – NPTEL (IIT Kharagpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_ch50/preview"
+        }
+      ],
+      "proof": "Solved notes for 25+ balance problems, including at least five with recycle or reaction.",
+      "sources": [
+        {
+          "title": "Material & Energy Balance Computations – NPTEL (IIT Kharagpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_ch50/preview"
+        },
+        {
+          "title": "GATE 2027 CH syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CH_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "thermodynamics",
+      "title": "Chemical engineering thermodynamics",
+      "kind": "skill",
+      "summary": "Learn equations of state, solution thermodynamics, phase equilibria and reaction equilibria. You need these to choose the right property model in a simulator and to answer interview questions.",
+      "prerequisites": ["process-calculations"],
+      "estimateHours": [70, 120],
+      "resources": [
+        {
+          "title": "Chemical Engineering Thermodynamics – NPTEL (IIT Tirupati)",
+          "url": "https://onlinecourses.nptel.ac.in/noc24_ch31/preview"
+        }
+      ],
+      "proof": "A worked vapour-liquid equilibrium (VLE) example for a binary mixture, with a hand-drawn or plotted T-x-y diagram.",
+      "sources": [
+        {
+          "title": "Chemical Engineering Thermodynamics – NPTEL (IIT Tirupati)",
+          "url": "https://onlinecourses.nptel.ac.in/noc24_ch31/preview"
+        },
+        {
+          "title": "GATE 2027 CH syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CH_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "process-simulation",
+      "title": "Process simulation with DWSIM",
+      "kind": "skill",
+      "summary": "DWSIM is a free, open-source process simulator. Learn to set up components, property packages, streams and unit operations using the FOSSEE spoken tutorials.",
+      "prerequisites": ["thermodynamics"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "DWSIM – A Chemical Process Simulator – FOSSEE",
+          "url": "https://fossee.in/node/27"
+        },
+        {
+          "title": "DWSIM on FOSSEE (spoken tutorials link)",
+          "url": "https://dwsim.fossee.in/node/10"
+        },
+        {
+          "title": "DWSIM Instruction Sheet – Spoken Tutorial",
+          "url": "https://website.spoken-tutorial.org/media/videos/78/DWSIM-Instruction-Sheet-English.pdf"
+        }
+      ],
+      "proof": "A DWSIM file for a simple flash or distillation column, with a screenshot and a note on why you chose the property package.",
+      "sources": [
+        {
+          "title": "DWSIM – A Chemical Process Simulator – FOSSEE",
+          "url": "https://fossee.in/node/27"
+        },
+        {
+          "title": "DWSIM Brochure – Spoken Tutorial",
+          "url": "https://website.spoken-tutorial.org/media/videos/78/DWSIM-Brochure-English.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "process-safety",
+      "title": "Chemical process safety",
+      "kind": "skill",
+      "summary": "Learn the basics of toxicology, fires and explosions, relief systems, HAZOP and risk assessment. Plants take safety very seriously, and interviewers often ask about HAZOP.",
+      "prerequisites": ["thermodynamics"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Chemical Process Safety – NPTEL (IIT Roorkee)",
+          "url": "https://archive.nptel.ac.in/noc/courses/noc20/SEM2/noc20-ch38"
+        },
+        {
+          "title": "Chemical Process Safety – NPTEL preview",
+          "url": "https://onlinecourses.nptel.ac.in/noc20_ch38/preview"
+        }
+      ],
+      "proof": "A small HAZOP table (nodes, deviations, causes, safeguards) for one unit of your flowsheet.",
+      "sources": [
+        {
+          "title": "Chemical Process Safety – NPTEL (IIT Roorkee)",
+          "url": "https://archive.nptel.ac.in/noc/courses/noc20/SEM2/noc20-ch38"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "flowsheet-project",
+      "title": "FOSSEE DWSIM flowsheeting project",
+      "kind": "project",
+      "summary": "Recreate a real process flowsheet from a textbook or journal in DWSIM through the FOSSEE flowsheeting project. Reviewed submissions get a FOSSEE internship e-certificate.",
+      "prerequisites": ["process-simulation"],
+      "estimateHours": [40, 100],
+      "resources": [
+        {
+          "title": "Flowsheeting Project – DWSIM FOSSEE",
+          "url": "https://dwsim.fossee.in/node/22"
+        },
+        {
+          "title": "Flowsheet proposal guidelines – DWSIM FOSSEE",
+          "url": "https://dwsim.fossee.in/node/23"
+        }
+      ],
+      "proof": "A completed flowsheet (more than two unit operations) with a short report comparing your results to the source.",
+      "sources": [
+        {
+          "title": "Flowsheeting Project – DWSIM FOSSEE",
+          "url": "https://dwsim.fossee.in/node/22"
+        },
+        {
+          "title": "Flowsheet proposal guidelines – DWSIM FOSSEE",
+          "url": "https://dwsim.fossee.in/node/23"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "professional-body",
+      "title": "Join IIChE as a student member",
+      "kind": "milestone",
+      "summary": "Undergraduate chemical engineering students can become IIChE student members, usually through a college student chapter. Chapter events are a good way to meet working engineers.",
+      "prerequisites": ["process-calculations"],
+      "estimateHours": [5, 20],
+      "resources": [
+        {
+          "title": "IIChE Rules and Regulations",
+          "url": "https://iiche.org.in/pdfs/RulesandRegulations.pdf"
+        }
+      ],
+      "proof": "Student membership or chapter role, and one event you attended or helped run, summarised in a short note.",
+      "sources": [
+        {
+          "title": "IIChE Rules and Regulations",
+          "url": "https://iiche.org.in/pdfs/RulesandRegulations.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gate-psu",
+      "title": "GATE CH and PSU recruitment",
+      "kind": "exam",
+      "summary": "Oil and gas PSUs such as GAIL and IndianOil have hired chemical engineers using GATE CH scores. Use the official syllabus and past papers, and read each PSU advertisement for eligibility.",
+      "prerequisites": ["process-calculations", "thermodynamics"],
+      "estimateHours": [300, 600],
+      "resources": [
+        {
+          "title": "GATE 2027 CH syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CH_GATE2027_Syllabus.pdf"
+        },
+        {
+          "title": "GATE 2027 downloads (past papers) – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/download"
+        },
+        {
+          "title": "GAIL – Executive Trainee through GATE 2027 (advertisement)",
+          "url": "https://www.gailonline.com/careers/currentOpnning/GATE-2027-1st-Advertisement-01092026.pdf"
+        }
+      ],
+      "proof": "Three full past CH papers solved under time limits, with a topic-wise error log.",
+      "sources": [
+        {
+          "title": "IIT Madras announces GATE 2027 dates, syllabus revision and new paper",
+          "url": "https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper"
+        },
+        {
+          "title": "GAIL – Executive Trainee through GATE 2027 (advertisement)",
+          "url": "https://www.gailonline.com/careers/currentOpnning/GATE-2027-1st-Advertisement-01092026.pdf"
+        },
+        {
+          "title": "IndianOil – Recruitment of Engineers/Officers through GATE-2019",
+          "url": "https://www.iocl.com/download/Detailed-Advertisement-Open-Recruitment-through-GATE-%202019.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview and placement preparation",
+      "kind": "milestone",
+      "summary": "Revise core subjects with past GATE questions, practise explaining your flowsheet and HAZOP, and work on group discussion and interview skills. PSU selection often adds a GD and interview after GATE.",
+      "prerequisites": ["flowsheet-project", "process-safety"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Soft Skills – NPTEL (IIT Roorkee)",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_hs76/preview"
+        },
+        {
+          "title": "NPTEL Soft Skills Training",
+          "url": "https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html"
+        },
+        {
+          "title": "GATE 2027 downloads (past papers) – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/download"
+        }
+      ],
+      "proof": "Two mock interviews done with a senior or faculty member, and a one-page résumé listing your DWSIM project.",
+      "sources": [
+        {
+          "title": "NPTEL Soft Skills Training (includes HR mock interview)",
+          "url": "https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html"
+        },
+        {
+          "title": "IndianOil – Recruitment of Engineers/Officers through GATE-2019",
+          "url": "https://www.iocl.com/download/Detailed-Advertisement-Open-Recruitment-through-GATE-%202019.pdf"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

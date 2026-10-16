@@ -1,0 +1,275 @@
+{
+  "key": "game-dev",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Game Developer",
+  "category": "software",
+  "branches": ["CSE", "IT"],
+  "summary": "Game developers write the code that makes games play: movement, physics, AI, UI and tools, usually inside an engine like Unity or Godot. It suits students who like programming, maths and finishing small playable things.",
+  "outcomes": ["Game Developer", "Gameplay Programmer", "Unity Developer", "Game Tools Programmer"],
+  "sources": [
+    {
+      "title": "Game Developer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/game-developer"
+    },
+    {
+      "title": "Game Developer Roadmap (PDF) – roadmap.sh",
+      "url": "https://roadmap.sh/pdfs/roadmaps/game-developer.pdf"
+    },
+    {
+      "title": "Unity Learn Pathways",
+      "url": "https://learn.unity.com/pathways"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "csharp-programming",
+      "title": "Programming in C#",
+      "kind": "skill",
+      "summary": "Learn one language well: variables, loops, functions, classes and collections. C# is used for Unity scripting and is also supported by Godot, so it is a practical first choice.",
+      "prerequisites": [],
+      "estimateHours": [50, 90],
+      "resources": [
+        {
+          "title": "Get started with C#, Part 1 – Microsoft Learn",
+          "url": "https://learn.microsoft.com/en-us/training/paths/get-started-c-sharp-part-1/"
+        },
+        {
+          "title": "C# Guide – Microsoft Learn",
+          "url": "https://learn.microsoft.com/en-us/dotnet/csharp/"
+        }
+      ],
+      "proof": "A console game (such as number guessing or tic-tac-toe) in C# with classes and clean, commented code on GitHub.",
+      "sources": [
+        {
+          "title": "Game Developer Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/game-developer.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "game-math",
+      "title": "Maths for games",
+      "kind": "skill",
+      "summary": "Vectors, matrices and coordinate systems are how games move, rotate and draw things. Revise linear algebra with a focus on what it means in 2D and 3D space rather than exam tricks.",
+      "prerequisites": [],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "18.06 Linear Algebra – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/"
+        },
+        {
+          "title": "Coordinate Systems – LearnOpenGL",
+          "url": "https://learnopengl.com/Getting-started/Coordinate-Systems"
+        }
+      ],
+      "proof": "A small script or demo that moves and rotates a shape using vector and matrix maths you wrote yourself.",
+      "sources": [
+        {
+          "title": "Game Developer Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/game-developer.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "engine-basics",
+      "title": "A game engine: Unity or Godot",
+      "kind": "skill",
+      "summary": "Pick one engine and learn its editor, scenes, objects, physics, audio and scripting. Unity Essentials and Godot's step-by-step guide are free and aimed at beginners.",
+      "prerequisites": ["csharp-programming"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Unity Essentials Pathway – Unity Learn",
+          "url": "https://learn.unity.com/pathway/unity-essentials"
+        },
+        {
+          "title": "Step by step – Godot Docs",
+          "url": "https://docs.godotengine.org/en/stable/getting_started/step_by_step/index.html"
+        }
+      ],
+      "proof": "Finish the Unity Essentials pathway or Godot's step-by-step section and show one scene you built yourself.",
+      "sources": [
+        {
+          "title": "Unity Essentials Pathway – Unity Learn",
+          "url": "https://learn.unity.com/pathway/unity-essentials"
+        },
+        {
+          "title": "Game Developer Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/game-developer.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "first-2d-game",
+      "title": "Build your first 2D games",
+      "kind": "project",
+      "summary": "Make small, complete 2D games before anything big. Godot's 'Dodge the Creeps' tutorial covers player movement, enemies, score and UI; CS50's archived 2D course rebuilds classics like Pong and Breakout.",
+      "prerequisites": ["engine-basics"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Your first 2D game – Godot Docs",
+          "url": "https://docs.godotengine.org/en/stable/getting_started/first_2d_game/index.html"
+        },
+        {
+          "title": "CS50's Introduction to 2D Game Development (archived)",
+          "url": "https://cs50.harvard.edu/games/"
+        }
+      ],
+      "proof": "Two small finished 2D games with a start screen, score and game-over, playable from a link.",
+      "sources": [
+        {
+          "title": "Your first 2D game – Godot Docs",
+          "url": "https://docs.godotengine.org/en/stable/getting_started/first_2d_game/index.html"
+        },
+        {
+          "title": "CS50's Introduction to 2D Game Development",
+          "url": "https://cs50.harvard.edu/games/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "game-patterns",
+      "title": "Game code architecture",
+      "kind": "skill",
+      "summary": "As games grow, messy code slows you down. Learn common patterns such as component and observer, explained with examples in the free online book Game Programming Patterns.",
+      "prerequisites": ["first-2d-game"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Game Programming Patterns (free web edition)",
+          "url": "https://gameprogrammingpatterns.com/"
+        },
+        {
+          "title": "Component – Game Programming Patterns",
+          "url": "https://gameprogrammingpatterns.com/component.html"
+        }
+      ],
+      "proof": "Refactor one of your games to use a state machine or component pattern and explain the change in the README.",
+      "sources": [
+        {
+          "title": "Game Programming Patterns",
+          "url": "https://gameprogrammingpatterns.com/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "graphics-fundamentals",
+      "title": "Graphics fundamentals (optional)",
+      "kind": "skill",
+      "summary": "For engine or graphics roles, learn how a GPU draws a frame: vertex and fragment shaders, buffers and textures. LearnOpenGL teaches this in C++ with modern OpenGL.",
+      "prerequisites": ["game-math", "csharp-programming"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "LearnOpenGL",
+          "url": "https://learnopengl.com/"
+        },
+        {
+          "title": "Hello Triangle – LearnOpenGL",
+          "url": "https://learnopengl.com/Getting-started/Hello-Triangle"
+        },
+        {
+          "title": "Shaders – LearnOpenGL",
+          "url": "https://learnopengl.com/Getting-started/Shaders"
+        }
+      ],
+      "proof": "A C++ OpenGL program that draws a textured, rotating cube with your own shaders.",
+      "sources": [
+        {
+          "title": "Game Developer Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/game-developer.pdf"
+        },
+        {
+          "title": "LearnOpenGL – OpenGL",
+          "url": "https://learnopengl.com/Getting-started/OpenGL"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "game-jams",
+      "title": "Join game jams",
+      "kind": "project",
+      "summary": "Game jams are short events where you build a game around a theme, alone or in a team. itch.io lists many free online jams. They teach you to scope small, finish on time and work with others.",
+      "prerequisites": ["first-2d-game"],
+      "estimateHours": [20, 50],
+      "resources": [
+        {
+          "title": "Game jams – itch.io",
+          "url": "https://itch.io/jams"
+        },
+        {
+          "title": "Upcoming Game Jams – itch.io",
+          "url": "https://itch.io/jams/upcoming"
+        }
+      ],
+      "proof": "Submit a playable entry to at least one online game jam and note what you would change after reading player feedback.",
+      "sources": [
+        {
+          "title": "Game jams – itch.io",
+          "url": "https://itch.io/jams"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "polished-portfolio-game",
+      "title": "One polished portfolio game",
+      "kind": "project",
+      "summary": "Take your best jam or practice game and polish it: menus, sound, juice, bug fixes and a short trailer or GIF. One finished, polished game usually says more than many half-built ones.",
+      "prerequisites": ["game-patterns", "game-jams"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "Unity Learn Pathways",
+          "url": "https://learn.unity.com/pathways"
+        },
+        {
+          "title": "Game Programming Patterns",
+          "url": "https://gameprogrammingpatterns.com/"
+        }
+      ],
+      "proof": "A public game page with a playable build, screenshots, controls and a link to clean source code.",
+      "sources": [
+        {
+          "title": "Game Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/game-developer"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "interview-job-search",
+      "title": "Interview prep and job search",
+      "kind": "milestone",
+      "summary": "Prepare to explain your games' code, patterns and maths, and revise data structures and C# or C++ basics. Apply to game studios and also to related roles (simulation, AR/VR, interactive apps) that use the same engines.",
+      "prerequisites": ["polished-portfolio-game"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Game Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/game-developer"
+        },
+        {
+          "title": "C# Guide – Microsoft Learn",
+          "url": "https://learn.microsoft.com/en-us/dotnet/csharp/"
+        }
+      ],
+      "proof": "A one-page portfolio site linking your games, plus a mock interview where you walk through one system you built.",
+      "sources": [
+        {
+          "title": "Game Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/game-developer"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

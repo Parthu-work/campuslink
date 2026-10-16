@@ -1,0 +1,283 @@
+{
+  "key": "blockchain",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Blockchain Developer",
+  "category": "software",
+  "branches": ["CSE", "IT"],
+  "summary": "Blockchain developers write and test smart contracts and build the apps that talk to them. It suits students who enjoy programming, care about security and are comfortable in a small, fast-changing field.",
+  "outcomes": ["Smart Contract Developer", "Blockchain Developer", "Web3 Frontend Developer"],
+  "sources": [
+    {
+      "title": "Blockchain Developer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/blockchain"
+    },
+    {
+      "title": "Ethereum development documentation – ethereum.org",
+      "url": "https://ethereum.org/developers/docs/"
+    },
+    {
+      "title": "Blockchain and Money – MIT OpenCourseWare",
+      "url": "https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "javascript-basics",
+      "title": "JavaScript basics",
+      "kind": "skill",
+      "summary": "Learn modern JavaScript: functions, objects, modules and promises. Most blockchain client libraries, such as ethers.js, and most dApp front ends are written in JavaScript.",
+      "prerequisites": [],
+      "estimateHours": [50, 90],
+      "resources": [
+        {
+          "title": "JavaScript Guide – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide"
+        },
+        {
+          "title": "Learn web development – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development"
+        }
+      ],
+      "proof": "A small Node.js script that fetches JSON from a public API using async/await and prints a summary.",
+      "sources": [
+        {
+          "title": "Ethers.js v6 documentation",
+          "url": "https://docs.ethers.org/v6/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "blockchain-basics",
+      "title": "How blockchains work",
+      "kind": "skill",
+      "summary": "Understand blocks, hashing, digital signatures, consensus and the double-spending problem. Reading the original Bitcoin paper and MIT's open lectures gives you the ideas behind every chain.",
+      "prerequisites": [],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Bitcoin: A Peer-to-Peer Electronic Cash System (paper)",
+          "url": "https://bitcoin.org/bitcoin.pdf"
+        },
+        {
+          "title": "Session 3: Blockchain Basics & Cryptography – MIT OCW",
+          "url": "https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/resources/session-3-blockchain-basics-cryptography/"
+        }
+      ],
+      "proof": "Explain in a short blog post or README how a chain of hashes and signatures stops someone spending the same coin twice.",
+      "sources": [
+        {
+          "title": "Blockchain Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/blockchain.pdf"
+        },
+        {
+          "title": "Blockchain and Money – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ethereum-evm",
+      "title": "Ethereum and the EVM",
+      "kind": "skill",
+      "summary": "Learn how Ethereum accounts, transactions, gas and the Ethereum Virtual Machine work. A smart contract is code and data stored at one address, and knowing this model helps you write cheaper, safer contracts.",
+      "prerequisites": ["blockchain-basics"],
+      "estimateHours": [15, 30],
+      "resources": [
+        {
+          "title": "Technical intro to Ethereum – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/intro-to-ethereum/"
+        },
+        {
+          "title": "Introduction to smart contracts – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/smart-contracts/"
+        }
+      ],
+      "proof": "A diagram with notes showing what happens from signing a transaction to it being included in a block.",
+      "sources": [
+        {
+          "title": "Introduction to smart contracts – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/smart-contracts/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "solidity",
+      "title": "Solidity smart contracts",
+      "kind": "skill",
+      "summary": "Learn Solidity, the most widely used Ethereum contract language: state variables, functions, visibility, events and error handling with require and revert. Start with the official docs' simple storage and coin examples.",
+      "prerequisites": ["javascript-basics", "ethereum-evm"],
+      "estimateHours": [50, 90],
+      "resources": [
+        {
+          "title": "Introduction to Smart Contracts – Solidity docs",
+          "url": "https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html"
+        },
+        {
+          "title": "Anatomy of smart contracts – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/smart-contracts/anatomy/"
+        }
+      ],
+      "proof": "Write and explain a simple token or voting contract with events and access checks.",
+      "sources": [
+        {
+          "title": "Smart contract languages – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/smart-contracts/languages/"
+        },
+        {
+          "title": "Blockchain Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/blockchain.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "testing-tools",
+      "title": "Testing and development tools",
+      "kind": "skill",
+      "summary": "Use a development framework such as Foundry to compile, test and deploy contracts locally. Write unit tests and fuzz tests; deployed contracts are hard to change, so testing matters more than in normal apps.",
+      "prerequisites": ["solidity"],
+      "estimateHours": [25, 50],
+      "resources": [
+        {
+          "title": "Getting Started – Foundry Book",
+          "url": "https://book.getfoundry.sh/getting-started/first-steps"
+        },
+        {
+          "title": "Tests – Foundry Book",
+          "url": "https://book.getfoundry.sh/forge/tests"
+        },
+        {
+          "title": "Testing smart contracts – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/smart-contracts/testing/"
+        }
+      ],
+      "proof": "A Foundry project with unit tests and at least one fuzz test that all pass with forge test.",
+      "sources": [
+        {
+          "title": "Testing smart contracts – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/smart-contracts/testing/"
+        },
+        {
+          "title": "Blockchain Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/blockchain.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "contract-security",
+      "title": "Smart contract security",
+      "kind": "skill",
+      "summary": "Bugs in contracts can lose real money, so learn access control, safe checks, testing plus static analysis (for example Slither), and planning for failure. Audits help but do not catch every bug.",
+      "prerequisites": ["testing-tools"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Smart contract security – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/smart-contracts/security/"
+        },
+        {
+          "title": "A guide to smart contract security tools – ethereum.org",
+          "url": "https://ethereum.org/developers/tutorials/guide-to-smart-contract-security-tools/"
+        },
+        {
+          "title": "Smart contract security checklist – ethereum.org",
+          "url": "https://ethereum.org/developers/tutorials/secure-development-workflow/"
+        }
+      ],
+      "proof": "Run a static analyser on your own contract, fix what it finds and record each issue and fix in the README.",
+      "sources": [
+        {
+          "title": "Smart contract security – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/smart-contracts/security/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "dapp-frontend",
+      "title": "Connecting apps to contracts",
+      "kind": "skill",
+      "summary": "Learn how a web app reads from and writes to a contract using its ABI, a provider and a signer. Reads are free; writes need a signed transaction and gas. ethers.js is one common library for this.",
+      "prerequisites": ["javascript-basics", "solidity"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Ethers.js v6 documentation",
+          "url": "https://docs.ethers.org/v6/"
+        },
+        {
+          "title": "Interacting with smart contracts – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/smart-contracts/interacting/"
+        }
+      ],
+      "proof": "A small web page that shows a value from your contract and lets a user update it from a browser wallet on a test network.",
+      "sources": [
+        {
+          "title": "Interacting with smart contracts – ethereum.org",
+          "url": "https://ethereum.org/developers/docs/smart-contracts/interacting/"
+        },
+        {
+          "title": "Blockchain Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/blockchain.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "portfolio-dapp",
+      "title": "Portfolio dApp on a test network",
+      "kind": "project",
+      "summary": "Build one complete project: a tested, security-reviewed contract deployed to a public test network such as Sepolia, with a simple front end. Use test networks only; never spend real money while learning.",
+      "prerequisites": ["contract-security", "dapp-frontend"],
+      "estimateHours": [50, 100],
+      "resources": [
+        {
+          "title": "Hello World Smart Contract for Beginners – ethereum.org",
+          "url": "https://ethereum.org/developers/tutorials/hello-world-smart-contract/"
+        },
+        {
+          "title": "Getting Started – Foundry Book",
+          "url": "https://book.getfoundry.sh/getting-started/first-steps"
+        }
+      ],
+      "proof": "A public GitHub repo with contract, tests, front end, testnet address and a README explaining design and security choices.",
+      "sources": [
+        {
+          "title": "Hello World Smart Contract for Beginners – ethereum.org",
+          "url": "https://ethereum.org/developers/tutorials/hello-world-smart-contract/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-job-search",
+      "title": "Interview prep and job search",
+      "kind": "milestone",
+      "summary": "Practise explaining your contracts, tests and security choices, and revise core programming and data structures too. Blockchain hiring is smaller and changes quickly, so also apply for general backend or frontend roles. Watch for scams.",
+      "prerequisites": ["portfolio-dapp"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Education & community resources – ethereum.org",
+          "url": "https://ethereum.org/developers/tools/education/"
+        },
+        {
+          "title": "Ethereum security and scam prevention – ethereum.org",
+          "url": "https://ethereum.org/security/"
+        }
+      ],
+      "proof": "Give a 10-minute walkthrough of your portfolio dApp to a senior or friend, including one bug you found and fixed.",
+      "sources": [
+        {
+          "title": "Blockchain Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/blockchain"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

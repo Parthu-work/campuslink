@@ -1,0 +1,273 @@
+{
+  "key": "mechanical",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Mechanical Engineer (Core)",
+  "category": "core-engineering",
+  "branches": ["MECH"],
+  "summary": "Mechanical engineers design, analyse and make machines and products. This path suits students who like drawing parts, understanding how heat and materials behave, and testing designs on a computer before they are built.",
+  "outcomes": ["Design Engineer", "CAE / Simulation Engineer", "Production Engineer", "PSU Engineer Trainee"],
+  "sources": [
+    {
+      "title": "GATE 2027 Mechanical Engineering (ME) syllabus – IIT Madras",
+      "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/ME_GATE2027_Syllabus.pdf"
+    },
+    {
+      "title": "Engineering Graphics and Design – NPTEL (IIT Delhi)",
+      "url": "https://onlinecourses.nptel.ac.in/noc22_me68/preview"
+    },
+    {
+      "title": "Student Membership – ASME",
+      "url": "https://asme.org/membership/student-membership"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "drawing-cad",
+      "title": "Engineering drawing and 3D CAD",
+      "kind": "skill",
+      "summary": "Learn to read and make engineering drawings (projections, sections, dimensions), then model parts and assemblies in a CAD tool. Almost every core job expects you to read drawings and use CAD.",
+      "prerequisites": [],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Engineering Graphics and Design – NPTEL (IIT Delhi)",
+          "url": "https://onlinecourses.nptel.ac.in/noc22_me68/preview"
+        },
+        {
+          "title": "FreeCAD Online Help Startpage",
+          "url": "https://wiki.freecad.org/Online_Help_Startpage"
+        },
+        {
+          "title": "Autodesk Fusion for education",
+          "url": "https://www.autodesk.com/in/education/edu-software/fusion"
+        }
+      ],
+      "proof": "A drawing set and 3D assembly of a small mechanism (for example a bench vice) with dimensioned part drawings.",
+      "sources": [
+        {
+          "title": "Engineering Graphics and Design – NPTEL (IIT Delhi)",
+          "url": "https://onlinecourses.nptel.ac.in/noc22_me68/preview"
+        },
+        {
+          "title": "Autodesk Fusion for education",
+          "url": "https://www.autodesk.com/in/education/edu-software/fusion"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "thermo-manufacturing",
+      "title": "Thermodynamics and manufacturing basics",
+      "kind": "skill",
+      "summary": "Get strong in the first and second laws, cycles and properties, and in casting, machining, forming and joining. These topics are core GATE sections and come up in most technical interviews.",
+      "prerequisites": [],
+      "estimateHours": [80, 140],
+      "resources": [
+        {
+          "title": "Thermodynamics – NPTEL (Prof. S. R. Kale, IIT Delhi)",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_me78/preview"
+        },
+        {
+          "title": "Manufacturing Process Technology I & II – NPTEL (IIT Kanpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_me51/preview"
+        }
+      ],
+      "proof": "Solved notes for 30+ numericals across both subjects, plus a one-page process plan for making a simple part.",
+      "sources": [
+        {
+          "title": "GATE 2027 ME syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/ME_GATE2027_Syllabus.pdf"
+        },
+        {
+          "title": "Manufacturing Process Technology I & II – NPTEL (IIT Kanpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_me51/preview"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "cae-simulation",
+      "title": "CAE and simulation (FEA basics)",
+      "kind": "skill",
+      "summary": "Learn what finite element analysis does, then run simple stress and heat-transfer studies with a free student simulation tool. Learn to check results against hand calculations, not just make colourful plots.",
+      "prerequisites": ["drawing-cad", "thermo-manufacturing"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "Ansys Student – free download",
+          "url": "https://www.ansys.com/academic/students/ansys-student"
+        },
+        {
+          "title": "Fundamentals of Finite Element (FE) Method – Ansys Innovation Space",
+          "url": "https://innovationspace.ansys.com/product/fundamentals-of-finite-element-fe-method/"
+        },
+        {
+          "title": "Finite Element Method – NPTEL (IIT Kharagpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_ce21/preview"
+        }
+      ],
+      "proof": "A static stress study of a bracket with a mesh check and a hand calculation that agrees with the result.",
+      "sources": [
+        {
+          "title": "Ansys Student – free download",
+          "url": "https://www.ansys.com/academic/students/ansys-student"
+        },
+        {
+          "title": "Finite Element Method – NPTEL (IIT Kharagpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_ce21/preview"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "student-team",
+      "title": "Join a student team or professional body",
+      "kind": "milestone",
+      "summary": "Join your college's ASME or SAEINDIA chapter, or a vehicle team. Working on a real build teaches teamwork, deadlines and design trade-offs that interviewers ask about.",
+      "prerequisites": ["drawing-cad"],
+      "estimateHours": [10, 30],
+      "resources": [
+        {
+          "title": "Student Membership – ASME",
+          "url": "https://asme.org/membership/student-membership"
+        },
+        {
+          "title": "BAJA SAEINDIA press release (official)",
+          "url": "https://bajasaeindia.org/upload/Pressrelease/Press%20Release%20Preliminary%20BAJA%20SAEINDIA%202024_1690821286.pdf"
+        }
+      ],
+      "proof": "A role on a team or chapter, with one sub-system or event you owned written up in a short note.",
+      "sources": [
+        {
+          "title": "Student Membership – ASME",
+          "url": "https://asme.org/membership/student-membership"
+        },
+        {
+          "title": "BAJA SAEINDIA press release (official)",
+          "url": "https://bajasaeindia.org/upload/Pressrelease/Press%20Release%20Preliminary%20BAJA%20SAEINDIA%202024_1690821286.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "design-project",
+      "title": "Design, simulate and document a part",
+      "kind": "project",
+      "summary": "Pick one real part (a bracket, gear pair or vehicle component), model it in CAD, check it with simulation, and write a short design report with drawings, calculations and what you would change.",
+      "prerequisites": ["cae-simulation"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "FreeCAD Online Help Startpage",
+          "url": "https://wiki.freecad.org/Online_Help_Startpage"
+        },
+        {
+          "title": "Ansys Student – free download",
+          "url": "https://www.ansys.com/academic/students/ansys-student"
+        }
+      ],
+      "proof": "A public portfolio page or PDF with the CAD model, drawings, simulation results and a hand-check of the key numbers.",
+      "sources": [
+        {
+          "title": "Engineering Graphics and Design – NPTEL (design project in course outline)",
+          "url": "https://onlinecourses.nptel.ac.in/noc22_me68/preview"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gate-psu",
+      "title": "GATE ME and PSU recruitment",
+      "kind": "exam",
+      "summary": "Many PSUs, NTPC among them, hire engineer trainees using GATE scores followed by tests, a group discussion and an interview. Read the official syllabus, solve past papers, and check each PSU's own page.",
+      "prerequisites": ["thermo-manufacturing"],
+      "estimateHours": [300, 600],
+      "resources": [
+        {
+          "title": "GATE 2027 downloads (past papers, brochure) – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/download"
+        },
+        {
+          "title": "GATE 2027 ME syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/ME_GATE2027_Syllabus.pdf"
+        },
+        {
+          "title": "Recruitment System in NTPC",
+          "url": "https://ntpc.co.in/recruitment-system-ntpc"
+        }
+      ],
+      "proof": "Three full past ME papers solved under time limits, with a list of weak topics and how you fixed them.",
+      "sources": [
+        {
+          "title": "IIT Madras announces GATE 2027 dates, syllabus revision and new paper",
+          "url": "https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper"
+        },
+        {
+          "title": "Recruitment System in NTPC",
+          "url": "https://ntpc.co.in/recruitment-system-ntpc"
+        },
+        {
+          "title": "NTPC careers portal",
+          "url": "https://careers.ntpc.co.in/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "core-to-it",
+      "title": "Optional: switching from core to IT",
+      "kind": "skill",
+      "summary": "If you want software or data roles instead, start with a solid programming foundation and build small tools for mechanical problems (for example a unit converter or a beam calculator) so your degree still shows.",
+      "prerequisites": [],
+      "estimateHours": [100, 200],
+      "resources": [
+        {
+          "title": "CS50x: Introduction to Computer Science – Harvard",
+          "url": "https://cs50.harvard.edu/x/"
+        }
+      ],
+      "proof": "A small program on GitHub that solves a mechanical engineering calculation, with a README explaining it.",
+      "sources": [
+        {
+          "title": "CS50x: Introduction to Computer Science – Harvard",
+          "url": "https://cs50.harvard.edu/x/"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview and placement preparation",
+      "kind": "milestone",
+      "summary": "Revise core subjects with past GATE questions, practise explaining your project in two minutes, and work on group discussion and interview skills. Many core interviews start with your final-year project.",
+      "prerequisites": ["design-project"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Soft Skills – NPTEL (IIT Roorkee)",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_hs76/preview"
+        },
+        {
+          "title": "NPTEL Soft Skills Training",
+          "url": "https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html"
+        },
+        {
+          "title": "GATE 2027 downloads (past papers) – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/download"
+        }
+      ],
+      "proof": "Two mock interviews done with a senior or faculty member, and a one-page résumé with your project and CAD/CAE skills.",
+      "sources": [
+        {
+          "title": "NPTEL Soft Skills Training (includes HR mock interview)",
+          "url": "https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html"
+        },
+        {
+          "title": "Soft Skills – NPTEL (IIT Roorkee)",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_hs76/preview"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

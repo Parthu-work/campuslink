@@ -1,0 +1,306 @@
+{
+  "key": "cybersecurity",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Cybersecurity Analyst",
+  "category": "security",
+  "branches": ["CSE", "IT", "AIML", "DS"],
+  "summary": "Cybersecurity people protect systems and data: they watch for attacks, find weak spots and help fix them. It suits students who like networks, Linux and puzzles, and who are patient enough to dig through logs and traffic.",
+  "outcomes": [
+    "SOC Analyst",
+    "Security Analyst",
+    "Application Security Engineer",
+    "Junior Penetration Tester"
+  ],
+  "sources": [
+    {
+      "title": "Cyber Security Expert Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/cyber-security"
+    },
+    {
+      "title": "Cyber Security Projects – roadmap.sh",
+      "url": "https://roadmap.sh/cyber-security/projects"
+    },
+    {
+      "title": "The NIST Cybersecurity Framework (CSF) 2.0 – NIST",
+      "url": "https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "networking-basics",
+      "title": "Networking basics",
+      "kind": "skill",
+      "summary": "Learn how data moves between computers: IP addresses, ports, DNS, HTTP and common protocols. Security work means reading network traffic, so practise capturing and inspecting packets in Wireshark as you learn.",
+      "prerequisites": [],
+      "estimateHours": [40, 70],
+      "resources": [
+        {
+          "title": "Networking Basics – Cisco Networking Academy (free)",
+          "url": "https://www.netacad.com/courses/networking-basics?courseLang=en-US"
+        },
+        {
+          "title": "Wireshark User's Guide",
+          "url": "https://www.wireshark.org/docs/wsug_html_chunked/"
+        }
+      ],
+      "proof": "A short write-up of one Wireshark capture explaining what a DNS lookup and an HTTP request look like on the wire.",
+      "sources": [
+        {
+          "title": "Cyber Security Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/cyber-security.pdf"
+        },
+        {
+          "title": "Networking Basics – Cisco Networking Academy",
+          "url": "https://www.netacad.com/courses/networking-basics?courseLang=en-US"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "linux-command-line",
+      "title": "Linux and the command line",
+      "kind": "skill",
+      "summary": "Get comfortable in a Linux terminal: files, permissions, processes, SSH and searching text. OverTheWire's Bandit game teaches these step by step and is the usual first wargame for beginners.",
+      "prerequisites": [],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "OverTheWire: Bandit",
+          "url": "https://overthewire.org/wargames/bandit/"
+        },
+        {
+          "title": "OverTheWire Wargames",
+          "url": "https://overthewire.org/wargames/"
+        }
+      ],
+      "proof": "Finish Bandit up to level 20 and keep your own notes of the commands and ideas each level taught you.",
+      "sources": [
+        {
+          "title": "OverTheWire: Bandit",
+          "url": "https://overthewire.org/wargames/bandit/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "python-scripting",
+      "title": "Python for automation",
+      "kind": "skill",
+      "summary": "Learn enough Python to automate boring tasks: read log files, call web APIs, parse text and write small tools. Analysts and testers use scripts every day to save time.",
+      "prerequisites": ["linux-command-line"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "The Python Tutorial – python.org",
+          "url": "https://docs.python.org/3/tutorial/index.html"
+        }
+      ],
+      "proof": "A Python script that reads a sample web server log and lists the IP addresses with the most failed login attempts.",
+      "sources": [
+        {
+          "title": "Cyber Security Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/cyber-security.pdf"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "security-fundamentals",
+      "title": "Security fundamentals",
+      "kind": "skill",
+      "summary": "Learn the core ideas: the CIA triad, common threats, how incident response works and what frameworks like NIST CSF (Govern, Identify, Protect, Detect, Respond, Recover) are for. Interviewers expect you to explain these clearly.",
+      "prerequisites": ["networking-basics"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Introduction to Cybersecurity – Cisco Networking Academy (free)",
+          "url": "https://www.netacad.com/courses/introduction-to-cybersecurity"
+        },
+        {
+          "title": "The NIST Cybersecurity Framework (CSF) 2.0",
+          "url": "https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20"
+        }
+      ],
+      "proof": "A one-page explainer, in your own words, of the six NIST CSF functions with one real-world example for each.",
+      "sources": [
+        {
+          "title": "Cyber Security Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/cyber-security.pdf"
+        },
+        {
+          "title": "NIST Releases Version 2.0 of Landmark Cybersecurity Framework",
+          "url": "https://www.nist.gov/news-events/news/2024/02/nist-releases-version-20-landmark-cybersecurity-framework"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "web-security",
+      "title": "Web application security",
+      "kind": "skill",
+      "summary": "Learn how web apps get broken: access control flaws, injection, misconfiguration and the rest of the OWASP Top 10. PortSwigger's Web Security Academy is free and has hands-on labs for each topic.",
+      "prerequisites": ["security-fundamentals", "python-scripting"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "Web Security Academy – PortSwigger (free)",
+          "url": "https://portswigger.net/web-security"
+        },
+        {
+          "title": "OWASP Top 10",
+          "url": "https://owasp.org/projects/top-ten"
+        }
+      ],
+      "proof": "Complete the Web Security Academy labs for SQL injection and access control, and explain one fix for each in a short note.",
+      "sources": [
+        {
+          "title": "New learning paths, from the Web Security Academy – PortSwigger",
+          "url": "https://portswigger.net/blog/new-learning-paths-from-the-web-security-academy"
+        },
+        {
+          "title": "OWASP Top 10",
+          "url": "https://owasp.org/projects/top-ten"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ctf-practice",
+      "title": "Capture-the-flag practice",
+      "kind": "project",
+      "summary": "Practise on legal, free challenge sites. picoGym (from picoCTF, now part of CMU's CyLab Security Academy) has beginner challenges with hints; OverTheWire has more wargames for web, crypto and reverse engineering.",
+      "prerequisites": ["linux-command-line", "web-security"],
+      "estimateHours": [40, 100],
+      "resources": [
+        {
+          "title": "Getting Started with picoCTF",
+          "url": "https://picoctf.org/get_started.html"
+        },
+        {
+          "title": "picoCTF Learning Resources",
+          "url": "https://picoctf.org/resources.html"
+        },
+        {
+          "title": "OverTheWire Wargames",
+          "url": "https://overthewire.org/wargames/"
+        }
+      ],
+      "proof": "Solve 30 or more practice challenges across categories and publish write-ups for a few (only for challenges that are not part of a live contest).",
+      "sources": [
+        {
+          "title": "Getting Started with picoCTF",
+          "url": "https://picoctf.org/get_started.html"
+        },
+        {
+          "title": "OverTheWire Wargames",
+          "url": "https://overthewire.org/wargames/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "security-operations",
+      "title": "Security operations and SIEM",
+      "kind": "skill",
+      "summary": "Many entry jobs are in a Security Operations Centre (SOC). Learn what a SIEM does: collect logs, write detection rules, investigate alerts and hunt for threats. Microsoft Learn's Sentinel paths are free to read; labs need a free Azure account.",
+      "prerequisites": ["security-fundamentals"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Describe the capabilities in Microsoft Sentinel – Microsoft Learn",
+          "url": "https://learn.microsoft.com/en-us/training/modules/describe-security-capabilities-of-azure-sentinel/"
+        },
+        {
+          "title": "Configure SIEM security operations using Microsoft Sentinel – Microsoft Learn",
+          "url": "https://learn.microsoft.com/en-us/training/paths/configure-security-information-event-management-operations-using-microsoft-sentinel/"
+        }
+      ],
+      "proof": "Write up one simulated alert investigation: what triggered it, which logs you checked and what you would do next.",
+      "sources": [
+        {
+          "title": "Cyber Security Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/cyber-security.pdf"
+        },
+        {
+          "title": "Configure SIEM security operations using Microsoft Sentinel – Microsoft Learn",
+          "url": "https://learn.microsoft.com/en-us/training/paths/configure-security-information-event-management-operations-using-microsoft-sentinel/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "portfolio-projects",
+      "title": "Security portfolio projects",
+      "kind": "project",
+      "summary": "Build two or three projects you can show and explain, picked from roadmap.sh's beginner-to-advanced cybersecurity project list. Put code and clear write-ups on GitHub so recruiters can see how you think.",
+      "prerequisites": ["ctf-practice", "security-operations"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Cyber Security Projects – roadmap.sh",
+          "url": "https://roadmap.sh/cyber-security/projects"
+        }
+      ],
+      "proof": "A GitHub profile with at least two documented security projects, each with a README explaining the problem, approach and results.",
+      "sources": [
+        {
+          "title": "Cyber Security Projects – roadmap.sh",
+          "url": "https://roadmap.sh/cyber-security/projects"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "security-plus",
+      "title": "CompTIA Security+ (optional)",
+      "kind": "exam",
+      "summary": "Security+ is a well-known entry-level certification covering threats, security architecture, operations and governance. It is a paid exam and not required; check the official CompTIA page for the current version and objectives.",
+      "prerequisites": ["security-fundamentals", "networking-basics"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "What Is CompTIA Security+ Certification? – CompTIA",
+          "url": "https://www.comptia.org/en-us/blog/what-is-comptia-security-certification/"
+        },
+        {
+          "title": "What Is on the CompTIA Security+ Exam? – CompTIA",
+          "url": "https://www.comptia.org/en-us/blog/what-is-on-the-comptia-security-exam/"
+        }
+      ],
+      "proof": "Map each official exam objective to something you have already practised (a lab, CTF or project) and fill the gaps.",
+      "sources": [
+        {
+          "title": "What Is on the CompTIA Security+ Exam? – CompTIA",
+          "url": "https://www.comptia.org/en-us/blog/what-is-on-the-comptia-security-exam/"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "interview-job-search",
+      "title": "Interview prep and job search",
+      "kind": "milestone",
+      "summary": "Revise fundamentals (CIA triad, incident response, OWASP Top 10, common attacks) and practise explaining your projects and CTF write-ups out loud. Apply for SOC analyst, security intern and junior AppSec roles.",
+      "prerequisites": ["portfolio-projects"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Cyber Security Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/cyber-security.pdf"
+        },
+        {
+          "title": "OWASP Top 10",
+          "url": "https://owasp.org/projects/top-ten"
+        }
+      ],
+      "proof": "Do two mock interviews with a friend or senior where you explain one project and walk through how you would respond to a phishing incident.",
+      "sources": [
+        {
+          "title": "Cyber Security Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/cyber-security.pdf"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

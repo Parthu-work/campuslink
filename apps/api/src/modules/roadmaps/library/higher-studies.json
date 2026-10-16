@@ -1,0 +1,366 @@
+{
+  "key": "higher-studies",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Higher Studies: GATE, M.Tech, MS Abroad and Research",
+  "category": "exams-higher-studies",
+  "branches": ["CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "CHEM", "AIML", "DS"],
+  "summary": "This path is for students who want a master's or PhD after B.Tech: GATE for M.Tech at IITs and NITs, GRE and an English test for MS abroad, or a research route towards a PhD. It suits students who like going deep into one subject.",
+  "outcomes": [
+    "M.Tech student at an IIT, NIT or IIIT",
+    "MS student at a university abroad",
+    "MS (by research) or PhD scholar",
+    "Research assistant"
+  ],
+  "sources": [
+    {
+      "title": "GATE 2027 – IIT Madras (organising institute)",
+      "url": "https://gate2027.iitm.ac.in/"
+    },
+    {
+      "title": "COAP 2026 – Common Offer Acceptance Portal, IIT Roorkee",
+      "url": "https://coap2026.iitr.ac.in/coap2026/"
+    },
+    {
+      "title": "CCMT – Centralized Counselling for M.Tech/M.Arch/M.Plan",
+      "url": "https://ccmt.admissions.nic.in/"
+    },
+    {
+      "title": "About the GRE General Test – ETS",
+      "url": "https://www.ets.org/gre/test-takers/general-test/about.html"
+    },
+    {
+      "title": "Graduate study – EducationUSA (U.S. Department of State)",
+      "url": "https://educationusa.state.gov/your-5-steps-us-study/research-your-options/graduate"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "choose-path",
+      "title": "Choose your path: M.Tech, MS abroad or research",
+      "kind": "milestone",
+      "summary": "Decide early which route fits you: GATE and M.Tech in India, an MS abroad with GRE and an English test, or a research degree. GATE can be written from your third year, so plan from second year.",
+      "prerequisites": [],
+      "estimateHours": [5, 10],
+      "resources": [
+        {
+          "title": "GATE 2027 eligibility criteria – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/eligibility_criteria"
+        },
+        {
+          "title": "Research your options: graduate study – EducationUSA",
+          "url": "https://educationusa.state.gov/your-5-steps-us-study/research-your-options/graduate"
+        },
+        {
+          "title": "Ph.D. programmes – IIT Hyderabad",
+          "url": "https://iith.ac.in/academics/phd/"
+        }
+      ],
+      "proof": "A one-page plan naming your target route, two backup options and the official pages you will track.",
+      "sources": [
+        {
+          "title": "GATE 2027 eligibility criteria – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/eligibility_criteria"
+        },
+        {
+          "title": "Research your options: graduate study – EducationUSA",
+          "url": "https://educationusa.state.gov/your-5-steps-us-study/research-your-options/graduate"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gate-syllabus",
+      "title": "Pick your GATE paper and read its syllabus",
+      "kind": "skill",
+      "summary": "GATE has separate papers by discipline. Pick the paper that matches your branch (AIML and DS students can also look at the Data Science and AI paper) and read the official syllabus, which was revised for GATE 2027.",
+      "prerequisites": ["choose-path"],
+      "estimateHours": [3, 6],
+      "resources": [
+        {
+          "title": "GATE 2027 test papers and syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+        },
+        {
+          "title": "GATE 2027 Data Science and AI (DA) syllabus",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/DA_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "proof": "A checklist of every syllabus topic in your paper, marked strong, weak or not started.",
+      "sources": [
+        {
+          "title": "GATE 2027 test papers and syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+        },
+        {
+          "title": "IIT Madras press release on GATE 2027 syllabus revision",
+          "url": "https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gate-core-prep",
+      "title": "Engineering maths, core subjects and aptitude",
+      "kind": "skill",
+      "summary": "Study engineering mathematics, your core branch subjects and general aptitude topic by topic, following the syllabus. Free NPTEL lectures from IIT faculty cover the maths part well.",
+      "prerequisites": ["gate-syllabus"],
+      "estimateHours": [300, 600],
+      "resources": [
+        {
+          "title": "Engineering Mathematics – I – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_ma58/preview"
+        },
+        {
+          "title": "Advanced Engineering Mathematics – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_ma57/preview"
+        },
+        {
+          "title": "Foundations of Mathematics courses – NPTEL",
+          "url": "https://nptel.ac.in/domains/discipline/116?course=116_0"
+        }
+      ],
+      "proof": "Your own short notes for each syllabus topic, with ten solved problems per topic.",
+      "sources": [
+        {
+          "title": "GATE 2027 test papers and syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gate-mock-tests",
+      "title": "Previous papers and mock test practice",
+      "kind": "project",
+      "summary": "Solve official previous GATE papers under timed conditions and use the official mock tests to get used to the computer-based interface. Track your mistakes topic by topic.",
+      "prerequisites": ["gate-core-prep"],
+      "estimateHours": [80, 150],
+      "resources": [
+        {
+          "title": "Downloads (previous question papers) – GATE 2027",
+          "url": "https://gate2027.iitm.ac.in/download"
+        },
+        {
+          "title": "Sample and previous question papers – GATE 2026, IIT Guwahati",
+          "url": "https://gate2026.iitg.ac.in/download.html"
+        },
+        {
+          "title": "Mock test links – GATE 2025, IIT Roorkee",
+          "url": "https://gate2025.iitr.ac.in/mock-test-links.html"
+        }
+      ],
+      "proof": "A log of at least ten timed full papers with scores and a list of weak topics you fixed.",
+      "sources": [
+        {
+          "title": "Downloads – GATE 2027, IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/download"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gate-exam",
+      "title": "Register for and write GATE",
+      "kind": "exam",
+      "summary": "GATE is a computer-based test. For GATE 2027, Indian nationals must register through DigiLocker. Check the official site for dates and notices, since they change every year. The score stays valid for three years.",
+      "prerequisites": ["gate-mock-tests"],
+      "estimateHours": [10, 20],
+      "resources": [
+        {
+          "title": "GATE 2027 – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/"
+        },
+        {
+          "title": "GATE 2027 notifications",
+          "url": "https://gate2027.iitm.ac.in/notifications"
+        },
+        {
+          "title": "GATE 2027 FAQs",
+          "url": "https://gate2027.iitm.ac.in/faqs"
+        }
+      ],
+      "proof": "Your GATE scorecard, with a list of the M.Tech programmes and PSUs you plan to apply to.",
+      "sources": [
+        {
+          "title": "GATE 2027 – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/"
+        },
+        {
+          "title": "GATE 2027 FAQs",
+          "url": "https://gate2027.iitm.ac.in/faqs"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "mtech-counselling",
+      "title": "M.Tech admission through COAP and CCMT",
+      "kind": "milestone",
+      "summary": "For IITs, apply on each institute's own portal, then accept offers on COAP (COAP is not an application portal). For NITs, IIITs and other institutes, one CCMT form covers all eligible programmes. Read each year's brochure.",
+      "prerequisites": ["gate-exam"],
+      "estimateHours": [10, 25],
+      "resources": [
+        {
+          "title": "COAP 2026 FAQs – IIT Roorkee",
+          "url": "https://coap2026.iitr.ac.in/coap2026/faqs.php"
+        },
+        {
+          "title": "CCMT – official portal",
+          "url": "https://ccmt.admissions.nic.in/"
+        },
+        {
+          "title": "CCMT opening and closing scores",
+          "url": "https://ccmt.admissions.nic.in/or-cr/"
+        }
+      ],
+      "proof": "A shortlist of programmes with your COAP registration and CCMT choice list ready before the rounds open.",
+      "sources": [
+        {
+          "title": "COAP 2026 FAQs – IIT Roorkee",
+          "url": "https://coap2026.iitr.ac.in/coap2026/faqs.php"
+        },
+        {
+          "title": "About CCMT",
+          "url": "https://ccmt.admissions.nic.in/about-department/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gre-english-tests",
+      "title": "GRE and an English test (IELTS or TOEFL)",
+      "kind": "exam",
+      "summary": "Many universities abroad ask for the GRE General Test (verbal, quantitative and analytical writing) and an English test such as IELTS or TOEFL. Check each university's own requirements. Use the free official practice tests first.",
+      "prerequisites": ["choose-path"],
+      "estimateHours": [80, 160],
+      "resources": [
+        {
+          "title": "GRE General Test content – ETS",
+          "url": "https://www.ets.org/gre/test-takers/general-test/prepare/content.html"
+        },
+        {
+          "title": "TOEFL iBT test preparation – ETS",
+          "url": "https://www.ets.org/toefl/test-takers/ibt/prepare.html"
+        },
+        {
+          "title": "Free IELTS practice and sample tests – British Council",
+          "url": "https://takeielts.britishcouncil.org/prepare/ielts-free-practice-mock-tests"
+        }
+      ],
+      "proof": "Scores from two full official practice tests in each exam you plan to take.",
+      "sources": [
+        {
+          "title": "About the GRE General Test – ETS",
+          "url": "https://www.ets.org/gre/test-takers/general-test/about.html"
+        },
+        {
+          "title": "TOEFL iBT test preparation – ETS",
+          "url": "https://www.ets.org/toefl/test-takers/ibt/prepare.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ms-applications",
+      "title": "Shortlist universities and apply for MS",
+      "kind": "milestone",
+      "summary": "Start researching 12 to 18 months before you want to begin. Shortlist programmes, compare costs, and look for teaching or research assistantships. Many scholarships cover only part of the cost.",
+      "prerequisites": ["gre-english-tests"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Research and narrow your options: graduate – EducationUSA",
+          "url": "https://educationusa.state.gov/your-5-steps-us-study/research-your-options/graduate/research-and-narrow-your-options-graduate"
+        },
+        {
+          "title": "Finance your studies: graduate – EducationUSA",
+          "url": "https://educationusa.state.gov/your-5-steps-us-study/finance-your-studies/graduate"
+        }
+      ],
+      "proof": "A spreadsheet of 8–12 programmes with requirements and funding options, plus a reviewed statement of purpose.",
+      "sources": [
+        {
+          "title": "Graduate study – EducationUSA",
+          "url": "https://educationusa.state.gov/your-5-steps-us-study/research-your-options/graduate"
+        },
+        {
+          "title": "Finance your studies: graduate – EducationUSA",
+          "url": "https://educationusa.state.gov/your-5-steps-us-study/finance-your-studies/graduate"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "research-phd",
+      "title": "Research path: MS (by research) or PhD",
+      "kind": "milestone",
+      "summary": "Learn how research works (literature survey, data analysis, technical writing) and read IIT PhD brochures. IIT Hyderabad, for example, takes some B.Tech graduates directly into a PhD; rules differ by institute. PMRF is a national fellowship for PhD scholars.",
+      "prerequisites": ["choose-path"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Research Methodology – NPTEL (IIT Madras)",
+          "url": "https://onlinecourses.nptel.ac.in/noc23_ge36/preview"
+        },
+        {
+          "title": "Ph.D. programmes – IIT Hyderabad",
+          "url": "https://iith.ac.in/academics/phd/"
+        },
+        {
+          "title": "Prime Minister's Research Fellowship (PMRF)",
+          "url": "https://pmrf.in/"
+        }
+      ],
+      "proof": "A two-page literature review on one topic and a list of three faculty whose work matches your interest.",
+      "sources": [
+        {
+          "title": "Ph.D. programmes – IIT Hyderabad",
+          "url": "https://iith.ac.in/academics/phd/"
+        },
+        {
+          "title": "PMRF guidelines",
+          "url": "https://pmrf.in/guidelines-new.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "scholarships",
+      "title": "Scholarships from official government schemes",
+      "kind": "milestone",
+      "summary": "Check official schemes only: the AICTE PG Scholarship for GATE-qualified M.Tech students, the National Overseas Scholarship and Telangana ePASS overseas schemes for eligible categories, and PMRF for PhD. Read the current guidelines every year.",
+      "prerequisites": ["choose-path"],
+      "estimateHours": [5, 15],
+      "resources": [
+        {
+          "title": "PG Scholarship Scheme – AICTE",
+          "url": "https://www.aicte.gov.in/schemes/students-development-schemes/PG-Scholarship-Scheme"
+        },
+        {
+          "title": "National Overseas Scholarship – Ministry of Social Justice",
+          "url": "https://socialjustice.gov.in/schemes/28"
+        },
+        {
+          "title": "Overseas scholarships – Telangana ePASS",
+          "url": "https://telanganaepass.cgg.gov.in/OverseasLinks.do"
+        }
+      ],
+      "proof": "A list of the schemes you are eligible for, with the official guideline link and document checklist for each.",
+      "sources": [
+        {
+          "title": "PG Scholarship Scheme – AICTE",
+          "url": "https://www.aicte.gov.in/schemes/students-development-schemes/PG-Scholarship-Scheme"
+        },
+        {
+          "title": "National Overseas Scholarship – Ministry of Social Justice",
+          "url": "https://socialjustice.gov.in/schemes/28"
+        },
+        {
+          "title": "Overseas scholarships – Telangana ePASS",
+          "url": "https://telanganaepass.cgg.gov.in/OverseasLinks.do"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

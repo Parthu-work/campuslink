@@ -2,13 +2,23 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { roadmapContent, type RoadmapContent } from '@campuslink/shared';
 import backend from './backend.json' with { type: 'json' };
+import blockchain from './blockchain.json' with { type: 'json' };
+import chemical from './chemical.json' with { type: 'json' };
+import civil from './civil.json' with { type: 'json' };
+import cybersecurity from './cybersecurity.json' with { type: 'json' };
 import dataAnalyst from './data-analyst.json' with { type: 'json' };
 import dataEngineer from './data-engineer.json' with { type: 'json' };
 import dataScience from './data-science.json' with { type: 'json' };
 import devopsCloud from './devops-cloud.json' with { type: 'json' };
 import ece from './ece.json' with { type: 'json' };
 import eee from './eee.json' with { type: 'json' };
+import embeddedIot from './embedded-iot.json' with { type: 'json' };
+import forwardDeployedEngineer from './forward-deployed-engineer.json' with { type: 'json' };
 import frontend from './frontend.json' with { type: 'json' };
+import gameDev from './game-dev.json' with { type: 'json' };
+import govtExams from './govt-exams.json' with { type: 'json' };
+import higherStudies from './higher-studies.json' with { type: 'json' };
+import mechanical from './mechanical.json' with { type: 'json' };
 import mlAiEngineer from './ml-ai-engineer.json' with { type: 'json' };
 import mobile from './mobile.json' with { type: 'json' };
 import productManagement from './product-management.json' with { type: 'json' };
@@ -51,13 +61,23 @@ function load(raw: unknown): LibraryRoadmap {
 
 export const LIBRARY: readonly LibraryRoadmap[] = [
   backend,
+  blockchain,
+  chemical,
+  civil,
+  cybersecurity,
   dataAnalyst,
   dataEngineer,
   dataScience,
   devopsCloud,
   ece,
   eee,
+  embeddedIot,
+  forwardDeployedEngineer,
   frontend,
+  gameDev,
+  govtExams,
+  higherStudies,
+  mechanical,
   mlAiEngineer,
   mobile,
   productManagement,
@@ -69,13 +89,23 @@ export const LIBRARY: readonly LibraryRoadmap[] = [
 ].map(load);
 export const LIBRARY_FILES = [
   'backend',
+  'blockchain',
+  'chemical',
+  'civil',
+  'cybersecurity',
   'data-analyst',
   'data-engineer',
   'data-science',
   'devops-cloud',
   'ece',
   'eee',
+  'embedded-iot',
+  'forward-deployed-engineer',
   'frontend',
+  'game-dev',
+  'govt-exams',
+  'higher-studies',
+  'mechanical',
   'ml-ai-engineer',
   'mobile',
   'product-management',

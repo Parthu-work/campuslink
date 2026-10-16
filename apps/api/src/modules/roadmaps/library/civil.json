@@ -1,0 +1,293 @@
+{
+  "key": "civil",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Civil Engineer (Core)",
+  "category": "core-engineering",
+  "branches": ["CIVIL"],
+  "summary": "Civil engineers plan, design and build roads, buildings, water systems and other infrastructure. This path suits students who like drawings, structures, site work and seeing a project go from survey to finished building.",
+  "outcomes": [
+    "Site Engineer",
+    "Structural Design Engineer",
+    "Quantity Surveyor / Planning Engineer",
+    "GIS Technician",
+    "State AE / PSU Engineer"
+  ],
+  "sources": [
+    {
+      "title": "GATE 2027 Civil Engineering (CE) syllabus – IIT Madras",
+      "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CE_GATE2027_Syllabus.pdf"
+    },
+    {
+      "title": "The Institution of Engineers (India) – official website",
+      "url": "https://www.ieindia.org/"
+    },
+    {
+      "title": "QGIS Training Manual",
+      "url": "https://docs.qgis.org/3.44/en/docs/training_manual/index.html"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "drafting",
+      "title": "Drafting: plans, sections and elevations",
+      "kind": "skill",
+      "summary": "Learn to read and draw building plans, sections and elevations in a CAD tool. Autodesk gives eligible students free education access; FreeCAD is a free, open-source option.",
+      "prerequisites": [],
+      "estimateHours": [50, 90],
+      "resources": [
+        {
+          "title": "Autodesk Student Access to Education Downloads",
+          "url": "https://www.autodesk.com/education/edu-software/overview"
+        },
+        {
+          "title": "FreeCAD Online Help Startpage",
+          "url": "https://wiki.freecad.org/Online_Help_Startpage"
+        },
+        {
+          "title": "Engineering Graphics and Design – NPTEL (IIT Delhi)",
+          "url": "https://onlinecourses.nptel.ac.in/noc22_me68/preview"
+        }
+      ],
+      "proof": "A dimensioned plan, section and elevation of a two-room house drawn to scale in CAD.",
+      "sources": [
+        {
+          "title": "Autodesk Student Access to Education Downloads",
+          "url": "https://www.autodesk.com/education/edu-software/overview"
+        },
+        {
+          "title": "Engineering Graphics and Design – NPTEL (IIT Delhi)",
+          "url": "https://onlinecourses.nptel.ac.in/noc22_me68/preview"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "structural-analysis",
+      "title": "Structural analysis",
+      "kind": "skill",
+      "summary": "Learn equilibrium, determinate and indeterminate structures, deflections and influence lines. This is the base for every design subject and a large part of the GATE CE paper.",
+      "prerequisites": [],
+      "estimateHours": [80, 140],
+      "resources": [
+        {
+          "title": "Structural Analysis I – NPTEL (IIT Kharagpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc22_ce29/preview"
+        }
+      ],
+      "proof": "Hand-solved notes for beams, frames and trusses, including at least five indeterminate problems.",
+      "sources": [
+        {
+          "title": "Structural Analysis I – NPTEL (IIT Kharagpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc22_ce29/preview"
+        },
+        {
+          "title": "GATE 2027 CE syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CE_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "rcc-design",
+      "title": "Reinforced concrete design (IS 456)",
+      "kind": "skill",
+      "summary": "Learn limit state design of slabs, beams, columns and footings using IS 456:2000. Site and design jobs both expect you to read and check RCC drawings.",
+      "prerequisites": ["structural-analysis"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "Reinforced Concrete Design – NPTEL (IIT Guwahati)",
+          "url": "https://onlinecourses.nptel.ac.in/noc26_ce03/preview"
+        }
+      ],
+      "proof": "A design sheet for one slab, one beam and one column with reinforcement sketches.",
+      "sources": [
+        {
+          "title": "Reinforced Concrete Design – NPTEL (IIT Guwahati)",
+          "url": "https://onlinecourses.nptel.ac.in/noc26_ce03/preview"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "surveying-gis",
+      "title": "Surveying and GIS with QGIS",
+      "kind": "skill",
+      "summary": "Learn total station and GPS-based surveying, then make maps in QGIS, a free, open-source GIS tool. Survey and mapping skills are used on almost every site and in many government projects.",
+      "prerequisites": [],
+      "estimateHours": [50, 100],
+      "resources": [
+        {
+          "title": "Digital Land Surveying and Mapping – NPTEL (IIT Roorkee)",
+          "url": "https://archive.nptel.ac.in/noc/courses/noc21/SEM1/noc21-ce08"
+        },
+        {
+          "title": "QGIS Training Manual",
+          "url": "https://docs.qgis.org/3.44/en/docs/training_manual/index.html"
+        }
+      ],
+      "proof": "A QGIS map of your campus or village with roads, buildings and a labelled legend, exported as a PDF.",
+      "sources": [
+        {
+          "title": "QGIS Training Manual",
+          "url": "https://docs.qgis.org/3.44/en/docs/training_manual/index.html"
+        },
+        {
+          "title": "Digital Land Surveying and Mapping – NPTEL (IIT Roorkee)",
+          "url": "https://archive.nptel.ac.in/noc/courses/noc21/SEM1/noc21-ce08"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "construction-management",
+      "title": "Construction management, estimation and scheduling",
+      "kind": "skill",
+      "summary": "Learn estimation, scheduling (CPM/PERT), quality, safety and contracts. Site engineer and planning roles use these every day, and they are a GATE CE section.",
+      "prerequisites": ["drafting"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Principles of Construction Management – NPTEL (IIT Kanpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_ce95/preview"
+        }
+      ],
+      "proof": "A bill of quantities and a bar-chart schedule for a small building.",
+      "sources": [
+        {
+          "title": "Principles of Construction Management – NPTEL (IIT Kanpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_ce95/preview"
+        },
+        {
+          "title": "GATE 2027 CE syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CE_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "building-project",
+      "title": "Small building project, end to end",
+      "kind": "project",
+      "summary": "Take one small building from site map to drawings, a basic RCC design check, a quantity estimate and a schedule. Put it in one report so an interviewer can see the whole process.",
+      "prerequisites": ["rcc-design", "surveying-gis", "construction-management"],
+      "estimateHours": [50, 100],
+      "resources": [
+        {
+          "title": "QGIS Training Manual",
+          "url": "https://docs.qgis.org/3.44/en/docs/training_manual/index.html"
+        },
+        {
+          "title": "FreeCAD Online Help Startpage",
+          "url": "https://wiki.freecad.org/Online_Help_Startpage"
+        }
+      ],
+      "proof": "A PDF report with the site map, plan/section drawings, design sheet, estimate and schedule.",
+      "sources": [
+        {
+          "title": "Principles of Construction Management – NPTEL (IIT Kanpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_ce95/preview"
+        },
+        {
+          "title": "Reinforced Concrete Design – NPTEL (IIT Guwahati)",
+          "url": "https://onlinecourses.nptel.ac.in/noc26_ce03/preview"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "professional-body",
+      "title": "Join a professional body",
+      "kind": "milestone",
+      "summary": "Join your college's Institution of Engineers (India) student chapter. It offers technical events and a way to meet working engineers, which helps when you look for internships.",
+      "prerequisites": ["drafting"],
+      "estimateHours": [5, 20],
+      "resources": [
+        {
+          "title": "The Institution of Engineers (India) – official website",
+          "url": "https://www.ieindia.org/"
+        }
+      ],
+      "proof": "Student membership or chapter role, and one event or talk you attended, summarised in a short note.",
+      "sources": [
+        {
+          "title": "The Institution of Engineers (India) – official website",
+          "url": "https://www.ieindia.org/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gate-psu-state-ae",
+      "title": "GATE CE, PSU and state AE/AEE exams",
+      "kind": "exam",
+      "summary": "PSUs such as POWERGRID hire civil engineer trainees through GATE, and TGPSC runs state AE/AEE recruitment. Use the official syllabus and past papers, and check each notification for eligibility.",
+      "prerequisites": ["structural-analysis", "surveying-gis"],
+      "estimateHours": [300, 600],
+      "resources": [
+        {
+          "title": "GATE 2027 CE syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CE_GATE2027_Syllabus.pdf"
+        },
+        {
+          "title": "GATE 2027 downloads (past papers) – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/download"
+        },
+        {
+          "title": "TGPSC notifications – Telangana Public Service Commission",
+          "url": "https://websitenew.tgpsc.gov.in/notifications"
+        }
+      ],
+      "proof": "Three full past CE papers solved under time limits, with a topic-wise error log.",
+      "sources": [
+        {
+          "title": "IIT Madras announces GATE 2027 dates, syllabus revision and new paper",
+          "url": "https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper"
+        },
+        {
+          "title": "Employment opportunities – POWERGRID",
+          "url": "https://www.powergrid.in/en/job-opportunities1"
+        },
+        {
+          "title": "TGPSC notifications – Telangana Public Service Commission",
+          "url": "https://websitenew.tgpsc.gov.in/notifications"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview and placement preparation",
+      "kind": "milestone",
+      "summary": "Revise core subjects with past GATE questions, practise explaining your building project, and work on group discussion and interview skills. Be ready to read a drawing in the interview.",
+      "prerequisites": ["building-project"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Soft Skills – NPTEL (IIT Roorkee)",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_hs76/preview"
+        },
+        {
+          "title": "NPTEL Soft Skills Training",
+          "url": "https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html"
+        },
+        {
+          "title": "GATE 2027 downloads (past papers) – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/download"
+        }
+      ],
+      "proof": "Two mock interviews done with a senior or faculty member, and a one-page résumé listing your project and software skills.",
+      "sources": [
+        {
+          "title": "NPTEL Soft Skills Training (includes HR mock interview)",
+          "url": "https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html"
+        },
+        {
+          "title": "Soft Skills – NPTEL (IIT Roorkee)",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_hs76/preview"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

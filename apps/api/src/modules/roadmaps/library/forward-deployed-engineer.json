@@ -1,0 +1,276 @@
+{
+  "key": "forward-deployed-engineer",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Forward Deployed Engineer",
+  "category": "software",
+  "branches": ["CSE", "IT", "DS"],
+  "summary": "Forward deployed engineers work closely with one customer at a time, using code, data pipelines and their company's platform to solve that customer's real problems. It suits strong programmers who also like talking to people and owning outcomes.",
+  "outcomes": [
+    "Forward Deployed Engineer",
+    "Forward Deployed Software Engineer",
+    "Software Engineer",
+    "Data Engineer"
+  ],
+  "sources": [
+    {
+      "title": "A Day in the Life of a Palantir Forward Deployed Software Engineer – Palantir Blog",
+      "url": "https://blog.palantir.com/a-day-in-the-life-of-a-palantir-forward-deployed-software-engineer-45ef2de257b1"
+    },
+    {
+      "title": "Dev versus Delta: Demystifying engineering roles at Palantir – Palantir Blog",
+      "url": "https://blog.palantir.com/dev-versus-delta-demystifying-engineering-roles-at-palantir-ad44c2a6e87"
+    },
+    {
+      "title": "Full Stack Developer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/full-stack"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "python-programming",
+      "title": "Python programming",
+      "kind": "skill",
+      "summary": "Learn Python well: data types, functions, classes, modules, errors and virtual environments. FDE work ranges from software development to data engineering, and Python is a practical language for both.",
+      "prerequisites": [],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "The Python Tutorial – python.org",
+          "url": "https://docs.python.org/3/tutorial/index.html"
+        }
+      ],
+      "proof": "A command-line tool in Python, with tests, that reads a CSV file and produces a clean summary report.",
+      "sources": [
+        {
+          "title": "A Day in the Life of a Palantir Forward Deployed Software Engineer – Palantir Blog",
+          "url": "https://blog.palantir.com/a-day-in-the-life-of-a-palantir-forward-deployed-software-engineer-45ef2de257b1"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "sql-databases",
+      "title": "SQL and relational databases",
+      "kind": "skill",
+      "summary": "Customer data usually lives in databases. Learn to create tables, query, join, aggregate and update data, and understand transactions and window functions. The PostgreSQL tutorial covers all of these for free.",
+      "prerequisites": ["python-programming"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "PostgreSQL Tutorial – The SQL Language",
+          "url": "https://www.postgresql.org/docs/current/tutorial-sql.html"
+        },
+        {
+          "title": "PostgreSQL Tutorial (Part I)",
+          "url": "https://www.postgresql.org/docs/current/tutorial.html"
+        }
+      ],
+      "proof": "A small PostgreSQL database for a made-up shop with 10 SQL queries (joins, aggregates, a window function) and their answers.",
+      "sources": [
+        {
+          "title": "Full Stack Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack"
+        },
+        {
+          "title": "PostgreSQL Tutorial (Part I)",
+          "url": "https://www.postgresql.org/docs/current/tutorial.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "data-wrangling",
+      "title": "Data cleaning and pipelines",
+      "kind": "skill",
+      "summary": "Real customer data is messy. Learn to load, clean, reshape, merge and summarise data with pandas, then turn the steps into a repeatable script. This is the data engineering side of the role.",
+      "prerequisites": ["python-programming", "sql-databases"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Getting started – pandas documentation",
+          "url": "https://pandas.pydata.org/docs/getting_started/index.html"
+        },
+        {
+          "title": "10 minutes to pandas",
+          "url": "https://pandas.pydata.org/docs/user_guide/10min.html"
+        }
+      ],
+      "proof": "A script that takes two messy public datasets, cleans and joins them, and writes the result to a database table.",
+      "sources": [
+        {
+          "title": "Dev versus Delta: Demystifying engineering roles at Palantir – Palantir Blog",
+          "url": "https://blog.palantir.com/dev-versus-delta-demystifying-engineering-roles-at-palantir-ad44c2a6e87"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "web-apps-apis",
+      "title": "Web apps and APIs",
+      "kind": "skill",
+      "summary": "FDEs often build tools and workflows that customers use. Learn JavaScript, how to build and call REST APIs, and enough front end to make a simple, usable interface on top of your data.",
+      "prerequisites": ["python-programming"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "JavaScript Guide – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide"
+        },
+        {
+          "title": "Learn web development – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development"
+        },
+        {
+          "title": "Full Stack Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack"
+        }
+      ],
+      "proof": "A small web app with a REST API and a page that lets a user search and filter records from your database.",
+      "sources": [
+        {
+          "title": "Full Stack Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack"
+        },
+        {
+          "title": "A Day in the Life of a Palantir Forward Deployed Software Engineer – Palantir Blog",
+          "url": "https://blog.palantir.com/a-day-in-the-life-of-a-palantir-forward-deployed-software-engineer-45ef2de257b1"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "deployment-docker",
+      "title": "Deployment with Docker",
+      "kind": "skill",
+      "summary": "Your code has to run on someone else's systems, not just your laptop. Learn to package apps in containers, run multi-container setups with Compose, and keep production systems monitored and maintained.",
+      "prerequisites": ["web-apps-apis"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Get started – Docker Docs",
+          "url": "https://docs.docker.com/get-started/"
+        },
+        {
+          "title": "Overview of the Docker workshop – Docker Docs",
+          "url": "https://docs.docker.com/guides/get-started/"
+        }
+      ],
+      "proof": "Your web app and its database running together with one docker compose command, with setup steps in the README.",
+      "sources": [
+        {
+          "title": "How to Become a Full Stack Developer – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack/how-to-become"
+        },
+        {
+          "title": "A Day in the Life of a Palantir Forward Deployed Software Engineer – Palantir Blog",
+          "url": "https://blog.palantir.com/a-day-in-the-life-of-a-palantir-forward-deployed-software-engineer-45ef2de257b1"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ai-integration",
+      "title": "Using AI models in applications",
+      "kind": "skill",
+      "summary": "Many companies now hire FDEs to put AI into customers' workflows. Learn to apply pre-trained models: prompting, embeddings, retrieval-augmented generation (RAG) and simple agents, plus their limits and safety.",
+      "prerequisites": ["data-wrangling", "web-apps-apis"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "AI Engineer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/ai-engineer"
+        }
+      ],
+      "proof": "A small RAG app that answers questions over a set of public documents and shows which passages it used.",
+      "sources": [
+        {
+          "title": "AI Engineer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/ai-engineer"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "customer-problem-solving",
+      "title": "Working with customers",
+      "kind": "skill",
+      "summary": "The role is 'one customer, many capabilities': you learn the customer's problem, decide what to build, explain trade-offs plainly and send field lessons back to the product team. Practise this with real users.",
+      "prerequisites": ["web-apps-apis"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Dev versus Delta: Demystifying engineering roles at Palantir – Palantir Blog",
+          "url": "https://blog.palantir.com/dev-versus-delta-demystifying-engineering-roles-at-palantir-ad44c2a6e87"
+        },
+        {
+          "title": "A Day in the Life of a Palantir Forward Deployed Software Engineer – Palantir Blog",
+          "url": "https://blog.palantir.com/a-day-in-the-life-of-a-palantir-forward-deployed-software-engineer-45ef2de257b1"
+        }
+      ],
+      "proof": "Interview a college office or local shop about one data problem and write a one-page brief of the problem and your proposed fix.",
+      "sources": [
+        {
+          "title": "Dev versus Delta: Demystifying engineering roles at Palantir – Palantir Blog",
+          "url": "https://blog.palantir.com/dev-versus-delta-demystifying-engineering-roles-at-palantir-ad44c2a6e87"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "end-to-end-project",
+      "title": "End-to-end project for a real user",
+      "kind": "project",
+      "summary": "Build one project for an actual person or group: collect their data, clean it, build a tool on top (optionally with AI), deploy it and improve it from their feedback. This shows the whole FDE loop.",
+      "prerequisites": ["deployment-docker", "ai-integration", "customer-problem-solving"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "AI Engineer Projects – roadmap.sh",
+          "url": "https://roadmap.sh/ai-engineer/projects"
+        },
+        {
+          "title": "Build and share a containerized application – Docker Docs",
+          "url": "https://docs.docker.com/get-started/introduction/"
+        }
+      ],
+      "proof": "A deployed tool used by at least one real user, with a README covering the problem, design, data pipeline and what you changed after feedback.",
+      "sources": [
+        {
+          "title": "How to Become a Full Stack Developer – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack/how-to-become"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview prep and job search",
+      "kind": "milestone",
+      "summary": "Practise coding problems, system design and explaining your end-to-end project to a non-technical person. Read companies' own interview advice, and apply to FDE roles as well as backend and data engineering roles.",
+      "prerequisites": ["end-to-end-project"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Interviewing at Palantir: Our advice – Palantir Blog",
+          "url": "https://blog.palantir.com/interviewing-at-palantir-advice-from-palantirians-88444a90e7c4"
+        },
+        {
+          "title": "System Design Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/system-design"
+        },
+        {
+          "title": "Full Stack Developer Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/full-stack"
+        }
+      ],
+      "proof": "Two mock interviews: one coding or system design round, and one where you explain your project to someone outside tech.",
+      "sources": [
+        {
+          "title": "Interviewing at Palantir: Our advice – Palantir Blog",
+          "url": "https://blog.palantir.com/interviewing-at-palantir-advice-from-palantirians-88444a90e7c4"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

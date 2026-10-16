@@ -31,15 +31,14 @@ The researched roadmap library lives in `apps/api/src/modules/roadmaps/library/`
 - An IIT Madras press release (redirect loop for clients without cookies).
 - An NN/g PDF report (connection reset).
 
-## Not yet researched
+## Research passes
 
-The web-search budget for the research run ran out before these were done. They are **not** in the library rather than filled in from memory:
-
-- Cybersecurity, blockchain, game development, forward-deployed engineering
-- Higher studies (GATE/M.Tech, MS abroad), government exams (ESE, SSC JE, state PSCs, PSUs)
-- Mechanical, civil, chemical, embedded systems and IoT
-
-Colleges can write these today through the normal draft → review workflow. The next research pass adds them to the library.
+- **First pass:** 16 roadmaps (software, data and AI, design and product, ECE, EEE).
+- **Second pass:** 10 roadmaps (cybersecurity, blockchain, game development, forward-deployed engineering, higher studies, government exams, mechanical, civil, chemical, embedded and IoT). The first pass ran out of web-search budget before reaching these, so they were left out rather than written from memory.
+- **Notes from the second pass:**
+  - COAP is hosted by a different IIT each year, so its link needs updating yearly.
+  - TGPSC (formerly TSPSC) is cited at the address search returned.
+  - The forward-deployed engineering roadmap rests mainly on Palantir's own engineering blog, because no open roadmap exists for the role. Tracking parameters were removed from those links.
 
 ## Roadmaps
 
@@ -84,6 +83,132 @@ Roadmap sources:
 - [Preparing to Interview and Interviewing – The Odin Project](https://www.theodinproject.com/lessons/node-path-getting-hired-preparing-to-interview-and-interviewing)
 - [CSES Problem Set](https://cses.fi/)
 - [Strategy – The Odin Project](https://www.theodinproject.com/lessons/node-path-getting-hired-strategy)
+
+</details>
+
+### Blockchain Developer (`blockchain`)
+
+Software · branches CSE, IT · 9 steps, 1 marked needs review · last reviewed 2026-10-16
+
+Roadmap sources:
+
+- [Blockchain Developer Roadmap – roadmap.sh](https://roadmap.sh/blockchain)
+- [Ethereum development documentation – ethereum.org](https://ethereum.org/developers/docs/)
+- [Blockchain and Money – MIT OpenCourseWare](https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/)
+
+<details><summary>All 24 cited links</summary>
+
+- [Ethers.js v6 documentation](https://docs.ethers.org/v6/)
+- [JavaScript Guide – MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide)
+- [Learn web development – MDN Web Docs](https://developer.mozilla.org/en-US/docs/Learn_web_development)
+- [Blockchain Roadmap (PDF) – roadmap.sh](https://roadmap.sh/pdfs/roadmaps/blockchain.pdf)
+- [Bitcoin: A Peer-to-Peer Electronic Cash System (paper)](https://bitcoin.org/bitcoin.pdf)
+- [Session 3: Blockchain Basics & Cryptography – MIT OCW](https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/resources/session-3-blockchain-basics-cryptography/)
+- [Introduction to smart contracts – ethereum.org](https://ethereum.org/developers/docs/smart-contracts/)
+- [Technical intro to Ethereum – ethereum.org](https://ethereum.org/developers/docs/intro-to-ethereum/)
+- [Smart contract languages – ethereum.org](https://ethereum.org/developers/docs/smart-contracts/languages/)
+- [Introduction to Smart Contracts – Solidity docs](https://docs.soliditylang.org/en/latest/introduction-to-smart-contracts.html)
+- [Anatomy of smart contracts – ethereum.org](https://ethereum.org/developers/docs/smart-contracts/anatomy/)
+- [Testing smart contracts – ethereum.org](https://ethereum.org/developers/docs/smart-contracts/testing/)
+- [Getting Started – Foundry Book](https://book.getfoundry.sh/getting-started/first-steps)
+- [Tests – Foundry Book](https://book.getfoundry.sh/forge/tests)
+- [Smart contract security – ethereum.org](https://ethereum.org/developers/docs/smart-contracts/security/)
+- [A guide to smart contract security tools – ethereum.org](https://ethereum.org/developers/tutorials/guide-to-smart-contract-security-tools/)
+- [Smart contract security checklist – ethereum.org](https://ethereum.org/developers/tutorials/secure-development-workflow/)
+- [Interacting with smart contracts – ethereum.org](https://ethereum.org/developers/docs/smart-contracts/interacting/)
+- [Hello World Smart Contract for Beginners – ethereum.org](https://ethereum.org/developers/tutorials/hello-world-smart-contract/)
+- [Education & community resources – ethereum.org](https://ethereum.org/developers/tools/education/)
+- [Ethereum security and scam prevention – ethereum.org](https://ethereum.org/security/)
+
+</details>
+
+### Chemical Engineer (Core) (`chemical`)
+
+Core engineering · branches CHEM · 8 steps, 0 marked needs review · last reviewed 2026-10-16
+
+Roadmap sources:
+
+- [GATE 2027 Chemical Engineering (CH) syllabus – IIT Madras](https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CH_GATE2027_Syllabus.pdf)
+- [DWSIM – A Chemical Process Simulator – FOSSEE](https://fossee.in/node/27)
+- [IIChE Rules and Regulations](https://iiche.org.in/pdfs/RulesandRegulations.pdf)
+
+<details><summary>All 18 cited links</summary>
+
+- [Material & Energy Balance Computations – NPTEL (IIT Kharagpur)](https://onlinecourses.nptel.ac.in/noc21_ch50/preview)
+- [Chemical Engineering Thermodynamics – NPTEL (IIT Tirupati)](https://onlinecourses.nptel.ac.in/noc24_ch31/preview)
+- [DWSIM Brochure – Spoken Tutorial](https://website.spoken-tutorial.org/media/videos/78/DWSIM-Brochure-English.pdf)
+- [DWSIM on FOSSEE (spoken tutorials link)](https://dwsim.fossee.in/node/10)
+- [DWSIM Instruction Sheet – Spoken Tutorial](https://website.spoken-tutorial.org/media/videos/78/DWSIM-Instruction-Sheet-English.pdf)
+- [Chemical Process Safety – NPTEL (IIT Roorkee)](https://archive.nptel.ac.in/noc/courses/noc20/SEM2/noc20-ch38)
+- [Chemical Process Safety – NPTEL preview](https://onlinecourses.nptel.ac.in/noc20_ch38/preview)
+- [Flowsheeting Project – DWSIM FOSSEE](https://dwsim.fossee.in/node/22)
+- [Flowsheet proposal guidelines – DWSIM FOSSEE](https://dwsim.fossee.in/node/23)
+- [IIT Madras announces GATE 2027 dates, syllabus revision and new paper](https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper)
+- [GAIL – Executive Trainee through GATE 2027 (advertisement)](https://www.gailonline.com/careers/currentOpnning/GATE-2027-1st-Advertisement-01092026.pdf)
+- [IndianOil – Recruitment of Engineers/Officers through GATE-2019](https://www.iocl.com/download/Detailed-Advertisement-Open-Recruitment-through-GATE-%202019.pdf)
+- [GATE 2027 downloads (past papers) – IIT Madras](https://gate2027.iitm.ac.in/download)
+- [NPTEL Soft Skills Training (includes HR mock interview)](https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html)
+- [Soft Skills – NPTEL (IIT Roorkee)](https://onlinecourses.nptel.ac.in/noc21_hs76/preview)
+
+</details>
+
+### Civil Engineer (Core) (`civil`)
+
+Core engineering · branches CIVIL · 9 steps, 0 marked needs review · last reviewed 2026-10-16
+
+Roadmap sources:
+
+- [GATE 2027 Civil Engineering (CE) syllabus – IIT Madras](https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CE_GATE2027_Syllabus.pdf)
+- [The Institution of Engineers (India) – official website](https://www.ieindia.org/)
+- [QGIS Training Manual](https://docs.qgis.org/3.44/en/docs/training_manual/index.html)
+
+<details><summary>All 16 cited links</summary>
+
+- [Autodesk Student Access to Education Downloads](https://www.autodesk.com/education/edu-software/overview)
+- [Engineering Graphics and Design – NPTEL (IIT Delhi)](https://onlinecourses.nptel.ac.in/noc22_me68/preview)
+- [FreeCAD Online Help Startpage](https://wiki.freecad.org/Online_Help_Startpage)
+- [Structural Analysis I – NPTEL (IIT Kharagpur)](https://onlinecourses.nptel.ac.in/noc22_ce29/preview)
+- [Reinforced Concrete Design – NPTEL (IIT Guwahati)](https://onlinecourses.nptel.ac.in/noc26_ce03/preview)
+- [Digital Land Surveying and Mapping – NPTEL (IIT Roorkee)](https://archive.nptel.ac.in/noc/courses/noc21/SEM1/noc21-ce08)
+- [Principles of Construction Management – NPTEL (IIT Kanpur)](https://onlinecourses.nptel.ac.in/noc25_ce95/preview)
+- [IIT Madras announces GATE 2027 dates, syllabus revision and new paper](https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper)
+- [Employment opportunities – POWERGRID](https://www.powergrid.in/en/job-opportunities1)
+- [TGPSC notifications – Telangana Public Service Commission](https://websitenew.tgpsc.gov.in/notifications)
+- [GATE 2027 downloads (past papers) – IIT Madras](https://gate2027.iitm.ac.in/download)
+- [NPTEL Soft Skills Training (includes HR mock interview)](https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html)
+- [Soft Skills – NPTEL (IIT Roorkee)](https://onlinecourses.nptel.ac.in/noc21_hs76/preview)
+
+</details>
+
+### Cybersecurity Analyst (`cybersecurity`)
+
+Security · branches CSE, IT, AIML, DS · 10 steps, 3 marked needs review · last reviewed 2026-10-16
+
+Roadmap sources:
+
+- [Cyber Security Expert Roadmap – roadmap.sh](https://roadmap.sh/cyber-security)
+- [Cyber Security Projects – roadmap.sh](https://roadmap.sh/cyber-security/projects)
+- [The NIST Cybersecurity Framework (CSF) 2.0 – NIST](https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20)
+
+<details><summary>All 20 cited links</summary>
+
+- [Cyber Security Roadmap (PDF) – roadmap.sh](https://roadmap.sh/pdfs/roadmaps/cyber-security.pdf)
+- [Networking Basics – Cisco Networking Academy](https://www.netacad.com/courses/networking-basics?courseLang=en-US)
+- [Wireshark User's Guide](https://www.wireshark.org/docs/wsug_html_chunked/)
+- [OverTheWire: Bandit](https://overthewire.org/wargames/bandit/)
+- [OverTheWire Wargames](https://overthewire.org/wargames/)
+- [The Python Tutorial – python.org](https://docs.python.org/3/tutorial/index.html)
+- [NIST Releases Version 2.0 of Landmark Cybersecurity Framework](https://www.nist.gov/news-events/news/2024/02/nist-releases-version-20-landmark-cybersecurity-framework)
+- [Introduction to Cybersecurity – Cisco Networking Academy (free)](https://www.netacad.com/courses/introduction-to-cybersecurity)
+- [New learning paths, from the Web Security Academy – PortSwigger](https://portswigger.net/blog/new-learning-paths-from-the-web-security-academy)
+- [OWASP Top 10](https://owasp.org/projects/top-ten)
+- [Web Security Academy – PortSwigger (free)](https://portswigger.net/web-security)
+- [Getting Started with picoCTF](https://picoctf.org/get_started.html)
+- [picoCTF Learning Resources](https://picoctf.org/resources.html)
+- [Configure SIEM security operations using Microsoft Sentinel – Microsoft Learn](https://learn.microsoft.com/en-us/training/paths/configure-security-information-event-management-operations-using-microsoft-sentinel/)
+- [Describe the capabilities in Microsoft Sentinel – Microsoft Learn](https://learn.microsoft.com/en-us/training/modules/describe-security-capabilities-of-azure-sentinel/)
+- [What Is on the CompTIA Security+ Exam? – CompTIA](https://www.comptia.org/en-us/blog/what-is-on-the-comptia-security-exam/)
+- [What Is CompTIA Security+ Certification? – CompTIA](https://www.comptia.org/en-us/blog/what-is-comptia-security-certification/)
 
 </details>
 
@@ -283,6 +408,78 @@ Roadmap sources:
 
 </details>
 
+### Embedded Systems and IoT Engineer (`embedded-iot`)
+
+Core engineering · branches ECE, EEE, CSE · 10 steps, 2 marked needs review · last reviewed 2026-10-16
+
+Roadmap sources:
+
+- [Introduction to Embedded System Design – NPTEL](https://onlinecourses.nptel.ac.in/noc26_cs22/preview)
+- [ESP-IDF Programming Guide (stable) – Espressif](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/index.html)
+- [FreeRTOS documentation](https://www.freertos.org/Documentation/00-Overview)
+- [Embedded Linux training materials – Bootlin](https://bootlin.com/doc/training/embedded-linux/)
+
+<details><summary>All 29 cited links</summary>
+
+- [C++ vs. C: when to use each – roadmap.sh](https://roadmap.sh/cpp/vs-c)
+- [BARR-C:2018 Embedded C Coding Standard](https://barrgroup.com/embedded-c-coding-standard)
+- [Problem Solving through Programming in C – NPTEL (IIT Kharagpur)](https://nptel.ac.in/courses/106105171)
+- [Built-in Examples – Arduino Docs](https://docs.arduino.cc/built-in-examples/)
+- [The C/C++ SDK – Raspberry Pi Documentation](https://www.raspberrypi.com/documentation/microcontrollers/c_sdk.html)
+- [Getting Started with Arduino – Arduino Docs](https://docs.arduino.cc/learn/starting-guide/getting-started-arduino/)
+- [Exception handling and prioritization – Arm Cortex-M4 TRM](https://developer.arm.com/documentation/100166/0001/Programmers-Model/Exceptions/Exception-handling-and-prioritization)
+- [Embedded System Design with ARM – NPTEL](https://onlinecourses.nptel.ac.in/noc26_cs40/preview)
+- [Cortex-M0+ Devices Generic User Guide – Arm](https://developer.arm.com/documentation/dui0662/b/BABEDCBC)
+- [UM10204 I2C-bus specification and user manual – NXP](https://www.nxp.com/docs/en/user-guide/UM10204.pdf)
+- [Serial Peripheral Interface (SPI) – Linux kernel docs](https://docs.kernel.org/driver-api/spi.html)
+- [ESP-IDF versions – which docs to use](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/versions.html)
+- [FreeRTOS tasks overview](https://freertos.org/Documentation/02-Kernel/02-Kernel-features/01-Tasks-and-co-routines/01-Tasks-overview)
+- [Mastering the FreeRTOS Real Time Kernel (free PDF)](https://www.freertos.org/media/2018/161204_Mastering_the_FreeRTOS_Real_Time_Kernel-A_Hands-On_Tutorial_Guide.pdf)
+- [FreeRTOS queues](https://freertos.org/Documentation/02-Kernel/02-Kernel-features/02-Queues-mutexes-and-semaphores/01-Queues)
+- [MQTT Version 3.1.1 – OASIS Standard](https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html)
+- [mosquitto broker man page](https://mosquitto.org/man/mosquitto-8.html)
+- [MQTT specification – mqtt.org](https://mqtt.org/mqtt-specification/)
+- [mosquitto_sub man page](https://mosquitto.org/man/mosquitto_sub-1.html)
+- [SPI userspace API (spidev) – Linux kernel docs](https://www.kernel.org/doc/html/latest/spi/spidev.html)
+- [Raspberry Pi computer hardware – Raspberry Pi Documentation](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html)
+- [Yocto Project Quick Build](https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html)
+- [Networking APIs – ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/index.html)
+- [Embedded Systems Design – NPTEL (IIT Kharagpur)](https://onlinecourses.nptel.ac.in/noc26_cs54/preview)
+- [Employment Communication: A Lab-based Course – NPTEL](https://onlinecourses.nptel.ac.in/noc25_hs17/preview)
+
+</details>
+
+### Forward Deployed Engineer (`forward-deployed-engineer`)
+
+Software · branches CSE, IT, DS · 9 steps, 4 marked needs review · last reviewed 2026-10-16
+
+Roadmap sources:
+
+- [A Day in the Life of a Palantir Forward Deployed Software Engineer – Palantir Blog](https://blog.palantir.com/a-day-in-the-life-of-a-palantir-forward-deployed-software-engineer-45ef2de257b1)
+- [Dev versus Delta: Demystifying engineering roles at Palantir – Palantir Blog](https://blog.palantir.com/dev-versus-delta-demystifying-engineering-roles-at-palantir-ad44c2a6e87)
+- [Full Stack Developer Roadmap – roadmap.sh](https://roadmap.sh/full-stack)
+
+<details><summary>All 19 cited links</summary>
+
+- [The Python Tutorial – python.org](https://docs.python.org/3/tutorial/index.html)
+- [PostgreSQL Tutorial (Part I)](https://www.postgresql.org/docs/current/tutorial.html)
+- [PostgreSQL Tutorial – The SQL Language](https://www.postgresql.org/docs/current/tutorial-sql.html)
+- [Getting started – pandas documentation](https://pandas.pydata.org/docs/getting_started/index.html)
+- [10 minutes to pandas](https://pandas.pydata.org/docs/user_guide/10min.html)
+- [JavaScript Guide – MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide)
+- [Learn web development – MDN Web Docs](https://developer.mozilla.org/en-US/docs/Learn_web_development)
+- [How to Become a Full Stack Developer – roadmap.sh](https://roadmap.sh/full-stack/how-to-become)
+- [Get started – Docker Docs](https://docs.docker.com/get-started/)
+- [Overview of the Docker workshop – Docker Docs](https://docs.docker.com/guides/get-started/)
+- [AI Engineer Roadmap – roadmap.sh](https://roadmap.sh/ai-engineer)
+- [AI Engineer Projects – roadmap.sh](https://roadmap.sh/ai-engineer/projects)
+- [Build and share a containerized application – Docker Docs](https://docs.docker.com/get-started/introduction/)
+- [Interviewing at Palantir: Our advice – Palantir Blog](https://blog.palantir.com/interviewing-at-palantir-advice-from-palantirians-88444a90e7c4)
+- [System Design Interview Questions – roadmap.sh](https://roadmap.sh/questions/system-design)
+- [Full Stack Developer Interview Questions – roadmap.sh](https://roadmap.sh/questions/full-stack)
+
+</details>
+
 ### Frontend Developer (`frontend`)
 
 Software · branches CSE, IT · 10 steps, 2 marked needs review · last reviewed 2026-10-16
@@ -315,6 +512,144 @@ Roadmap sources:
 - [Frontend Developer Job Description – roadmap.sh](https://roadmap.sh/frontend/job-description)
 - [Preparing to Interview and Interviewing – The Odin Project](https://www.theodinproject.com/lessons/node-path-getting-hired-preparing-to-interview-and-interviewing)
 - [Applying for Web Development Jobs – The Odin Project](https://www.theodinproject.com/lessons/node-path-getting-hired-applying-for-web-development-jobs)
+
+</details>
+
+### Game Developer (`game-dev`)
+
+Software · branches CSE, IT · 9 steps, 2 marked needs review · last reviewed 2026-10-16
+
+Roadmap sources:
+
+- [Game Developer Roadmap – roadmap.sh](https://roadmap.sh/game-developer)
+- [Game Developer Roadmap (PDF) – roadmap.sh](https://roadmap.sh/pdfs/roadmaps/game-developer.pdf)
+- [Unity Learn Pathways](https://learn.unity.com/pathways)
+
+<details><summary>All 19 cited links</summary>
+
+- [Get started with C#, Part 1 – Microsoft Learn](https://learn.microsoft.com/en-us/training/paths/get-started-c-sharp-part-1/)
+- [C# Guide – Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/csharp/)
+- [18.06 Linear Algebra – MIT OpenCourseWare](https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/)
+- [Coordinate Systems – LearnOpenGL](https://learnopengl.com/Getting-started/Coordinate-Systems)
+- [Unity Essentials Pathway – Unity Learn](https://learn.unity.com/pathway/unity-essentials)
+- [Step by step – Godot Docs](https://docs.godotengine.org/en/stable/getting_started/step_by_step/index.html)
+- [Your first 2D game – Godot Docs](https://docs.godotengine.org/en/stable/getting_started/first_2d_game/index.html)
+- [CS50's Introduction to 2D Game Development](https://cs50.harvard.edu/games/)
+- [Game Programming Patterns](https://gameprogrammingpatterns.com/)
+- [Component – Game Programming Patterns](https://gameprogrammingpatterns.com/component.html)
+- [LearnOpenGL – OpenGL](https://learnopengl.com/Getting-started/OpenGL)
+- [LearnOpenGL](https://learnopengl.com/)
+- [Hello Triangle – LearnOpenGL](https://learnopengl.com/Getting-started/Hello-Triangle)
+- [Shaders – LearnOpenGL](https://learnopengl.com/Getting-started/Shaders)
+- [Game jams – itch.io](https://itch.io/jams)
+- [Upcoming Game Jams – itch.io](https://itch.io/jams/upcoming)
+
+</details>
+
+### Government Engineering Jobs: ESE, SSC JE, TGPSC and PSUs (`govt-exams`)
+
+Exams and higher studies · branches CSE, IT, ECE, EEE, MECH, CIVIL, CHEM, AIML, DS · 10 steps, 1 marked needs review · last reviewed 2026-10-16
+
+Roadmap sources:
+
+- [Engineering Services Examination 2027 notice – UPSC](https://www.upsc.gov.in/sites/default/files/Notif-ESEP-2027-Engl-160926.pdf)
+- [Junior Engineer Examination notice – SSC](https://ssc.gov.in/api/attachment/uploads/masterData/NoticeBoards/notice_16092026.pdf)
+- [Telangana Public Service Commission (TGPSC)](https://websitenew.tgpsc.gov.in/)
+- [Recruitment system in NTPC](https://ntpc.co.in/recruitment-system-ntpc)
+
+<details><summary>All 21 cited links</summary>
+
+- [Engineer Trainee 2027 through GATE 2027 – POWERGRID](https://www.powergrid.in/sites/default/files/job_opportunities_document/ET2027_Detailed_Advertisement_For%20Website_1.pdf)
+- [SSC tentative exam calendar 2026–27](https://ssc.gov.in/api/attachment/uploads/masterData/ExamCalendar/Tentative_Calendar2026_27_08012026.pdf)
+- [GATE 2027 important dates](https://gate2027.iitm.ac.in/important_dates)
+- [TGPSC notifications](https://websitenew.tgpsc.gov.in/notifications)
+- [GATE 2027 test papers and syllabus – IIT Madras](https://gate2027.iitm.ac.in/exam_papers_and_syllabus)
+- [Engineering Mathematics – I – NPTEL](https://onlinecourses.nptel.ac.in/noc21_ma58/preview)
+- [Previous year question papers – UPSC](https://www.upsc.gov.in/examinations/previous-question-papers)
+- [Downloads – GATE 2027, IIT Madras](https://gate2027.iitm.ac.in/download)
+- [Previous year question papers (filter: Engineering Services) – UPSC](https://upsc.gov.in/examinations/previous-question-papers?field_exam_name_value=engineering+services&page=1)
+- [Recruitment notices – ONGC](https://ongcindia.com/web/eng/career/recruitment-notice)
+- [Jobs at NTPC](https://ntpc.co.in/jobs-ntpc)
+- [Employment opportunities – POWERGRID](https://www.powergrid.in/en/job-opportunities1)
+- [Latest job openings – IndianOil](https://iocl.com/latest-job-opening)
+- [Engineering Services (Main) Examination 2026 papers – UPSC](<https://www.upsc.gov.in/examinations/Engineering%20Services%20(Main)%20Examination,%202026>)
+- [Tentative vacancy – SSC](https://ssc.gov.in/for-candidates/tentative-vacancy)
+- [Soft Skills – NPTEL (IIT Roorkee)](https://onlinecourses.nptel.ac.in/noc21_hs76/preview)
+- [Employment Communication: A Lab-based Course – NPTEL](https://onlinecourses.nptel.ac.in/noc25_hs17/preview)
+
+</details>
+
+### Higher Studies: GATE, M.Tech, MS Abroad and Research (`higher-studies`)
+
+Exams and higher studies · branches CSE, IT, ECE, EEE, MECH, CIVIL, CHEM, AIML, DS · 10 steps, 0 marked needs review · last reviewed 2026-10-16
+
+Roadmap sources:
+
+- [GATE 2027 – IIT Madras (organising institute)](https://gate2027.iitm.ac.in/)
+- [COAP 2026 – Common Offer Acceptance Portal, IIT Roorkee](https://coap2026.iitr.ac.in/coap2026/)
+- [CCMT – Centralized Counselling for M.Tech/M.Arch/M.Plan](https://ccmt.admissions.nic.in/)
+- [About the GRE General Test – ETS](https://www.ets.org/gre/test-takers/general-test/about.html)
+- [Graduate study – EducationUSA (U.S. Department of State)](https://educationusa.state.gov/your-5-steps-us-study/research-your-options/graduate)
+
+<details><summary>All 32 cited links</summary>
+
+- [GATE 2027 eligibility criteria – IIT Madras](https://gate2027.iitm.ac.in/eligibility_criteria)
+- [Ph.D. programmes – IIT Hyderabad](https://iith.ac.in/academics/phd/)
+- [GATE 2027 test papers and syllabus – IIT Madras](https://gate2027.iitm.ac.in/exam_papers_and_syllabus)
+- [IIT Madras press release on GATE 2027 syllabus revision](https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper)
+- [GATE 2027 Data Science and AI (DA) syllabus](https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/DA_GATE2027_Syllabus.pdf)
+- [Engineering Mathematics – I – NPTEL](https://onlinecourses.nptel.ac.in/noc21_ma58/preview)
+- [Advanced Engineering Mathematics – NPTEL](https://onlinecourses.nptel.ac.in/noc21_ma57/preview)
+- [Foundations of Mathematics courses – NPTEL](https://nptel.ac.in/domains/discipline/116?course=116_0)
+- [Downloads – GATE 2027, IIT Madras](https://gate2027.iitm.ac.in/download)
+- [Sample and previous question papers – GATE 2026, IIT Guwahati](https://gate2026.iitg.ac.in/download.html)
+- [Mock test links – GATE 2025, IIT Roorkee](https://gate2025.iitr.ac.in/mock-test-links.html)
+- [GATE 2027 FAQs](https://gate2027.iitm.ac.in/faqs)
+- [GATE 2027 notifications](https://gate2027.iitm.ac.in/notifications)
+- [COAP 2026 FAQs – IIT Roorkee](https://coap2026.iitr.ac.in/coap2026/faqs.php)
+- [About CCMT](https://ccmt.admissions.nic.in/about-department/)
+- [CCMT opening and closing scores](https://ccmt.admissions.nic.in/or-cr/)
+- [TOEFL iBT test preparation – ETS](https://www.ets.org/toefl/test-takers/ibt/prepare.html)
+- [GRE General Test content – ETS](https://www.ets.org/gre/test-takers/general-test/prepare/content.html)
+- [Free IELTS practice and sample tests – British Council](https://takeielts.britishcouncil.org/prepare/ielts-free-practice-mock-tests)
+- [Finance your studies: graduate – EducationUSA](https://educationusa.state.gov/your-5-steps-us-study/finance-your-studies/graduate)
+- [Research and narrow your options: graduate – EducationUSA](https://educationusa.state.gov/your-5-steps-us-study/research-your-options/graduate/research-and-narrow-your-options-graduate)
+- [PMRF guidelines](https://pmrf.in/guidelines-new.html)
+- [Research Methodology – NPTEL (IIT Madras)](https://onlinecourses.nptel.ac.in/noc23_ge36/preview)
+- [Prime Minister's Research Fellowship (PMRF)](https://pmrf.in/)
+- [PG Scholarship Scheme – AICTE](https://www.aicte.gov.in/schemes/students-development-schemes/PG-Scholarship-Scheme)
+- [National Overseas Scholarship – Ministry of Social Justice](https://socialjustice.gov.in/schemes/28)
+- [Overseas scholarships – Telangana ePASS](https://telanganaepass.cgg.gov.in/OverseasLinks.do)
+
+</details>
+
+### Mechanical Engineer (Core) (`mechanical`)
+
+Core engineering · branches MECH · 8 steps, 1 marked needs review · last reviewed 2026-10-16
+
+Roadmap sources:
+
+- [GATE 2027 Mechanical Engineering (ME) syllabus – IIT Madras](https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/ME_GATE2027_Syllabus.pdf)
+- [Engineering Graphics and Design – NPTEL (IIT Delhi)](https://onlinecourses.nptel.ac.in/noc22_me68/preview)
+- [Student Membership – ASME](https://asme.org/membership/student-membership)
+
+<details><summary>All 18 cited links</summary>
+
+- [Autodesk Fusion for education](https://www.autodesk.com/in/education/edu-software/fusion)
+- [FreeCAD Online Help Startpage](https://wiki.freecad.org/Online_Help_Startpage)
+- [Manufacturing Process Technology I & II – NPTEL (IIT Kanpur)](https://onlinecourses.nptel.ac.in/noc25_me51/preview)
+- [Thermodynamics – NPTEL (Prof. S. R. Kale, IIT Delhi)](https://onlinecourses.nptel.ac.in/noc25_me78/preview)
+- [Ansys Student – free download](https://www.ansys.com/academic/students/ansys-student)
+- [Finite Element Method – NPTEL (IIT Kharagpur)](https://onlinecourses.nptel.ac.in/noc25_ce21/preview)
+- [Fundamentals of Finite Element (FE) Method – Ansys Innovation Space](https://innovationspace.ansys.com/product/fundamentals-of-finite-element-fe-method/)
+- [BAJA SAEINDIA press release (official)](https://bajasaeindia.org/upload/Pressrelease/Press%20Release%20Preliminary%20BAJA%20SAEINDIA%202024_1690821286.pdf)
+- [IIT Madras announces GATE 2027 dates, syllabus revision and new paper](https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper)
+- [Recruitment System in NTPC](https://ntpc.co.in/recruitment-system-ntpc)
+- [NTPC careers portal](https://careers.ntpc.co.in/)
+- [GATE 2027 downloads (past papers, brochure) – IIT Madras](https://gate2027.iitm.ac.in/download)
+- [CS50x: Introduction to Computer Science – Harvard](https://cs50.harvard.edu/x/)
+- [NPTEL Soft Skills Training (includes HR mock interview)](https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html)
+- [Soft Skills – NPTEL (IIT Roorkee)](https://onlinecourses.nptel.ac.in/noc21_hs76/preview)
 
 </details>
 

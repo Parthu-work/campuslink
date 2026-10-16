@@ -1,0 +1,338 @@
+{
+  "key": "govt-exams",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Government Engineering Jobs: ESE, SSC JE, TGPSC and PSUs",
+  "category": "exams-higher-studies",
+  "branches": ["CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "CHEM", "AIML", "DS"],
+  "summary": "This path covers the main routes into government engineering jobs: UPSC Engineering Services, SSC Junior Engineer, Telangana Public Service Commission (TGPSC) posts and PSU jobs through GATE. It suits students who want stable public-sector work and can study steadily for months.",
+  "outcomes": [
+    "Group A engineer through UPSC Engineering Services",
+    "Junior Engineer in central government departments",
+    "Assistant Executive Engineer or similar state posts",
+    "Engineer or Executive Trainee in a PSU"
+  ],
+  "sources": [
+    {
+      "title": "Engineering Services Examination 2027 notice – UPSC",
+      "url": "https://www.upsc.gov.in/sites/default/files/Notif-ESEP-2027-Engl-160926.pdf"
+    },
+    {
+      "title": "Junior Engineer Examination notice – SSC",
+      "url": "https://ssc.gov.in/api/attachment/uploads/masterData/NoticeBoards/notice_16092026.pdf"
+    },
+    {
+      "title": "Telangana Public Service Commission (TGPSC)",
+      "url": "https://websitenew.tgpsc.gov.in/"
+    },
+    {
+      "title": "Recruitment system in NTPC",
+      "url": "https://ntpc.co.in/recruitment-system-ntpc"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "choose-exams",
+      "title": "Know the exams and which fit your branch",
+      "kind": "milestone",
+      "summary": "UPSC ESE covers Civil, Mechanical, Electrical and Electronics & Telecommunication. SSC JE covers Civil, Mechanical and Electrical. Some PSUs, such as POWERGRID, also hire Computer Science graduates through GATE. Read each notice for eligibility.",
+      "prerequisites": [],
+      "estimateHours": [5, 10],
+      "resources": [
+        {
+          "title": "Engineering Services Examination 2027 notice – UPSC",
+          "url": "https://www.upsc.gov.in/sites/default/files/Notif-ESEP-2027-Engl-160926.pdf"
+        },
+        {
+          "title": "Junior Engineer Examination notice – SSC",
+          "url": "https://ssc.gov.in/api/attachment/uploads/masterData/NoticeBoards/notice_16092026.pdf"
+        },
+        {
+          "title": "Engineer Trainee 2027 through GATE 2027 – POWERGRID",
+          "url": "https://www.powergrid.in/sites/default/files/job_opportunities_document/ET2027_Detailed_Advertisement_For%20Website_1.pdf"
+        }
+      ],
+      "proof": "A table of the exams you are eligible for, with the official notice link for each.",
+      "sources": [
+        {
+          "title": "Engineering Services Examination 2027 notice – UPSC",
+          "url": "https://www.upsc.gov.in/sites/default/files/Notif-ESEP-2027-Engl-160926.pdf"
+        },
+        {
+          "title": "Junior Engineer Examination notice – SSC",
+          "url": "https://ssc.gov.in/api/attachment/uploads/masterData/NoticeBoards/notice_16092026.pdf"
+        },
+        {
+          "title": "Engineer Trainee 2027 through GATE 2027 – POWERGRID",
+          "url": "https://www.powergrid.in/sites/default/files/job_opportunities_document/ET2027_Detailed_Advertisement_For%20Website_1.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "study-plan",
+      "title": "Make one study plan around the official calendars",
+      "kind": "milestone",
+      "summary": "GATE, ESE and SSC JE test many of the same core subjects, so one plan can cover several exams. Build your weekly plan around the official exam calendars and revise it when new notices come out.",
+      "prerequisites": ["choose-exams"],
+      "estimateHours": [4, 8],
+      "resources": [
+        {
+          "title": "SSC tentative exam calendar 2026–27",
+          "url": "https://ssc.gov.in/api/attachment/uploads/masterData/ExamCalendar/Tentative_Calendar2026_27_08012026.pdf"
+        },
+        {
+          "title": "GATE 2027 important dates",
+          "url": "https://gate2027.iitm.ac.in/important_dates"
+        },
+        {
+          "title": "TGPSC notifications",
+          "url": "https://websitenew.tgpsc.gov.in/notifications"
+        }
+      ],
+      "proof": "A written week-by-week plan that maps each syllabus topic to the exams it serves.",
+      "sources": [
+        {
+          "title": "SSC tentative exam calendar 2026–27",
+          "url": "https://ssc.gov.in/api/attachment/uploads/masterData/ExamCalendar/Tentative_Calendar2026_27_08012026.pdf"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "core-subjects",
+      "title": "Core engineering subjects and engineering maths",
+      "kind": "skill",
+      "summary": "Study your branch's core subjects and engineering mathematics topic by topic, using the official syllabus of each exam as your checklist. Free NPTEL courses from IIT faculty help with concepts.",
+      "prerequisites": ["study-plan"],
+      "estimateHours": [300, 600],
+      "resources": [
+        {
+          "title": "GATE 2027 test papers and syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+        },
+        {
+          "title": "Engineering Mathematics – I – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_ma58/preview"
+        }
+      ],
+      "proof": "Short notes per syllabus topic plus a formula sheet you can revise in one hour.",
+      "sources": [
+        {
+          "title": "Engineering Services Examination 2027 notice (syllabus) – UPSC",
+          "url": "https://www.upsc.gov.in/sites/default/files/Notif-ESEP-2027-Engl-160926.pdf"
+        },
+        {
+          "title": "GATE 2027 test papers and syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "general-studies-aptitude",
+      "title": "General studies and engineering aptitude",
+      "kind": "skill",
+      "summary": "The ESE general paper covers current issues, logical reasoning, engineering maths, standards and quality, project management and ethics in engineering. Read the newspaper daily and practise reasoning questions.",
+      "prerequisites": ["study-plan"],
+      "estimateHours": [80, 150],
+      "resources": [
+        {
+          "title": "Engineering Services Examination 2027 notice (syllabus) – UPSC",
+          "url": "https://www.upsc.gov.in/sites/default/files/Notif-ESEP-2027-Engl-160926.pdf"
+        },
+        {
+          "title": "Previous year question papers – UPSC",
+          "url": "https://www.upsc.gov.in/examinations/previous-question-papers"
+        }
+      ],
+      "proof": "Your scores on three past ESE general studies papers, solved under time limits.",
+      "sources": [
+        {
+          "title": "Engineering Services Examination 2027 notice (syllabus) – UPSC",
+          "url": "https://www.upsc.gov.in/sites/default/files/Notif-ESEP-2027-Engl-160926.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "previous-papers-practice",
+      "title": "Previous papers and mock test series",
+      "kind": "project",
+      "summary": "Solve official previous papers for each exam under timed conditions. UPSC posts past ESE preliminary and main papers, and the GATE site has past GATE papers. Keep a mistake log and revisit weak topics.",
+      "prerequisites": ["core-subjects", "general-studies-aptitude"],
+      "estimateHours": [100, 200],
+      "resources": [
+        {
+          "title": "Previous year question papers (filter: Engineering Services) – UPSC",
+          "url": "https://upsc.gov.in/examinations/previous-question-papers?field_exam_name_value=engineering+services&page=1"
+        },
+        {
+          "title": "Downloads (previous GATE papers) – GATE 2027",
+          "url": "https://gate2027.iitm.ac.in/download"
+        }
+      ],
+      "proof": "A mistake log covering at least fifteen timed past papers, with scores improving over time.",
+      "sources": [
+        {
+          "title": "Previous year question papers – UPSC",
+          "url": "https://www.upsc.gov.in/examinations/previous-question-papers"
+        },
+        {
+          "title": "Downloads – GATE 2027, IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/download"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gate-for-psus",
+      "title": "GATE for PSU jobs",
+      "kind": "exam",
+      "summary": "PSUs such as NTPC, POWERGRID, IndianOil and ONGC shortlist using GATE scores, then hold group discussions, interviews or other tests. Some accept only that year's GATE score, so read each advertisement on the PSU's careers page.",
+      "prerequisites": ["previous-papers-practice"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Jobs at NTPC",
+          "url": "https://ntpc.co.in/jobs-ntpc"
+        },
+        {
+          "title": "Employment opportunities – POWERGRID",
+          "url": "https://www.powergrid.in/en/job-opportunities1"
+        },
+        {
+          "title": "Latest job openings – IndianOil",
+          "url": "https://iocl.com/latest-job-opening"
+        }
+      ],
+      "proof": "A list of PSUs hiring in your GATE paper, with each advertisement link and its selection steps.",
+      "sources": [
+        {
+          "title": "Recruitment system in NTPC",
+          "url": "https://ntpc.co.in/recruitment-system-ntpc"
+        },
+        {
+          "title": "Engineer Trainee 2027 through GATE 2027 – POWERGRID",
+          "url": "https://www.powergrid.in/sites/default/files/job_opportunities_document/ET2027_Detailed_Advertisement_For%20Website_1.pdf"
+        },
+        {
+          "title": "Recruitment notices – ONGC",
+          "url": "https://ongcindia.com/web/eng/career/recruitment-notice"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "upsc-ese",
+      "title": "UPSC Engineering Services Examination",
+      "kind": "exam",
+      "summary": "ESE has a preliminary stage (a general studies and engineering aptitude paper plus a branch paper) and a main stage with conventional branch papers. Read the full notice for the scheme, eligibility and later stages.",
+      "prerequisites": ["previous-papers-practice"],
+      "estimateHours": [150, 300],
+      "resources": [
+        {
+          "title": "Engineering Services Examination 2027 notice – UPSC",
+          "url": "https://www.upsc.gov.in/sites/default/files/Notif-ESEP-2027-Engl-160926.pdf"
+        },
+        {
+          "title": "Engineering Services (Main) Examination 2026 papers – UPSC",
+          "url": "https://www.upsc.gov.in/examinations/Engineering%20Services%20(Main)%20Examination,%202026"
+        }
+      ],
+      "proof": "Five past ESE main answers in your branch, written by hand in the time allowed and self-checked.",
+      "sources": [
+        {
+          "title": "Engineering Services Examination 2027 notice – UPSC",
+          "url": "https://www.upsc.gov.in/sites/default/files/Notif-ESEP-2027-Engl-160926.pdf"
+        },
+        {
+          "title": "Previous year question papers – UPSC",
+          "url": "https://www.upsc.gov.in/examinations/previous-question-papers"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ssc-je",
+      "title": "SSC Junior Engineer (Civil, Mechanical, Electrical)",
+      "kind": "exam",
+      "summary": "SSC JE recruits Junior Engineers for departments such as CPWD and the Central Water Commission through two computer-based papers. Qualifications and age limits differ by post, so check the notice.",
+      "prerequisites": ["previous-papers-practice"],
+      "estimateHours": [100, 200],
+      "resources": [
+        {
+          "title": "Junior Engineer Examination notice – SSC",
+          "url": "https://ssc.gov.in/api/attachment/uploads/masterData/NoticeBoards/notice_16092026.pdf"
+        },
+        {
+          "title": "Tentative vacancy – SSC",
+          "url": "https://ssc.gov.in/for-candidates/tentative-vacancy"
+        }
+      ],
+      "proof": "Scores on three full timed practice papers in the SSC JE pattern, with a mistake log.",
+      "sources": [
+        {
+          "title": "Junior Engineer Examination notice – SSC",
+          "url": "https://ssc.gov.in/api/attachment/uploads/masterData/NoticeBoards/notice_16092026.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "tgpsc-exams",
+      "title": "Telangana state posts through TGPSC",
+      "kind": "exam",
+      "summary": "The Telangana Public Service Commission (TGPSC, earlier TSPSC) recruits for state engineering posts such as Assistant Executive Engineer. Each notification has its own syllabus, so follow the official notifications page.",
+      "prerequisites": ["previous-papers-practice"],
+      "estimateHours": [100, 200],
+      "resources": [
+        {
+          "title": "TGPSC notifications",
+          "url": "https://websitenew.tgpsc.gov.in/notifications"
+        },
+        {
+          "title": "Telangana Public Service Commission (TGPSC)",
+          "url": "https://websitenew.tgpsc.gov.in/"
+        }
+      ],
+      "proof": "A syllabus checklist for one TGPSC engineering notification, mapped to your existing notes.",
+      "sources": [
+        {
+          "title": "TGPSC notifications",
+          "url": "https://websitenew.tgpsc.gov.in/notifications"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-gd-prep",
+      "title": "Group discussion and interview preparation",
+      "kind": "milestone",
+      "summary": "PSUs such as NTPC and POWERGRID add a group discussion and a personal interview after the GATE shortlist. Practise explaining your final-year project, core basics and current issues clearly and calmly.",
+      "prerequisites": ["gate-for-psus", "upsc-ese"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Soft Skills – NPTEL (IIT Roorkee)",
+          "url": "https://onlinecourses.nptel.ac.in/noc21_hs76/preview"
+        },
+        {
+          "title": "Employment Communication: A Lab-based Course – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_hs17/preview"
+        }
+      ],
+      "proof": "Recordings of two mock interviews and two mock group discussions, with feedback you acted on.",
+      "sources": [
+        {
+          "title": "Recruitment system in NTPC",
+          "url": "https://ntpc.co.in/recruitment-system-ntpc"
+        },
+        {
+          "title": "Engineer Trainee 2027 through GATE 2027 – POWERGRID",
+          "url": "https://www.powergrid.in/sites/default/files/job_opportunities_document/ET2027_Detailed_Advertisement_For%20Website_1.pdf"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

@@ -1,0 +1,345 @@
+{
+  "key": "embedded-iot",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Embedded Systems and IoT Engineer",
+  "category": "core-engineering",
+  "branches": ["ECE", "EEE", "CSE"],
+  "summary": "Embedded engineers write the firmware that runs on microcontrollers inside devices, and IoT engineers connect those devices to networks. This path suits students who enjoy both code and hardware: C, microcontrollers, an RTOS, communication protocols and embedded Linux.",
+  "outcomes": [
+    "Embedded Software / Firmware Engineer (trainee)",
+    "IoT Developer",
+    "Embedded Linux Engineer (trainee)",
+    "Hardware–software Test Engineer"
+  ],
+  "sources": [
+    {
+      "title": "Introduction to Embedded System Design – NPTEL",
+      "url": "https://onlinecourses.nptel.ac.in/noc26_cs22/preview"
+    },
+    {
+      "title": "ESP-IDF Programming Guide (stable) – Espressif",
+      "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/index.html"
+    },
+    {
+      "title": "FreeRTOS documentation",
+      "url": "https://www.freertos.org/Documentation/00-Overview"
+    },
+    {
+      "title": "Embedded Linux training materials – Bootlin",
+      "url": "https://bootlin.com/doc/training/embedded-linux/"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "c-for-embedded",
+      "title": "C for embedded systems",
+      "kind": "skill",
+      "summary": "C is the usual language for firmware on boards such as Arduino, STM32 and ESP32 because it runs with little overhead. Get strong at pointers, structures, functions and memory, and learn to follow a coding standard such as BARR-C.",
+      "prerequisites": [],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Problem Solving through Programming in C – NPTEL (IIT Kharagpur)",
+          "url": "https://nptel.ac.in/courses/106105171"
+        },
+        {
+          "title": "BARR-C:2018 Embedded C Coding Standard (free PDF)",
+          "url": "https://barrgroup.com/embedded-c-coding-standard"
+        }
+      ],
+      "proof": "A small C library (for example a ring buffer) with tests, written to follow BARR-C rules.",
+      "sources": [
+        {
+          "title": "C++ vs. C: when to use each – roadmap.sh",
+          "url": "https://roadmap.sh/cpp/vs-c"
+        },
+        {
+          "title": "BARR-C:2018 Embedded C Coding Standard",
+          "url": "https://barrgroup.com/embedded-c-coding-standard"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "microcontroller-basics",
+      "title": "Microcontroller basics with Arduino or Pico",
+      "kind": "skill",
+      "summary": "Start on a beginner board: blink an LED, read buttons and analog sensors, and print over serial. Then move to the Raspberry Pi Pico C SDK to work closer to the hardware with CMake and plain C.",
+      "prerequisites": ["c-for-embedded"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Getting Started with Arduino – Arduino Docs",
+          "url": "https://docs.arduino.cc/learn/starting-guide/getting-started-arduino/"
+        },
+        {
+          "title": "Built-in Examples – Arduino Docs",
+          "url": "https://docs.arduino.cc/built-in-examples/"
+        },
+        {
+          "title": "The C/C++ SDK – Raspberry Pi Documentation",
+          "url": "https://www.raspberrypi.com/documentation/microcontrollers/c_sdk.html"
+        }
+      ],
+      "proof": "Three small sketches (digital input, analog read, serial output) on one board, with photos and code on GitHub.",
+      "sources": [
+        {
+          "title": "Built-in Examples – Arduino Docs",
+          "url": "https://docs.arduino.cc/built-in-examples/"
+        },
+        {
+          "title": "The C/C++ SDK – Raspberry Pi Documentation",
+          "url": "https://www.raspberrypi.com/documentation/microcontrollers/c_sdk.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interrupts-arm",
+      "title": "Interrupts and ARM Cortex-M basics",
+      "kind": "skill",
+      "summary": "Learn how a Cortex-M processor handles exceptions and interrupts through the NVIC: priorities, the vector table and handler mode. This is how real firmware reacts to timers, buttons and peripherals without wasting time polling.",
+      "prerequisites": ["microcontroller-basics"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "Embedded System Design with ARM – NPTEL (IIT Kharagpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc26_cs40/preview"
+        },
+        {
+          "title": "Cortex-M0+ Devices Generic User Guide – Arm",
+          "url": "https://developer.arm.com/documentation/dui0662/b/BABEDCBC"
+        }
+      ],
+      "proof": "A timer interrupt that toggles an LED while the main loop does other work, with notes on how you set the priority.",
+      "sources": [
+        {
+          "title": "Exception handling and prioritization – Arm Cortex-M4 TRM",
+          "url": "https://developer.arm.com/documentation/100166/0001/Programmers-Model/Exceptions/Exception-handling-and-prioritization"
+        },
+        {
+          "title": "Embedded System Design with ARM – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc26_cs40/preview"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "serial-protocols",
+      "title": "UART, I2C and SPI",
+      "kind": "skill",
+      "summary": "Most sensors and displays talk over UART, I2C or SPI. Learn how each one works, read a sensor datasheet, and use your chip's peripheral drivers. The NXP manual is the official I2C reference.",
+      "prerequisites": ["microcontroller-basics"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "UM10204 I2C-bus specification and user manual – NXP",
+          "url": "https://www.nxp.com/docs/en/user-guide/UM10204.pdf"
+        },
+        {
+          "title": "ESP-IDF Programming Guide (stable): peripherals API",
+          "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/index.html"
+        }
+      ],
+      "proof": "Read one I2C sensor and one SPI device on the same board, with a logic-analyser or serial-log screenshot.",
+      "sources": [
+        {
+          "title": "UM10204 I2C-bus specification and user manual – NXP",
+          "url": "https://www.nxp.com/docs/en/user-guide/UM10204.pdf"
+        },
+        {
+          "title": "Serial Peripheral Interface (SPI) – Linux kernel docs",
+          "url": "https://docs.kernel.org/driver-api/spi.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "esp-idf",
+      "title": "ESP32 with ESP-IDF",
+      "kind": "skill",
+      "summary": "ESP-IDF is Espressif's official framework for the ESP32. Learn to set the target, build, flash and monitor with idf.py, and use its GPIO, I2C, SPI, UART and Wi-Fi APIs. Use the stable docs, not old versions.",
+      "prerequisites": ["interrupts-arm", "serial-protocols"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "ESP-IDF Programming Guide (stable) – Espressif",
+          "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/index.html"
+        },
+        {
+          "title": "ESP-IDF versions – which docs to use",
+          "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/versions.html"
+        }
+      ],
+      "proof": "An ESP-IDF project that reads a sensor and connects to Wi-Fi, built from the command line, with a README.",
+      "sources": [
+        {
+          "title": "ESP-IDF Programming Guide (stable) – Espressif",
+          "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/index.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "rtos-freertos",
+      "title": "RTOS with FreeRTOS",
+      "kind": "skill",
+      "summary": "A real-time OS lets you split firmware into tasks. Learn tasks, priorities, queues, mutexes, semaphores and software timers in FreeRTOS. ESP-IDF includes FreeRTOS, so you can practise on the same ESP32.",
+      "prerequisites": ["esp-idf"],
+      "estimateHours": [40, 70],
+      "resources": [
+        {
+          "title": "FreeRTOS documentation",
+          "url": "https://www.freertos.org/Documentation/00-Overview"
+        },
+        {
+          "title": "Mastering the FreeRTOS Real Time Kernel (free PDF)",
+          "url": "https://www.freertos.org/media/2018/161204_Mastering_the_FreeRTOS_Real_Time_Kernel-A_Hands-On_Tutorial_Guide.pdf"
+        },
+        {
+          "title": "FreeRTOS queues",
+          "url": "https://freertos.org/Documentation/02-Kernel/02-Kernel-features/02-Queues-mutexes-and-semaphores/01-Queues"
+        }
+      ],
+      "proof": "A three-task firmware (sensor, processing, output) that passes data through queues, with a diagram of the tasks.",
+      "sources": [
+        {
+          "title": "FreeRTOS tasks overview",
+          "url": "https://freertos.org/Documentation/02-Kernel/02-Kernel-features/01-Tasks-and-co-routines/01-Tasks-overview"
+        },
+        {
+          "title": "ESP-IDF Programming Guide (stable) – Espressif",
+          "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/index.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "mqtt-iot",
+      "title": "MQTT and connecting devices",
+      "kind": "skill",
+      "summary": "MQTT is an OASIS-standard publish/subscribe messaging protocol. Learn topics, QoS levels and retained messages, then run the free Mosquitto broker locally and test with mosquitto_pub and mosquitto_sub.",
+      "prerequisites": ["rtos-freertos"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "MQTT specification – mqtt.org",
+          "url": "https://mqtt.org/mqtt-specification/"
+        },
+        {
+          "title": "mosquitto broker man page",
+          "url": "https://mosquitto.org/man/mosquitto-8.html"
+        },
+        {
+          "title": "mosquitto_sub man page",
+          "url": "https://mosquitto.org/man/mosquitto_sub-1.html"
+        }
+      ],
+      "proof": "Your ESP32 publishes sensor readings to a local Mosquitto broker and reacts to a command topic.",
+      "sources": [
+        {
+          "title": "MQTT Version 3.1.1 – OASIS Standard",
+          "url": "https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html"
+        },
+        {
+          "title": "mosquitto broker man page",
+          "url": "https://mosquitto.org/man/mosquitto-8.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "embedded-linux",
+      "title": "Embedded Linux on Raspberry Pi",
+      "kind": "skill",
+      "summary": "Bigger devices run Linux. Learn the boot process, cross-compiling, using GPIO, I2C and SPI from Linux, and how kernel drivers fit in. Bootlin's free course and the Yocto Quick Build are good next steps.",
+      "prerequisites": ["serial-protocols"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "Embedded Linux training materials (free) – Bootlin",
+          "url": "https://bootlin.com/doc/training/embedded-linux/"
+        },
+        {
+          "title": "Raspberry Pi computer hardware – Raspberry Pi Documentation",
+          "url": "https://www.raspberrypi.com/documentation/computers/raspberry-pi.html"
+        },
+        {
+          "title": "Yocto Project Quick Build",
+          "url": "https://docs.yoctoproject.org/brief-yoctoprojectqs/index.html"
+        }
+      ],
+      "proof": "A Raspberry Pi program that reads an I2C or SPI sensor from Linux user space, with setup steps in a README.",
+      "sources": [
+        {
+          "title": "Embedded Linux training materials – Bootlin",
+          "url": "https://bootlin.com/doc/training/embedded-linux/"
+        },
+        {
+          "title": "SPI userspace API (spidev) – Linux kernel docs",
+          "url": "https://www.kernel.org/doc/html/latest/spi/spidev.html"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "iot-project",
+      "title": "Project: sensor node with FreeRTOS and MQTT",
+      "kind": "project",
+      "summary": "Build one complete device: an ESP32 reads an I2C sensor in a FreeRTOS task, publishes to MQTT over Wi-Fi, and a Raspberry Pi or laptop subscribes and logs the data. Document wiring, design and known limits.",
+      "prerequisites": ["mqtt-iot", "embedded-linux"],
+      "estimateHours": [50, 100],
+      "resources": [
+        {
+          "title": "Networking APIs – ESP-IDF Programming Guide",
+          "url": "https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/index.html"
+        },
+        {
+          "title": "mosquitto_sub man page",
+          "url": "https://mosquitto.org/man/mosquitto_sub-1.html"
+        },
+        {
+          "title": "BARR-C:2018 Embedded C Coding Standard",
+          "url": "https://barrgroup.com/embedded-c-coding-standard"
+        }
+      ],
+      "proof": "A public repo with code, a wiring diagram, a task diagram and a two-minute demo video of the device working.",
+      "sources": [
+        {
+          "title": "ESP-IDF Programming Guide (stable) – Espressif",
+          "url": "https://docs.espressif.com/projects/esp-idf/en/stable/esp32/index.html"
+        },
+        {
+          "title": "MQTT specification – mqtt.org",
+          "url": "https://mqtt.org/mqtt-specification/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-prep",
+      "title": "Embedded interview preparation",
+      "kind": "milestone",
+      "summary": "Revise C (pointers, memory, bit operations), interrupts, RTOS ideas such as tasks, queues and mutexes, and UART, I2C and SPI. Be ready to walk through your project's design and the bugs you fixed.",
+      "prerequisites": ["iot-project"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Embedded Systems Design – NPTEL (IIT Kharagpur)",
+          "url": "https://onlinecourses.nptel.ac.in/noc26_cs54/preview"
+        },
+        {
+          "title": "Mastering the FreeRTOS Real Time Kernel (free PDF)",
+          "url": "https://www.freertos.org/media/2018/161204_Mastering_the_FreeRTOS_Real_Time_Kernel-A_Hands-On_Tutorial_Guide.pdf"
+        },
+        {
+          "title": "Employment Communication: A Lab-based Course – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_hs17/preview"
+        }
+      ],
+      "proof": "A one-page summary of your project you can explain in five minutes, plus answers to 30 practice questions.",
+      "sources": [],
+      "needsReview": true
+    }
+  ]
+}

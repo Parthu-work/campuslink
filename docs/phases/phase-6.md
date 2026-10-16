@@ -84,6 +84,6 @@ Done when: students explore researched, cited roadmaps in a zoomable Career Gala
 
 **Gaps:**
 
-- **10 planned roadmaps are not in the library:** cybersecurity, blockchain, game development, forward-deployed engineering, higher studies, government exams, mechanical, civil, chemical, and embedded/IoT. The shared web-search budget for the research run ran out, so they were left out rather than written from memory. Colleges can author them now; the next research pass adds them.
+- ~~10 planned roadmaps were missing.~~ **Resolved in a second research pass:** cybersecurity, blockchain, game development, forward-deployed engineering, higher studies, government exams, mechanical, civil, chemical, and embedded/IoT are now in the library (26 roadmaps in all). See `docs/roadmap-sources.md`.
 - Mobile, ECE and EEE have many "needs review" steps.
 - Editor validation messages come from the schema in English.
