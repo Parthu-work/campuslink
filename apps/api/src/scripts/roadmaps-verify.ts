@@ -74,9 +74,13 @@ async function main() {
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${md}\n`);
   if (process.env.GITHUB_ACTIONS) {
     const enc = (v: string) => v.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+    // One annotation per failure (never truncated), then a summary with the inconclusive ones.
+    for (const u of notPassing.filter((x) => results.get(x)?.result === 'FAIL'))
+      process.stdout.write(`::error title=Broken roadmap link::${enc(line(u))}\n`);
     const body = [
       `${urls.length} URLs: ${count('pass')} pass, ${count('RETRY')} inconclusive, ${count('FAIL')} fail`,
-      ...notPassing.map(line),
+      ...notPassing.filter((x) => results.get(x)?.result === 'FAIL').map(line),
+      ...notPassing.filter((x) => results.get(x)?.result !== 'FAIL').map(line),
     ].join('\n');
     process.stdout.write(`::notice title=Roadmap link check ${date}::${enc(body.slice(0, 60_000))}\n`);
   }

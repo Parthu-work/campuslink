@@ -25,7 +25,7 @@ The researched roadmap library lives in `apps/api/src/modules/roadmaps/library/`
 - The Odin Project moved its "Getting hired" lessons. The old addresses redirected through plain http, which the safe fetcher refuses, so they were updated to the current https lesson URLs.
 - A DataTalks.Club wiki page returned 404 and was removed. Its step in the data-engineer roadmap is now marked "needs review".
 
-**Fixed after the 26-roadmap run:** three archived NPTEL course pages (a chemical safety course, a surveying course and a soft-skills page) and IndianOil’s 2019 GATE advertisement PDF now return 404 and were removed. The chemical process-safety and interview steps are now marked "needs review".
+**Fixed after the 26-roadmap run:** three archived NPTEL course pages (a chemical safety course, a surveying course and a soft-skills page) IndianOil’s 2019 GATE advertisement PDF and its job-openings page no longer answer and were removed. The chemical process-safety and interview steps are now marked "needs review".
 
 **Inconclusive** (the site refused an automated or overseas client; these are not counted as broken). They should be re-checked by hand from India:
 
@@ -556,7 +556,7 @@ Roadmap sources:
 - [Telangana Public Service Commission (TGPSC)](https://websitenew.tgpsc.gov.in/)
 - [Recruitment system in NTPC](https://ntpc.co.in/recruitment-system-ntpc)
 
-<details><summary>All 21 cited links</summary>
+<details><summary>All 20 cited links</summary>
 
 - [Engineer Trainee 2027 through GATE 2027 – POWERGRID](https://www.powergrid.in/sites/default/files/job_opportunities_document/ET2027_Detailed_Advertisement_For%20Website_1.pdf)
 - [SSC tentative exam calendar 2026–27](https://ssc.gov.in/api/attachment/uploads/masterData/ExamCalendar/Tentative_Calendar2026_27_08012026.pdf)
@@ -570,7 +570,6 @@ Roadmap sources:
 - [Recruitment notices – ONGC](https://ongcindia.com/web/eng/career/recruitment-notice)
 - [Jobs at NTPC](https://ntpc.co.in/jobs-ntpc)
 - [Employment opportunities – POWERGRID](https://www.powergrid.in/en/job-opportunities1)
-- [Latest job openings – IndianOil](https://iocl.com/latest-job-opening)
 - [Engineering Services (Main) Examination 2026 papers – UPSC](<https://www.upsc.gov.in/examinations/Engineering%20Services%20(Main)%20Examination,%202026>)
 - [Tentative vacancy – SSC](https://ssc.gov.in/for-candidates/tentative-vacancy)
 - [Soft Skills – NPTEL (IIT Roorkee)](https://onlinecourses.nptel.ac.in/noc21_hs76/preview)
