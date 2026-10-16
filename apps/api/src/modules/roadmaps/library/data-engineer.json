@@ -14,10 +14,6 @@
     {
       "title": "Data Engineering Zoomcamp – DataTalks.Club (GitHub)",
       "url": "https://github.com/datatalksclub/data-engineering-zoomcamp"
-    },
-    {
-      "title": "Data Engineer Roadmap – DataTalks.Club",
-      "url": "https://datatalks.club/podwiki/roadmaps/data-engineer-roadmap/"
     }
   ],
   "nodes": [
@@ -39,13 +35,8 @@
         }
       ],
       "proof": "A script that reads a CSV or JSON file, validates and cleans it, and writes the result to a new file, pushed to GitHub.",
-      "sources": [
-        {
-          "title": "Data Engineer Roadmap – DataTalks.Club",
-          "url": "https://datatalks.club/podwiki/roadmaps/data-engineer-roadmap/"
-        }
-      ],
-      "needsReview": false
+      "sources": [],
+      "needsReview": true
     },
     {
       "id": "sql-modelling",
@@ -66,10 +57,6 @@
       ],
       "proof": "A small database schema you designed (for example, a college library) with sample data and 15 queries including window functions.",
       "sources": [
-        {
-          "title": "Data Engineer Roadmap – DataTalks.Club",
-          "url": "https://datatalks.club/podwiki/roadmaps/data-engineer-roadmap/"
-        },
         {
           "title": "Data Engineer Roadmap – roadmap.sh",
           "url": "https://roadmap.sh/data-engineer"
@@ -222,10 +209,6 @@
       ],
       "proof": "A GitHub repo with an architecture diagram, setup steps that work on a fresh machine and a dashboard or table built from the pipeline.",
       "sources": [
-        {
-          "title": "Data Engineer Roadmap – DataTalks.Club",
-          "url": "https://datatalks.club/podwiki/roadmaps/data-engineer-roadmap/"
-        },
         {
           "title": "Data Engineering Zoomcamp – DataTalks.Club (GitHub)",
           "url": "https://github.com/datatalksclub/data-engineering-zoomcamp"

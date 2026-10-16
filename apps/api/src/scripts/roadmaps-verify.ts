@@ -28,7 +28,9 @@ async function check(url: string): Promise<{ result: Result; detail: string }> {
     const msg = e instanceof Error ? e.message : String(e);
     // The page answered; it is just bigger than we read.
     if (msg === 'Response is too large') return { result: 'pass', detail: 'large' };
-    if (msg === 'The request timed out' || msg === 'Too many redirects')
+    // Connection refused or reset: some official sites (Indian government, NPTEL) refuse
+    // connections from overseas CI runners. Inconclusive; checked by hand and listed in the docs.
+    if (msg === 'The request timed out' || msg === 'Too many redirects' || msg === 'Could not fetch that URL')
       return { result: 'RETRY', detail: msg };
     return { result: 'FAIL', detail: msg };
   }
@@ -78,7 +80,8 @@ async function main() {
     ].join('\n');
     process.stdout.write(`::notice title=Roadmap link check ${date}::${enc(body.slice(0, 60_000))}\n`);
   }
-  // Red only for definite breakage (gone, not found, no such host); blocks and rate limits are retried.
+  // Red only for definite breakage (gone, not found, no such host, http-only); blocks, rate limits and
+  // refused connections are retried.
   if (count('FAIL') > 0) process.exitCode = 1;
 }
 

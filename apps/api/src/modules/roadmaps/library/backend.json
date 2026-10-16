@@ -313,7 +313,7 @@
       "resources": [
         {
           "title": "Preparing to Interview and Interviewing – The Odin Project",
-          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/preparing-to-interview-and-interviewing"
+          "url": "https://www.theodinproject.com/lessons/node-path-getting-hired-preparing-to-interview-and-interviewing"
         },
         {
           "title": "CSES Problem Set",
@@ -321,18 +321,18 @@
         },
         {
           "title": "Strategy – The Odin Project",
-          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/strategy"
+          "url": "https://www.theodinproject.com/lessons/node-path-getting-hired-strategy"
         }
       ],
       "proof": "Give a ten-minute walkthrough of your project to a senior or friend, and keep a log of at least 75 solved coding problems.",
       "sources": [
         {
           "title": "What Companies Want – The Odin Project",
-          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/what-companies-want"
+          "url": "https://www.theodinproject.com/lessons/node-path-getting-hired-what-companies-want"
         },
         {
           "title": "Preparing to Interview and Interviewing – The Odin Project",
-          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/preparing-to-interview-and-interviewing"
+          "url": "https://www.theodinproject.com/lessons/node-path-getting-hired-preparing-to-interview-and-interviewing"
         }
       ],
       "needsReview": true
