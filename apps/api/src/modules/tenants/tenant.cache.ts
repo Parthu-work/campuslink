@@ -12,6 +12,7 @@ export interface TenantRecord {
   allowedEmailDomains: string[];
   limits: { mentorshipRequestsPerWeek: number; referralRequestsPerWeek: number };
   permissionOverrides: PermissionOverrides;
+  retention?: { inactiveAccountDays: number; deletedAccountGraceDays: number };
 }
 
 const TTL_MS = 30_000;

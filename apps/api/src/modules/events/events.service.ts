@@ -79,6 +79,36 @@ function fold(line: string): string {
  * a live Q&A queue. Seats are claimed with conditional updates, so capacity holds under races.
  */
 export class EventsService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const u = oid(userId);
+    const [rsvps, questions, hosted] = await Promise.all([
+      EventRsvpModel.find({ userId: u }).select('eventId status checkedIn createdAt').lean(),
+      EventQuestionModel.find({ authorId: u }).select('eventId body createdAt').lean(),
+      EventModel.find({ hostId: u }).select('title kind startsAt status').lean(),
+    ]);
+    return { rsvps, questions, hosted };
+  }
+
+  /** RSVPs and questions are deleted (seats are freed); my future events are cancelled. */
+  async eraseFor(userId: string) {
+    const u = oid(userId);
+    const going = await EventRsvpModel.find({ userId: u, status: 'going' })
+      .select('eventId')
+      .lean<RsvpDoc[]>();
+    for (const r of going)
+      await EventModel.updateOne({ _id: r.eventId, goingCount: { $gt: 0 } }, { $inc: { goingCount: -1 } });
+    await Promise.all([
+      EventRsvpModel.deleteMany({ userId: u }),
+      EventQuestionModel.deleteMany({ authorId: u }),
+      EventQuestionVoteModel.deleteMany({ userId: u }),
+      EventModel.updateMany(
+        { hostId: u, status: 'scheduled', startsAt: { $gt: new Date() } },
+        { $set: { status: 'cancelled' }, $inc: { version: 1 } },
+      ),
+    ]);
+  }
+
   /** Points for attendance and hosting (wired in app.ts). */
   award: Award = noAward;
   constructor(private readonly d: EventsDeps) {}

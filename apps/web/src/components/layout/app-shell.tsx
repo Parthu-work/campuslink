@@ -35,6 +35,7 @@ import { useTenant } from '../../lib/tenant-context';
 import { useMe } from '../../lib/me';
 import { useSignOut } from '../../lib/use-sign-out';
 import { cn } from '../../lib/cn';
+import { formatDay } from '../../lib/format';
 import { usePalette, usePaletteShortcut } from '../../lib/palette';
 import { CommandPalette } from './command-palette';
 import { Dialog } from '../ui/dialog';
@@ -305,6 +306,17 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         className="gutter min-w-0 pt-[calc(64px+env(safe-area-inset-top,0px))] pb-[calc(96px+env(safe-area-inset-bottom,0px))] lg:py-8"
       >
         <div className="screen-in mx-auto grid max-w-[880px] gap-5">
+          {me?.deletionPurgeAt && (
+            <div
+              role="alert"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-danger bg-surface-1 p-3 text-sm"
+            >
+              <span>{t('settings.data.banner', { date: formatDay(me.deletionPurgeAt) })}</span>
+              <Link to="/settings/data" className="font-semibold text-brand-ink underline">
+                {t('settings.data.cancel')}
+              </Link>
+            </div>
+          )}
           <Outlet />
         </div>
       </main>

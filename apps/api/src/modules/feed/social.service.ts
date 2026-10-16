@@ -29,6 +29,15 @@ const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11
 
 // ── Follows ─────────────────────────────
 export class FollowsService {
+  async exportFor(userId: string) {
+    return FollowModel.find({ followerId: userId }).select('targetType targetId createdAt').lean();
+  }
+
+  async eraseFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    await FollowModel.deleteMany({ $or: [{ followerId: u }, { targetType: 'user', targetId: u }] });
+  }
+
   constructor(
     private readonly d: {
       profiles: ProfilesService;
@@ -118,6 +127,14 @@ export class FollowsService {
 
 // ── Stories ─────────────────────────────
 export class StoriesService {
+  async exportFor(userId: string) {
+    return StoryModel.find({ authorId: userId }).select('kind text link createdAt expiresAt').lean();
+  }
+
+  async eraseFor(userId: string) {
+    await StoryModel.deleteMany({ authorId: new Types.ObjectId(userId) });
+  }
+
   constructor(
     private readonly d: { files: FilesService; profiles: ProfilesService; safety: SafetyService },
   ) {}

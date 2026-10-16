@@ -53,6 +53,26 @@ export interface ReferralsDeps {
  * student, one-tap refer or a kind decline for the alumnus. Requests expire after 14 days.
  */
 export class ReferralsService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    const [prefs, requests] = await Promise.all([
+      ReferralPrefsModel.findOne({ userId: u }).lean(),
+      ReferralRequestModel.find({ $or: [{ requesterId: u }, { referrerId: u }] })
+        .select('requesterId referrerId jobTitle company why status responseNote createdAt')
+        .lean(),
+    ]);
+    return { settings: prefs, requests };
+  }
+
+  async eraseFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    await Promise.all([
+      ReferralPrefsModel.deleteMany({ userId: u }),
+      ReferralRequestModel.deleteMany({ $or: [{ requesterId: u }, { referrerId: u }] }),
+    ]);
+  }
+
   /** Points for actions this module confirms (wired in app.ts). */
   award: Award = noAward;
   constructor(private readonly d: ReferralsDeps) {}

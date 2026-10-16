@@ -65,9 +65,18 @@ Sign-up requires an 18+ declaration. Under-18 users are blocked on the client an
 
 File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable per tenant: inactive accounts (default 3 years) and deleted-account grace (default 30 days); those purges ship with the privacy release.
 
-## Rights (planned, privacy release)
+## Rights (implemented)
 
-Correction is self-service now (profile editing). Self-service export (JSON) and deletion (soft delete → hard delete after the grace period) through background jobs.
+- **Access and export:** Settings → Your data → Download my data (`GET /me/export`). This is one JSON file built from every module's registered exporter, and it includes only messages the member sent. Exports are rate-limited (5 an hour) and audited.
+- **Correction:** profile editing; name changes go through the college.
+- **Withdrawal of consent:** Settings → Privacy.
+- **Erasure:** Settings → Your data → Delete my account (`POST /me/deletion`, password required).
+  - Every session is signed out at once and the profile is hidden. While deletion is pending, the account has no permissions, and the member can only export or cancel.
+  - After the college's grace period (`retention.deletedAccountGraceDays`, default 30), the retention job runs every module's eraser. Private data is deleted. Messages the member sent are blanked for the other person. Shared items (roadmaps they wrote, past sessions) remain and show "Former member". The account record is deleted last.
+  - Consent records and the audit log are kept as legal evidence, keyed only by an id that no longer resolves to a person.
+- **Grievance contact:** a placeholder in the Privacy Policy template (`docs/legal/privacy-policy.md`), which each college fills in.
+
+**Templates:** `docs/legal/privacy-policy.md` and `docs/legal/terms.md` are drafts that need legal review.
 
 ## Residency and backups
 

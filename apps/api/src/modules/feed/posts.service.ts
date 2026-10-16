@@ -44,6 +44,26 @@ export interface PostsDeps {
 }
 
 export class PostsService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const [posts, comments] = await Promise.all([
+      PostModel.find({ authorId: userId }).select('kind body topics hashtags createdAt status').lean(),
+      CommentModel.find({ authorId: userId }).select('postId body createdAt status').lean(),
+    ]);
+    return { posts, comments };
+  }
+
+  async eraseFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    await Promise.all([
+      PostModel.deleteMany({ authorId: u }),
+      CommentModel.deleteMany({ authorId: u }),
+      ReactionModel.deleteMany({ userId: u }),
+      SaveModel.deleteMany({ userId: u }),
+      PollVoteModel.deleteMany({ userId: u }),
+    ]);
+  }
+
   /** Points for actions this module confirms (wired in app.ts). */
   award: Award = noAward;
   constructor(private readonly d: PostsDeps) {}

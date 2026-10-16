@@ -77,6 +77,28 @@ export interface GamificationDeps {
  * rewards catalogue. Points come only from other modules' successful writes (`award`).
  */
 export class GamificationService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const u = oid(userId);
+    const [points, badges, redemptions, prefs] = await Promise.all([
+      XpEventModel.find({ userId: u }).select('track kind points createdAt note').limit(20_000).lean(),
+      UserBadgeModel.find({ userId: u }).select('badge createdAt').lean(),
+      RedemptionModel.find({ userId: u }).select('title cost track status createdAt').lean(),
+      GamificationPrefsModel.findOne({ userId: u }).select('showOnLeaderboard showOnWall').lean(),
+    ]);
+    return { points, badges, redemptions, preferences: prefs };
+  }
+
+  async eraseFor(userId: string) {
+    const u = oid(userId);
+    await Promise.all([
+      XpEventModel.deleteMany({ userId: u }),
+      UserBadgeModel.deleteMany({ userId: u }),
+      RedemptionModel.deleteMany({ userId: u }),
+      GamificationPrefsModel.deleteMany({ userId: u }),
+    ]);
+  }
+
   constructor(private readonly d: GamificationDeps) {}
 
   // ── Awarding ─────────────────────────────

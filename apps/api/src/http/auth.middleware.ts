@@ -44,8 +44,10 @@ export async function authFromToken(
       .select('_id')
       .lean(),
   ]);
-  if (!user || !session || user.status !== 'active' || user.tokenVersion !== claims.ver)
+  if (!user || !session || user.status === 'suspended' || user.tokenVersion !== claims.ver)
     throw unauthenticated();
+  // A pending deletion keeps only signed-in basics (see /me, export, cancel): no permissions at all.
+  const deleting = user.status === 'deleting';
 
   // Defence in depth: SUPER_ADMIN only on the platform host, never inside a college.
   const roles = (user.roles as Role[]).filter(
@@ -60,10 +62,12 @@ export async function authFromToken(
     verified: !!user.verified,
     mfaEnabled,
     mfaPending: requiresMfa(roles) && !mfaEnabled,
-    permissions: resolvePermissions(
-      { roles, capabilities: user.capabilities as Capability[], verified: !!user.verified, mfaEnabled },
-      effectiveOverrides(tenant.features, tenant.permissionOverrides),
-    ),
+    permissions: deleting
+      ? new Set()
+      : resolvePermissions(
+          { roles, capabilities: user.capabilities as Capability[], verified: !!user.verified, mfaEnabled },
+          effectiveOverrides(tenant.features, tenant.permissionOverrides),
+        ),
     expiresAt: claims.exp * 1000,
   };
 }

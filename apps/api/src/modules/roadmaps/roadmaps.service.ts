@@ -152,6 +152,27 @@ export interface RoadmapsDeps {
  * per-node comments, personal progress with a weekly goal and gentle nudges.
  */
 export class RoadmapsService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const [progress, comments] = await Promise.all([
+      RoadmapProgressModel.find({ userId: oid(userId) })
+        .select('roadmapId done nodesPerWeek')
+        .lean(),
+      RoadmapCommentModel.find({ authorId: oid(userId) })
+        .select('roadmapId nodeId body createdAt')
+        .lean(),
+    ]);
+    return { progress, comments };
+  }
+
+  /** Progress and comments are deleted; roadmaps I wrote stay for the college (shown as "Former member"). */
+  async eraseFor(userId: string) {
+    await Promise.all([
+      RoadmapProgressModel.deleteMany({ userId: oid(userId) }),
+      RoadmapCommentModel.deleteMany({ authorId: oid(userId) }),
+    ]);
+  }
+
   /** Points for actions this module confirms (wired in app.ts). */
   award: Award = noAward;
   constructor(private readonly d: RoadmapsDeps) {}

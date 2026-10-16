@@ -62,6 +62,28 @@ export type SlotList = (
 ) => Promise<{ timezone: string; durationMin: number; slots: string[] }>;
 
 export class SessionsService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    const [bookings, feedbackGiven] = await Promise.all([
+      BookingModel.find({ $or: [{ menteeId: u }, { mentorId: u }] })
+        .select('mentorId menteeId sessionType start end status')
+        .lean(),
+      FeedbackModel.find({ menteeId: u }).select('bookingId rating tags comment createdAt').lean(),
+    ]);
+    return { bookings, feedbackGiven };
+  }
+
+  /** Future sessions are cancelled; feedback I wrote is deleted. Past bookings stay, pseudonymous. */
+  async eraseFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    await BookingModel.updateMany(
+      { $or: [{ menteeId: u }, { mentorId: u }], status: 'scheduled', start: { $gt: new Date() } },
+      { $set: { status: 'cancelled' }, $inc: { version: 1 } },
+    );
+    await FeedbackModel.deleteMany({ menteeId: u });
+  }
+
   /** Points for actions this module confirms (wired in app.ts). */
   award: Award = noAward;
   slotCheck: SlotCheck | null = null;

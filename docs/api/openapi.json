@@ -13330,6 +13330,120 @@
         "x-permission": "reports:export"
       }
     },
+    "/api/v1/me/export": {
+      "get": {
+        "tags": [
+          "Privacy"
+        ],
+        "summary": "Download everything this college’s space holds about me (JSON, audited)",
+        "description": "Any signed-in user. Host scope: college. Rate limit: privacy.",
+        "operationId": "privacy_get_me_export",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/me/deletion": {
+      "get": {
+        "tags": [
+          "Privacy"
+        ],
+        "summary": "Whether my account is scheduled for deletion, and when",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "privacy_get_me_deletion",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "post": {
+        "tags": [
+          "Privacy"
+        ],
+        "summary": "Delete my account after the college’s grace period (password required; signs out everywhere)",
+        "description": "Any signed-in user. Host scope: college. Rate limit: privacy.",
+        "operationId": "privacy_post_me_deletion",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "delete": {
+        "tags": [
+          "Privacy"
+        ],
+        "summary": "Cancel my account deletion during the grace period",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "privacy_delete_me_deletion",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
     "/api/v1/admin/moderation/summary": {
       "get": {
         "tags": [

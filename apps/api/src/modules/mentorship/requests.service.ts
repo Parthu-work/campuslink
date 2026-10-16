@@ -39,6 +39,17 @@ export interface RequestsDeps {
 
 /** Structured mentorship requests. No cold DMs: messaging opens only when a mentor accepts. */
 export class RequestsService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    return MentorshipRequestModel.find({ $or: [{ menteeId: u }, { mentorId: u }] }).lean();
+  }
+
+  async eraseFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    await MentorshipRequestModel.deleteMany({ $or: [{ menteeId: u }, { mentorId: u }] });
+  }
+
   constructor(private readonly d: RequestsDeps) {}
 
   private async views(rows: RequestDoc[]): Promise<RequestView[]> {

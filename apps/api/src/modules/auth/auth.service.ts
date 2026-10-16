@@ -56,6 +56,60 @@ const genericLoginError = () =>
 const invalidLink = () => badRequest('This link is invalid or has expired. Request a new one.');
 
 export class AuthService {
+  // ── Privacy (export and erasure) ─────────────────────────────
+  async exportFor(userId: string) {
+    const [u, sessions] = await Promise.all([
+      UserModel.findById(userId)
+        .select('email name roles capabilities verified status locale createdAt mfa.enabled')
+        .lean(),
+      SessionModel.find({ userId }).select('device createdAt lastUsedAt revokedAt createdIpPrefix').lean(),
+    ]);
+    return { account: u, sessions };
+  }
+
+  /** Erasure: sessions and tokens now; the user record itself is removed last by the privacy service. */
+  async eraseFor(userId: string) {
+    await Promise.all([SessionModel.deleteMany({ userId }), AuthTokenModel.deleteMany({ userId })]);
+  }
+
+  async deleteUserRecord(userId: string) {
+    await UserModel.deleteOne({ _id: userId });
+  }
+
+  async checkPassword(userId: string, password: string) {
+    const u = await UserModel.findById(userId).select('+passwordHash').lean();
+    return !!u && (await verifyPassword(u.passwordHash, password));
+  }
+
+  /** Mark or clear a pending deletion (status `deleting` hides the profile; sign-in still works to cancel). */
+  async setDeletion(userId: string, purgeAt: Date | null) {
+    await UserModel.updateOne(
+      { _id: userId },
+      purgeAt
+        ? {
+            $set: { status: 'deleting', deletionPurgeAt: purgeAt, deletionRequestedAt: new Date() },
+            $inc: { tokenVersion: 1 },
+          }
+        : { $set: { status: 'active', deletionPurgeAt: null, deletionRequestedAt: null } },
+    );
+  }
+
+  async deletionOf(userId: string) {
+    const u = await UserModel.findById(userId).select('status deletionPurgeAt deletionRequestedAt').lean();
+    return u?.status === 'deleting' && u.deletionPurgeAt
+      ? { requestedAt: u.deletionRequestedAt ?? null, purgeAt: u.deletionPurgeAt }
+      : null;
+  }
+
+  async dueDeletions(now: Date) {
+    return (
+      await UserModel.find({ status: 'deleting', deletionPurgeAt: { $lte: now } })
+        .select('_id')
+        .limit(200)
+        .lean()
+    ).map((u) => String(u._id));
+  }
+
   /** Set by the app: lets verification react when someone proves their email (invites, list matches). */
   onEmailVerified: ((userId: string, email: string, meta: ClientMeta) => Promise<void>) | null = null;
   /** Set by the app: creates the member's profile record whenever an account is created. */
@@ -280,7 +334,8 @@ export class AuthService {
       );
       throw genericLoginError();
     }
-    if (user.status !== 'active')
+    // Members with a pending deletion may still sign in (to cancel it); suspended members may not.
+    if (user.status === 'suspended')
       throw new AppError(
         403,
         ErrorCode.FORBIDDEN,
@@ -318,7 +373,7 @@ export class AuthService {
         '+mfa.secretEnc +mfa.lastTimeStep +mfa.recoveryCodeHashes status failedLogins lockedUntil tokenVersion mfa.enabled',
       )
       .lean();
-    if (!user || user.status !== 'active' || !user.mfa?.enabled || !user.mfa.secretEnc)
+    if (!user || user.status === 'suspended' || !user.mfa?.enabled || !user.mfa.secretEnc)
       throw unauthenticated();
     if (user.lockedUntil && user.lockedUntil > new Date()) throw tooMany();
 
@@ -443,7 +498,7 @@ export class AuthService {
       throw unauthenticated();
     }
     const user = await UserModel.findById(session.userId).select('status tokenVersion').lean();
-    if (!user || user.status !== 'active') {
+    if (!user || user.status === 'suspended') {
       await SessionModel.updateOne(
         { _id: session._id },
         { $set: { revokedAt: new Date(), revokedReason: 'user_inactive' } },

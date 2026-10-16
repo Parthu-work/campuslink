@@ -74,6 +74,24 @@ const view = (n: NotificationDoc): NotificationView => ({
 });
 
 export class NotificationsService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const [notifications, preferences] = await Promise.all([
+      NotificationModel.find({ userId }).select('type data readAt createdAt').limit(5000).lean(),
+      NotificationPrefsModel.findOne({ userId }).lean(),
+    ]);
+    return { notifications, preferences };
+  }
+
+  async eraseFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    await Promise.all([
+      NotificationModel.deleteMany({ userId: u }),
+      NotificationPrefsModel.deleteMany({ userId: u }),
+      PushSubscriptionModel.deleteMany({ userId: u }),
+    ]);
+  }
+
   constructor(private readonly d: NotificationsDeps) {}
 
   async prefs(userId: string | Types.ObjectId): Promise<NotificationPrefs> {

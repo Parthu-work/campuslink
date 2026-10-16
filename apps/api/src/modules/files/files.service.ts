@@ -84,6 +84,16 @@ const newKey = () => {
 };
 
 export class FilesService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    return FileModel.find({ ownerId: userId }).select('purpose mime size createdAt').lean();
+  }
+
+  async eraseFor(userId: string) {
+    const owned = await FileModel.find({ ownerId: userId }).select('_id').lean();
+    for (const f of owned) await this.remove(f._id);
+  }
+
   private readonly resolvers = new Map<FilePurpose, FileAccessResolver>();
   constructor(
     private readonly storage: StorageProvider,

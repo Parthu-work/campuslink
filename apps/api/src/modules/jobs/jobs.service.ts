@@ -64,6 +64,26 @@ export interface JobsDeps {
 }
 
 export class JobsService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const [tracker, alerts, posted] = await Promise.all([
+      SavedJobModel.find({ userId }).select('jobId title company status note createdAt').lean(),
+      JobAlertModel.find({ userId }).select('name filters createdAt').lean(),
+      JobModel.find({ postedBy: userId }).select('title company status postedAt').lean(),
+    ]);
+    return { tracker, alerts, posted };
+  }
+
+  /** Private tracker and alerts are deleted; openings I posted are closed. */
+  async eraseFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    await Promise.all([
+      SavedJobModel.deleteMany({ userId: u }),
+      JobAlertModel.deleteMany({ userId: u }),
+      JobModel.updateMany({ postedBy: u, status: 'open' }, { $set: { status: 'closed' } }),
+    ]);
+  }
+
   /** Set by the referrals module: how many referrers accept requests per company key. */
   referrerCounts: (keys: string[], viewer: AuthState) => Promise<Map<string, number>> = async () => new Map();
   /** Set by the job-sources module: source names and attribution lines. */

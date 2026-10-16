@@ -33,6 +33,8 @@ export const listUsersQuery = z.strictObject({
 
 export interface MeResponse {
   id: string;
+  /** Set while the member's account deletion is pending (they keep no permissions). */
+  deletionPurgeAt?: string | null;
   name: string;
   email: string;
   roles: Role[];

@@ -42,6 +42,24 @@ const blankAuthor = (id: string) => ({
  * accepts the best answer, members vote answers helpful.
  */
 export class QaService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const [questions, answers] = await Promise.all([
+      QuestionModel.find({ authorId: userId }).select('title body topics status createdAt').lean(),
+      AnswerModel.find({ authorId: userId }).select('questionId body status createdAt').lean(),
+    ]);
+    return { questions, answers };
+  }
+
+  async eraseFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    await Promise.all([
+      QuestionModel.deleteMany({ authorId: u }),
+      AnswerModel.deleteMany({ authorId: u }),
+      AnswerVoteModel.deleteMany({ userId: u }),
+    ]);
+  }
+
   /** Points for actions this module confirms (wired in app.ts). */
   award: Award = noAward;
   constructor(

@@ -36,6 +36,19 @@ export interface VerificationDeps {
 }
 
 export class VerificationService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    return VerificationRequestModel.find({ userId }).select('method status createdAt decidedAt').lean();
+  }
+
+  async eraseFor(userId: string) {
+    const u = new Types.ObjectId(userId);
+    await Promise.all([
+      VerificationRequestModel.deleteMany({ userId: u }),
+      OtpChallengeModel.deleteMany({ userId: u }),
+    ]);
+  }
+
   constructor(private readonly d: VerificationDeps) {}
 
   async status(userId: string) {

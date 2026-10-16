@@ -21,6 +21,9 @@ const Settings = lazy(() =>
 const Security = lazy(() =>
   import('../features/settings/settings').then((m) => ({ default: m.SecuritySettings })),
 );
+const DataSettings = lazy(() =>
+  import('../features/settings/data-settings').then((m) => ({ default: m.DataSettings })),
+);
 const Privacy = lazy(() =>
   import('../features/settings/settings').then((m) => ({ default: m.PrivacySettings })),
 );
@@ -158,6 +161,14 @@ const settingsRoutes = {
       element: (
         <S>
           <Security />
+        </S>
+      ),
+    },
+    {
+      path: 'data',
+      element: (
+        <S>
+          <DataSettings />
         </S>
       ),
     },

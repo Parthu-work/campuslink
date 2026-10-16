@@ -28,6 +28,7 @@ export function SettingsLayout() {
     ['/settings/privacy', t('settings.privacy')],
     ['/settings/preferences', t('settings.preferences')],
     ['/settings/notifications', t('settings.notifications')],
+    ['/settings/data', t('settings.data.tab')],
   ] as const;
   return (
     <>

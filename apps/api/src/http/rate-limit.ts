@@ -22,7 +22,8 @@ export type LimiterName =
   | 'posting'
   | 'interact'
   | 'qa'
-  | 'referrals';
+  | 'referrals'
+  | 'privacy';
 
 const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: boolean }> = {
   global: { windowMs: 60_000, limit: 600 },
@@ -43,6 +44,7 @@ const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: bo
   interact: { windowMs: 60_000, limit: 120, perUser: true },
   qa: { windowMs: 60 * 60_000, limit: 10, perUser: true },
   referrals: { windowMs: 60 * 60_000, limit: 10, perUser: true },
+  privacy: { windowMs: 60 * 60_000, limit: 5, perUser: true },
 };
 
 const key = (req: Request, perUser?: boolean) =>

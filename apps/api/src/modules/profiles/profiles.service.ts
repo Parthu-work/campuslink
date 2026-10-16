@@ -35,6 +35,18 @@ export function canSee(audience: Audience, viewerRoles: Role[], isSelf: boolean)
 }
 
 export class ProfilesService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const p = await ProfileModel.findOne({ userId }).lean<ProfileDoc>();
+    if (!p) return null;
+    const { phoneEnc, ...rest } = p as ProfileDoc & { phoneEnc?: string | null };
+    return { ...rest, phone: phoneEnc ? this.cipher.decrypt(phoneEnc) : null };
+  }
+
+  async eraseFor(userId: string) {
+    await ProfileModel.deleteOne({ userId });
+  }
+
   constructor(
     private readonly cipher: FieldCipher,
     private readonly files: FilesService,

@@ -34,6 +34,25 @@ export interface MessagingDeps {
  * admins and the platform operator).
  */
 export class MessagingService {
+  // ── Privacy ─────────────────────────────
+  /** Only messages I sent (the other person's messages are theirs). */
+  async exportFor(userId: string) {
+    const rows = await MessageModel.find({ senderId: userId })
+      .select('conversationId bodyEnc createdAt')
+      .limit(20_000)
+      .lean();
+    return rows.map((m) => ({
+      conversationId: String(m.conversationId),
+      body: m.bodyEnc ? this.d.cipher.decrypt(m.bodyEnc) : '',
+      at: m.createdAt,
+    }));
+  }
+
+  /** Erase what I wrote; the other person keeps an empty placeholder in their history. */
+  async eraseFor(userId: string) {
+    await MessageModel.updateMany({ senderId: new Types.ObjectId(userId) }, { $set: { bodyEnc: null } });
+  }
+
   constructor(private readonly d: MessagingDeps) {}
 
   /** Called on acceptance. Reopens nothing that a block closed. */

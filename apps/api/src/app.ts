@@ -84,6 +84,9 @@ import { EVENT_REMINDER_JOB, EventsService } from './modules/events/events.servi
 import { eventRoutes } from './modules/events/events.routes.js';
 import { AnalyticsService } from './modules/analytics/analytics.service.js';
 import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
+import { PrivacyService } from './modules/privacy/privacy.service.js';
+import { privacyRoutes } from './modules/privacy/privacy.routes.js';
+import { consentService } from './modules/consent/consent.service.js';
 
 export interface AppDeps {
   env: Env;
@@ -415,6 +418,33 @@ export function createApp({
     eventHosts: async (since) => (await eventsService.hostsSince(since)).map(String),
   });
 
+  // ── Privacy rights (Phase 8) ─────────────────────────────
+  const privacyService = new PrivacyService({ auth: authService, profiles: profilesService, logger });
+  const hook = (svc: { exportFor(u: string): Promise<unknown>; eraseFor(u: string): Promise<void> }) => ({
+    exportFor: (u: string) => svc.exportFor(u),
+    eraseFor: (u: string) => svc.eraseFor(u),
+  });
+  // Order matters for erasure: content and files first, the account record last (privacy service).
+  privacyService.register('account', hook(authService));
+  privacyService.register('profile', hook(profilesService));
+  privacyService.register('consents', { exportFor: (u) => consentService.current(u) });
+  privacyService.register('verification', hook(verificationService));
+  privacyService.register('posts', hook(postsService));
+  privacyService.register('stories', hook(storiesService));
+  privacyService.register('follows', hook(followsService));
+  privacyService.register('questions', hook(qaService));
+  privacyService.register('messages', hook(messagingService));
+  privacyService.register('mentorship', hook(mentorsService));
+  privacyService.register('mentorshipRequests', hook(requestsService));
+  privacyService.register('sessions', hook(sessionsService));
+  privacyService.register('jobs', hook(jobsService));
+  privacyService.register('referrals', hook(referralsService));
+  privacyService.register('roadmaps', hook(roadmapsService));
+  privacyService.register('points', hook(gamificationService));
+  privacyService.register('events', hook(eventsService));
+  privacyService.register('notifications', hook(notificationsService));
+  privacyService.register('files', hook(filesService));
+
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
     posts: auth.permissions.has('feed:read') ? await postsService.search(auth, q) : [],
     questions: auth.permissions.has('feed:read') ? await qaService.search(auth, q) : [],
@@ -507,6 +537,7 @@ export function createApp({
   app.use(API_PREFIX, defineModule('gamification', gamificationRoutes(gamificationService), pipeline));
   app.use(API_PREFIX, defineModule('events', eventRoutes(eventsService), pipeline));
   app.use(API_PREFIX, defineModule('analytics', analyticsRoutes(analyticsService), pipeline));
+  app.use(API_PREFIX, defineModule('privacy', privacyRoutes(privacyService), pipeline));
   app.use(
     API_PREFIX,
     defineModule(
@@ -560,6 +591,7 @@ export function createApp({
     gamification: gamificationService,
     events: eventsService,
     analytics: analyticsService,
+    privacy: privacyService,
   };
   return app;
 }

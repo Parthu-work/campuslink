@@ -9,7 +9,10 @@ const userSchema = new Schema(
     passwordHash: { type: String, required: true, select: false },
     roles: { type: [String], enum: ROLES, required: true },
     capabilities: { type: [String], enum: CAPABILITIES, default: [] },
-    status: { type: String, enum: ['active', 'suspended'], default: 'active', required: true },
+    /** `deleting`: the member asked for erasure; it runs after the college's grace period. */
+    status: { type: String, enum: ['active', 'suspended', 'deleting'], default: 'active', required: true },
+    deletionRequestedAt: { type: Date, default: null },
+    deletionPurgeAt: { type: Date, default: null },
     /** College verification (roll number / ID) — completed in Phase 2. */
     verified: { type: Boolean, default: false },
     emailVerifiedAt: { type: Date, default: null },
@@ -36,6 +39,7 @@ const userSchema = new Schema(
 userSchema.index({ tenantId: 1, email: 1 }, { unique: true });
 userSchema.index({ tenantId: 1, roles: 1, _id: -1 });
 userSchema.index({ tenantId: 1, name: 'text', email: 'text' }, { name: 'user_search' });
+userSchema.index({ tenantId: 1, status: 1, deletionPurgeAt: 1 });
 
 export type User = InferSchemaType<typeof userSchema>;
 export type UserDoc = HydratedDocument<User>;

@@ -6,6 +6,7 @@ import { createLogger } from './lib/logger.js';
 import { MemoryMailProvider, SmtpMailProvider } from './lib/mailer.js';
 import { BullJobQueue, InlineJobQueue } from './lib/jobs.js';
 import { runRetention } from './lib/maintenance.js';
+import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
 import { createApp } from './app.js';
 import { syncIndexes } from './db/connect.js';
@@ -76,11 +77,17 @@ async function main() {
     logger.info({ port: env.API_PORT, jobs: env.JOBS_DRIVER }, 'api listening'),
   );
 
-  const services = app.locals.services as { files: FilesService; realtime: RealtimeGateway };
+  const services = app.locals.services as {
+    files: FilesService;
+    realtime: RealtimeGateway;
+    privacy: PrivacyService;
+  };
   services.realtime.attach(server, createAdapter(ioPub, ioSub));
   const files = services.files;
   const retention = () =>
-    runRetention(files, logger).catch((err: unknown) => logger.error({ err }, 'retention failed'));
+    runRetention(files, logger, services.privacy).catch((err: unknown) =>
+      logger.error({ err }, 'retention failed'),
+    );
   setTimeout(retention, 30_000).unref();
   setInterval(retention, 6 * 3600_000).unref();
 

@@ -92,10 +92,11 @@ export class UsersService {
   ) {}
 
   async me(auth: AuthState): Promise<MeResponse> {
-    const u = await UserModel.findById(auth.userId).select('name email locale').lean();
+    const u = await UserModel.findById(auth.userId).select('name email locale deletionPurgeAt').lean();
     if (!u) throw notFound('User');
     return {
       id: auth.userId,
+      deletionPurgeAt: u.deletionPurgeAt ? u.deletionPurgeAt.toISOString() : null,
       name: u.name,
       email: u.email,
       roles: auth.roles,

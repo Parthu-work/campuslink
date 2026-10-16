@@ -296,6 +296,10 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `PATCH /api/v1/event-questions/:id` | `events:rsvp` | college | — | Mark a question answered, reopen it or hide it (host or staff) |
 | `GET /api/v1/admin/analytics` | `analytics:cohort` | college | — | Aggregated college analytics (cohort view for faculty); counts under 5 are suppressed |
 | `GET /api/v1/admin/analytics/export` | `reports:export` | college | search | Download a report as CSV (audited) |
+| `GET /api/v1/me/export` | any signed-in user | college | privacy | Download everything this college’s space holds about me (JSON, audited) |
+| `GET /api/v1/me/deletion` | any signed-in user | college | — | Whether my account is scheduled for deletion, and when |
+| `POST /api/v1/me/deletion` | any signed-in user | college | privacy | Delete my account after the college’s grace period (password required; signs out everywhere) |
+| `DELETE /api/v1/me/deletion` | any signed-in user | college | — | Cancel my account deletion during the grace period |
 | `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
 | `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |
 | `GET /api/v1/admin/moderation/history/:targetType/:targetId` | `moderation:act` | college | — | Moderation history of one item |

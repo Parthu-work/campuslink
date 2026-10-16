@@ -101,6 +101,19 @@ export function scoreMatch(
 }
 
 export class MentorsService {
+  // ── Privacy ─────────────────────────────
+  async exportFor(userId: string) {
+    const [mentor, prefs] = await Promise.all([
+      MentorProfileModel.findOne({ userId }).lean(),
+      MenteePrefsModel.findOne({ userId }).lean(),
+    ]);
+    return { mentorProfile: mentor, menteePreferences: prefs };
+  }
+
+  async eraseFor(userId: string) {
+    await Promise.all([MentorProfileModel.deleteMany({ userId }), MenteePrefsModel.deleteMany({ userId })]);
+  }
+
   constructor(
     private readonly d: { profiles: ProfilesService; safety: SafetyService; sessions: SessionsService },
   ) {}

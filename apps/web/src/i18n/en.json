@@ -172,7 +172,26 @@
     "motionSystem": "Match device",
     "motionFull": "Full",
     "motionReduce": "Reduced",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "data": {
+      "tab": "Your data",
+      "exportTitle": "Download your data",
+      "exportBody": "A JSON file with everything this college’s space holds about you: your account, profile, posts, messages you sent, requests, sessions, applications, progress and more.",
+      "download": "Download my data",
+      "deleteTitle": "Delete your account",
+      "deleteBody": "You’ll be signed out everywhere and your profile is hidden at once. Your data is erased after the college’s grace period (usually 30 days); you can cancel until then by signing in.",
+      "delete": "Delete my account",
+      "confirmTitle": "Delete your account?",
+      "confirmBody": "Enter your password to confirm. You can cancel during the grace period.",
+      "password": "Password",
+      "confirm": "Delete my account",
+      "scheduled": "Deletion scheduled. You’ve been signed out.",
+      "pending": "Your account will be deleted on {{date}}.",
+      "cancel": "Cancel deletion",
+      "cancelled": "Deletion cancelled. Welcome back.",
+      "kept": "Your consent records and the security audit log are kept, as the law requires, without your details.",
+      "banner": "Your account is scheduled for deletion on {{date}}. Until then you can only download your data or cancel."
+    }
   },
   "admin": {
     "users": "People",
