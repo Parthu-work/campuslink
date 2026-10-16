@@ -10,6 +10,7 @@ on:
     branches: [main]
     paths:
       - apps/api/src/modules/content-sources/**
+      - apps/api/src/scripts/feeds-verify.ts
       - .github/workflows/feeds.yml
 
 permissions:

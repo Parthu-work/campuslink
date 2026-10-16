@@ -43,6 +43,13 @@ async function main() {
       .join(',')}`,
   );
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${md}\n`);
+  // One annotation with every result: readable through the REST API (check-run annotations) even
+  // where log downloads are not reachable.
+  if (process.env.GITHUB_ACTIONS) {
+    const lines = rows.map((r) => `${r.ok ? 'pass' : 'FAIL'} ${r.key}: ${r.detail}`);
+    const enc = (v: string) => v.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+    process.stdout.write(`::notice title=Starter feed verification ${date}::${enc(lines.join('\n'))}\n`);
+  }
   if (rows.some((r) => !r.ok)) process.exitCode = 1;
 }
 
