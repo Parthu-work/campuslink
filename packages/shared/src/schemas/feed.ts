@@ -168,7 +168,17 @@ export const sourceUpdateBody = z.strictObject({
 export const sourceTestBody = z.strictObject({ url: httpsUrl });
 
 // ── Moderation ─────────────────────────────
-export const CONTENT_TARGETS = ['post', 'comment', 'question', 'answer', 'story', 'item', 'job'] as const;
+export const CONTENT_TARGETS = [
+  'post',
+  'comment',
+  'question',
+  'answer',
+  'story',
+  'item',
+  'job',
+  'roadmap',
+  'roadmap_comment',
+] as const;
 export type ContentTarget = (typeof CONTENT_TARGETS)[number];
 export const REMOVAL_REASONS = [
   'spam',

@@ -9,6 +9,9 @@ import { api, makeTenant, makeUser, testApp, type TestTenant, type TestUser } fr
 import type { RouteRegistry } from '../src/http/registry.js';
 import { TenantModel } from '../src/modules/tenants/tenant.model.js';
 import { clearTenantCache } from '../src/modules/tenants/tenant.cache.js';
+import { runInTenant } from '../src/lib/context.js';
+import { RoadmapModel } from '../src/modules/roadmaps/roadmap.model.js';
+import { LIBRARY } from '../src/modules/roadmaps/library/index.js';
 
 const ctx = testApp();
 let T: TestTenant;
@@ -174,6 +177,11 @@ describe('super admin is platform-only', () => {
       users: 1,
       status: 'active',
     });
+    // New colleges start with the researched roadmap library installed.
+    const t = await TenantModel.findOne({ slug: 'newcollege' }).lean();
+    expect(await runInTenant(t?._id as Types.ObjectId, () => RoadmapModel.countDocuments({}))).toBe(
+      LIBRARY.length,
+    );
   });
   it('a super-admin token is rejected on a college host', async () => {
     const r = await api(ctx, T.host, sa.token).get('/admin/users');

@@ -65,6 +65,15 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       body: 'Your referral request to {name} expired without a reply.',
     },
     job_alert: { title: 'New openings', body: 'New openings match your alert “{alert}”.' },
+    roadmap_nudge: {
+      title: 'Your weekly roadmap goal',
+      body: 'A small step on “{roadmap}” this week keeps you on track.',
+    },
+    roadmap_approved: { title: 'Roadmap published', body: '{name} approved your changes to “{roadmap}”.' },
+    roadmap_changes_requested: {
+      title: 'Roadmap review',
+      body: '{name} asked for changes to “{roadmap}”.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -121,6 +130,18 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       body: '{name} కి మీ రిఫరల్ అభ్యర్థనకు జవాబు రాకుండానే గడువు ముగిసింది.',
     },
     job_alert: { title: 'కొత్త ఉద్యోగాలు', body: 'మీ అలర్ట్ “{alert}” కు సరిపోయే కొత్త ఉద్యోగాలు ఉన్నాయి.' },
+    roadmap_nudge: {
+      title: 'మీ వారపు రోడ్‌మ్యాప్ లక్ష్యం',
+      body: 'ఈ వారం “{roadmap}” లో ఒక చిన్న అడుగు వేస్తే మీరు ట్రాక్‌లో ఉంటారు.',
+    },
+    roadmap_approved: {
+      title: 'రోడ్‌మ్యాప్ ప్రచురించబడింది',
+      body: '{name} “{roadmap}” లో మీ మార్పులను ఆమోదించారు.',
+    },
+    roadmap_changes_requested: {
+      title: 'రోడ్‌మ్యాప్ సమీక్ష',
+      body: '{name} “{roadmap}” లో మార్పులు అడిగారు.',
+    },
   },
 };
 
@@ -133,6 +154,8 @@ const CONTENT_LABEL: Record<Locale, Record<string, string>> = {
     story: 'story',
     item: 'item',
     job: 'job post',
+    roadmap: 'roadmap',
+    roadmap_comment: 'roadmap comment',
   },
   te: {
     post: 'పోస్ట్',
@@ -142,6 +165,8 @@ const CONTENT_LABEL: Record<Locale, Record<string, string>> = {
     story: 'స్టోరీ',
     item: 'అంశం',
     job: 'ఉద్యోగ పోస్ట్',
+    roadmap: 'రోడ్‌మ్యాప్',
+    roadmap_comment: 'రోడ్‌మ్యాప్ వ్యాఖ్య',
   },
 };
 
@@ -158,6 +183,9 @@ function contentPath(data: Record<string, string>): string {
       return data.questionId ? `/questions/${data.questionId}` : '/questions';
     case 'job':
       return `/jobs/${data.contentId ?? ''}`;
+    case 'roadmap':
+    case 'roadmap_comment':
+      return data.slug ? `/roadmaps/${data.slug}` : '/roadmaps';
     default:
       return '/home';
   }
@@ -207,6 +235,10 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/referrals?box=sent';
     case 'job_alert':
       return data.alertId ? `/jobs?alert=${data.alertId}` : '/jobs';
+    case 'roadmap_nudge':
+    case 'roadmap_approved':
+    case 'roadmap_changes_requested':
+      return data.slug ? `/roadmaps/${data.slug}` : '/roadmaps';
     default:
       return '/sessions';
   }
@@ -233,6 +265,7 @@ export function renderNotification(
       .replace('{time}', time)
       .replace('{content}', CONTENT_LABEL[locale][data.contentType ?? ''] ?? '')
       .replace('{company}', data.company ?? '')
-      .replace('{alert}', data.alert ?? '');
+      .replace('{alert}', data.alert ?? '')
+      .replace('{roadmap}', data.roadmap ?? '');
   return { title: fill(t.title), body: fill(t.body), footer: FOOTER[locale], open: OPEN[locale] };
 }

@@ -11,7 +11,8 @@ import type { AuthState } from '../../types.js';
 
 /** What another module tells us about a reported item the reporter can see. */
 export interface ReportTarget {
-  subjectUserId: string;
+  /** Null for content without a member author (library roadmaps). */
+  subjectUserId: string | null;
   snapshot: string | null;
 }
 type TargetResolver = (viewer: AuthState, targetId: string) => Promise<ReportTarget | null>;
@@ -104,7 +105,7 @@ export class SafetyService {
         reporterId: new Types.ObjectId(viewer.userId),
         targetType: body.targetType,
         targetId: new Types.ObjectId(body.targetId),
-        subjectUserId: new Types.ObjectId(target.subjectUserId),
+        subjectUserId: target.subjectUserId ? new Types.ObjectId(target.subjectUserId) : null,
         reason: body.reason,
         note: body.note ?? '',
         snapshot: target.snapshot,
@@ -129,7 +130,9 @@ export class SafetyService {
       .limit(31)
       .lean<ReportDoc[]>();
     const page = rows.slice(0, 30);
-    const refs = await this.profiles.refsFor(page.flatMap((r) => [r.reporterId, r.subjectUserId]));
+    const refs = await this.profiles.refsFor(
+      page.flatMap((r) => (r.subjectUserId ? [r.reporterId, r.subjectUserId] : [r.reporterId])),
+    );
     return {
       items: page.map((r) => ({
         id: String(r._id),
@@ -141,7 +144,7 @@ export class SafetyService {
         status: r.status,
         outcome: r.outcome,
         reporter: refs.get(String(r.reporterId)),
-        subject: refs.get(String(r.subjectUserId)),
+        subject: r.subjectUserId ? refs.get(String(r.subjectUserId)) : undefined,
         createdAt: r.createdAt,
       })),
       nextCursor: rows.length > 30 ? String(page.at(-1)?._id) : null,

@@ -1,0 +1,287 @@
+{
+  "key": "ml-ai-engineer",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Machine Learning and AI Engineer",
+  "category": "data-ai",
+  "branches": ["CSE", "AIML", "DS", "IT"],
+  "summary": "ML and AI engineers build, deploy and maintain models and AI features, from classic ML to apps built on large language models. It suits students who like both programming and maths and want to ship working software.",
+  "outcomes": ["Machine Learning Engineer", "AI Engineer", "MLOps Engineer", "Applied ML Engineer"],
+  "sources": [
+    {
+      "title": "Machine Learning Engineer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/machine-learning"
+    },
+    {
+      "title": "AI Engineer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/ai-engineer"
+    },
+    {
+      "title": "MLOps Roadmap (PDF) – roadmap.sh",
+      "url": "https://roadmap.sh/pdfs/roadmaps/mlops.pdf"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "python-programming",
+      "title": "Python programming",
+      "kind": "skill",
+      "summary": "Get comfortable with Python: functions, classes, modules, files and errors, plus NumPy and pandas. ML engineers write real software, so clean code matters as much as models.",
+      "prerequisites": [],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "The Python Tutorial – python.org",
+          "url": "https://docs.python.org/3/tutorial/index.html"
+        },
+        {
+          "title": "Intro to Programming – Kaggle Learn",
+          "url": "https://www.kaggle.com/learn/intro-to-programming"
+        },
+        {
+          "title": "pandas Getting Started Tutorials",
+          "url": "https://pandas.pydata.org/docs/getting_started/intro_tutorials/"
+        }
+      ],
+      "proof": "A small Python package with functions, tests and a README that cleans and summarises a dataset, on GitHub.",
+      "sources": [
+        {
+          "title": "Machine Learning Crash Course: Prerequisites and prework – Google",
+          "url": "https://developers.google.com/machine-learning/crash-course/prereqs-and-prework"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "math-for-ml",
+      "title": "Maths for ML: linear algebra and statistics",
+      "kind": "skill",
+      "summary": "Learn vectors, matrices, derivatives, probability and basic statistics with a focus on intuition. These explain how training, loss and gradients work.",
+      "prerequisites": [],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "18.06 Linear Algebra – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/"
+        },
+        {
+          "title": "OpenIntro Statistics (free PDF)",
+          "url": "https://www.openintro.org/book/os/"
+        }
+      ],
+      "proof": "Implement gradient descent for linear regression with NumPy and plot the loss going down over iterations.",
+      "sources": [
+        {
+          "title": "Machine Learning Crash Course: Prerequisites and prework – Google",
+          "url": "https://developers.google.com/machine-learning/crash-course/prereqs-and-prework"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ml-fundamentals",
+      "title": "Machine learning fundamentals",
+      "kind": "skill",
+      "summary": "Learn regression, classification, trees and clustering, how to split data, avoid overfitting and choose metrics. Use scikit-learn to practise on real datasets.",
+      "prerequisites": ["python-programming", "math-for-ml"],
+      "estimateHours": [80, 120],
+      "resources": [
+        {
+          "title": "Machine Learning Crash Course – Google for Developers",
+          "url": "https://developers.google.com/machine-learning/crash-course"
+        },
+        {
+          "title": "Getting Started – scikit-learn",
+          "url": "https://scikit-learn.org/stable/getting_started.html"
+        },
+        {
+          "title": "Introduction to Machine Learning – NPTEL (IIT Madras)",
+          "url": "https://nptel.ac.in/courses/106106139"
+        }
+      ],
+      "proof": "A scikit-learn pipeline with preprocessing, cross-validation and hyperparameter search, with a short note on the chosen metric.",
+      "sources": [
+        {
+          "title": "Machine Learning Crash Course – Google for Developers",
+          "url": "https://developers.google.com/machine-learning/crash-course"
+        },
+        {
+          "title": "Datasets, generalization, and overfitting – Google MLCC",
+          "url": "https://developers.google.com/machine-learning/crash-course/overfitting"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "deep-learning",
+      "title": "Deep learning with PyTorch",
+      "kind": "skill",
+      "summary": "Learn tensors, autograd, building and training neural networks, and saving models in PyTorch. Then try a computer vision or NLP task with a pretrained model.",
+      "prerequisites": ["ml-fundamentals"],
+      "estimateHours": [80, 120],
+      "resources": [
+        {
+          "title": "Learn the Basics – PyTorch Tutorials",
+          "url": "https://docs.pytorch.org/tutorials/beginner/basics/intro.html"
+        },
+        {
+          "title": "Practical Deep Learning for Coders – fast.ai",
+          "url": "https://course.fast.ai/"
+        },
+        {
+          "title": "Intro to Deep Learning – Kaggle Learn",
+          "url": "https://www.kaggle.com/learn/intro-to-deep-learning"
+        }
+      ],
+      "proof": "Fine-tune a pretrained image or text model on your own small dataset and report accuracy on a held-out test set.",
+      "sources": [
+        {
+          "title": "Learn the Basics – PyTorch Tutorials",
+          "url": "https://docs.pytorch.org/tutorials/beginner/basics/intro.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "llms-genai",
+      "title": "LLMs and generative AI apps",
+      "kind": "skill",
+      "summary": "Learn how transformers and LLMs work, how to use them through libraries and APIs, and how to build retrieval-augmented (RAG) apps and simple agents. Many AI engineer roles focus on this.",
+      "prerequisites": ["deep-learning"],
+      "estimateHours": [50, 80],
+      "resources": [
+        {
+          "title": "LLM Course – Hugging Face",
+          "url": "https://huggingface.co/learn/llm-course/en/chapter1/1"
+        },
+        {
+          "title": "Introduction to Large Language Models – Google MLCC",
+          "url": "https://developers.google.com/machine-learning/crash-course/llm"
+        },
+        {
+          "title": "AI Agents Course – Hugging Face",
+          "url": "https://huggingface.co/learn/agents-course/unit0/introduction"
+        }
+      ],
+      "proof": "A small RAG app that answers questions over a set of documents and shows which passages it used.",
+      "sources": [
+        {
+          "title": "AI Engineer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/ai-engineer"
+        },
+        {
+          "title": "LLM Course – Hugging Face",
+          "url": "https://huggingface.co/learn/llm-course/en/chapter1/1"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "serving-docker",
+      "title": "Serving models: APIs and Docker",
+      "kind": "skill",
+      "summary": "Wrap a trained model in a small web API, package it with Docker and run it anywhere. Use Git for all your code. Employers want models that run outside a notebook.",
+      "prerequisites": ["ml-fundamentals"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "Get started – Docker Docs",
+          "url": "https://docs.docker.com/get-started/"
+        },
+        {
+          "title": "Production ML systems – Google MLCC",
+          "url": "https://developers.google.com/machine-learning/crash-course/production-ml-systems"
+        }
+      ],
+      "proof": "A Docker image that serves predictions from your model over HTTP, with run instructions in the README.",
+      "sources": [
+        {
+          "title": "MLOps Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/mlops.pdf"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "mlops-production",
+      "title": "Production ML and MLOps basics",
+      "kind": "skill",
+      "summary": "Learn what happens after deployment: data validation, tracking experiments, monitoring for drift and retraining. This is the gap between a demo and a product.",
+      "prerequisites": ["serving-docker"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "Production ML systems – Google MLCC",
+          "url": "https://developers.google.com/machine-learning/crash-course/production-ml-systems"
+        },
+        {
+          "title": "MLOps Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/mlops.pdf"
+        }
+      ],
+      "proof": "Add logging of inputs and predictions to your served model and a simple script that flags when input data shifts.",
+      "sources": [
+        {
+          "title": "Production ML systems – Google MLCC",
+          "url": "https://developers.google.com/machine-learning/crash-course/production-ml-systems"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ml-project",
+      "title": "End-to-end ML or AI project",
+      "kind": "project",
+      "summary": "Build one project from data to deployed app: train or adapt a model, serve it, add a simple front end and monitoring. One finished, deployed project beats many half-done notebooks.",
+      "prerequisites": ["llms-genai", "mlops-production"],
+      "estimateHours": [80, 120],
+      "resources": [
+        {
+          "title": "AI Engineer Projects – roadmap.sh",
+          "url": "https://roadmap.sh/ai-engineer/projects"
+        },
+        {
+          "title": "AI and Data Scientist Projects – roadmap.sh",
+          "url": "https://roadmap.sh/ai-data-scientist/projects"
+        }
+      ],
+      "proof": "A public GitHub repo plus a live demo or video, with a README covering the problem, data, model, metrics and limits.",
+      "sources": [
+        {
+          "title": "AI Engineer Projects – roadmap.sh",
+          "url": "https://roadmap.sh/ai-engineer/projects"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview preparation and applying",
+      "kind": "milestone",
+      "summary": "Revise ML concepts and metrics, practise Python coding questions and data structures problems, and prepare an ML system design answer (such as a recommender). Rehearse explaining your project.",
+      "prerequisites": ["ml-project"],
+      "estimateHours": [50, 80],
+      "resources": [
+        {
+          "title": "Top 60+ Data Science Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/data-science"
+        },
+        {
+          "title": "Top 20 Python Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/python"
+        },
+        {
+          "title": "Top 30 System Design Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/system-design"
+        }
+      ],
+      "proof": "Do two mock interviews: one on ML concepts and coding, one where you design an ML system on a whiteboard.",
+      "sources": [
+        {
+          "title": "Top 60+ Data Science Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/data-science"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

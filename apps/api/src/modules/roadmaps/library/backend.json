@@ -1,0 +1,341 @@
+{
+  "key": "backend",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Backend Developer",
+  "category": "software",
+  "branches": ["CSE", "IT"],
+  "summary": "Backend developers build the servers, APIs and databases that apps and websites depend on. The role suits students who like logic, data and making things reliable and secure, more than visual design.",
+  "outcomes": ["Backend Developer", "API Engineer", "Software Engineer (Backend)"],
+  "sources": [
+    {
+      "title": "Backend Developer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/backend"
+    },
+    {
+      "title": "API Design Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/api-design"
+    },
+    {
+      "title": "20 Backend Project Ideas – roadmap.sh",
+      "url": "https://roadmap.sh/backend/project-ideas"
+    },
+    {
+      "title": "OWASP Top 10:2025",
+      "url": "https://owasp.org/Top10/2025/"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "language",
+      "title": "One server-side language",
+      "kind": "skill",
+      "summary": "Pick one language such as Python, Java or JavaScript (Node.js) and learn it well, including its package manager and how to structure a project. Depth in one language matters more than a little of many.",
+      "prerequisites": [],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "The Python Tutorial",
+          "url": "https://docs.python.org/3/tutorial/index.html"
+        },
+        {
+          "title": "Learn Java – Dev.java",
+          "url": "https://dev.java/learn/"
+        },
+        {
+          "title": "Learn Node.js – nodejs.org",
+          "url": "https://nodejs.org/learn"
+        }
+      ],
+      "proof": "Build a small command-line tool, such as a task tracker that saves to a file, in your chosen language and publish it on GitHub.",
+      "sources": [
+        {
+          "title": "The 5 Best Backend Development Languages – roadmap.sh",
+          "url": "https://roadmap.sh/backend/languages"
+        },
+        {
+          "title": "Backend Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/backend"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "git-cli",
+      "title": "Git, the terminal and Linux basics",
+      "kind": "skill",
+      "summary": "Servers are mostly run from a terminal. Learn shell commands, editing files, environment variables and Git for version control. These daily tools are rarely taught in class but expected at work.",
+      "prerequisites": ["language"],
+      "estimateHours": [15, 30],
+      "resources": [
+        {
+          "title": "The Missing Semester of Your CS Education – MIT",
+          "url": "https://missing.csail.mit.edu/"
+        },
+        {
+          "title": "Pro Git (free book)",
+          "url": "https://git-scm.com/book/en/v2"
+        }
+      ],
+      "proof": "Write a shell script that sets up and runs one of your projects, and keep every project in Git with meaningful commits.",
+      "sources": [
+        {
+          "title": "The Missing Semester of Your CS Education – MIT",
+          "url": "https://missing.csail.mit.edu/"
+        },
+        {
+          "title": "Backend Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/backend"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "http-apis",
+      "title": "HTTP and REST API design",
+      "kind": "skill",
+      "summary": "Understand HTTP methods, status codes and headers, then learn to design clean REST APIs: resource URLs, versioning, pagination, error responses and rate limiting.",
+      "prerequisites": ["language"],
+      "estimateHours": [25, 40],
+      "resources": [
+        {
+          "title": "Overview of HTTP – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+        },
+        {
+          "title": "HTTP request methods – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods"
+        },
+        {
+          "title": "API Design Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/api-design"
+        }
+      ],
+      "proof": "Write an API design document for a small app listing each endpoint, its method, request body, responses and error codes.",
+      "sources": [
+        {
+          "title": "API Design Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/api-design"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "framework",
+      "title": "A web framework",
+      "kind": "skill",
+      "summary": "Learn one framework for your language, for example Express for Node.js. Cover routing, middleware, request validation and structured error handling, and keep business logic separate from route handlers.",
+      "prerequisites": ["http-apis", "git-cli"],
+      "estimateHours": [40, 70],
+      "resources": [
+        {
+          "title": "Hello world example – Express.js",
+          "url": "https://expressjs.com/en/starter/hello-world/"
+        },
+        {
+          "title": "Writing middleware – Express.js",
+          "url": "https://expressjs.com/en/guide/writing-middleware/"
+        },
+        {
+          "title": "Python Backend Development: Build Your First API – roadmap.sh",
+          "url": "https://roadmap.sh/python/backend"
+        }
+      ],
+      "proof": "Build the API you designed earlier, with input validation and consistent JSON error responses for bad requests.",
+      "sources": [
+        {
+          "title": "Routing – Express.js",
+          "url": "https://expressjs.com/en/guide/routing/"
+        },
+        {
+          "title": "Backend Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/backend"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "databases",
+      "title": "Relational databases and SQL",
+      "kind": "skill",
+      "summary": "Learn to model data in tables, write queries with joins, use indexes to speed up searches, and use transactions. Also learn when a NoSQL store like MongoDB or a cache like Redis is a better fit.",
+      "prerequisites": ["language"],
+      "estimateHours": [40, 70],
+      "resources": [
+        {
+          "title": "PostgreSQL Tutorial – PostgreSQL Documentation",
+          "url": "https://www.postgresql.org/docs/current/tutorial.html"
+        },
+        {
+          "title": "CS50's Introduction to Databases with SQL (archived, free to view)",
+          "url": "https://cs50.harvard.edu/sql/"
+        }
+      ],
+      "proof": "Design a normalised schema for a library or shop with at least four tables, and write ten queries including joins and an aggregate.",
+      "sources": [
+        {
+          "title": "Backend Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/backend"
+        },
+        {
+          "title": "CS50's Introduction to Databases with SQL",
+          "url": "https://cs50.harvard.edu/sql/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "auth-security",
+      "title": "Authentication and API security",
+      "kind": "skill",
+      "summary": "Store passwords with a slow hash such as Argon2id, manage sessions or tokens safely, and check on every request that the user may access that exact record. Broken access control is the top web risk on the OWASP list.",
+      "prerequisites": ["framework", "databases"],
+      "estimateHours": [25, 45],
+      "resources": [
+        {
+          "title": "Password Storage Cheat Sheet – OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html"
+        },
+        {
+          "title": "Session Management Cheat Sheet – OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html"
+        },
+        {
+          "title": "OWASP Top 10 API Security Risks – 2023",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0x11-t10/"
+        }
+      ],
+      "proof": "Add login to your API and write tests proving that one user gets a 403 or 404 when asking for another user's records.",
+      "sources": [
+        {
+          "title": "OWASP Top 10:2025",
+          "url": "https://owasp.org/Top10/2025/"
+        },
+        {
+          "title": "Password Storage Cheat Sheet – OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "testing-deploy",
+      "title": "Testing, containers and deployment",
+      "kind": "skill",
+      "summary": "Write automated tests for your API so you can change code without fear. Package the app and its database with Docker so it runs the same on any machine, then deploy it.",
+      "prerequisites": ["auth-security"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "Get started – Docker Docs",
+          "url": "https://docs.docker.com/get-started/"
+        },
+        {
+          "title": "What is Docker? – Docker Docs",
+          "url": "https://docs.docker.com/get-started/docker-overview/"
+        },
+        {
+          "title": "Learn Node.js (includes testing) – nodejs.org",
+          "url": "https://nodejs.org/learn"
+        }
+      ],
+      "proof": "Your API repo has a test suite you can run with one command and a Docker Compose file that starts the API and database together.",
+      "sources": [
+        {
+          "title": "Build and share a containerized application – Docker Docs",
+          "url": "https://docs.docker.com/get-started/introduction/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "system-design",
+      "title": "Caching, scaling and system design basics",
+      "kind": "skill",
+      "summary": "Learn the core ideas behind larger systems: caching, load balancing, replication, sharding and message queues, and the trade-offs between consistency and availability. Start with simple diagrams of systems you already use.",
+      "prerequisites": ["testing-deploy"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "System Design Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/system-design.pdf"
+        },
+        {
+          "title": "Backend Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/backend"
+        }
+      ],
+      "proof": "Draw and explain a design for a URL shortener, covering storage, caching and what happens when traffic grows ten times.",
+      "sources": [
+        {
+          "title": "System Design Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/system-design.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "project",
+      "title": "Build a production-style API",
+      "kind": "project",
+      "summary": "Build one realistic backend from start to finish, such as an e-commerce or booking API, with login, a database, tests, Docker and clear docs. This is the main thing you will talk about in interviews.",
+      "prerequisites": ["testing-deploy"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "E-Commerce API Project Idea – roadmap.sh",
+          "url": "https://roadmap.sh/projects/ecommerce-api"
+        },
+        {
+          "title": "Backend Projects – roadmap.sh",
+          "url": "https://roadmap.sh/backend/projects"
+        },
+        {
+          "title": "Todo List API Project Idea – roadmap.sh",
+          "url": "https://roadmap.sh/projects/todo-list-api"
+        }
+      ],
+      "proof": "A public repo with a deployed API, API documentation, passing tests and a README explaining your design decisions.",
+      "sources": [
+        {
+          "title": "20 Backend Project Ideas – roadmap.sh",
+          "url": "https://roadmap.sh/backend/project-ideas"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interviews",
+      "title": "Interview preparation and applying",
+      "kind": "milestone",
+      "summary": "Prepare to explain your project in depth, answer questions on databases, HTTP and security, and solve coding problems on data structures. Learn the usual hiring steps and apply steadily.",
+      "prerequisites": ["project", "system-design"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Preparing to Interview and Interviewing – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/preparing-to-interview-and-interviewing"
+        },
+        {
+          "title": "CSES Problem Set",
+          "url": "https://cses.fi/"
+        },
+        {
+          "title": "Strategy – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/strategy"
+        }
+      ],
+      "proof": "Give a ten-minute walkthrough of your project to a senior or friend, and keep a log of at least 75 solved coding problems.",
+      "sources": [
+        {
+          "title": "What Companies Want – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/what-companies-want"
+        },
+        {
+          "title": "Preparing to Interview and Interviewing – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/preparing-to-interview-and-interviewing"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

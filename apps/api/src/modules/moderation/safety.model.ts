@@ -22,7 +22,7 @@ const reportSchema = new Schema(
     reporterId: { type: Schema.Types.ObjectId, required: true },
     targetType: { type: String, enum: REPORT_TARGETS, required: true },
     targetId: { type: Schema.Types.ObjectId, required: true },
-    subjectUserId: { type: Schema.Types.ObjectId, required: true },
+    subjectUserId: { type: Schema.Types.ObjectId, default: null },
     reason: { type: String, enum: REPORT_REASONS, required: true },
     note: { type: String, default: '', maxlength: 500 },
     snapshot: { type: String, default: null, maxlength: 2500 },

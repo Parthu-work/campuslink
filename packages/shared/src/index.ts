@@ -13,3 +13,4 @@ export * from './schemas/mentorship.js';
 export * from './schemas/messaging.js';
 export * from './schemas/feed.js';
 export * from './schemas/jobs.js';
+export * from './schemas/roadmaps.js';

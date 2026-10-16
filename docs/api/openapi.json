@@ -5294,6 +5294,26 @@
                           "push"
                         ],
                         "additionalProperties": false
+                      },
+                      "roadmaps": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
@@ -5303,7 +5323,8 @@
                       "messages",
                       "community",
                       "moderation",
-                      "jobs"
+                      "jobs",
+                      "roadmaps"
                     ],
                     "additionalProperties": false
                   },
@@ -5630,7 +5651,9 @@
                       "answer",
                       "story",
                       "job",
-                      "referral"
+                      "referral",
+                      "roadmap",
+                      "roadmap_comment"
                     ]
                   },
                   "targetId": {
@@ -10324,6 +10347,1293 @@
         "x-permission": "referrals:request"
       }
     },
+    "/api/v1/roadmaps": {
+      "get": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Published roadmaps (filters: category, branch, search, mine); reviewers can list drafts",
+        "description": "Requires permission `roadmaps:read` (View roadmaps). Host scope: college. Rate limit: search.",
+        "operationId": "roadmaps_get_roadmaps",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "software",
+                "data-ai",
+                "security",
+                "design-product",
+                "core-engineering",
+                "exams-higher-studies"
+              ]
+            }
+          },
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 80
+            }
+          },
+          {
+            "name": "mine",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "authored",
+                "following"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "in_review",
+                "draft",
+                "archived"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:read"
+      },
+      "post": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Start a new roadmap (a draft only its editors and reviewers can see)",
+        "description": "Requires permission `roadmaps:write` (Draft and edit roadmaps). Host scope: college. Rate limit: interact.",
+        "operationId": "roadmaps_post_roadmaps",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 100
+                      },
+                      "summary": {
+                        "type": "string",
+                        "minLength": 20,
+                        "maxLength": 600
+                      },
+                      "category": {
+                        "type": "string",
+                        "enum": [
+                          "software",
+                          "data-ai",
+                          "security",
+                          "design-product",
+                          "core-engineering",
+                          "exams-higher-studies"
+                        ]
+                      },
+                      "branches": {
+                        "minItems": 1,
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "CSE",
+                            "IT",
+                            "ECE",
+                            "EEE",
+                            "MECH",
+                            "CIVIL",
+                            "CHEM",
+                            "AIML",
+                            "DS",
+                            "OTHER"
+                          ]
+                        }
+                      },
+                      "outcomes": {
+                        "default": [],
+                        "maxItems": 6,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 80
+                        }
+                      },
+                      "sources": {
+                        "default": [],
+                        "maxItems": 12,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "title": {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 200
+                            },
+                            "url": {
+                              "type": "string",
+                              "maxLength": 2000,
+                              "format": "uri"
+                            }
+                          },
+                          "required": [
+                            "title",
+                            "url"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "nodes": {
+                        "minItems": 1,
+                        "maxItems": 40,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[a-z0-9][a-z0-9-]{0,39}$"
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 100
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "skill",
+                                "milestone",
+                                "project",
+                                "exam"
+                              ]
+                            },
+                            "summary": {
+                              "type": "string",
+                              "minLength": 10,
+                              "maxLength": 400
+                            },
+                            "prerequisites": {
+                              "default": [],
+                              "maxItems": 6,
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "estimateHours": {
+                              "type": "array",
+                              "prefixItems": [
+                                {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 2000
+                                },
+                                {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 2000
+                                }
+                              ],
+                              "items": false,
+                              "minItems": 2,
+                              "maxItems": 2
+                            },
+                            "resources": {
+                              "default": [],
+                              "maxItems": 5,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "title": {
+                                    "type": "string",
+                                    "minLength": 2,
+                                    "maxLength": 200
+                                  },
+                                  "url": {
+                                    "type": "string",
+                                    "maxLength": 2000,
+                                    "format": "uri"
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "url"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "proof": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 300
+                            },
+                            "sources": {
+                              "default": [],
+                              "maxItems": 6,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "title": {
+                                    "type": "string",
+                                    "minLength": 2,
+                                    "maxLength": 200
+                                  },
+                                  "url": {
+                                    "type": "string",
+                                    "maxLength": 2000,
+                                    "format": "uri"
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "url"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "needsReview": {
+                              "default": false,
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "kind",
+                            "summary",
+                            "estimateHours"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "title",
+                      "summary",
+                      "category",
+                      "branches",
+                      "nodes"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "content"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:write"
+      }
+    },
+    "/api/v1/roadmaps/review-queue": {
+      "get": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Versions waiting for review, oldest first",
+        "description": "Requires permission `roadmaps:review` (Review and publish roadmaps). Host scope: college.",
+        "operationId": "roadmaps_get_roadmaps_review_queue",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:review"
+      }
+    },
+    "/api/v1/roadmaps/library": {
+      "get": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "The researched roadmap library, with what this college has installed",
+        "description": "Requires permission `roadmaps:review` (Review and publish roadmaps). Host scope: college.",
+        "operationId": "roadmaps_get_roadmaps_library",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:review"
+      }
+    },
+    "/api/v1/roadmaps/library/{key}": {
+      "post": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Install a library roadmap, or propose its researched update for review",
+        "description": "Requires permission `roadmaps:review` (Review and publish roadmaps). Host scope: college.",
+        "operationId": "roadmaps_post_roadmaps_library_key",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{2,40}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:review"
+      }
+    },
+    "/api/v1/roadmaps/{slug}": {
+      "get": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "One roadmap: the published content, my progress, and the open draft for editors",
+        "description": "Requires permission `roadmaps:read` (View roadmaps). Host scope: college.",
+        "operationId": "roadmaps_get_roadmaps_slug",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{0,79}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:read"
+      }
+    },
+    "/api/v1/roadmaps/{id}/draft": {
+      "put": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Save the open draft, or start a new version of a published roadmap",
+        "description": "Requires permission `roadmaps:write` (Draft and edit roadmaps). Host scope: college. Rate limit: interact.",
+        "operationId": "roadmaps_put_roadmaps_id_draft",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 100
+                      },
+                      "summary": {
+                        "type": "string",
+                        "minLength": 20,
+                        "maxLength": 600
+                      },
+                      "category": {
+                        "type": "string",
+                        "enum": [
+                          "software",
+                          "data-ai",
+                          "security",
+                          "design-product",
+                          "core-engineering",
+                          "exams-higher-studies"
+                        ]
+                      },
+                      "branches": {
+                        "minItems": 1,
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "CSE",
+                            "IT",
+                            "ECE",
+                            "EEE",
+                            "MECH",
+                            "CIVIL",
+                            "CHEM",
+                            "AIML",
+                            "DS",
+                            "OTHER"
+                          ]
+                        }
+                      },
+                      "outcomes": {
+                        "default": [],
+                        "maxItems": 6,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 80
+                        }
+                      },
+                      "sources": {
+                        "default": [],
+                        "maxItems": 12,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "title": {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 200
+                            },
+                            "url": {
+                              "type": "string",
+                              "maxLength": 2000,
+                              "format": "uri"
+                            }
+                          },
+                          "required": [
+                            "title",
+                            "url"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "nodes": {
+                        "minItems": 1,
+                        "maxItems": 40,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "pattern": "^[a-z0-9][a-z0-9-]{0,39}$"
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 100
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "skill",
+                                "milestone",
+                                "project",
+                                "exam"
+                              ]
+                            },
+                            "summary": {
+                              "type": "string",
+                              "minLength": 10,
+                              "maxLength": 400
+                            },
+                            "prerequisites": {
+                              "default": [],
+                              "maxItems": 6,
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "estimateHours": {
+                              "type": "array",
+                              "prefixItems": [
+                                {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 2000
+                                },
+                                {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 2000
+                                }
+                              ],
+                              "items": false,
+                              "minItems": 2,
+                              "maxItems": 2
+                            },
+                            "resources": {
+                              "default": [],
+                              "maxItems": 5,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "title": {
+                                    "type": "string",
+                                    "minLength": 2,
+                                    "maxLength": 200
+                                  },
+                                  "url": {
+                                    "type": "string",
+                                    "maxLength": 2000,
+                                    "format": "uri"
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "url"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "proof": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 300
+                            },
+                            "sources": {
+                              "default": [],
+                              "maxItems": 6,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "title": {
+                                    "type": "string",
+                                    "minLength": 2,
+                                    "maxLength": 200
+                                  },
+                                  "url": {
+                                    "type": "string",
+                                    "maxLength": 2000,
+                                    "format": "uri"
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "url"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "needsReview": {
+                              "default": false,
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "kind",
+                            "summary",
+                            "estimateHours"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "title",
+                      "summary",
+                      "category",
+                      "branches",
+                      "nodes"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "changeNote": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "content"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:write"
+      },
+      "delete": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Discard the open draft (a never-published roadmap is deleted)",
+        "description": "Requires permission `roadmaps:write` (Draft and edit roadmaps). Host scope: college.",
+        "operationId": "roadmaps_delete_roadmaps_id_draft",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:write"
+      }
+    },
+    "/api/v1/roadmaps/{id}/submit": {
+      "post": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Submit the draft for review (needs sources, and a project node)",
+        "description": "Requires permission `roadmaps:write` (Draft and edit roadmaps). Host scope: college.",
+        "operationId": "roadmaps_post_roadmaps_id_submit",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:write"
+      }
+    },
+    "/api/v1/roadmaps/{id}/review": {
+      "post": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Approve (publish) or request changes; reviewers cannot approve their own edits",
+        "description": "Requires permission `roadmaps:review` (Review and publish roadmaps). Host scope: college.",
+        "operationId": "roadmaps_post_roadmaps_id_review",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "request_changes"
+                    ]
+                  },
+                  "note": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:review"
+      }
+    },
+    "/api/v1/roadmaps/{id}": {
+      "patch": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Feature or archive a roadmap",
+        "description": "Requires permission `roadmaps:review` (Review and publish roadmaps). Host scope: college.",
+        "operationId": "roadmaps_patch_roadmaps_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "featured": {
+                    "type": "boolean"
+                  },
+                  "archived": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:review"
+      }
+    },
+    "/api/v1/roadmaps/{id}/versions": {
+      "get": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Version history (open versions only for editors and reviewers)",
+        "description": "Requires permission `roadmaps:read` (View roadmaps). Host scope: college.",
+        "operationId": "roadmaps_get_roadmaps_id_versions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:read"
+      }
+    },
+    "/api/v1/roadmaps/{id}/versions/{version}": {
+      "get": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "One version’s content and its publish checklist",
+        "description": "Requires permission `roadmaps:read` (View roadmaps). Host scope: college.",
+        "operationId": "roadmaps_get_roadmaps_id_versions_version",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:read"
+      }
+    },
+    "/api/v1/roadmaps/{id}/progress": {
+      "put": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Mark a step done or not done",
+        "description": "Requires permission `roadmaps:progress` (Track personal roadmap progress). Host scope: college. Rate limit: interact.",
+        "operationId": "roadmaps_put_roadmaps_id_progress",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "nodeId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,39}$"
+                  },
+                  "done": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "nodeId",
+                  "done"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:progress"
+      },
+      "delete": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Stop following a roadmap and forget my progress on it",
+        "description": "Requires permission `roadmaps:progress` (Track personal roadmap progress). Host scope: college.",
+        "operationId": "roadmaps_delete_roadmaps_id_progress",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:progress"
+      }
+    },
+    "/api/v1/roadmaps/{id}/goal": {
+      "put": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Follow a roadmap with a weekly goal (0 = no goal, no nudges)",
+        "description": "Requires permission `roadmaps:progress` (Track personal roadmap progress). Host scope: college.",
+        "operationId": "roadmaps_put_roadmaps_id_goal",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "nodesPerWeek": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10
+                  }
+                },
+                "required": [
+                  "nodesPerWeek"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:progress"
+      }
+    },
+    "/api/v1/roadmaps/{id}/comments": {
+      "get": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Per-step comments for authors and reviewers",
+        "description": "Requires permission `roadmaps:write` (Draft and edit roadmaps). Host scope: college.",
+        "operationId": "roadmaps_get_roadmaps_id_comments",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:write"
+      },
+      "post": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Comment on one step of the current version",
+        "description": "Requires permission `roadmaps:write` (Draft and edit roadmaps). Host scope: college. Rate limit: interact.",
+        "operationId": "roadmaps_post_roadmaps_id_comments",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "nodeId": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{0,39}$"
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "nodeId",
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:write"
+      }
+    },
+    "/api/v1/roadmap-comments/{id}": {
+      "delete": {
+        "tags": [
+          "Roadmaps"
+        ],
+        "summary": "Delete my comment (reviewers can delete any)",
+        "description": "Requires permission `roadmaps:write` (Draft and edit roadmaps). Host scope: college.",
+        "operationId": "roadmaps_delete_roadmap_comments_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "roadmaps:write"
+      }
+    },
     "/api/v1/admin/moderation/summary": {
       "get": {
         "tags": [
@@ -10378,7 +11688,9 @@
                       "answer",
                       "story",
                       "item",
-                      "job"
+                      "job",
+                      "roadmap",
+                      "roadmap_comment"
                     ]
                   },
                   "targetId": {
@@ -10463,7 +11775,9 @@
                 "answer",
                 "story",
                 "item",
-                "job"
+                "job",
+                "roadmap",
+                "roadmap_comment"
               ]
             }
           },
@@ -10836,7 +12150,9 @@
                       "answer",
                       "story",
                       "item",
-                      "job"
+                      "job",
+                      "roadmap",
+                      "roadmap_comment"
                     ]
                   },
                   "targetId": {

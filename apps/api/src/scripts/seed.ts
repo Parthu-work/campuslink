@@ -34,6 +34,12 @@ import { AnswerModel, QuestionModel } from '../modules/qa/question.model.js';
 import { JobModel, SavedJobModel } from '../modules/jobs/job.model.js';
 import { ReferralPrefsModel } from '../modules/referrals/referral.model.js';
 import { companyKey } from '../lib/company.js';
+import { installLibraryRoadmaps } from '../modules/roadmaps/roadmaps.service.js';
+import {
+  RoadmapModel,
+  RoadmapProgressModel,
+  RoadmapVersionModel,
+} from '../modules/roadmaps/roadmap.model.js';
 
 const env = loadEnv();
 if (env.NODE_ENV === 'production') throw new Error('Refusing to seed a production database');
@@ -457,6 +463,108 @@ async function seedFeed(ids: Map<string, Types.ObjectId>) {
  * Demo openings posted by the fictional alumni and TPO at fictional companies, marked DEMO, with
  * apply links on the reserved example.com domain. Real listings come only from sources an admin adds.
  */
+/** The researched library, plus DEMO progress and one DEMO draft waiting for review. */
+async function seedRoadmaps(ids: Map<string, Types.ObjectId>) {
+  const id = (local: string) => {
+    const v = ids.get(local);
+    if (!v) throw new Error(`seed: missing ${local}`);
+    return v;
+  };
+  await installLibraryRoadmaps();
+  const sde = await RoadmapModel.findOne({ libraryKey: 'sde-dsa' }).lean();
+  const sdeV = sde
+    ? await RoadmapVersionModel.findOne({ roadmapId: sde._id, version: 1 }).lean<{
+        content: { nodes: { id: string }[] };
+      }>()
+    : null;
+  if (sde && sdeV) {
+    const now = Date.now();
+    await RoadmapProgressModel.create({
+      userId: id('ananya'),
+      roadmapId: sde._id,
+      done: sdeV.content.nodes
+        .slice(0, 2)
+        .map((n, i) => ({ nodeId: n.id, at: new Date(now - (i + 2) * DAY) })),
+      nodesPerWeek: 2,
+      nextNudgeAt: new Date(now + 7 * DAY),
+    });
+  }
+  // A DEMO community draft (fictional sources on example.org) submitted for review.
+  const content = {
+    title: 'DEMO: Campus Placement Sprint',
+    summary:
+      'DEMO roadmap written by a fictional alumnus to show the review workflow. Not real advice; the sources are placeholders.',
+    category: 'software',
+    branches: ['CSE', 'IT', 'AIML'],
+    outcomes: ['DEMO outcome'],
+    sources: [
+      { title: 'DEMO source one', url: 'https://example.org/demo-source-1' },
+      { title: 'DEMO source two', url: 'https://example.org/demo-source-2' },
+    ],
+    nodes: [
+      {
+        id: 'resume',
+        title: 'DEMO: One-page résumé',
+        kind: 'milestone',
+        summary: 'DEMO step: write a one-page résumé and ask a mentor to review it.',
+        prerequisites: [],
+        estimateHours: [3, 6],
+        resources: [],
+        proof: 'DEMO: a résumé reviewed in a mentorship session.',
+        sources: [{ title: 'DEMO source three', url: 'https://example.org/demo-source-3' }],
+        needsReview: false,
+      },
+      {
+        id: 'mock',
+        title: 'DEMO: Two mock interviews',
+        kind: 'milestone',
+        summary: 'DEMO step: book two mock interviews with alumni and note what to improve.',
+        prerequisites: ['resume'],
+        estimateHours: [2, 4],
+        resources: [],
+        proof: '',
+        sources: [],
+        needsReview: true,
+      },
+      {
+        id: 'portfolio',
+        title: 'DEMO: Portfolio project',
+        kind: 'project',
+        summary: 'DEMO step: polish one project with a README, tests and a short demo video.',
+        prerequisites: ['resume'],
+        estimateHours: [15, 30],
+        resources: [],
+        proof: 'DEMO: a public repository link.',
+        sources: [],
+        needsReview: true,
+      },
+    ],
+  };
+  const r = await RoadmapModel.create({
+    slug: 'demo-campus-placement-sprint',
+    status: 'in_review',
+    title: content.title,
+    summary: content.summary,
+    category: 'software',
+    branches: content.branches,
+    nodeCount: content.nodes.length,
+    needsReviewCount: 2,
+    createdBy: id('rahul'),
+    latestVersion: 1,
+    openVersion: 1,
+  });
+  await RoadmapVersionModel.create({
+    roadmapId: r._id,
+    version: 1,
+    status: 'submitted',
+    content,
+    changeNote: 'DEMO: first draft',
+    authorId: id('rahul'),
+    editorIds: [id('rahul')],
+    submittedAt: new Date(),
+  });
+}
+
 async function seedJobs(ids: Map<string, Types.ObjectId>) {
   const id = (local: string) => {
     const v = ids.get(local);
@@ -664,6 +772,7 @@ async function main() {
       await seedMentorship(ids);
       await seedFeed(ids);
       await seedJobs(ids);
+      await seedRoadmaps(ids);
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
   }
@@ -685,6 +794,9 @@ async function main() {
   );
   console.warn(
     'Try jobs: ananya@dpit.example opens Jobs and asks Rahul (Nimbus Labs) for a referral; rahul@dpit.example answers under Referrals; tpo@dpit.example adds job boards under Admin → Job sources.',
+  );
+  console.warn(
+    'Try roadmaps: ananya@dpit.example opens Roadmaps (Career Galaxy) and marks steps done; faculty@dpit.example reviews Rahul’s DEMO draft under Roadmaps → Review.',
   );
   console.warn(
     '\nOpen http://dpit.localhost:5173 or http://mrce.localhost:5173 (platform console: http://admin.localhost:5173)\n',

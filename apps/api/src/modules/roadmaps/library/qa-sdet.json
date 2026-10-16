@@ -1,0 +1,263 @@
+{
+  "key": "qa-sdet",
+  "lastReviewedAt": "2026-10-16",
+  "title": "QA, Testing and SDET",
+  "category": "software",
+  "branches": ["CSE", "IT", "ECE"],
+  "summary": "QA engineers and SDETs (software development engineers in test) find bugs before users do, by designing test cases and writing automated tests for APIs and web apps. It suits careful, curious students who like breaking things and can write code.",
+  "outcomes": ["QA Engineer", "Test Automation Engineer", "SDET", "API Test Engineer"],
+  "sources": [
+    {
+      "title": "QA Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/qa"
+    },
+    {
+      "title": "Certified Tester Foundation Level (CTFL) v4.0 – ISTQB",
+      "url": "https://istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/"
+    },
+    {
+      "title": "QA Projects – roadmap.sh",
+      "url": "https://roadmap.sh/qa/projects"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "testing-fundamentals",
+      "title": "Testing fundamentals",
+      "kind": "skill",
+      "summary": "Learn why testing matters, test levels and types (functional, regression, smoke, performance), black-box and white-box approaches, test design techniques, and how to write clear test cases and bug reports.",
+      "prerequisites": [],
+      "estimateHours": [40, 60],
+      "resources": [
+        {
+          "title": "CTFL v4.0 overview and free syllabus download – ISTQB",
+          "url": "https://istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/"
+        },
+        {
+          "title": "QA Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/qa"
+        }
+      ],
+      "proof": "Write 20 test cases and 5 bug reports for a login and sign-up form, using boundary values and equivalence classes.",
+      "sources": [
+        {
+          "title": "QA Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/qa"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "programming",
+      "title": "Programming and Git for testers",
+      "kind": "skill",
+      "summary": "Automation and SDET roles need real coding. Learn one language well (Python, Java or JavaScript), including functions, classes and exceptions, and use Git for all your test code.",
+      "prerequisites": ["testing-fundamentals"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "The Python Tutorial – python.org",
+          "url": "https://docs.python.org/3/tutorial/index.html"
+        },
+        {
+          "title": "Pro Git book – git-scm.com",
+          "url": "https://www.git-scm.com/book/en/v2"
+        }
+      ],
+      "proof": "A public repo of small programs solved with tests, committed with meaningful messages.",
+      "sources": [
+        {
+          "title": "QA Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/qa"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "unit-testing",
+      "title": "Unit tests with a test framework",
+      "kind": "skill",
+      "summary": "Learn a test runner such as pytest: writing tests, assertions, fixtures, grouping tests and reading failure reports. These same skills carry into API and UI automation.",
+      "prerequisites": ["programming"],
+      "estimateHours": [20, 35],
+      "resources": [
+        {
+          "title": "Get Started – pytest documentation",
+          "url": "https://docs.pytest.org/en/stable/getting-started.html"
+        }
+      ],
+      "proof": "A small library (for example a shopping-cart price calculator) with pytest tests covering normal, edge and error cases.",
+      "sources": [
+        {
+          "title": "Get Started – pytest documentation",
+          "url": "https://docs.pytest.org/en/stable/getting-started.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "api-testing",
+      "title": "API testing",
+      "kind": "skill",
+      "summary": "Most product logic sits behind APIs. Learn HTTP methods, status codes and JSON, then test APIs in Postman (status, body, schema, chained requests) and later in code.",
+      "prerequisites": ["unit-testing"],
+      "estimateHours": [25, 40],
+      "resources": [
+        {
+          "title": "Write scripts to test API response data – Postman Docs",
+          "url": "https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-scripts"
+        },
+        {
+          "title": "Postman test script examples – Postman Docs",
+          "url": "https://learning.postman.com/docs/tests-and-scripts/write-scripts/test-examples"
+        },
+        {
+          "title": "Test end-to-end API workflows – Postman Docs",
+          "url": "https://learning.postman.com/docs/tests-and-scripts/test-apis/end-to-end-testing"
+        }
+      ],
+      "proof": "A Postman collection for a public demo API that creates, reads, updates and deletes a record and checks each response.",
+      "sources": [
+        {
+          "title": "QA Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/qa"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ui-automation",
+      "title": "Web UI automation",
+      "kind": "skill",
+      "summary": "Learn one browser automation tool, Playwright or Selenium: locators, waits, assertions and organising tests (for example with page objects) so they stay stable and readable.",
+      "prerequisites": ["unit-testing"],
+      "estimateHours": [40, 70],
+      "resources": [
+        {
+          "title": "Playwright installation and first test – playwright.dev",
+          "url": "https://playwright.dev/docs/intro"
+        },
+        {
+          "title": "Playwright for Python – playwright.dev",
+          "url": "https://playwright.dev/python/docs/intro"
+        },
+        {
+          "title": "Write your first Selenium script – selenium.dev",
+          "url": "https://www.selenium.dev/documentation/webdriver/getting_started/first_script/"
+        }
+      ],
+      "proof": "Automate five user journeys (sign-up, login, search, add to cart, logout) on a demo site, with no fixed sleeps.",
+      "sources": [
+        {
+          "title": "QA Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/qa"
+        },
+        {
+          "title": "The Selenium Browser Automation Project – selenium.dev",
+          "url": "https://www.selenium.dev/documentation/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ci-testing",
+      "title": "Running tests in CI",
+      "kind": "skill",
+      "summary": "Tests are most useful when they run on every change. Learn to run your test suite in GitHub Actions, publish reports, and keep smoke tests fast and the full suite for nightly or release runs.",
+      "prerequisites": ["api-testing", "ui-automation"],
+      "estimateHours": [15, 25],
+      "resources": [
+        {
+          "title": "Quickstart for GitHub Actions – GitHub Docs",
+          "url": "https://docs.github.com/en/actions/get-started/quickstart"
+        },
+        {
+          "title": "Playwright installation (includes a GitHub Actions workflow option) – playwright.dev",
+          "url": "https://playwright.dev/docs/intro"
+        }
+      ],
+      "proof": "A repo where every push runs your API and UI tests in GitHub Actions and shows a pass/fail badge.",
+      "sources": [
+        {
+          "title": "QA Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/qa"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "istqb-ctfl",
+      "title": "Optional: ISTQB Foundation Level (CTFL)",
+      "kind": "exam",
+      "summary": "ISTQB CTFL is a widely known testing certificate. The syllabus and sample exams are free to download, so studying them is useful even if you do not sit the exam. Check the official site for current exam details.",
+      "prerequisites": ["testing-fundamentals"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "CTFL v4.0 overview and downloads – ISTQB",
+          "url": "https://istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/"
+        },
+        {
+          "title": "CTFL v4.0 Sample Exam A – ISTQB (PDF)",
+          "url": "https://istqb.org/wp-content/uploads/2024/11/ISTQB_CTFL_v4.0_Sample-Exam-A-Questions_v1.6.pdf"
+        }
+      ],
+      "proof": "Score well on an official ISTQB sample exam under timed conditions and note the topics you missed.",
+      "sources": [
+        {
+          "title": "CTFL v4.0 overview – ISTQB",
+          "url": "https://istqb.org/certifications/certified-tester-foundation-level-ctfl-v4-0/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "test-suite-project",
+      "title": "Project: full test suite for a demo web app",
+      "kind": "project",
+      "summary": "Pick a demo e-commerce or to-do app and test it like a real QA team: a short test plan, manual test cases, bug reports, automated API and UI tests, all running in CI.",
+      "prerequisites": ["ci-testing"],
+      "estimateHours": [50, 80],
+      "resources": [
+        {
+          "title": "QA Projects – roadmap.sh",
+          "url": "https://roadmap.sh/qa/projects"
+        }
+      ],
+      "proof": "A public repo with the test plan, bug reports, automated suites, a CI badge and a README explaining what you chose to test and why.",
+      "sources": [
+        {
+          "title": "QA Projects – roadmap.sh",
+          "url": "https://roadmap.sh/qa/projects"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview preparation and job search",
+      "kind": "milestone",
+      "summary": "QA interviews often ask you to write test cases for an everyday object or feature, explain test types and the bug life cycle, and write automation code live. SDET roles add coding rounds.",
+      "prerequisites": ["test-suite-project"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "QA Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/qa"
+        },
+        {
+          "title": "CTFL v4.0 Sample Exam A – ISTQB (PDF)",
+          "url": "https://istqb.org/wp-content/uploads/2024/11/ISTQB_CTFL_v4.0_Sample-Exam-A-Questions_v1.6.pdf"
+        }
+      ],
+      "proof": "In a mock interview, write test cases for a feature in 10 minutes and walk through your project's automation framework.",
+      "sources": [
+        {
+          "title": "QA Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/qa"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

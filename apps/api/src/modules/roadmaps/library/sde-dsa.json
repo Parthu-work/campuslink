@@ -1,0 +1,337 @@
+{
+  "key": "sde-dsa",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Software Engineer (DSA and interviews)",
+  "category": "software",
+  "branches": ["CSE", "IT", "AIML", "DS"],
+  "summary": "Software engineers design, write and fix code that other people rely on. Many software hiring processes include coding problems on data structures and algorithms. This path suits students who enjoy problem solving and want to be ready for coding rounds and technical interviews.",
+  "outcomes": ["Software Engineer", "Software Development Engineer (SDE)", "Associate Software Engineer"],
+  "sources": [
+    {
+      "title": "Data Structures & Algorithms Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/datastructures-and-algorithms"
+    },
+    {
+      "title": "6.006 Introduction to Algorithms (Spring 2020) – MIT OpenCourseWare",
+      "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/"
+    },
+    {
+      "title": "Programming, Data Structures and Algorithms Using Python – NPTEL",
+      "url": "https://nptel.ac.in/courses/106106145"
+    },
+    {
+      "title": "Preparing to Interview and Interviewing – The Odin Project",
+      "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/preparing-to-interview-and-interviewing"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "language",
+      "title": "One language, written fluently",
+      "kind": "skill",
+      "summary": "Pick one of Python, Java or C++ and stick with it. Get comfortable with loops, functions, strings, arrays or lists, maps and classes, so the language never slows you down when you are solving a problem.",
+      "prerequisites": [],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "CS50's Introduction to Programming with Python",
+          "url": "https://cs50.harvard.edu/python/"
+        },
+        {
+          "title": "Learn Java – Dev.java",
+          "url": "https://dev.java/learn/"
+        },
+        {
+          "title": "The Python Tutorial",
+          "url": "https://docs.python.org/3/tutorial/index.html"
+        }
+      ],
+      "proof": "Solve the first 20 introductory problems on the CSES Problem Set in your chosen language without looking up syntax.",
+      "sources": [
+        {
+          "title": "Data Structures & Algorithms Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/datastructures-and-algorithms"
+        },
+        {
+          "title": "CS50x 2026",
+          "url": "https://cs50.harvard.edu/x/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "complexity",
+      "title": "Big-O and complexity analysis",
+      "kind": "skill",
+      "summary": "Learn to estimate how fast a solution runs and how much memory it uses as the input grows. Interviewers expect you to state the time and space cost of your answer and to compare it with other approaches.",
+      "prerequisites": ["language"],
+      "estimateHours": [10, 20],
+      "resources": [
+        {
+          "title": "6.006 Lecture Notes – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/pages/lecture-notes/"
+        },
+        {
+          "title": "Data Structures & Algorithms Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/datastructures-and-algorithms.pdf"
+        }
+      ],
+      "proof": "For ten of your past solutions, write the time and space complexity in a comment and explain one faster or smaller alternative.",
+      "sources": [
+        {
+          "title": "Data Structures & Algorithms Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/datastructures-and-algorithms.pdf"
+        },
+        {
+          "title": "6.006 Syllabus – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/pages/syllabus/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "core-structures",
+      "title": "Arrays, hashing, stacks, queues and linked lists",
+      "kind": "skill",
+      "summary": "These basic data structures appear in most coding problems. Learn how each one works inside, what each operation costs, and when to choose one over another. Hash tables in particular turn many slow solutions into fast ones.",
+      "prerequisites": ["complexity"],
+      "estimateHours": [50, 80],
+      "resources": [
+        {
+          "title": "Programming, Data Structures and Algorithms Using Python – NPTEL",
+          "url": "https://nptel.ac.in/courses/106106145"
+        },
+        {
+          "title": "CS50x 2026",
+          "url": "https://cs50.harvard.edu/x/"
+        },
+        {
+          "title": "Data Structures & Algorithms Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/datastructures-and-algorithms"
+        }
+      ],
+      "proof": "Implement a stack, a queue, a singly linked list and a simple hash map from scratch, each with a few unit tests, in a public Git repo.",
+      "sources": [
+        {
+          "title": "Data Structures & Algorithms Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/datastructures-and-algorithms.pdf"
+        },
+        {
+          "title": "Programming, Data Structures and Algorithms Using Python – NPTEL",
+          "url": "https://nptel.ac.in/courses/106106145"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "sort-search",
+      "title": "Sorting, searching and recursion",
+      "kind": "skill",
+      "summary": "Understand merge sort, quick sort and heap sort, binary search, and how to think recursively. Many harder problems are really a sorting or binary search idea in disguise, so practise spotting them.",
+      "prerequisites": ["core-structures"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "6.006 Lecture Notes – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/pages/lecture-notes/"
+        },
+        {
+          "title": "Programming, Data Structures and Algorithms Using Python – NPTEL",
+          "url": "https://nptel.ac.in/courses/106106145"
+        }
+      ],
+      "proof": "Write merge sort, quick sort and binary search yourself, then solve ten CSES problems that need sorting or binary search.",
+      "sources": [
+        {
+          "title": "Data Structures & Algorithms Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/datastructures-and-algorithms.pdf"
+        },
+        {
+          "title": "6.006 Syllabus – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/pages/syllabus/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "trees-graphs",
+      "title": "Trees, heaps and graphs",
+      "kind": "skill",
+      "summary": "Learn binary trees, binary search trees and heaps, then graphs: breadth-first and depth-first search and shortest paths. These topics come up often in interviews and model real things like maps, networks and dependencies.",
+      "prerequisites": ["sort-search"],
+      "estimateHours": [50, 80],
+      "resources": [
+        {
+          "title": "6.006 Introduction to Algorithms – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/"
+        },
+        {
+          "title": "Design and Analysis of Algorithms – NPTEL",
+          "url": "https://nptel.ac.in/courses/106106131"
+        }
+      ],
+      "proof": "Solve 15 tree and graph problems on CSES, including at least one shortest-path problem, and explain each approach in a short note.",
+      "sources": [
+        {
+          "title": "6.006 Syllabus – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/pages/syllabus/"
+        },
+        {
+          "title": "Design and Analysis of Algorithms – NPTEL",
+          "url": "https://nptel.ac.in/courses/106106131"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "dp-greedy",
+      "title": "Greedy algorithms and dynamic programming",
+      "kind": "skill",
+      "summary": "Greedy methods make the best local choice; dynamic programming breaks a problem into overlapping subproblems and reuses answers. Both feel hard at first and get easier with steady practice on classic problems.",
+      "prerequisites": ["trees-graphs"],
+      "estimateHours": [40, 70],
+      "resources": [
+        {
+          "title": "Design and Analysis of Algorithms – NPTEL",
+          "url": "https://nptel.ac.in/courses/106106131"
+        },
+        {
+          "title": "6.006 Lecture Notes – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/pages/lecture-notes/"
+        }
+      ],
+      "proof": "Solve ten dynamic programming problems on CSES and, for each, write down the state, the transition and the base case.",
+      "sources": [
+        {
+          "title": "Design and Analysis of Algorithms – NPTEL",
+          "url": "https://nptel.ac.in/courses/106106131"
+        },
+        {
+          "title": "6.006 Syllabus – MIT OpenCourseWare",
+          "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/pages/syllabus/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "practice",
+      "title": "Steady problem-solving practice",
+      "kind": "skill",
+      "summary": "Knowing the topics is not enough; you need speed and calm under a time limit. Solve problems regularly across all topics, keep notes on mistakes, and revisit problems you could not solve after a few days.",
+      "prerequisites": ["dp-greedy"],
+      "estimateHours": [100, 200],
+      "resources": [
+        {
+          "title": "CSES Problem Set",
+          "url": "https://cses.fi/"
+        },
+        {
+          "title": "Data Structures & Algorithms Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/datastructures-and-algorithms"
+        }
+      ],
+      "proof": "A log of 150 or more solved problems across topics, with a one-line note on the key idea for each.",
+      "sources": [
+        {
+          "title": "CSES Problem Set",
+          "url": "https://cses.fi/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "cs-fundamentals",
+      "title": "CS fundamentals: OOP, databases, OS and networks",
+      "kind": "skill",
+      "summary": "Technical interviews for freshers often go beyond coding problems into object-oriented design, SQL and database basics, operating system ideas like processes and memory, and how the web and HTTP work. Revise the core ideas from your coursework.",
+      "prerequisites": ["language"],
+      "estimateHours": [40, 70],
+      "resources": [
+        {
+          "title": "CS50's Introduction to Databases with SQL (archived, free to view)",
+          "url": "https://cs50.harvard.edu/sql/"
+        },
+        {
+          "title": "Overview of HTTP – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+        },
+        {
+          "title": "The Missing Semester of Your CS Education – MIT",
+          "url": "https://missing.csail.mit.edu/"
+        }
+      ],
+      "proof": "Write one page of your own revision notes per subject and answer them aloud to a friend without reading.",
+      "sources": [
+        {
+          "title": "Computer Science Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/computer-science.pdf"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "project",
+      "title": "Build and ship one real project",
+      "kind": "project",
+      "summary": "Employers want to see that you can build and ship working software, not only solve puzzles. Build one small but complete project, keep it on GitHub with a clear README, and be ready to explain your design choices.",
+      "prerequisites": ["core-structures"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "20 Backend Project Ideas – roadmap.sh",
+          "url": "https://roadmap.sh/backend/project-ideas"
+        },
+        {
+          "title": "Pro Git (free book)",
+          "url": "https://git-scm.com/book/en/v2"
+        },
+        {
+          "title": "CS50x 2026 (includes a final project)",
+          "url": "https://cs50.harvard.edu/x/"
+        }
+      ],
+      "proof": "A public GitHub repo with a README, setup steps, screenshots or a demo, and a commit history that shows steady work.",
+      "sources": [
+        {
+          "title": "What You Can Do to Prepare – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/what-you-can-do-to-prepare"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interviews",
+      "title": "Mock interviews and job search",
+      "kind": "milestone",
+      "summary": "Practise explaining your thinking aloud while you code, because interviewers judge how you reason as well as the final answer. Learn the usual hiring steps, prepare your resume, and apply steadily rather than all at once.",
+      "prerequisites": ["practice", "cs-fundamentals", "project"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Preparing to Interview and Interviewing – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/preparing-to-interview-and-interviewing"
+        },
+        {
+          "title": "What Companies Want – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/what-companies-want"
+        },
+        {
+          "title": "Strategy – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/strategy"
+        }
+      ],
+      "proof": "Complete five timed mock interviews with classmates or seniors, and keep notes on what to improve after each one.",
+      "sources": [
+        {
+          "title": "Preparing to Interview and Interviewing – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/preparing-to-interview-and-interviewing"
+        },
+        {
+          "title": "What Companies Want – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/what-companies-want"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

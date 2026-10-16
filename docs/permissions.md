@@ -246,6 +246,25 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/referrals/:id` | `jobs:read` | college | — | One referral request (its two people only) |
 | `POST /api/v1/referrals/:id/respond` | `referrals:offer` | college | interact | Refer, or decline with a kind template |
 | `POST /api/v1/referrals/:id/withdraw` | `referrals:request` | college | — | Withdraw my pending request |
+| `GET /api/v1/roadmaps` | `roadmaps:read` | college | search | Published roadmaps (filters: category, branch, search, mine); reviewers can list drafts |
+| `GET /api/v1/roadmaps/review-queue` | `roadmaps:review` | college | — | Versions waiting for review, oldest first |
+| `GET /api/v1/roadmaps/library` | `roadmaps:review` | college | — | The researched roadmap library, with what this college has installed |
+| `POST /api/v1/roadmaps/library/:key` | `roadmaps:review` | college | — | Install a library roadmap, or propose its researched update for review |
+| `POST /api/v1/roadmaps` | `roadmaps:write` | college | interact | Start a new roadmap (a draft only its editors and reviewers can see) |
+| `GET /api/v1/roadmaps/:slug` | `roadmaps:read` | college | — | One roadmap: the published content, my progress, and the open draft for editors |
+| `PUT /api/v1/roadmaps/:id/draft` | `roadmaps:write` | college | interact | Save the open draft, or start a new version of a published roadmap |
+| `DELETE /api/v1/roadmaps/:id/draft` | `roadmaps:write` | college | — | Discard the open draft (a never-published roadmap is deleted) |
+| `POST /api/v1/roadmaps/:id/submit` | `roadmaps:write` | college | — | Submit the draft for review (needs sources, and a project node) |
+| `POST /api/v1/roadmaps/:id/review` | `roadmaps:review` | college | — | Approve (publish) or request changes; reviewers cannot approve their own edits |
+| `PATCH /api/v1/roadmaps/:id` | `roadmaps:review` | college | — | Feature or archive a roadmap |
+| `GET /api/v1/roadmaps/:id/versions` | `roadmaps:read` | college | — | Version history (open versions only for editors and reviewers) |
+| `GET /api/v1/roadmaps/:id/versions/:version` | `roadmaps:read` | college | — | One version’s content and its publish checklist |
+| `PUT /api/v1/roadmaps/:id/progress` | `roadmaps:progress` | college | interact | Mark a step done or not done |
+| `PUT /api/v1/roadmaps/:id/goal` | `roadmaps:progress` | college | — | Follow a roadmap with a weekly goal (0 = no goal, no nudges) |
+| `DELETE /api/v1/roadmaps/:id/progress` | `roadmaps:progress` | college | — | Stop following a roadmap and forget my progress on it |
+| `GET /api/v1/roadmaps/:id/comments` | `roadmaps:write` | college | — | Per-step comments for authors and reviewers |
+| `POST /api/v1/roadmaps/:id/comments` | `roadmaps:write` | college | interact | Comment on one step of the current version |
+| `DELETE /api/v1/roadmap-comments/:id` | `roadmaps:write` | college | — | Delete my comment (reviewers can delete any) |
 | `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
 | `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |
 | `GET /api/v1/admin/moderation/history/:targetType/:targetId` | `moderation:act` | college | — | Moderation history of one item |

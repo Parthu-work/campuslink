@@ -1,0 +1,339 @@
+{
+  "key": "ece",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Electronics and Communication Engineering Careers (VLSI, communication, core)",
+  "category": "core-engineering",
+  "branches": ["ECE"],
+  "summary": "Core ECE careers include chip design and verification (VLSI), communication and signal processing, and electronics roles in PSUs and research labs. This path suits students who enjoy circuits, maths and hands-on design, and it also shows how GATE, higher studies and a switch to IT fit in.",
+  "outcomes": [
+    "RTL Design / Verification Engineer (trainee)",
+    "Physical Design Engineer (trainee)",
+    "Communication / DSP Engineer",
+    "PSU or Research Lab Engineer (via GATE or own exams)",
+    "M.Tech / research student"
+  ],
+  "sources": [
+    {
+      "title": "GATE 2027 EC syllabus – IIT Madras",
+      "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EC_GATE2027_Syllabus.pdf"
+    },
+    {
+      "title": "GATE 2027 test papers and syllabus – IIT Madras",
+      "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+    },
+    {
+      "title": "VLSI Design Flow: RTL to GDS – NPTEL",
+      "url": "https://onlinecourses.nptel.ac.in/noc23_ee137/preview"
+    },
+    {
+      "title": "NPTEL Communication and Signal Processing domain",
+      "url": "https://nptel.ac.in/domains/discipline/112?course=112_1"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "ece-foundations",
+      "title": "Circuits, devices and signals",
+      "kind": "skill",
+      "summary": "Networks, electronic devices, analog and digital circuits, and signals and systems are the base for every ECE path. They make up most of the GATE EC syllabus, so strong basics help in core interviews and in GATE.",
+      "prerequisites": [],
+      "estimateHours": [80, 140],
+      "resources": [
+        {
+          "title": "Digital Circuits – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc24_ee147/preview"
+        },
+        {
+          "title": "ngspice tutorials (free SPICE simulator)",
+          "url": "https://ngspice.sourceforge.io/tutorials.html"
+        }
+      ],
+      "proof": "Simulate an amplifier and an RC filter in ngspice and explain how your results compare with your hand calculations.",
+      "sources": [
+        {
+          "title": "GATE 2027 EC syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EC_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "digital-design-hdl",
+      "title": "Digital design with Verilog",
+      "kind": "skill",
+      "summary": "Learn to describe circuits in Verilog, write testbenches and read waveforms. This is the entry skill for front-end VLSI roles (RTL design and verification). SystemVerilog and UVM come next for verification jobs.",
+      "prerequisites": ["ece-foundations"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Hardware Modeling using Verilog – NPTEL (IIT Kharagpur)",
+          "url": "https://onlinecourses.nptel.ac.in/e-learning/preview/noc25_cs155"
+        },
+        {
+          "title": "Digital Design with Verilog – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc26_cs24/preview"
+        },
+        {
+          "title": "Verilator User's Guide (free Verilog simulator)",
+          "url": "https://verilator.org/guide/latest/"
+        }
+      ],
+      "proof": "Write a UART or FIFO in Verilog with a self-checking testbench that passes in Verilator.",
+      "sources": [
+        {
+          "title": "Hardware Modeling using Verilog – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc20_cs63/preview"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "vlsi-cmos-flow",
+      "title": "CMOS design and the RTL-to-GDS flow",
+      "kind": "skill",
+      "summary": "Understand CMOS gates, delay, power and timing, then the chip flow: synthesis, floorplanning, placement, routing and static timing analysis. Physical design and STA roles test this, and open tools let you try the full flow for free.",
+      "prerequisites": ["digital-design-hdl"],
+      "estimateHours": [80, 140],
+      "resources": [
+        {
+          "title": "CMOS Digital VLSI Design – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc26_ee85/preview"
+        },
+        {
+          "title": "VLSI Design Flow: RTL to GDS – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc23_ee137/preview"
+        },
+        {
+          "title": "OpenROAD documentation",
+          "url": "https://openroad.readthedocs.io/"
+        }
+      ],
+      "proof": "Take a small design through synthesis and place-and-route, and explain its timing report and critical path.",
+      "sources": [
+        {
+          "title": "Digital IC Design – NPTEL (IIT Madras)",
+          "url": "https://onlinecourses.nptel.ac.in/noc25_ee21/preview"
+        },
+        {
+          "title": "OpenROAD documentation",
+          "url": "https://openroad.readthedocs.io/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "communication-dsp",
+      "title": "Communication and signal processing",
+      "kind": "skill",
+      "summary": "Cover analog and digital modulation, noise, information theory, basic DSP and electromagnetics. This is the base for telecom, RF and DSP roles. Practise with MATLAB or GNU Radio so you can show working signals, not just formulas.",
+      "prerequisites": ["ece-foundations"],
+      "estimateHours": [70, 120],
+      "resources": [
+        {
+          "title": "Principles of Digital Communication – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc26_ee25/preview"
+        },
+        {
+          "title": "Signal Processing Onramp – MathWorks (free)",
+          "url": "https://matlabacademy.mathworks.com/details/signal-processing-onramp/signalprocessing"
+        },
+        {
+          "title": "Guided Tutorial GRC – GNU Radio",
+          "url": "https://wiki.gnuradio.org/index.php/Guided_Tutorial_GRC"
+        }
+      ],
+      "proof": "Simulate BPSK or QPSK over a noisy channel and plot bit error rate against SNR.",
+      "sources": [
+        {
+          "title": "GATE 2027 EC syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EC_GATE2027_Syllabus.pdf"
+        },
+        {
+          "title": "NPTEL Communication and Signal Processing domain",
+          "url": "https://nptel.ac.in/domains/discipline/112?course=112_1"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "employer-tools",
+      "title": "Tools employers ask for",
+      "kind": "skill",
+      "summary": "Get comfortable with MATLAB, a SPICE simulator, an HDL simulator, the Linux shell and scripting (Tcl or Python) for running EDA flows. Commercial EDA tools are usually learned in college labs or on the job; free tools teach the same ideas.",
+      "prerequisites": ["digital-design-hdl", "communication-dsp"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "MATLAB Onramp – MathWorks (free)",
+          "url": "https://matlabacademy.mathworks.com/details/matlab-onramp/gettingstarted"
+        },
+        {
+          "title": "ngspice documentation",
+          "url": "https://ngspice.sourceforge.io/docs.html"
+        },
+        {
+          "title": "OpenROAD Flow Scripts documentation",
+          "url": "https://openroad-flow-scripts.readthedocs.io/en/latest/index2.html"
+        }
+      ],
+      "proof": "Write a script that runs your simulation or flow from the command line and saves the reports automatically.",
+      "sources": [
+        {
+          "title": "OpenROAD Flow Scripts documentation",
+          "url": "https://openroad-flow-scripts.readthedocs.io/en/latest/index2.html"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "core-project",
+      "title": "One end-to-end core project",
+      "kind": "project",
+      "summary": "Build one project you can explain in depth, such as a small processor or peripheral in Verilog taken through the open RTL-to-GDS flow, or a software-defined radio receiver in GNU Radio. Depth beats many shallow projects.",
+      "prerequisites": ["vlsi-cmos-flow", "employer-tools"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "OpenROAD Flow Scripts documentation",
+          "url": "https://openroad-flow-scripts.readthedocs.io/en/latest/index2.html"
+        },
+        {
+          "title": "Your First Flowgraph – GNU Radio",
+          "url": "https://wiki.gnuradio.org/index.php?title=Your_First_Flowgraph"
+        },
+        {
+          "title": "Verilator User's Guide",
+          "url": "https://verilator.org/guide/latest/"
+        }
+      ],
+      "proof": "A public repo with RTL, testbench, waveforms and timing/area reports (or a flowgraph and demo video), plus a clear README.",
+      "sources": [
+        {
+          "title": "OpenROAD documentation",
+          "url": "https://openroad.readthedocs.io/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gate-psu-govt",
+      "title": "GATE EC, PSUs and government exams",
+      "kind": "exam",
+      "summary": "GATE EC is used for M.Tech admissions and by some PSUs and labs for hiring; each recruiter's advert says whether it uses GATE. ISRO and BEL post their own engineer recruitments, and UPSC ESE has an E&T stream. Use only official pages for dates.",
+      "prerequisites": ["ece-foundations"],
+      "estimateHours": [300, 600],
+      "resources": [
+        {
+          "title": "GATE 2027 EC syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EC_GATE2027_Syllabus.pdf"
+        },
+        {
+          "title": "GATE 2027 test papers and syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+        },
+        {
+          "title": "Engineering Services (Preliminary) Examination 2027 – UPSC",
+          "url": "https://www.upsc.gov.in/whats-new/Engineering%20Services%20(Preliminary)%20Examination,%202027/Exam%20Notification"
+        }
+      ],
+      "proof": "Solve two years of past GATE EC papers under timed conditions and keep a log of weak topics.",
+      "sources": [
+        {
+          "title": "GATE 2027 – IIT Madras (organising institute)",
+          "url": "https://gate2027.iitm.ac.in/"
+        },
+        {
+          "title": "IIT Madras announces GATE 2027 dates and syllabus revision",
+          "url": "https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper"
+        },
+        {
+          "title": "ISRO Careers",
+          "url": "https://www.isro.gov.in/Careers.html"
+        },
+        {
+          "title": "BEL Job Notifications",
+          "url": "https://bel-india.in/job-notifications/"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "higher-studies",
+      "title": "Higher studies (M.Tech, MS, research)",
+      "kind": "milestone",
+      "summary": "An M.Tech in VLSI, communication or signal processing (usually through GATE) leads to deeper design and research roles. Decide early if you want this, because GATE prep overlaps with final-year placements. Check eligibility on the official GATE site.",
+      "prerequisites": ["gate-psu-govt"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "GATE 2027 eligibility criteria – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/eligibility_criteria"
+        },
+        {
+          "title": "GATE 2027 FAQs – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/faqs"
+        }
+      ],
+      "proof": "A shortlist of 5–8 programmes with their admission route and a written plan for your final year.",
+      "sources": [
+        {
+          "title": "GATE 2027 – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "job-search",
+      "title": "Interview preparation and applying",
+      "kind": "milestone",
+      "summary": "Core interviews test fundamentals (digital logic, CMOS, analog, communication), your project in depth and aptitude. Revise from past GATE papers, practise explaining your project, and watch official career pages instead of agents who ask for money.",
+      "prerequisites": ["core-project"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "GATE 2027 test papers and syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+        },
+        {
+          "title": "ISRO Current Opportunities",
+          "url": "https://www.isro.gov.in/CurrentOpportunities.html"
+        },
+        {
+          "title": "BEL Job Notifications",
+          "url": "https://bel-india.in/job-notifications/"
+        }
+      ],
+      "proof": "A one-page resume with your project, plus a 5-minute walkthrough of it you can give without notes.",
+      "sources": [
+        {
+          "title": "BEL Job Notifications",
+          "url": "https://bel-india.in/job-notifications/"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "core-to-it",
+      "title": "Honest check: switching from core to IT",
+      "kind": "milestone",
+      "summary": "Many ECE graduates move to software jobs. Your maths and logic help, but you still need one language, data structures, DBMS, OS, networks and real projects. It is a full switch, not a shortcut. Embedded and verification roles sit in between.",
+      "prerequisites": ["ece-foundations"],
+      "estimateHours": [300, 600],
+      "resources": [
+        {
+          "title": "GATE 2027 CS syllabus – IIT Madras (checklist of CS fundamentals)",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CS_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "proof": "Two working software projects in a public repo and 100+ solved data-structure problems before you apply.",
+      "sources": [
+        {
+          "title": "GATE 2027 CS syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CS_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

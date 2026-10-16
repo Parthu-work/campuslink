@@ -13,7 +13,8 @@
     "docs:gen": "tsx src/scripts/gen-docs.ts",
     "vapid": "tsx src/scripts/vapid.ts",
     "feeds:verify": "tsx src/scripts/feeds-verify.ts",
-    "jobs:verify": "tsx src/scripts/jobs-verify.ts"
+    "jobs:verify": "tsx src/scripts/jobs-verify.ts",
+    "roadmaps:verify": "tsx src/scripts/roadmaps-verify.ts"
   },
   "dependencies": {
     "@campuslink/shared": "workspace:*",

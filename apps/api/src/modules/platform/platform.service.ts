@@ -51,6 +51,9 @@ export class PlatformService {
     }));
   }
 
+  /** Runs inside the new college's tenant context (installs the roadmap library). */
+  onTenantCreated?: () => Promise<unknown>;
+
   async createTenant(actorId: string, body: z.output<typeof createTenantBody>, meta: RequestMetaLite) {
     if (await TenantModel.exists({ slug: body.slug })) throw conflict('That subdomain is taken');
     const tenant = await TenantModel.create({
@@ -81,6 +84,7 @@ export class PlatformService {
       );
       await this.auth.onUserCreated?.(String(user._id));
       await this.auth.sendInvite(record, user._id, user.email, user.name);
+      await this.onTenantCreated?.();
       return user;
     });
     await audit.record(

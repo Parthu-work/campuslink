@@ -1,0 +1,287 @@
+{
+  "key": "sre",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Site Reliability Engineer",
+  "category": "software",
+  "branches": ["CSE", "IT"],
+  "summary": "Site Reliability Engineers use software engineering to keep services fast and available: they set reliability targets, build monitoring, automate repetitive work and lead the response when things break. It suits students who enjoy both coding and debugging systems.",
+  "outcomes": ["Site Reliability Engineer", "Production Engineer", "DevOps Engineer", "Platform Engineer"],
+  "sources": [
+    {
+      "title": "Site Reliability Engineering books (free to read online) – Google SRE",
+      "url": "https://sre.google/books/"
+    },
+    {
+      "title": "Site Reliability Engineering: table of contents – Google SRE",
+      "url": "https://sre.google/sre-book/table-of-contents/"
+    },
+    {
+      "title": "DevOps Roadmap: Learn to become a DevOps Engineer or SRE – roadmap.sh",
+      "url": "https://roadmap.sh/devops"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "linux-systems",
+      "title": "Linux and operating-system basics",
+      "kind": "skill",
+      "summary": "SREs debug live machines. Get comfortable with the shell, processes, memory, disks, file systems, permissions and logs, and know which command to reach for when a server is slow.",
+      "prerequisites": [],
+      "estimateHours": [50, 80],
+      "resources": [
+        {
+          "title": "Introduction to Linux (LFS101) – The Linux Foundation",
+          "url": "https://training.linuxfoundation.org/training/introduction-to-linux/"
+        },
+        {
+          "title": "The Missing Semester of Your CS Education – MIT",
+          "url": "https://missing.csail.mit.edu/"
+        },
+        {
+          "title": "Linux Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/linux"
+        }
+      ],
+      "proof": "Write a short troubleshooting guide for a Linux VM: how you found the process using the most CPU, a full disk, and a crashed service.",
+      "sources": [
+        {
+          "title": "DevOps Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/devops"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "programming",
+      "title": "Programming and Git",
+      "kind": "skill",
+      "summary": "Google describes SRE as software engineers doing operations work, so coding matters. Learn one language well (Python is a friendly start), plus data structures basics and Git.",
+      "prerequisites": ["linux-systems"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "The Python Tutorial – python.org",
+          "url": "https://docs.python.org/3/tutorial/index.html"
+        },
+        {
+          "title": "Pro Git book – git-scm.com",
+          "url": "https://www.git-scm.com/book/en/v2"
+        }
+      ],
+      "proof": "A Python tool in a public repo that parses a log file and reports error counts and slowest requests.",
+      "sources": [
+        {
+          "title": "SRE book: Introduction – Google SRE",
+          "url": "https://sre.google/sre-book/introduction/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "networking",
+      "title": "Networking fundamentals",
+      "kind": "skill",
+      "summary": "Many incidents come down to DNS, TCP, load balancers or HTTP errors. Learn the TCP/IP layers, DNS, routing and HTTP well enough to trace a request end to end.",
+      "prerequisites": ["linux-systems"],
+      "estimateHours": [40, 60],
+      "resources": [
+        {
+          "title": "Computer Networks and Internet Protocol – NPTEL (IIT Kharagpur)",
+          "url": "https://nptel.ac.in/courses/106105183"
+        }
+      ],
+      "proof": "Diagram and explain how a request travels from a browser to your app, and which tool you would use to check each hop.",
+      "sources": [
+        {
+          "title": "DevOps Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/devops"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "containers-cloud",
+      "title": "Containers, Kubernetes and one cloud",
+      "kind": "skill",
+      "summary": "Modern services run in containers on cloud platforms. Learn Docker, Kubernetes basics (deployments, services, scaling, rollouts) and the core services of one cloud provider.",
+      "prerequisites": ["programming", "networking"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Docker workshop overview – Docker Docs",
+          "url": "https://docs.docker.com/get-started/workshop/"
+        },
+        {
+          "title": "Learn Kubernetes Basics – kubernetes.io",
+          "url": "https://www.kubernetes.io/docs/tutorials/kubernetes-basics/"
+        },
+        {
+          "title": "AWS Cloud Practitioner training – AWS",
+          "url": "https://aws.amazon.com/training/learn-about/cloud-practitioner/"
+        }
+      ],
+      "proof": "Run a containerised app on a local minikube cluster with three replicas and do a rolling update.",
+      "sources": [
+        {
+          "title": "DevOps Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/devops"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "slos-error-budgets",
+      "title": "SLIs, SLOs and error budgets",
+      "kind": "skill",
+      "summary": "This is what makes SRE different. Learn to pick indicators users care about (SLIs), set targets (SLOs), and use the error budget to decide when to ship features and when to fix reliability.",
+      "prerequisites": ["programming"],
+      "estimateHours": [15, 30],
+      "resources": [
+        {
+          "title": "Implementing SLOs – The Site Reliability Workbook",
+          "url": "https://sre.google/workbook/implementing-slos/"
+        },
+        {
+          "title": "Part II: Principles (Embracing Risk, Service Level Objectives) – SRE book",
+          "url": "https://sre.google/sre-book/part-II-principles/"
+        }
+      ],
+      "proof": "Write a one-page SLO document for a sample app: two SLIs, their targets, the time window and what happens when the budget runs out.",
+      "sources": [
+        {
+          "title": "Implementing SLOs – The Site Reliability Workbook",
+          "url": "https://sre.google/workbook/implementing-slos/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "observability",
+      "title": "Monitoring and observability",
+      "kind": "skill",
+      "summary": "Start with the four golden signals: latency, traffic, errors and saturation. Then learn to collect metrics with Prometheus, build Grafana dashboards, and add traces and logs with OpenTelemetry.",
+      "prerequisites": ["containers-cloud", "slos-error-budgets"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "Monitoring Distributed Systems – SRE book, Chapter 6",
+          "url": "https://sre.google/sre-book/monitoring-distributed-systems/"
+        },
+        {
+          "title": "First steps with Prometheus – prometheus.io",
+          "url": "https://prometheus.io/docs/introduction/first_steps/"
+        },
+        {
+          "title": "OpenTelemetry documentation",
+          "url": "https://opentelemetry.io/docs/"
+        }
+      ],
+      "proof": "A Grafana dashboard for your app showing all four golden signals, fed by Prometheus.",
+      "sources": [
+        {
+          "title": "Monitoring Distributed Systems – SRE book, Chapter 6",
+          "url": "https://sre.google/sre-book/monitoring-distributed-systems/"
+        },
+        {
+          "title": "Monitoring – The Site Reliability Workbook",
+          "url": "https://sre.google/workbook/monitoring/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "incidents-toil",
+      "title": "Incident response, postmortems and toil",
+      "kind": "skill",
+      "summary": "Learn how teams run on-call, manage an incident with clear roles, and write blameless postmortems. Learn to spot toil (repetitive manual work) and remove or automate it.",
+      "prerequisites": ["observability"],
+      "estimateHours": [20, 35],
+      "resources": [
+        {
+          "title": "Managing Incidents – SRE book",
+          "url": "https://sre.google/sre-book/managing-incidents/"
+        },
+        {
+          "title": "Postmortem Culture: Learning from Failure – Google SRE",
+          "url": "https://sre.google/resources/book-update/postmortem-culture/"
+        },
+        {
+          "title": "Eliminating Toil – The Site Reliability Workbook",
+          "url": "https://sre.google/workbook/eliminating-toil/"
+        }
+      ],
+      "proof": "A blameless postmortem for a real failure from your own projects: timeline, impact, root cause and action items.",
+      "sources": [
+        {
+          "title": "On-Call – The Site Reliability Workbook",
+          "url": "https://sre.google/workbook/on-call/"
+        },
+        {
+          "title": "Incident Response – The Site Reliability Workbook",
+          "url": "https://sre.google/workbook/incident-response/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "reliability-project",
+      "title": "Project: run a service with an SLO",
+      "kind": "project",
+      "summary": "Deploy a small web service, define its SLO, build dashboards and alerts on the SLO, then break it on purpose (kill a pod, add latency) and write the postmortem.",
+      "prerequisites": ["incidents-toil"],
+      "estimateHours": [50, 90],
+      "resources": [
+        {
+          "title": "Alerting overview – prometheus.io",
+          "url": "https://prometheus.io/docs/alerting/overview"
+        },
+        {
+          "title": "Get started with Grafana and Prometheus – Grafana Docs",
+          "url": "https://grafana.com/docs/grafana/latest/fundamentals/getting-started/first-dashboards/get-started-grafana-prometheus/"
+        }
+      ],
+      "proof": "A public repo with the SLO document, dashboard screenshots, an alert rule that fired during your test, and the postmortem.",
+      "sources": [
+        {
+          "title": "Implementing SLOs – The Site Reliability Workbook",
+          "url": "https://sre.google/workbook/implementing-slos/"
+        },
+        {
+          "title": "Getting started with Prometheus – prometheus.io",
+          "url": "https://prometheus.io/docs/prometheus/latest/getting_started/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview preparation and job search",
+      "kind": "milestone",
+      "summary": "SRE interviews usually mix coding, Linux and networking troubleshooting, system design and reliability concepts. Fresher SRE openings are few; many people start in DevOps, backend or support roles and move across.",
+      "prerequisites": ["reliability-project"],
+      "estimateHours": [40, 70],
+      "resources": [
+        {
+          "title": "Top DevOps Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/devops"
+        },
+        {
+          "title": "System Design Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/system-design"
+        },
+        {
+          "title": "The Site Reliability Workbook: table of contents – Google SRE",
+          "url": "https://sre.google/workbook/table-of-contents/"
+        }
+      ],
+      "proof": "Do three mock interviews: one coding, one 'the site is slow, debug it' scenario, and one walkthrough of your SLO project.",
+      "sources": [
+        {
+          "title": "DevOps Roadmap: Learn to become a DevOps Engineer or SRE – roadmap.sh",
+          "url": "https://roadmap.sh/devops"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

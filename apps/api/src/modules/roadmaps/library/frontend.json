@@ -1,0 +1,313 @@
+{
+  "key": "frontend",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Frontend Developer",
+  "category": "software",
+  "branches": ["CSE", "IT"],
+  "summary": "Frontend developers build the parts of a website or web app that people see and use, such as pages, buttons, forms and menus, using HTML, CSS and JavaScript. The role suits students who care about both clean code and a good, accessible experience for users.",
+  "outcomes": ["Frontend Developer", "UI Developer", "Web Developer"],
+  "sources": [
+    {
+      "title": "Frontend Developer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/frontend"
+    },
+    {
+      "title": "12 In-Demand Front End Developer Skills – roadmap.sh",
+      "url": "https://roadmap.sh/frontend/developer-skills"
+    },
+    {
+      "title": "MDN Curriculum",
+      "url": "https://developer.mozilla.org/en-US/curriculum/"
+    },
+    {
+      "title": "Full Stack JavaScript Path – The Odin Project",
+      "url": "https://theodinproject.com/paths/2"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "web-basics",
+      "title": "How the web and browsers work",
+      "kind": "skill",
+      "summary": "Learn how a browser asks a server for a page, what HTML, CSS and JavaScript each do, and how to set up an editor and browser developer tools. This makes every later step easier to follow.",
+      "prerequisites": [],
+      "estimateHours": [8, 15],
+      "resources": [
+        {
+          "title": "How the web works – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Getting_started/Web_standards/How_the_web_works"
+        },
+        {
+          "title": "Learn web development – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn"
+        }
+      ],
+      "proof": "Explain, using your browser's developer tools, what files a real website loads and roughly what each one does.",
+      "sources": [
+        {
+          "title": "MDN Curriculum",
+          "url": "https://developer.mozilla.org/en-US/curriculum/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "html",
+      "title": "Semantic HTML",
+      "kind": "skill",
+      "summary": "Use the right HTML element for each job: headings, lists, links, buttons, forms and landmarks. Good structure helps screen readers, search engines and your own CSS.",
+      "prerequisites": ["web-basics"],
+      "estimateHours": [25, 40],
+      "resources": [
+        {
+          "title": "Learn web development – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn"
+        },
+        {
+          "title": "HTML Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/html"
+        }
+      ],
+      "proof": "Build a multi-page site with a working form, using only semantic HTML, that passes the W3C HTML validator.",
+      "sources": [
+        {
+          "title": "MDN Curriculum",
+          "url": "https://developer.mozilla.org/en-US/curriculum/"
+        },
+        {
+          "title": "Frontend Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/frontend"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "css",
+      "title": "CSS, layout and responsive design",
+      "kind": "skill",
+      "summary": "Style pages with CSS, including the box model, Flexbox, Grid and media queries, so layouts work on small phones and large screens. Many users in India browse mainly on phones, so test small widths first.",
+      "prerequisites": ["html"],
+      "estimateHours": [50, 80],
+      "resources": [
+        {
+          "title": "CSS Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/css"
+        },
+        {
+          "title": "Learn web development – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn"
+        },
+        {
+          "title": "freeCodeCamp's Responsive Web Design certification",
+          "url": "https://www.freecodecamp.org/news/freecodecamps-new-responsive-web-design-certification-is-now-live/"
+        }
+      ],
+      "proof": "Recreate the layout of a real website's home page that adapts cleanly from 360px phone width to desktop.",
+      "sources": [
+        {
+          "title": "Responsive Web Design certification redesigned – freeCodeCamp",
+          "url": "https://www.freecodecamp.org/news/responsive-web-design-certification-redesigned/"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "accessibility",
+      "title": "Accessibility",
+      "kind": "skill",
+      "summary": "Make sites usable for everyone, including people using a keyboard or screen reader: labels on form fields, enough colour contrast, visible focus and meaningful alt text. It is a core skill, not an extra.",
+      "prerequisites": ["css"],
+      "estimateHours": [15, 30],
+      "resources": [
+        {
+          "title": "MDN Curriculum",
+          "url": "https://developer.mozilla.org/en-US/curriculum/"
+        },
+        {
+          "title": "freeCodeCamp's Responsive Web Design certification",
+          "url": "https://www.freecodecamp.org/news/freecodecamps-new-responsive-web-design-certification-is-now-live/"
+        }
+      ],
+      "proof": "Use one of your sites with only the keyboard, fix every problem you find, and list the fixes in the README.",
+      "sources": [
+        {
+          "title": "12 In-Demand Front End Developer Skills – roadmap.sh",
+          "url": "https://roadmap.sh/frontend/developer-skills"
+        },
+        {
+          "title": "MDN Curriculum",
+          "url": "https://developer.mozilla.org/en-US/curriculum/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "javascript",
+      "title": "JavaScript and the DOM",
+      "kind": "skill",
+      "summary": "Learn JavaScript properly: variables, functions, arrays, objects, events, changing the page through the DOM, and async code with promises and fetch. It is the main language of frontend work.",
+      "prerequisites": ["html"],
+      "estimateHours": [80, 120],
+      "resources": [
+        {
+          "title": "Learn web development – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn"
+        },
+        {
+          "title": "Full Stack JavaScript Path – The Odin Project",
+          "url": "https://theodinproject.com/paths/2"
+        },
+        {
+          "title": "JavaScript lecture – CS50's Web Programming",
+          "url": "https://cs50.harvard.edu/web/notes/5/"
+        }
+      ],
+      "proof": "Build a weather or movie search app in plain JavaScript that calls a public API and handles loading and error states.",
+      "sources": [
+        {
+          "title": "Frontend Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/frontend"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "git",
+      "title": "Git and GitHub",
+      "kind": "skill",
+      "summary": "Track every project with Git, use branches, and share code on GitHub. Recruiters often look at your GitHub, and teams use pull requests to review each other's work.",
+      "prerequisites": ["web-basics"],
+      "estimateHours": [10, 20],
+      "resources": [
+        {
+          "title": "Pro Git (free book)",
+          "url": "https://git-scm.com/book/en/v2"
+        },
+        {
+          "title": "The Missing Semester of Your CS Education – MIT",
+          "url": "https://missing.csail.mit.edu/"
+        }
+      ],
+      "proof": "Every project is on GitHub with a README, small clear commits, and at least one merged pull request.",
+      "sources": [
+        {
+          "title": "MDN Curriculum",
+          "url": "https://developer.mozilla.org/en-US/curriculum/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "framework",
+      "title": "A framework (React) and TypeScript",
+      "kind": "skill",
+      "summary": "Learn one framework such as React: components, props, state, effects and routing. Then add TypeScript, a typed version of JavaScript that catches mistakes early and is common in team codebases.",
+      "prerequisites": ["javascript", "git"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Full Stack JavaScript Path – The Odin Project",
+          "url": "https://theodinproject.com/paths/2"
+        },
+        {
+          "title": "CS50's Web Programming with Python and JavaScript",
+          "url": "https://cs50.harvard.edu/web/"
+        }
+      ],
+      "proof": "Rebuild your plain JavaScript app in React with routing, shared state and at least one form, then convert it to TypeScript.",
+      "sources": [
+        {
+          "title": "Frontend Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/frontend"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "apis-testing-performance",
+      "title": "APIs, testing and performance",
+      "kind": "skill",
+      "summary": "Fetch and send data to REST APIs, write tests for your components, and learn to find slow parts of a page using browser tools. These separate a demo from work a team can trust.",
+      "prerequisites": ["framework"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "Overview of HTTP – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+        },
+        {
+          "title": "12 In-Demand Front End Developer Skills – roadmap.sh",
+          "url": "https://roadmap.sh/frontend/developer-skills"
+        }
+      ],
+      "proof": "Add tests for the main user flows of your React app and record one page-load improvement you made with before and after numbers.",
+      "sources": [
+        {
+          "title": "12 In-Demand Front End Developer Skills – roadmap.sh",
+          "url": "https://roadmap.sh/frontend/developer-skills"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "portfolio-projects",
+      "title": "Two or three deployed portfolio projects",
+      "kind": "project",
+      "summary": "Build a small set of polished, live projects that show different skills, such as a responsive site, an API-driven app and a React app with forms and tests. Quality matters more than quantity.",
+      "prerequisites": ["accessibility", "apis-testing-performance"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "JavaScript Projects – roadmap.sh",
+          "url": "https://roadmap.sh/javascript/projects"
+        },
+        {
+          "title": "Project 0 – CS50's Web Programming",
+          "url": "https://cs50.harvard.edu/web/projects/0/"
+        }
+      ],
+      "proof": "Two or three live links, each with a public repo, screenshots, and a README that explains what you built and why.",
+      "sources": [
+        {
+          "title": "What You Can Do to Prepare – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/what-you-can-do-to-prepare"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "job-search",
+      "title": "Interviews and applying",
+      "kind": "milestone",
+      "summary": "Read real frontend job descriptions to see what is asked, prepare to explain your projects and core HTML, CSS and JavaScript ideas, and practise small live-coding tasks. Apply steadily and follow up.",
+      "prerequisites": ["portfolio-projects"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Frontend Developer Job Description – roadmap.sh",
+          "url": "https://roadmap.sh/frontend/job-description"
+        },
+        {
+          "title": "Preparing to Interview and Interviewing – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/preparing-to-interview-and-interviewing"
+        },
+        {
+          "title": "Applying for Web Development Jobs – The Odin Project",
+          "url": "https://www.theodinproject.com/lessons/node-path-getting-hired-applying-for-web-development-jobs"
+        }
+      ],
+      "proof": "A portfolio page, a one-page resume, and three mock interviews where you build a small UI component live.",
+      "sources": [
+        {
+          "title": "How to Become a Front-End Developer in 7 Steps – roadmap.sh",
+          "url": "https://roadmap.sh/frontend/how-to-become-frontend-developer"
+        },
+        {
+          "title": "Strategy – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/strategy"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

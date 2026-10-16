@@ -1,0 +1,283 @@
+{
+  "key": "mobile",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Mobile App Developer (Android / Flutter)",
+  "category": "software",
+  "branches": ["CSE", "IT", "ECE"],
+  "summary": "Mobile developers build the apps people use on their phones. You can go native Android with Kotlin, or use Flutter with Dart to build for Android and iOS from one codebase. This path suits students who like building things they can hold and show friends.",
+  "outcomes": ["Android Developer", "Flutter Developer", "Mobile App Developer"],
+  "sources": [
+    {
+      "title": "Android Developer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/android"
+    },
+    {
+      "title": "Flutter Developer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/flutter"
+    },
+    {
+      "title": "Mobile Application Security Cheat Sheet – OWASP",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Mobile_Application_Security_Cheat_Sheet.html"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "programming-basics",
+      "title": "Programming basics and object-oriented thinking",
+      "kind": "skill",
+      "summary": "Before touching app frameworks, get comfortable with variables, loops, functions, classes and objects in one language. Java is a good start because its ideas carry over to both Kotlin and Dart.",
+      "prerequisites": [],
+      "estimateHours": [50, 90],
+      "resources": [
+        {
+          "title": "Learn Java – Dev.java",
+          "url": "https://dev.java/learn/"
+        },
+        {
+          "title": "Java Language Basics – Dev.java",
+          "url": "https://dev.java/learn/language-basics/"
+        },
+        {
+          "title": "CS50x 2026",
+          "url": "https://cs50.harvard.edu/x/"
+        }
+      ],
+      "proof": "Write a small console program, such as a student marks manager, that uses classes, lists and file saving.",
+      "sources": [
+        {
+          "title": "Learn Java – Dev.java",
+          "url": "https://dev.java/learn/"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "git",
+      "title": "Git and GitHub",
+      "kind": "skill",
+      "summary": "Keep every app in Git from the first day, commit often and push to GitHub. Recruiters and teams look at your repos, and Git saves you when an experiment breaks your project.",
+      "prerequisites": ["programming-basics"],
+      "estimateHours": [10, 20],
+      "resources": [
+        {
+          "title": "Pro Git (free book)",
+          "url": "https://git-scm.com/book/en/v2"
+        },
+        {
+          "title": "The Missing Semester of Your CS Education – MIT",
+          "url": "https://missing.csail.mit.edu/"
+        }
+      ],
+      "proof": "All your practice apps are on GitHub with READMEs and a history of small, clearly described commits.",
+      "sources": [
+        {
+          "title": "Pro Git (free book)",
+          "url": "https://git-scm.com/book/en/v2"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "choose-track",
+      "title": "Choose a track: native Android or Flutter",
+      "kind": "milestone",
+      "summary": "Native Android uses Kotlin and Android's own tools; Flutter uses Dart and targets Android and iOS from one codebase. Look at job posts near you, try a small tutorial in each, then commit to one for at least six months.",
+      "prerequisites": ["programming-basics"],
+      "estimateHours": [3, 8],
+      "resources": [
+        {
+          "title": "Android Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/android"
+        },
+        {
+          "title": "Flutter Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/flutter"
+        }
+      ],
+      "proof": "A short note in your notebook or repo explaining which track you chose and why, based on job posts you read.",
+      "sources": [
+        {
+          "title": "Android Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/android"
+        },
+        {
+          "title": "Flutter Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/flutter"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "track-language",
+      "title": "Kotlin or Dart",
+      "kind": "skill",
+      "summary": "Learn the language of your track: Kotlin for native Android or Dart for Flutter. Focus on null safety, collections, classes and asynchronous code, since apps constantly wait on networks and storage.",
+      "prerequisites": ["choose-track"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Android Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/android"
+        },
+        {
+          "title": "Flutter Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/flutter"
+        }
+      ],
+      "proof": "Solve 20 small exercises in Kotlin or Dart, including at least three that use asynchronous code.",
+      "sources": [
+        {
+          "title": "Android Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/android"
+        },
+        {
+          "title": "Flutter Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/flutter"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "ui-state",
+      "title": "Screens, navigation and state",
+      "kind": "skill",
+      "summary": "Build user interfaces with your track's UI toolkit (Jetpack Compose on Android, widgets in Flutter), move between screens, handle user input, and manage app state so the screen updates correctly.",
+      "prerequisites": ["track-language", "git"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Android Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/android"
+        },
+        {
+          "title": "Flutter Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/flutter"
+        }
+      ],
+      "proof": "Build a three-screen app, such as a habit tracker, with a list, a detail view and a form that updates the list.",
+      "sources": [
+        {
+          "title": "Android Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/android"
+        },
+        {
+          "title": "Flutter Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/flutter"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "data-networking",
+      "title": "Networking, APIs and local storage",
+      "kind": "skill",
+      "summary": "Most apps load data from a server over HTTP and keep some of it on the phone so they still work on a weak connection. Learn how HTTP and REST APIs work, how to parse JSON, and how to store data locally.",
+      "prerequisites": ["ui-state"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Overview of HTTP – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+        },
+        {
+          "title": "API Design Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/api-design"
+        }
+      ],
+      "proof": "Extend your app to load data from a public API, show loading and error states, and keep the last result for offline use.",
+      "sources": [
+        {
+          "title": "Overview of HTTP – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "security",
+      "title": "Mobile app security basics",
+      "kind": "skill",
+      "summary": "Never hard-code secret keys in the app, store sensitive data with the platform's secure storage, use HTTPS only, and ask for as few permissions as possible. Users trust apps with personal data on their phones.",
+      "prerequisites": ["data-networking"],
+      "estimateHours": [10, 20],
+      "resources": [
+        {
+          "title": "Mobile Application Security Cheat Sheet – OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Mobile_Application_Security_Cheat_Sheet.html"
+        }
+      ],
+      "proof": "Review your own app against the OWASP mobile cheat sheet and list each issue you fixed in the README.",
+      "sources": [
+        {
+          "title": "Mobile Application Security Cheat Sheet – OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Mobile_Application_Security_Cheat_Sheet.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "app-project",
+      "title": "Build and release a complete app",
+      "kind": "project",
+      "summary": "Build one useful app from idea to release, such as a campus events or expense tracker app, with several screens, an API, offline storage and a clean design. Share an installable build and the code.",
+      "prerequisites": ["security"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "Android Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/android"
+        },
+        {
+          "title": "Flutter Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/flutter"
+        },
+        {
+          "title": "Pro Git (free book)",
+          "url": "https://git-scm.com/book/en/v2"
+        }
+      ],
+      "proof": "A public repo with screenshots, a short screen recording and an installable build or store listing link that others can try.",
+      "sources": [
+        {
+          "title": "What You Can Do to Prepare – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/what-you-can-do-to-prepare"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "job-search",
+      "title": "Interviews and applying",
+      "kind": "milestone",
+      "summary": "Prepare to demo your app and explain how it handles state, data and errors. Revise programming and data structure basics for coding rounds, learn the usual hiring steps, and apply steadily.",
+      "prerequisites": ["app-project"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Preparing to Interview and Interviewing – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/preparing-to-interview-and-interviewing"
+        },
+        {
+          "title": "Strategy – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/strategy"
+        },
+        {
+          "title": "CSES Problem Set",
+          "url": "https://cses.fi/"
+        }
+      ],
+      "proof": "A five-minute demo video of your app, a one-page resume, and three mock interviews completed with notes.",
+      "sources": [
+        {
+          "title": "What Companies Want – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/what-companies-want"
+        },
+        {
+          "title": "Strategy – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/strategy"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

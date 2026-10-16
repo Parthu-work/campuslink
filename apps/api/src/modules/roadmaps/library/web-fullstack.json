@@ -1,0 +1,329 @@
+{
+  "key": "web-fullstack",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Full-Stack Web Developer",
+  "category": "software",
+  "branches": ["CSE", "IT"],
+  "summary": "Full-stack developers build both the part of a website people see and the server and database behind it. The role suits students who like seeing a whole product come together and are happy to keep learning across many tools.",
+  "outcomes": ["Full-Stack Developer", "Web Developer", "Software Engineer (Web)"],
+  "sources": [
+    {
+      "title": "Full Stack Developer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/full-stack"
+    },
+    {
+      "title": "8 In-Demand Full Stack Developer Skills – roadmap.sh",
+      "url": "https://roadmap.sh/full-stack/developer-skills"
+    },
+    {
+      "title": "Full Stack JavaScript Path – The Odin Project",
+      "url": "https://theodinproject.com/paths/2"
+    },
+    {
+      "title": "CS50's Web Programming with Python and JavaScript",
+      "url": "https://cs50.harvard.edu/web/"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "web-basics",
+      "title": "How the web and HTTP work",
+      "kind": "skill",
+      "summary": "Learn what happens when you open a web page: browsers, servers, requests, responses, status codes and headers. Every later topic, from forms to APIs, builds on this.",
+      "prerequisites": [],
+      "estimateHours": [10, 20],
+      "resources": [
+        {
+          "title": "How the web works – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Getting_started/Web_standards/How_the_web_works"
+        },
+        {
+          "title": "Overview of HTTP – MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+        }
+      ],
+      "proof": "Use your browser's network tab to explain, in your own words, every request a simple page makes and what each status code means.",
+      "sources": [
+        {
+          "title": "8 In-Demand Full Stack Developer Skills – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack/developer-skills"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "html-css",
+      "title": "HTML, CSS and responsive layouts",
+      "kind": "skill",
+      "summary": "Write semantic HTML and style it with CSS, including Flexbox, Grid and layouts that work on phones. Clean, accessible markup is the base of every web job.",
+      "prerequisites": ["web-basics"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Learn web development – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn"
+        },
+        {
+          "title": "Full Stack JavaScript Path – The Odin Project",
+          "url": "https://theodinproject.com/paths/2"
+        }
+      ],
+      "proof": "Build a responsive, multi-section landing page that looks right at phone and desktop widths, and host its code on GitHub.",
+      "sources": [
+        {
+          "title": "Full Stack Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack"
+        },
+        {
+          "title": "MDN Curriculum",
+          "url": "https://developer.mozilla.org/en-US/curriculum/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "javascript",
+      "title": "JavaScript in depth",
+      "kind": "skill",
+      "summary": "Learn modern JavaScript well: functions, objects, arrays, the DOM, events, promises and async/await, and fetching data. It runs in the browser and, with Node.js, on the server too.",
+      "prerequisites": ["html-css"],
+      "estimateHours": [80, 120],
+      "resources": [
+        {
+          "title": "Full Stack JavaScript Path – The Odin Project",
+          "url": "https://theodinproject.com/paths/2"
+        },
+        {
+          "title": "Learn web development – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn"
+        }
+      ],
+      "proof": "Build an interactive to-do or quiz app in plain JavaScript that saves data in the browser and loads data from a public API.",
+      "sources": [
+        {
+          "title": "8 In-Demand Full Stack Developer Skills – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack/developer-skills"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "git",
+      "title": "Git and GitHub",
+      "kind": "skill",
+      "summary": "Use Git for every project: commits, branches, merges and pull requests. Teams expect it from day one, and your GitHub history is part of your portfolio.",
+      "prerequisites": ["web-basics"],
+      "estimateHours": [10, 20],
+      "resources": [
+        {
+          "title": "Pro Git (free book)",
+          "url": "https://git-scm.com/book/en/v2"
+        },
+        {
+          "title": "The Missing Semester of Your CS Education – MIT",
+          "url": "https://missing.csail.mit.edu/"
+        }
+      ],
+      "proof": "All your projects live on GitHub with small, clearly worded commits, and at least one used a branch and a merged pull request.",
+      "sources": [
+        {
+          "title": "Full Stack Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "frontend-framework",
+      "title": "One frontend framework (React)",
+      "kind": "skill",
+      "summary": "Learn one framework properly rather than several a little. React is a common choice: components, props, state, effects and routing. Focus on building, not on chasing every new library.",
+      "prerequisites": ["javascript", "git"],
+      "estimateHours": [50, 80],
+      "resources": [
+        {
+          "title": "Full Stack JavaScript Path – The Odin Project",
+          "url": "https://theodinproject.com/paths/2"
+        },
+        {
+          "title": "CS50's Web Programming with Python and JavaScript",
+          "url": "https://cs50.harvard.edu/web/"
+        }
+      ],
+      "proof": "Rebuild your plain JavaScript app in React with at least three routes and components that share state.",
+      "sources": [
+        {
+          "title": "8 In-Demand Full Stack Developer Skills – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack/developer-skills"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "backend-api",
+      "title": "Backend with Node.js and Express",
+      "kind": "skill",
+      "summary": "Write a server that exposes a REST API: routes, middleware, input validation and error handling. Using JavaScript on both sides lets you reuse what you already know.",
+      "prerequisites": ["javascript", "git"],
+      "estimateHours": [50, 90],
+      "resources": [
+        {
+          "title": "Learn Node.js – nodejs.org",
+          "url": "https://nodejs.org/learn"
+        },
+        {
+          "title": "Hello world example – Express.js",
+          "url": "https://expressjs.com/en/starter/hello-world/"
+        },
+        {
+          "title": "Routing – Express.js",
+          "url": "https://expressjs.com/en/guide/routing/"
+        }
+      ],
+      "proof": "Build a REST API for notes or tasks with create, read, update and delete routes, and test each route with an HTTP client.",
+      "sources": [
+        {
+          "title": "Full Stack JavaScript Path – The Odin Project",
+          "url": "https://theodinproject.com/paths/2"
+        },
+        {
+          "title": "Full Stack Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "database",
+      "title": "SQL databases with PostgreSQL",
+      "kind": "skill",
+      "summary": "Learn tables, keys, joins, indexes and how to model data for an app. Connect your API to a real database instead of keeping data in memory.",
+      "prerequisites": ["backend-api"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "PostgreSQL Tutorial – PostgreSQL Documentation",
+          "url": "https://www.postgresql.org/docs/current/tutorial.html"
+        },
+        {
+          "title": "CS50's Introduction to Databases with SQL (archived, free to view)",
+          "url": "https://cs50.harvard.edu/sql/"
+        }
+      ],
+      "proof": "Design a schema with at least three related tables for your API and write queries that use joins and an index.",
+      "sources": [
+        {
+          "title": "Full Stack JavaScript Path – The Odin Project",
+          "url": "https://theodinproject.com/paths/2"
+        },
+        {
+          "title": "8 In-Demand Full Stack Developer Skills – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack/developer-skills"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "auth-security",
+      "title": "Login and web security basics",
+      "kind": "skill",
+      "summary": "Add sign-up and login safely: hash passwords with a slow algorithm, manage sessions, and check permissions on every request. Learn the most common web security risks so you avoid them by habit.",
+      "prerequisites": ["database"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "OWASP Top 10:2025",
+          "url": "https://owasp.org/Top10/2025/"
+        },
+        {
+          "title": "Authentication Cheat Sheet – OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html"
+        },
+        {
+          "title": "Password Storage Cheat Sheet – OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html"
+        }
+      ],
+      "proof": "Add login to your app with hashed passwords, and show that one user cannot read or change another user's data.",
+      "sources": [
+        {
+          "title": "OWASP Top 10:2025",
+          "url": "https://owasp.org/Top10/2025/"
+        },
+        {
+          "title": "Password Storage Cheat Sheet – OWASP",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "deploy-project",
+      "title": "Build and deploy a full-stack app",
+      "kind": "project",
+      "summary": "Combine everything into one app that real people can use online: React frontend, Express API, PostgreSQL database and login. Learning Docker helps you run the same setup everywhere.",
+      "prerequisites": ["frontend-framework", "auth-security"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "Get started – Docker Docs",
+          "url": "https://docs.docker.com/get-started/"
+        },
+        {
+          "title": "20 Backend Project Ideas – roadmap.sh",
+          "url": "https://roadmap.sh/backend/project-ideas"
+        },
+        {
+          "title": "Capstone – CS50's Web Programming",
+          "url": "https://cs50.harvard.edu/web/projects/final/capstone/"
+        }
+      ],
+      "proof": "A live link and a public repo for an app with login, a database and at least one feature you designed yourself, plus a clear README.",
+      "sources": [
+        {
+          "title": "Full Stack Developer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack"
+        },
+        {
+          "title": "What You Can Do to Prepare – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/what-you-can-do-to-prepare"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "job-search",
+      "title": "Portfolio, interviews and applying",
+      "kind": "milestone",
+      "summary": "Put your best two or three projects in a simple portfolio, tidy your GitHub and resume, and learn the usual hiring steps: phone screen, technical interview and take-home task. Apply steadily and follow up.",
+      "prerequisites": ["deploy-project"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Preparing to Interview and Interviewing – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/preparing-to-interview-and-interviewing"
+        },
+        {
+          "title": "Applying for Web Development Jobs – The Odin Project",
+          "url": "https://www.theodinproject.com/lessons/node-path-getting-hired-applying-for-web-development-jobs"
+        },
+        {
+          "title": "How to Become a Full Stack Developer – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack/how-to-become"
+        }
+      ],
+      "proof": "A portfolio page linking your projects, a one-page resume, and a tracked list of applications with follow-up dates.",
+      "sources": [
+        {
+          "title": "Strategy – The Odin Project",
+          "url": "https://theodinproject.com/paths/full-stack-javascript/courses/getting-hired/lessons/strategy"
+        },
+        {
+          "title": "How to Become a Full Stack Developer – roadmap.sh",
+          "url": "https://roadmap.sh/full-stack/how-to-become"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

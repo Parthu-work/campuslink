@@ -1,0 +1,267 @@
+{
+  "key": "data-engineer",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Data Engineer",
+  "category": "data-ai",
+  "branches": ["CSE", "IT", "DS"],
+  "summary": "Data engineers build the pipelines that move data from apps and files into warehouses where analysts and data scientists can use it. It suits students who enjoy programming, databases and making systems reliable.",
+  "outcomes": ["Data Engineer", "ETL Developer", "Analytics Engineer", "Big Data Engineer"],
+  "sources": [
+    {
+      "title": "Data Engineer Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/data-engineer"
+    },
+    {
+      "title": "Data Engineering Zoomcamp – DataTalks.Club (GitHub)",
+      "url": "https://github.com/datatalksclub/data-engineering-zoomcamp"
+    },
+    {
+      "title": "Data Engineer Roadmap – DataTalks.Club",
+      "url": "https://datatalks.club/podwiki/roadmaps/data-engineer-roadmap/"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "python",
+      "title": "Python programming",
+      "kind": "skill",
+      "summary": "Learn Python well: functions, data structures, files, error handling and modules. Most pipeline code, scripts and tools in data engineering are written in Python.",
+      "prerequisites": [],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "The Python Tutorial – python.org",
+          "url": "https://docs.python.org/3/tutorial/index.html"
+        },
+        {
+          "title": "Intro to Programming – Kaggle Learn",
+          "url": "https://www.kaggle.com/learn/intro-to-programming"
+        }
+      ],
+      "proof": "A script that reads a CSV or JSON file, validates and cleans it, and writes the result to a new file, pushed to GitHub.",
+      "sources": [
+        {
+          "title": "Data Engineer Roadmap – DataTalks.Club",
+          "url": "https://datatalks.club/podwiki/roadmaps/data-engineer-roadmap/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "sql-modelling",
+      "title": "SQL and data modelling",
+      "kind": "skill",
+      "summary": "Go beyond SELECT: joins, window functions, indexes, normalisation and designing tables. Strong SQL is the core skill interviewers test for data engineering roles.",
+      "prerequisites": [],
+      "estimateHours": [60, 90],
+      "resources": [
+        {
+          "title": "CS50's Introduction to Databases with SQL – Harvard",
+          "url": "https://cs50.harvard.edu/sql"
+        },
+        {
+          "title": "SQL Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/sql"
+        }
+      ],
+      "proof": "A small database schema you designed (for example, a college library) with sample data and 15 queries including window functions.",
+      "sources": [
+        {
+          "title": "Data Engineer Roadmap – DataTalks.Club",
+          "url": "https://datatalks.club/podwiki/roadmaps/data-engineer-roadmap/"
+        },
+        {
+          "title": "Data Engineer Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/data-engineer"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "docker",
+      "title": "Docker and containers",
+      "kind": "skill",
+      "summary": "Learn to run databases and tools in containers, write a Dockerfile and use Docker Compose. Containers let you run a whole pipeline on your laptop the same way it runs elsewhere.",
+      "prerequisites": ["python"],
+      "estimateHours": [15, 30],
+      "resources": [
+        {
+          "title": "Get started – Docker Docs",
+          "url": "https://docs.docker.com/get-started/"
+        }
+      ],
+      "proof": "A Docker Compose file that starts a database and your Python ingestion script together with one command.",
+      "sources": [
+        {
+          "title": "Data Engineering Zoomcamp – DataTalks.Club (GitHub)",
+          "url": "https://github.com/datatalksclub/data-engineering-zoomcamp"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "batch-pipelines",
+      "title": "Batch pipelines and orchestration",
+      "kind": "skill",
+      "summary": "Learn how to extract, transform and load data on a schedule, and how an orchestrator like Apache Airflow runs tasks as a DAG with retries and dependencies.",
+      "prerequisites": ["python", "sql-modelling", "docker"],
+      "estimateHours": [40, 60],
+      "resources": [
+        {
+          "title": "Airflow 101: Building Your First Workflow – Apache Airflow",
+          "url": "https://airflow.apache.org/docs/apache-airflow/stable/tutorial/fundamentals.html"
+        },
+        {
+          "title": "Core Concepts – Apache Airflow",
+          "url": "https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/index.html"
+        }
+      ],
+      "proof": "An Airflow DAG that downloads a public dataset daily, cleans it and loads it into a database, with a screenshot of successful runs.",
+      "sources": [
+        {
+          "title": "Core Concepts – Apache Airflow",
+          "url": "https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/index.html"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "warehouse-dbt",
+      "title": "Data warehouses and dbt",
+      "kind": "skill",
+      "summary": "Learn how analytical warehouses differ from app databases, and use dbt to turn raw tables into clean, tested models with SQL. DuckDB lets you practise this for free on a laptop.",
+      "prerequisites": ["sql-modelling"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "What is dbt? – dbt Docs",
+          "url": "https://docs.getdbt.com/docs/introduction"
+        },
+        {
+          "title": "Quickstart for dbt Core using DuckDB",
+          "url": "https://docs.getdbt.com/guides/duckdb"
+        }
+      ],
+      "proof": "A dbt project with staging and final models, tests on key columns and generated documentation.",
+      "sources": [
+        {
+          "title": "What is dbt? – dbt Docs",
+          "url": "https://docs.getdbt.com/docs/introduction"
+        },
+        {
+          "title": "Data Engineering Zoomcamp – DataTalks.Club (GitHub)",
+          "url": "https://github.com/datatalksclub/data-engineering-zoomcamp"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "spark",
+      "title": "Big data processing with Spark",
+      "kind": "skill",
+      "summary": "Learn PySpark DataFrames: reading files, filtering, joining and grouping data that is too large for pandas, and how lazy evaluation works.",
+      "prerequisites": ["python", "sql-modelling"],
+      "estimateHours": [40, 60],
+      "resources": [
+        {
+          "title": "Quick Start – Apache Spark",
+          "url": "https://spark.apache.org/docs/latest/quick-start.html"
+        },
+        {
+          "title": "Quickstart: DataFrame – PySpark",
+          "url": "https://spark.apache.org/docs/latest/api/python/getting_started/quickstart_df.html"
+        }
+      ],
+      "proof": "A PySpark job that processes a multi-file public dataset and writes aggregated results as Parquet files.",
+      "sources": [
+        {
+          "title": "Data Engineering Zoomcamp – DataTalks.Club (GitHub)",
+          "url": "https://github.com/datatalksclub/data-engineering-zoomcamp"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "streaming-kafka",
+      "title": "Streaming basics with Kafka",
+      "kind": "skill",
+      "summary": "Understand topics, producers and consumers, and run Kafka locally. Learn this after batch pipelines; many entry-level roles focus on batch work first.",
+      "prerequisites": ["docker", "batch-pipelines"],
+      "estimateHours": [25, 40],
+      "resources": [
+        {
+          "title": "Quickstart – Apache Kafka",
+          "url": "https://kafka.apache.org/quickstart/"
+        },
+        {
+          "title": "Introduction – Apache Kafka",
+          "url": "https://kafka.apache.org/intro/"
+        }
+      ],
+      "proof": "A small producer that sends events to a Kafka topic and a consumer that writes them to a database.",
+      "sources": [
+        {
+          "title": "Data Engineering Zoomcamp – DataTalks.Club (GitHub)",
+          "url": "https://github.com/datatalksclub/data-engineering-zoomcamp"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "capstone-pipeline",
+      "title": "End-to-end pipeline project",
+      "kind": "project",
+      "summary": "Build one pipeline from a real public source to a trusted, documented output: ingest, store, transform with dbt or Spark, schedule it and add data quality checks. This is your main interview talking point.",
+      "prerequisites": ["batch-pipelines", "warehouse-dbt", "spark"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Data Engineering Zoomcamp – DataTalks.Club (GitHub)",
+          "url": "https://github.com/datatalksclub/data-engineering-zoomcamp"
+        }
+      ],
+      "proof": "A GitHub repo with an architecture diagram, setup steps that work on a fresh machine and a dashboard or table built from the pipeline.",
+      "sources": [
+        {
+          "title": "Data Engineer Roadmap – DataTalks.Club",
+          "url": "https://datatalks.club/podwiki/roadmaps/data-engineer-roadmap/"
+        },
+        {
+          "title": "Data Engineering Zoomcamp – DataTalks.Club (GitHub)",
+          "url": "https://github.com/datatalksclub/data-engineering-zoomcamp"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview preparation and applying",
+      "kind": "milestone",
+      "summary": "Practise SQL query questions, Python coding questions and basic system design (how data flows, partitioning, queues). Be ready to explain every choice in your capstone pipeline.",
+      "prerequisites": ["capstone-pipeline"],
+      "estimateHours": [40, 60],
+      "resources": [
+        {
+          "title": "30 SQL Queries Interview Questions and Answers – roadmap.sh",
+          "url": "https://roadmap.sh/questions/sql-queries"
+        },
+        {
+          "title": "Top 20 Python Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/python"
+        },
+        {
+          "title": "Top 30 System Design Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/system-design"
+        }
+      ],
+      "proof": "Solve the roadmap.sh SQL and Python question sets without notes, and explain your capstone design to a friend in 5 minutes.",
+      "sources": [
+        {
+          "title": "30 SQL Queries Interview Questions and Answers – roadmap.sh",
+          "url": "https://roadmap.sh/questions/sql-queries"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

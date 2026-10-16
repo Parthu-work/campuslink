@@ -1,0 +1,318 @@
+{
+  "key": "ui-ux",
+  "lastReviewedAt": "2026-10-16",
+  "title": "UI/UX Designer",
+  "category": "design-product",
+  "branches": ["CSE", "IT", "OTHER"],
+  "summary": "UI/UX designers find out what users need, then design screens and flows that are easy to understand and use. It suits students who like people, problem-solving and visual work, and who can explain their decisions clearly.",
+  "outcomes": [
+    "UI/UX Designer",
+    "Product Designer (junior)",
+    "Interaction Designer",
+    "UX Researcher (junior)"
+  ],
+  "sources": [
+    {
+      "title": "UX Design Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/ux-design"
+    },
+    {
+      "title": "Growing in Your UX Career: Study Guide – NN/G",
+      "url": "https://www.nngroup.com/articles/growing-your-ux-career-study-guide/"
+    },
+    {
+      "title": "User Experience Careers (free report) – NN/G",
+      "url": "https://media.nngroup.com/media/reports/free/UserExperienceCareers_2nd_Edition.pdf"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "ux-foundations",
+      "title": "UX basics and usability heuristics",
+      "kind": "skill",
+      "summary": "Learn what UX design covers and Jakob Nielsen's 10 usability heuristics. They give you a shared vocabulary for spotting and explaining problems in any app, which interviewers expect you to use.",
+      "prerequisites": [],
+      "estimateHours": [15, 25],
+      "resources": [
+        {
+          "title": "10 Usability Heuristics for User Interface Design – NN/G",
+          "url": "https://www.nngroup.com/articles/ten-usability-heuristics/"
+        },
+        {
+          "title": "UX Design Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/ux-design"
+        }
+      ],
+      "proof": "Write a one-page heuristic review of an app you use daily, naming which heuristic each problem breaks.",
+      "sources": [
+        {
+          "title": "10 Usability Heuristics for User Interface Design – NN/G",
+          "url": "https://www.nngroup.com/articles/ten-usability-heuristics/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "user-research",
+      "title": "User interviews and usability testing",
+      "kind": "skill",
+      "summary": "Learn to plan and run user interviews (to understand needs) and usability tests (to watch people use a design). NN/G notes that about five users per round can reveal most common problems in a qualitative test.",
+      "prerequisites": ["ux-foundations"],
+      "estimateHours": [25, 40],
+      "resources": [
+        {
+          "title": "User Interviews 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/user-interviews/"
+        },
+        {
+          "title": "Usability (User) Testing 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/usability-testing-101/"
+        },
+        {
+          "title": "Checklist for Moderating a Usability Test – NN/G",
+          "url": "https://www.nngroup.com/articles/usability-checklist/"
+        }
+      ],
+      "proof": "Interview 5 classmates about one campus task, then share a short findings summary with quotes and pain points.",
+      "sources": [
+        {
+          "title": "User Interviews 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/user-interviews/"
+        },
+        {
+          "title": "Usability (User) Testing 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/usability-testing-101/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "mapping-flows",
+      "title": "Journey maps and user flows",
+      "kind": "skill",
+      "summary": "Turn research into journey maps (the steps, thoughts and feelings a person has while reaching a goal) and wireflows (wireframes joined into a flow). These show teams where the real problems are before anyone designs screens.",
+      "prerequisites": ["user-research"],
+      "estimateHours": [15, 25],
+      "resources": [
+        {
+          "title": "Journey Mapping 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/journey-mapping-101/"
+        },
+        {
+          "title": "Wireflows 101 (video) – NN/G",
+          "url": "https://www.nngroup.com/videos/wireflows-101/"
+        },
+        {
+          "title": "UX Mapping Methods: Study Guide – NN/G",
+          "url": "https://www.nngroup.com/articles/ux-mapping-methods-study-guide/"
+        }
+      ],
+      "proof": "Draw a journey map for one student task (for example, getting a bonafide certificate) based on your interviews.",
+      "sources": [
+        {
+          "title": "Journey Mapping 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/journey-mapping-101/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "visual-design",
+      "title": "Visual design: hierarchy, type, colour and layout",
+      "kind": "skill",
+      "summary": "Learn scale, visual hierarchy, balance, contrast and Gestalt grouping, plus simple type rules such as using one or two fonts and a few sizes. This is what makes a UI look clear rather than cluttered.",
+      "prerequisites": ["ux-foundations"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "5 Principles of Visual Design in UX – NN/G",
+          "url": "https://www.nngroup.com/articles/principles-visual-design/"
+        },
+        {
+          "title": "Good Visual Design, Explained – NN/G",
+          "url": "https://www.nngroup.com/articles/good-visual-design/"
+        },
+        {
+          "title": "The Dos and Don'ts of Pairing Typefaces – NN/G",
+          "url": "https://www.nngroup.com/articles/pairing-typefaces/"
+        }
+      ],
+      "proof": "Redesign one cluttered screen (such as a results or notice page) and annotate each hierarchy decision you made.",
+      "sources": [
+        {
+          "title": "5 Principles of Visual Design in UX – NN/G",
+          "url": "https://www.nngroup.com/articles/principles-visual-design/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "figma",
+      "title": "Figma: frames, auto layout, components and prototypes",
+      "kind": "skill",
+      "summary": "Figma is a widely used design tool, and its official beginner course works on the free Starter plan. Learn frames, auto layout, components and clickable prototypes so you can build and share real designs.",
+      "prerequisites": ["visual-design"],
+      "estimateHours": [20, 35],
+      "resources": [
+        {
+          "title": "Figma Design for beginners – course overview",
+          "url": "https://help.figma.com/hc/en-us/articles/30848209492887"
+        },
+        {
+          "title": "Figma Learn: courses, tutorials and projects",
+          "url": "https://help.figma.com/hc/en-us/categories/23557013073047-Courses-tutorials-projects"
+        }
+      ],
+      "proof": "Build a clickable 5-screen prototype that uses components and auto layout, and share the link.",
+      "sources": [
+        {
+          "title": "Figma Design for beginners – course overview",
+          "url": "https://help.figma.com/hc/en-us/articles/30848209492887"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "accessibility-guidelines",
+      "title": "Accessibility and platform design guidelines",
+      "kind": "skill",
+      "summary": "Learn the WCAG principles (perceivable, operable, understandable, robust) and read a platform design system such as Material 3. Accessible, guideline-aware designs are easier for developers to build and work for more people.",
+      "prerequisites": ["figma"],
+      "estimateHours": [20, 30],
+      "resources": [
+        {
+          "title": "What is accessibility? – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Accessibility/What_is_accessibility"
+        },
+        {
+          "title": "W3C Accessibility Standards Overview – W3C WAI",
+          "url": "https://www.w3.org/WAI/standards-guidelines/"
+        },
+        {
+          "title": "Material Design 3 – Get started",
+          "url": "https://m3.material.io/get-started"
+        }
+      ],
+      "proof": "Audit your prototype for colour contrast, text size, touch targets and labels, and fix what fails.",
+      "sources": [
+        {
+          "title": "What is accessibility? – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Accessibility/What_is_accessibility"
+        },
+        {
+          "title": "W3C Accessibility Standards Overview – W3C WAI",
+          "url": "https://www.w3.org/WAI/standards-guidelines/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "web-basics",
+      "title": "Enough HTML and CSS to work with developers",
+      "kind": "skill",
+      "summary": "You don't need to be a developer, but building a simple web page helps you understand what is easy or hard to build and makes design handoff smoother.",
+      "prerequisites": ["figma"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Getting started modules – MDN Learn web development",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Getting_started"
+        },
+        {
+          "title": "Your first website – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/learn/getting_started_with_the_web"
+        }
+      ],
+      "proof": "Turn one of your Figma screens into a simple HTML/CSS page and publish it.",
+      "sources": [
+        {
+          "title": "Getting started modules – MDN Learn web development",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Getting_started"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "case-study-project",
+      "title": "End-to-end redesign case study",
+      "kind": "project",
+      "summary": "Pick a real problem (a campus portal, a local shop's ordering flow) and go from research to tested prototype. Hiring managers want to see the messy process, your role, constraints and how research shaped the design, not only final screens.",
+      "prerequisites": ["mapping-flows", "accessibility-guidelines"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Creating a UX Design Portfolio Case Study (video) – NN/G",
+          "url": "https://www.nngroup.com/videos/ux-design-portfolio-case-study/"
+        },
+        {
+          "title": "Usability (User) Testing 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/usability-testing-101/"
+        }
+      ],
+      "proof": "A written case study: problem, research, journey map, iterations, usability test results with 5 users, and final prototype.",
+      "sources": [
+        {
+          "title": "5 Steps to Creating a UX-Design Portfolio – NN/G",
+          "url": "https://www.nngroup.com/articles/ux-design-portfolios/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "portfolio",
+      "title": "Build your portfolio",
+      "kind": "milestone",
+      "summary": "NN/G suggests 3–5 projects written up as detailed case studies. The portfolio has two jobs: get you an interview, then support you while you walk through your work in it.",
+      "prerequisites": ["case-study-project"],
+      "estimateHours": [20, 35],
+      "resources": [
+        {
+          "title": "5 Steps to Creating a UX-Design Portfolio – NN/G",
+          "url": "https://www.nngroup.com/articles/ux-design-portfolios/"
+        },
+        {
+          "title": "How to Maintain a UX Portfolio Over Time – NN/G",
+          "url": "https://www.nngroup.com/articles/maintain-ux-portfolio/"
+        }
+      ],
+      "proof": "A public portfolio site with at least 3 case studies, each showing problem, process, your role and outcome.",
+      "sources": [
+        {
+          "title": "5 Steps to Creating a UX-Design Portfolio – NN/G",
+          "url": "https://www.nngroup.com/articles/ux-design-portfolios/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview preparation and job search",
+      "kind": "milestone",
+      "summary": "Practise walking through your case studies out loud, and answer behavioural questions with STAR (situation, task, action, result). Expect portfolio reviews and sometimes a take-home or whiteboard design exercise.",
+      "prerequisites": ["portfolio"],
+      "estimateHours": [15, 30],
+      "resources": [
+        {
+          "title": "How to Answer UX Job Interview Questions – NN/G",
+          "url": "https://www.nngroup.com/articles/answer-ux-job-interview-questions/"
+        },
+        {
+          "title": "UX Portfolios: Preparing for Interviews (video) – NN/G",
+          "url": "https://www.nngroup.com/videos/ux-portfolios-interviews/"
+        },
+        {
+          "title": "UX Portfolios: What Hiring Managers Look For (video) – NN/G",
+          "url": "https://www.nngroup.com/videos/ux-portfolios-hiring/"
+        }
+      ],
+      "proof": "Record a mock portfolio walkthrough and write STAR answers to 5 common behavioural questions.",
+      "sources": [
+        {
+          "title": "How to Answer UX Job Interview Questions – NN/G",
+          "url": "https://www.nngroup.com/articles/answer-ux-job-interview-questions/"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

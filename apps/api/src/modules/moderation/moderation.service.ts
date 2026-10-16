@@ -331,7 +331,7 @@ export class ModerationService {
   async reportTarget(type: ContentTarget, viewer: AuthState, id: string) {
     const item = await this.handlers.get(type)?.load(id);
     if (!item || item.status !== 'published' || item.authorId === viewer.userId) return null;
-    return { subjectUserId: item.authorId, snapshot: item.snapshot.slice(0, 2500) };
+    return { subjectUserId: item.authorId || null, snapshot: item.snapshot.slice(0, 2500) };
   }
 
   async openAppealCount() {

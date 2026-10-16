@@ -1,0 +1,255 @@
+{
+  "key": "data-analyst",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Data Analyst",
+  "category": "data-ai",
+  "branches": ["CSE", "IT", "DS", "AIML", "OTHER"],
+  "summary": "Data analysts turn raw data into answers a team can act on, using spreadsheets, SQL, Python and dashboards. It suits students who like asking questions, spotting patterns and explaining findings clearly, and it is open to any branch.",
+  "outcomes": ["Data Analyst", "Business Analyst", "Reporting Analyst", "Product Analyst"],
+  "sources": [
+    {
+      "title": "Data Analyst Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/data-analyst"
+    },
+    {
+      "title": "How to Become a Data Analyst with No Experience – roadmap.sh",
+      "url": "https://roadmap.sh/data-analyst/how-to-become"
+    },
+    {
+      "title": "Data Analyst Roadmap (PDF) – roadmap.sh",
+      "url": "https://roadmap.sh/pdfs/roadmaps/data-analyst.pdf"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "spreadsheets",
+      "title": "Spreadsheets: formulas and pivot tables",
+      "kind": "skill",
+      "summary": "Learn to sort, filter, write common formulas (lookups, IF, SUMIFS) and build pivot tables in Excel or Google Sheets. Spreadsheets are still the everyday tool in most analyst jobs.",
+      "prerequisites": [],
+      "estimateHours": [25, 40],
+      "resources": [
+        {
+          "title": "Data Analyst Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/data-analyst"
+        },
+        {
+          "title": "Data Analyst Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/data-analyst.pdf"
+        }
+      ],
+      "proof": "A cleaned spreadsheet of a public dataset with a pivot table and a one-paragraph summary of what it shows.",
+      "sources": [
+        {
+          "title": "Data Analyst Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/data-analyst.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "sql",
+      "title": "SQL for analysis",
+      "kind": "skill",
+      "summary": "Write SELECT queries with filters, GROUP BY, JOINs, subqueries and window functions. SQL is usually tested in analyst interviews, so learn it early and practise a lot.",
+      "prerequisites": [],
+      "estimateHours": [50, 80],
+      "resources": [
+        {
+          "title": "CS50's Introduction to Databases with SQL – Harvard",
+          "url": "https://cs50.harvard.edu/sql"
+        },
+        {
+          "title": "SQL Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/sql"
+        }
+      ],
+      "proof": "A set of 20 or more SQL queries answering business questions on a sample database, saved in a GitHub repository.",
+      "sources": [
+        {
+          "title": "How to Become a Data Analyst with No Experience – roadmap.sh",
+          "url": "https://roadmap.sh/data-analyst/how-to-become"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "statistics",
+      "title": "Statistics you will actually use",
+      "kind": "skill",
+      "summary": "Cover averages, spread, distributions, sampling, confidence intervals, hypothesis tests and simple regression. This lets you say whether a change is real or just noise.",
+      "prerequisites": ["spreadsheets"],
+      "estimateHours": [40, 70],
+      "resources": [
+        {
+          "title": "OpenIntro Statistics (free PDF)",
+          "url": "https://www.openintro.org/book/os/"
+        }
+      ],
+      "proof": "A short write-up testing one claim on real data (for example, whether two groups differ), with the test used and the result explained.",
+      "sources": [
+        {
+          "title": "Data Analyst Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/data-analyst.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "python-pandas",
+      "title": "Python with pandas",
+      "kind": "skill",
+      "summary": "Learn Python basics, then use pandas to load, filter, group and reshape tables. Python handles data that is too big or too messy for a spreadsheet.",
+      "prerequisites": ["spreadsheets"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "The Python Tutorial – python.org",
+          "url": "https://docs.python.org/3/tutorial/index.html"
+        },
+        {
+          "title": "pandas Getting Started Tutorials",
+          "url": "https://pandas.pydata.org/docs/getting_started/intro_tutorials/"
+        },
+        {
+          "title": "Kaggle Learn (free Python and pandas courses)",
+          "url": "https://www.kaggle.com/learn"
+        }
+      ],
+      "proof": "A Jupyter notebook that loads a CSV, answers five questions with pandas and explains each answer in plain words.",
+      "sources": [
+        {
+          "title": "Python for Data Analysis – roadmap.sh",
+          "url": "https://roadmap.sh/python-data-analysis"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "dashboards",
+      "title": "Dashboards with Power BI",
+      "kind": "skill",
+      "summary": "Learn to prepare data with Power Query, build a data model, write simple DAX measures and design clear report pages. Dashboards are how most analysts share results.",
+      "prerequisites": ["spreadsheets", "sql"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "Power BI Data Analyst learning catalog – Microsoft Learn",
+          "url": "https://learn.microsoft.com/power-bi/learning-catalog/learning-catalog-data-analyst"
+        }
+      ],
+      "proof": "A one-page dashboard on a public dataset with filters and three key measures, plus screenshots in your portfolio.",
+      "sources": [
+        {
+          "title": "Power BI Data Analyst learning catalog – Microsoft Learn",
+          "url": "https://learn.microsoft.com/power-bi/learning-catalog/learning-catalog-data-analyst"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "cleaning-eda",
+      "title": "Data cleaning and exploratory analysis",
+      "kind": "skill",
+      "summary": "Practise fixing missing values, duplicates and wrong types, then explore data with summaries and charts before drawing conclusions. Real data is messy, and this is most of the job.",
+      "prerequisites": ["python-pandas", "statistics"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "Learn Data Analysis with Python – freeCodeCamp",
+          "url": "https://www.freecodecamp.org/news/learn-data-analysis-with-python-course/"
+        },
+        {
+          "title": "pandas Getting Started Tutorials",
+          "url": "https://pandas.pydata.org/docs/getting_started/intro_tutorials/"
+        }
+      ],
+      "proof": "A notebook that takes a messy public dataset, documents every cleaning step and ends with three charts and findings.",
+      "sources": [
+        {
+          "title": "Data Analyst Projects – roadmap.sh",
+          "url": "https://roadmap.sh/data-analyst/projects"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "portfolio-projects",
+      "title": "Two or three end-to-end analysis projects",
+      "kind": "project",
+      "summary": "Pick datasets you care about, ask a clear question, then clean, analyse and present the answer with SQL, Python and a dashboard. A small, finished portfolio matters more than a long list of courses.",
+      "prerequisites": ["cleaning-eda", "dashboards"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "Data Analyst Projects – roadmap.sh",
+          "url": "https://roadmap.sh/data-analyst/projects"
+        },
+        {
+          "title": "Kaggle Learn",
+          "url": "https://www.kaggle.com/learn"
+        }
+      ],
+      "proof": "A GitHub repository or portfolio page with 2–3 projects, each with the question, the method, a chart and the conclusion.",
+      "sources": [
+        {
+          "title": "Data Analyst Projects – roadmap.sh",
+          "url": "https://roadmap.sh/data-analyst/projects"
+        },
+        {
+          "title": "Data Analyst Roadmap (PDF) – roadmap.sh",
+          "url": "https://roadmap.sh/pdfs/roadmaps/data-analyst.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "business-communication",
+      "title": "Asking business questions and presenting findings",
+      "kind": "skill",
+      "summary": "Practise turning a vague request into a clear question, and explaining results to non-technical people in a few slides or a short note. Interviewers often check this as much as tools.",
+      "prerequisites": ["portfolio-projects"],
+      "estimateHours": [15, 30],
+      "resources": [
+        {
+          "title": "What Does a Data Analyst Do? – roadmap.sh",
+          "url": "https://roadmap.sh/data-analyst/what-does-a-data-analyst-do"
+        }
+      ],
+      "proof": "A 5-minute recorded walkthrough or a one-page summary of one project written for a manager, not an engineer.",
+      "sources": [
+        {
+          "title": "What Does a Data Analyst Do? – roadmap.sh",
+          "url": "https://roadmap.sh/data-analyst/what-does-a-data-analyst-do"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview preparation and applying",
+      "kind": "milestone",
+      "summary": "Revise common analyst questions on cleaning, statistics and visualisation, practise SQL query questions under time, and be ready to walk through your projects. Then apply for internships and entry-level analyst roles.",
+      "prerequisites": ["portfolio-projects", "business-communication"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "50 Popular Data Analyst Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/data-analyst"
+        },
+        {
+          "title": "30 SQL Queries Interview Questions and Answers – roadmap.sh",
+          "url": "https://roadmap.sh/questions/sql-queries"
+        }
+      ],
+      "proof": "Answer the roadmap.sh question set out loud with a friend, and solve the SQL query questions without looking at answers.",
+      "sources": [
+        {
+          "title": "50 Popular Data Analyst Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/data-analyst"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

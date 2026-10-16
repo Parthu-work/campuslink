@@ -1,0 +1,314 @@
+{
+  "key": "product-management",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Product Manager (technical roles)",
+  "category": "design-product",
+  "branches": ["CSE", "IT", "ECE", "EEE", "MECH", "OTHER"],
+  "summary": "Product managers decide what a team builds and why: they understand users, set priorities and work with engineers and designers to ship. It suits students from any branch who enjoy problem-solving, writing and talking to people, and who learn enough tech to earn engineers' trust.",
+  "outcomes": [
+    "Associate Product Manager",
+    "Product Analyst",
+    "Technical Product Manager (later)",
+    "Product Owner"
+  ],
+  "sources": [
+    {
+      "title": "Product Manager Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/product-manager"
+    },
+    {
+      "title": "Product Management – Atlassian Agile Coach",
+      "url": "https://www.atlassian.com/agile/product-management"
+    },
+    {
+      "title": "Product Manager: Role & Best Practices – Atlassian",
+      "url": "https://www.atlassian.com/agile/product-management/product-manager"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "pm-role",
+      "title": "Understand what a product manager does",
+      "kind": "skill",
+      "summary": "A PM owns the 'what' and 'why' of a product: customer insight, strategy and roadmap, priorities, team alignment and measuring results. Learn how this differs from a project manager, who focuses on 'how' and 'when'.",
+      "prerequisites": [],
+      "estimateHours": [6, 12],
+      "resources": [
+        {
+          "title": "Product Manager: Role & Best Practices – Atlassian",
+          "url": "https://www.atlassian.com/agile/product-management/product-manager"
+        },
+        {
+          "title": "Product manager vs. project manager – Atlassian",
+          "url": "https://www.atlassian.com/agile/project-management/product-vs-project-management"
+        },
+        {
+          "title": "Product Manager Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/product-manager"
+        }
+      ],
+      "proof": "Write a one-page note on an app you use: its users, the problem it solves and one feature you would change.",
+      "sources": [
+        {
+          "title": "Product Manager: Role & Best Practices – Atlassian",
+          "url": "https://www.atlassian.com/agile/product-management/product-manager"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "tech-foundations",
+      "title": "Technical foundations: how software and the web work",
+      "kind": "skill",
+      "summary": "Technical PMs must follow engineering discussions. Learn programming basics, how the internet and HTTP work, and what APIs are. Non-CS branches (ECE, EEE, MECH) should spend extra time here.",
+      "prerequisites": ["pm-role"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "CS50x: Introduction to Computer Science – Harvard",
+          "url": "https://cs50.harvard.edu/x/"
+        },
+        {
+          "title": "How does the Internet work? – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Web_mechanics/How_does_the_Internet_work"
+        },
+        {
+          "title": "Overview of HTTP – MDN",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+        }
+      ],
+      "proof": "Finish CS50x problem sets up to Python and explain in a short write-up what happens when you open a website.",
+      "sources": [
+        {
+          "title": "CS50x: Introduction to Computer Science – Harvard",
+          "url": "https://cs50.harvard.edu/x/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "customer-discovery",
+      "title": "Customer discovery and user interviews",
+      "kind": "skill",
+      "summary": "Good PMs start from real problems, not ideas. Learn to run user interviews and stakeholder interviews, ask open questions and dig for pain points, motivations and current workarounds.",
+      "prerequisites": ["pm-role"],
+      "estimateHours": [20, 30],
+      "resources": [
+        {
+          "title": "User Interviews 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/user-interviews/"
+        },
+        {
+          "title": "Stakeholder Interviews 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/stakeholder-interviews/"
+        }
+      ],
+      "proof": "Interview 5 people about one problem and write a summary of the top 3 pain points with quotes.",
+      "sources": [
+        {
+          "title": "User Interviews 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/user-interviews/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "requirements",
+      "title": "Writing PRDs, user stories and acceptance criteria",
+      "kind": "skill",
+      "summary": "A product requirements document (PRD) states goals, assumptions, user stories, design and what is out of scope. User stories describe work from the user's view; acceptance criteria say when a story is done.",
+      "prerequisites": ["customer-discovery"],
+      "estimateHours": [15, 25],
+      "resources": [
+        {
+          "title": "What is a Product Requirements Document (PRD)? – Atlassian",
+          "url": "https://www.atlassian.com/agile/product-management/requirements"
+        },
+        {
+          "title": "User Stories with Examples and a Template – Atlassian",
+          "url": "https://www.atlassian.com/agile/project-management/user-stories"
+        },
+        {
+          "title": "What is Acceptance Criteria? – Atlassian",
+          "url": "https://www.atlassian.com/work-management/project-management/acceptance-criteria"
+        }
+      ],
+      "proof": "Write a 2-page PRD for one feature, with 5 user stories and acceptance criteria for each.",
+      "sources": [
+        {
+          "title": "What is a Product Requirements Document (PRD)? – Atlassian",
+          "url": "https://www.atlassian.com/agile/product-management/requirements"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "agile-delivery",
+      "title": "Agile and Scrum: how teams ship",
+      "kind": "skill",
+      "summary": "Most software teams work in short cycles. Read the official Scrum Guide and learn backlogs, sprints and epics so you can plan work with engineers instead of handing over a long spec.",
+      "prerequisites": ["requirements"],
+      "estimateHours": [12, 20],
+      "resources": [
+        {
+          "title": "The Scrum Guide – ScrumGuides.org",
+          "url": "https://scrumguides.org/"
+        },
+        {
+          "title": "What is Scrum? – Atlassian",
+          "url": "https://www.atlassian.com/agile/scrum"
+        },
+        {
+          "title": "Product backlog: tips for creation and prioritization – Atlassian",
+          "url": "https://www.atlassian.com/agile/scrum/backlogs"
+        }
+      ],
+      "proof": "Turn your PRD into a prioritised backlog and plan a 2-week sprint with a clear sprint goal.",
+      "sources": [
+        {
+          "title": "The Scrum Guide – ScrumGuides.org",
+          "url": "https://scrumguides.org/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "prioritization",
+      "title": "Prioritisation and roadmaps",
+      "kind": "skill",
+      "summary": "PMs always have more ideas than time. Learn frameworks such as RICE, MoSCoW and value vs. effort, and how to explain trade-offs and keep a roadmap that changes as you learn.",
+      "prerequisites": ["requirements"],
+      "estimateHours": [12, 20],
+      "resources": [
+        {
+          "title": "Prioritization frameworks – Atlassian",
+          "url": "https://www.atlassian.com/agile/product-management/prioritization-framework"
+        },
+        {
+          "title": "Prioritizing ideas – Jira Product Discovery handbook",
+          "url": "https://www.atlassian.com/software/jira/product-discovery/resources/handbook/prioritization"
+        }
+      ],
+      "proof": "Score 10 feature ideas with RICE, pick the top 3 and write one paragraph defending each choice.",
+      "sources": [
+        {
+          "title": "Prioritization frameworks – Atlassian",
+          "url": "https://www.atlassian.com/agile/product-management/prioritization-framework"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "data-metrics",
+      "title": "Metrics, OKRs and basic SQL",
+      "kind": "skill",
+      "summary": "PMs check whether a change worked. Learn to set outcome-based goals (OKRs), pick metrics, and pull data yourself with SQL. Basic web analytics helps you read usage data.",
+      "prerequisites": ["tech-foundations"],
+      "estimateHours": [35, 60],
+      "resources": [
+        {
+          "title": "Intro to SQL: Querying and managing data – Khan Academy",
+          "url": "https://en.khanacademy.org/computing/sql"
+        },
+        {
+          "title": "OKRs: The Ultimate Guide – Atlassian",
+          "url": "https://www.atlassian.com/agile/agile-at-scale/okr"
+        },
+        {
+          "title": "[GA4] Analytics Academy – Google Analytics Help",
+          "url": "https://support.google.com/analytics/answer/15440208"
+        }
+      ],
+      "proof": "Define one objective with 3 key results for a feature and write 3 SQL queries that would measure them.",
+      "sources": [
+        {
+          "title": "Outcomes vs Outputs – Jira Product Discovery handbook",
+          "url": "https://www.atlassian.com/software/jira/product-discovery/resources/handbook/outcomes"
+        },
+        {
+          "title": "Intro to SQL: Querying and managing data – Khan Academy",
+          "url": "https://en.khanacademy.org/computing/sql"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ux-for-pms",
+      "title": "UX basics for PMs",
+      "kind": "skill",
+      "summary": "You will work closely with designers. Learn the 10 usability heuristics and how to run a quick usability test, so you can give useful feedback and check designs with real users.",
+      "prerequisites": ["customer-discovery"],
+      "estimateHours": [10, 20],
+      "resources": [
+        {
+          "title": "10 Usability Heuristics for User Interface Design – NN/G",
+          "url": "https://www.nngroup.com/articles/ten-usability-heuristics/"
+        },
+        {
+          "title": "Usability (User) Testing 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/usability-testing-101/"
+        }
+      ],
+      "proof": "Run a usability test of an existing app with 3–5 people and list the problems you found, ranked.",
+      "sources": [
+        {
+          "title": "Usability (User) Testing 101 – NN/G",
+          "url": "https://www.nngroup.com/articles/usability-testing-101/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "product-project",
+      "title": "Ship a small product with a team",
+      "kind": "project",
+      "summary": "Team up with 1–2 developer friends and take one real problem from interviews to a working launch. Owning a shipped product with real users and numbers is stronger evidence than any certificate.",
+      "prerequisites": ["agile-delivery", "prioritization", "data-metrics", "ux-for-pms"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "Free Product Requirements Document template – Atlassian",
+          "url": "https://www.atlassian.com/software/confluence/templates/product-requirements"
+        },
+        {
+          "title": "CS50's Web Programming with Python and JavaScript – Harvard",
+          "url": "https://cs50.harvard.edu/web/"
+        }
+      ],
+      "proof": "A public write-up: problem, research, PRD, what you cut and why, launch, usage numbers and what you learned.",
+      "sources": [
+        {
+          "title": "Product Management – Atlassian Agile Coach",
+          "url": "https://www.atlassian.com/agile/product-management"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "pm-job-search",
+      "title": "Interview preparation and job search",
+      "kind": "milestone",
+      "summary": "Look for Associate PM (APM) programmes and analyst roles. Practise product-sense questions (improve or design a product), metrics questions and behavioural answers using STAR. Many people move into PM after starting as engineers or analysts.",
+      "prerequisites": ["product-project"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "A day with Atlassian's Associate Product Managers",
+          "url": "https://www.atlassian.com/company/careers/resources/culture/a-day-with-atlassians-apms"
+        },
+        {
+          "title": "How to think like a Product Manager – Inside Atlassian",
+          "url": "https://www.atlassian.com/blog/developer/how-to-think-like-a-product-manager"
+        }
+      ],
+      "proof": "Do 5 mock interviews (2 product-sense, 2 metrics, 1 behavioural) with a peer and note what to improve.",
+      "sources": [
+        {
+          "title": "A day with Atlassian's Associate Product Managers",
+          "url": "https://www.atlassian.com/company/careers/resources/culture/a-day-with-atlassians-apms"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

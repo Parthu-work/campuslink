@@ -1,0 +1,307 @@
+{
+  "key": "eee",
+  "lastReviewedAt": "2026-10-16",
+  "title": "Electrical and Electronics Engineering Careers (power, control, core)",
+  "category": "core-engineering",
+  "branches": ["EEE"],
+  "summary": "Core EEE careers cover power generation and transmission, electrical machines and drives, power electronics (EVs, solar, UPS) and control systems. This path suits students who like circuits and machines, and it also shows how GATE, PSUs, higher studies and a switch to IT fit in.",
+  "outcomes": [
+    "Electrical Design / Site Engineer (trainee)",
+    "Power Electronics / Drives Engineer (trainee)",
+    "Control / Simulation Engineer (trainee)",
+    "PSU or Utility Engineer (via GATE or own exams)",
+    "M.Tech / research student"
+  ],
+  "sources": [
+    {
+      "title": "GATE 2027 EE syllabus – IIT Madras",
+      "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EE_GATE2027_Syllabus.pdf"
+    },
+    {
+      "title": "GATE 2027 test papers and syllabus – IIT Madras",
+      "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+    },
+    {
+      "title": "Power Systems Simulation Onramp – MathWorks",
+      "url": "https://matlabacademy.mathworks.com/details/power-systems-simulation-onramp/orps"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "eee-foundations",
+      "title": "Circuits, fields and electronics",
+      "kind": "skill",
+      "summary": "Electric circuits, electromagnetic fields, signals and systems, analog and digital electronics, and measurements are the base of every EEE path and a large part of the GATE EE syllabus. Get these strong before you specialise.",
+      "prerequisites": [],
+      "estimateHours": [80, 140],
+      "resources": [
+        {
+          "title": "ngspice tutorials (free SPICE simulator)",
+          "url": "https://ngspice.sourceforge.io/tutorials.html"
+        },
+        {
+          "title": "Digital Circuits – NPTEL",
+          "url": "https://onlinecourses.nptel.ac.in/noc24_ee147/preview"
+        }
+      ],
+      "proof": "Simulate an RLC circuit's step response in ngspice and match it with your hand-worked solution.",
+      "sources": [
+        {
+          "title": "GATE 2027 EE syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EE_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "machines-power-systems",
+      "title": "Electrical machines and power systems",
+      "kind": "skill",
+      "summary": "Learn transformers, induction and synchronous machines, then power system basics: per-unit values, load flow, faults and protection. Power plants, utilities, substations and design consultancies ask about these first.",
+      "prerequisites": ["eee-foundations"],
+      "estimateHours": [100, 160],
+      "resources": [
+        {
+          "title": "Power Systems Simulation Onramp – MathWorks (free)",
+          "url": "https://matlabacademy.mathworks.com/details/power-systems-simulation-onramp/orps"
+        },
+        {
+          "title": "GATE 2027 EE syllabus – use as a topic checklist",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EE_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "proof": "Model a small three-bus system, run a fault case and explain which protection would act and why.",
+      "sources": [
+        {
+          "title": "GATE 2027 EE syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EE_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "control-systems",
+      "title": "Control systems",
+      "kind": "skill",
+      "summary": "Transfer functions, stability, root locus, Bode plots and PID tuning. Control is used in drives, automation, robotics and power converters. Learn it with Simulink so you can see a system respond, not just solve on paper.",
+      "prerequisites": ["eee-foundations"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "Simulink online courses – MathWorks",
+          "url": "https://www.mathworks.com/help/simulink/slref/simulinkonlinecourses.html"
+        },
+        {
+          "title": "MATLAB Onramp – MathWorks (free)",
+          "url": "https://matlabacademy.mathworks.com/details/matlab-onramp/gettingstarted"
+        }
+      ],
+      "proof": "Tune a PID controller for a DC motor model in Simulink and show the step response before and after tuning.",
+      "sources": [
+        {
+          "title": "GATE 2027 EE syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EE_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "power-electronics-drives",
+      "title": "Power electronics and drives",
+      "kind": "skill",
+      "summary": "Rectifiers, DC-DC converters, inverters and motor drives. These skills are used in electric vehicles, solar and battery systems, UPS and industrial drives. Simulate converters before you build them.",
+      "prerequisites": ["machines-power-systems", "control-systems"],
+      "estimateHours": [70, 120],
+      "resources": [
+        {
+          "title": "ngspice documentation",
+          "url": "https://ngspice.sourceforge.io/docs.html"
+        },
+        {
+          "title": "Simulink online courses – MathWorks",
+          "url": "https://www.mathworks.com/help/simulink/slref/simulinkonlinecourses.html"
+        }
+      ],
+      "proof": "Simulate a buck or boost converter, then plot output ripple against duty cycle and switching frequency.",
+      "sources": [
+        {
+          "title": "GATE 2027 EE syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EE_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "employer-tools",
+      "title": "Tools employers ask for",
+      "kind": "skill",
+      "summary": "MATLAB/Simulink and a SPICE simulator are widely used. Many core firms also ask for reading single-line diagrams, electrical CAD, power system study software or PLC/SCADA basics. These are often paid tools learned in college labs or on the job.",
+      "prerequisites": ["machines-power-systems", "control-systems"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "MATLAB Onramp – MathWorks (free)",
+          "url": "https://matlabacademy.mathworks.com/details/matlab-onramp/gettingstarted"
+        },
+        {
+          "title": "Power Systems Simulation Onramp – MathWorks (free)",
+          "url": "https://matlabacademy.mathworks.com/details/power-systems-simulation-onramp/orps"
+        },
+        {
+          "title": "ngspice (free circuit simulator)",
+          "url": "https://ngspice.sourceforge.io/"
+        }
+      ],
+      "proof": "Finish the MATLAB and Power Systems Simulation Onramps and keep one model you can open and explain in an interview.",
+      "sources": [
+        {
+          "title": "MATLAB & Simulink self-paced courses – MathWorks",
+          "url": "https://matlabacademy.mathworks.com/"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "core-project",
+      "title": "One end-to-end core project",
+      "kind": "project",
+      "summary": "Build one project you can explain fully. For example, simulate solar PV with a boost converter and MPPT, run a fault study on a small grid model, or build a motor speed controller on real hardware. Record your results and what went wrong.",
+      "prerequisites": ["power-electronics-drives", "employer-tools"],
+      "estimateHours": [60, 120],
+      "resources": [
+        {
+          "title": "Power Systems Simulation Onramp – MathWorks",
+          "url": "https://matlabacademy.mathworks.com/details/power-systems-simulation-onramp/orps"
+        },
+        {
+          "title": "Simulink online courses – MathWorks",
+          "url": "https://www.mathworks.com/help/simulink/slref/simulinkonlinecourses.html"
+        },
+        {
+          "title": "ngspice tutorials",
+          "url": "https://ngspice.sourceforge.io/tutorials.html"
+        }
+      ],
+      "proof": "A short report with your model files, plots and design choices, kept in a public repo or shareable folder.",
+      "sources": [
+        {
+          "title": "Power Systems Simulation Onramp – MathWorks",
+          "url": "https://matlabacademy.mathworks.com/details/power-systems-simulation-onramp/orps"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "gate-psu-govt",
+      "title": "GATE EE, PSUs and government exams",
+      "kind": "exam",
+      "summary": "GATE EE is used for M.Tech admissions and by several power-sector PSUs for hiring; each advert says whether it uses GATE. UPSC ESE has an Electrical stream, and state power utilities run their own exams. Use only official pages for dates.",
+      "prerequisites": ["eee-foundations"],
+      "estimateHours": [300, 600],
+      "resources": [
+        {
+          "title": "GATE 2027 EE syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/EE_GATE2027_Syllabus.pdf"
+        },
+        {
+          "title": "GATE 2027 test papers and syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+        },
+        {
+          "title": "Engineering Services (Preliminary) Examination 2027 – UPSC",
+          "url": "https://www.upsc.gov.in/whats-new/Engineering%20Services%20(Preliminary)%20Examination,%202027/Exam%20Notification"
+        }
+      ],
+      "proof": "Solve two years of past GATE EE papers under timed conditions and keep a log of weak topics.",
+      "sources": [
+        {
+          "title": "GATE 2027 – IIT Madras (organising institute)",
+          "url": "https://gate2027.iitm.ac.in/"
+        },
+        {
+          "title": "IIT Madras announces GATE 2027 dates and syllabus revision",
+          "url": "https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper"
+        },
+        {
+          "title": "UPSC Examination Notifications",
+          "url": "https://upsc.gov.in/exams-related-info/exam-notification/archives"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "higher-studies",
+      "title": "Higher studies (M.Tech, MS, research)",
+      "kind": "milestone",
+      "summary": "An M.Tech in power systems, power electronics or control (usually through GATE) leads to design, R&D and teaching roles. Decide early, because GATE prep overlaps with final-year placements. Check eligibility on the official GATE site.",
+      "prerequisites": ["gate-psu-govt"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "GATE 2027 eligibility criteria – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/eligibility_criteria"
+        },
+        {
+          "title": "GATE 2027 FAQs – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/faqs"
+        }
+      ],
+      "proof": "A shortlist of 5–8 programmes with their admission route and a written plan for your final year.",
+      "sources": [
+        {
+          "title": "GATE 2027 – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "job-search",
+      "title": "Interview preparation and applying",
+      "kind": "milestone",
+      "summary": "Core interviews test machines, power systems, electrical safety basics, your project in depth and aptitude. Revise from past GATE papers, practise explaining your project, and apply only through official career pages.",
+      "prerequisites": ["core-project"],
+      "estimateHours": [40, 80],
+      "resources": [
+        {
+          "title": "GATE 2027 test papers and syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/exam_papers_and_syllabus"
+        },
+        {
+          "title": "BEL Job Notifications",
+          "url": "https://bel-india.in/job-notifications/"
+        }
+      ],
+      "proof": "A one-page resume with your project, plus a 5-minute walkthrough of it you can give without notes.",
+      "sources": [
+        {
+          "title": "BEL Job Notifications",
+          "url": "https://bel-india.in/job-notifications/"
+        }
+      ],
+      "needsReview": true
+    },
+    {
+      "id": "core-to-it",
+      "title": "Honest check: switching from core to IT",
+      "kind": "milestone",
+      "summary": "Many EEE graduates move to software jobs. Your maths and problem-solving help, but you still need one language, data structures, DBMS, OS, networks and real projects. It is a full switch, not a shortcut. Embedded and EV software sit in between.",
+      "prerequisites": ["eee-foundations"],
+      "estimateHours": [300, 600],
+      "resources": [
+        {
+          "title": "GATE 2027 CS syllabus – IIT Madras (checklist of CS fundamentals)",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CS_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "proof": "Two working software projects in a public repo and 100+ solved data-structure problems before you apply.",
+      "sources": [
+        {
+          "title": "GATE 2027 CS syllabus – IIT Madras",
+          "url": "https://gate2027.iitm.ac.in/static/doc/GATE2027_Syllabus/CS_GATE2027_Syllabus.pdf"
+        }
+      ],
+      "needsReview": true
+    }
+  ]
+}

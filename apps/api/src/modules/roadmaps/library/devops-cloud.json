@@ -1,0 +1,298 @@
+{
+  "key": "devops-cloud",
+  "lastReviewedAt": "2026-10-16",
+  "title": "DevOps and Cloud Engineer",
+  "category": "software",
+  "branches": ["CSE", "IT"],
+  "summary": "DevOps and cloud engineers build the pipelines and infrastructure that take code from a laptop to running servers, then keep it deployed, scaled and monitored. It suits students who like Linux, automation and fixing why something broke.",
+  "outcomes": [
+    "Junior DevOps Engineer",
+    "Cloud Engineer",
+    "Build and Release Engineer",
+    "Cloud Support Associate"
+  ],
+  "sources": [
+    {
+      "title": "DevOps Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/devops"
+    },
+    {
+      "title": "DevOps Beginner Roadmap – roadmap.sh",
+      "url": "https://roadmap.sh/devops-beginner"
+    },
+    {
+      "title": "How to become a DevOps Engineer – roadmap.sh",
+      "url": "https://roadmap.sh/devops/how-to-become-devops-engineer"
+    },
+    {
+      "title": "DevOps Engineer Skills – roadmap.sh",
+      "url": "https://roadmap.sh/devops/skills"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "linux-shell",
+      "title": "Linux and the command line",
+      "kind": "skill",
+      "summary": "Servers almost always run Linux. Learn files and permissions, processes, package managers, SSH, logs and the shell, so you can work on a machine with no graphical screen.",
+      "prerequisites": [],
+      "estimateHours": [40, 70],
+      "resources": [
+        {
+          "title": "Introduction to Linux (LFS101) – The Linux Foundation",
+          "url": "https://training.linuxfoundation.org/training/introduction-to-linux/"
+        },
+        {
+          "title": "The Missing Semester of Your CS Education – MIT",
+          "url": "https://missing.csail.mit.edu/"
+        },
+        {
+          "title": "Linux Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/linux"
+        }
+      ],
+      "proof": "Set up a Linux VM, log in over SSH with a key, create users, and write down how you found and read a service's logs.",
+      "sources": [
+        {
+          "title": "How to become a DevOps Engineer – roadmap.sh",
+          "url": "https://roadmap.sh/devops/how-to-become-devops-engineer"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "scripting-git",
+      "title": "Python scripting and Git",
+      "kind": "skill",
+      "summary": "Automation is the core of the job. Learn one language (Python is a common first pick) well enough to write small tools, and use Git for every change: branches, commits, merges and pull requests.",
+      "prerequisites": ["linux-shell"],
+      "estimateHours": [50, 90],
+      "resources": [
+        {
+          "title": "The Python Tutorial – python.org",
+          "url": "https://docs.python.org/3/tutorial/index.html"
+        },
+        {
+          "title": "Pro Git book – git-scm.com",
+          "url": "https://www.git-scm.com/book/en/v2"
+        }
+      ],
+      "proof": "A public Git repo with a Python script that automates a real chore, such as cleaning old log files or checking if a website is up.",
+      "sources": [
+        {
+          "title": "How to become a DevOps Engineer – roadmap.sh",
+          "url": "https://roadmap.sh/devops/how-to-become-devops-engineer"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "networking",
+      "title": "Networking basics",
+      "kind": "skill",
+      "summary": "Most outages you debug will be network problems. Understand IP addressing, DNS, TCP vs UDP, HTTP, ports, routing and how load balancers and firewalls fit in.",
+      "prerequisites": ["linux-shell"],
+      "estimateHours": [30, 60],
+      "resources": [
+        {
+          "title": "Computer Networks and Internet Protocol – NPTEL (IIT Kharagpur)",
+          "url": "https://nptel.ac.in/courses/106105183"
+        }
+      ],
+      "proof": "Explain, step by step, what happens when you open a URL, and show the DNS lookup and open ports on your own VM using command-line tools.",
+      "sources": [
+        {
+          "title": "How to become a DevOps Engineer – roadmap.sh",
+          "url": "https://roadmap.sh/devops/how-to-become-devops-engineer"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "containers",
+      "title": "Containers with Docker",
+      "kind": "skill",
+      "summary": "Containers package an app with everything it needs so it runs the same everywhere. Learn to write a Dockerfile, build and share images, and run multi-container apps with Docker Compose.",
+      "prerequisites": ["scripting-git"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "Docker workshop overview – Docker Docs",
+          "url": "https://docs.docker.com/get-started/workshop/"
+        },
+        {
+          "title": "Containerize an application – Docker Docs",
+          "url": "https://docs.docker.com/guides/workshop/02_our_app"
+        }
+      ],
+      "proof": "Containerise a small web app and its database with Docker Compose, with a README showing one command to start it.",
+      "sources": [
+        {
+          "title": "DevOps Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/devops"
+        },
+        {
+          "title": "Docker guides – Docker Docs",
+          "url": "https://docs.docker.com/guides/"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "ci-cd",
+      "title": "CI/CD pipelines",
+      "kind": "skill",
+      "summary": "CI/CD runs builds, tests and deployments automatically on every push. Start with GitHub Actions: triggers, jobs, secrets and building a Docker image in a pipeline.",
+      "prerequisites": ["containers"],
+      "estimateHours": [20, 40],
+      "resources": [
+        {
+          "title": "Quickstart for GitHub Actions – GitHub Docs",
+          "url": "https://docs.github.com/en/actions/get-started/quickstart"
+        }
+      ],
+      "proof": "A repo where every push runs tests and builds a Docker image, and a failing test blocks the merge.",
+      "sources": [
+        {
+          "title": "How to become a DevOps Engineer – roadmap.sh",
+          "url": "https://roadmap.sh/devops/how-to-become-devops-engineer"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "cloud-fundamentals",
+      "title": "One cloud provider",
+      "kind": "skill",
+      "summary": "Pick one cloud and learn its basics: compute, storage, networking (VPCs), identity and access, and billing. roadmap.sh suggests AWS for beginners; Azure and Google Cloud teach the same ideas.",
+      "prerequisites": ["networking"],
+      "estimateHours": [50, 90],
+      "resources": [
+        {
+          "title": "AWS Cloud Practitioner training – AWS",
+          "url": "https://aws.amazon.com/training/learn-about/cloud-practitioner/"
+        },
+        {
+          "title": "Introduction to Cloud Infrastructure: Apply Azure Skills in Guided Projects – Microsoft Learn",
+          "url": "https://learn.microsoft.com/en-us/training/paths/introduction-cloud-infrastructure-apply-azure-skills-guided-projects/"
+        },
+        {
+          "title": "Cloud Computing – NPTEL (IIT Kharagpur)",
+          "url": "https://nptel.ac.in/courses/106105167"
+        }
+      ],
+      "proof": "Host a static site and one small VM on a cloud free tier, set a billing alert, and delete everything afterwards.",
+      "sources": [
+        {
+          "title": "How to become a DevOps Engineer – roadmap.sh",
+          "url": "https://roadmap.sh/devops/how-to-become-devops-engineer"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "iac-terraform",
+      "title": "Infrastructure as code with Terraform",
+      "kind": "skill",
+      "summary": "Instead of clicking in a console, describe servers and networks in code so they can be reviewed, repeated and destroyed safely. Learn Terraform's plan/apply cycle, variables, outputs and modules.",
+      "prerequisites": ["cloud-fundamentals", "scripting-git"],
+      "estimateHours": [25, 45],
+      "resources": [
+        {
+          "title": "Get Started – AWS (Terraform tutorials) – HashiCorp Developer",
+          "url": "https://developer.hashicorp.com/terraform/tutorials/aws-get-started"
+        }
+      ],
+      "proof": "A Terraform repo that creates and destroys a VM with its network and security group in one command.",
+      "sources": [
+        {
+          "title": "How to become a DevOps Engineer – roadmap.sh",
+          "url": "https://roadmap.sh/devops/how-to-become-devops-engineer"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "kubernetes",
+      "title": "Kubernetes basics",
+      "kind": "skill",
+      "summary": "Kubernetes runs and scales containers across many machines and is asked about in most DevOps interviews. Learn pods, deployments, services, scaling and rolling updates on a local minikube cluster.",
+      "prerequisites": ["containers"],
+      "estimateHours": [35, 60],
+      "resources": [
+        {
+          "title": "Learn Kubernetes Basics – kubernetes.io",
+          "url": "https://www.kubernetes.io/docs/tutorials/kubernetes-basics/"
+        }
+      ],
+      "proof": "Deploy your containerised app to minikube, scale it to three replicas, and roll out a new version with no downtime.",
+      "sources": [
+        {
+          "title": "Top DevOps Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/devops"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "pipeline-project",
+      "title": "Project: end-to-end deployment with monitoring",
+      "kind": "project",
+      "summary": "Tie it all together in one portfolio project: code in Git, CI that tests and builds an image, infrastructure from Terraform or Kubernetes manifests, and Prometheus plus Grafana dashboards watching it.",
+      "prerequisites": ["ci-cd", "iac-terraform", "kubernetes"],
+      "estimateHours": [60, 100],
+      "resources": [
+        {
+          "title": "First steps with Prometheus – prometheus.io",
+          "url": "https://prometheus.io/docs/introduction/first_steps/"
+        },
+        {
+          "title": "Get started with Grafana and Prometheus – Grafana Docs",
+          "url": "https://grafana.com/docs/grafana/latest/fundamentals/getting-started/first-dashboards/get-started-grafana-prometheus/"
+        }
+      ],
+      "proof": "A public repo with an architecture diagram, a pipeline badge, a dashboard screenshot, and a write-up of one problem you hit and fixed.",
+      "sources": [
+        {
+          "title": "Top DevOps Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/devops"
+        },
+        {
+          "title": "DevOps Roadmap – roadmap.sh",
+          "url": "https://roadmap.sh/devops"
+        }
+      ],
+      "needsReview": false
+    },
+    {
+      "id": "interview-prep",
+      "title": "Interview preparation and job search",
+      "kind": "milestone",
+      "summary": "Practise explaining containers vs VMs, CI/CD design, deployment strategies (blue-green, canary) and how you debug incidents, using your own project as examples. An entry cloud certificate is optional; check the official page.",
+      "prerequisites": ["pipeline-project"],
+      "estimateHours": [30, 50],
+      "resources": [
+        {
+          "title": "Top DevOps Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/devops"
+        },
+        {
+          "title": "System Design Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/system-design"
+        },
+        {
+          "title": "AWS Certified Cloud Practitioner – AWS",
+          "url": "https://aws.amazon.com/certification/certified-cloud-practitioner/"
+        }
+      ],
+      "proof": "Answer 20 common DevOps questions out loud in a mock interview, and walk an interviewer through your project's pipeline in five minutes.",
+      "sources": [
+        {
+          "title": "Top DevOps Interview Questions – roadmap.sh",
+          "url": "https://roadmap.sh/questions/devops"
+        }
+      ],
+      "needsReview": false
+    }
+  ]
+}

@@ -34,6 +34,7 @@ const prefsSchema = new Schema(
       community: { type: channel, _id: false },
       moderation: { type: channel, _id: false },
       jobs: { type: channel, _id: false },
+      roadmaps: { type: channel, _id: false },
     },
     quietHours: {
       enabled: { type: Boolean, default: false },

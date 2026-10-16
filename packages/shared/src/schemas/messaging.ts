@@ -81,6 +81,9 @@ export const NOTIFICATION_TYPES = [
   'referral_declined',
   'referral_expired',
   'job_alert',
+  'roadmap_nudge',
+  'roadmap_approved',
+  'roadmap_changes_requested',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -91,6 +94,7 @@ export const NOTIFICATION_CATEGORIES = [
   'community',
   'moderation',
   'jobs',
+  'roadmaps',
 ] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
@@ -118,6 +122,9 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   referral_declined: 'jobs',
   referral_expired: 'jobs',
   job_alert: 'jobs',
+  roadmap_nudge: 'roadmaps',
+  roadmap_approved: 'roadmaps',
+  roadmap_changes_requested: 'roadmaps',
 };
 export const CHANNELS = ['inApp', 'email', 'push'] as const;
 export type Channel = (typeof CHANNELS)[number];
@@ -133,6 +140,8 @@ export const DEFAULT_CHANNELS: Record<NotificationCategory, ChannelPrefs> = {
   moderation: { inApp: true, email: true, push: false },
   // Referral replies and daily job-alert matches.
   jobs: { inApp: true, email: true, push: true },
+  // Weekly goal nudges and review decisions: gentle, never by email unless you turn it on.
+  roadmaps: { inApp: true, email: false, push: true },
 };
 
 const channelPrefs = z.strictObject({ inApp: z.boolean(), email: z.boolean(), push: z.boolean() });
@@ -145,6 +154,7 @@ export const notificationPrefsBody = z.strictObject({
     community: channelPrefs,
     moderation: channelPrefs,
     jobs: channelPrefs,
+    roadmaps: channelPrefs,
   }),
   quietHours: z.strictObject({
     enabled: z.boolean(),
@@ -208,6 +218,8 @@ export const REPORT_TARGETS = [
   'story',
   'job',
   'referral',
+  'roadmap',
+  'roadmap_comment',
 ] as const;
 export const REPORT_REASONS = ['spam', 'harassment', 'inappropriate', 'impersonation', 'other'] as const;
 export const reportBody = z.strictObject({

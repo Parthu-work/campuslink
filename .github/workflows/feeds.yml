@@ -1,6 +1,7 @@
 name: feeds
 
-# Checks the curated starter feeds (reachability, robots.txt, RSS/Atom, freshness). Separate from CI:
+# Checks the curated starter feeds (reachability, robots.txt, RSS/Atom, freshness), the starter job
+# boards and every link cited by the roadmap library. Separate from CI:
 # a third-party outage must not block merges, but it must be visible.
 on:
   workflow_dispatch:
@@ -13,6 +14,8 @@ on:
       - apps/api/src/scripts/feeds-verify.ts
       - apps/api/src/scripts/jobs-verify.ts
       - apps/api/src/modules/job-sources/**
+      - apps/api/src/modules/roadmaps/library/**
+      - apps/api/src/scripts/roadmaps-verify.ts
       - .github/workflows/feeds.yml
 
 permissions:
@@ -45,3 +48,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @campuslink/shared build
       - run: pnpm --filter @campuslink/api jobs:verify
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @campuslink/shared build
+      - run: pnpm --filter @campuslink/api roadmaps:verify

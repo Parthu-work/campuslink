@@ -76,6 +76,8 @@ import { JOB_FETCH_JOB, JobSourcesService } from './modules/job-sources/job-sour
 import { jobSourceRoutes } from './modules/job-sources/job-sources.routes.js';
 import { REFERRAL_EXPIRE_JOB, ReferralsService } from './modules/referrals/referrals.service.js';
 import { referralRoutes } from './modules/referrals/referrals.routes.js';
+import { NUDGE_JOB, RoadmapsService, installLibraryRoadmaps } from './modules/roadmaps/roadmaps.service.js';
+import { roadmapRoutes } from './modules/roadmaps/roadmaps.routes.js';
 
 export interface AppDeps {
   env: Env;
@@ -351,10 +353,28 @@ export function createApp({
   queue.register(ALERT_JOB, (data) => jobsService.runAlert(data));
   queue.register(REFERRAL_EXPIRE_JOB, (data) => referralsService.onExpire(data));
 
+  // ── Roadmaps (Phase 6) ─────────────────────────────
+  const roadmapsService = new RoadmapsService({
+    profiles: profilesService,
+    notifications: notificationsService,
+    jobs: queue,
+  });
+  moderationService.register('roadmap', roadmapsService.handler);
+  moderationService.register('roadmap_comment', roadmapsService.commentHandler);
+  safetyService.registerTarget('roadmap', (viewer, id) =>
+    moderationService.reportTarget('roadmap', viewer, id),
+  );
+  safetyService.registerTarget('roadmap_comment', (viewer, id) =>
+    roadmapsService.commentReportTarget(viewer, id),
+  );
+  queue.register(NUDGE_JOB, (data) => roadmapsService.runNudge(data));
+  platformService.onTenantCreated = installLibraryRoadmaps;
+
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
     posts: auth.permissions.has('feed:read') ? await postsService.search(auth, q) : [],
     questions: auth.permissions.has('feed:read') ? await qaService.search(auth, q) : [],
     jobs: auth.permissions.has('jobs:read') ? await jobsService.search(auth, q) : [],
+    roadmaps: auth.permissions.has('roadmaps:read') ? await roadmapsService.search(auth, q) : [],
   });
   const cookie = {
     secure: env.COOKIE_SECURE ?? env.NODE_ENV === 'production',
@@ -437,6 +457,7 @@ export function createApp({
     API_PREFIX,
     defineModule('referrals', referralRoutes({ referrals: referralsService, files: filesService }), pipeline),
   );
+  app.use(API_PREFIX, defineModule('roadmaps', roadmapRoutes(roadmapsService), pipeline));
   app.use(
     API_PREFIX,
     defineModule(
@@ -486,6 +507,7 @@ export function createApp({
     jobs: jobsService,
     jobSources: jobSourcesService,
     referrals: referralsService,
+    roadmaps: roadmapsService,
   };
   return app;
 }

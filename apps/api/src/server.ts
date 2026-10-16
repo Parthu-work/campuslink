@@ -14,6 +14,7 @@ import type { RealtimeGateway } from './http/realtime.js';
 import { ContentSourcesService } from './modules/content-sources/sources.service.js';
 import { JobSourcesService } from './modules/job-sources/job-sources.service.js';
 import { JobsService } from './modules/jobs/jobs.service.js';
+import { RoadmapsService } from './modules/roadmaps/roadmaps.service.js';
 
 const env = loadEnv();
 const logger = createLogger(env.LOG_LEVEL);
@@ -95,6 +96,12 @@ async function main() {
     setTimeout(tick, 15_000).unref();
     setInterval(tick, 60_000).unref();
   }
+  // Weekly roadmap goal checks: every five minutes, queue the due ones (job ids dedupe).
+  const nudgeTick = () =>
+    RoadmapsService.enqueueDueNudges(jobs).catch((err: unknown) =>
+      logger.error({ err }, 'nudge tick failed'),
+    );
+  setInterval(nudgeTick, 5 * 60_000).unref();
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, 'shutting down');
