@@ -32,7 +32,7 @@ Health states: **new** (never fetched), **ok**, **failing** (last attempt failed
 
 ### Verification results
 
-GitHub Actions runs of 2026-10-16 (`feeds` workflow, runs 38842261299 and 38842649580 after the parser fix):
+GitHub Actions runs of 2026-10-16 (`feeds` workflow, runs 38842261299, 38842649580 after the parser fix, and the run for commit 57ddd75):
 
 | Feed                     | Result                                                                                                                     | Status                                            |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
@@ -44,7 +44,7 @@ GitHub Actions runs of 2026-10-16 (`feeds` workflow, runs 38842261299 and 388426
 | sciencedaily-computers   | pass: RSS, 60 items, newest 2 days old                                                                                     | verified 2026-10-16                               |
 | the-hindu-education      | pass: RSS, 60 items, newest 1 day old                                                                                      | verified 2026-10-16                               |
 | github-blog              | pass (second run): RSS, 10 items, newest 0 days old; the first run tripped our DTD guard on a doctype quoted in an article | verified 2026-10-16 (parser fixed)                |
-| nasa-news                | failed twice: 429, rate-limited on the shared runner IP                                                                    | stays unverified; retried weekly                  |
+| nasa-news                | pass (third run): RSS, 10 items, newest 0 days old; the first two runs were rate-limited (429)                             | verified 2026-10-16                               |
 | mit-news-engineering     | failed: newest item 203 days old                                                                                           | removed from the list (stale)                     |
 | pib-releases             | failed: 403 for our bot                                                                                                    | removed: the publisher refuses automated fetching |
 | indian-express-education | failed: 403 for our bot                                                                                                    | removed: the publisher refuses automated fetching |

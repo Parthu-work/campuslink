@@ -61,7 +61,7 @@ Done when: members see a college feed with For You and Following tabs, alumni an
 - Playwright: 40 end-to-end tests with axe on every new view (post → react → comment → report → remove → appeal → restore; ask → approve → answer → accept; stories; reels; sources).
 - Checked at 360 px and desktop widths, in light and dark themes and with reduced motion: no horizontal overflow on any new page.
 
-**Feed verification:** done in GitHub Actions. Eight of the nine remaining starter feeds are verified (2026-10-16). Three candidates were dropped (two refuse bots with 403, one is stale), and NASA stays unverified (rate-limited). See `docs/content-sources.md`. The first CI run exposed a real bug: a doctype quoted inside an article's CDATA tripped the DTD guard. The guard now ignores CDATA and comments, but checks the whole document rather than only the first 4 KB.
+**Feed verification:** done in GitHub Actions. All nine remaining starter feeds are verified (2026-10-16). Three candidates were dropped (two refuse bots with 403, one is stale), and NASA passed on its third run after two rate-limited (429) attempts. See `docs/content-sources.md`. The first CI run exposed a real bug: a doctype quoted inside an article's CDATA tripped the DTD guard. The guard now ignores CDATA and comments, but checks the whole document rather than only the first 4 KB.
 
 **Decisions:**
 
@@ -76,5 +76,4 @@ Done when: members see a college feed with For You and Following tabs, alumni an
 - No video transcoding or streaming (Phase 8).
 - Story "seen" rings are not tracked.
 - Spam filters are keyword-based.
-- NASA's feed needs a passing run.
 - Phase 5 (Jobs and referrals) is next.

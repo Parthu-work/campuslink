@@ -97,7 +97,7 @@ export const STARTER_SOURCES: StarterSource[] = [
     topics: ['tech-news'],
     branches: ['MECH', 'ECE', 'EEE'],
     intervalMin: 720,
-    verifiedAt: null,
+    verifiedAt: '2026-10-16',
   },
   {
     key: 'the-hindu-education',

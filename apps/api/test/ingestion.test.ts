@@ -261,9 +261,26 @@ describe('starter list', () => {
   it('only verified starter feeds can be added', async () => {
     const list = (await as(admin).get('/admin/sources/starter')).body.data;
     expect(list).toHaveLength(STARTER_SOURCES.length);
-    const unverified = STARTER_SOURCES.find((s) => !s.verifiedAt);
-    if (unverified)
-      expect((await as(admin).post(`/admin/sources/starter/${unverified.key}`).send({})).status).toBe(409);
+    // A candidate that has not passed verification is listed but cannot be added.
+    STARTER_SOURCES.push({
+      key: 'test-unverified',
+      name: 'Unverified candidate',
+      publisher: 'Demo',
+      url: FEED,
+      topics: [],
+      branches: [],
+      intervalMin: 360,
+      verifiedAt: null,
+    });
+    try {
+      const listed = (await as(admin).get('/admin/sources/starter')).body.data;
+      expect(listed.find((x: { key: string }) => x.key === 'test-unverified')).toMatchObject({
+        verifiedAt: null,
+      });
+      expect((await as(admin).post('/admin/sources/starter/test-unverified').send({})).status).toBe(409);
+    } finally {
+      STARTER_SOURCES.pop();
+    }
     expect((await as(admin).post('/admin/sources/starter/not-a-feed').send({})).status).toBe(404);
     const verified = STARTER_SOURCES.find((s) => s.verifiedAt);
     if (verified) {
