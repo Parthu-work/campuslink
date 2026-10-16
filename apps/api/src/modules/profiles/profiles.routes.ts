@@ -5,10 +5,14 @@ import { authOf } from '../../http/request-context.js';
 import { requestMeta } from '../../lib/request-meta.js';
 import { badRequest } from '../../lib/errors.js';
 import type { ProfilesService } from './profiles.service.js';
+import type { AuthState } from '../../types.js';
 
 const DIRECTORY = { kind: 'permission', permission: 'directory:read' } as const;
 
-export function profileRoutes(svc: ProfilesService): AnyRouteSpec[] {
+/** Other modules add their results to the command-palette search (posts, questions). */
+export type ExtraSearch = (auth: AuthState, q: string) => Promise<Record<string, unknown>>;
+
+export function profileRoutes(svc: ProfilesService, extraSearch?: ExtraSearch): AnyRouteSpec[] {
   return [
     {
       method: 'get',
@@ -66,11 +70,18 @@ export function profileRoutes(svc: ProfilesService): AnyRouteSpec[] {
       method: 'get',
       path: '/search',
       tag: 'Profiles',
-      summary: 'Command-palette search (people for now)',
+      summary: 'Command-palette search: people, posts and questions',
       access: DIRECTORY,
       limiter: 'search',
       query: searchQuery,
-      handler: async ({ req, query }) => ({ data: await svc.search(authOf(req), query.q) }),
+      handler: async ({ req, query }) => {
+        const auth = authOf(req);
+        const [people, extra] = await Promise.all([
+          svc.search(auth, query.q),
+          extraSearch?.(auth, query.q) ?? {},
+        ]);
+        return { data: { ...people, ...extra } };
+      },
     },
   ];
 }

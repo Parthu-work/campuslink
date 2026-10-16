@@ -294,7 +294,7 @@ export class ImportsService {
     const job = await ImportJobModel.findOneAndUpdate(
       { _id: jobId, status: 'queued' },
       { $set: { status: 'running', startedAt: new Date() } },
-      { new: true },
+      { returnDocument: 'after' },
     ).lean();
     if (!job) return; // already processed (BullMQ retry or duplicate enqueue): idempotent
     try {

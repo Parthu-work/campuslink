@@ -1,7 +1,14 @@
 import { Schema, type InferSchemaType } from 'mongoose';
 import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
 
-export const FILE_PURPOSES = ['avatar', 'id_card', 'import_source', 'message_attachment'] as const;
+export const FILE_PURPOSES = [
+  'avatar',
+  'id_card',
+  'import_source',
+  'message_attachment',
+  'post_media',
+  'story_media',
+] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 
 const fileSchema = new Schema(
@@ -15,6 +22,9 @@ const fileSchema = new Schema(
     scanStatus: { type: String, enum: ['skipped', 'clean', 'infected'], default: 'skipped' },
     /** Retention: a purge job deletes the blob and this record after this time. */
     deleteAfter: { type: Date, default: null },
+    /** Upload-then-attach media: set once a post or story claims the file (claims are single-use). */
+    attachedAt: { type: Date, default: null },
+    durationSec: { type: Number, default: null },
   },
   { ...baseSchemaOptions, timestamps: { createdAt: true, updatedAt: false } },
 );

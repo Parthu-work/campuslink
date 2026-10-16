@@ -60,6 +60,16 @@ import { sessionRoutes } from './modules/sessions/sessions.routes.js';
 import { MentorsService } from './modules/mentorship/mentors.service.js';
 import { EXPIRE_JOB, RequestsService } from './modules/mentorship/requests.service.js';
 import { mentorshipRoutes } from './modules/mentorship/mentorship.routes.js';
+import { ModerationService } from './modules/moderation/moderation.service.js';
+import { queueRoutes } from './modules/moderation/queue.routes.js';
+import { PostsService } from './modules/feed/posts.service.js';
+import { FeedService } from './modules/feed/feed.service.js';
+import { FollowsService, OneUsefulThingService, StoriesService } from './modules/feed/social.service.js';
+import { feedRoutes } from './modules/feed/feed.routes.js';
+import { QaService } from './modules/qa/qa.service.js';
+import { qaRoutes } from './modules/qa/qa.routes.js';
+import { ContentSourcesService, FETCH_JOB } from './modules/content-sources/sources.service.js';
+import { sourceRoutes } from './modules/content-sources/sources.routes.js';
 
 export interface AppDeps {
   env: Env;
@@ -233,6 +243,73 @@ export function createApp({
   queue.register(REMINDER_JOB, (data) => sessionsService.onReminder(data));
   queue.register(COMPLETE_JOB, (data) => sessionsService.onComplete(data));
   queue.register(EXPIRE_JOB, (data) => requestsService.onExpire(data));
+
+  // ── Feed and content (Phase 4) ─────────────────────────────
+  const moderationService = new ModerationService({
+    notifications: notificationsService,
+    profiles: profilesService,
+  });
+  let followsRef: FollowsService | null = null;
+  const sourcesService = new ContentSourcesService({
+    fetcher,
+    jobs: queue,
+    logger,
+    onRemoved: (id) => followsRef?.dropTarget('source', id) ?? Promise.resolve(),
+    followerCounts: (ids) => followsRef?.followerCounts('source', ids) ?? Promise.resolve(new Map()),
+  });
+  const followsService = new FollowsService({
+    profiles: profilesService,
+    safety: safetyService,
+    sources: () => sourcesService,
+  });
+  followsRef = followsService;
+  const postsService = new PostsService({
+    files: filesService,
+    profiles: profilesService,
+    notifications: notificationsService,
+    safety: safetyService,
+    moderation: moderationService,
+    fetcher,
+  });
+  const storiesService = new StoriesService({
+    files: filesService,
+    profiles: profilesService,
+    safety: safetyService,
+  });
+  const outService = new OneUsefulThingService({
+    posts: postsService,
+    sources: sourcesService,
+    follows: followsService,
+  });
+  const feedService = new FeedService({
+    posts: postsService,
+    follows: followsService,
+    sources: sourcesService,
+    profiles: profilesService,
+    safety: safetyService,
+  });
+  const qaService = new QaService({
+    profiles: profilesService,
+    notifications: notificationsService,
+    safety: safetyService,
+    moderation: moderationService,
+  });
+  moderationService.register('post', postsService.postHandler);
+  moderationService.register('comment', postsService.commentHandler);
+  moderationService.register('story', storiesService.handler);
+  moderationService.register('question', qaService.questionHandler);
+  moderationService.register('answer', qaService.answerHandler);
+  moderationService.register('item', sourcesService.itemHandler);
+  for (const type of ['post', 'comment', 'story', 'question', 'answer'] as const)
+    safetyService.registerTarget(type, (viewer, id) => moderationService.reportTarget(type, viewer, id));
+  filesService.registerAccess('post_media', (fileId, viewer) => postsService.mediaAccess(fileId, viewer));
+  filesService.registerAccess('story_media', (fileId, viewer) => storiesService.mediaAccess(fileId, viewer));
+  safetyService.onBlock((a, b) => followsService.onBlock(a, b));
+  queue.register(FETCH_JOB, (data) => sourcesService.runFetch(data));
+  const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
+    posts: auth.permissions.has('feed:read') ? await postsService.search(auth, q) : [],
+    questions: auth.permissions.has('feed:read') ? await qaService.search(auth, q) : [],
+  });
   const cookie = {
     secure: env.COOKIE_SECURE ?? env.NODE_ENV === 'production',
     refreshTtlSec: env.JWT_REFRESH_TTL_SECONDS,
@@ -278,7 +355,7 @@ export function createApp({
     API_PREFIX,
     defineModule('verification', verificationRoutes(verificationService, invitesService), pipeline),
   );
-  app.use(API_PREFIX, defineModule('profiles', profileRoutes(profilesService), pipeline));
+  app.use(API_PREFIX, defineModule('profiles', profileRoutes(profilesService, extraSearch), pipeline));
   app.use(
     API_PREFIX,
     defineModule('mentorship', mentorshipRoutes(mentorsService, requestsService, sessionsService), pipeline),
@@ -287,6 +364,37 @@ export function createApp({
   app.use(API_PREFIX, defineModule('messaging', messagingRoutes(messagingService), pipeline));
   app.use(API_PREFIX, defineModule('notifications', notificationRoutes(notificationsService), pipeline));
   app.use(API_PREFIX, defineModule('moderation', moderationRoutes(safetyService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule(
+      'feed',
+      feedRoutes({
+        posts: postsService,
+        feed: feedService,
+        follows: followsService,
+        stories: storiesService,
+        out: outService,
+        files: filesService,
+        sources: sourcesService,
+      }),
+      pipeline,
+    ),
+  );
+  app.use(API_PREFIX, defineModule('qa', qaRoutes(qaService), pipeline));
+  app.use(API_PREFIX, defineModule('content-sources', sourceRoutes(sourcesService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule(
+      'moderation-queue',
+      queueRoutes({
+        moderation: moderationService,
+        qa: qaService,
+        sources: sourcesService,
+        safety: safetyService,
+      }),
+      pipeline,
+    ),
+  );
 
   const openapi = buildOpenApi(registry);
   app.get(`${API_PREFIX}/openapi.json`, (_req, res) => res.json(openapi));
@@ -312,6 +420,14 @@ export function createApp({
     mentors: mentorsService,
     requests: requestsService,
     safety: safetyService,
+    moderation: moderationService,
+    posts: postsService,
+    feed: feedService,
+    follows: followsService,
+    stories: storiesService,
+    out: outService,
+    qa: qaService,
+    sources: sourcesService,
   };
   return app;
 }

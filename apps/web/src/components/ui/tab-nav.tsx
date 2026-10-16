@@ -33,17 +33,19 @@ export function Segmented<T extends string>({
   value,
   options,
   onChange,
+  className,
 }: {
   label: string;
   value: T;
   options: readonly (readonly [T, string])[];
   onChange: (v: T) => void;
+  className?: string;
 }) {
   return (
     <div
       role="group"
       aria-label={label}
-      className="flex gap-1 rounded-full border border-line bg-surface-1 p-1"
+      className={cn('flex gap-1 rounded-full border border-line bg-surface-1 p-1', className)}
     >
       {options.map(([v, text]) => (
         <button
@@ -51,7 +53,7 @@ export function Segmented<T extends string>({
           type="button"
           aria-pressed={v === value}
           onClick={() => onChange(v)}
-          className="min-h-10 flex-1 rounded-full px-4 text-sm font-semibold text-fg-2 aria-pressed:bg-brand aria-pressed:text-on-brand"
+          className="min-h-10 min-w-0 flex-1 rounded-full px-3 text-sm font-semibold text-fg-2 aria-pressed:bg-brand aria-pressed:text-on-brand"
         >
           {text}
         </button>

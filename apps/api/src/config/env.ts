@@ -77,6 +77,11 @@ export const envSchema = z.object({
     .string()
     .regex(/^[A-Za-z0-9_-]{40,50}$/)
     .optional(),
+  /** Content ingestion scheduler (off in tests and end-to-end runs). */
+  INGESTION_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
   VAPID_SUBJECT: z
     .string()
     .regex(/^(mailto:|https:\/\/)/)

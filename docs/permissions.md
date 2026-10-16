@@ -20,6 +20,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `feed:post` Publish posts, tips and stories | · | ✅ | ✅ | ✅ | ✅ | · |
 | `feed:interact` React, comment, save and share | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `qa:ask` Ask questions in moderated Q&A | · | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `qa:answer` Answer questions in Q&A | · | ✅ | ✅ | ✅ | ✅ | · |
 | `content:report` Report content or people | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `sources:follow` Follow topics and content sources | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `sources:manage` Add or remove content sources for the college | · | ✅ | · | · | · | · |
@@ -124,7 +125,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/me/avatar` | any signed-in user | college | upload | Upload a profile photo (re-encoded, metadata removed) |
 | `GET /api/v1/directory` | `directory:read` | college | search | Browse verified members (filters, cursor pagination) |
 | `GET /api/v1/profiles/:userId` | `directory:read` | college | — | A member’s profile (only the fields you are allowed to see) |
-| `GET /api/v1/search` | `directory:read` | college | search | Command-palette search (people for now) |
+| `GET /api/v1/search` | `directory:read` | college | search | Command-palette search: people, posts and questions |
 | `GET /api/v1/me/mentor` | `mentorship:mentor` | college | — | My mentor settings and availability |
 | `PUT /api/v1/me/mentor` | `mentorship:mentor` | college | — | Update mentor settings (accepting switch, weekly cap, session types, audience) |
 | `PUT /api/v1/me/mentor/availability` | `mentorship:mentor` | college | — | Set weekly availability and date exceptions (in my timezone) |
@@ -174,3 +175,55 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/reports` | `content:report` | college | reports | Report a person, message or request |
 | `GET /api/v1/admin/reports` | `moderation:act` | college | — | Reports to review (message reports carry a snapshot, never the conversation) |
 | `POST /api/v1/admin/reports/:id/resolve` | `moderation:act` | college | adminWrite | Resolve a report (audited) |
+| `GET /api/v1/feed` | `feed:read` | college | — | For You (ranked, see docs/feed-ranking.md) or Following (newest first) |
+| `GET /api/v1/feed/one-useful-thing` | `feed:read` | college | — | Today’s One Useful Thing (staff pick, else computed) |
+| `POST /api/v1/feed/one-useful-thing` | `announcements:post` | college | — | Feature a post or item as today’s One Useful Thing |
+| `GET /api/v1/feed/suggestions` | `feed:read` | college | — | People and sources to follow |
+| `GET /api/v1/posts` | `feed:read` | college | — | Posts by author, kind (reels), topic, or my saved posts |
+| `POST /api/v1/posts` | `feed:post` | college | posting | Publish a post (text, photos, reel, poll or link) |
+| `GET /api/v1/posts/:id` | `feed:read` | college | — | One post |
+| `DELETE /api/v1/posts/:id` | `feed:read` | college | — | Delete my post (with its comments and media) |
+| `POST /api/v1/posts/:id/reactions` | `feed:interact` | college | interact | React (helpful, insightful, celebrate) or clear my reaction |
+| `POST /api/v1/posts/:id/save` | `feed:interact` | college | interact | Save a post |
+| `DELETE /api/v1/posts/:id/save` | `feed:interact` | college | interact | Unsave a post |
+| `POST /api/v1/posts/:id/share` | `feed:interact` | college | interact | Count a share within the college |
+| `POST /api/v1/posts/:id/vote` | `feed:interact` | college | interact | Vote in a poll (once) |
+| `GET /api/v1/posts/:id/comments` | `feed:read` | college | — | Comments on a post |
+| `POST /api/v1/posts/:id/comments` | `feed:interact` | college | interact | Comment, or reply to a comment |
+| `DELETE /api/v1/comments/:id` | `feed:read` | college | — | Delete my comment |
+| `POST /api/v1/media/images` | `feed:post` | college | upload | Upload a photo for a post or story (re-encoded, metadata removed) |
+| `POST /api/v1/media/videos` | `feed:post` | college | upload | Upload a Tips reel video (MP4/MOV, up to 60 s, metadata removed) |
+| `GET /api/v1/stories` | `feed:read` | college | — | Live stories (24 hours) |
+| `POST /api/v1/stories` | `feed:post` | college | posting | Post a 24-hour story |
+| `DELETE /api/v1/stories/:id` | `feed:read` | college | — | Delete my story |
+| `GET /api/v1/me/follows` | `sources:follow` | college | — | People, topics and sources I follow |
+| `POST /api/v1/follows` | `sources:follow` | college | interact | Follow a person, topic or source |
+| `DELETE /api/v1/follows/:targetType/:targetId` | `sources:follow` | college | — | Unfollow |
+| `GET /api/v1/sources` | `sources:follow` | college | — | Content sources you can follow |
+| `GET /api/v1/questions` | `feed:read` | college | — | Published questions (or mine, including pending) |
+| `POST /api/v1/questions` | `qa:ask` | college | qa | Ask a question (published after moderation) |
+| `GET /api/v1/questions/:id` | `feed:read` | college | — | A question with its answers |
+| `DELETE /api/v1/questions/:id` | `feed:read` | college | — | Delete my question (only while unanswered) |
+| `POST /api/v1/questions/:id/answers` | `qa:answer` | college | interact | Answer a question (alumni and staff) |
+| `POST /api/v1/questions/:id/accept` | `qa:ask` | college | — | Mark the best answer (asker only) |
+| `POST /api/v1/answers/:id/helpful` | `feed:interact` | college | interact | Vote an answer helpful |
+| `DELETE /api/v1/answers/:id/helpful` | `feed:interact` | college | interact | Remove my helpful vote |
+| `DELETE /api/v1/answers/:id` | `feed:read` | college | — | Delete my answer |
+| `GET /api/v1/admin/sources` | `sources:manage` | college | — | Sources with health (last fetch, failures, items in 7 days) |
+| `POST /api/v1/admin/sources/test` | `sources:manage` | college | adminWrite | Test a feed URL (robots.txt, reachability, parsing) before adding |
+| `POST /api/v1/admin/sources` | `sources:manage` | college | adminWrite | Add an RSS/Atom source (tested first) |
+| `GET /api/v1/admin/sources/starter` | `sources:manage` | college | — | Curated starter feeds and their verification status |
+| `POST /api/v1/admin/sources/starter/:key` | `sources:manage` | college | adminWrite | Add a verified starter feed |
+| `PATCH /api/v1/admin/sources/:id` | `sources:manage` | college | adminWrite | Rename, retag, change interval, pause or resume |
+| `DELETE /api/v1/admin/sources/:id` | `sources:manage` | college | adminWrite | Remove a source and its items |
+| `POST /api/v1/admin/sources/:id/fetch` | `sources:manage` | college | adminWrite | Fetch now |
+| `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
+| `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |
+| `GET /api/v1/admin/moderation/history/:targetType/:targetId` | `moderation:act` | college | — | Moderation history of one item |
+| `GET /api/v1/admin/moderation/items` | `moderation:act` | college | — | Automated items held by the quality filters |
+| `POST /api/v1/admin/moderation/items/:id/decision` | `moderation:act` | college | adminWrite | Publish or reject a held item |
+| `GET /api/v1/admin/moderation/questions` | `moderation:act` | college | — | Questions waiting for approval |
+| `POST /api/v1/admin/moderation/questions/:id/decision` | `moderation:act` | college | adminWrite | Approve or reject a question (the asker is told why) |
+| `GET /api/v1/admin/moderation/appeals` | `moderation:act` | college | — | Appeals against removals |
+| `POST /api/v1/admin/moderation/appeals/:id/decision` | `moderation:act` | college | adminWrite | Uphold or reverse a removal (a different moderator must uphold) |
+| `POST /api/v1/appeals` | `feed:read` | college | reports | Appeal the removal of my content (once) |

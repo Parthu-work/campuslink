@@ -11,6 +11,7 @@ import { createApp } from './app.js';
 import { syncIndexes } from './db/connect.js';
 import type { FilesService } from './modules/files/files.service.js';
 import type { RealtimeGateway } from './http/realtime.js';
+import { ContentSourcesService } from './modules/content-sources/sources.service.js';
 
 const env = loadEnv();
 const logger = createLogger(env.LOG_LEVEL);
@@ -79,6 +80,16 @@ async function main() {
     runRetention(files, logger).catch((err: unknown) => logger.error({ err }, 'retention failed'));
   setTimeout(retention, 30_000).unref();
   setInterval(retention, 6 * 3600_000).unref();
+
+  // Content ingestion: every minute, queue fetches for due sources (job ids dedupe across instances).
+  if (env.INGESTION_ENABLED) {
+    const tick = () =>
+      ContentSourcesService.enqueueDue(jobs).catch((err: unknown) =>
+        logger.error({ err }, 'ingestion tick failed'),
+      );
+    setTimeout(tick, 15_000).unref();
+    setInterval(tick, 60_000).unref();
+  }
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, 'shutting down');

@@ -39,7 +39,10 @@ export interface SafeResponse {
   contentType: string;
   body: Buffer;
   finalUrl: string;
+  /** Caching and back-off headers only (lowercase names). */
+  headers?: Partial<Record<'etag' | 'last-modified' | 'cache-control' | 'retry-after', string>>;
 }
+const KEPT_HEADERS = ['etag', 'last-modified', 'cache-control', 'retry-after'] as const;
 
 const defaultResolve = async (host: string) =>
   (await dnsLookup(host, { all: true, verbatim: true })).map((a) => a.address);
@@ -183,11 +186,17 @@ export async function safeFetch(
       if (e instanceof SafeFetchError) throw e;
       throw new SafeFetchError(deadline.aborted ? 'The request timed out' : 'Could not fetch that URL');
     }
+    const headers: SafeResponse['headers'] = {};
+    for (const h of KEPT_HEADERS) {
+      const v = res.header(h);
+      if (v) headers[h] = v.slice(0, 500);
+    }
     return {
       status: res.status,
       contentType: res.header('content-type') ?? '',
       body: Buffer.concat(chunks),
       finalUrl: url.toString(),
+      headers,
     };
   }
   throw new SafeFetchError('Too many redirects');

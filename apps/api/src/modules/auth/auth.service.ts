@@ -112,7 +112,7 @@ export class AuthService {
     return AuthTokenModel.findOneAndUpdate(
       { tokenHash: sha256(token), purpose, usedAt: null, expiresAt: { $gt: new Date() } },
       { $set: { usedAt: new Date() } },
-      { new: true },
+      { returnDocument: 'after' },
     ).lean();
   }
 
@@ -422,7 +422,7 @@ export class AuthService {
         $set: { currentTokenHash: sha256(next), lastUsedAt: new Date() },
         $push: { usedTokenHashes: { $each: [hash], $slice: -50 } },
       },
-      { new: true },
+      { returnDocument: 'after' },
     ).lean();
     if (!session) {
       const reused = await SessionModel.findOneAndUpdate(

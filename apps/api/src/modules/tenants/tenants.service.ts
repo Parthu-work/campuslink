@@ -58,7 +58,7 @@ export const tenantsService = {
     const updated = await TenantModel.findOneAndUpdate(
       { _id: tenant._id },
       { $set: set },
-      { new: true },
+      { returnDocument: 'after' },
     ).lean<TenantRecord>();
     invalidateTenant(tenant.slug);
     await audit.record(

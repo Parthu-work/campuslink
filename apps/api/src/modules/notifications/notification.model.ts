@@ -31,6 +31,8 @@ const prefsSchema = new Schema(
       sessions: { type: channel, _id: false },
       reminders: { type: channel, _id: false },
       messages: { type: channel, _id: false },
+      community: { type: channel, _id: false },
+      moderation: { type: channel, _id: false },
     },
     quietHours: {
       enabled: { type: Boolean, default: false },

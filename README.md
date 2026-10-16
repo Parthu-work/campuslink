@@ -40,6 +40,13 @@ Emails (verification, reset, invites) land in Mailpit at http://localhost:8025.
 
 Video uses the public `meet.jit.si` locally; for production, self-host Jitsi with JWT (`docs/video.md`).
 
+### Try Phase 4
+
+1. **Feed:** sign in as `ananya@dpit.example`. Home shows stories, today's One Useful Thing, For you and Following. React, save and comment; open a story and pause it with Space.
+2. **Post:** as `rahul@dpit.example`, use the composer to share a text tip, photos (alt text required), a Tips reel (MP4 up to 60 s), a poll or a link.
+3. **Q&A and moderation:** as Ananya, ask in Q&A. As `faculty@dpit.example`, open Admin → Moderation to approve it (Vikram's demo question is already waiting), handle reports and decide appeals.
+4. **News sources:** as `admin@dpit.example`, open Admin → Sources, paste any RSS or Atom feed URL, Test, then Add. Fetching needs internet access and `INGESTION_ENABLED=true` (the default outside tests). Starter feeds can be added once CI has verified them (`docs/content-sources.md`).
+
 | Service             | URL                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------- |
 | Web app             | http://dpit.localhost:5173, http://mrce.localhost:5173, platform: http://admin.localhost:5173 |

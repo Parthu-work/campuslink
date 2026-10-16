@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import sharp from 'sharp';
 import { PDFArray, PDFDict, PDFDocument, PDFName } from 'pdf-lib';
+import { readMp4, stripMp4Metadata } from '../../lib/mp4.js';
 import { fileTypeFromBuffer } from 'file-type';
 import { Types } from 'mongoose';
 import { ErrorCode, type Permission } from '@campuslink/shared';
@@ -16,11 +17,17 @@ export interface MalwareScanner {
 export const noopScanner: MalwareScanner = { scan: async () => 'skipped' };
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const IMAGE_RULES: Record<'avatar' | 'id_card' | 'message_attachment', { maxEdge: number }> = {
+type ImagePurpose = 'avatar' | 'id_card' | 'message_attachment' | 'post_media' | 'story_media';
+const IMAGE_RULES: Record<ImagePurpose, { maxEdge: number }> = {
   avatar: { maxEdge: 512 },
   id_card: { maxEdge: 2000 },
   message_attachment: { maxEdge: 2000 },
+  post_media: { maxEdge: 1600 },
+  story_media: { maxEdge: 1440 },
 };
+const VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime']);
+/** Uploaded-but-unattached media is purged after a day. */
+const UNATTACHED_TTL_MS = 24 * 3600_000;
 
 /** Who may read a file of a purpose owned by another module (e.g. chat attachments → participants). */
 export type FileAccessResolver = (fileId: string, viewer: AuthState) => Promise<{ name: string } | null>;
@@ -90,7 +97,7 @@ export class FilesService {
    * Images: magic-byte check (JPEG/PNG/WebP only), then re-encode to WebP with sharp. Re-encoding
    * drops EXIF/GPS and any appended payload (polyglots), and normalises orientation.
    */
-  async storeImage(ownerId: string, purpose: 'avatar' | 'id_card' | 'message_attachment', data: Buffer) {
+  async storeImage(ownerId: string, purpose: ImagePurpose, data: Buffer) {
     const type = await fileTypeFromBuffer(data);
     if (!type || !IMAGE_TYPES.has(type.mime)) throw unsupported('Upload a JPEG, PNG or WebP image');
     let out: Buffer;
@@ -108,7 +115,77 @@ export class FilesService {
     } catch {
       throw unsupported('That image could not be read');
     }
-    return this.store(ownerId, purpose, out, 'image/webp');
+    const pending = purpose === 'post_media' || purpose === 'story_media';
+    return this.store(
+      ownerId,
+      purpose,
+      out,
+      'image/webp',
+      pending ? new Date(Date.now() + UNATTACHED_TTL_MS) : null,
+    );
+  }
+
+  /**
+   * Tips reel: MP4/QuickTime only (sniffed), at most `maxSeconds` long (read from the container
+   * header), metadata boxes (GPS, device, XMP) neutralised in place. No transcoding.
+   */
+  async storeVideo(ownerId: string, data: Buffer, maxSeconds: number) {
+    const type = await fileTypeFromBuffer(data);
+    if (!type || !VIDEO_TYPES.has(type.mime)) throw unsupported('Upload an MP4 or MOV video');
+    const info = readMp4(data);
+    if (!info) throw unsupported('That video could not be read');
+    if (info.durationSec > maxSeconds + 0.5)
+      throw new AppError(400, ErrorCode.VALIDATION_FAILED, `Reels can be up to ${maxSeconds} seconds`);
+    return {
+      ...(await this.store(
+        ownerId,
+        'post_media',
+        stripMp4Metadata(data),
+        type.mime,
+        new Date(Date.now() + UNATTACHED_TTL_MS),
+        {
+          durationSec: Math.round(info.durationSec * 10) / 10,
+        },
+      )),
+      durationSec: Math.round(info.durationSec * 10) / 10,
+    };
+  }
+
+  /**
+   * Attaches uploaded media to a post or story: only the uploader, only the right purpose, only
+   * once. `keepUntil` null keeps the file; a date schedules deletion (stories).
+   */
+  /** An unattached upload of the owner (for validation before claiming), or null. */
+  async pending(fileId: string, ownerId: string, purpose: 'post_media' | 'story_media') {
+    const f = await FileModel.findOne({
+      _id: fileId,
+      ownerId: new Types.ObjectId(ownerId),
+      purpose,
+      attachedAt: null,
+    })
+      .select('mime durationSec')
+      .lean();
+    return f ? { id: String(f._id), mime: f.mime, durationSec: f.durationSec ?? null } : null;
+  }
+
+  async claim(
+    fileId: string,
+    ownerId: string,
+    purpose: 'post_media' | 'story_media',
+    keepUntil: Date | null,
+  ) {
+    const f = await FileModel.findOneAndUpdate(
+      { _id: fileId, ownerId: new Types.ObjectId(ownerId), purpose, attachedAt: null },
+      { $set: { attachedAt: new Date(), deleteAfter: keepUntil } },
+      { returnDocument: 'after' },
+    ).lean();
+    if (!f)
+      throw new AppError(
+        400,
+        ErrorCode.VALIDATION_FAILED,
+        'Upload the media again (it expired or is already used)',
+      );
+    return { id: String(f._id), mime: f.mime, durationSec: f.durationSec ?? null };
   }
 
   /**
@@ -140,6 +217,7 @@ export class FilesService {
     data: Buffer,
     mime: string,
     deleteAfter: Date | null = null,
+    extra: { durationSec?: number } = {},
   ) {
     const scan = await this.scanner.scan(data);
     if (scan === 'infected') throw unsupported('This file was flagged by the malware scanner');
@@ -154,6 +232,7 @@ export class FilesService {
       sha256: createHash('sha256').update(data).digest('hex'),
       scanStatus: scan,
       deleteAfter,
+      ...extra,
     });
     return { id: String(doc._id), mime, size: data.length };
   }
@@ -177,7 +256,10 @@ export class FilesService {
     const can = (p: Permission) => viewer.permissions.has(p);
     let name: string | null = null;
     let allowed =
-      f.purpose === 'avatar' || (f.purpose === 'id_card' && (isOwner || can('verification:review')));
+      f.purpose === 'avatar' ||
+      (f.purpose === 'id_card' && (isOwner || can('verification:review'))) ||
+      // The uploader previews their own media before posting.
+      ((f.purpose === 'post_media' || f.purpose === 'story_media') && isOwner);
     const resolver = this.resolvers.get(f.purpose);
     if (!allowed && resolver) {
       const grant = await resolver(String(f._id), viewer);

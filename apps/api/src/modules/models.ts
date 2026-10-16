@@ -25,3 +25,8 @@ export {
   PushSubscriptionModel,
 } from './notifications/notification.model.js';
 export { BlockModel, ReportModel } from './moderation/safety.model.js';
+export { PostModel, CommentModel, ReactionModel, SaveModel, PollVoteModel } from './feed/post.model.js';
+export { StoryModel, FollowModel, OneUsefulThingModel } from './feed/story.model.js';
+export { QuestionModel, AnswerModel, AnswerVoteModel } from './qa/question.model.js';
+export { ContentSourceModel, ContentItemModel } from './content-sources/source.model.js';
+export { ModerationActionModel, AppealModel } from './moderation/moderation.model.js';

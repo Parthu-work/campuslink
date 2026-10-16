@@ -28,6 +28,10 @@
   --accent-ink: var(--accent-ink-dark, #f7c843);
   --on-brand: #06101c;
   --on-accent: #06101c;
+  /* Story backgrounds: white text stays at or above 4.5:1 across each gradient. */
+  --story-sunset: linear-gradient(150deg, #8f1b3e, #b2471b);
+  --story-ocean: linear-gradient(150deg, #0b3f72, #136b80);
+  --story-forest: linear-gradient(150deg, #123f24, #2a6a3f);
 
   --font-display:
     'Bricolage Grotesque Variable', 'Noto Sans Telugu Variable', ui-sans-serif, system-ui, sans-serif;

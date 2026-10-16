@@ -25,6 +25,7 @@ export const PERMISSIONS = {
   'feed:post': 'Publish posts, tips and stories',
   'feed:interact': 'React, comment, save and share',
   'qa:ask': 'Ask questions in moderated Q&A',
+  'qa:answer': 'Answer questions in Q&A',
   'content:report': 'Report content or people',
   'sources:follow': 'Follow topics and content sources',
   'sources:manage': 'Add or remove content sources for the college',
@@ -100,6 +101,7 @@ const STUDENT: Permission[] = [
 const ALUMNI: Permission[] = [
   ...STUDENT,
   'feed:post',
+  'qa:answer',
   'mentorship:mentor',
   'ama:host',
   'jobs:post',
@@ -109,6 +111,7 @@ const ALUMNI: Permission[] = [
 const STAFF: Permission[] = [
   ...STUDENT,
   'feed:post',
+  'qa:answer',
   'announcements:post',
   'events:create',
   'jobs:post',
@@ -181,4 +184,18 @@ export function resolvePermissions(
   for (const c of subject.capabilities ?? []) for (const p of CAPABILITY_PERMISSIONS[c]) out.add(p);
   if (!subject.verified) for (const p of [...out]) if (!UNVERIFIED_PERMISSIONS.includes(p)) out.delete(p);
   return out;
+}
+
+/**
+ * Tenant feature toggles that widen role permissions, folded into the overrides:
+ * `studentPosting` lets students publish posts and stories (the spec's "students only if admin enables it").
+ */
+export function effectiveOverrides(
+  features: Partial<Record<string, boolean>> | undefined,
+  overrides: PermissionOverrides = {},
+): PermissionOverrides {
+  if (!features?.studentPosting) return overrides;
+  const grant = { ...(overrides.grant ?? {}) };
+  grant.STUDENT = [...new Set([...(grant.STUDENT ?? []), 'feed:post' as Permission])];
+  return { ...overrides, grant };
 }

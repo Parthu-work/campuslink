@@ -12,9 +12,9 @@ import { LandingPage } from '../features/landing/landing';
 import { SignInPage } from '../features/auth/sign-in';
 import { SignUpPage } from '../features/auth/sign-up';
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '../features/auth/email-links';
-import { HomePage } from '../features/home/home';
 
-// Route-level code splitting: settings, admin and platform are not on the first-load path.
+// Route-level code splitting: only the public pages are on the first-load path.
+const HomePage = lazy(() => import('../features/home/home').then((m) => ({ default: m.HomePage })));
 const Settings = lazy(() =>
   import('../features/settings/settings').then((m) => ({ default: m.SettingsLayout })),
 );
@@ -73,6 +73,20 @@ const NotificationSettings = lazy(() =>
 );
 const MentorshipAdmin = lazy(() =>
   import('../features/admin/mentorship-admin').then((m) => ({ default: m.MentorshipAdmin })),
+);
+const PostPage = lazy(() => import('../features/feed/post-page').then((m) => ({ default: m.PostPage })));
+const Saved = lazy(() => import('../features/feed/collections').then((m) => ({ default: m.SavedPage })));
+const Reels = lazy(() => import('../features/feed/collections').then((m) => ({ default: m.ReelsPage })));
+const Following = lazy(() =>
+  import('../features/feed/collections').then((m) => ({ default: m.FollowingPage })),
+);
+const Questions = lazy(() => import('../features/qa/questions').then((m) => ({ default: m.QuestionsPage })));
+const Question = lazy(() => import('../features/qa/questions').then((m) => ({ default: m.QuestionPage })));
+const ModerationAdmin = lazy(() =>
+  import('../features/admin/moderation-admin').then((m) => ({ default: m.ModerationAdmin })),
+);
+const SourcesAdmin = lazy(() =>
+  import('../features/admin/sources-admin').then((m) => ({ default: m.SourcesAdmin })),
 );
 const Audit = lazy(() => import('../features/admin/admin').then((m) => ({ default: m.AuditAdmin })));
 const Tenants = lazy(() =>
@@ -179,7 +193,14 @@ function collegeRouter() {
         </RequireAuth>
       ),
       children: [
-        { path: '/home', element: <HomePage /> },
+        {
+          path: '/home',
+          element: (
+            <S>
+              <HomePage />
+            </S>
+          ),
+        },
         {
           path: '/verify',
           element: (
@@ -216,6 +237,12 @@ function collegeRouter() {
             </RequirePermission>
           ),
         },
+        { path: '/posts/:postId', element: gated('feed:read', <PostPage />) },
+        { path: '/saved', element: gated('feed:interact', <Saved />) },
+        { path: '/reels', element: gated('feed:read', <Reels />) },
+        { path: '/following', element: gated('sources:follow', <Following />) },
+        { path: '/questions', element: gated('feed:read', <Questions />) },
+        { path: '/questions/:questionId', element: gated('feed:read', <Question />) },
         { path: '/mentors', element: gated('mentorship:request', <Mentors />) },
         { path: '/mentors/:userId', element: gated('mentorship:request', <MentorPage />) },
         { path: '/mentorship', element: gated('mentorship:request', <Requests />) },
@@ -235,7 +262,9 @@ function collegeRouter() {
         {
           path: 'admin',
           element: (
-            <RequirePermission permission={['users:read_admin', 'mentorship:oversee']}>
+            <RequirePermission
+              permission={['users:read_admin', 'mentorship:oversee', 'moderation:act', 'sources:manage']}
+            >
               <S>
                 <Admin />
               </S>
@@ -244,6 +273,8 @@ function collegeRouter() {
           children: [
             { index: true, element: gated('users:read_admin', <Users />) },
             { path: 'mentorship', element: gated('mentorship:oversee', <MentorshipAdmin />) },
+            { path: 'moderation', element: gated('moderation:act', <ModerationAdmin />) },
+            { path: 'sources', element: gated('sources:manage', <SourcesAdmin />) },
             {
               path: 'imports',
               element: (

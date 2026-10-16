@@ -59,6 +59,10 @@ docs/            architecture, ADRs, threat model, privacy, design brief
 - Background work goes through `JobQueue` (`lib/jobs.ts`); handlers run inside `runInTenant`, so the tenancy rules hold in jobs too. Tests use `InlineJobQueue`.
 - The profile is a read model of the user: after changing a user's name, roles, status or verification, call `ProfilesService.sync()`. New import sources follow `docs/data-sources.md`.
 - Realtime: clients only send `typing`. Every other socket event is emitted by a service after an authorised REST write, to `userRoom(tenantId, userId)` (`http/realtime.ts`). New socket events need isolation tests in `test/realtime.test.ts`.
+- User text is stored as plain text (`lib/text.ts › plainText`) and rendered by the web app's markdown subset as React elements (ADR 0007). Never store or render HTML.
+- New moderatable content registers a `ModeratableHandler` with `ModerationService` and a report target with `SafetyService`; removals carry a reason the author sees, and appeals go to a second moderator.
+- Media for posts and stories is uploaded first and attached with `FilesService.claim()` (owner, purpose, single use). Validate every file before claiming any.
+- Outside content comes only from RSS/Atom through `content-sources` (robots.txt, `safeFetch`, snippet + link-out). Starter feeds stay disabled until `feeds:verify` passes in CI; record results in `docs/content-sources.md`.
 - Notify people only through `NotificationsService.notify()`. Payloads carry ids, names, session types and times, never message or request text.
 - Bookings: never write `holds` by hand; use `holdsFor()` (`modules/mentorship/slots.ts`). The unique index on holds is what prevents double booking. Delayed jobs carry the booking `version` and must no-op when it changed.
 - Mark sensitive POSTs `idempotent: true` (signed-in JSON routes) and abuse-prone public or social writes `bot: true`.

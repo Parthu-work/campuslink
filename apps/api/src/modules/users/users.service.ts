@@ -4,6 +4,7 @@ import {
   Role,
   requiresMfa,
   resolvePermissions,
+  effectiveOverrides,
   type Capability,
   type MeResponse,
 } from '@campuslink/shared';
@@ -198,6 +199,6 @@ export class UsersService {
     tenant: TenantRecord,
     u: { roles: Role[]; capabilities: Capability[]; verified: boolean; mfaEnabled: boolean },
   ) {
-    return resolvePermissions(u, tenant.permissionOverrides);
+    return resolvePermissions(u, effectiveOverrides(tenant.features, tenant.permissionOverrides));
   }
 }

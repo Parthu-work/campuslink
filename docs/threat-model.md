@@ -154,3 +154,47 @@ Scope so far: Phases 1–3 (tenancy, auth, RBAC, audit, consent, branding, platf
 - Public `meet.jit.si` cannot enforce our link expiry; production should self-host Jitsi with JWT (see `docs/video.md`).
 - No malware scanning provider is configured (hook only); attachments rely on type checks and PDF rebuilding.
 - Bot protection is off locally; deployments must set `BOT_PROTECTION=turnstile`.
+
+# Phase 4: Feed and content (posts, stories, Q&A, ingestion, moderation)
+
+**New assets:** posts, comments, reactions and saves; post and story media; stories; follows; questions and answers; content sources and ingested items; moderation actions and appeals.
+
+## User content
+
+|     | Threat                                               | Mitigation                                                                                                                                                                               | Test                                       |
+| --- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| T   | Stored XSS through posts, comments or questions      | Plain text only: `sanitize-html` with an empty allowlist on write; the client renders a markdown subset as React elements, never HTML; only `https:` links (ADR 0007)                    | `feed-lib.test.ts`, web `feed-lib.test.ts` |
+| T   | Trojan Source / bidi spoofing in text                | Control and bidi-override characters stripped on write                                                                                                                                   | `feed-lib.test.ts`                         |
+| E   | Students posting where the college hasn't allowed it | `feed:post` only for alumni and staff; students gain it only through the tenant's `studentPosting` toggle; announcements need `announcements:post`                                       | `feed.test.ts`, `permissions.test.ts`      |
+| I   | Attaching someone else's upload                      | Uploads are bound to owner and purpose (`post_media`, `story_media`); attaching validates every file first, then claims each once (`attachedAt`); unattached files are purged after 24 h | `feed.test.ts`, `isolation/feed`           |
+| I   | Location leaks in photos and videos                  | Images re-encoded (EXIF dropped); MP4/MOV `udta`, `meta` and `uuid` boxes renamed to `free` and zeroed                                                                                   | `feed.test.ts`                             |
+| D   | Oversized or very long reels                         | 25 MB cap, container duration read from `mvhd` and capped at 60 s, MP4/QuickTime only by magic bytes                                                                                     | `feed.test.ts`, `feed-lib.test.ts`         |
+| I   | Link previews used for SSRF or tracking              | `safeFetch` (public IPs, 512 KB, 5 s); only title, description and site name kept; no remote images                                                                                      | `feed.test.ts`                             |
+| D   | Posting, reaction and Q&A floods                     | Rate limits: posting 20/h, interactions 120/min, Q&A 10/h; bot check on posts, stories and questions; idempotency on posts, questions and answers                                        | `permissions.test.ts`                      |
+| T   | Count inflation (double reactions, saves, votes)     | Unique indexes per user and post (reaction, save, poll vote, answer vote); counters change only when the unique write succeeds                                                           | `feed.test.ts`, `qa.test.ts`               |
+| I   | Seeing blocked people's content                      | Blocks hide posts, comments, stories, questions and answers both ways and end follows                                                                                                    | `feed.test.ts`, `qa.test.ts`               |
+
+## Moderation
+
+|     | Threat                                         | Mitigation                                                                                                                                     | Test                 |
+| --- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| R   | Silent or unexplained removals                 | Every removal has a reason code shown to the author with the moderator's note; the action log (`moderationActions`) is append-only and audited | `moderation.test.ts` |
+| E   | A moderator rubber-stamping their own decision | One appeal per removal; the moderator who removed it cannot uphold the appeal (they can still reverse)                                         | `moderation.test.ts` |
+| T   | Questions bypassing review                     | Questions start `pending`, visible only to the asker until a moderator approves; answers are refused until then                                | `qa.test.ts`         |
+| I   | Moderators browsing private content            | Reports carry a snapshot of the reported item; private messages remain reachable only through a report (Phase 3)                               | `moderation.test.ts` |
+
+## Ingestion
+
+|     | Threat                                   | Mitigation                                                                                                                                             | Test                     |
+| --- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
+| I   | SSRF via a feed URL                      | HTTPS only, `safeFetch` with public-IP pinning, size and time caps; admins only (`sources:manage`)                                                     | `ingestion.test.ts`      |
+| T   | XXE or billion-laughs in feed XML        | Documents with DOCTYPE or ENTITY declarations refused before parsing                                                                                   | `feed-lib.test.ts`       |
+| T   | Spam, clickbait or duplicate items       | Spam rejected, low-quality held for review, canonical-URL and content-hash dedupe                                                                      | `ingestion.test.ts`      |
+| R   | Violating publisher terms or robots.txt  | robots.txt per RFC 9309, identifying user agent, conditional requests, Retry-After and back-off, snippet + link-out only, starter feeds verified first | `ingestion.test.ts`      |
+| I   | One college's sources leaking to another | Sources and items are tenant-owned; the scheduler is a named platform path that only reads due ids and enqueues per-tenant jobs                        | `isolation/feed.test.ts` |
+
+## Residual risks (Phase 4)
+
+- Videos are not transcoded; a crafted MP4 still reaches browsers' decoders (mitigated by type sniffing, size and duration caps, attachment-only downloads and the AV hook).
+- Keyword spam filters are basic; moderators remain the backstop.
+- Starter feeds depend on CI verification; publishers can change terms or URLs, so the weekly workflow re-checks them.

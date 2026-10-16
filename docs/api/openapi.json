@@ -220,6 +220,7 @@
                               "feed:post",
                               "feed:interact",
                               "qa:ask",
+                              "qa:answer",
                               "content:report",
                               "sources:follow",
                               "sources:manage",
@@ -287,6 +288,7 @@
                               "feed:post",
                               "feed:interact",
                               "qa:ask",
+                              "qa:answer",
                               "content:report",
                               "sources:follow",
                               "sources:manage",
@@ -3148,7 +3150,7 @@
         "tags": [
           "Profiles"
         ],
-        "summary": "Command-palette search (people for now)",
+        "summary": "Command-palette search: people, posts and questions",
         "description": "Requires permission `directory:read` (Browse the people directory). Host scope: college. Rate limit: search.",
         "operationId": "profiles_get_search",
         "security": [
@@ -5230,13 +5232,55 @@
                           "push"
                         ],
                         "additionalProperties": false
+                      },
+                      "community": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "moderation": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
                       "requests",
                       "sessions",
                       "reminders",
-                      "messages"
+                      "messages",
+                      "community",
+                      "moderation"
                     ],
                     "additionalProperties": false
                   },
@@ -5556,7 +5600,12 @@
                     "enum": [
                       "user",
                       "message",
-                      "request"
+                      "request",
+                      "post",
+                      "comment",
+                      "question",
+                      "answer",
+                      "story"
                     ]
                   },
                   "targetId": {
@@ -5708,6 +5757,2909 @@
           }
         },
         "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/feed": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "For You (ranked, see docs/feed-ranking.md) or Following (newest first)",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "feed_get_feed",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tab",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "for_you",
+              "type": "string",
+              "enum": [
+                "for_you",
+                "following"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 15,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      }
+    },
+    "/api/v1/feed/one-useful-thing": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Today’s One Useful Thing (staff pick, else computed)",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "feed_get_feed_one_useful_thing",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      },
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Feature a post or item as today’s One Useful Thing",
+        "description": "Requires permission `announcements:post` (Post official announcements). Host scope: college.",
+        "operationId": "feed_post_feed_one_useful_thing",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "targetType": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "item"
+                    ]
+                  },
+                  "targetId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "targetType",
+                  "targetId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "announcements:post"
+      }
+    },
+    "/api/v1/feed/suggestions": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "People and sources to follow",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "feed_get_feed_suggestions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      }
+    },
+    "/api/v1/posts": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Posts by author, kind (reels), topic, or my saved posts",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "feed_get_posts",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "text",
+                "photo",
+                "reel",
+                "poll",
+                "link"
+              ]
+            }
+          },
+          {
+            "name": "author",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "topic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "placements",
+                "internships",
+                "higher-studies",
+                "gate",
+                "core-jobs",
+                "govt-exams",
+                "dsa",
+                "web-dev",
+                "data",
+                "ai-ml",
+                "cloud-devops",
+                "cybersecurity",
+                "electronics",
+                "electrical",
+                "mechanical",
+                "civil",
+                "chemical",
+                "scholarships",
+                "events",
+                "campus-life",
+                "govt-schemes",
+                "startups",
+                "tech-news",
+                "education-news"
+              ]
+            }
+          },
+          {
+            "name": "saved",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      },
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Publish a post (text, photos, reel, poll or link)",
+        "description": "Requires permission `feed:post` (Publish posts, tips and stories). Host scope: college. Rate limit: posting.",
+        "operationId": "feed_post_posts",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "text"
+                      },
+                      "body": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 3000
+                      },
+                      "topics": {
+                        "default": [],
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "placements",
+                            "internships",
+                            "higher-studies",
+                            "gate",
+                            "core-jobs",
+                            "govt-exams",
+                            "dsa",
+                            "web-dev",
+                            "data",
+                            "ai-ml",
+                            "cloud-devops",
+                            "cybersecurity",
+                            "electronics",
+                            "electrical",
+                            "mechanical",
+                            "civil",
+                            "chemical",
+                            "scholarships",
+                            "events",
+                            "campus-life",
+                            "govt-schemes",
+                            "startups",
+                            "tech-news",
+                            "education-news"
+                          ]
+                        }
+                      },
+                      "announcement": {
+                        "default": false,
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "body"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "photo"
+                      },
+                      "body": {
+                        "default": "",
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 3000
+                      },
+                      "media": {
+                        "minItems": 1,
+                        "maxItems": 4,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "fileId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "alt": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 200
+                            }
+                          },
+                          "required": [
+                            "fileId",
+                            "alt"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "topics": {
+                        "default": [],
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "placements",
+                            "internships",
+                            "higher-studies",
+                            "gate",
+                            "core-jobs",
+                            "govt-exams",
+                            "dsa",
+                            "web-dev",
+                            "data",
+                            "ai-ml",
+                            "cloud-devops",
+                            "cybersecurity",
+                            "electronics",
+                            "electrical",
+                            "mechanical",
+                            "civil",
+                            "chemical",
+                            "scholarships",
+                            "events",
+                            "campus-life",
+                            "govt-schemes",
+                            "startups",
+                            "tech-news",
+                            "education-news"
+                          ]
+                        }
+                      },
+                      "announcement": {
+                        "default": false,
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "media"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "reel"
+                      },
+                      "body": {
+                        "default": "",
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 600
+                      },
+                      "media": {
+                        "minItems": 1,
+                        "maxItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "fileId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "alt": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 300
+                            }
+                          },
+                          "required": [
+                            "fileId",
+                            "alt"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "topics": {
+                        "default": [],
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "placements",
+                            "internships",
+                            "higher-studies",
+                            "gate",
+                            "core-jobs",
+                            "govt-exams",
+                            "dsa",
+                            "web-dev",
+                            "data",
+                            "ai-ml",
+                            "cloud-devops",
+                            "cybersecurity",
+                            "electronics",
+                            "electrical",
+                            "mechanical",
+                            "civil",
+                            "chemical",
+                            "scholarships",
+                            "events",
+                            "campus-life",
+                            "govt-schemes",
+                            "startups",
+                            "tech-news",
+                            "education-news"
+                          ]
+                        }
+                      },
+                      "announcement": {
+                        "default": false,
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "media"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "poll"
+                      },
+                      "body": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 300
+                      },
+                      "poll": {
+                        "type": "object",
+                        "properties": {
+                          "options": {
+                            "minItems": 2,
+                            "maxItems": 4,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            }
+                          },
+                          "closesInDays": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 14
+                          }
+                        },
+                        "required": [
+                          "options",
+                          "closesInDays"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "topics": {
+                        "default": [],
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "placements",
+                            "internships",
+                            "higher-studies",
+                            "gate",
+                            "core-jobs",
+                            "govt-exams",
+                            "dsa",
+                            "web-dev",
+                            "data",
+                            "ai-ml",
+                            "cloud-devops",
+                            "cybersecurity",
+                            "electronics",
+                            "electrical",
+                            "mechanical",
+                            "civil",
+                            "chemical",
+                            "scholarships",
+                            "events",
+                            "campus-life",
+                            "govt-schemes",
+                            "startups",
+                            "tech-news",
+                            "education-news"
+                          ]
+                        }
+                      },
+                      "announcement": {
+                        "default": false,
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "body",
+                      "poll"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "link"
+                      },
+                      "body": {
+                        "default": "",
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 3000
+                      },
+                      "url": {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      },
+                      "topics": {
+                        "default": [],
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "placements",
+                            "internships",
+                            "higher-studies",
+                            "gate",
+                            "core-jobs",
+                            "govt-exams",
+                            "dsa",
+                            "web-dev",
+                            "data",
+                            "ai-ml",
+                            "cloud-devops",
+                            "cybersecurity",
+                            "electronics",
+                            "electrical",
+                            "mechanical",
+                            "civil",
+                            "chemical",
+                            "scholarships",
+                            "events",
+                            "campus-life",
+                            "govt-schemes",
+                            "startups",
+                            "tech-news",
+                            "education-news"
+                          ]
+                        }
+                      },
+                      "announcement": {
+                        "default": false,
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "url"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:post"
+      }
+    },
+    "/api/v1/posts/{id}": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "One post",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "feed_get_posts_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      },
+      "delete": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Delete my post (with its comments and media)",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "feed_delete_posts_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      }
+    },
+    "/api/v1/posts/{id}/reactions": {
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "React (helpful, insightful, celebrate) or clear my reaction",
+        "description": "Requires permission `feed:interact` (React, comment, save and share). Host scope: college. Rate limit: interact.",
+        "operationId": "feed_post_posts_id_reactions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "reaction": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "helpful",
+                          "insightful",
+                          "celebrate"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "reaction"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:interact"
+      }
+    },
+    "/api/v1/posts/{id}/save": {
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Save a post",
+        "description": "Requires permission `feed:interact` (React, comment, save and share). Host scope: college. Rate limit: interact.",
+        "operationId": "feed_post_posts_id_save",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:interact"
+      },
+      "delete": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Unsave a post",
+        "description": "Requires permission `feed:interact` (React, comment, save and share). Host scope: college. Rate limit: interact.",
+        "operationId": "feed_delete_posts_id_save",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:interact"
+      }
+    },
+    "/api/v1/posts/{id}/share": {
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Count a share within the college",
+        "description": "Requires permission `feed:interact` (React, comment, save and share). Host scope: college. Rate limit: interact.",
+        "operationId": "feed_post_posts_id_share",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:interact"
+      }
+    },
+    "/api/v1/posts/{id}/vote": {
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Vote in a poll (once)",
+        "description": "Requires permission `feed:interact` (React, comment, save and share). Host scope: college. Rate limit: interact.",
+        "operationId": "feed_post_posts_id_vote",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "option": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3
+                  }
+                },
+                "required": [
+                  "option"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:interact"
+      }
+    },
+    "/api/v1/posts/{id}/comments": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Comments on a post",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "feed_get_posts_id_comments",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      },
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Comment, or reply to a comment",
+        "description": "Requires permission `feed:interact` (React, comment, save and share). Host scope: college. Rate limit: interact.",
+        "operationId": "feed_post_posts_id_comments",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  },
+                  "parentId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:interact"
+      }
+    },
+    "/api/v1/comments/{id}": {
+      "delete": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Delete my comment",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "feed_delete_comments_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      }
+    },
+    "/api/v1/media/images": {
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Upload a photo for a post or story (re-encoded, metadata removed)",
+        "description": "Requires permission `feed:post` (Publish posts, tips and stories). Host scope: college. Rate limit: upload.",
+        "operationId": "feed_post_media_images",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "for": {
+                    "default": "post",
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "story"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:post"
+      }
+    },
+    "/api/v1/media/videos": {
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Upload a Tips reel video (MP4/MOV, up to 60 s, metadata removed)",
+        "description": "Requires permission `feed:post` (Publish posts, tips and stories). Host scope: college. Rate limit: upload.",
+        "operationId": "feed_post_media_videos",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:post"
+      }
+    },
+    "/api/v1/stories": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Live stories (24 hours)",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "feed_get_stories",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      },
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Post a 24-hour story",
+        "description": "Requires permission `feed:post` (Publish posts, tips and stories). Host scope: college. Rate limit: posting.",
+        "operationId": "feed_post_stories",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "text"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "background": {
+                        "type": "string",
+                        "enum": [
+                          "brand",
+                          "accent",
+                          "sunset",
+                          "ocean",
+                          "forest"
+                        ]
+                      },
+                      "link": {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      },
+                      "linkLabel": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "text",
+                      "background"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "photo"
+                      },
+                      "fileId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "alt": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "text": {
+                        "default": "",
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 120
+                      },
+                      "link": {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      },
+                      "linkLabel": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 40
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "fileId",
+                      "alt"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:post"
+      }
+    },
+    "/api/v1/stories/{id}": {
+      "delete": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Delete my story",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "feed_delete_stories_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      }
+    },
+    "/api/v1/me/follows": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "People, topics and sources I follow",
+        "description": "Requires permission `sources:follow` (Follow topics and content sources). Host scope: college.",
+        "operationId": "feed_get_me_follows",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:follow"
+      }
+    },
+    "/api/v1/follows": {
+      "post": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Follow a person, topic or source",
+        "description": "Requires permission `sources:follow` (Follow topics and content sources). Host scope: college. Rate limit: interact.",
+        "operationId": "feed_post_follows",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "targetType": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "topic",
+                      "source"
+                    ]
+                  },
+                  "targetId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  }
+                },
+                "required": [
+                  "targetType",
+                  "targetId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:follow"
+      }
+    },
+    "/api/v1/follows/{targetType}/{targetId}": {
+      "delete": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Unfollow",
+        "description": "Requires permission `sources:follow` (Follow topics and content sources). Host scope: college.",
+        "operationId": "feed_delete_follows_targetType_targetId",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "targetType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "user",
+                "topic",
+                "source"
+              ]
+            }
+          },
+          {
+            "name": "targetId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{2,40}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:follow"
+      }
+    },
+    "/api/v1/sources": {
+      "get": {
+        "tags": [
+          "Feed"
+        ],
+        "summary": "Content sources you can follow",
+        "description": "Requires permission `sources:follow` (Follow topics and content sources). Host scope: college.",
+        "operationId": "feed_get_sources",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:follow"
+      }
+    },
+    "/api/v1/questions": {
+      "get": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Published questions (or mine, including pending)",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "qa_get_questions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "placements",
+                "internships",
+                "higher-studies",
+                "gate",
+                "core-jobs",
+                "govt-exams",
+                "dsa",
+                "web-dev",
+                "data",
+                "ai-ml",
+                "cloud-devops",
+                "cybersecurity",
+                "electronics",
+                "electrical",
+                "mechanical",
+                "civil",
+                "chemical",
+                "scholarships",
+                "events",
+                "campus-life",
+                "govt-schemes",
+                "startups",
+                "tech-news",
+                "education-news"
+              ]
+            }
+          },
+          {
+            "name": "mine",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true"
+              ]
+            }
+          },
+          {
+            "name": "unanswered",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      },
+      "post": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Ask a question (published after moderation)",
+        "description": "Requires permission `qa:ask` (Ask questions in moderated Q&A). Host scope: college. Rate limit: qa.",
+        "operationId": "qa_post_questions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 150
+                  },
+                  "body": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 2000
+                  },
+                  "topics": {
+                    "default": [],
+                    "maxItems": 3,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "placements",
+                        "internships",
+                        "higher-studies",
+                        "gate",
+                        "core-jobs",
+                        "govt-exams",
+                        "dsa",
+                        "web-dev",
+                        "data",
+                        "ai-ml",
+                        "cloud-devops",
+                        "cybersecurity",
+                        "electronics",
+                        "electrical",
+                        "mechanical",
+                        "civil",
+                        "chemical",
+                        "scholarships",
+                        "events",
+                        "campus-life",
+                        "govt-schemes",
+                        "startups",
+                        "tech-news",
+                        "education-news"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "title"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "qa:ask"
+      }
+    },
+    "/api/v1/questions/{id}": {
+      "get": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "A question with its answers",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "qa_get_questions_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      },
+      "delete": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Delete my question (only while unanswered)",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "qa_delete_questions_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      }
+    },
+    "/api/v1/questions/{id}/answers": {
+      "post": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Answer a question (alumni and staff)",
+        "description": "Requires permission `qa:answer` (Answer questions in Q&A). Host scope: college. Rate limit: interact.",
+        "operationId": "qa_post_questions_id_answers",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 3000
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "qa:answer"
+      }
+    },
+    "/api/v1/questions/{id}/accept": {
+      "post": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Mark the best answer (asker only)",
+        "description": "Requires permission `qa:ask` (Ask questions in moderated Q&A). Host scope: college.",
+        "operationId": "qa_post_questions_id_accept",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "answerId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "answerId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "qa:ask"
+      }
+    },
+    "/api/v1/answers/{id}/helpful": {
+      "post": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Vote an answer helpful",
+        "description": "Requires permission `feed:interact` (React, comment, save and share). Host scope: college. Rate limit: interact.",
+        "operationId": "qa_post_answers_id_helpful",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:interact"
+      },
+      "delete": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Remove my helpful vote",
+        "description": "Requires permission `feed:interact` (React, comment, save and share). Host scope: college. Rate limit: interact.",
+        "operationId": "qa_delete_answers_id_helpful",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:interact"
+      }
+    },
+    "/api/v1/answers/{id}": {
+      "delete": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Delete my answer",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college.",
+        "operationId": "qa_delete_answers_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
+      }
+    },
+    "/api/v1/admin/sources": {
+      "get": {
+        "tags": [
+          "Content sources"
+        ],
+        "summary": "Sources with health (last fetch, failures, items in 7 days)",
+        "description": "Requires permission `sources:manage` (Add or remove content sources for the college). Host scope: college.",
+        "operationId": "content-sources_get_admin_sources",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:manage"
+      },
+      "post": {
+        "tags": [
+          "Content sources"
+        ],
+        "summary": "Add an RSS/Atom source (tested first)",
+        "description": "Requires permission `sources:manage` (Add or remove content sources for the college). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "content-sources_post_admin_sources",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "url": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "format": "uri"
+                  },
+                  "topics": {
+                    "default": [],
+                    "maxItems": 5,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "placements",
+                        "internships",
+                        "higher-studies",
+                        "gate",
+                        "core-jobs",
+                        "govt-exams",
+                        "dsa",
+                        "web-dev",
+                        "data",
+                        "ai-ml",
+                        "cloud-devops",
+                        "cybersecurity",
+                        "electronics",
+                        "electrical",
+                        "mechanical",
+                        "civil",
+                        "chemical",
+                        "scholarships",
+                        "events",
+                        "campus-life",
+                        "govt-schemes",
+                        "startups",
+                        "tech-news",
+                        "education-news"
+                      ]
+                    }
+                  },
+                  "branches": {
+                    "default": [],
+                    "maxItems": 5,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "CSE",
+                        "IT",
+                        "ECE",
+                        "EEE",
+                        "MECH",
+                        "CIVIL",
+                        "CHEM",
+                        "AIML",
+                        "DS",
+                        "OTHER"
+                      ]
+                    }
+                  },
+                  "intervalMin": {
+                    "default": 180,
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "name",
+                  "url"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:manage"
+      }
+    },
+    "/api/v1/admin/sources/test": {
+      "post": {
+        "tags": [
+          "Content sources"
+        ],
+        "summary": "Test a feed URL (robots.txt, reachability, parsing) before adding",
+        "description": "Requires permission `sources:manage` (Add or remove content sources for the college). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "content-sources_post_admin_sources_test",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "format": "uri"
+                  }
+                },
+                "required": [
+                  "url"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:manage"
+      }
+    },
+    "/api/v1/admin/sources/starter": {
+      "get": {
+        "tags": [
+          "Content sources"
+        ],
+        "summary": "Curated starter feeds and their verification status",
+        "description": "Requires permission `sources:manage` (Add or remove content sources for the college). Host scope: college.",
+        "operationId": "content-sources_get_admin_sources_starter",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:manage"
+      }
+    },
+    "/api/v1/admin/sources/starter/{key}": {
+      "post": {
+        "tags": [
+          "Content sources"
+        ],
+        "summary": "Add a verified starter feed",
+        "description": "Requires permission `sources:manage` (Add or remove content sources for the college). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "content-sources_post_admin_sources_starter_key",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{2,60}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:manage"
+      }
+    },
+    "/api/v1/admin/sources/{id}": {
+      "patch": {
+        "tags": [
+          "Content sources"
+        ],
+        "summary": "Rename, retag, change interval, pause or resume",
+        "description": "Requires permission `sources:manage` (Add or remove content sources for the college). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "content-sources_patch_admin_sources_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "topics": {
+                    "maxItems": 5,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "placements",
+                        "internships",
+                        "higher-studies",
+                        "gate",
+                        "core-jobs",
+                        "govt-exams",
+                        "dsa",
+                        "web-dev",
+                        "data",
+                        "ai-ml",
+                        "cloud-devops",
+                        "cybersecurity",
+                        "electronics",
+                        "electrical",
+                        "mechanical",
+                        "civil",
+                        "chemical",
+                        "scholarships",
+                        "events",
+                        "campus-life",
+                        "govt-schemes",
+                        "startups",
+                        "tech-news",
+                        "education-news"
+                      ]
+                    }
+                  },
+                  "branches": {
+                    "maxItems": 5,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "CSE",
+                        "IT",
+                        "ECE",
+                        "EEE",
+                        "MECH",
+                        "CIVIL",
+                        "CHEM",
+                        "AIML",
+                        "DS",
+                        "OTHER"
+                      ]
+                    }
+                  },
+                  "intervalMin": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "paused"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:manage"
+      },
+      "delete": {
+        "tags": [
+          "Content sources"
+        ],
+        "summary": "Remove a source and its items",
+        "description": "Requires permission `sources:manage` (Add or remove content sources for the college). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "content-sources_delete_admin_sources_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:manage"
+      }
+    },
+    "/api/v1/admin/sources/{id}/fetch": {
+      "post": {
+        "tags": [
+          "Content sources"
+        ],
+        "summary": "Fetch now",
+        "description": "Requires permission `sources:manage` (Add or remove content sources for the college). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "content-sources_post_admin_sources_id_fetch",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sources:manage"
+      }
+    },
+    "/api/v1/admin/moderation/summary": {
+      "get": {
+        "tags": [
+          "Moderation"
+        ],
+        "summary": "Counts for the moderation queue",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college.",
+        "operationId": "moderation-queue_get_admin_moderation_summary",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/admin/moderation/actions": {
+      "post": {
+        "tags": [
+          "Moderation"
+        ],
+        "summary": "Remove or restore content (the author sees the reason and can appeal)",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "moderation-queue_post_admin_moderation_actions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "targetType": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "comment",
+                      "question",
+                      "answer",
+                      "story",
+                      "item"
+                    ]
+                  },
+                  "targetId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "remove",
+                      "restore"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "spam",
+                      "harassment",
+                      "inappropriate",
+                      "misinformation",
+                      "off_topic",
+                      "copyright",
+                      "privacy",
+                      "other"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 500
+                  },
+                  "reportId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "targetType",
+                  "targetId",
+                  "action"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/admin/moderation/history/{targetType}/{targetId}": {
+      "get": {
+        "tags": [
+          "Moderation"
+        ],
+        "summary": "Moderation history of one item",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college.",
+        "operationId": "moderation-queue_get_admin_moderation_history_targetType_targetId",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "targetType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "post",
+                "comment",
+                "question",
+                "answer",
+                "story",
+                "item"
+              ]
+            }
+          },
+          {
+            "name": "targetId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/admin/moderation/items": {
+      "get": {
+        "tags": [
+          "Moderation"
+        ],
+        "summary": "Automated items held by the quality filters",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college.",
+        "operationId": "moderation-queue_get_admin_moderation_items",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/admin/moderation/items/{id}/decision": {
+      "post": {
+        "tags": [
+          "Moderation"
+        ],
+        "summary": "Publish or reject a held item",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "moderation-queue_post_admin_moderation_items_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "publish",
+                      "reject"
+                    ]
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/admin/moderation/questions": {
+      "get": {
+        "tags": [
+          "Moderation"
+        ],
+        "summary": "Questions waiting for approval",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college.",
+        "operationId": "moderation-queue_get_admin_moderation_questions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/admin/moderation/questions/{id}/decision": {
+      "post": {
+        "tags": [
+          "Moderation"
+        ],
+        "summary": "Approve or reject a question (the asker is told why)",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "moderation-queue_post_admin_moderation_questions_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "spam",
+                      "harassment",
+                      "inappropriate",
+                      "misinformation",
+                      "off_topic",
+                      "copyright",
+                      "privacy",
+                      "other"
+                    ]
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/admin/moderation/appeals": {
+      "get": {
+        "tags": [
+          "Moderation"
+        ],
+        "summary": "Appeals against removals",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college.",
+        "operationId": "moderation-queue_get_admin_moderation_appeals",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "open",
+              "type": "string",
+              "enum": [
+                "open",
+                "decided"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/admin/moderation/appeals/{id}/decision": {
+      "post": {
+        "tags": [
+          "Moderation"
+        ],
+        "summary": "Uphold or reverse a removal (a different moderator must uphold)",
+        "description": "Requires permission `moderation:act` (Act on reported content within scope). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "moderation-queue_post_admin_moderation_appeals_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "uphold",
+                      "reverse"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "moderation:act"
+      }
+    },
+    "/api/v1/appeals": {
+      "post": {
+        "tags": [
+          "Moderation"
+        ],
+        "summary": "Appeal the removal of my content (once)",
+        "description": "Requires permission `feed:read` (Browse the college feed). Host scope: college. Rate limit: reports.",
+        "operationId": "moderation-queue_post_appeals",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 1000
+                  },
+                  "targetType": {
+                    "type": "string",
+                    "enum": [
+                      "post",
+                      "comment",
+                      "question",
+                      "answer",
+                      "story",
+                      "item"
+                    ]
+                  },
+                  "targetId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "message",
+                  "targetType",
+                  "targetId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "feed:read"
       }
     }
   }

@@ -18,7 +18,10 @@ export type LimiterName =
   | 'requests'
   | 'messages'
   | 'reports'
-  | 'push';
+  | 'push'
+  | 'posting'
+  | 'interact'
+  | 'qa';
 
 const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: boolean }> = {
   global: { windowMs: 60_000, limit: 600 },
@@ -35,6 +38,9 @@ const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: bo
   messages: { windowMs: 60_000, limit: 30, perUser: true },
   reports: { windowMs: 60 * 60_000, limit: 20, perUser: true },
   push: { windowMs: 60 * 60_000, limit: 20, perUser: true },
+  posting: { windowMs: 60 * 60_000, limit: 20, perUser: true },
+  interact: { windowMs: 60_000, limit: 120, perUser: true },
+  qa: { windowMs: 60 * 60_000, limit: 10, perUser: true },
 };
 
 const key = (req: Request, perUser?: boolean) =>

@@ -31,6 +31,10 @@ Sign-up requires an 18+ declaration. Under-18 users are blocked on the client an
 - **Session feedback** is private to the mentor and college admins (`mentorship:oversee`).
 - **Alumni Match** uses only profile fields the mentee is allowed to see, plus the mentee's own goals and target companies, which nobody else sees.
 - **Notifications** (in-app, email, push) carry names, session types and times, never message or request text. Members choose channels per category and can set quiet hours.
+- **Feed ranking** uses only what members chose to follow, their branch and public counts. No dwell time, click tracking or hidden interest profile (`docs/feed-ranking.md`).
+- **Posts and stories:** photos are re-encoded and video metadata boxes (which can hold GPS location) are wiped. Link previews keep only the page title, description and site name. Stories expire after 24 hours, and their photos are deleted an hour later.
+- **Q&A** questions are visible only to the asker and moderators until approved. Rejection and removal reasons are shown only to the author.
+- **News items** keep only a headline, a snippet of at most 300 characters and a link; nothing about who read them is recorded.
 - **Blocking** is silent: the blocked person isn't told; the chat closes and future sessions are cancelled.
 
 ## Retention (implemented)
@@ -44,6 +48,10 @@ Sign-up requires an 18+ declaration. Under-18 users are blocked on the client an
 | Import previews                     | Deleted after 2 hours (TTL index)                                      |
 | Import source files                 | Deleted right after the import runs; at most 24 hours if it never runs |
 | College ID photos                   | Deleted 30 days after the admin's decision                             |
+| Unattached post and story uploads   | Deleted after 24 hours                                                 |
+| Stories                             | Deleted after 24 hours (TTL); their photos 1 hour later                |
+| Ingested news items                 | Deleted 90 days after publication (TTL index)                          |
+| Moderation actions and appeals      | Kept (append-only accountability log)                                  |
 | Audit log                           | Kept                                                                   |
 
 File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable per tenant: inactive accounts (default 3 years) and deleted-account grace (default 30 days); those purges ship with the privacy release.

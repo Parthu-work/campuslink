@@ -1,5 +1,12 @@
 import type { RequestHandler } from 'express';
-import { ErrorCode, requiresMfa, resolvePermissions, Role, type Capability } from '@campuslink/shared';
+import {
+  ErrorCode,
+  effectiveOverrides,
+  requiresMfa,
+  resolvePermissions,
+  Role,
+  type Capability,
+} from '@campuslink/shared';
 import { AppError, unauthenticated } from '../lib/errors.js';
 import type { TokenService } from '../lib/jwt.js';
 import { UserModel } from '../modules/auth/user.model.js';
@@ -55,7 +62,7 @@ export async function authFromToken(
     mfaPending: requiresMfa(roles) && !mfaEnabled,
     permissions: resolvePermissions(
       { roles, capabilities: user.capabilities as Capability[], verified: !!user.verified, mfaEnabled },
-      tenant.permissionOverrides,
+      effectiveOverrides(tenant.features, tenant.permissionOverrides),
     ),
     expiresAt: claims.exp * 1000,
   };

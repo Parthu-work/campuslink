@@ -4,15 +4,19 @@ import { useTranslation } from 'react-i18next';
 import {
   Activity,
   Bell,
+  Bookmark,
   Building2,
   CalendarClock,
   Compass,
+  Film,
   HeartHandshake,
   Home,
   Inbox,
   LogOut,
   Menu,
+  MessageCircleQuestion,
   MessagesSquare,
+  Rss,
   Search,
   Settings,
   Shield,
@@ -71,7 +75,11 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
   const location = useLocation();
   const can = (p?: Permission | Permission[]) =>
     !p || (Array.isArray(p) ? p : [p]).some((x) => me?.permissions.includes(x));
-  const adminHome = can('users:read_admin') ? '/admin' : '/admin/mentorship';
+  const adminHome = can('users:read_admin')
+    ? '/admin'
+    : can('mentorship:oversee')
+      ? '/admin/mentorship'
+      : '/admin/moderation';
   const items: NavItem[] = platform
     ? [
         { to: '/platform', label: t('nav.platform'), icon: Building2 },
@@ -102,9 +110,13 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           primary: true,
           badge: unreadMessages,
         },
+        { to: '/questions', label: t('nav.questions'), icon: MessageCircleQuestion, permission: 'feed:read' },
+        { to: '/reels', label: t('nav.reels'), icon: Film, permission: 'feed:read' },
         { to: '/people', label: t('nav.people'), icon: Users, permission: 'directory:read' },
         { to: '/mentorship', label: t('nav.requests'), icon: Inbox, permission: 'mentorship:request' },
         { to: '/mentor', label: t('nav.mentor'), icon: HeartHandshake, permission: 'mentorship:mentor' },
+        { to: '/following', label: t('nav.following'), icon: Rss, permission: 'sources:follow' },
+        { to: '/saved', label: t('nav.saved'), icon: Bookmark, permission: 'feed:interact' },
         { to: '/notifications', label: t('nav.notifications'), icon: Bell, badge: unreadNotifications },
         { to: '/profile', label: t('nav.profile'), icon: User },
         { to: '/settings', label: t('nav.settings'), icon: Settings },
@@ -112,7 +124,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           to: adminHome,
           label: t('nav.admin'),
           icon: Shield,
-          permission: ['users:read_admin', 'mentorship:oversee'],
+          permission: ['users:read_admin', 'mentorship:oversee', 'moderation:act', 'sources:manage'],
         },
       ];
   const visible = items.filter((i) => can(i.permission));

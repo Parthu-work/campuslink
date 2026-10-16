@@ -39,6 +39,24 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     session_completed: { title: 'How did it go?', body: 'Rate your {type} with {name}.' },
     feedback_received: { title: 'New feedback', body: 'A mentee rated your session.' },
     new_message: { title: 'New message', body: '{name} sent you a message.' },
+    post_comment: { title: 'New comment', body: '{name} commented on your post.' },
+    comment_reply: { title: 'New reply', body: '{name} replied to your comment.' },
+    question_answered: { title: 'New answer', body: '{name} answered your question.' },
+    answer_accepted: { title: 'Answer accepted', body: 'Your answer was marked as the best answer.' },
+    question_approved: { title: 'Question published', body: 'Your question is now visible to your college.' },
+    question_rejected: {
+      title: 'Question not published',
+      body: 'Moderators didn’t publish your question. Open it to see why.',
+    },
+    content_removed: {
+      title: 'Content removed',
+      body: 'Moderators removed your {content}. Open it to see why, and appeal if you disagree.',
+    },
+    content_restored: { title: 'Content restored', body: 'Your {content} is visible again.' },
+    appeal_decided: {
+      title: 'Appeal decided',
+      body: 'Moderators reviewed your appeal about your {content}.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -60,8 +78,67 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     session_completed: { title: 'ఎలా జరిగింది?', body: '{name} తో మీ {type} కి రేటింగ్ ఇవ్వండి.' },
     feedback_received: { title: 'కొత్త ఫీడ్‌బ్యాక్', body: 'ఒక మెంటీ మీ సెషన్‌కు రేటింగ్ ఇచ్చారు.' },
     new_message: { title: 'కొత్త సందేశం', body: '{name} మీకు సందేశం పంపారు.' },
+    post_comment: { title: 'కొత్త కామెంట్', body: '{name} మీ పోస్ట్‌పై కామెంట్ చేశారు.' },
+    comment_reply: { title: 'కొత్త జవాబు', body: '{name} మీ కామెంట్‌కు జవాబిచ్చారు.' },
+    question_answered: { title: 'కొత్త సమాధానం', body: '{name} మీ ప్రశ్నకు సమాధానం ఇచ్చారు.' },
+    answer_accepted: {
+      title: 'సమాధానం అంగీకరించబడింది',
+      body: 'మీ సమాధానాన్ని ఉత్తమ సమాధానంగా గుర్తించారు.',
+    },
+    question_approved: {
+      title: 'ప్రశ్న ప్రచురించబడింది',
+      body: 'మీ ప్రశ్న ఇప్పుడు మీ కాలేజీకి కనిపిస్తుంది.',
+    },
+    question_rejected: {
+      title: 'ప్రశ్న ప్రచురించలేదు',
+      body: 'మోడరేటర్లు మీ ప్రశ్నను ప్రచురించలేదు. కారణం చూడటానికి తెరవండి.',
+    },
+    content_removed: {
+      title: 'కంటెంట్ తొలగించబడింది',
+      body: 'మోడరేటర్లు మీ {content} ని తొలగించారు. కారణం చూడటానికి తెరవండి, అంగీకరించకపోతే అప్పీల్ చేయండి.',
+    },
+    content_restored: { title: 'కంటెంట్ పునరుద్ధరించబడింది', body: 'మీ {content} మళ్లీ కనిపిస్తోంది.' },
+    appeal_decided: {
+      title: 'అప్పీల్‌పై నిర్ణయం',
+      body: 'మీ {content} గురించి మీ అప్పీల్‌ను మోడరేటర్లు పరిశీలించారు.',
+    },
   },
 };
+
+const CONTENT_LABEL: Record<Locale, Record<string, string>> = {
+  en: {
+    post: 'post',
+    comment: 'comment',
+    question: 'question',
+    answer: 'answer',
+    story: 'story',
+    item: 'item',
+  },
+  te: {
+    post: 'పోస్ట్',
+    comment: 'కామెంట్',
+    question: 'ప్రశ్న',
+    answer: 'సమాధానం',
+    story: 'స్టోరీ',
+    item: 'అంశం',
+  },
+};
+
+/** Where content lives in the app (moderation notices link back to it). */
+function contentPath(data: Record<string, string>): string {
+  switch (data.contentType) {
+    case 'post':
+      return `/posts/${data.contentId ?? ''}`;
+    case 'comment':
+      return data.postId ? `/posts/${data.postId}` : '/home';
+    case 'question':
+      return `/questions/${data.contentId ?? ''}`;
+    case 'answer':
+      return data.questionId ? `/questions/${data.questionId}` : '/questions';
+    default:
+      return '/home';
+  }
+}
 
 const FOOTER: Record<Locale, string> = {
   en: 'You can change which notifications you get in Settings → Notifications.',
@@ -87,6 +164,18 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return data.conversationId ? `/messages/${data.conversationId}` : '/messages';
     case 'feedback_received':
       return '/mentor';
+    case 'post_comment':
+    case 'comment_reply':
+      return data.postId ? `/posts/${data.postId}` : '/home';
+    case 'question_answered':
+    case 'answer_accepted':
+    case 'question_approved':
+    case 'question_rejected':
+      return data.questionId ? `/questions/${data.questionId}` : '/questions';
+    case 'content_removed':
+    case 'content_restored':
+    case 'appeal_decided':
+      return contentPath(data);
     default:
       return '/sessions';
   }
@@ -110,6 +199,7 @@ export function renderNotification(
     s
       .replace('{name}', data.name ?? '')
       .replace('{type}', TYPE_LABEL[locale][data.sessionType as SessionType] ?? '')
-      .replace('{time}', time);
+      .replace('{time}', time)
+      .replace('{content}', CONTENT_LABEL[locale][data.contentType ?? ''] ?? '');
   return { title: fill(t.title), body: fill(t.body), footer: FOOTER[locale], open: OPEN[locale] };
 }

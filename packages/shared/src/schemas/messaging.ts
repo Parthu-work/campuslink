@@ -67,9 +67,25 @@ export const NOTIFICATION_TYPES = [
   'session_completed',
   'feedback_received',
   'new_message',
+  'post_comment',
+  'comment_reply',
+  'question_answered',
+  'answer_accepted',
+  'question_approved',
+  'question_rejected',
+  'content_removed',
+  'content_restored',
+  'appeal_decided',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
-export const NOTIFICATION_CATEGORIES = ['requests', 'sessions', 'reminders', 'messages'] as const;
+export const NOTIFICATION_CATEGORIES = [
+  'requests',
+  'sessions',
+  'reminders',
+  'messages',
+  'community',
+  'moderation',
+] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   request_received: 'requests',
@@ -82,6 +98,15 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   feedback_received: 'sessions',
   booking_reminder: 'reminders',
   new_message: 'messages',
+  post_comment: 'community',
+  comment_reply: 'community',
+  question_answered: 'community',
+  answer_accepted: 'community',
+  question_approved: 'community',
+  question_rejected: 'community',
+  content_removed: 'moderation',
+  content_restored: 'moderation',
+  appeal_decided: 'moderation',
 };
 export const CHANNELS = ['inApp', 'email', 'push'] as const;
 export type Channel = (typeof CHANNELS)[number];
@@ -92,6 +117,9 @@ export const DEFAULT_CHANNELS: Record<NotificationCategory, ChannelPrefs> = {
   reminders: { inApp: true, email: true, push: true },
   // One email per conversation at most every 30 minutes, and only while you are offline.
   messages: { inApp: true, email: false, push: true },
+  community: { inApp: true, email: false, push: true },
+  // Decisions about your content always reach you by email too (moderation transparency).
+  moderation: { inApp: true, email: true, push: false },
 };
 
 const channelPrefs = z.strictObject({ inApp: z.boolean(), email: z.boolean(), push: z.boolean() });
@@ -101,6 +129,8 @@ export const notificationPrefsBody = z.strictObject({
     sessions: channelPrefs,
     reminders: channelPrefs,
     messages: channelPrefs,
+    community: channelPrefs,
+    moderation: channelPrefs,
   }),
   quietHours: z.strictObject({
     enabled: z.boolean(),
@@ -153,7 +183,16 @@ export const notificationsQuery = z.strictObject({
 
 // ── Safety ─────────────────────────────
 export const blockBody = z.strictObject({ userId: objectId });
-export const REPORT_TARGETS = ['user', 'message', 'request'] as const;
+export const REPORT_TARGETS = [
+  'user',
+  'message',
+  'request',
+  'post',
+  'comment',
+  'question',
+  'answer',
+  'story',
+] as const;
 export const REPORT_REASONS = ['spam', 'harassment', 'inappropriate', 'impersonation', 'other'] as const;
 export const reportBody = z.strictObject({
   targetType: z.enum(REPORT_TARGETS),

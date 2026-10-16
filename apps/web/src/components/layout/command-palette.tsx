@@ -4,8 +4,21 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Command } from 'cmdk';
 import { Dialog as D } from 'radix-ui';
-import { Home, Languages, Settings, Shield, SunMoon, User, Users, BadgeCheck } from 'lucide-react';
-import type { PublicProfile } from '@campuslink/shared';
+import {
+  BadgeCheck,
+  Bookmark,
+  Film,
+  Home,
+  Languages,
+  MessageCircleQuestion,
+  Newspaper,
+  Settings,
+  Shield,
+  SunMoon,
+  User,
+  Users,
+} from 'lucide-react';
+import type { PostView, PublicProfile, QuestionView } from '@campuslink/shared';
 import { api } from '../../lib/api';
 import { usePalette } from '../../lib/palette';
 import { useCan, useMe } from '../../lib/me';
@@ -23,6 +36,7 @@ export function CommandPalette() {
   const { open, setOpen } = usePalette();
   const { data: me } = useMe();
   const canSearch = useCan('directory:read');
+  const canFeed = useCan('feed:read');
   const canAdmin = useCan('users:read_admin');
   const { setTheme, setLanguage } = usePreferences();
   const [q, setQ] = useState('');
@@ -30,7 +44,10 @@ export function CommandPalette() {
   const people = useQuery({
     queryKey: ['search', dq],
     queryFn: ({ signal }) =>
-      api.get<{ people: PublicProfile[] }>(`/search?q=${encodeURIComponent(dq)}`, signal),
+      api.get<{ people: PublicProfile[]; posts?: PostView[]; questions?: QuestionView[] }>(
+        `/search?q=${encodeURIComponent(dq)}`,
+        signal,
+      ),
     enabled: open && canSearch && dq.length >= 2,
     staleTime: 30_000,
   });
@@ -41,6 +58,9 @@ export function CommandPalette() {
   };
   const nav = [
     { to: '/home', label: t('nav.home'), icon: Home, show: true },
+    { to: '/questions', label: t('nav.questions'), icon: MessageCircleQuestion, show: canFeed },
+    { to: '/reels', label: t('nav.reels'), icon: Film, show: canFeed },
+    { to: '/saved', label: t('nav.saved'), icon: Bookmark, show: canFeed },
     { to: '/people', label: t('nav.people'), icon: Users, show: canSearch },
     { to: '/profile', label: t('nav.profile'), icon: User, show: true },
     { to: '/verify', label: t('home.verifyCta'), icon: BadgeCheck, show: !!me && !me.verified },
@@ -84,6 +104,38 @@ export function CommandPalette() {
                   {people.isSuccess && !people.data.people.length && (
                     <p className="px-3 py-2 text-sm text-fg-2">{t('palette.noResults')}</p>
                   )}
+                </Command.Group>
+              )}
+              {dq.length >= 3 && !!people.data?.posts?.length && (
+                <Command.Group heading={t('palette.posts')} className={group}>
+                  {people.data.posts.map((p) => (
+                    <Command.Item
+                      key={p.id}
+                      value={`post-${p.id}`}
+                      onSelect={() => go(`/posts/${p.id}`)}
+                      className={item}
+                    >
+                      <Newspaper className="size-4 flex-none text-fg-2" aria-hidden />
+                      <span className="min-w-0 flex-1 truncate">
+                        {p.body || p.link?.title || p.author.name}
+                      </span>
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              )}
+              {dq.length >= 3 && !!people.data?.questions?.length && (
+                <Command.Group heading={t('palette.questions')} className={group}>
+                  {people.data.questions.map((q) => (
+                    <Command.Item
+                      key={q.id}
+                      value={`q-${q.id}`}
+                      onSelect={() => go(`/questions/${q.id}`)}
+                      className={item}
+                    >
+                      <MessageCircleQuestion className="size-4 flex-none text-fg-2" aria-hidden />
+                      <span className="min-w-0 flex-1 truncate">{q.title}</span>
+                    </Command.Item>
+                  ))}
                 </Command.Group>
               )}
               <Command.Group heading={t('palette.goTo')} className={group}>

@@ -28,6 +28,9 @@ import { BookingModel, FeedbackModel } from '../modules/sessions/booking.model.j
 import { ConversationModel, MessageModel } from '../modules/messaging/conversation.model.js';
 import { holdsFor } from '../modules/mentorship/slots.js';
 import { randomRoomName } from '../lib/video.js';
+import { CommentModel, PostModel, ReactionModel } from '../modules/feed/post.model.js';
+import { FollowModel, StoryModel } from '../modules/feed/story.model.js';
+import { AnswerModel, QuestionModel } from '../modules/qa/question.model.js';
 
 const env = loadEnv();
 if (env.NODE_ENV === 'production') throw new Error('Refusing to seed a production database');
@@ -334,6 +337,119 @@ async function seedMentorship(ids: Map<string, Types.ObjectId>) {
   await pair('fatima', 'vikram', 'quick_chat', { status: 'pending' });
 }
 
+/**
+ * Demo feed: posts, a poll, an announcement, a story and Q&A, every text marked DEMO. No news items
+ * are seeded: real feeds come only from sources an admin adds (never invented headlines).
+ */
+async function seedFeed(ids: Map<string, Types.ObjectId>) {
+  const id = (local: string) => {
+    const v = ids.get(local);
+    if (!v) throw new Error(`seed: missing ${local}`);
+    return v;
+  };
+  const ago = (h: number) => new Date(Date.now() - h * 3600_000);
+  const post = async (
+    author: string,
+    hoursAgo: number,
+    fields: Record<string, unknown>,
+    facts: { alumni: boolean; branch: Branch | null },
+  ) => {
+    const p = await PostModel.create({
+      authorId: id(author),
+      kind: 'text',
+      authorAlumni: facts.alumni,
+      authorBranch: facts.branch,
+      ...fields,
+    });
+    await PostModel.updateOne({ _id: p._id }, { $set: { createdAt: ago(hoursAgo) } }, { timestamps: false });
+    return p._id;
+  };
+  const tip = await post(
+    'rahul',
+    3,
+    {
+      body: 'DEMO: One habit that helped me crack backend interviews:\n\n- Solve **one** problem a day, but explain it out loud\n- Re-do it a week later without notes\n\n#placements #dsa',
+      hashtags: ['placements', 'dsa'],
+      topics: ['placements', 'dsa'],
+      counts: { helpful: 2, insightful: 0, celebrate: 0, comments: 1, saves: 0, shares: 0 },
+    },
+    { alumni: true, branch: 'CSE' },
+  );
+  await ReactionModel.insertMany([
+    { postId: tip, userId: id('ananya'), reaction: 'helpful' },
+    { postId: tip, userId: id('vikram'), reaction: 'helpful' },
+  ]);
+  await CommentModel.create({
+    postId: tip,
+    authorId: id('ananya'),
+    body: 'DEMO: Trying this from today. Do you time yourself while explaining?',
+  });
+  await post(
+    'fatima',
+    6,
+    {
+      kind: 'poll',
+      body: 'DEMO: Final-years, what are you preparing for first?',
+      topics: ['placements', 'higher-studies'],
+      poll: {
+        options: [
+          { text: 'Campus placements', votes: 0 },
+          { text: 'GATE', votes: 0 },
+          { text: 'Higher studies abroad', votes: 0 },
+        ],
+        closesAt: new Date(Date.now() + 3 * DAY),
+      },
+    },
+    { alumni: true, branch: null },
+  );
+  await post(
+    'tpo',
+    20,
+    {
+      body: 'DEMO: Placement cell office hours move to 3–5 pm this week. Bring printed resumes for the mock drive.',
+      announcement: true,
+      topics: ['placements', 'events'],
+    },
+    { alumni: false, branch: null },
+  );
+  await post(
+    'arjun',
+    30,
+    {
+      body: 'DEMO: Core-company interviews still ask fundamentals. Revise *thermodynamics* and *strength of materials* before the aptitude round.',
+      topics: ['core-jobs', 'mechanical'],
+    },
+    { alumni: true, branch: null },
+  );
+  await StoryModel.create({
+    authorId: id('tpo'),
+    kind: 'text',
+    text: 'DEMO: Mock interview slots open today in the seminar hall',
+    background: 'ocean',
+    expiresAt: new Date(Date.now() + 20 * 3600_000),
+  });
+  const q = await QuestionModel.create({
+    authorId: id('ananya'),
+    title: 'DEMO: How many projects should a CSE resume show for backend roles?',
+    body: 'DEMO: Third year, two projects so far.',
+    topics: ['placements'],
+    status: 'published',
+    answers: 1,
+  });
+  const a = await AnswerModel.create({
+    questionId: q._id,
+    authorId: id('rahul'),
+    body: 'DEMO: Two solid projects you can explain end to end beat five shallow ones.',
+  });
+  await QuestionModel.updateOne({ _id: q._id }, { $set: { acceptedAnswerId: a._id } });
+  await QuestionModel.create({
+    authorId: id('vikram'),
+    title: 'DEMO: Is GATE worth it if I already have a campus offer?',
+    topics: ['gate'],
+  });
+  await FollowModel.create({ followerId: id('ananya'), targetType: 'user', targetId: String(id('rahul')) });
+}
+
 async function main() {
   await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
   await mongoose.connection.dropDatabase();
@@ -433,6 +549,7 @@ async function main() {
         });
       }
       await seedMentorship(ids);
+      await seedFeed(ids);
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
   }
@@ -448,6 +565,9 @@ async function main() {
   console.warn('Try an import: Admin → Imports → upload docs/samples/sample-students.csv');
   console.warn(
     'Try mentorship: ananya@dpit.example has a session with Rahul starting in a few minutes (Sessions → Join video) and a demo chat; sign in as rahul@dpit.example to see the mentor side.',
+  );
+  console.warn(
+    'Try the feed: sign in as ananya@dpit.example (For you, stories, Q&A); faculty@dpit.example sees a pending question under Admin → Moderation; admin@dpit.example adds RSS sources under Admin → Sources.',
   );
   console.warn(
     '\nOpen http://dpit.localhost:5173 or http://mrce.localhost:5173 (platform console: http://admin.localhost:5173)\n',

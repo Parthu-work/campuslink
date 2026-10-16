@@ -6,6 +6,7 @@ import {
   type ProfileField,
   type PublicProfile,
   type PersonRef,
+  type AuthorRef,
   type Role,
 } from '@campuslink/shared';
 import type { z } from 'zod';
@@ -205,6 +206,61 @@ export class ProfilesService {
         avatarFileId: p.avatarFileId ? String(p.avatarFileId) : null,
       });
     return map;
+  }
+
+  /** Author cards for content (headline, branch and batch only when visible to this viewer). */
+  async authorsFor(viewer: AuthState, userIds: (string | Types.ObjectId)[]): Promise<Map<string, AuthorRef>> {
+    const ids = [...new Set(userIds.map(String))];
+    const rows = await ProfileModel.find({ userId: { $in: ids } }).lean<ProfileDoc[]>();
+    const map = new Map<string, AuthorRef>();
+    for (const id of ids)
+      map.set(id, {
+        userId: id,
+        name: 'Former member',
+        avatarFileId: null,
+        roles: [],
+        headline: '',
+        branch: null,
+        gradYear: null,
+      });
+    for (const p of rows) {
+      const v = this.present(p, viewer, null);
+      map.set(v.userId, {
+        userId: v.userId,
+        name: v.name,
+        avatarFileId: v.avatarFileId,
+        roles: v.roles,
+        headline: v.fields.headline ?? '',
+        branch: (v.fields.branch ?? null) as AuthorRef['branch'],
+        gradYear: v.fields.gradYear ?? null,
+      });
+    }
+    return map;
+  }
+
+  /** Facts used for feed ranking and suggestions (own profile, never shown to others). */
+  async rankingFacts(userIds: (string | Types.ObjectId)[]) {
+    const rows = await ProfileModel.find({ userId: { $in: userIds } })
+      .select('userId roles branch')
+      .lean<ProfileDoc[]>();
+    return new Map(
+      rows.map((p) => [String(p.userId), { alumni: p.roles.includes('ALUMNI'), branch: p.branch ?? null }]),
+    );
+  }
+
+  /** Verified alumni of a branch (follow suggestions). */
+  async alumniOfBranch(branch: string | null, exclude: string[], limit: number) {
+    const rows = await ProfileModel.find({
+      verified: true,
+      roles: 'ALUMNI',
+      userId: { $nin: exclude },
+      ...(branch ? { branch } : {}),
+    })
+      .sort({ _id: -1 })
+      .limit(limit)
+      .select('userId')
+      .lean<ProfileDoc[]>();
+    return rows.map((r) => String(r.userId));
   }
 
   /** What `viewer` may see of each verified, active member in `userIds` (visibility applied). */

@@ -276,7 +276,7 @@ erDiagram
   REPORT {
     ObjectId tenantId
     ObjectId reporterId
-    enum targetType "user | message | request"
+    enum targetType "user | message | request | post | comment | question | answer | story"
     ObjectId subjectUserId
     enum reason
     string snapshot "reported text only"
@@ -286,4 +286,128 @@ erDiagram
 
 Availability is embedded in `mentorProfiles` (one document, changed atomically with the settings) rather than a separate `availability` collection. `idempotencyRecords` (TTL 24 h) store replayable responses for `Idempotency-Key`.
 
-The remaining collections from the spec are added by their phases: feed and content (4), jobs (5), roadmaps (6), gamification and events (7).
+## Feed and content (Phase 4)
+
+```mermaid
+erDiagram
+  USER ||--o{ POST : writes
+  POST ||--o{ COMMENT : has
+  POST ||--o{ REACTION : has
+  POST ||--o{ SAVED_POST : "saved as"
+  POST ||--o{ POLL_VOTE : has
+  USER ||--o{ STORY : posts
+  USER ||--o{ FOLLOW : follows
+  USER ||--o{ QUESTION : asks
+  QUESTION ||--o{ ANSWER : has
+  ANSWER ||--o{ ANSWER_VOTE : has
+  CONTENT_SOURCE ||--o{ CONTENT_ITEM : ingests
+  MODERATION_ACTION }o--|| POST : "acts on (any content)"
+  APPEAL }o--|| POST : "appeals (any content)"
+  POST {
+    ObjectId tenantId
+    ObjectId authorId
+    enum kind "text | photo | reel | poll | link"
+    string body "plain text, max 3000"
+    string[] hashtags
+    enum[] topics "max 3"
+    object[] media "fileId, alt, kind, mime, durationSec"
+    object poll "options with vote counts, closesAt"
+    object link "url, host, title, description, siteName"
+    bool announcement
+    bool authorAlumni "ranking"
+    enum authorBranch "ranking"
+    object counts "reactions, comments, saves, shares"
+    enum status "published | removed"
+    object removal "reason, note, by, at"
+  }
+  COMMENT {
+    ObjectId tenantId
+    ObjectId postId
+    ObjectId parentId "one level"
+    ObjectId authorId
+    string body "max 1000"
+    enum status
+  }
+  REACTION {
+    ObjectId tenantId
+    ObjectId postId
+    ObjectId userId "unique with postId"
+    enum reaction "helpful | insightful | celebrate"
+  }
+  STORY {
+    ObjectId tenantId
+    ObjectId authorId
+    enum kind "text | photo"
+    string text
+    ObjectId fileId
+    string link
+    date expiresAt "TTL 24 h"
+  }
+  FOLLOW {
+    ObjectId tenantId
+    ObjectId followerId
+    enum targetType "user | topic | source"
+    string targetId "unique per follower"
+  }
+  QUESTION {
+    ObjectId tenantId
+    ObjectId authorId
+    string title
+    string body
+    enum status "pending | published | rejected | removed"
+    int answers
+    ObjectId acceptedAnswerId
+  }
+  ANSWER {
+    ObjectId tenantId
+    ObjectId questionId
+    ObjectId authorId
+    string body
+    int helpful
+    enum status
+  }
+  CONTENT_SOURCE {
+    ObjectId tenantId
+    string url "unique per tenant, https"
+    string starterKey
+    enum status "active | paused"
+    string etag
+    string lastModified
+    date nextFetchAt
+    int consecutiveFailures
+    enum lastOutcome "ok | not_modified | blocked | error"
+  }
+  CONTENT_ITEM {
+    ObjectId tenantId
+    ObjectId sourceId
+    string title
+    string snippet "max 300"
+    string url "canonical"
+    string urlHash "unique per tenant"
+    string contentHash "7-day dedupe"
+    enum status "published | held | rejected | removed"
+    date expiresAt "TTL 90 days"
+  }
+  MODERATION_ACTION {
+    ObjectId tenantId
+    ObjectId actorId
+    enum targetType
+    ObjectId targetId
+    enum action "remove | restore | approve | reject | publish | appeal_upheld | appeal_reversed"
+    enum reason
+    string note
+  }
+  APPEAL {
+    ObjectId tenantId
+    enum targetType
+    ObjectId targetId "unique: one appeal"
+    ObjectId authorId
+    string message
+    enum status "open | upheld | reversed"
+    ObjectId decidedBy
+  }
+```
+
+Also: `savedPosts` and `pollVotes` (unique per user and post), `answerVotes` (unique per user and answer) and `oneUsefulThings` (one staff pick per date). `moderationActions` is append-only (update and delete hooks throw). Files gain the purposes `post_media` and `story_media` with `attachedAt` (single-use claim) and `durationSec`.
+
+The remaining collections from the spec are added by their phases: jobs (5), roadmaps (6), gamification and events (7).

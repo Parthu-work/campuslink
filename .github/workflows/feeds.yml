@@ -1,0 +1,31 @@
+name: feeds
+
+# Checks the curated starter feeds (reachability, robots.txt, RSS/Atom, freshness). Separate from CI:
+# a third-party outage must not block merges, but it must be visible.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+  push:
+    branches: [main]
+    paths:
+      - apps/api/src/modules/content-sources/**
+      - .github/workflows/feeds.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @campuslink/shared build
+      - run: pnpm --filter @campuslink/api feeds:verify

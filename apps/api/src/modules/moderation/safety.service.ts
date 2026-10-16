@@ -23,7 +23,7 @@ const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11
 export class SafetyService {
   private readonly onBlockListeners: BlockListener[] = [];
   private readonly onUnblockListeners: BlockListener[] = [];
-  private readonly targets = new Map<'message' | 'request', TargetResolver>();
+  private readonly targets = new Map<string, TargetResolver>();
 
   constructor(private readonly profiles: ProfilesService) {}
 
@@ -33,7 +33,10 @@ export class SafetyService {
   onUnblock(fn: BlockListener) {
     this.onUnblockListeners.push(fn);
   }
-  registerTarget(kind: 'message' | 'request', resolver: TargetResolver) {
+  registerTarget(
+    kind: 'message' | 'request' | 'post' | 'comment' | 'question' | 'answer' | 'story',
+    resolver: TargetResolver,
+  ) {
     this.targets.set(kind, resolver);
   }
 
@@ -116,6 +119,10 @@ export class SafetyService {
     }
   }
 
+  async openReportCount() {
+    return ReportModel.countDocuments({ status: 'open' });
+  }
+
   async listReports(q: z.output<typeof reportsQuery>) {
     const rows = await ReportModel.find({
       status: q.status,
@@ -130,6 +137,7 @@ export class SafetyService {
       items: page.map((r) => ({
         id: String(r._id),
         targetType: r.targetType,
+        targetId: String(r.targetId),
         reason: r.reason,
         note: r.note,
         snapshot: r.snapshot,

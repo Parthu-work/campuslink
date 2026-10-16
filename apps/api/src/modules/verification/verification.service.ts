@@ -67,7 +67,7 @@ export class VerificationService {
     const rec = await WhitelistModel.findOneAndUpdate(
       { _id: recordId, status: 'unclaimed' },
       { $set: { status: 'claimed', claimedBy: new Types.ObjectId(userId), claimedAt: new Date() } },
-      { new: true },
+      { returnDocument: 'after' },
     ).lean();
     if (!rec) return false;
     const user = await UserModel.findById(userId).select('roles').lean();
