@@ -444,4 +444,9 @@ export class VerificationService {
     );
     return { company: ch.company?.name, domain: ch.company?.domain };
   }
+
+  /** Analytics: verification requests waiting for a decision. */
+  pendingCount() {
+    return VerificationRequestModel.countDocuments({ status: 'pending' });
+  }
 }

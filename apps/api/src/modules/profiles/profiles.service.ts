@@ -355,4 +355,19 @@ export class ProfilesService {
       },
     );
   }
+
+  /** Analytics: every member's role, verification and cohort (aggregated by the caller). */
+  async cohorts() {
+    const rows = await ProfileModel.find({})
+      .select('userId roles verified branch gradYear')
+      .limit(50_000)
+      .lean<ProfileDoc[]>();
+    return rows.map((p) => ({
+      userId: String(p.userId),
+      roles: p.roles,
+      verified: p.verified,
+      branch: p.branch ?? null,
+      gradYear: p.gradYear ?? null,
+    }));
+  }
 }

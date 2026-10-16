@@ -26,6 +26,7 @@ import type { NotificationsService } from '../notifications/notifications.servic
 import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthState } from '../../types.js';
 import { zonedParts, zonedToUtc } from '../../lib/timezone.js';
+import { noAward, type Award } from '../../lib/awards.js';
 
 export const REMINDER_JOB = 'sessions.reminder';
 export const COMPLETE_JOB = 'sessions.complete';
@@ -61,6 +62,8 @@ export type SlotList = (
 ) => Promise<{ timezone: string; durationMin: number; slots: string[] }>;
 
 export class SessionsService {
+  /** Points for actions this module confirms (wired in app.ts). */
+  award: Award = noAward;
   slotCheck: SlotCheck | null = null;
   slotList: SlotList | null = null;
   constructor(private readonly d: SessionsDeps) {}
@@ -397,6 +400,7 @@ export class SessionsService {
       throw e;
     }
     await this.d.notifications.notify(b.mentorId, 'feedback_received', { bookingId: String(b._id) });
+    await this.award(b.menteeId, 'feedback_given', String(b._id), { from: b.mentorId });
     return { saved: true };
   }
 
@@ -519,5 +523,31 @@ export class SessionsService {
       sessionType: b.sessionType,
       bookingId: String(b._id),
     });
+    await this.award(b.menteeId, 'session_completed', String(b._id), { from: b.mentorId });
+    await this.award(b.mentorId, 'session_mentored', String(b._id), { from: b.menteeId });
+    // Once per mentee: the dedupe key includes the mentor.
+    await this.award(b.mentorId, 'new_mentee', String(b.menteeId), { from: b.menteeId });
+  }
+
+  /** Analytics: completed sessions since a date (who and when only) and the average rating. */
+  async completedSince(since: Date) {
+    const [rows, rating] = await Promise.all([
+      BookingModel.find({ status: 'completed', completedAt: { $gte: since } })
+        .select('mentorId menteeId completedAt')
+        .limit(100_000)
+        .lean<BookingDoc[]>(),
+      FeedbackModel.aggregate<{ avg: number; n: number }>([
+        { $match: { createdAt: { $gte: since } } },
+        { $group: { _id: null, avg: { $avg: '$rating' }, n: { $sum: 1 } } },
+      ]),
+    ]);
+    return {
+      sessions: rows.map((b) => ({
+        mentorId: String(b.mentorId),
+        menteeId: String(b.menteeId),
+        at: b.completedAt ?? b.end,
+      })),
+      averageRating: rating[0] && rating[0].n >= 5 ? Math.round(rating[0].avg * 10) / 10 : null,
+    };
   }
 }

@@ -42,6 +42,7 @@ import type { JobQueue, TenantJob } from '../../lib/jobs.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
 import type { NotificationsService } from '../notifications/notifications.service.js';
 import type { AuthState } from '../../types.js';
+import { noAward, type Award } from '../../lib/awards.js';
 
 export const NUDGE_JOB = 'roadmaps.nudge';
 const DAY = 86_400_000;
@@ -151,6 +152,8 @@ export interface RoadmapsDeps {
  * per-node comments, personal progress with a weekly goal and gentle nudges.
  */
 export class RoadmapsService {
+  /** Points for actions this module confirms (wired in app.ts). */
+  award: Award = noAward;
   constructor(private readonly d: RoadmapsDeps) {}
 
   // ── Loading and access ─────────────────────────────
@@ -543,6 +546,8 @@ export class RoadmapsService {
     );
     const name = (await this.d.profiles.refsFor([viewer.userId])).get(viewer.userId)?.name ?? '';
     const notifyIds = new Set(open.editorIds.map(String));
+    if (body.decision === 'approve')
+      for (const editor of notifyIds) await this.award(editor, 'roadmap_published', `${id}:v${open.version}`);
     for (const to of notifyIds)
       await this.d.notifications.notify(
         to,
@@ -727,9 +732,13 @@ export class RoadmapsService {
         { ...key, 'done.nodeId': { $ne: body.nodeId } },
         { $push: { done: { nodeId: body.nodeId, at: new Date() } } },
       );
+      await this.award(viewer.userId, 'roadmap_step', `${String(r._id)}:${body.nodeId}`);
     } else await RoadmapProgressModel.updateOne(key, { $pull: { done: { nodeId: body.nodeId } } });
     const p = await RoadmapProgressModel.findOne(key).lean<ProgressDoc>();
-    return this.myProgress(p, content);
+    const mine = this.myProgress(p, content);
+    if (body.done && mine && mine.done.length === content.nodes.length)
+      await this.award(viewer.userId, 'roadmap_finished', String(r._id));
+    return mine;
   }
 
   /** Follow a roadmap with a weekly goal (0 = follow without a goal or nudges). */
@@ -909,5 +918,16 @@ export class RoadmapsService {
   async search(viewer: AuthState, text: string) {
     if (text.length < 2) return [];
     return (await this.list(viewer, { q: text })).slice(0, 5);
+  }
+
+  /** Analytics: roadmap steps marked done per member since a date. */
+  async stepsByUserSince(since: Date) {
+    const rows = await RoadmapProgressModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+      { $match: { 'done.at': { $gte: since } } },
+      { $unwind: '$done' },
+      { $match: { 'done.at': { $gte: since } } },
+      { $group: { _id: '$userId', n: { $sum: 1 } } },
+    ]);
+    return new Map(rows.map((r) => [String(r._id), r.n]));
   }
 }

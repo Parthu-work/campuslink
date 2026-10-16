@@ -722,4 +722,9 @@ export class AuthService {
       meta,
     );
   }
+
+  /** Analytics: members with a session used since a date (no other activity is tracked). */
+  async activeSince(since: Date) {
+    return (await SessionModel.distinct('userId', { lastUsedAt: { $gte: since } })).length;
+  }
 }

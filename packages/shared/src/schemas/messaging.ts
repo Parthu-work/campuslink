@@ -84,6 +84,12 @@ export const NOTIFICATION_TYPES = [
   'roadmap_nudge',
   'roadmap_approved',
   'roadmap_changes_requested',
+  'badge_earned',
+  'redemption_decided',
+  'event_reminder',
+  'event_updated',
+  'event_cancelled',
+  'event_promoted',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -95,6 +101,8 @@ export const NOTIFICATION_CATEGORIES = [
   'moderation',
   'jobs',
   'roadmaps',
+  'achievements',
+  'events',
 ] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
@@ -125,6 +133,12 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   roadmap_nudge: 'roadmaps',
   roadmap_approved: 'roadmaps',
   roadmap_changes_requested: 'roadmaps',
+  badge_earned: 'achievements',
+  redemption_decided: 'achievements',
+  event_reminder: 'events',
+  event_updated: 'events',
+  event_cancelled: 'events',
+  event_promoted: 'events',
 };
 export const CHANNELS = ['inApp', 'email', 'push'] as const;
 export type Channel = (typeof CHANNELS)[number];
@@ -142,6 +156,10 @@ export const DEFAULT_CHANNELS: Record<NotificationCategory, ChannelPrefs> = {
   jobs: { inApp: true, email: true, push: true },
   // Weekly goal nudges and review decisions: gentle, never by email unless you turn it on.
   roadmaps: { inApp: true, email: false, push: true },
+  // Badges and reward decisions: in the app only, unless you turn more on.
+  achievements: { inApp: true, email: false, push: false },
+  // Reminders, changes and waitlist places for events you RSVP'd to.
+  events: { inApp: true, email: true, push: true },
 };
 
 const channelPrefs = z.strictObject({ inApp: z.boolean(), email: z.boolean(), push: z.boolean() });
@@ -155,6 +173,8 @@ export const notificationPrefsBody = z.strictObject({
     moderation: channelPrefs,
     jobs: channelPrefs,
     roadmaps: channelPrefs,
+    achievements: channelPrefs,
+    events: channelPrefs,
   }),
   quietHours: z.strictObject({
     enabled: z.boolean(),
@@ -220,6 +240,8 @@ export const REPORT_TARGETS = [
   'referral',
   'roadmap',
   'roadmap_comment',
+  'event',
+  'event_question',
 ] as const;
 export const REPORT_REASONS = ['spam', 'harassment', 'inappropriate', 'impersonation', 'other'] as const;
 export const reportBody = z.strictObject({

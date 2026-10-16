@@ -832,6 +832,34 @@
     "roadmap_changes_requested": {
       "title": "Roadmap review",
       "body": "{{name}} asked for changes to “{{roadmap}}”."
+    },
+    "badge_earned": {
+      "title": "New badge",
+      "body": "You earned the “{{badge}}” badge."
+    },
+    "redemption_decided": {
+      "title": "Reward update",
+      "body": "Your request for “{{reward}}” was {{decision}}."
+    },
+    "event_reminder": {
+      "title": "Event reminder",
+      "body": "“{{event}}” starts {{time}}."
+    },
+    "event_updated": {
+      "title": "Event changed",
+      "body": "“{{event}}” has new details. Check the time and place."
+    },
+    "event_cancelled": {
+      "title": "Event cancelled",
+      "body": "“{{event}}” was cancelled."
+    },
+    "event_promoted": {
+      "title": "You’re in",
+      "body": "A place opened up: you’re now going to “{{event}}”."
+    },
+    "decision": {
+      "fulfilled": "handed over",
+      "rejected": "declined (your points were returned)"
     }
   },
   "notifications": {
@@ -862,7 +890,9 @@
       "community": "Comments and answers",
       "moderation": "Moderation decisions",
       "jobs": "Jobs and referrals",
-      "roadmaps": "Roadmaps"
+      "roadmaps": "Roadmaps",
+      "achievements": "Badges and rewards",
+      "events": "Events"
     },
     "catHint": {
       "requests": "New requests, replies, expiries",
@@ -872,7 +902,9 @@
       "community": "Comments, replies and answers to your posts and questions",
       "moderation": "Removals, restorations, appeals and question reviews",
       "jobs": "Referral replies and daily job-alert matches",
-      "roadmaps": "Weekly goal nudges and review decisions"
+      "roadmaps": "Weekly goal nudges and review decisions",
+      "achievements": "New badges and reward decisions",
+      "events": "Reminders, changes, cancellations and waitlist places"
     },
     "toggle": "{{channel}} for {{category}}",
     "quiet": "Quiet hours",
@@ -953,7 +985,9 @@
     "job": "job post",
     "referral": "referral request",
     "roadmap": "roadmap",
-    "roadmap_comment": "roadmap comment"
+    "roadmap_comment": "roadmap comment",
+    "event": "event",
+    "event_question": "event question"
   },
   "feed": {
     "tabs": "Feed view",
@@ -1708,6 +1742,54 @@
       "upToDate": "Installed",
       "installed": "Installed",
       "proposed": "Update proposed for review"
+    }
+  },
+  "progress": {
+    "badge": {
+      "first_step": {
+        "name": "First step",
+        "description": "You marked your first roadmap step done."
+      },
+      "roadmap_finisher": {
+        "name": "Roadmap finisher",
+        "description": "You finished every step of a roadmap."
+      },
+      "streak_7": {
+        "name": "7-day streak",
+        "description": "You learned something seven days in a row."
+      },
+      "streak_30": {
+        "name": "30-day streak",
+        "description": "Thirty days in a row. Steady wins."
+      },
+      "helpful_answer": {
+        "name": "Helpful answer",
+        "description": "Someone accepted your answer."
+      },
+      "first_session": {
+        "name": "First session",
+        "description": "You completed your first mentorship session."
+      },
+      "event_goer": {
+        "name": "Event regular",
+        "description": "You attended three events."
+      },
+      "mentor_first": {
+        "name": "First mentee",
+        "description": "You mentored your first session."
+      },
+      "mentor_10": {
+        "name": "Ten sessions",
+        "description": "You mentored ten sessions."
+      },
+      "referrer_5": {
+        "name": "Door opener",
+        "description": "You referred five students."
+      },
+      "roadmap_author": {
+        "name": "Roadmap author",
+        "description": "A roadmap you wrote was published."
+      }
     }
   }
 }

@@ -39,3 +39,16 @@ export {
   RoadmapProgressModel,
   RoadmapCommentModel,
 } from './roadmaps/roadmap.model.js';
+export {
+  XpEventModel,
+  UserBadgeModel,
+  GamificationPrefsModel,
+  RewardModel,
+  RedemptionModel,
+} from './gamification/gamification.model.js';
+export {
+  EventModel,
+  EventRsvpModel,
+  EventQuestionModel,
+  EventQuestionVoteModel,
+} from './events/event.model.js';

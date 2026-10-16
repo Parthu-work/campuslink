@@ -261,6 +261,7 @@
                               "tenant:settings",
                               "audit:read",
                               "rewards:manage",
+                              "rewards:redeem",
                               "platform:tenants",
                               "platform:health"
                             ]
@@ -330,6 +331,7 @@
                               "tenant:settings",
                               "audit:read",
                               "rewards:manage",
+                              "rewards:redeem",
                               "platform:tenants",
                               "platform:health"
                             ]
@@ -5314,6 +5316,46 @@
                           "push"
                         ],
                         "additionalProperties": false
+                      },
+                      "achievements": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "events": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
@@ -5324,7 +5366,9 @@
                       "community",
                       "moderation",
                       "jobs",
-                      "roadmaps"
+                      "roadmaps",
+                      "achievements",
+                      "events"
                     ],
                     "additionalProperties": false
                   },
@@ -5653,7 +5697,9 @@
                       "job",
                       "referral",
                       "roadmap",
-                      "roadmap_comment"
+                      "roadmap_comment",
+                      "event",
+                      "event_question"
                     ]
                   },
                   "targetId": {
@@ -11634,6 +11680,1656 @@
         "x-permission": "roadmaps:write"
       }
     },
+    "/api/v1/me/progress": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "My XP, level, streak, badges, impact and point balance",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "gamification_get_me_progress",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/me/progress/settings": {
+      "put": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Opt in or out of leaderboards and the Wall of Mentors",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "gamification_put_me_progress_settings",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "showOnLeaderboard": {
+                    "type": "boolean"
+                  },
+                  "showOnWall": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "showOnLeaderboard",
+                  "showOnWall"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/leaderboard": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "This month’s XP among members who opted in",
+        "description": "Requires permission `directory:read` (Browse the people directory). Host scope: college.",
+        "operationId": "gamification_get_leaderboard",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "college",
+              "type": "string",
+              "enum": [
+                "college",
+                "branch"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "directory:read"
+      }
+    },
+    "/api/v1/wall-of-mentors": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Opted-in mentors by level, and last month’s Mentor of the Month",
+        "description": "Requires permission `directory:read` (Browse the people directory). Host scope: college.",
+        "operationId": "gamification_get_wall_of_mentors",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "directory:read"
+      }
+    },
+    "/api/v1/rewards": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Rewards I can redeem points for",
+        "description": "Requires permission `rewards:redeem` (Redeem points for rewards). Host scope: college.",
+        "operationId": "gamification_get_rewards",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:redeem"
+      }
+    },
+    "/api/v1/rewards/redeem": {
+      "post": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Redeem points for a reward (pending until the college hands it over)",
+        "description": "Requires permission `rewards:redeem` (Redeem points for rewards). Host scope: college. Rate limit: interact.",
+        "operationId": "gamification_post_rewards_redeem",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "rewardId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "rewardId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:redeem"
+      }
+    },
+    "/api/v1/me/redemptions": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "My reward requests",
+        "description": "Requires permission `rewards:redeem` (Redeem points for rewards). Host scope: college.",
+        "operationId": "gamification_get_me_redemptions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:redeem"
+      }
+    },
+    "/api/v1/me/redemptions/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Cancel a pending reward request (points are returned)",
+        "description": "Requires permission `rewards:redeem` (Redeem points for rewards). Host scope: college.",
+        "operationId": "gamification_post_me_redemptions_id_cancel",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:redeem"
+      }
+    },
+    "/api/v1/admin/rewards": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "The rewards catalogue, including inactive rewards",
+        "description": "Requires permission `rewards:manage` (Manage the rewards catalogue). Host scope: college.",
+        "operationId": "gamification_get_admin_rewards",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:manage"
+      },
+      "post": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Add a reward",
+        "description": "Requires permission `rewards:manage` (Manage the rewards catalogue). Host scope: college.",
+        "operationId": "gamification_post_admin_rewards",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 500
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "certificate",
+                      "event_invite",
+                      "goodies",
+                      "other"
+                    ]
+                  },
+                  "track": {
+                    "type": "string",
+                    "enum": [
+                      "xp",
+                      "impact"
+                    ]
+                  },
+                  "cost": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100000
+                  },
+                  "stock": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "active": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "title",
+                  "kind",
+                  "track",
+                  "cost"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:manage"
+      }
+    },
+    "/api/v1/admin/rewards/{id}": {
+      "patch": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Change or retire a reward",
+        "description": "Requires permission `rewards:manage` (Manage the rewards catalogue). Host scope: college.",
+        "operationId": "gamification_patch_admin_rewards_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 80
+                  },
+                  "description": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 500
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "certificate",
+                      "event_invite",
+                      "goodies",
+                      "other"
+                    ]
+                  },
+                  "track": {
+                    "type": "string",
+                    "enum": [
+                      "xp",
+                      "impact"
+                    ]
+                  },
+                  "cost": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100000
+                  },
+                  "stock": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 100000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "active": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:manage"
+      }
+    },
+    "/api/v1/admin/redemptions": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Reward requests to hand over",
+        "description": "Requires permission `rewards:manage` (Manage the rewards catalogue). Host scope: college.",
+        "operationId": "gamification_get_admin_redemptions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "fulfilled",
+                "rejected",
+                "cancelled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:manage"
+      }
+    },
+    "/api/v1/admin/redemptions/{id}/decide": {
+      "post": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Mark a reward handed over, or decline it (points are returned)",
+        "description": "Requires permission `rewards:manage` (Manage the rewards catalogue). Host scope: college.",
+        "operationId": "gamification_post_admin_redemptions_id_decide",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "fulfil",
+                      "reject"
+                    ]
+                  },
+                  "note": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:manage"
+      }
+    },
+    "/api/v1/admin/users/{id}/xp": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "A member’s points ledger (audit tool)",
+        "description": "Requires permission `rewards:manage` (Manage the rewards catalogue). Host scope: college.",
+        "operationId": "gamification_get_admin_users_id_xp",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:manage"
+      }
+    },
+    "/api/v1/admin/xp/{id}/revoke": {
+      "post": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Revoke an award with a reason (append-only, audited)",
+        "description": "Requires permission `rewards:manage` (Manage the rewards catalogue). Host scope: college.",
+        "operationId": "gamification_post_admin_xp_id_revoke",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "rewards:manage"
+      }
+    },
+    "/api/v1/events": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Upcoming, past or my events (only those meant for me)",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college.",
+        "operationId": "events_get_events",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "when",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "upcoming",
+              "type": "string",
+              "enum": [
+                "upcoming",
+                "past",
+                "mine"
+              ]
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "meetup",
+                "talk",
+                "drive",
+                "workshop",
+                "ama",
+                "office_hours"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      },
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Create an event (staff: any kind; alumni hosts: AMAs and office hours)",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college. Rate limit: interact.",
+        "operationId": "events_post_events",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 120
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 4000
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "meetup",
+                      "talk",
+                      "drive",
+                      "workshop",
+                      "ama",
+                      "office_hours"
+                    ]
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "online",
+                      "in_person",
+                      "hybrid"
+                    ]
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "location": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 200
+                  },
+                  "onlineUrl": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "capacity": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 10000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "audience": {
+                    "default": "everyone",
+                    "type": "string",
+                    "enum": [
+                      "everyone",
+                      "students",
+                      "alumni"
+                    ]
+                  },
+                  "branches": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "CSE",
+                        "IT",
+                        "ECE",
+                        "EEE",
+                        "MECH",
+                        "CIVIL",
+                        "CHEM",
+                        "AIML",
+                        "DS",
+                        "OTHER"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "title",
+                  "description",
+                  "kind",
+                  "mode",
+                  "startsAt",
+                  "endsAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/events/{id}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "One event, with my RSVP and the online link when it is open",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college.",
+        "operationId": "events_get_events_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      },
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Change an event (host or staff); people going are told",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college.",
+        "operationId": "events_put_events_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 120
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 4000
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "meetup",
+                      "talk",
+                      "drive",
+                      "workshop",
+                      "ama",
+                      "office_hours"
+                    ]
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "online",
+                      "in_person",
+                      "hybrid"
+                    ]
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "location": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 200
+                  },
+                  "onlineUrl": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "capacity": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 10000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "audience": {
+                    "default": "everyone",
+                    "type": "string",
+                    "enum": [
+                      "everyone",
+                      "students",
+                      "alumni"
+                    ]
+                  },
+                  "branches": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "CSE",
+                        "IT",
+                        "ECE",
+                        "EEE",
+                        "MECH",
+                        "CIVIL",
+                        "CHEM",
+                        "AIML",
+                        "DS",
+                        "OTHER"
+                      ]
+                    }
+                  },
+                  "notifyChange": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "title",
+                  "description",
+                  "kind",
+                  "mode",
+                  "startsAt",
+                  "endsAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/events/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Cancel an event (host or staff); people going are told",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college.",
+        "operationId": "events_post_events_id_cancel",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/events/{id}/rsvp": {
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "RSVP (joins the waitlist when full) or cancel my RSVP",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college. Rate limit: interact.",
+        "operationId": "events_put_events_id_rsvp",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "going": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "going"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/events/{id}/ics": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Download the event for a calendar (.ics)",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college.",
+        "operationId": "events_get_events_id_ics",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/events/{id}/attendees": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Who is going or waiting (host or staff)",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college.",
+        "operationId": "events_get_events_id_attendees",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/events/{id}/check-in": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Mark an attendee as present (host or staff)",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college.",
+        "operationId": "events_post_events_id_check_in",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "attended": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "userId",
+                  "attended"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/events/{id}/questions": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "The live Q&A queue (AMAs, office hours, talks)",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college.",
+        "operationId": "events_get_events_id_questions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      },
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Ask a question in the queue",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college. Rate limit: interact.",
+        "operationId": "events_post_events_id_questions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/event-questions/{id}/vote": {
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Upvote a question (one vote each)",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college. Rate limit: interact.",
+        "operationId": "events_put_event_questions_id_vote",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "on": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "on"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/event-questions/{id}": {
+      "patch": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Mark a question answered, reopen it or hide it (host or staff)",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college.",
+        "operationId": "events_patch_event_questions_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "answered",
+                      "hidden"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/admin/analytics": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Aggregated college analytics (cohort view for faculty); counts under 5 are suppressed",
+        "description": "Requires permission `analytics:cohort` (View cohort analytics). Host scope: college.",
+        "operationId": "analytics_get_admin_analytics",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "months",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 6,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 24
+            }
+          },
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1950,
+              "maximum": 2100
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "analytics:cohort"
+      }
+    },
+    "/api/v1/admin/analytics/export": {
+      "get": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Download a report as CSV (audited)",
+        "description": "Requires permission `reports:export` (Export reports and data). Host scope: college. Rate limit: search.",
+        "operationId": "analytics_get_admin_analytics_export",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "months",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 6,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 24
+            }
+          },
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1950,
+              "maximum": 2100
+            }
+          },
+          {
+            "name": "report",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "summary",
+                "engagement",
+                "mentorship",
+                "referrals",
+                "events"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "reports:export"
+      }
+    },
     "/api/v1/admin/moderation/summary": {
       "get": {
         "tags": [
@@ -11690,7 +13386,9 @@
                       "item",
                       "job",
                       "roadmap",
-                      "roadmap_comment"
+                      "roadmap_comment",
+                      "event",
+                      "event_question"
                     ]
                   },
                   "targetId": {
@@ -11777,7 +13475,9 @@
                 "item",
                 "job",
                 "roadmap",
-                "roadmap_comment"
+                "roadmap_comment",
+                "event",
+                "event_question"
               ]
             }
           },
@@ -12152,7 +13852,9 @@
                       "item",
                       "job",
                       "roadmap",
-                      "roadmap_comment"
+                      "roadmap_comment",
+                      "event",
+                      "event_question"
                     ]
                   },
                   "targetId": {

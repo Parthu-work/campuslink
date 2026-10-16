@@ -74,6 +74,12 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'Roadmap review',
       body: '{name} asked for changes to “{roadmap}”.',
     },
+    badge_earned: { title: 'New badge', body: 'You earned a new badge. Open your progress to see it.' },
+    redemption_decided: { title: 'Reward update', body: 'Your request for “{reward}” was {decision}.' },
+    event_reminder: { title: 'Event reminder', body: '“{event}” starts {time}.' },
+    event_updated: { title: 'Event changed', body: '“{event}” has new details. Check the time and place.' },
+    event_cancelled: { title: 'Event cancelled', body: '“{event}” was cancelled.' },
+    event_promoted: { title: 'You’re in', body: 'A place opened up: you’re now going to “{event}”.' },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -142,6 +148,18 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'రోడ్‌మ్యాప్ సమీక్ష',
       body: '{name} “{roadmap}” లో మార్పులు అడిగారు.',
     },
+    badge_earned: {
+      title: 'కొత్త బ్యాడ్జ్',
+      body: 'మీకు కొత్త బ్యాడ్జ్ వచ్చింది. చూడటానికి మీ పురోగతి తెరవండి.',
+    },
+    redemption_decided: { title: 'రివార్డ్ అప్‌డేట్', body: '“{reward}” కోసం మీ అభ్యర్థన {decision}.' },
+    event_reminder: { title: 'ఈవెంట్ గుర్తు', body: '“{event}” {time} కి మొదలవుతుంది.' },
+    event_updated: { title: 'ఈవెంట్ మారింది', body: '“{event}” వివరాలు మారాయి. సమయం, స్థలం చూడండి.' },
+    event_cancelled: { title: 'ఈవెంట్ రద్దయింది', body: '“{event}” రద్దు చేయబడింది.' },
+    event_promoted: {
+      title: 'మీకు చోటు దొరికింది',
+      body: 'ఒక చోటు ఖాళీ అయింది: మీరు ఇప్పుడు “{event}” కి వెళ్తున్నారు.',
+    },
   },
 };
 
@@ -156,6 +174,8 @@ const CONTENT_LABEL: Record<Locale, Record<string, string>> = {
     job: 'job post',
     roadmap: 'roadmap',
     roadmap_comment: 'roadmap comment',
+    event: 'event',
+    event_question: 'event question',
   },
   te: {
     post: 'పోస్ట్',
@@ -167,6 +187,8 @@ const CONTENT_LABEL: Record<Locale, Record<string, string>> = {
     job: 'ఉద్యోగ పోస్ట్',
     roadmap: 'రోడ్‌మ్యాప్',
     roadmap_comment: 'రోడ్‌మ్యాప్ వ్యాఖ్య',
+    event: 'ఈవెంట్',
+    event_question: 'ఈవెంట్ ప్రశ్న',
   },
 };
 
@@ -186,6 +208,9 @@ function contentPath(data: Record<string, string>): string {
     case 'roadmap':
     case 'roadmap_comment':
       return data.slug ? `/roadmaps/${data.slug}` : '/roadmaps';
+    case 'event':
+    case 'event_question':
+      return data.eventId ? `/events/${data.eventId}` : '/events';
     default:
       return '/home';
   }
@@ -196,6 +221,10 @@ const FOOTER: Record<Locale, string> = {
   te: 'మీకు ఏ నోటిఫికేషన్లు రావాలో సెట్టింగ్స్ → నోటిఫికేషన్స్‌లో మార్చుకోవచ్చు.',
 };
 const OPEN: Record<Locale, string> = { en: 'Open', te: 'తెరవండి' };
+const DECISION: Record<Locale, Record<string, string>> = {
+  en: { fulfilled: 'fulfilled', rejected: 'declined (your points were returned)' },
+  te: { fulfilled: 'పూర్తయింది', rejected: 'తిరస్కరించబడింది (మీ పాయింట్లు తిరిగి ఇచ్చాం)' },
+};
 
 /** In-app path a notification links to. */
 export function pathFor(type: NotificationType, data: Record<string, string>): string {
@@ -235,6 +264,15 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/referrals?box=sent';
     case 'job_alert':
       return data.alertId ? `/jobs?alert=${data.alertId}` : '/jobs';
+    case 'badge_earned':
+      return '/progress';
+    case 'redemption_decided':
+      return '/rewards';
+    case 'event_reminder':
+    case 'event_updated':
+    case 'event_cancelled':
+    case 'event_promoted':
+      return data.eventId ? `/events/${data.eventId}` : '/events';
     case 'roadmap_nudge':
     case 'roadmap_approved':
     case 'roadmap_changes_requested':
@@ -266,6 +304,9 @@ export function renderNotification(
       .replace('{content}', CONTENT_LABEL[locale][data.contentType ?? ''] ?? '')
       .replace('{company}', data.company ?? '')
       .replace('{alert}', data.alert ?? '')
-      .replace('{roadmap}', data.roadmap ?? '');
+      .replace('{roadmap}', data.roadmap ?? '')
+      .replace('{reward}', data.reward ?? '')
+      .replace('{event}', data.event ?? '')
+      .replace('{decision}', DECISION[locale][data.decision ?? ''] ?? '');
   return { title: fill(t.title), body: fill(t.body), footer: FOOTER[locale], open: OPEN[locale] };
 }

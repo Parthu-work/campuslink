@@ -73,6 +73,7 @@ export const PERMISSIONS = {
   'tenant:settings': 'Change features, limits and permission overrides',
   'audit:read': 'Read the audit log',
   'rewards:manage': 'Manage the rewards catalogue',
+  'rewards:redeem': 'Redeem points for rewards',
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants': 'Create, suspend and configure colleges',
   'platform:health': 'View platform health',
@@ -98,6 +99,7 @@ const STUDENT: Permission[] = [
   'roadmaps:read',
   'roadmaps:progress',
   'events:rsvp',
+  'rewards:redeem',
 ];
 const ALUMNI: Permission[] = [
   ...STUDENT,

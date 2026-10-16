@@ -28,6 +28,7 @@ import type { NotificationsService } from '../notifications/notifications.servic
 import type { FilesService } from '../files/files.service.js';
 import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthState } from '../../types.js';
+import { noAward, type Award } from '../../lib/awards.js';
 
 export const REFERRAL_EXPIRE_JOB = 'referrals.expire';
 const DAY = 86_400_000;
@@ -52,6 +53,8 @@ export interface ReferralsDeps {
  * student, one-tap refer or a kind decline for the alumnus. Requests expire after 14 days.
  */
 export class ReferralsService {
+  /** Points for actions this module confirms (wired in app.ts). */
+  award: Award = noAward;
   constructor(private readonly d: ReferralsDeps) {}
 
   // ── Settings ─────────────────────────────
@@ -311,6 +314,8 @@ export class ReferralsService {
     ).lean<ReferralDoc>();
     if (!done) throw conflict('This request just changed. Refresh and try again.');
     await this.d.jobs.cancel(REFERRAL_EXPIRE_JOB, `refexp-${id}`);
+    if (body.action === 'refer')
+      await this.award(viewer.userId, 'referral_given', id, { from: r.requesterId });
     const name = (await this.d.profiles.refsFor([viewer.userId])).get(viewer.userId)?.name ?? '';
     await this.d.notifications.notify(
       r.requesterId,
@@ -383,5 +388,26 @@ export class ReferralsService {
       referrerId: new Types.ObjectId(userId),
       status: 'referred',
     });
+  }
+
+  /** Analytics: referral requests since a date by outcome, and who referred. */
+  async statsSince(since: Date) {
+    const rows = await ReferralRequestModel.aggregate<{ _id: string; n: number }>([
+      { $match: { createdAt: { $gte: since } } },
+      { $group: { _id: '$status', n: { $sum: 1 } } },
+    ]);
+    const by = new Map(rows.map((r) => [r._id, r.n]));
+    const referrers = (await ReferralRequestModel.distinct('referrerId', {
+      status: 'referred',
+      respondedAt: { $gte: since },
+    })) as Types.ObjectId[];
+    return {
+      requested: rows.reduce((s, r) => s + r.n, 0),
+      referred: by.get('referred') ?? 0,
+      declined: by.get('declined') ?? 0,
+      expired: by.get('expired') ?? 0,
+      pending: by.get('pending') ?? 0,
+      referrerIds: referrers.map(String),
+    };
   }
 }

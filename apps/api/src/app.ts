@@ -78,6 +78,12 @@ import { REFERRAL_EXPIRE_JOB, ReferralsService } from './modules/referrals/refer
 import { referralRoutes } from './modules/referrals/referrals.routes.js';
 import { NUDGE_JOB, RoadmapsService, installLibraryRoadmaps } from './modules/roadmaps/roadmaps.service.js';
 import { roadmapRoutes } from './modules/roadmaps/roadmaps.routes.js';
+import { GamificationService } from './modules/gamification/gamification.service.js';
+import { gamificationRoutes } from './modules/gamification/gamification.routes.js';
+import { EVENT_REMINDER_JOB, EventsService } from './modules/events/events.service.js';
+import { eventRoutes } from './modules/events/events.routes.js';
+import { AnalyticsService } from './modules/analytics/analytics.service.js';
+import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
 
 export interface AppDeps {
   env: Env;
@@ -370,11 +376,51 @@ export function createApp({
   queue.register(NUDGE_JOB, (data) => roadmapsService.runNudge(data));
   platformService.onTenantCreated = installLibraryRoadmaps;
 
+  // ── Gamification, events and analytics (Phase 7) ─────────────────────────────
+  const gamificationService = new GamificationService({
+    profiles: profilesService,
+    notifications: notificationsService,
+    logger,
+  });
+  const eventsService = new EventsService({
+    profiles: profilesService,
+    notifications: notificationsService,
+    jobs: queue,
+  });
+  for (const svc of [
+    postsService,
+    qaService,
+    sessionsService,
+    referralsService,
+    roadmapsService,
+    eventsService,
+  ])
+    svc.award = gamificationService.award;
+  moderationService.register('event', eventsService.handler);
+  moderationService.register('event_question', eventsService.questionHandler);
+  for (const type of ['event', 'event_question'] as const)
+    safetyService.registerTarget(type, (viewer, id) => eventsService.reportTarget(type, viewer, id));
+  queue.register(EVENT_REMINDER_JOB, (data) => eventsService.onReminder(data));
+  const analyticsService = new AnalyticsService({
+    cohorts: () => profilesService.cohorts(),
+    pendingVerification: () => verificationService.pendingCount(),
+    activeSince: (since) => authService.activeSince(since),
+    postsByAuthor: (since) => postsService.countByAuthorSince(since),
+    answersByAuthor: (since) => qaService.answersByAuthorSince(since),
+    stepsByUser: (since) => roadmapsService.stepsByUserSince(since),
+    sessions: (since) => sessionsService.completedSince(since),
+    referrals: (since) => referralsService.statsSince(since),
+    jobs: (since) => jobsService.postedSince(since),
+    events: (since) => eventsService.stats(since),
+    eventHosts: async (since) => (await eventsService.hostsSince(since)).map(String),
+  });
+
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
     posts: auth.permissions.has('feed:read') ? await postsService.search(auth, q) : [],
     questions: auth.permissions.has('feed:read') ? await qaService.search(auth, q) : [],
     jobs: auth.permissions.has('jobs:read') ? await jobsService.search(auth, q) : [],
     roadmaps: auth.permissions.has('roadmaps:read') ? await roadmapsService.search(auth, q) : [],
+    events: auth.permissions.has('events:rsvp') ? await eventsService.search(auth, q) : [],
   });
   const cookie = {
     secure: env.COOKIE_SECURE ?? env.NODE_ENV === 'production',
@@ -458,6 +504,9 @@ export function createApp({
     defineModule('referrals', referralRoutes({ referrals: referralsService, files: filesService }), pipeline),
   );
   app.use(API_PREFIX, defineModule('roadmaps', roadmapRoutes(roadmapsService), pipeline));
+  app.use(API_PREFIX, defineModule('gamification', gamificationRoutes(gamificationService), pipeline));
+  app.use(API_PREFIX, defineModule('events', eventRoutes(eventsService), pipeline));
+  app.use(API_PREFIX, defineModule('analytics', analyticsRoutes(analyticsService), pipeline));
   app.use(
     API_PREFIX,
     defineModule(
@@ -508,6 +557,9 @@ export function createApp({
     jobSources: jobSourcesService,
     referrals: referralsService,
     roadmaps: roadmapsService,
+    gamification: gamificationService,
+    events: eventsService,
+    analytics: analyticsService,
   };
   return app;
 }

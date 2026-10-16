@@ -12,6 +12,10 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     company: d.company ?? '',
     alert: d.alert ?? '',
     roadmap: d.roadmap ?? '',
+    reward: d.reward ?? '',
+    event: d.event ?? '',
+    badge: d.badge ? t(`progress.badge.${d.badge}.name`) : '',
+    decision: d.decision ? t(`notify.decision.${d.decision}`) : '',
     type: d.sessionType ? t(`session.type.${d.sessionType}`) : '',
     time: d.start ? formatDateTime(d.start) : '',
   };
@@ -48,6 +52,15 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return '/referrals?box=sent';
       case 'job_alert':
         return d.alertId ? `/jobs?alert=${d.alertId}` : '/jobs';
+      case 'badge_earned':
+        return '/progress';
+      case 'redemption_decided':
+        return '/rewards';
+      case 'event_reminder':
+      case 'event_updated':
+      case 'event_cancelled':
+      case 'event_promoted':
+        return d.eventId ? `/events/${d.eventId}` : '/events';
       case 'roadmap_nudge':
       case 'roadmap_approved':
       case 'roadmap_changes_requested':
@@ -56,6 +69,8 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       case 'content_restored':
       case 'appeal_decided':
         if (d.contentType === 'job') return `/jobs/${d.contentId ?? ''}`;
+        if ((d.contentType === 'event' || d.contentType === 'event_question') && d.eventId)
+          return `/events/${d.eventId}`;
         if (d.contentType === 'roadmap' || d.contentType === 'roadmap_comment')
           return d.slug ? `/roadmaps/${d.slug}` : '/roadmaps';
         return d.postId

@@ -24,6 +24,7 @@ import type { SafetyService } from '../moderation/safety.service.js';
 import { isModerator, type ModerationService, type Removal } from '../moderation/moderation.service.js';
 import type { RequestMetaLite } from '../audit/audit.service.js';
 import type { AuthState } from '../../types.js';
+import { noAward, type Award } from '../../lib/awards.js';
 
 const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11000;
 const blankAuthor = (id: string) => ({
@@ -41,6 +42,8 @@ const blankAuthor = (id: string) => ({
  * accepts the best answer, members vote answers helpful.
  */
 export class QaService {
+  /** Points for actions this module confirms (wired in app.ts). */
+  award: Award = noAward;
   constructor(
     private readonly d: {
       profiles: ProfilesService;
@@ -229,8 +232,11 @@ export class QaService {
       { _id: q._id },
       { $set: { acceptedAnswerId: a._id, lastActivityAt: new Date() } },
     );
-    if (String(a.authorId) !== viewer.userId)
+    if (String(a.authorId) !== viewer.userId) {
       await this.d.notifications.notify(a.authorId, 'answer_accepted', { questionId: String(q._id) });
+      await this.award(a.authorId, 'answer_accepted', String(a._id), { from: viewer.userId });
+      await this.award(a.authorId, 'answer_accepted_alumni', String(a._id), { from: viewer.userId });
+    }
     return this.get(viewer, questionId);
   }
 
@@ -391,5 +397,14 @@ export class QaService {
       .limit(5)
       .lean<QuestionDoc[]>();
     return this.questionViews(viewer, rows);
+  }
+
+  /** Analytics: published answers per author since a date. */
+  async answersByAuthorSince(since: Date) {
+    const rows = await AnswerModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+      { $match: { status: 'published', createdAt: { $gte: since } } },
+      { $group: { _id: '$authorId', n: { $sum: 1 } } },
+    ]);
+    return new Map(rows.map((r) => [String(r._id), r.n]));
   }
 }

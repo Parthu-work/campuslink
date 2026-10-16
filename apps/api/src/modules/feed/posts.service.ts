@@ -30,6 +30,7 @@ import type { NotificationsService } from '../notifications/notifications.servic
 import type { SafetyService } from '../moderation/safety.service.js';
 import { isModerator, type ModerationService, type Removal } from '../moderation/moderation.service.js';
 import type { AuthState } from '../../types.js';
+import { noAward, type Award } from '../../lib/awards.js';
 
 const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11000;
 
@@ -43,6 +44,8 @@ export interface PostsDeps {
 }
 
 export class PostsService {
+  /** Points for actions this module confirms (wired in app.ts). */
+  award: Award = noAward;
   constructor(private readonly d: PostsDeps) {}
 
   // ── Create ─────────────────────────────
@@ -100,6 +103,7 @@ export class PostsService {
       authorAlumni: facts?.alumni ?? false,
       authorBranch: facts?.branch ?? null,
     });
+    if (!body.announcement) await this.award(viewer.userId, 'post_published', String(doc._id));
     return (await this.views(viewer, [doc.toObject() as PostDoc]))[0] as PostView;
   }
 
@@ -502,5 +506,14 @@ export class PostsService {
 
   async byIds(ids: string[]) {
     return PostModel.find({ _id: { $in: ids }, status: 'published' }).lean<PostDoc[]>();
+  }
+
+  /** Analytics: published posts per author since a date. */
+  async countByAuthorSince(since: Date) {
+    const rows = await PostModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+      { $match: { status: 'published', createdAt: { $gte: since } } },
+      { $group: { _id: '$authorId', n: { $sum: 1 } } },
+    ]);
+    return new Map(rows.map((r) => [String(r._id), r.n]));
   }
 }

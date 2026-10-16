@@ -589,4 +589,16 @@ export class JobsService {
     const rows = await withTextSearch(JobModel.find(live()), text).limit(5).lean<JobDoc[]>();
     return this.views(viewer, rows);
   }
+
+  /** Analytics: openings posted by members since a date (dates only), and how many are open. */
+  async postedSince(since: Date) {
+    const [rows, open] = await Promise.all([
+      JobModel.find({ origin: 'posted', createdAt: { $gte: since } })
+        .select('createdAt')
+        .limit(100_000)
+        .lean<{ createdAt: Date }[]>(),
+      JobModel.countDocuments(live()),
+    ]);
+    return { posted: rows.map((r) => r.createdAt), open };
+  }
 }

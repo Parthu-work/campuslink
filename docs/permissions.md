@@ -61,6 +61,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `tenant:settings` Change features, limits and permission overrides | · | ✅ | · | · | · | · |
 | `audit:read` Read the audit log | ✅ | ✅ | · | · | · | · |
 | `rewards:manage` Manage the rewards catalogue | · | ✅ | · | · | · | · |
+| `rewards:redeem` Redeem points for rewards | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `platform:tenants` Create, suspend and configure colleges | ✅ | · | · | · | · | · |
 | `platform:health` View platform health | ✅ | · | · | · | · | · |
 
@@ -265,6 +266,36 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/roadmaps/:id/comments` | `roadmaps:write` | college | — | Per-step comments for authors and reviewers |
 | `POST /api/v1/roadmaps/:id/comments` | `roadmaps:write` | college | interact | Comment on one step of the current version |
 | `DELETE /api/v1/roadmap-comments/:id` | `roadmaps:write` | college | — | Delete my comment (reviewers can delete any) |
+| `GET /api/v1/me/progress` | any signed-in user | college | — | My XP, level, streak, badges, impact and point balance |
+| `PUT /api/v1/me/progress/settings` | any signed-in user | college | — | Opt in or out of leaderboards and the Wall of Mentors |
+| `GET /api/v1/leaderboard` | `directory:read` | college | — | This month’s XP among members who opted in |
+| `GET /api/v1/wall-of-mentors` | `directory:read` | college | — | Opted-in mentors by level, and last month’s Mentor of the Month |
+| `GET /api/v1/rewards` | `rewards:redeem` | college | — | Rewards I can redeem points for |
+| `POST /api/v1/rewards/redeem` | `rewards:redeem` | college | interact | Redeem points for a reward (pending until the college hands it over) |
+| `GET /api/v1/me/redemptions` | `rewards:redeem` | college | — | My reward requests |
+| `POST /api/v1/me/redemptions/:id/cancel` | `rewards:redeem` | college | — | Cancel a pending reward request (points are returned) |
+| `GET /api/v1/admin/rewards` | `rewards:manage` | college | — | The rewards catalogue, including inactive rewards |
+| `POST /api/v1/admin/rewards` | `rewards:manage` | college | — | Add a reward |
+| `PATCH /api/v1/admin/rewards/:id` | `rewards:manage` | college | — | Change or retire a reward |
+| `GET /api/v1/admin/redemptions` | `rewards:manage` | college | — | Reward requests to hand over |
+| `POST /api/v1/admin/redemptions/:id/decide` | `rewards:manage` | college | — | Mark a reward handed over, or decline it (points are returned) |
+| `GET /api/v1/admin/users/:id/xp` | `rewards:manage` | college | — | A member’s points ledger (audit tool) |
+| `POST /api/v1/admin/xp/:id/revoke` | `rewards:manage` | college | — | Revoke an award with a reason (append-only, audited) |
+| `GET /api/v1/events` | `events:rsvp` | college | — | Upcoming, past or my events (only those meant for me) |
+| `POST /api/v1/events` | `events:rsvp` | college | interact | Create an event (staff: any kind; alumni hosts: AMAs and office hours) |
+| `GET /api/v1/events/:id` | `events:rsvp` | college | — | One event, with my RSVP and the online link when it is open |
+| `PUT /api/v1/events/:id` | `events:rsvp` | college | — | Change an event (host or staff); people going are told |
+| `POST /api/v1/events/:id/cancel` | `events:rsvp` | college | — | Cancel an event (host or staff); people going are told |
+| `PUT /api/v1/events/:id/rsvp` | `events:rsvp` | college | interact | RSVP (joins the waitlist when full) or cancel my RSVP |
+| `GET /api/v1/events/:id/ics` | `events:rsvp` | college | — | Download the event for a calendar (.ics) |
+| `GET /api/v1/events/:id/attendees` | `events:rsvp` | college | — | Who is going or waiting (host or staff) |
+| `POST /api/v1/events/:id/check-in` | `events:rsvp` | college | — | Mark an attendee as present (host or staff) |
+| `GET /api/v1/events/:id/questions` | `events:rsvp` | college | — | The live Q&A queue (AMAs, office hours, talks) |
+| `POST /api/v1/events/:id/questions` | `events:rsvp` | college | interact | Ask a question in the queue |
+| `PUT /api/v1/event-questions/:id/vote` | `events:rsvp` | college | interact | Upvote a question (one vote each) |
+| `PATCH /api/v1/event-questions/:id` | `events:rsvp` | college | — | Mark a question answered, reopen it or hide it (host or staff) |
+| `GET /api/v1/admin/analytics` | `analytics:cohort` | college | — | Aggregated college analytics (cohort view for faculty); counts under 5 are suppressed |
+| `GET /api/v1/admin/analytics/export` | `reports:export` | college | search | Download a report as CSV (audited) |
 | `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
 | `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |
 | `GET /api/v1/admin/moderation/history/:targetType/:targetId` | `moderation:act` | college | — | Moderation history of one item |
