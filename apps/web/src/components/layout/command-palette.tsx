@@ -20,8 +20,17 @@ import {
   User,
   Users,
   Orbit,
+  CalendarDays,
+  Trophy,
 } from 'lucide-react';
-import type { JobView, PostView, PublicProfile, QuestionView, RoadmapSummaryView } from '@campuslink/shared';
+import type {
+  EventView,
+  JobView,
+  PostView,
+  PublicProfile,
+  QuestionView,
+  RoadmapSummaryView,
+} from '@campuslink/shared';
 import { api } from '../../lib/api';
 import { usePalette } from '../../lib/palette';
 import { useCan, useMe } from '../../lib/me';
@@ -42,6 +51,7 @@ export function CommandPalette() {
   const canFeed = useCan('feed:read');
   const canJobs = useCan('jobs:read');
   const canRoadmaps = useCan('roadmaps:read');
+  const canEvents = useCan('events:rsvp');
   const canAdmin = useCan('users:read_admin');
   const { setTheme, setLanguage } = usePreferences();
   const [q, setQ] = useState('');
@@ -55,6 +65,7 @@ export function CommandPalette() {
         questions?: QuestionView[];
         jobs?: JobView[];
         roadmaps?: RoadmapSummaryView[];
+        events?: EventView[];
       }>(`/search?q=${encodeURIComponent(dq)}`, signal),
     enabled: open && canSearch && dq.length >= 2,
     staleTime: 30_000,
@@ -67,6 +78,8 @@ export function CommandPalette() {
   const nav = [
     { to: '/home', label: t('nav.home'), icon: Home, show: true },
     { to: '/roadmaps', label: t('nav.roadmaps'), icon: Orbit, show: canRoadmaps },
+    { to: '/events', label: t('nav.events'), icon: CalendarDays, show: canEvents },
+    { to: '/progress', label: t('nav.progress'), icon: Trophy, show: true },
     { to: '/jobs', label: t('nav.jobs'), icon: BriefcaseBusiness, show: canJobs },
     { to: '/jobs/tracker', label: t('jobs.tracker'), icon: ListChecks, show: canJobs },
     { to: '/questions', label: t('nav.questions'), icon: MessageCircleQuestion, show: canFeed },
@@ -129,6 +142,22 @@ export function CommandPalette() {
                       <Orbit className="size-4 flex-none text-fg-2" aria-hidden />
                       <span className="min-w-0 flex-1 truncate">{r.title}</span>
                       <span className="truncate text-xs text-fg-3">{t(`roadmaps.cat.${r.category}`)}</span>
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              )}
+              {!!people.data?.events?.length && (
+                <Command.Group heading={t('palette.events')} className={group}>
+                  {people.data.events.map((e) => (
+                    <Command.Item
+                      key={e.id}
+                      value={`event-${e.id}`}
+                      onSelect={() => go(`/events/${e.id}`)}
+                      className={item}
+                    >
+                      <CalendarDays className="size-4 flex-none text-fg-2" aria-hidden />
+                      <span className="min-w-0 flex-1 truncate">{e.title}</span>
+                      <span className="truncate text-xs text-fg-3">{t(`events.kind.${e.kind}`)}</span>
                     </Command.Item>
                   ))}
                 </Command.Group>

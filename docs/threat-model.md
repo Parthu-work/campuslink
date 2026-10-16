@@ -240,3 +240,26 @@ Scope so far: Phases 1–3 (tenancy, auth, RBAC, audit, consent, branding, platf
 
 - Cited pages can change after review; the weekly link check catches pages that disappear, not pages whose content changes. Each roadmap shows when it was last reviewed.
 - Some official Indian sites refuse overseas automated checks, so their links are re-checked by hand (`docs/roadmap-sources.md`).
+
+# Phase 7: Gamification, events and analytics
+
+**New assets:** the points ledger, badges and opt-ins, the rewards catalogue and redemptions, events with RSVPs and Q&A, and aggregated analytics.
+
+|     | Threat                                                   | Mitigation                                                                                                                                                                                                  | Test                       |
+| --- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| T   | Farming points (repeating or self-created actions)       | Points only come from other modules' confirmed writes; a unique dedupe key per action, member and item; daily caps; no award when the other party is the recipient; admin revocation (append-only, audited) | `gamification.test.ts`     |
+| T   | Overspending points or stock in concurrent requests      | A per-member redemption lock, atomic stock decrement, raw (unclamped) balance check; declines and cancellations refund through ledger entries                                                               | `gamification.test.ts`     |
+| I   | Leaderboards exposing members who don't want it          | Leaderboard and Wall of Mentors are opt-in (off by default); only name, photo, branch and points appear                                                                                                     | `gamification.test.ts`     |
+| D   | Over-booking an event                                    | Seats claimed with a conditional update against capacity; a waitlist ordered by time; promotion re-checks the seat                                                                                          | `events.test.ts`           |
+| I   | Online meeting links leaking                             | The link is returned only to the host, staff, and people going, from 15 minutes before the start; it is never in listings or the .ics for others                                                            | `events.test.ts`           |
+| T   | Stale reminders after a change                           | Reminder jobs carry the event version and no-op when it changed or the event was cancelled                                                                                                                  | `events.test.ts`           |
+| T   | Calendar injection through event text                    | RFC 5545 escaping of commas, semicolons, backslashes and newlines; line folding; plain text only                                                                                                            | `events.test.ts`           |
+| E   | Alumni creating staff events                             | Alumni (`ama:host`) may create only AMAs and office hours; other kinds need `events:create`; only the host or staff manage an event                                                                         | `events.test.ts`           |
+| I   | Re-identifying people from analytics                     | Aggregates only; counts under 5 shown as "<5"; faculty get the cohort view without activity or ratings; exports are audited                                                                                 | `analytics.test.ts`        |
+| T   | Spreadsheet formula injection in exports                 | Every CSV cell is quoted and cells starting with `=`, `+`, `-`, `@` or tabs are prefixed                                                                                                                    | `analytics.test.ts`        |
+| I   | One college's points, rewards or events reaching another | Nine tenant-owned collections with isolation tests                                                                                                                                                          | `isolation/phase7.test.ts` |
+
+## Residual risks (Phase 7)
+
+- Point values and caps are a first tuning; admins can revoke unfair awards, but there is no automatic anomaly detection yet.
+- Attendance depends on the host's check-in.

@@ -38,6 +38,9 @@ Sign-up requires an 18+ declaration. Under-18 users are blocked on the client an
 - **Jobs:** saved jobs, application statuses, private notes and alerts are visible only to the member. "Alumni at this company" never reveals a company someone hid.
 - **Referrals** are opt-in for alumni (off by default, with a weekly cap). A request's message and résumé are visible only to the requester and the chosen alumnus. Résumés are PDFs rebuilt without document metadata and deleted 60 days after the request.
 - **Roadmap progress** (steps done, weekly goal) is visible only to the member. Weekly nudges carry only the roadmap's name, and email for them is off by default. Comments on roadmap steps are visible only to people who write or review roadmaps.
+- **Points and badges** are private to the member unless they opt in to the leaderboard or the Wall of Mentors (both off by default). The impact card is drawn in the browser and contains only the mentor's own name, college and counts.
+- **Events:** attendee lists are visible only to the host and staff; the online link only to people going, shortly before the start.
+- **Analytics** are aggregates only, with counts under 5 suppressed; nothing about individual members is shown or exported.
 - **Blocking** is silent: the blocked person isn't told; the chat closes and future sessions are cancelled.
 
 ## Retention (implemented)

@@ -95,6 +95,25 @@ const RoadmapEditor = lazy(() =>
 const RoadmapReview = lazy(() =>
   import('../features/roadmaps/review').then((m) => ({ default: m.RoadmapReviewPage })),
 );
+const Progress = lazy(() =>
+  import('../features/progress/progress-page').then((m) => ({ default: m.ProgressPage })),
+);
+const Leaderboard = lazy(() =>
+  import('../features/progress/leaderboard').then((m) => ({ default: m.LeaderboardPage })),
+);
+const Wall = lazy(() =>
+  import('../features/progress/leaderboard').then((m) => ({ default: m.WallOfMentorsPage })),
+);
+const Rewards = lazy(() => import('../features/progress/rewards').then((m) => ({ default: m.RewardsPage })));
+const RewardsAdmin = lazy(() =>
+  import('../features/progress/rewards').then((m) => ({ default: m.RewardsAdmin })),
+);
+const Events = lazy(() => import('../features/events/events').then((m) => ({ default: m.EventsPage })));
+const EventForm = lazy(() => import('../features/events/events').then((m) => ({ default: m.EventFormPage })));
+const EventPage = lazy(() => import('../features/events/event-page').then((m) => ({ default: m.EventPage })));
+const AnalyticsAdmin = lazy(() =>
+  import('../features/admin/analytics-admin').then((m) => ({ default: m.AnalyticsAdmin })),
+);
 const Jobs = lazy(() => import('../features/jobs/radar').then((m) => ({ default: m.JobsPage })));
 const JobPage = lazy(() => import('../features/jobs/job-page').then((m) => ({ default: m.JobPage })));
 const Tracker = lazy(() => import('../features/jobs/tracker').then((m) => ({ default: m.TrackerPage })));
@@ -272,6 +291,21 @@ function collegeRouter() {
         { path: '/roadmaps/:slug', element: gated('roadmaps:read', <Roadmap />) },
         { path: '/roadmaps/:slug/history', element: gated('roadmaps:read', <RoadmapHistory />) },
         { path: '/roadmaps/:slug/edit', element: gated('roadmaps:write', <RoadmapEditor />) },
+        {
+          path: '/progress',
+          element: (
+            <S>
+              <Progress />
+            </S>
+          ),
+        },
+        { path: '/leaderboard', element: gated('directory:read', <Leaderboard />) },
+        { path: '/wall-of-mentors', element: gated('directory:read', <Wall />) },
+        { path: '/rewards', element: gated('rewards:redeem', <Rewards />) },
+        { path: '/events', element: gated('events:rsvp', <Events />) },
+        { path: '/events/new', element: gated(['events:create', 'ama:host'], <EventForm />) },
+        { path: '/events/:id', element: gated('events:rsvp', <EventPage />) },
+        { path: '/events/:id/edit', element: gated(['events:create', 'ama:host'], <EventForm />) },
         { path: '/jobs', element: gated('jobs:read', <Jobs />) },
         { path: '/jobs/tracker', element: gated('jobs:save', <Tracker />) },
         { path: '/jobs/new', element: gated('jobs:post', <PostJob />) },
@@ -303,6 +337,8 @@ function collegeRouter() {
                 'moderation:act',
                 'sources:manage',
                 'jobs:sources',
+                'analytics:cohort',
+                'rewards:manage',
               ]}
             >
               <S>
@@ -316,6 +352,8 @@ function collegeRouter() {
             { path: 'moderation', element: gated('moderation:act', <ModerationAdmin />) },
             { path: 'sources', element: gated('sources:manage', <SourcesAdmin />) },
             { path: 'job-sources', element: gated('jobs:sources', <JobSourcesAdmin />) },
+            { path: 'analytics', element: gated('analytics:cohort', <AnalyticsAdmin />) },
+            { path: 'rewards', element: gated('rewards:manage', <RewardsAdmin />) },
             {
               path: 'imports',
               element: (

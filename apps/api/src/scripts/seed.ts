@@ -35,6 +35,15 @@ import { JobModel, SavedJobModel } from '../modules/jobs/job.model.js';
 import { ReferralPrefsModel } from '../modules/referrals/referral.model.js';
 import { companyKey } from '../lib/company.js';
 import { installLibraryRoadmaps } from '../modules/roadmaps/roadmaps.service.js';
+import { dayKey } from '../modules/gamification/gamification.service.js';
+import {
+  GamificationPrefsModel,
+  RewardModel,
+  UserBadgeModel,
+  XpEventModel,
+} from '../modules/gamification/gamification.model.js';
+import { EventModel, EventRsvpModel } from '../modules/events/event.model.js';
+import { XP_RULES, type XpKind } from '@campuslink/shared';
 import {
   RoadmapModel,
   RoadmapProgressModel,
@@ -565,6 +574,107 @@ async function seedRoadmaps(ids: Map<string, Types.ObjectId>) {
   });
 }
 
+/** DEMO events, rewards and points (Phase 7). */
+async function seedPhase7(ids: Map<string, Types.ObjectId>) {
+  const id = (local: string) => {
+    const v = ids.get(local);
+    if (!v) throw new Error(`seed: missing ${local}`);
+    return v;
+  };
+  const now = Date.now();
+  const HOUR = 3_600_000;
+  const xp = async (who: string, kind: XpKind, ref: string, daysAgo: number) => {
+    const at = new Date(now - daysAgo * DAY);
+    const rule = XP_RULES[kind];
+    await XpEventModel.create({
+      userId: id(who),
+      track: rule.track,
+      kind,
+      points: rule.points,
+      refId: `demo-${ref}`,
+      dedupeKey: `${kind}:${String(id(who))}:demo-${ref}`,
+      day: dayKey(at),
+    });
+  };
+  await xp('ananya', 'roadmap_step', 'step-1', 3);
+  await xp('ananya', 'roadmap_step', 'step-2', 2);
+  await xp('ananya', 'event_attended', 'event-1', 1);
+  await xp('ananya', 'feedback_given', 'fb-1', 0);
+  await xp('vikram', 'roadmap_step', 'step-3', 0);
+  await xp('vikram', 'session_completed', 'session-1', 4);
+  for (let i = 0; i < 6; i++) await xp('rahul', 'session_mentored', `mentored-${i}`, 30 + i);
+  await xp('rahul', 'new_mentee', 'mentee-1', 35);
+  await xp('rahul', 'new_mentee', 'mentee-2', 33);
+  await xp('rahul', 'referral_given', 'ref-1', 5);
+  await xp('sneha', 'session_mentored', 'mentored-s', 12);
+  await xp('sneha', 'new_mentee', 'mentee-s', 12);
+  await UserBadgeModel.create([
+    { userId: id('ananya'), badge: 'first_step' },
+    { userId: id('rahul'), badge: 'mentor_first' },
+  ]);
+  await GamificationPrefsModel.create([
+    { userId: id('ananya'), showOnLeaderboard: true, showOnWall: false },
+    { userId: id('vikram'), showOnLeaderboard: true, showOnWall: false },
+    { userId: id('rahul'), showOnLeaderboard: false, showOnWall: true },
+  ]);
+  await RewardModel.create([
+    {
+      title: 'DEMO: Certificate of contribution',
+      description: 'DEMO reward: a signed certificate from the placement cell.',
+      kind: 'certificate',
+      track: 'xp',
+      cost: 30,
+      stock: null,
+      createdBy: id('admin'),
+    },
+    {
+      title: 'DEMO: Alumni dinner invite',
+      description: 'DEMO reward: a seat at the annual alumni dinner.',
+      kind: 'event_invite',
+      track: 'impact',
+      cost: 50,
+      stock: 10,
+      createdBy: id('admin'),
+    },
+  ]);
+  const at = (h: number) => new Date(now + h * HOUR);
+  const [meetup] = await EventModel.create([
+    {
+      title: 'DEMO: Alumni meetup, Hyderabad chapter',
+      description: 'DEMO event: meet alumni working in Hyderabad and talk about placements and internships.',
+      kind: 'meetup',
+      mode: 'hybrid',
+      startsAt: at(72),
+      endsAt: at(75),
+      location: 'DEMO venue: Seminar Hall 2',
+      onlineUrl: 'https://meet.jit.si/demo-campus-meetup',
+      capacity: 40,
+      hostId: id('faculty'),
+      goingCount: 1,
+    },
+    {
+      title: 'DEMO: AMA on backend careers with Rahul',
+      description: 'DEMO AMA: ask anything about backend roles, interviews and first jobs.',
+      kind: 'ama',
+      mode: 'online',
+      startsAt: at(26),
+      endsAt: at(27),
+      location: '',
+      onlineUrl: 'https://meet.jit.si/demo-backend-ama',
+      capacity: null,
+      hostId: id('rahul'),
+      goingCount: 0,
+    },
+  ]);
+  if (meetup)
+    await EventRsvpModel.create({
+      eventId: meetup._id,
+      userId: id('ananya'),
+      status: 'going',
+      queuedAt: new Date(),
+    });
+}
+
 async function seedJobs(ids: Map<string, Types.ObjectId>) {
   const id = (local: string) => {
     const v = ids.get(local);
@@ -773,6 +883,7 @@ async function main() {
       await seedFeed(ids);
       await seedJobs(ids);
       await seedRoadmaps(ids);
+      await seedPhase7(ids);
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
   }
@@ -794,6 +905,9 @@ async function main() {
   );
   console.warn(
     'Try jobs: ananya@dpit.example opens Jobs and asks Rahul (Nimbus Labs) for a referral; rahul@dpit.example answers under Referrals; tpo@dpit.example adds job boards under Admin → Job sources.',
+  );
+  console.warn(
+    'Try events and progress: ananya@dpit.example opens Events (RSVP, add to calendar, ask in the AMA) and Progress (XP, badges, rewards); admin@dpit.example opens Admin → Analytics and Admin → Rewards.',
   );
   console.warn(
     'Try roadmaps: ananya@dpit.example opens Roadmaps (Career Galaxy) and marks steps done; faculty@dpit.example reviews Rahul’s DEMO draft under Roadmaps → Review.',

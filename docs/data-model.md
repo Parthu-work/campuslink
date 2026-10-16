@@ -550,4 +550,82 @@ erDiagram
   }
 ```
 
-The remaining collections from the spec are added by their phase: gamification and events (7).
+## Gamification and events (Phase 7)
+
+```mermaid
+erDiagram
+  USER ||--o{ XP_EVENT : earns
+  USER ||--o{ USER_BADGE : holds
+  USER ||--o| GAMIFICATION_PREFS : "opts in"
+  REWARD ||--o{ REDEMPTION : "redeemed as"
+  USER ||--o{ REDEMPTION : requests
+  EVENT ||--o{ EVENT_RSVP : has
+  EVENT ||--o{ EVENT_QUESTION : "Q&A"
+  EVENT_QUESTION ||--o{ EVENT_QUESTION_VOTE : has
+  XP_EVENT {
+    ObjectId tenantId
+    ObjectId userId
+    enum track "xp | impact"
+    enum kind "earning kinds | revoked | redeemed | refund"
+    int points "negative for spending and revocation"
+    string dedupeKey "unique per tenant"
+    string day "college timezone, for caps and streaks"
+  }
+  USER_BADGE {
+    ObjectId tenantId
+    ObjectId userId
+    enum badge "unique with userId"
+  }
+  GAMIFICATION_PREFS {
+    ObjectId tenantId
+    ObjectId userId "unique"
+    bool showOnLeaderboard "default false"
+    bool showOnWall "default false"
+    date redeemLockUntil
+  }
+  REWARD {
+    ObjectId tenantId
+    string title
+    enum kind
+    enum track
+    int cost
+    int stock "null = unlimited"
+    bool active
+  }
+  REDEMPTION {
+    ObjectId tenantId
+    ObjectId userId
+    ObjectId rewardId
+    int cost
+    enum status "pending | fulfilled | rejected | cancelled"
+  }
+  EVENT {
+    ObjectId tenantId
+    enum kind
+    enum mode
+    date startsAt
+    date endsAt
+    string onlineUrl "shown only to people going"
+    int capacity
+    enum audience
+    ObjectId hostId
+    int version "voids stale reminders"
+    int goingCount "atomic against capacity"
+  }
+  EVENT_RSVP {
+    ObjectId tenantId
+    ObjectId eventId
+    ObjectId userId "unique with eventId"
+    enum status "going | waitlist | cancelled"
+    date queuedAt
+    bool checkedIn
+  }
+  EVENT_QUESTION {
+    ObjectId tenantId
+    ObjectId eventId
+    ObjectId authorId
+    string body "plain text"
+    int votes
+    enum status "open | answered | hidden | removed"
+  }
+```

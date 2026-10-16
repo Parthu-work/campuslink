@@ -116,3 +116,58 @@ Phase 7 is done when:
 - **Rewards** are real-world items handed out by the college. The platform tracks redemptions only and handles no money.
 - **"Active"** means a session refresh in the period. Nothing else is tracked (no page views, no third-party analytics).
 - **The impact card** is drawn in the browser and contains only the mentor's own name, college and counts.
+
+## Outcome
+
+**Built:**
+
+- **API:**
+  - `gamification`: an append-only XP and impact ledger with dedupe keys, daily caps and no self-awards. Levels, streaks in the college's timezone, 11 badges, mentor levels, an opt-in leaderboard, an opt-in Wall of Mentors with Mentor of the Month, a rewards catalogue with redemptions, and admin ledger and revocation tools (audited).
+  - `events`: RSVP with atomic capacity and an automatic waitlist, versioned 24-hour and 1-hour reminders, `.ics` export, check-in that earns XP and impact, a live Q&A queue with votes and host controls, and moderation and reports.
+  - `analytics`: aggregates composed from module services, counts under 5 suppressed, a cohort view for faculty, and audited CSV exports.
+  - Points hooks in roadmaps, posts, Q&A, sessions, feedback, referrals and events.
+  - Six new notification types in two new categories (achievements: in-app only; events).
+- **Web:**
+  - Progress: level bar, streak, badges, impact, privacy opt-ins and recent points.
+  - Leaderboard and Wall of Mentors.
+  - An impact card drawn on a canvas and downloaded as PNG.
+  - Rewards for members; rewards catalogue and fulfilment for admins.
+  - Events: list, detail with RSVP, calendar download and Q&A queue, host tools (edit, cancel, attendees, check-in) and a form.
+  - Admin analytics: stat tiles, monthly SVG bar charts with hover and focus tooltips and table views, outcome bars, an engagement table, CSV exports and print.
+  - English and Telugu throughout.
+- **Seed:** DEMO events (a meetup and an AMA), two DEMO rewards, and points, badges and opt-ins for the demo people.
+
+**Tests:**
+
+- API: 557 tests, including:
+  - Gamification (13): dedupe, caps, self-award, hooks, opt-in boards, wall and Mentor of the Month, rewards with concurrency, and revocation.
+  - Events (14): roles, validation, capacity and waitlist promotion, concurrent RSVPs, link visibility, versioned reminders, cancellation, ICS escaping and folding, audience, check-in and Q&A.
+  - Analytics (5).
+  - A 23-case isolation suite for the 9 new collections.
+  - Coverage is 92%.
+- Playwright: 56 end-to-end tests with axe, adding RSVP → calendar → Q&A; staff create an event; progress → redeem → admin hands over; and the analytics dashboard with export.
+- Checked at 360 px and desktop in both themes: no horizontal overflow.
+
+**Bugs found and fixed while testing:**
+
+- Concurrent redemptions could overspend, because the balance check used a value clamped at zero. Redemptions now take a per-member lock and check the raw balance.
+- Locked badges and resolved questions were dimmed with opacity, which failed contrast (axe). They now use a dashed border.
+- Chart bars were interactive elements inside an image role (axe nested-interactive).
+- A suppressed count ("<5") was used as an i18n plural count.
+- A Phase 1 TOTP test was flaky at 30-second boundaries.
+- The second-pass roadmaps had 5 dead links (old NPTEL pages and IndianOil pages), removed after the CI link check. The link check now reports each failure in its own annotation.
+
+**Decisions:**
+
+- Impact is a second track in the same ledger, so one system covers students and alumni.
+- Spending points never lowers XP or the level.
+- Rewards are handed over by the college; the platform only tracks them.
+- The Q&A queue polls every 10 seconds instead of adding socket events.
+- Charts are plain SVG, with no chart library.
+
+**Gaps:**
+
+- No automatic anomaly detection for points (admins review ledgers).
+- Attendance depends on the host's check-in.
+- Analytics are computed on request with a 5-minute cache; very large colleges may want a nightly rollup.
+- MongoDB in this sandbox crashes (exit 139) during some coverage runs. Every run here passed on retry, and CI is unaffected.

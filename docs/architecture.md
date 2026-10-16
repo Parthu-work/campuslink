@@ -61,6 +61,13 @@ Socket.io at `/api/v1/realtime` (`http/realtime.ts`), with the Redis adapter for
 - **Nudges:** every 5 minutes the API queues due weekly goal checks (`roadmaps.nudge`, platform path `roadmaps:due-nudges`). Each check runs with the member's current permissions (`backgroundAuth`).
 - **Web:** the Career Galaxy and the roadmap graph are plain SVG (no WebGL). The layout is deterministic (`lib/roadmaps.ts`). The list view is the default with reduced motion and on small screens.
 
+## Gamification, events and analytics
+
+- **Modules:** `gamification` (ledger, badges, opt-ins, rewards), `events` (RSVP, reminders, ICS, Q&A) and `analytics`.
+- **Awards:** other modules hold an `award` callback (`lib/awards.ts`), wired to `GamificationService.award` in `app.ts`. They never touch the ledger, and an award never fails the action that earned it.
+- **Analytics:** `AnalyticsService` composes aggregate methods that each module's service exposes (`AnalyticsSources`), caches per college for 5 minutes and suppresses small counts.
+- **Reminders:** delayed `events.reminder` jobs carry the event version.
+
 ## Swappable providers
 
 | Interface           | Local                                          | Others                                                           |

@@ -26,6 +26,8 @@ import {
   Users,
   type LucideIcon,
   Orbit,
+  CalendarDays,
+  Trophy,
 } from 'lucide-react';
 import type { Permission } from '@campuslink/shared';
 import { Crest } from '../ui/misc';
@@ -84,7 +86,11 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       ? '/admin/mentorship'
       : can('moderation:act')
         ? '/admin/moderation'
-        : '/admin/job-sources';
+        : can('jobs:sources')
+          ? '/admin/job-sources'
+          : can('analytics:cohort')
+            ? '/admin/analytics'
+            : '/admin/rewards';
   const items: NavItem[] = platform
     ? [
         { to: '/platform', label: t('nav.platform'), icon: Building2 },
@@ -129,6 +135,8 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           primary: true,
           badge: unreadMessages,
         },
+        { to: '/events', label: t('nav.events'), icon: CalendarDays, permission: 'events:rsvp' },
+        { to: '/progress', label: t('nav.progress'), icon: Trophy },
         { to: '/questions', label: t('nav.questions'), icon: MessageCircleQuestion, permission: 'feed:read' },
         { to: '/reels', label: t('nav.reels'), icon: Film, permission: 'feed:read' },
         { to: '/people', label: t('nav.people'), icon: Users, permission: 'directory:read' },
@@ -155,6 +163,8 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
             'moderation:act',
             'sources:manage',
             'jobs:sources',
+            'analytics:cohort',
+            'rewards:manage',
           ],
         },
       ];

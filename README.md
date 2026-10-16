@@ -60,6 +60,13 @@ Video uses the public `meet.jit.si` locally; for production, self-host Jitsi wit
 2. **Write a roadmap:** as `rahul@dpit.example` (alumni), choose New roadmap. Cite sources or mark steps "needs review", then save and submit.
 3. **Review:** as `faculty@dpit.example`, open Roadmaps → Review roadmaps. Approve Rahul's DEMO draft or ask for changes. History shows each version's changes. The researched library is installed and updated from the same page.
 
+### Try Phase 7
+
+1. **Events:** as `vikram@dpit.example`, open Events. RSVP to the DEMO AMA, add it to your calendar and ask a question. As `rahul@dpit.example`, host it: mark questions answered and check people in.
+2. **Progress and rewards:** as `ananya@dpit.example`, open Progress for XP, streak and badges, opt in to the leaderboard, then redeem the DEMO certificate under Rewards. As `admin@dpit.example`, hand it over under Admin → Rewards.
+3. **Mentor impact:** as `rahul@dpit.example`, open Progress to see the Impact Score, download the impact card, and find yourself on the Wall of Mentors.
+4. **Analytics:** as `tpo@dpit.example` or `admin@dpit.example`, open Admin → Analytics; filter by branch and batch, export CSVs or print.
+
 | Service             | URL                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------- |
 | Web app             | http://dpit.localhost:5173, http://mrce.localhost:5173, platform: http://admin.localhost:5173 |
