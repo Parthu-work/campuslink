@@ -25,7 +25,7 @@ The researched roadmap library lives in `apps/api/src/modules/roadmaps/library/`
 - The Odin Project moved its "Getting hired" lessons. The old addresses redirected through plain http, which the safe fetcher refuses, so they were updated to the current https lesson URLs.
 - A DataTalks.Club wiki page returned 404 and was removed. Its step in the data-engineer roadmap is now marked "needs review".
 
-**Fixed after the 26-roadmap run:** three archived NPTEL course pages (a chemical safety course, a surveying course and a soft-skills page) now return 404 and were removed. The chemical process-safety step is now marked "needs review".
+**Fixed after the 26-roadmap run:** three archived NPTEL course pages (a chemical safety course, a surveying course and a soft-skills page) and IndianOil’s 2019 GATE advertisement PDF now return 404 and were removed. The chemical process-safety and interview steps are now marked "needs review".
 
 **Inconclusive** (the site refused an automated or overseas client; these are not counted as broken). They should be re-checked by hand from India:
 
@@ -128,7 +128,7 @@ Roadmap sources:
 
 ### Chemical Engineer (Core) (`chemical`)
 
-Core engineering · branches CHEM · 8 steps, 1 marked needs review · last reviewed 2026-10-16
+Core engineering · branches CHEM · 8 steps, 2 marked needs review · last reviewed 2026-10-16
 
 Roadmap sources:
 
@@ -136,7 +136,7 @@ Roadmap sources:
 - [DWSIM – A Chemical Process Simulator – FOSSEE](https://fossee.in/node/27)
 - [IIChE Rules and Regulations](https://iiche.org.in/pdfs/RulesandRegulations.pdf)
 
-<details><summary>All 16 cited links</summary>
+<details><summary>All 15 cited links</summary>
 
 - [Material & Energy Balance Computations – NPTEL (IIT Kharagpur)](https://onlinecourses.nptel.ac.in/noc21_ch50/preview)
 - [Chemical Engineering Thermodynamics – NPTEL (IIT Tirupati)](https://onlinecourses.nptel.ac.in/noc24_ch31/preview)
@@ -148,7 +148,6 @@ Roadmap sources:
 - [Flowsheet proposal guidelines – DWSIM FOSSEE](https://dwsim.fossee.in/node/23)
 - [IIT Madras announces GATE 2027 dates, syllabus revision and new paper](https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper)
 - [GAIL – Executive Trainee through GATE 2027 (advertisement)](https://www.gailonline.com/careers/currentOpnning/GATE-2027-1st-Advertisement-01092026.pdf)
-- [IndianOil – Recruitment of Engineers/Officers through GATE-2019](https://www.iocl.com/download/Detailed-Advertisement-Open-Recruitment-through-GATE-%202019.pdf)
 - [GATE 2027 downloads (past papers) – IIT Madras](https://gate2027.iitm.ac.in/download)
 - [Soft Skills – NPTEL (IIT Roorkee)](https://onlinecourses.nptel.ac.in/noc21_hs76/preview)
 

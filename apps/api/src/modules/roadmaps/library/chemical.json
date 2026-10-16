@@ -211,10 +211,6 @@
         {
           "title": "GAIL – Executive Trainee through GATE 2027 (advertisement)",
           "url": "https://www.gailonline.com/careers/currentOpnning/GATE-2027-1st-Advertisement-01092026.pdf"
-        },
-        {
-          "title": "IndianOil – Recruitment of Engineers/Officers through GATE-2019",
-          "url": "https://www.iocl.com/download/Detailed-Advertisement-Open-Recruitment-through-GATE-%202019.pdf"
         }
       ],
       "needsReview": false
@@ -237,13 +233,8 @@
         }
       ],
       "proof": "Two mock interviews done with a senior or faculty member, and a one-page résumé listing your DWSIM project.",
-      "sources": [
-        {
-          "title": "IndianOil – Recruitment of Engineers/Officers through GATE-2019",
-          "url": "https://www.iocl.com/download/Detailed-Advertisement-Open-Recruitment-through-GATE-%202019.pdf"
-        }
-      ],
-      "needsReview": false
+      "sources": [],
+      "needsReview": true
     }
   ]
 }
