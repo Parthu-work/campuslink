@@ -18,11 +18,14 @@ The researched roadmap library lives in `apps/api/src/modules/roadmaps/library/`
 | ------------------------ | ---- | ---- | ------------ | ---- |
 | 2026-10-16 (first run)   | 252  | 238  | 5            | 9    |
 | 2026-10-16 (after fixes) | 251  | 242  | 9            | 0    |
+| 2026-10-16 (26 roadmaps) | 428  | 388  | 36           | 4    |
 
 **Fixed after the first run:**
 
 - The Odin Project moved its "Getting hired" lessons. The old addresses redirected through plain http, which the safe fetcher refuses, so they were updated to the current https lesson URLs.
 - A DataTalks.Club wiki page returned 404 and was removed. Its step in the data-engineer roadmap is now marked "needs review".
+
+**Fixed after the 26-roadmap run:** three archived NPTEL course pages (a chemical safety course, a surveying course and a soft-skills page) now return 404 and were removed. The chemical process-safety step is now marked "needs review".
 
 **Inconclusive** (the site refused an automated or overseas client; these are not counted as broken). They should be re-checked by hand from India:
 
@@ -30,6 +33,7 @@ The researched roadmap library lives in `apps/api/src/modules/roadmaps/library/`
 - `wiki.gnuradio.org` and `mathworks.com` (403 to automated clients).
 - An IIT Madras press release (redirect loop for clients without cookies).
 - An NN/g PDF report (connection reset).
+- Others (403 to automated clients): picoCTF, Autodesk Education, Raspberry Pi docs, the Barr Group coding standard, Palantir's blog, the TGPSC site and UPSC PDFs.
 
 ## Research passes
 
@@ -124,7 +128,7 @@ Roadmap sources:
 
 ### Chemical Engineer (Core) (`chemical`)
 
-Core engineering · branches CHEM · 8 steps, 0 marked needs review · last reviewed 2026-10-16
+Core engineering · branches CHEM · 8 steps, 1 marked needs review · last reviewed 2026-10-16
 
 Roadmap sources:
 
@@ -132,14 +136,13 @@ Roadmap sources:
 - [DWSIM – A Chemical Process Simulator – FOSSEE](https://fossee.in/node/27)
 - [IIChE Rules and Regulations](https://iiche.org.in/pdfs/RulesandRegulations.pdf)
 
-<details><summary>All 18 cited links</summary>
+<details><summary>All 16 cited links</summary>
 
 - [Material & Energy Balance Computations – NPTEL (IIT Kharagpur)](https://onlinecourses.nptel.ac.in/noc21_ch50/preview)
 - [Chemical Engineering Thermodynamics – NPTEL (IIT Tirupati)](https://onlinecourses.nptel.ac.in/noc24_ch31/preview)
 - [DWSIM Brochure – Spoken Tutorial](https://website.spoken-tutorial.org/media/videos/78/DWSIM-Brochure-English.pdf)
 - [DWSIM on FOSSEE (spoken tutorials link)](https://dwsim.fossee.in/node/10)
 - [DWSIM Instruction Sheet – Spoken Tutorial](https://website.spoken-tutorial.org/media/videos/78/DWSIM-Instruction-Sheet-English.pdf)
-- [Chemical Process Safety – NPTEL (IIT Roorkee)](https://archive.nptel.ac.in/noc/courses/noc20/SEM2/noc20-ch38)
 - [Chemical Process Safety – NPTEL preview](https://onlinecourses.nptel.ac.in/noc20_ch38/preview)
 - [Flowsheeting Project – DWSIM FOSSEE](https://dwsim.fossee.in/node/22)
 - [Flowsheet proposal guidelines – DWSIM FOSSEE](https://dwsim.fossee.in/node/23)
@@ -147,7 +150,6 @@ Roadmap sources:
 - [GAIL – Executive Trainee through GATE 2027 (advertisement)](https://www.gailonline.com/careers/currentOpnning/GATE-2027-1st-Advertisement-01092026.pdf)
 - [IndianOil – Recruitment of Engineers/Officers through GATE-2019](https://www.iocl.com/download/Detailed-Advertisement-Open-Recruitment-through-GATE-%202019.pdf)
 - [GATE 2027 downloads (past papers) – IIT Madras](https://gate2027.iitm.ac.in/download)
-- [NPTEL Soft Skills Training (includes HR mock interview)](https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html)
 - [Soft Skills – NPTEL (IIT Roorkee)](https://onlinecourses.nptel.ac.in/noc21_hs76/preview)
 
 </details>
@@ -162,20 +164,18 @@ Roadmap sources:
 - [The Institution of Engineers (India) – official website](https://www.ieindia.org/)
 - [QGIS Training Manual](https://docs.qgis.org/3.44/en/docs/training_manual/index.html)
 
-<details><summary>All 16 cited links</summary>
+<details><summary>All 14 cited links</summary>
 
 - [Autodesk Student Access to Education Downloads](https://www.autodesk.com/education/edu-software/overview)
 - [Engineering Graphics and Design – NPTEL (IIT Delhi)](https://onlinecourses.nptel.ac.in/noc22_me68/preview)
 - [FreeCAD Online Help Startpage](https://wiki.freecad.org/Online_Help_Startpage)
 - [Structural Analysis I – NPTEL (IIT Kharagpur)](https://onlinecourses.nptel.ac.in/noc22_ce29/preview)
 - [Reinforced Concrete Design – NPTEL (IIT Guwahati)](https://onlinecourses.nptel.ac.in/noc26_ce03/preview)
-- [Digital Land Surveying and Mapping – NPTEL (IIT Roorkee)](https://archive.nptel.ac.in/noc/courses/noc21/SEM1/noc21-ce08)
 - [Principles of Construction Management – NPTEL (IIT Kanpur)](https://onlinecourses.nptel.ac.in/noc25_ce95/preview)
 - [IIT Madras announces GATE 2027 dates, syllabus revision and new paper](https://www.iitm.ac.in/happenings/press-releases-and-coverages/iit-madras-announces-dates-syllabus-revision-new-paper)
 - [Employment opportunities – POWERGRID](https://www.powergrid.in/en/job-opportunities1)
 - [TGPSC notifications – Telangana Public Service Commission](https://websitenew.tgpsc.gov.in/notifications)
 - [GATE 2027 downloads (past papers) – IIT Madras](https://gate2027.iitm.ac.in/download)
-- [NPTEL Soft Skills Training (includes HR mock interview)](https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html)
 - [Soft Skills – NPTEL (IIT Roorkee)](https://onlinecourses.nptel.ac.in/noc21_hs76/preview)
 
 </details>
@@ -633,7 +633,7 @@ Roadmap sources:
 - [Engineering Graphics and Design – NPTEL (IIT Delhi)](https://onlinecourses.nptel.ac.in/noc22_me68/preview)
 - [Student Membership – ASME](https://asme.org/membership/student-membership)
 
-<details><summary>All 18 cited links</summary>
+<details><summary>All 17 cited links</summary>
 
 - [Autodesk Fusion for education](https://www.autodesk.com/in/education/edu-software/fusion)
 - [FreeCAD Online Help Startpage](https://wiki.freecad.org/Online_Help_Startpage)
@@ -648,7 +648,6 @@ Roadmap sources:
 - [NTPC careers portal](https://careers.ntpc.co.in/)
 - [GATE 2027 downloads (past papers, brochure) – IIT Madras](https://gate2027.iitm.ac.in/download)
 - [CS50x: Introduction to Computer Science – Harvard](https://cs50.harvard.edu/x/)
-- [NPTEL Soft Skills Training (includes HR mock interview)](https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html)
 - [Soft Skills – NPTEL (IIT Roorkee)](https://onlinecourses.nptel.ac.in/noc21_hs76/preview)
 
 </details>

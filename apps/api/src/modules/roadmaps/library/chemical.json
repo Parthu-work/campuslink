@@ -121,22 +121,13 @@
       "estimateHours": [40, 80],
       "resources": [
         {
-          "title": "Chemical Process Safety – NPTEL (IIT Roorkee)",
-          "url": "https://archive.nptel.ac.in/noc/courses/noc20/SEM2/noc20-ch38"
-        },
-        {
           "title": "Chemical Process Safety – NPTEL preview",
           "url": "https://onlinecourses.nptel.ac.in/noc20_ch38/preview"
         }
       ],
       "proof": "A small HAZOP table (nodes, deviations, causes, safeguards) for one unit of your flowsheet.",
-      "sources": [
-        {
-          "title": "Chemical Process Safety – NPTEL (IIT Roorkee)",
-          "url": "https://archive.nptel.ac.in/noc/courses/noc20/SEM2/noc20-ch38"
-        }
-      ],
-      "needsReview": false
+      "sources": [],
+      "needsReview": true
     },
     {
       "id": "flowsheet-project",
@@ -241,20 +232,12 @@
           "url": "https://onlinecourses.nptel.ac.in/noc21_hs76/preview"
         },
         {
-          "title": "NPTEL Soft Skills Training",
-          "url": "https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html"
-        },
-        {
           "title": "GATE 2027 downloads (past papers) – IIT Madras",
           "url": "https://gate2027.iitm.ac.in/download"
         }
       ],
       "proof": "Two mock interviews done with a senior or faculty member, and a one-page résumé listing your DWSIM project.",
       "sources": [
-        {
-          "title": "NPTEL Soft Skills Training (includes HR mock interview)",
-          "url": "https://archive.nptel.ac.in/IndustryAssociate/Soft_Skills_Training.html"
-        },
         {
           "title": "IndianOil – Recruitment of Engineers/Officers through GATE-2019",
           "url": "https://www.iocl.com/download/Detailed-Advertisement-Open-Recruitment-through-GATE-%202019.pdf"
