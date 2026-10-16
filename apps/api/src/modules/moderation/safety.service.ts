@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import type { z } from 'zod';
-import { ErrorCode } from '@campuslink/shared';
+import { ErrorCode, type REPORT_TARGETS } from '@campuslink/shared';
 import type { reportBody, reportsQuery, resolveReportBody } from '@campuslink/shared';
 import { BlockModel, ReportModel, type ReportDoc } from './safety.model.js';
 import { UserModel } from '../auth/user.model.js';
@@ -33,10 +33,7 @@ export class SafetyService {
   onUnblock(fn: BlockListener) {
     this.onUnblockListeners.push(fn);
   }
-  registerTarget(
-    kind: 'message' | 'request' | 'post' | 'comment' | 'question' | 'answer' | 'story',
-    resolver: TargetResolver,
-  ) {
+  registerTarget(kind: Exclude<(typeof REPORT_TARGETS)[number], 'user'>, resolver: TargetResolver) {
     this.targets.set(kind, resolver);
   }
 

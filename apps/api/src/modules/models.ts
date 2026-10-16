@@ -30,3 +30,6 @@ export { StoryModel, FollowModel, OneUsefulThingModel } from './feed/story.model
 export { QuestionModel, AnswerModel, AnswerVoteModel } from './qa/question.model.js';
 export { ContentSourceModel, ContentItemModel } from './content-sources/source.model.js';
 export { ModerationActionModel, AppealModel } from './moderation/moderation.model.js';
+export { JobModel, SavedJobModel, JobAlertModel } from './jobs/job.model.js';
+export { JobSourceModel } from './job-sources/job-source.model.js';
+export { ReferralPrefsModel, ReferralRequestModel } from './referrals/referral.model.js';

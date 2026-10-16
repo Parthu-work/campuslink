@@ -47,6 +47,13 @@ Video uses the public `meet.jit.si` locally; for production, self-host Jitsi wit
 3. **Q&A and moderation:** as Ananya, ask in Q&A. As `faculty@dpit.example`, open Admin → Moderation to approve it (Vikram's demo question is already waiting), handle reports and decide appeals.
 4. **News sources:** as `admin@dpit.example`, open Admin → Sources, paste any RSS or Atom feed URL, Test, then Add. Fetching needs internet access and `INGESTION_ENABLED=true` (the default outside tests). Starter feeds can be added once CI has verified them (`docs/content-sources.md`).
 
+### Try Phase 5
+
+1. **Job Radar:** as `ananya@dpit.example`, open Jobs. Filter, save a job, open it and choose Apply, then mark it as applied; My applications tracks it. Filter and choose “Alert me” for a daily alert.
+2. **Referrals:** on the Nimbus Labs demo job, ask Rahul for a referral (optionally attach a PDF). As `rahul@dpit.example`, open Referrals to refer or decline; referral settings set the weekly limit.
+3. **Post an opening:** alumni and staff use Jobs → Post an opening.
+4. **Job sources:** as `tpo@dpit.example`, open Admin → Job sources to test and add a Greenhouse, Lever, Ashby or SmartRecruiters board, or an RSS notice feed (needs internet access). Adzuna needs `ADZUNA_APP_ID` and `ADZUNA_APP_KEY`.
+
 | Service             | URL                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------- |
 | Web app             | http://dpit.localhost:5173, http://mrce.localhost:5173, platform: http://admin.localhost:5173 |

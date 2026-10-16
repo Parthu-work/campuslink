@@ -7,6 +7,8 @@ import { Dialog as D } from 'radix-ui';
 import {
   BadgeCheck,
   Bookmark,
+  BriefcaseBusiness,
+  ListChecks,
   Film,
   Home,
   Languages,
@@ -18,7 +20,7 @@ import {
   User,
   Users,
 } from 'lucide-react';
-import type { PostView, PublicProfile, QuestionView } from '@campuslink/shared';
+import type { JobView, PostView, PublicProfile, QuestionView } from '@campuslink/shared';
 import { api } from '../../lib/api';
 import { usePalette } from '../../lib/palette';
 import { useCan, useMe } from '../../lib/me';
@@ -37,6 +39,7 @@ export function CommandPalette() {
   const { data: me } = useMe();
   const canSearch = useCan('directory:read');
   const canFeed = useCan('feed:read');
+  const canJobs = useCan('jobs:read');
   const canAdmin = useCan('users:read_admin');
   const { setTheme, setLanguage } = usePreferences();
   const [q, setQ] = useState('');
@@ -44,7 +47,7 @@ export function CommandPalette() {
   const people = useQuery({
     queryKey: ['search', dq],
     queryFn: ({ signal }) =>
-      api.get<{ people: PublicProfile[]; posts?: PostView[]; questions?: QuestionView[] }>(
+      api.get<{ people: PublicProfile[]; posts?: PostView[]; questions?: QuestionView[]; jobs?: JobView[] }>(
         `/search?q=${encodeURIComponent(dq)}`,
         signal,
       ),
@@ -58,6 +61,8 @@ export function CommandPalette() {
   };
   const nav = [
     { to: '/home', label: t('nav.home'), icon: Home, show: true },
+    { to: '/jobs', label: t('nav.jobs'), icon: BriefcaseBusiness, show: canJobs },
+    { to: '/jobs/tracker', label: t('jobs.tracker'), icon: ListChecks, show: canJobs },
     { to: '/questions', label: t('nav.questions'), icon: MessageCircleQuestion, show: canFeed },
     { to: '/reels', label: t('nav.reels'), icon: Film, show: canFeed },
     { to: '/saved', label: t('nav.saved'), icon: Bookmark, show: canFeed },
@@ -104,6 +109,22 @@ export function CommandPalette() {
                   {people.isSuccess && !people.data.people.length && (
                     <p className="px-3 py-2 text-sm text-fg-2">{t('palette.noResults')}</p>
                   )}
+                </Command.Group>
+              )}
+              {dq.length >= 3 && !!people.data?.jobs?.length && (
+                <Command.Group heading={t('palette.jobs')} className={group}>
+                  {people.data.jobs.map((j) => (
+                    <Command.Item
+                      key={j.id}
+                      value={`job-${j.id}`}
+                      onSelect={() => go(`/jobs/${j.id}`)}
+                      className={item}
+                    >
+                      <BriefcaseBusiness className="size-4 flex-none text-fg-2" aria-hidden />
+                      <span className="min-w-0 flex-1 truncate">{j.title}</span>
+                      <span className="truncate text-xs text-fg-3">{j.company}</span>
+                    </Command.Item>
+                  ))}
                 </Command.Group>
               )}
               {dq.length >= 3 && !!people.data?.posts?.length && (

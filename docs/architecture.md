@@ -1,6 +1,6 @@
 # Architecture
 
-Grows with each phase (now through Phase 4).
+Grows with each phase (now through Phase 5).
 
 ```mermaid
 flowchart LR
@@ -35,7 +35,7 @@ Socket.io at `/api/v1/realtime` (`http/realtime.ts`), with the Redis adapter for
 
 ## Background jobs
 
-`JobQueue` (BullMQ; inline in unit tests). Jobs carry their tenant and run inside `runInTenant`. Jobs: feed fetches (`content.fetch`) and imports. Delayed jobs: booking reminders (24 h, 1 h), booking completion, request expiry and notification delivery after quiet hours. Delayed jobs carry the booking's `version` and do nothing when a reschedule made them stale; reads also settle overdue state, in case Redis lost a job.
+`JobQueue` (BullMQ; inline in unit tests). Jobs carry their tenant and run inside `runInTenant`. Jobs: feed and job-source fetches (`content.fetch`, `jobs.fetch`), job alerts (`jobs.alert`) and imports; referral expiry (`referrals.expire`) is delayed. Delayed jobs: booking reminders (24 h, 1 h), booking completion, request expiry and notification delivery after quiet hours. Delayed jobs carry the booking's `version` and do nothing when a reschedule made them stale; reads also settle overdue state, in case Redis lost a job.
 
 ## Feed and content
 
@@ -44,17 +44,28 @@ Socket.io at `/api/v1/realtime` (`http/realtime.ts`), with the Redis adapter for
 - **Ranking:** `docs/feed-ranking.md`. **Ingestion:** `docs/content-sources.md`. **Rich text:** ADR 0007.
 - **Scheduler:** every 60 s the API enqueues due source fetches (`content.fetch`, deduplicated by job id) under the named platform path `content:due-sources`; the jobs run per tenant.
 
+## Jobs and referrals
+
+- **Modules:** `jobs` (listings, Job Radar, tracker, alerts), `job-sources` (adapters, scheduler, health) and `referrals`.
+- **Links between modules:**
+  - `JobsService` gets referrer counts and source names through callbacks set in `app.ts`, so no module reads another's models.
+  - Ingested postings are written by `JobsService.ingest()`.
+- **Schedulers:** the 60-second ingestion tick also queues due job-source fetches (`jobs.fetch`, platform path `jobs:due-sources`) and due alerts (`jobs.alert`, platform path `jobs:due-alerts`).
+- **Background permissions:** alert runs use `backgroundAuth()` (users module), so the member's current permissions and blocks apply.
+- See `docs/job-sources.md`.
+
 ## Swappable providers
 
-| Interface           | Local                           | Others                                                           |
-| ------------------- | ------------------------------- | ---------------------------------------------------------------- |
-| `StorageProvider`   | local disk                      | S3 stub                                                          |
-| `MailProvider`      | SMTP → Mailpit                  | any SMTP                                                         |
-| `SmsProvider`       | disabled                        | (deployment adapter)                                             |
-| `VideoProvider`     | Jitsi (`meet.jit.si`, link-out) | self-hosted Jitsi + JWT, 100ms and Daily stubs (`docs/video.md`) |
-| `BotProtection`     | disabled                        | Turnstile                                                        |
-| `PushSender`        | web push (VAPID) when keys set  | —                                                                |
-| `DataSourceAdapter` | CSV, XLSX, Google Sheets, REST  | ERP adapters (`docs/data-sources.md`)                            |
+| Interface           | Local                                          | Others                                                           |
+| ------------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
+| `StorageProvider`   | local disk                                     | S3 stub                                                          |
+| `MailProvider`      | SMTP → Mailpit                                 | any SMTP                                                         |
+| `SmsProvider`       | disabled                                       | (deployment adapter)                                             |
+| `VideoProvider`     | Jitsi (`meet.jit.si`, link-out)                | self-hosted Jitsi + JWT, 100ms and Daily stubs (`docs/video.md`) |
+| `BotProtection`     | disabled                                       | Turnstile                                                        |
+| `PushSender`        | web push (VAPID) when keys set                 | —                                                                |
+| `DataSourceAdapter` | CSV, XLSX, Google Sheets, REST                 | ERP adapters (`docs/data-sources.md`)                            |
+| `JobSourceAdapter`  | Greenhouse, Lever, Ashby, SmartRecruiters, RSS | Adzuna with deployment keys (`docs/job-sources.md`)              |
 
 ## Phases
 

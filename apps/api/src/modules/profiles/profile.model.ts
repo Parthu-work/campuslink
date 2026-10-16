@@ -1,6 +1,7 @@
 import { Schema, type InferSchemaType } from 'mongoose';
 import { AUDIENCES, BRANCHES, DEFAULT_VISIBILITY, PROFILE_FIELDS } from '@campuslink/shared';
 import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
+import { companyKey } from '../../lib/company.js';
 
 const visibility = Object.fromEntries(
   PROFILE_FIELDS.map((f) => [f, { type: String, enum: AUDIENCES, default: DEFAULT_VISIBILITY[f] }]),
@@ -15,6 +16,8 @@ const profileSchema = new Schema(
     verified: { type: Boolean, default: false },
     headline: { type: String, default: '' },
     company: { type: String, default: '' },
+    /** Comparable company name (lib/company.ts) for "alumni at this company". */
+    companyKey: { type: String, default: '' },
     jobTitle: { type: String, default: '' },
     location: { type: String, default: '' },
     bio: { type: String, default: '' },
@@ -33,6 +36,10 @@ const profileSchema = new Schema(
 );
 profileSchema.index({ tenantId: 1, userId: 1 }, { unique: true });
 profileSchema.index({ tenantId: 1, verified: 1, _id: -1 });
+profileSchema.index({ tenantId: 1, companyKey: 1, verified: 1 });
+profileSchema.pre('validate', function () {
+  if (this.isModified('company') || this.isNew) this.companyKey = companyKey(this.company ?? '');
+});
 profileSchema.index({ tenantId: 1, verified: 1, roles: 1, branch: 1, gradYear: 1 });
 profileSchema.index(
   { tenantId: 1, name: 'text', headline: 'text', company: 'text', skills: 'text' },

@@ -35,6 +35,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `jobs:read` Browse jobs and openings | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `jobs:save` Save jobs and track applications | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `jobs:post` Publish openings | · | ✅ | ✅ | ✅ | ✅ | · |
+| `jobs:sources` Add or remove job sources (ATS boards, feeds) for the college | · | ✅ | ✅ | · | · | · |
 | `referrals:request` Request referrals from alumni | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `referrals:offer` Offer referrals and set referral caps | · | ✅ | ✅ | · | ✅ | · |
 | `roadmaps:read` View roadmaps | · | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -217,6 +218,34 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `PATCH /api/v1/admin/sources/:id` | `sources:manage` | college | adminWrite | Rename, retag, change interval, pause or resume |
 | `DELETE /api/v1/admin/sources/:id` | `sources:manage` | college | adminWrite | Remove a source and its items |
 | `POST /api/v1/admin/sources/:id/fetch` | `sources:manage` | college | adminWrite | Fetch now |
+| `GET /api/v1/jobs` | `jobs:read` | college | — | Open jobs with filters (skills, branch, level, mode, type, location, fresher, alumni here) or mine |
+| `GET /api/v1/jobs/radar` | `jobs:read` | college | — | Job Radar sections: for you, alumni can refer, fresher friendly, closing soon |
+| `POST /api/v1/jobs` | `jobs:post` | college | posting | Post an opening (alumni and staff) |
+| `GET /api/v1/jobs/:id` | `jobs:read` | college | — | One job (with alumni-at-company counts and my tracker entry) |
+| `POST /api/v1/jobs/:id/close` | `jobs:post` | college | — | Close an opening I posted |
+| `PUT /api/v1/jobs/:id/track` | `jobs:save` | college | interact | Save a job or update its tracker status and private note |
+| `DELETE /api/v1/jobs/:id/track` | `jobs:save` | college | interact | Remove a job from my saved list |
+| `GET /api/v1/jobs/:id/referrers` | `referrals:request` | college | — | Alumni at this company who accept referral requests |
+| `GET /api/v1/me/job-tracker` | `jobs:save` | college | — | My saved jobs and application statuses (private) |
+| `GET /api/v1/me/job-alerts` | `jobs:save` | college | — | My job alerts |
+| `POST /api/v1/me/job-alerts` | `jobs:save` | college | interact | Create a daily job alert from filters (up to 5) |
+| `DELETE /api/v1/me/job-alerts/:id` | `jobs:save` | college | — | Delete a job alert |
+| `GET /api/v1/admin/job-sources` | `jobs:sources` | college | — | Job sources with health (last fetch, failures, open jobs) |
+| `POST /api/v1/admin/job-sources/test` | `jobs:sources` | college | adminWrite | Test an ATS board, Adzuna search or RSS feed before adding |
+| `POST /api/v1/admin/job-sources` | `jobs:sources` | college | adminWrite | Add a job source (tested first) |
+| `GET /api/v1/admin/job-sources/starter` | `jobs:sources` | college | — | Curated public job boards and their verification status |
+| `POST /api/v1/admin/job-sources/starter/:key` | `jobs:sources` | college | adminWrite | Add a verified starter board |
+| `PATCH /api/v1/admin/job-sources/:id` | `jobs:sources` | college | adminWrite | Rename, pause, resume or change interval |
+| `DELETE /api/v1/admin/job-sources/:id` | `jobs:sources` | college | adminWrite | Remove a source (its open jobs close) |
+| `POST /api/v1/admin/job-sources/:id/fetch` | `jobs:sources` | college | adminWrite | Fetch now |
+| `GET /api/v1/me/referral-settings` | `referrals:offer` | college | — | My referral settings (off until I opt in) and this week’s count |
+| `PUT /api/v1/me/referral-settings` | `referrals:offer` | college | — | Opt in or out of referral requests and set a weekly cap |
+| `POST /api/v1/referrals/resume` | `referrals:request` | college | upload | Upload a résumé PDF for a referral request (rebuilt, metadata removed) |
+| `POST /api/v1/referrals` | `referrals:request` | college | referrals | Ask an alumnus at the company for a referral |
+| `GET /api/v1/referrals` | `jobs:read` | college | — | Referral requests I received or sent |
+| `GET /api/v1/referrals/:id` | `jobs:read` | college | — | One referral request (its two people only) |
+| `POST /api/v1/referrals/:id/respond` | `referrals:offer` | college | interact | Refer, or decline with a kind template |
+| `POST /api/v1/referrals/:id/withdraw` | `referrals:request` | college | — | Withdraw my pending request |
 | `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
 | `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |
 | `GET /api/v1/admin/moderation/history/:targetType/:targetId` | `moderation:act` | college | — | Moderation history of one item |

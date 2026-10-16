@@ -8,6 +8,7 @@ export const FILE_PURPOSES = [
   'message_attachment',
   'post_media',
   'story_media',
+  'referral_resume',
 ] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 

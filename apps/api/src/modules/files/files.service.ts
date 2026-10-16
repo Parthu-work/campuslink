@@ -26,6 +26,7 @@ const IMAGE_RULES: Record<ImagePurpose, { maxEdge: number }> = {
   story_media: { maxEdge: 1440 },
 };
 const VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime']);
+type ClaimablePurpose = 'post_media' | 'story_media' | 'referral_resume';
 /** Uploaded-but-unattached media is purged after a day. */
 const UNATTACHED_TTL_MS = 24 * 3600_000;
 
@@ -156,7 +157,7 @@ export class FilesService {
    * once. `keepUntil` null keeps the file; a date schedules deletion (stories).
    */
   /** An unattached upload of the owner (for validation before claiming), or null. */
-  async pending(fileId: string, ownerId: string, purpose: 'post_media' | 'story_media') {
+  async pending(fileId: string, ownerId: string, purpose: ClaimablePurpose) {
     const f = await FileModel.findOne({
       _id: fileId,
       ownerId: new Types.ObjectId(ownerId),
@@ -168,12 +169,7 @@ export class FilesService {
     return f ? { id: String(f._id), mime: f.mime, durationSec: f.durationSec ?? null } : null;
   }
 
-  async claim(
-    fileId: string,
-    ownerId: string,
-    purpose: 'post_media' | 'story_media',
-    keepUntil: Date | null,
-  ) {
+  async claim(fileId: string, ownerId: string, purpose: ClaimablePurpose, keepUntil: Date | null) {
     const f = await FileModel.findOneAndUpdate(
       { _id: fileId, ownerId: new Types.ObjectId(ownerId), purpose, attachedAt: null },
       { $set: { attachedAt: new Date(), deleteAfter: keepUntil } },
@@ -204,6 +200,25 @@ export class FilesService {
       throw unsupported('That PDF could not be read (password-protected PDFs are not supported)');
     }
     return this.store(ownerId, 'message_attachment', Buffer.from(out), 'application/pdf');
+  }
+
+  /** Résumé for a referral request: PDF only, rebuilt like chat PDFs; purged unless a request claims it. */
+  async storeResume(ownerId: string, data: Buffer) {
+    const type = await fileTypeFromBuffer(data);
+    if (type?.mime !== 'application/pdf') throw unsupported('Upload your résumé as a PDF');
+    let out: Uint8Array;
+    try {
+      out = await sanitisePdf(data);
+    } catch {
+      throw unsupported('That PDF could not be read (password-protected PDFs are not supported)');
+    }
+    return this.store(
+      ownerId,
+      'referral_resume',
+      Buffer.from(out),
+      'application/pdf',
+      new Date(Date.now() + UNATTACHED_TTL_MS),
+    );
   }
 
   /** Raw spreadsheet or CSV for an import: kept only until the import job has read it. */
@@ -259,7 +274,8 @@ export class FilesService {
       f.purpose === 'avatar' ||
       (f.purpose === 'id_card' && (isOwner || can('verification:review'))) ||
       // The uploader previews their own media before posting.
-      ((f.purpose === 'post_media' || f.purpose === 'story_media') && isOwner);
+      ((f.purpose === 'post_media' || f.purpose === 'story_media' || f.purpose === 'referral_resume') &&
+        isOwner);
     const resolver = this.resolvers.get(f.purpose);
     if (!allowed && resolver) {
       const grant = await resolver(String(f._id), viewer);

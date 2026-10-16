@@ -17,6 +17,7 @@ import type { FieldCipher } from '../../lib/crypto.js';
 import type { FilesService } from '../files/files.service.js';
 import { withTextSearch } from '../../db/search.js';
 import { notFound } from '../../lib/errors.js';
+import { companyKey } from '../../lib/company.js';
 import type { AuthState } from '../../types.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 
@@ -116,6 +117,7 @@ export class ProfilesService {
       Object.entries(rest).filter(([, v]) => v !== undefined),
     );
     if (phone !== undefined) set.phoneEnc = phone ? this.cipher.encrypt(phone) : null;
+    if (typeof rest.company === 'string') set.companyKey = companyKey(rest.company);
     for (const [f, a] of Object.entries(visibility ?? {})) set[`visibility.${f}`] = a;
     await ProfileModel.updateOne({ userId: viewer.userId }, { $set: set });
     return this.mine(viewer);
@@ -285,6 +287,57 @@ export class ProfilesService {
     };
   }
 
+  /**
+   * Verified alumni per company key whose company field `viewer` may see (the "alumni at this
+   * company" badge never reveals a company someone hid). The viewer is never counted.
+   */
+  async alumniAtCompanies(viewer: AuthState, keys: string[]): Promise<Map<string, string[]>> {
+    const wanted = [...new Set(keys.filter(Boolean))];
+    const map = new Map<string, string[]>();
+    if (!wanted.length) return map;
+    const rows = await ProfileModel.find({ companyKey: { $in: wanted }, verified: true, roles: 'ALUMNI' })
+      .select('userId companyKey visibility')
+      .limit(5000)
+      .lean<ProfileDoc[]>();
+    for (const p of rows) {
+      if (String(p.userId) === viewer.userId) continue;
+      const vis = (p.visibility ?? {}) as Record<ProfileField, Audience>;
+      if (!canSee(vis.company ?? 'members', viewer.roles, false)) continue;
+      const k = p.companyKey ?? '';
+      map.set(k, [...(map.get(k) ?? []), String(p.userId)]);
+    }
+    return map;
+  }
+
+  /** Cards for alumni who offer referrals (only fields visible to the viewer). */
+  async referrerCards(viewer: AuthState, userIds: string[]) {
+    const rows = await ProfileModel.find({ userId: { $in: userIds }, verified: true }).lean<ProfileDoc[]>();
+    return new Map(
+      rows.map((p) => {
+        const v = this.present(p, viewer, null);
+        return [
+          String(p.userId),
+          {
+            userId: v.userId,
+            name: v.name,
+            avatarFileId: v.avatarFileId,
+            headline: (v.fields.headline as string | undefined) ?? '',
+            jobTitle: (v.fields.jobTitle as string | undefined) ?? '',
+            gradYear: (v.fields.gradYear as number | undefined) ?? null,
+            branch: (v.fields.branch as AuthorRef['branch'] | undefined) ?? null,
+            companyVerified: !!v.companyVerified,
+          },
+        ];
+      }),
+    );
+  }
+
+  /** The member's own company (for referral settings). */
+  async ownCompany(userId: string) {
+    const p = await this.load(userId);
+    return { company: p.company ?? '', companyKey: p.companyKey ?? '' };
+  }
+
   async isActiveMember(userId: string): Promise<boolean> {
     return !!(await ProfileModel.exists({ userId, verified: true }));
   }
@@ -293,7 +346,13 @@ export class ProfilesService {
     await this.sync(userId);
     await ProfileModel.updateOne(
       { userId },
-      { $set: { companyVerified: { company, domain, verifiedAt: new Date() }, company } },
+      {
+        $set: {
+          companyVerified: { company, domain, verifiedAt: new Date() },
+          company,
+          companyKey: companyKey(company),
+        },
+      },
     );
   }
 }

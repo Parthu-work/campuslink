@@ -21,9 +21,11 @@ export function fileRoutes(svc: FilesService): AnyRouteSpec[] {
             body: f.data,
             headers: {
               'Content-Type': f.mime,
-              // Chat attachments always download; images we re-encoded may render inline (sandboxed).
+              // Attachments, résumés and videos always download; re-encoded images may render inline (sandboxed).
               'Content-Disposition':
-                f.purpose === 'message_attachment' || f.mime.startsWith('video/')
+                f.purpose === 'message_attachment' ||
+                f.mime === 'application/pdf' ||
+                f.mime.startsWith('video/')
                   ? `attachment; filename="${(f.name ?? 'attachment').replace(/[^\x20-\x7e]|"/g, '_')}"; filename*=UTF-8''${encodeURIComponent(f.name ?? 'attachment')}`
                   : 'inline; filename="image.webp"',
               'X-Content-Type-Options': 'nosniff',

@@ -198,3 +198,24 @@ Scope so far: Phases 1–3 (tenancy, auth, RBAC, audit, consent, branding, platf
 - Videos are not transcoded; a crafted MP4 still reaches browsers' decoders (mitigated by type sniffing, size and duration caps, attachment-only downloads and the AV hook).
 - Keyword spam filters are basic; moderators remain the backstop.
 - Starter feeds depend on CI verification; publishers can change terms or URLs, so the weekly workflow re-checks them.
+
+# Phase 5: Jobs and referrals
+
+**New assets:** job listings (posted and imported), private application trackers and alerts, job sources, referral settings, referral requests and résumés.
+
+|     | Threat                                           | Mitigation                                                                                                                                                                                       | Test                                      |
+| --- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| S   | Fake or scam openings                            | Only verified alumni and staff post (`jobs:post`); https apply links only; members report jobs and moderators remove them with a reason; bot check, rate limit, idempotency                      | `jobs.test.ts`                            |
+| D   | Referral spam towards a few alumni               | Opt-in only (off by default), alumnus weekly cap, 3 open and the college's weekly limit per requester, one open request per job and alumnus (unique index), rate limit, bot check, 14-day expiry | `referrals.test.ts`                       |
+| I   | Revealing where someone works when they hid it   | "Alumni at this company" counts and referrer lists only include people whose company field the viewer may see                                                                                    | `jobs.test.ts`                            |
+| I   | Résumés read by others                           | PDF only, rebuilt without metadata; purpose `referral_resume`; readable only by the requester and the chosen alumnus; always downloaded, never rendered                                          | `referrals.test.ts`, `isolation/jobs`     |
+| I   | Tracker and alerts exposing job-hunting          | Tracker entries and alerts are private to the member; nobody else (including the poster) sees them; alert notifications carry no listings                                                        | `jobs.test.ts`                            |
+| I   | SSRF through a board name or feed URL            | Board names are a strict pattern and URL-encoded into fixed vendor hosts; feeds use `safeFetch` (public IPs, caps); only `jobs:sources` may add sources                                          | `jobs-lib.test.ts`, `job-sources.test.ts` |
+| T   | Malicious or oversized source payloads           | 8 MB cap, defensive JSON parsing, plain-text stripping, https-only apply links, 500 postings per fetch                                                                                           | `jobs-lib.test.ts`                        |
+| R   | Violating source terms                           | Documented public APIs only, identifying user agent, Retry-After and back-off, snippet + link-out, Adzuna attribution, starter boards verified first                                             | `job-sources.test.ts`                     |
+| I   | One college's jobs or referrals reaching another | Tenant-owned collections; schedulers are named platform paths that only enqueue per-tenant jobs                                                                                                  | `isolation/jobs.test.ts`                  |
+
+## Residual risks (Phase 5)
+
+- Inferred experience level and skills can be wrong for imported jobs (shown as "about"; the employer's page is authoritative).
+- Company matching is by normalised name; two different companies with the same name would share a badge.

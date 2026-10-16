@@ -43,6 +43,7 @@ export const PERMISSIONS = {
   'jobs:read': 'Browse jobs and openings',
   'jobs:save': 'Save jobs and track applications',
   'jobs:post': 'Publish openings',
+  'jobs:sources': 'Add or remove job sources (ATS boards, feeds) for the college',
   'referrals:request': 'Request referrals from alumni',
   'referrals:offer': 'Offer referrals and set referral caps',
   // Roadmaps
@@ -127,7 +128,15 @@ const COLLEGE_ADMIN: Permission[] = ALL_PERMISSIONS.filter((p) => !PLATFORM_PERM
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   SUPER_ADMIN: ['platform:tenants', 'platform:health', 'audit:read'],
   COLLEGE_ADMIN,
-  TPO: [...STAFF, 'ama:host', 'referrals:offer', 'analytics:tenant', 'reports:export', 'mentorship:oversee'],
+  TPO: [
+    ...STAFF,
+    'ama:host',
+    'referrals:offer',
+    'analytics:tenant',
+    'reports:export',
+    'mentorship:oversee',
+    'jobs:sources',
+  ],
   FACULTY: STAFF,
   ALUMNI,
   STUDENT,

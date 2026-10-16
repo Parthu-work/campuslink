@@ -70,6 +70,12 @@ import { QaService } from './modules/qa/qa.service.js';
 import { qaRoutes } from './modules/qa/qa.routes.js';
 import { ContentSourcesService, FETCH_JOB } from './modules/content-sources/sources.service.js';
 import { sourceRoutes } from './modules/content-sources/sources.routes.js';
+import { ALERT_JOB, JobsService } from './modules/jobs/jobs.service.js';
+import { jobRoutes } from './modules/jobs/jobs.routes.js';
+import { JOB_FETCH_JOB, JobSourcesService } from './modules/job-sources/job-sources.service.js';
+import { jobSourceRoutes } from './modules/job-sources/job-sources.routes.js';
+import { REFERRAL_EXPIRE_JOB, ReferralsService } from './modules/referrals/referrals.service.js';
+import { referralRoutes } from './modules/referrals/referrals.routes.js';
 
 export interface AppDeps {
   env: Env;
@@ -306,9 +312,49 @@ export function createApp({
   filesService.registerAccess('story_media', (fileId, viewer) => storiesService.mediaAccess(fileId, viewer));
   safetyService.onBlock((a, b) => followsService.onBlock(a, b));
   queue.register(FETCH_JOB, (data) => sourcesService.runFetch(data));
+
+  // ── Jobs and referrals (Phase 5) ─────────────────────────────
+  const jobsService = new JobsService({
+    profiles: profilesService,
+    safety: safetyService,
+    notifications: notificationsService,
+    moderation: moderationService,
+  });
+  const jobSourcesService = new JobSourcesService({
+    fetcher,
+    jobs: queue,
+    logger,
+    listings: jobsService,
+    adzuna:
+      env.ADZUNA_APP_ID && env.ADZUNA_APP_KEY
+        ? { appId: env.ADZUNA_APP_ID, appKey: env.ADZUNA_APP_KEY }
+        : null,
+  });
+  const referralsService = new ReferralsService({
+    listings: jobsService,
+    profiles: profilesService,
+    safety: safetyService,
+    notifications: notificationsService,
+    files: filesService,
+    jobs: queue,
+  });
+  jobsService.referrerCounts = (keys, viewer) => referralsService.referrerCounts(keys, viewer);
+  jobsService.sourceInfo = (ids) => jobSourcesService.info(ids);
+  moderationService.register('job', jobsService.handler);
+  safetyService.registerTarget('job', (viewer, id) => moderationService.reportTarget('job', viewer, id));
+  safetyService.registerTarget('referral', (viewer, id) => referralsService.reportTarget(viewer, id));
+  filesService.registerAccess('referral_resume', (fileId, viewer) =>
+    referralsService.resumeAccess(fileId, viewer),
+  );
+  safetyService.onBlock((a, b) => referralsService.onBlock(a, b));
+  queue.register(JOB_FETCH_JOB, (data) => jobSourcesService.runFetch(data));
+  queue.register(ALERT_JOB, (data) => jobsService.runAlert(data));
+  queue.register(REFERRAL_EXPIRE_JOB, (data) => referralsService.onExpire(data));
+
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
     posts: auth.permissions.has('feed:read') ? await postsService.search(auth, q) : [],
     questions: auth.permissions.has('feed:read') ? await qaService.search(auth, q) : [],
+    jobs: auth.permissions.has('jobs:read') ? await jobsService.search(auth, q) : [],
   });
   const cookie = {
     secure: env.COOKIE_SECURE ?? env.NODE_ENV === 'production',
@@ -384,6 +430,15 @@ export function createApp({
   app.use(API_PREFIX, defineModule('content-sources', sourceRoutes(sourcesService), pipeline));
   app.use(
     API_PREFIX,
+    defineModule('jobs', jobRoutes({ jobs: jobsService, referrals: referralsService }), pipeline),
+  );
+  app.use(API_PREFIX, defineModule('job-sources', jobSourceRoutes(jobSourcesService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('referrals', referralRoutes({ referrals: referralsService, files: filesService }), pipeline),
+  );
+  app.use(
+    API_PREFIX,
     defineModule(
       'moderation-queue',
       queueRoutes({
@@ -428,6 +483,9 @@ export function createApp({
     out: outService,
     qa: qaService,
     sources: sourcesService,
+    jobs: jobsService,
+    jobSources: jobSourcesService,
+    referrals: referralsService,
   };
   return app;
 }

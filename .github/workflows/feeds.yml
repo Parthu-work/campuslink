@@ -11,6 +11,8 @@ on:
     paths:
       - apps/api/src/modules/content-sources/**
       - apps/api/src/scripts/feeds-verify.ts
+      - apps/api/src/scripts/jobs-verify.ts
+      - apps/api/src/modules/job-sources/**
       - .github/workflows/feeds.yml
 
 permissions:
@@ -30,3 +32,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @campuslink/shared build
       - run: pnpm --filter @campuslink/api feeds:verify
+  boards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @campuslink/shared build
+      - run: pnpm --filter @campuslink/api jobs:verify

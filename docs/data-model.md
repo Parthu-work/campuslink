@@ -410,4 +410,86 @@ erDiagram
 
 Also: `savedPosts` and `pollVotes` (unique per user and post), `answerVotes` (unique per user and answer) and `oneUsefulThings` (one staff pick per date). `moderationActions` is append-only (update and delete hooks throw). Files gain the purposes `post_media` and `story_media` with `attachedAt` (single-use claim) and `durationSec`.
 
-The remaining collections from the spec are added by their phases: jobs (5), roadmaps (6), gamification and events (7).
+## Jobs and referrals (Phase 5)
+
+```mermaid
+erDiagram
+  JOB_SOURCE ||--o{ JOB : imports
+  USER ||--o{ JOB : posts
+  USER ||--o{ SAVED_JOB : tracks
+  JOB ||--o{ SAVED_JOB : "saved as"
+  USER ||--o{ JOB_ALERT : owns
+  USER ||--o| REFERRAL_PREFS : "opts in"
+  JOB ||--o{ REFERRAL_REQUEST : about
+  JOB {
+    ObjectId tenantId
+    enum origin "posted | greenhouse | lever | ashby | smartrecruiters | adzuna | rss"
+    ObjectId sourceId
+    ObjectId postedBy
+    string title
+    string company
+    string companyKey "normalised"
+    string location
+    enum mode
+    enum type
+    enum level
+    string[] skills
+    enum[] branches
+    object salary "only when stated"
+    string applyUrl "https"
+    string description "plain text"
+    bool freshersOk
+    date expiresAt
+    enum status "open | closed | expired | removed"
+    string dedupeKey "unique per tenant"
+    date purgeAt "TTL"
+  }
+  SAVED_JOB {
+    ObjectId tenantId
+    ObjectId userId
+    ObjectId jobId "unique with userId"
+    string title "snapshot"
+    string company "snapshot"
+    enum status "saved | applied | interviewing | offer | rejected | withdrawn"
+    string note "private"
+  }
+  JOB_ALERT {
+    ObjectId tenantId
+    ObjectId userId
+    string name
+    object filters
+    date lastRunAt
+    date nextRunAt
+  }
+  JOB_SOURCE {
+    ObjectId tenantId
+    enum kind
+    string target "unique per tenant and kind"
+    string company
+    bool indiaOnly
+    int intervalMin
+    enum status "active | paused"
+    date nextFetchAt
+    int consecutiveFailures
+  }
+  REFERRAL_PREFS {
+    ObjectId tenantId
+    ObjectId userId "unique"
+    bool accepting "default false"
+    int weeklyCap
+  }
+  REFERRAL_REQUEST {
+    ObjectId tenantId
+    ObjectId requesterId
+    ObjectId referrerId
+    ObjectId jobId
+    string why
+    ObjectId resumeFileId
+    enum status "pending | referred | declined | expired | withdrawn"
+    date expiresAt "14 days"
+  }
+```
+
+Profiles gain `companyKey` (kept in sync with `company`). Files gain the purpose `referral_resume`.
+
+The remaining collections from the spec are added by their phases: roadmaps (6), gamification and events (7).

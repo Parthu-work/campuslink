@@ -76,6 +76,11 @@ export const NOTIFICATION_TYPES = [
   'content_removed',
   'content_restored',
   'appeal_decided',
+  'referral_received',
+  'referral_referred',
+  'referral_declined',
+  'referral_expired',
+  'job_alert',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -85,6 +90,7 @@ export const NOTIFICATION_CATEGORIES = [
   'messages',
   'community',
   'moderation',
+  'jobs',
 ] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
@@ -107,6 +113,11 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   content_removed: 'moderation',
   content_restored: 'moderation',
   appeal_decided: 'moderation',
+  referral_received: 'jobs',
+  referral_referred: 'jobs',
+  referral_declined: 'jobs',
+  referral_expired: 'jobs',
+  job_alert: 'jobs',
 };
 export const CHANNELS = ['inApp', 'email', 'push'] as const;
 export type Channel = (typeof CHANNELS)[number];
@@ -120,6 +131,8 @@ export const DEFAULT_CHANNELS: Record<NotificationCategory, ChannelPrefs> = {
   community: { inApp: true, email: false, push: true },
   // Decisions about your content always reach you by email too (moderation transparency).
   moderation: { inApp: true, email: true, push: false },
+  // Referral replies and daily job-alert matches.
+  jobs: { inApp: true, email: true, push: true },
 };
 
 const channelPrefs = z.strictObject({ inApp: z.boolean(), email: z.boolean(), push: z.boolean() });
@@ -131,6 +144,7 @@ export const notificationPrefsBody = z.strictObject({
     messages: channelPrefs,
     community: channelPrefs,
     moderation: channelPrefs,
+    jobs: channelPrefs,
   }),
   quietHours: z.strictObject({
     enabled: z.boolean(),
@@ -192,6 +206,8 @@ export const REPORT_TARGETS = [
   'question',
   'answer',
   'story',
+  'job',
+  'referral',
 ] as const;
 export const REPORT_REASONS = ['spam', 'harassment', 'inappropriate', 'impersonation', 'other'] as const;
 export const reportBody = z.strictObject({

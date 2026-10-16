@@ -54,6 +54,35 @@ function assertCanActOn(actor: AuthState, targetRoles: string[]) {
     throw forbidden();
 }
 
+/**
+ * The permissions a member has right now, for background work done on their behalf (job alerts):
+ * the same rules as a signed-in request, without a session. Null when the account is not active.
+ */
+export async function backgroundAuth(
+  userId: string | Types.ObjectId,
+  tenant: TenantRecord,
+): Promise<AuthState | null> {
+  const user = await UserModel.findById(userId)
+    .select('roles capabilities status verified mfa.enabled')
+    .lean();
+  if (!user || user.status !== 'active') return null;
+  const roles = (user.roles as Role[]).filter((r) => r !== Role.SUPER_ADMIN);
+  const mfaEnabled = !!user.mfa?.enabled;
+  return {
+    userId: String(user._id),
+    sessionId: 'background',
+    roles,
+    capabilities: user.capabilities as Capability[],
+    verified: !!user.verified,
+    mfaEnabled,
+    mfaPending: requiresMfa(roles) && !mfaEnabled,
+    permissions: resolvePermissions(
+      { roles, capabilities: user.capabilities as Capability[], verified: !!user.verified, mfaEnabled },
+      effectiveOverrides(tenant.features, tenant.permissionOverrides),
+    ),
+  };
+}
+
 export class UsersService {
   /** Set by the app: closes a suspended member's live sockets. */
   onSuspended: ((userId: string) => void) | null = null;

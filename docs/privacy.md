@@ -35,6 +35,8 @@ Sign-up requires an 18+ declaration. Under-18 users are blocked on the client an
 - **Posts and stories:** photos are re-encoded and video metadata boxes (which can hold GPS location) are wiped. Link previews keep only the page title, description and site name. Stories expire after 24 hours, and their photos are deleted an hour later.
 - **Q&A** questions are visible only to the asker and moderators until approved. Rejection and removal reasons are shown only to the author.
 - **News items** keep only a headline, a snippet of at most 300 characters and a link; nothing about who read them is recorded.
+- **Jobs:** saved jobs, application statuses, private notes and alerts are visible only to the member. "Alumni at this company" never reveals a company someone hid.
+- **Referrals** are opt-in for alumni (off by default, with a weekly cap). A request's message and résumé are visible only to the requester and the chosen alumnus. Résumés are PDFs rebuilt without document metadata and deleted 60 days after the request.
 - **Blocking** is silent: the blocked person isn't told; the chat closes and future sessions are cancelled.
 
 ## Retention (implemented)
@@ -52,6 +54,9 @@ Sign-up requires an 18+ declaration. Under-18 users are blocked on the client an
 | Stories                             | Deleted after 24 hours (TTL); their photos 1 hour later                |
 | Ingested news items                 | Deleted 90 days after publication (TTL index)                          |
 | Moderation actions and appeals      | Kept (append-only accountability log)                                  |
+| Job listings                        | Deleted 60 days after they close or expire (TTL)                       |
+| Unattached résumé uploads           | Deleted after 24 hours                                                 |
+| Résumés on referral requests        | Deleted 60 days after the request                                      |
 | Audit log                           | Kept                                                                   |
 
 File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable per tenant: inactive accounts (default 3 years) and deleted-account grace (default 30 days); those purges ship with the privacy release.

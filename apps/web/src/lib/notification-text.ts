@@ -9,6 +9,8 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     name: d.name ?? '',
     content: d.contentType ? t(`content.${d.contentType}`) : '',
     reason: d.reason ? t(`mod.reasons.${d.reason}`) : '',
+    company: d.company ?? '',
+    alert: d.alert ?? '',
     type: d.sessionType ? t(`session.type.${d.sessionType}`) : '',
     time: d.start ? formatDateTime(d.start) : '',
   };
@@ -37,9 +39,18 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       case 'question_approved':
       case 'question_rejected':
         return d.questionId ? `/questions/${d.questionId}` : '/questions';
+      case 'referral_received':
+        return '/referrals';
+      case 'referral_referred':
+      case 'referral_declined':
+      case 'referral_expired':
+        return '/referrals?box=sent';
+      case 'job_alert':
+        return d.alertId ? `/jobs?alert=${d.alertId}` : '/jobs';
       case 'content_removed':
       case 'content_restored':
       case 'appeal_decided':
+        if (d.contentType === 'job') return `/jobs/${d.contentId ?? ''}`;
         return d.postId
           ? `/posts/${d.postId}`
           : d.questionId

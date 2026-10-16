@@ -2,7 +2,6 @@ import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  BriefcaseBusiness,
   CalendarClock,
   Compass,
   HeartHandshake,
@@ -208,10 +207,7 @@ function RightRail() {
   const { t } = useTranslation();
   const canRequest = useCan('mentorship:request');
   const canMentor = useCan('mentorship:mentor');
-  const upcoming = [
-    { key: 'jobs', icon: BriefcaseBusiness },
-    { key: 'galaxy', icon: Orbit },
-  ] as const;
+  const upcoming = [{ key: 'galaxy', icon: Orbit }] as const;
   return (
     <aside aria-label={t('home.rail')} className="grid content-start gap-3">
       {canRequest && (

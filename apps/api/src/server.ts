@@ -12,6 +12,8 @@ import { syncIndexes } from './db/connect.js';
 import type { FilesService } from './modules/files/files.service.js';
 import type { RealtimeGateway } from './http/realtime.js';
 import { ContentSourcesService } from './modules/content-sources/sources.service.js';
+import { JobSourcesService } from './modules/job-sources/job-sources.service.js';
+import { JobsService } from './modules/jobs/jobs.service.js';
 
 const env = loadEnv();
 const logger = createLogger(env.LOG_LEVEL);
@@ -81,12 +83,15 @@ async function main() {
   setTimeout(retention, 30_000).unref();
   setInterval(retention, 6 * 3600_000).unref();
 
-  // Content ingestion: every minute, queue fetches for due sources (job ids dedupe across instances).
+  // Ingestion: every minute, queue fetches for due news and job sources, and due job alerts
+  // (job ids dedupe across instances).
   if (env.INGESTION_ENABLED) {
     const tick = () =>
-      ContentSourcesService.enqueueDue(jobs).catch((err: unknown) =>
-        logger.error({ err }, 'ingestion tick failed'),
-      );
+      Promise.all([
+        ContentSourcesService.enqueueDue(jobs),
+        JobSourcesService.enqueueDue(jobs),
+        JobsService.enqueueDueAlerts(jobs),
+      ]).catch((err: unknown) => logger.error({ err }, 'ingestion tick failed'));
     setTimeout(tick, 15_000).unref();
     setInterval(tick, 60_000).unref();
   }

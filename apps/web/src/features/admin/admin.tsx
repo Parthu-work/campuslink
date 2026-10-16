@@ -36,6 +36,7 @@ export function AdminLayout() {
   const canUsers = useCan('users:read_admin');
   const canModerate = useCan('moderation:act');
   const canSources = useCan('sources:manage');
+  const canJobSources = useCan('jobs:sources');
   const tabs = [
     ['/admin', t('admin.users'), canUsers],
     ['/admin/imports', t('admin.imports'), canImport],
@@ -44,6 +45,7 @@ export function AdminLayout() {
     ['/admin/mentorship', t('admin.mentorshipTab'), canOversee],
     ['/admin/moderation', t('admin.moderation'), canModerate],
     ['/admin/sources', t('admin.sources'), canSources],
+    ['/admin/job-sources', t('admin.jobSources'), canJobSources],
     ['/admin/branding', t('admin.branding'), canBrand],
     ['/admin/features', t('admin.features'), canSettings],
     ['/admin/audit', t('admin.audit'), canAudit],

@@ -82,6 +82,16 @@ const Following = lazy(() =>
 );
 const Questions = lazy(() => import('../features/qa/questions').then((m) => ({ default: m.QuestionsPage })));
 const Question = lazy(() => import('../features/qa/questions').then((m) => ({ default: m.QuestionPage })));
+const Jobs = lazy(() => import('../features/jobs/radar').then((m) => ({ default: m.JobsPage })));
+const JobPage = lazy(() => import('../features/jobs/job-page').then((m) => ({ default: m.JobPage })));
+const Tracker = lazy(() => import('../features/jobs/tracker').then((m) => ({ default: m.TrackerPage })));
+const PostJob = lazy(() => import('../features/jobs/post-job').then((m) => ({ default: m.PostJobPage })));
+const Referrals = lazy(() =>
+  import('../features/referrals/referrals').then((m) => ({ default: m.ReferralsPage })),
+);
+const JobSourcesAdmin = lazy(() =>
+  import('../features/admin/job-sources-admin').then((m) => ({ default: m.JobSourcesAdmin })),
+);
 const ModerationAdmin = lazy(() =>
   import('../features/admin/moderation-admin').then((m) => ({ default: m.ModerationAdmin })),
 );
@@ -243,6 +253,11 @@ function collegeRouter() {
         { path: '/following', element: gated('sources:follow', <Following />) },
         { path: '/questions', element: gated('feed:read', <Questions />) },
         { path: '/questions/:questionId', element: gated('feed:read', <Question />) },
+        { path: '/jobs', element: gated('jobs:read', <Jobs />) },
+        { path: '/jobs/tracker', element: gated('jobs:save', <Tracker />) },
+        { path: '/jobs/new', element: gated('jobs:post', <PostJob />) },
+        { path: '/jobs/:jobId', element: gated('jobs:read', <JobPage />) },
+        { path: '/referrals', element: gated(['referrals:request', 'referrals:offer'], <Referrals />) },
         { path: '/mentors', element: gated('mentorship:request', <Mentors />) },
         { path: '/mentors/:userId', element: gated('mentorship:request', <MentorPage />) },
         { path: '/mentorship', element: gated('mentorship:request', <Requests />) },
@@ -263,7 +278,13 @@ function collegeRouter() {
           path: 'admin',
           element: (
             <RequirePermission
-              permission={['users:read_admin', 'mentorship:oversee', 'moderation:act', 'sources:manage']}
+              permission={[
+                'users:read_admin',
+                'mentorship:oversee',
+                'moderation:act',
+                'sources:manage',
+                'jobs:sources',
+              ]}
             >
               <S>
                 <Admin />
@@ -275,6 +296,7 @@ function collegeRouter() {
             { path: 'mentorship', element: gated('mentorship:oversee', <MentorshipAdmin />) },
             { path: 'moderation', element: gated('moderation:act', <ModerationAdmin />) },
             { path: 'sources', element: gated('sources:manage', <SourcesAdmin />) },
+            { path: 'job-sources', element: gated('jobs:sources', <JobSourcesAdmin />) },
             {
               path: 'imports',
               element: (

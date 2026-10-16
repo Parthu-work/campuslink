@@ -5,10 +5,12 @@ import {
   Activity,
   Bell,
   Bookmark,
+  BriefcaseBusiness,
   Building2,
   CalendarClock,
   Compass,
   Film,
+  HandHelping,
   HeartHandshake,
   Home,
   Inbox,
@@ -79,7 +81,9 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
     ? '/admin'
     : can('mentorship:oversee')
       ? '/admin/mentorship'
-      : '/admin/moderation';
+      : can('moderation:act')
+        ? '/admin/moderation'
+        : '/admin/job-sources';
   const items: NavItem[] = platform
     ? [
         { to: '/platform', label: t('nav.platform'), icon: Building2 },
@@ -88,6 +92,13 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       ]
     : [
         { to: '/home', label: t('nav.home'), icon: Home, primary: true },
+        {
+          to: '/jobs',
+          label: t('nav.jobs'),
+          icon: BriefcaseBusiness,
+          permission: 'jobs:read',
+          primary: true,
+        },
         {
           to: '/mentors',
           label: t('nav.mentors'),
@@ -113,6 +124,12 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         { to: '/questions', label: t('nav.questions'), icon: MessageCircleQuestion, permission: 'feed:read' },
         { to: '/reels', label: t('nav.reels'), icon: Film, permission: 'feed:read' },
         { to: '/people', label: t('nav.people'), icon: Users, permission: 'directory:read' },
+        {
+          to: '/referrals',
+          label: t('nav.referrals'),
+          icon: HandHelping,
+          permission: ['referrals:request', 'referrals:offer'],
+        },
         { to: '/mentorship', label: t('nav.requests'), icon: Inbox, permission: 'mentorship:request' },
         { to: '/mentor', label: t('nav.mentor'), icon: HeartHandshake, permission: 'mentorship:mentor' },
         { to: '/following', label: t('nav.following'), icon: Rss, permission: 'sources:follow' },
@@ -124,7 +141,13 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           to: adminHome,
           label: t('nav.admin'),
           icon: Shield,
-          permission: ['users:read_admin', 'mentorship:oversee', 'moderation:act', 'sources:manage'],
+          permission: [
+            'users:read_admin',
+            'mentorship:oversee',
+            'moderation:act',
+            'sources:manage',
+            'jobs:sources',
+          ],
         },
       ];
   const visible = items.filter((i) => can(i.permission));

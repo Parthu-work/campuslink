@@ -57,6 +57,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'Appeal decided',
       body: 'Moderators reviewed your appeal about your {content}.',
     },
+    referral_received: { title: 'Referral request', body: '{name} asked you for a referral at {company}.' },
+    referral_referred: { title: 'You were referred', body: '{name} referred you at {company}.' },
+    referral_declined: { title: 'Referral update', body: '{name} can’t refer you at {company} right now.' },
+    referral_expired: {
+      title: 'Referral request expired',
+      body: 'Your referral request to {name} expired without a reply.',
+    },
+    job_alert: { title: 'New openings', body: 'New openings match your alert “{alert}”.' },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -102,6 +110,17 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'అప్పీల్‌పై నిర్ణయం',
       body: 'మీ {content} గురించి మీ అప్పీల్‌ను మోడరేటర్లు పరిశీలించారు.',
     },
+    referral_received: { title: 'రిఫరల్ అభ్యర్థన', body: '{company} లో రిఫరల్ కోసం {name} అడిగారు.' },
+    referral_referred: {
+      title: 'మిమ్మల్ని రిఫర్ చేశారు',
+      body: '{name} మిమ్మల్ని {company} లో రిఫర్ చేశారు.',
+    },
+    referral_declined: { title: 'రిఫరల్ అప్‌డేట్', body: '{name} ప్రస్తుతం {company} లో రిఫర్ చేయలేరు.' },
+    referral_expired: {
+      title: 'రిఫరల్ అభ్యర్థన గడువు ముగిసింది',
+      body: '{name} కి మీ రిఫరల్ అభ్యర్థనకు జవాబు రాకుండానే గడువు ముగిసింది.',
+    },
+    job_alert: { title: 'కొత్త ఉద్యోగాలు', body: 'మీ అలర్ట్ “{alert}” కు సరిపోయే కొత్త ఉద్యోగాలు ఉన్నాయి.' },
   },
 };
 
@@ -113,6 +132,7 @@ const CONTENT_LABEL: Record<Locale, Record<string, string>> = {
     answer: 'answer',
     story: 'story',
     item: 'item',
+    job: 'job post',
   },
   te: {
     post: 'పోస్ట్',
@@ -121,6 +141,7 @@ const CONTENT_LABEL: Record<Locale, Record<string, string>> = {
     answer: 'సమాధానం',
     story: 'స్టోరీ',
     item: 'అంశం',
+    job: 'ఉద్యోగ పోస్ట్',
   },
 };
 
@@ -135,6 +156,8 @@ function contentPath(data: Record<string, string>): string {
       return `/questions/${data.contentId ?? ''}`;
     case 'answer':
       return data.questionId ? `/questions/${data.questionId}` : '/questions';
+    case 'job':
+      return `/jobs/${data.contentId ?? ''}`;
     default:
       return '/home';
   }
@@ -176,6 +199,14 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
     case 'content_restored':
     case 'appeal_decided':
       return contentPath(data);
+    case 'referral_received':
+      return '/referrals';
+    case 'referral_referred':
+    case 'referral_declined':
+    case 'referral_expired':
+      return '/referrals?box=sent';
+    case 'job_alert':
+      return data.alertId ? `/jobs?alert=${data.alertId}` : '/jobs';
     default:
       return '/sessions';
   }
@@ -200,6 +231,8 @@ export function renderNotification(
       .replace('{name}', data.name ?? '')
       .replace('{type}', TYPE_LABEL[locale][data.sessionType as SessionType] ?? '')
       .replace('{time}', time)
-      .replace('{content}', CONTENT_LABEL[locale][data.contentType ?? ''] ?? '');
+      .replace('{content}', CONTENT_LABEL[locale][data.contentType ?? ''] ?? '')
+      .replace('{company}', data.company ?? '')
+      .replace('{alert}', data.alert ?? '');
   return { title: fill(t.title), body: fill(t.body), footer: FOOTER[locale], open: OPEN[locale] };
 }

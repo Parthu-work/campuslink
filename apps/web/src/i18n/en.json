@@ -45,7 +45,9 @@
     "questions": "Q&A",
     "reels": "Tips reels",
     "following": "Following",
-    "saved": "Saved"
+    "saved": "Saved",
+    "jobs": "Jobs",
+    "referrals": "Referrals"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -301,7 +303,8 @@
       "feedback": "Session feedback"
     },
     "moderation": "Moderation",
-    "sources": "Sources"
+    "sources": "Sources",
+    "jobSources": "Job sources"
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -448,7 +451,8 @@
     "open": "Search",
     "label": "Command palette",
     "posts": "Posts",
-    "questions": "Questions"
+    "questions": "Questions",
+    "jobs": "Jobs"
   },
   "session": {
     "type": {
@@ -793,6 +797,26 @@
     "appeal_decided": {
       "title": "Appeal decided",
       "body": "Moderators reviewed your appeal about your {{content}}."
+    },
+    "referral_received": {
+      "title": "Referral request",
+      "body": "{{name}} asked you for a referral at {{company}}."
+    },
+    "referral_referred": {
+      "title": "You were referred",
+      "body": "{{name}} referred you at {{company}}."
+    },
+    "referral_declined": {
+      "title": "Referral update",
+      "body": "{{name}} can’t refer you at {{company}} right now."
+    },
+    "referral_expired": {
+      "title": "Referral request expired",
+      "body": "Your referral request to {{name}} expired without a reply."
+    },
+    "job_alert": {
+      "title": "New openings",
+      "body": "New openings match your alert “{{alert}}”."
     }
   },
   "notifications": {
@@ -821,7 +845,8 @@
       "reminders": "Reminders",
       "messages": "Messages",
       "community": "Comments and answers",
-      "moderation": "Moderation decisions"
+      "moderation": "Moderation decisions",
+      "jobs": "Jobs and referrals"
     },
     "catHint": {
       "requests": "New requests, replies, expiries",
@@ -829,7 +854,8 @@
       "reminders": "24 hours and 1 hour before",
       "messages": "Only while you’re offline; at most one email per chat every 30 minutes",
       "community": "Comments, replies and answers to your posts and questions",
-      "moderation": "Removals, restorations, appeals and question reviews"
+      "moderation": "Removals, restorations, appeals and question reviews",
+      "jobs": "Referral replies and daily job-alert matches"
     },
     "toggle": "{{channel}} for {{category}}",
     "quiet": "Quiet hours",
@@ -906,7 +932,9 @@
     "deleteTitle": "Delete this {{what}}?",
     "deleteBody": "It’s removed for everyone, with its replies and media. This can’t be undone.",
     "deleteConfirm": "Delete",
-    "blockBody": "You won’t see each other’s posts, comments, stories or answers. They aren’t told that you blocked them."
+    "blockBody": "You won’t see each other’s posts, comments, stories or answers. They aren’t told that you blocked them.",
+    "job": "job post",
+    "referral": "referral request"
   },
   "feed": {
     "tabs": "Feed view",
@@ -1225,5 +1253,243 @@
     "starterIntro": "Feeds from reputable publishers. A feed can be added only after our automated check confirms it works and allows fetching.",
     "verifiedOn": "Verified {{date}}",
     "unverified": "Waiting for verification"
+  },
+  "jobs": {
+    "title": "Job Radar",
+    "intro": "Openings from your alumni and staff, plus verified public job boards. Apply on the employer’s site; ask alumni there for a referral.",
+    "search": "Search role, company or skill",
+    "quickFilters": "Quick filters",
+    "withAlumni": "Alumni work there",
+    "fresherFriendly": "Fresher friendly",
+    "levelLabel": "Experience",
+    "anyLevel": "Any experience",
+    "typeLabel": "Job type",
+    "anyType": "Any type",
+    "location": "Location",
+    "mode": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
+    },
+    "type": {
+      "full_time": "Full-time",
+      "internship": "Internship",
+      "contract": "Contract",
+      "part_time": "Part-time"
+    },
+    "level": {
+      "fresher": "Fresher (0–1 yr)",
+      "junior": "Junior (1–3 yrs)",
+      "mid": "Mid (3–6 yrs)",
+      "senior": "Senior (6+ yrs)"
+    },
+    "about": "about",
+    "track": {
+      "saved": "Saved",
+      "applied": "Applied",
+      "interviewing": "Interviewing",
+      "offer": "Offer",
+      "rejected": "Not selected",
+      "withdrawn": "Withdrawn"
+    },
+    "statusLabel": {
+      "open": "Open",
+      "closed": "Closed",
+      "expired": "Expired"
+    },
+    "salaryYear": "{{range}} a year",
+    "salaryMonth": "{{range}} a month",
+    "sections": {
+      "forYou": "For you",
+      "alumniCanRefer": "Alumni can refer",
+      "fresherFriendly": "Fresher friendly",
+      "closingSoon": "Closing soon"
+    },
+    "newThisWeek_one": "{{count}} new opening this week",
+    "newThisWeek_other": "{{count}} new openings this week",
+    "allOpenings": "All openings",
+    "results": "Matching openings",
+    "empty": "No openings yet",
+    "emptyBody": "Alumni and staff can post openings, and admins can add verified job boards.",
+    "noMatches": "No openings match",
+    "noMatchesBody": "Try fewer filters, or create an alert to hear when one appears.",
+    "alertForSearch": "Alert me about this search",
+    "alertCreated": "Alert created. We check once a day.",
+    "myAlert": "My job alert",
+    "tracker": "My applications",
+    "trackerIntro": "Your saved jobs and where each application stands. Only you can see this.",
+    "trackerEmpty": "Nothing saved yet",
+    "trackerEmptyBody": "Save jobs from Job Radar to track your applications here.",
+    "updated": "updated {{when}}",
+    "listingGone": "Listing removed",
+    "statusFor": "Status for {{title}}",
+    "alerts": "Job alerts",
+    "alertsIntro": "Up to five saved searches, checked once a day.",
+    "noAlerts": "No alerts yet. Filter Job Radar and choose “Alert me”.",
+    "deleteAlert": "Delete alert {{name}}",
+    "save": "Save {{title}}",
+    "unsave": "Remove {{title}} from saved",
+    "savedToast": "Saved to My applications",
+    "canRefer_one": "{{count}} alumnus can refer",
+    "canRefer_other": "{{count}} alumni can refer",
+    "alumniHere_one": "{{count}} alumnus works here",
+    "alumniHere_other": "{{count}} alumni work here",
+    "closes": "Closes {{when}}",
+    "posted": "Posted {{when}}",
+    "back": "Job Radar",
+    "gone": "This job isn’t available",
+    "goneBody": "It may have been removed, or you no longer see each other.",
+    "apply": "Apply",
+    "opensEmployer": "opens the employer’s site",
+    "close": "Close this opening",
+    "closed": "Opening closed",
+    "didYouApply": "Did you apply?",
+    "markApplied": "Mark as applied",
+    "notYet": "Not yet",
+    "aboutRole": "About the role",
+    "noDescription": "The employer’s page has the full description.",
+    "skills": "Skills",
+    "importedFrom": "Imported from {{source}}. Check details on the employer’s site.",
+    "expires": "Listed until {{when}}",
+    "alumniAt": "Alumni at {{company}}",
+    "noAlumni": "No alumni from your college have this company on their profile yet.",
+    "alumniCount_one": "{{count}} alumnus works here.",
+    "alumniCount_other": "{{count}} alumni work here.",
+    "referrersCount_one": "{{count}} accepts referral requests:",
+    "referrersCount_other": "{{count}} accept referral requests:",
+    "noReferrers": "None of them accept referral requests right now.",
+    "companyVerified": "Company email verified",
+    "batch": "Batch of {{year}}",
+    "myProgress": "My progress",
+    "status": "Status",
+    "notSaved": "Not saved",
+    "privateNote": "Private note",
+    "noteSaved": "Note saved",
+    "postJob": "Post an opening",
+    "postTitle": "Post an opening",
+    "postIntro": "Share a real opening at your company or one you know well. Students apply on the employer’s site.",
+    "fields": {
+      "title": "Role title",
+      "company": "Company",
+      "mode": "Work mode",
+      "applyUrl": "Apply link",
+      "applyUrlHint": "The employer’s own page, starting with https://",
+      "description": "Description",
+      "descriptionHint": "What the role involves and who should apply. Plain text; **bold** and lists work.",
+      "skillsHint": "Press Enter after each skill (up to 12)",
+      "branches": "Suits these branches (leave empty for any)",
+      "addSalary": "Add a salary range",
+      "salaryMin": "Minimum",
+      "salaryMax": "Maximum",
+      "currency": "Currency",
+      "period": "Per",
+      "perYear": "Year",
+      "perMonth": "Month",
+      "freshersOk": "Freshers can apply",
+      "expires": "Keep listed for"
+    },
+    "publish": "Post opening",
+    "postedToast": "Opening posted"
+  },
+  "referrals": {
+    "title": "Referrals",
+    "introAlumni": "Requests from students and alumni for openings at your company. You set the weekly limit; turning off stops new requests.",
+    "introStudent": "Your referral requests. Each alumnus decides; requests expire after 14 days.",
+    "box": "Referral box",
+    "received": "Received",
+    "sentBox": "Sent",
+    "emptyReceived": "No requests yet",
+    "emptyReceivedBody": "Turn on referrals in settings so students can ask you.",
+    "emptySent": "You haven’t asked anyone yet",
+    "emptySentBody": "Open a job in Job Radar and ask an alumnus who works there.",
+    "settings": "Referral settings",
+    "settingsBody": "Requests come for openings at {{company}}.",
+    "noCompany": "Add your current company to your profile to receive requests.",
+    "accepting": "Accept referral requests",
+    "weeklyCap": "Weekly limit",
+    "used": "{{count}} used this week",
+    "noteLabel": "Note for students (optional)",
+    "noteHint": "e.g. which teams you can refer for",
+    "to": "To {{name}}",
+    "theirNote": "Their note:",
+    "resume": "Résumé",
+    "respond": "Respond",
+    "withdraw": "Withdraw",
+    "expires": "expires {{when}}",
+    "status": {
+      "pending": "Waiting",
+      "referred": "Referred",
+      "declined": "Declined",
+      "expired": "Expired",
+      "withdrawn": "Withdrawn"
+    },
+    "templates": {
+      "not_a_fit": "Thanks for asking. Your profile isn’t a close fit for this role, so a referral wouldn’t help you here.",
+      "no_openings": "Thanks for asking. This team isn’t hiring through referrals right now.",
+      "cap_reached": "Thanks for asking. I’ve used my referrals for now; please try again later.",
+      "other": "Thanks for asking. I can’t refer you for this one."
+    },
+    "respondTitle": "Respond to {{name}}",
+    "decision": "Your decision",
+    "refer": "Refer",
+    "decline": "Decline",
+    "reply": "Reply",
+    "noteToStudent": "Note (optional)",
+    "referHint": "e.g. “Submitted. Watch for an email from HR.”",
+    "confirmRefer": "I’ve referred them",
+    "sendDecline": "Send reply",
+    "referredToast": "Marked as referred",
+    "declinedToast": "Reply sent",
+    "ask": "Ask for referral",
+    "capReached": "Weekly limit reached",
+    "askTitle": "Ask {{name}} for a referral",
+    "askBody": "Explain why you fit the role at {{company}}. They can see your profile.",
+    "why": "Why you’re a good fit",
+    "whyHint": "Your relevant projects, skills and year. At least 30 characters.",
+    "addResume": "Attach résumé (PDF)",
+    "replaceResume": "Replace résumé",
+    "resumeHint": "Optional. Only this alumnus can open it.",
+    "send": "Send request",
+    "sent": "Request sent to {{name}}"
+  },
+  "jobSources": {
+    "intro": "Bring openings in from public job boards and notices. Each source is tested first and checked on a schedule; we link to the employer’s own page.",
+    "addTitle": "Add a job source",
+    "addBody": "Pick a source type and test it before adding.",
+    "kindLabel": "Source type",
+    "kind": {
+      "greenhouse": "Greenhouse board",
+      "lever": "Lever board",
+      "ashby": "Ashby board",
+      "smartrecruiters": "SmartRecruiters",
+      "adzuna": "Adzuna search",
+      "rss": "RSS/Atom feed"
+    },
+    "kindHint": {
+      "greenhouse": "The name after boards.greenhouse.io/ in the company’s careers link",
+      "lever": "The name after jobs.lever.co/",
+      "ashby": "The name after jobs.ashbyhq.com/",
+      "smartrecruiters": "The company id after jobs.smartrecruiters.com/",
+      "adzuna": "Needs the deployment’s Adzuna keys; results say “Jobs by Adzuna”",
+      "rss": "Government notices or company career feeds; robots.txt is respected"
+    },
+    "board": "Board name",
+    "boardHint": "Letters, numbers, dot, dash or underscore",
+    "query": "What",
+    "where": "Where (optional)",
+    "url": "Feed URL",
+    "name": "Display name",
+    "nameHint": "Also used as the company name for boards",
+    "indiaOnly": "Only openings in India",
+    "testOk": "Works: {{total}} openings, {{kept}} kept",
+    "added": "Source added. Openings are being imported.",
+    "openJobs_one": "{{count}} open job",
+    "openJobs_other": "{{count}} open jobs",
+    "fetched": "fetched {{when}}",
+    "removeBody": "Its open jobs close. Saved jobs stay in members’ trackers.",
+    "empty": "No job sources yet",
+    "emptyBody": "Add a board, or pick a verified one below.",
+    "starter": "Verified starter boards",
+    "starterIntro": "Public boards of employers that hire in India. A board can be added only after our automated check confirms it answers and lists openings in India."
   }
 }

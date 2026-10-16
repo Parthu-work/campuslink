@@ -12,7 +12,8 @@
     "seed": "tsx --env-file-if-exists=../../.env src/scripts/seed.ts",
     "docs:gen": "tsx src/scripts/gen-docs.ts",
     "vapid": "tsx src/scripts/vapid.ts",
-    "feeds:verify": "tsx src/scripts/feeds-verify.ts"
+    "feeds:verify": "tsx src/scripts/feeds-verify.ts",
+    "jobs:verify": "tsx src/scripts/jobs-verify.ts"
   },
   "dependencies": {
     "@campuslink/shared": "workspace:*",

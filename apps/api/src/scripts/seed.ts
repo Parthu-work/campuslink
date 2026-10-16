@@ -31,6 +31,9 @@ import { randomRoomName } from '../lib/video.js';
 import { CommentModel, PostModel, ReactionModel } from '../modules/feed/post.model.js';
 import { FollowModel, StoryModel } from '../modules/feed/story.model.js';
 import { AnswerModel, QuestionModel } from '../modules/qa/question.model.js';
+import { JobModel, SavedJobModel } from '../modules/jobs/job.model.js';
+import { ReferralPrefsModel } from '../modules/referrals/referral.model.js';
+import { companyKey } from '../lib/company.js';
 
 const env = loadEnv();
 if (env.NODE_ENV === 'production') throw new Error('Refusing to seed a production database');
@@ -450,6 +453,116 @@ async function seedFeed(ids: Map<string, Types.ObjectId>) {
   await FollowModel.create({ followerId: id('ananya'), targetType: 'user', targetId: String(id('rahul')) });
 }
 
+/**
+ * Demo openings posted by the fictional alumni and TPO at fictional companies, marked DEMO, with
+ * apply links on the reserved example.com domain. Real listings come only from sources an admin adds.
+ */
+async function seedJobs(ids: Map<string, Types.ObjectId>) {
+  const id = (local: string) => {
+    const v = ids.get(local);
+    if (!v) throw new Error(`seed: missing ${local}`);
+    return v;
+  };
+  const now = Date.now();
+  const job = (
+    by: string,
+    f: {
+      title: string;
+      company: string;
+      location: string;
+      mode: string;
+      type: string;
+      level: string;
+      skills: string[];
+      branches: Branch[];
+      slug: string;
+      description: string;
+      days: number;
+      salary?: { min: number; max: number; currency: string; period: 'year' | 'month' };
+    },
+  ) => {
+    const expiresAt = new Date(now + f.days * DAY);
+    return JobModel.create({
+      origin: 'posted',
+      postedBy: id(by),
+      title: f.title,
+      company: f.company,
+      companyKey: companyKey(f.company),
+      location: f.location,
+      mode: f.mode,
+      type: f.type,
+      level: f.level,
+      skills: f.skills,
+      skillKeys: f.skills.map((x) => x.toLowerCase()),
+      branches: f.branches,
+      salary: f.salary ?? null,
+      applyUrl: `https://example.com/demo-careers/${f.slug}`,
+      description: f.description,
+      freshersOk: f.level === 'fresher' || f.type === 'internship',
+      postedAt: new Date(now - 2 * 3600_000),
+      expiresAt,
+      dedupeKey: `posted-seed-${f.slug}`,
+      purgeAt: new Date(expiresAt.getTime() + 60 * DAY),
+    });
+  };
+  const backend = await job('rahul', {
+    title: 'DEMO: Backend Developer (freshers)',
+    company: 'Nimbus Labs (demo)',
+    location: 'Hyderabad',
+    mode: 'hybrid',
+    type: 'full_time',
+    level: 'fresher',
+    skills: ['Java', 'Spring Boot', 'SQL'],
+    branches: ['CSE', 'IT'],
+    slug: 'nimbus-backend',
+    description:
+      'DEMO listing for trying the app. Build and run REST APIs with Java and Spring Boot. You know data structures, SQL basics and Git.',
+    days: 30,
+    salary: { min: 600000, max: 800000, currency: 'INR', period: 'year' },
+  });
+  await job('sneha', {
+    title: 'DEMO: Data Analyst Intern',
+    company: 'Kestrel Analytics (demo)',
+    location: 'Remote (India)',
+    mode: 'remote',
+    type: 'internship',
+    level: 'fresher',
+    skills: ['SQL', 'Excel', 'Power BI'],
+    branches: [],
+    slug: 'kestrel-analyst-intern',
+    description:
+      'DEMO listing for trying the app. Six-month internship building dashboards from sales data. Any branch.',
+    days: 5,
+    salary: { min: 20000, max: 25000, currency: 'INR', period: 'month' },
+  });
+  await job('tpo', {
+    title: 'DEMO: Campus drive, Graduate Engineer Trainee',
+    company: 'Ironleaf Motors (demo)',
+    location: 'Pune',
+    mode: 'onsite',
+    type: 'full_time',
+    level: 'fresher',
+    skills: ['AutoCAD', 'SolidWorks'],
+    branches: ['MECH', 'EEE'],
+    slug: 'ironleaf-get',
+    description:
+      'DEMO listing for trying the app. On-campus drive for final-year Mechanical and EEE students.',
+    days: 14,
+  });
+  await ReferralPrefsModel.insertMany([
+    { userId: id('rahul'), accepting: true, weeklyCap: 5, note: 'DEMO: backend and platform teams' },
+    { userId: id('sneha'), accepting: true, weeklyCap: 3, note: '' },
+  ]);
+  await SavedJobModel.create({
+    userId: id('vikram'),
+    jobId: backend._id,
+    title: backend.title,
+    company: backend.company,
+    status: 'applied',
+    note: 'DEMO: applied through the careers page',
+  });
+}
+
 async function main() {
   await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
   await mongoose.connection.dropDatabase();
@@ -550,6 +663,7 @@ async function main() {
       }
       await seedMentorship(ids);
       await seedFeed(ids);
+      await seedJobs(ids);
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
   }
@@ -568,6 +682,9 @@ async function main() {
   );
   console.warn(
     'Try the feed: sign in as ananya@dpit.example (For you, stories, Q&A); faculty@dpit.example sees a pending question under Admin → Moderation; admin@dpit.example adds RSS sources under Admin → Sources.',
+  );
+  console.warn(
+    'Try jobs: ananya@dpit.example opens Jobs and asks Rahul (Nimbus Labs) for a referral; rahul@dpit.example answers under Referrals; tpo@dpit.example adds job boards under Admin → Job sources.',
   );
   console.warn(
     '\nOpen http://dpit.localhost:5173 or http://mrce.localhost:5173 (platform console: http://admin.localhost:5173)\n',

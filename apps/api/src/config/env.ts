@@ -77,6 +77,9 @@ export const envSchema = z.object({
     .string()
     .regex(/^[A-Za-z0-9_-]{40,50}$/)
     .optional(),
+  /** Adzuna job search API (free tier, your own keys; off when unset). Terms require "Jobs by Adzuna". */
+  ADZUNA_APP_ID: z.string().min(1).max(100).optional(),
+  ADZUNA_APP_KEY: z.string().min(1).max(200).optional(),
   /** Content ingestion scheduler (off in tests and end-to-end runs). */
   INGESTION_ENABLED: z
     .enum(['true', 'false'])
