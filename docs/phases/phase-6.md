@@ -40,3 +40,50 @@ Done when: students explore researched, cited roadmaps in a zoomable Career Gala
 - **Time estimates** are editorial judgments for a part-time student, shown as "about".
 - **No exam dates, fees, vacancies or cut-offs** appear in roadmaps (they change yearly); nodes link to official pages instead.
 - **Library roadmaps are attributed to the platform's research,** not to a college member. Each college's reviewers own their copies from then on.
+
+## Outcome
+
+**Built:**
+
+- **API:** the `roadmaps` module.
+  - Four tenant-owned collections: roadmaps, versions, progress and comments.
+  - Workflow: draft → submit → review → publish. Anyone who saved a version (including a reviewer) cannot approve it. Version history and a publish checklist.
+  - Feature and archive flags; per-step comments; roadmaps and comments are reportable and moderatable.
+  - Weekly goals with gentle nudges (new `roadmaps` notification category, email off by default).
+  - Roadmaps appear in command-palette search.
+- **Library:** 16 researched, cited roadmaps.
+  - **Software:** SDE and DSA, full-stack web, backend, frontend, mobile, DevOps and cloud, SRE, QA and SDET.
+  - **Data and AI:** data analyst, data engineer, data science, ML and AI engineer.
+  - **Design and product:** UI/UX, product management.
+  - **Core engineering:** ECE, EEE.
+  - **Installation:** every new college gets them at creation, and the seed installs them too. Reviewers install or update from the library page; updates arrive as proposals for review.
+- **Link check:** `roadmaps:verify` runs in the feeds workflow. First run: 9 broken links, all fixed. Now 251 URLs: 242 pass, 9 inconclusive (sites that block automated or overseas clients), 0 fail. See `docs/roadmap-sources.md`.
+- **Web:**
+  - **Career Galaxy:** an SVG constellation per category; each star is a keyboard-reachable link.
+  - **Roadmaps list:** filters by category, branch and search; My roadmaps and My drafts.
+  - **Roadmap page:** layered graph with zoom and native-scroll pan, or a numbered list; the step panel shows resources, sources, proof of skill, the "needs review" note, mark done, and comments for writers.
+  - **Progress and goals:** a progress card with weekly goal and next steps.
+  - **Editing and review:** a form-based editor with a live publish checklist; history with a step-level diff, plus the review form; review queue and library page.
+  - **Defaults and language:** the list view is the default with reduced motion and on small screens; English and Telugu throughout.
+- **Seed:** library installed in both demo colleges; Ananya follows SDE and DSA with a goal; Rahul's DEMO draft waits for review.
+
+**Tests:**
+
+- API: 502 tests, including the workflow, no self-approval, versions, the library (every roadmap valid and publishable), progress and nudges, comments and moderation, and a 12-case isolation suite for the 4 new collections. Coverage is 92%.
+- Web unit tests: graph layout, galaxy layout (no overlapping stars), next steps and version diff.
+- Playwright: explore the Galaxy → open a roadmap → mark progress and set a goal; draft → submit → review → publish. Both run with axe at desktop and phone sizes.
+- Checked at 360 px and desktop in both themes: no horizontal overflow.
+
+**Decisions:**
+
+- Library roadmaps are attributed to the platform's research, not a member, so they can be reported but have no person to block.
+- Reports no longer require a member subject.
+- Comments are for writers and reviewers only; students give feedback through reports for now.
+- One open version per roadmap avoids merge conflicts.
+- Refused connections in the link check count as inconclusive, because Indian government sites block overseas runners.
+
+**Gaps:**
+
+- **10 planned roadmaps are not in the library:** cybersecurity, blockchain, game development, forward-deployed engineering, higher studies, government exams, mechanical, civil, chemical, and embedded/IoT. The shared web-search budget for the research run ran out, so they were left out rather than written from memory. Colleges can author them now; the next research pass adds them.
+- Mobile, ECE and EEE have many "needs review" steps.
+- Editor validation messages come from the schema in English.

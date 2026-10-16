@@ -25,6 +25,7 @@ export function ContentMenu({
   onDelete,
   deleting,
   featurable,
+  blockable = true,
 }: {
   targetType: Exclude<ContentTarget, 'item'>;
   targetId: string;
@@ -34,6 +35,8 @@ export function ContentMenu({
   onDelete?: () => void;
   deleting?: boolean;
   featurable?: boolean;
+  /** False for content without a member author (library roadmaps). */
+  blockable?: boolean;
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -103,12 +106,14 @@ export function ContentMenu({
                       <Flag className="size-4" aria-hidden /> {t('content.report', { what: label })}
                     </DropdownMenu.Item>
                   )}
-                  <DropdownMenu.Item
-                    onSelect={() => setDialog('block')}
-                    className={`${menuItem} text-danger`}
-                  >
-                    <Ban className="size-4" aria-hidden /> {t('safety.block', { name: authorName })}
-                  </DropdownMenu.Item>
+                  {blockable && (
+                    <DropdownMenu.Item
+                      onSelect={() => setDialog('block')}
+                      className={`${menuItem} text-danger`}
+                    >
+                      <Ban className="size-4" aria-hidden /> {t('safety.block', { name: authorName })}
+                    </DropdownMenu.Item>
+                  )}
                 </>
               )
             )}

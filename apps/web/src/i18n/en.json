@@ -21,7 +21,8 @@
     "demo": "Demo",
     "skipToContent": "Skip to content",
     "offline": "You’re offline. Changes will need a connection.",
-    "open": "Open"
+    "open": "Open",
+    "breadcrumb": "Breadcrumb"
   },
   "nav": {
     "home": "Home",
@@ -47,7 +48,8 @@
     "following": "Following",
     "saved": "Saved",
     "jobs": "Jobs",
-    "referrals": "Referrals"
+    "referrals": "Referrals",
+    "roadmaps": "Roadmaps"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -452,7 +454,8 @@
     "label": "Command palette",
     "posts": "Posts",
     "questions": "Questions",
-    "jobs": "Jobs"
+    "jobs": "Jobs",
+    "roadmaps": "Roadmaps"
   },
   "session": {
     "type": {
@@ -817,6 +820,18 @@
     "job_alert": {
       "title": "New openings",
       "body": "New openings match your alert “{{alert}}”."
+    },
+    "roadmap_nudge": {
+      "title": "Your weekly roadmap goal",
+      "body": "A small step on “{{roadmap}}” this week keeps you on track."
+    },
+    "roadmap_approved": {
+      "title": "Roadmap published",
+      "body": "{{name}} approved your changes to “{{roadmap}}”."
+    },
+    "roadmap_changes_requested": {
+      "title": "Roadmap review",
+      "body": "{{name}} asked for changes to “{{roadmap}}”."
     }
   },
   "notifications": {
@@ -846,7 +861,8 @@
       "messages": "Messages",
       "community": "Comments and answers",
       "moderation": "Moderation decisions",
-      "jobs": "Jobs and referrals"
+      "jobs": "Jobs and referrals",
+      "roadmaps": "Roadmaps"
     },
     "catHint": {
       "requests": "New requests, replies, expiries",
@@ -855,7 +871,8 @@
       "messages": "Only while you’re offline; at most one email per chat every 30 minutes",
       "community": "Comments, replies and answers to your posts and questions",
       "moderation": "Removals, restorations, appeals and question reviews",
-      "jobs": "Referral replies and daily job-alert matches"
+      "jobs": "Referral replies and daily job-alert matches",
+      "roadmaps": "Weekly goal nudges and review decisions"
     },
     "toggle": "{{channel}} for {{category}}",
     "quiet": "Quiet hours",
@@ -934,7 +951,9 @@
     "deleteConfirm": "Delete",
     "blockBody": "You won’t see each other’s posts, comments, stories or answers. They aren’t told that you blocked them.",
     "job": "job post",
-    "referral": "referral request"
+    "referral": "referral request",
+    "roadmap": "roadmap",
+    "roadmap_comment": "roadmap comment"
   },
   "feed": {
     "tabs": "Feed view",
@@ -1491,5 +1510,204 @@
     "emptyBody": "Add a board, or pick a verified one below.",
     "starter": "Verified starter boards",
     "starterIntro": "Public boards of employers that hire in India. A board can be added only after our automated check confirms it answers and lists openings in India."
+  },
+  "roadmaps": {
+    "title": "Roadmaps",
+    "intro": "Researched, cited paths from first steps to job-ready, reviewed by your college. Explore the Career Galaxy, follow one and mark steps as you go.",
+    "new": "New roadmap",
+    "mine": "My roadmaps",
+    "drafts": "My drafts",
+    "search": "Search roadmaps",
+    "category": "Category",
+    "branch": "Branch",
+    "allCategories": "All categories",
+    "allBranches": "All branches",
+    "viewAs": "View as",
+    "galaxy": "Galaxy",
+    "graph": "Graph",
+    "list": "List",
+    "galaxyLabel": "Career Galaxy: roadmaps grouped by category. Each star opens a roadmap.",
+    "graphLabel": "Roadmap steps and how they connect",
+    "graphLegend": "Arrows point to what comes next. Dashed outlines need review; gold outlines are projects. Scroll to pan.",
+    "emptyTitle": "No roadmaps match",
+    "emptyBody": "Try another category or search.",
+    "disclaimer": "Time estimates are about right for part-time study, not promises. Roadmaps link to free resources and official pages; check dates, fees and cut-offs there.",
+    "featured": "Featured",
+    "steps_one": "{{count}} step",
+    "steps_other": "{{count}} steps",
+    "needsReviewCount_one": "{{count}} needs review",
+    "needsReviewCount_other": "{{count}} need review",
+    "needsReview": "Needs review",
+    "needsReviewNote": "This step rests on editorial judgement rather than a confirmed source. Treat it as a suggestion.",
+    "progressOf": "Progress on {{title}}",
+    "doneOf": "{{done}} of {{total}} done",
+    "aboutHours": "about {{min}}–{{max}} h",
+    "aboutHoursTotal": "about {{min}}–{{max}} hours in all",
+    "byLibrary": "From the researched library",
+    "byAuthor": "By {{name}}",
+    "libraryAuthor": "Researched library",
+    "lastReviewed": "Last reviewed {{date}}",
+    "outcomes": "Leads to",
+    "notFound": "Roadmap not found",
+    "back": "Back to roadmaps",
+    "history": "History",
+    "reviewChanges": "Review changes",
+    "editDraft": "Edit draft",
+    "suggestEdit": "Suggest an edit",
+    "reviewNote": "Reviewer’s note",
+    "draftBanner": {
+      "draft": "Draft version {{version}} is open. It isn’t visible to students until it’s reviewed.",
+      "submitted": "Version {{version}} is waiting for review."
+    },
+    "yourProgress": "Your progress",
+    "weeklyGoal": "Weekly goal",
+    "noGoal": "No goal",
+    "perWeek_one": "{{count}} step a week",
+    "perWeek_other": "{{count}} steps a week",
+    "goalHint": "A gentle nudge once a week if you’re behind. Never by email unless you turn it on.",
+    "goalSaved": "Weekly goal saved",
+    "onTrack": "You’re on track this week.",
+    "thisWeek": "This week: {{done}} of {{goal}}.",
+    "next": "Next up",
+    "unfollow": "Stop following",
+    "done": "Done",
+    "markDone": "Mark as done",
+    "markNotDone": "Mark as not done",
+    "after": "Comes after",
+    "proof": "Proof of skill",
+    "resources": "Free resources",
+    "sources": "Sources",
+    "roadmapSources": "Sources for this roadmap",
+    "comments": "Comments for authors and reviewers",
+    "commentsHint": "Only people who write or review roadmaps see these.",
+    "addComment": "Suggest a change to this step",
+    "postComment": "Comment",
+    "deleteComment": "Delete comment",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomFit": "Reset zoom",
+    "versions": "Versions",
+    "changesIn": "Changes in version {{version}}",
+    "firstVersion_one": "First version, with {{count}} step.",
+    "firstVersion_other": "First version, with {{count}} steps.",
+    "noChanges": "No changes from the previous version.",
+    "reviewedBy": "reviewed by {{name}}",
+    "checklist": "Publish checklist",
+    "checklistOk": "Ready for review.",
+    "submit": "Submit for review",
+    "submitted": "Submitted for review",
+    "saved": "Draft saved",
+    "discarded": "Draft discarded",
+    "approved": "Published",
+    "changesRequested": "Changes requested",
+    "awaitingOther": "Waiting for a reviewer who didn’t edit this version.",
+    "diff": {
+      "roadmap": "Roadmap details changed",
+      "added": "Added",
+      "removed": "Removed",
+      "changed": "Changed"
+    },
+    "field": {
+      "title": "title",
+      "summary": "summary",
+      "category": "category",
+      "branches": "branches",
+      "outcomes": "outcomes",
+      "sources": "sources",
+      "kind": "type",
+      "prerequisites": "order",
+      "estimateHours": "time estimate",
+      "resources": "resources",
+      "proof": "proof of skill",
+      "needsReview": "review flag"
+    },
+    "cat": {
+      "software": "Software",
+      "data-ai": "Data and AI",
+      "security": "Security",
+      "design-product": "Design and product",
+      "core-engineering": "Core engineering",
+      "exams-higher-studies": "Exams and higher studies"
+    },
+    "kind": {
+      "skill": "Skill",
+      "milestone": "Milestone",
+      "project": "Project",
+      "exam": "Exam"
+    },
+    "status": {
+      "draft": "Draft",
+      "in_review": "In review",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "vstatus": {
+      "draft": "Draft",
+      "submitted": "Waiting for review",
+      "published": "Published",
+      "superseded": "Earlier version"
+    },
+    "editor": {
+      "newTitle": "New roadmap",
+      "editTitle": "Edit roadmap",
+      "intro": "Cite a source for every step, or mark it “needs review”. A different reviewer publishes it.",
+      "roadmap": "Roadmap",
+      "title": "Title",
+      "summary": "Summary (who it’s for, what the role does)",
+      "branches": "Branches",
+      "outcomes": "Roles it leads to",
+      "outcomesHint": "Separate with commas",
+      "roadmapSources": "Sources for the whole roadmap (at least two)",
+      "steps": "Steps",
+      "step": "Step {{n}}",
+      "stepTitle": "Step title",
+      "stepId": "Short id",
+      "stepIdHint": "Lowercase letters, digits and dashes",
+      "kind": "Type",
+      "stepSummary": "What to learn and why it matters",
+      "hoursMin": "Hours, at least",
+      "hoursMax": "Hours, at most",
+      "after": "Comes after",
+      "resources": "Free resources",
+      "sources": "Sources",
+      "needsReview": "Needs review (no confirmed source yet)",
+      "addRef": "Add link",
+      "refTitle": "Link {{n}} title",
+      "refTitlePh": "Title",
+      "refUrl": "Link {{n}} address",
+      "removeRef": "Remove link {{n}}",
+      "moveUp": "Move step up",
+      "moveDown": "Move step down",
+      "removeStep": "Remove step",
+      "addStep": "Add a step",
+      "changeNote": "What changed (for reviewers)",
+      "rules": "No exam dates, fees or cut-offs: link to the official page instead. Time estimates are your judgement.",
+      "saveDraft": "Save draft",
+      "saveSubmit": "Save and submit",
+      "discard": "Discard draft",
+      "fixErrors": "Fix the highlighted problems first"
+    },
+    "review": {
+      "title": "Review roadmaps",
+      "intro": "Approve changes made by others; you can’t approve versions you edited. Library updates can be approved by any reviewer.",
+      "waiting": "Waiting for review",
+      "empty": "Nothing is waiting for review",
+      "yours": "You edited this",
+      "open": "Review",
+      "decide": "Your decision",
+      "note": "Note for the author",
+      "noteHint": "Required when asking for changes",
+      "approve": "Approve and publish",
+      "requestChanges": "Ask for changes"
+    },
+    "library": {
+      "title": "Researched library",
+      "intro": "Cited roadmaps researched for engineering students. Install them for your college; updates arrive as proposals for review.",
+      "install": "Install",
+      "update": "Propose update",
+      "upToDate": "Installed",
+      "installed": "Installed",
+      "proposed": "Update proposed for review"
+    }
   }
 }

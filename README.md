@@ -54,6 +54,12 @@ Video uses the public `meet.jit.si` locally; for production, self-host Jitsi wit
 3. **Post an opening:** alumni and staff use Jobs → Post an opening.
 4. **Job sources:** as `tpo@dpit.example`, open Admin → Job sources to test and add a Greenhouse, Lever, Ashby or SmartRecruiters board, or an RSS notice feed (needs internet access). Adzuna needs `ADZUNA_APP_ID` and `ADZUNA_APP_KEY`.
 
+### Try Phase 6
+
+1. **Career Galaxy:** as `ananya@dpit.example`, open Roadmaps. Switch between Galaxy and List, open a roadmap, and mark steps done in the step panel. Set a weekly goal; My roadmaps shows your progress.
+2. **Write a roadmap:** as `rahul@dpit.example` (alumni), choose New roadmap. Cite sources or mark steps "needs review", then save and submit.
+3. **Review:** as `faculty@dpit.example`, open Roadmaps → Review roadmaps. Approve Rahul's DEMO draft or ask for changes. History shows each version's changes. The researched library is installed and updated from the same page.
+
 | Service             | URL                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------- |
 | Web app             | http://dpit.localhost:5173, http://mrce.localhost:5173, platform: http://admin.localhost:5173 |

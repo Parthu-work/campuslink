@@ -37,6 +37,7 @@ Sign-up requires an 18+ declaration. Under-18 users are blocked on the client an
 - **News items** keep only a headline, a snippet of at most 300 characters and a link; nothing about who read them is recorded.
 - **Jobs:** saved jobs, application statuses, private notes and alerts are visible only to the member. "Alumni at this company" never reveals a company someone hid.
 - **Referrals** are opt-in for alumni (off by default, with a weekly cap). A request's message and résumé are visible only to the requester and the chosen alumnus. Résumés are PDFs rebuilt without document metadata and deleted 60 days after the request.
+- **Roadmap progress** (steps done, weekly goal) is visible only to the member. Weekly nudges carry only the roadmap's name, and email for them is off by default. Comments on roadmap steps are visible only to people who write or review roadmaps.
 - **Blocking** is silent: the blocked person isn't told; the chat closes and future sessions are cancelled.
 
 ## Retention (implemented)

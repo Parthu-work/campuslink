@@ -492,4 +492,62 @@ erDiagram
 
 Profiles gain `companyKey` (kept in sync with `company`). Files gain the purpose `referral_resume`.
 
-The remaining collections from the spec are added by their phases: roadmaps (6), gamification and events (7).
+## Roadmaps (Phase 6)
+
+```mermaid
+erDiagram
+  ROADMAP ||--|{ ROADMAP_VERSION : "has versions"
+  ROADMAP ||--o{ ROADMAP_PROGRESS : "followed by"
+  ROADMAP ||--o{ ROADMAP_COMMENT : "discussed in"
+  USER ||--o{ ROADMAP_PROGRESS : tracks
+  ROADMAP {
+    ObjectId tenantId
+    string slug "unique per tenant"
+    string libraryKey "unique per tenant when set"
+    string libraryHash
+    enum status "draft | in_review | published | archived"
+    string title "copied from the published version"
+    enum category
+    enum[] branches
+    int nodeCount
+    int needsReviewCount
+    bool featured
+    ObjectId createdBy "null for library roadmaps"
+    int publishedVersion
+    int latestVersion
+    int openVersion "at most one draft or submitted version"
+    date lastReviewedAt
+    object removal
+  }
+  ROADMAP_VERSION {
+    ObjectId tenantId
+    ObjectId roadmapId
+    int version "unique with roadmapId"
+    enum status "draft | submitted | published | superseded"
+    object content "validated by roadmapContent"
+    string changeNote
+    ObjectId authorId
+    ObjectId[] editorIds "none may approve"
+    ObjectId reviewerId
+    string reviewNote
+  }
+  ROADMAP_PROGRESS {
+    ObjectId tenantId
+    ObjectId userId
+    ObjectId roadmapId "unique with userId"
+    object[] done "nodeId and when"
+    int nodesPerWeek
+    date nextNudgeAt
+  }
+  ROADMAP_COMMENT {
+    ObjectId tenantId
+    ObjectId roadmapId
+    int version
+    string nodeId
+    ObjectId authorId
+    string body "plain text"
+    enum status "published | removed"
+  }
+```
+
+The remaining collections from the spec are added by their phase: gamification and events (7).

@@ -25,6 +25,7 @@ import {
   User,
   Users,
   type LucideIcon,
+  Orbit,
 } from 'lucide-react';
 import type { Permission } from '@campuslink/shared';
 import { Crest } from '../ui/misc';
@@ -97,6 +98,13 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           label: t('nav.jobs'),
           icon: BriefcaseBusiness,
           permission: 'jobs:read',
+          primary: true,
+        },
+        {
+          to: '/roadmaps',
+          label: t('nav.roadmaps'),
+          icon: Orbit,
+          permission: 'roadmaps:read',
           primary: true,
         },
         {

@@ -19,8 +19,9 @@ import {
   SunMoon,
   User,
   Users,
+  Orbit,
 } from 'lucide-react';
-import type { JobView, PostView, PublicProfile, QuestionView } from '@campuslink/shared';
+import type { JobView, PostView, PublicProfile, QuestionView, RoadmapSummaryView } from '@campuslink/shared';
 import { api } from '../../lib/api';
 import { usePalette } from '../../lib/palette';
 import { useCan, useMe } from '../../lib/me';
@@ -40,6 +41,7 @@ export function CommandPalette() {
   const canSearch = useCan('directory:read');
   const canFeed = useCan('feed:read');
   const canJobs = useCan('jobs:read');
+  const canRoadmaps = useCan('roadmaps:read');
   const canAdmin = useCan('users:read_admin');
   const { setTheme, setLanguage } = usePreferences();
   const [q, setQ] = useState('');
@@ -47,10 +49,13 @@ export function CommandPalette() {
   const people = useQuery({
     queryKey: ['search', dq],
     queryFn: ({ signal }) =>
-      api.get<{ people: PublicProfile[]; posts?: PostView[]; questions?: QuestionView[]; jobs?: JobView[] }>(
-        `/search?q=${encodeURIComponent(dq)}`,
-        signal,
-      ),
+      api.get<{
+        people: PublicProfile[];
+        posts?: PostView[];
+        questions?: QuestionView[];
+        jobs?: JobView[];
+        roadmaps?: RoadmapSummaryView[];
+      }>(`/search?q=${encodeURIComponent(dq)}`, signal),
     enabled: open && canSearch && dq.length >= 2,
     staleTime: 30_000,
   });
@@ -61,6 +66,7 @@ export function CommandPalette() {
   };
   const nav = [
     { to: '/home', label: t('nav.home'), icon: Home, show: true },
+    { to: '/roadmaps', label: t('nav.roadmaps'), icon: Orbit, show: canRoadmaps },
     { to: '/jobs', label: t('nav.jobs'), icon: BriefcaseBusiness, show: canJobs },
     { to: '/jobs/tracker', label: t('jobs.tracker'), icon: ListChecks, show: canJobs },
     { to: '/questions', label: t('nav.questions'), icon: MessageCircleQuestion, show: canFeed },
@@ -109,6 +115,22 @@ export function CommandPalette() {
                   {people.isSuccess && !people.data.people.length && (
                     <p className="px-3 py-2 text-sm text-fg-2">{t('palette.noResults')}</p>
                   )}
+                </Command.Group>
+              )}
+              {!!people.data?.roadmaps?.length && (
+                <Command.Group heading={t('palette.roadmaps')} className={group}>
+                  {people.data.roadmaps.map((r) => (
+                    <Command.Item
+                      key={r.id}
+                      value={`roadmap-${r.id}`}
+                      onSelect={() => go(`/roadmaps/${r.slug}`)}
+                      className={item}
+                    >
+                      <Orbit className="size-4 flex-none text-fg-2" aria-hidden />
+                      <span className="min-w-0 flex-1 truncate">{r.title}</span>
+                      <span className="truncate text-xs text-fg-3">{t(`roadmaps.cat.${r.category}`)}</span>
+                    </Command.Item>
+                  ))}
                 </Command.Group>
               )}
               {dq.length >= 3 && !!people.data?.jobs?.length && (

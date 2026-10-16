@@ -54,6 +54,13 @@ Socket.io at `/api/v1/realtime` (`http/realtime.ts`), with the Redis adapter for
 - **Background permissions:** alert runs use `backgroundAuth()` (users module), so the member's current permissions and blocks apply.
 - See `docs/job-sources.md`.
 
+## Roadmaps
+
+- **Module:** `roadmaps` (roadmaps, versions, review, progress, comments, library).
+- **Library:** researched JSON in `modules/roadmaps/library/`, validated at load by `roadmapContent`. It is installed into each new college through `PlatformService.onTenantCreated` and by the seed. Library updates arrive as submitted versions that any reviewer can approve (`docs/roadmap-sources.md`).
+- **Nudges:** every 5 minutes the API queues due weekly goal checks (`roadmaps.nudge`, platform path `roadmaps:due-nudges`). Each check runs with the member's current permissions (`backgroundAuth`).
+- **Web:** the Career Galaxy and the roadmap graph are plain SVG (no WebGL). The layout is deterministic (`lib/roadmaps.ts`). The list view is the default with reduced motion and on small screens.
+
 ## Swappable providers
 
 | Interface           | Local                                          | Others                                                           |

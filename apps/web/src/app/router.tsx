@@ -82,6 +82,19 @@ const Following = lazy(() =>
 );
 const Questions = lazy(() => import('../features/qa/questions').then((m) => ({ default: m.QuestionsPage })));
 const Question = lazy(() => import('../features/qa/questions').then((m) => ({ default: m.QuestionPage })));
+const Roadmaps = lazy(() => import('../features/roadmaps/galaxy').then((m) => ({ default: m.RoadmapsPage })));
+const Roadmap = lazy(() =>
+  import('../features/roadmaps/roadmap-page').then((m) => ({ default: m.RoadmapPage })),
+);
+const RoadmapHistory = lazy(() =>
+  import('../features/roadmaps/history').then((m) => ({ default: m.RoadmapHistoryPage })),
+);
+const RoadmapEditor = lazy(() =>
+  import('../features/roadmaps/editor').then((m) => ({ default: m.RoadmapEditorPage })),
+);
+const RoadmapReview = lazy(() =>
+  import('../features/roadmaps/review').then((m) => ({ default: m.RoadmapReviewPage })),
+);
 const Jobs = lazy(() => import('../features/jobs/radar').then((m) => ({ default: m.JobsPage })));
 const JobPage = lazy(() => import('../features/jobs/job-page').then((m) => ({ default: m.JobPage })));
 const Tracker = lazy(() => import('../features/jobs/tracker').then((m) => ({ default: m.TrackerPage })));
@@ -253,6 +266,12 @@ function collegeRouter() {
         { path: '/following', element: gated('sources:follow', <Following />) },
         { path: '/questions', element: gated('feed:read', <Questions />) },
         { path: '/questions/:questionId', element: gated('feed:read', <Question />) },
+        { path: '/roadmaps', element: gated('roadmaps:read', <Roadmaps />) },
+        { path: '/roadmaps/review', element: gated('roadmaps:review', <RoadmapReview />) },
+        { path: '/roadmaps/new', element: gated('roadmaps:write', <RoadmapEditor />) },
+        { path: '/roadmaps/:slug', element: gated('roadmaps:read', <Roadmap />) },
+        { path: '/roadmaps/:slug/history', element: gated('roadmaps:read', <RoadmapHistory />) },
+        { path: '/roadmaps/:slug/edit', element: gated('roadmaps:write', <RoadmapEditor />) },
         { path: '/jobs', element: gated('jobs:read', <Jobs />) },
         { path: '/jobs/tracker', element: gated('jobs:save', <Tracker />) },
         { path: '/jobs/new', element: gated('jobs:post', <PostJob />) },

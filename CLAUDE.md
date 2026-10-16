@@ -25,6 +25,7 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 | Build                                       | `pnpm build`                                                            |
 | Seed demo data                              | `pnpm seed` (Phase 1 onwards)                                           |
 | Dependency audit                            | `pnpm audit`                                                            |
+| Check roadmap library links                 | `pnpm --filter @campuslink/api roadmaps:verify`                         |
 
 ## Folder structure
 
@@ -64,7 +65,8 @@ docs/            architecture, ADRs, threat model, privacy, design brief
 - Media for posts and stories is uploaded first and attached with `FilesService.claim()` (owner, purpose, single use). Validate every file before claiming any.
 - Outside content comes only from RSS/Atom through `content-sources` (robots.txt, `safeFetch`, snippet + link-out). Starter feeds stay disabled until `feeds:verify` passes in CI; record results in `docs/content-sources.md`.
 - Jobs: never invent listings. New job sources implement `JobSourceAdapter` (`modules/job-sources/adapters.ts`) on documented public APIs only. Starter boards stay disabled until `jobs:verify` passes in CI. "Alumni at this company" must respect profile field visibility (`ProfilesService.alumniAtCompanies`).
-- Background work on a member's behalf (alerts) uses `backgroundAuth()` so current permissions and blocks apply.
+- Roadmaps: never invent roadmap content. Library roadmaps live in `modules/roadmaps/library/` (cite every step or mark it `needsReview`; no dates, fees or cut-offs); record sources and link-check results in `docs/roadmap-sources.md`. Publishing goes through review, and nobody approves a version they edited.
+- Background work on a member's behalf (alerts, roadmap nudges) uses `backgroundAuth()` so current permissions and blocks apply.
 - Notify people only through `NotificationsService.notify()`. Payloads carry ids, names, session types and times, never message or request text.
 - Bookings: never write `holds` by hand; use `holdsFor()` (`modules/mentorship/slots.ts`). The unique index on holds is what prevents double booking. Delayed jobs carry the booking `version` and must no-op when it changed.
 - Mark sensitive POSTs `idempotent: true` (signed-in JSON routes) and abuse-prone public or social writes `bot: true`.

@@ -219,3 +219,24 @@ Scope so far: Phases 1–3 (tenancy, auth, RBAC, audit, consent, branding, platf
 
 - Inferred experience level and skills can be wrong for imported jobs (shown as "about"; the employer's page is authoritative).
 - Company matching is by normalised name; two different companies with the same name would share a badge.
+
+# Phase 6: Roadmaps and Career Galaxy
+
+**New assets:** roadmaps and their version history, review decisions, per-step comments, members' progress and weekly goals.
+
+|     | Threat                                                      | Mitigation                                                                                                                                                                              | Test                         |
+| --- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| T   | Self-published or unreviewed advice                         | Draft → submit → review; only `roadmaps:review` publishes; anyone who saved a version (including a reviewer) cannot approve it; publishing needs two roadmap sources and a project step | `roadmaps.test.ts`           |
+| S   | Misleading or fabricated guidance                           | Every step cites a source or is marked "needs review" (shown to students); researched library cites per roadmap and step; CI link check; members can report a roadmap                   | `roadmaps.test.ts`           |
+| T   | Script or markup in roadmap text                            | Strict Zod schema (unknown keys rejected), plain text stored (`plainText`), https-only links rendered with `rel="noopener noreferrer"`; React escapes output                            | `roadmaps.test.ts`           |
+| T   | Broken graphs (cycles, dangling prerequisites)              | `graphProblems()` rejects duplicates, unknown prerequisites, self-references and cycles at the schema level; at most 40 steps                                                           | `roadmaps.test.ts`           |
+| T   | Concurrent edits overwriting each other                     | One open version per roadmap, claimed with an atomic conditional update; submitted versions are read-only; reviews are conditional on status                                            | `roadmaps.test.ts`           |
+| I   | Drafts or review comments leaking to students               | Unpublished roadmaps are visible only to their editors and reviewers; open versions are hidden from version history for others; comments need `roadmaps:write`                          | `roadmaps.test.ts`           |
+| I   | Progress revealing a member's plans                         | Progress and goals are private to the member; nudges carry only the roadmap's name and slug                                                                                             | `roadmaps.test.ts`           |
+| R   | Disputed publication or archive                             | Create, approve, request changes, discard, flag changes and library installs are written to the audit log                                                                               | `roadmaps.test.ts`           |
+| I   | One college's roadmaps, drafts or progress reaching another | Four tenant-owned collections with isolation tests; the nudge scheduler is a named platform path that only enqueues per-tenant jobs                                                     | `isolation/roadmaps.test.ts` |
+
+## Residual risks (Phase 6)
+
+- Cited pages can change after review; the weekly link check catches pages that disappear, not pages whose content changes. Each roadmap shows when it was last reviewed.
+- Some official Indian sites refuse overseas automated checks, so their links are re-checked by hand (`docs/roadmap-sources.md`).
