@@ -41,3 +41,40 @@ Done when: members see a college feed with For You and Following tabs, alumni an
 - **Link previews** fetch only title, description and site name (no remote images, so no hotlinking or tracking pixels).
 - **Story "seen" state** is not tracked: no read receipts for stories (data minimisation).
 - **Ingestion in tests:** the scheduler is off in tests and end-to-end runs (`INGESTION_ENABLED=false`); ingestion is tested with a fake transport. The seed creates no fake news items: only real sources, which fetch when the API runs with internet access.
+
+## Outcome
+
+**Built:** everything in the plan above.
+
+- **API:** modules `feed`, `qa`, `content-sources`, moderation queue and appeals.
+- **Web:**
+  - Feed home with stories, One Useful Thing, composer, For you and Following tabs, and a virtualised infinite list with optimistic reactions and saves.
+  - Post detail with threaded comments; Reels, Saved, Following and Q&A pages.
+  - Admin Moderation and Sources tabs.
+  - English and Telugu throughout.
+- **Seed:** DEMO posts, a poll, an announcement, a story and Q&A (no news items).
+
+**Tests:**
+
+- API: 417 tests, including feed, Q&A, moderation, ingestion and a 38-case isolation suite covering all 15 new collections, media files and search.
+- Web: unit tests for the markdown parser, optimistic updates and story grouping.
+- Playwright: 40 end-to-end tests with axe on every new view (post → react → comment → report → remove → appeal → restore; ask → approve → answer → accept; stories; reels; sources).
+- Checked at 360 px and desktop widths, in light and dark themes and with reduced motion: no horizontal overflow on any new page.
+
+**Feed verification:** done in GitHub Actions. Eight of the nine remaining starter feeds are verified (2026-10-16). Three candidates were dropped (two refuse bots with 403, one is stale), and NASA stays unverified (rate-limited). See `docs/content-sources.md`. The first CI run exposed a real bug: a doctype quoted inside an article's CDATA tripped the DTD guard. The guard now ignores CDATA and comments, but checks the whole document rather than only the first 4 KB.
+
+**Decisions:**
+
+- Plain text plus a markdown subset (ADR 0007).
+- Explainable ranking from follows, branch and public counts only (`docs/feed-ranking.md`).
+- The feeds workflow turns red only when a verified feed regresses.
+- Media is validated before any of it is claimed, so a rejected post never uses up an upload.
+- Home is code-split; the main bundle is 454 kB.
+
+**Gaps and next steps:**
+
+- No video transcoding or streaming (Phase 8).
+- Story "seen" rings are not tracked.
+- Spam filters are keyword-based.
+- NASA's feed needs a passing run.
+- Phase 5 (Jobs and referrals) is next.

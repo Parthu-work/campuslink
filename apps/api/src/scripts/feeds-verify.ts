@@ -11,11 +11,16 @@ import { STARTER_SOURCES } from '../modules/content-sources/starter.js';
 const RECENT_DAYS = 120;
 
 async function main() {
-  const rows: { key: string; ok: boolean; detail: string }[] = [];
+  const rows: { key: string; ok: boolean; verified: boolean; detail: string }[] = [];
   for (const s of STARTER_SOURCES) {
     const r = await fetchFeed(s.url, safeFetch);
     if (r.kind !== 'ok') {
-      rows.push({ key: s.key, ok: false, detail: 'message' in r ? r.message : 'not modified' });
+      rows.push({
+        key: s.key,
+        ok: false,
+        verified: !!s.verifiedAt,
+        detail: 'message' in r ? r.message : 'not modified',
+      });
       continue;
     }
     const newest = r.feed.items.reduce((m, i) => Math.max(m, i.publishedAt.getTime()), 0);
@@ -24,6 +29,7 @@ async function main() {
     rows.push({
       key: s.key,
       ok,
+      verified: !!s.verifiedAt,
       detail: `${r.feed.format}, ${r.feed.items.length} items, newest ${ageDays} days old${ok ? '' : ' (stale or empty)'}`,
     });
   }
@@ -50,7 +56,8 @@ async function main() {
     const enc = (v: string) => v.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
     process.stdout.write(`::notice title=Starter feed verification ${date}::${enc(lines.join('\n'))}\n`);
   }
-  if (rows.some((r) => !r.ok)) process.exitCode = 1;
+  // Red only when a verified feed regresses; failing candidates simply stay unverified.
+  if (rows.some((r) => r.verified && !r.ok)) process.exitCode = 1;
 }
 
 main().catch((err: unknown) => {

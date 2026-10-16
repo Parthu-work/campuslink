@@ -28,26 +28,26 @@ Health states: **new** (never fetched), **ok**, **failing** (last attempt failed
 
 ## Verified starter list
 
-`apps/api/src/modules/content-sources/starter.ts` lists candidate feeds from reputable publishers. They are **disabled until verified**: `verifiedAt` stays `null` until a run of `pnpm --filter @campuslink/api feeds:verify` passes for that feed. The check covers reachability, robots.txt, RSS or Atom parsing and at least one item. The check runs in GitHub Actions (`.github/workflows/feeds.yml`: on demand, weekly, and when the module changes), because the development container's network policy blocks news hosts. The API refuses to add an unverified starter (409).
+`apps/api/src/modules/content-sources/starter.ts` lists candidate feeds from reputable publishers. They are **disabled until verified**: `verifiedAt` stays `null` until a run of `pnpm --filter @campuslink/api feeds:verify` passes for that feed. The check covers reachability, robots.txt, RSS or Atom parsing and at least one item. The check runs in GitHub Actions (`.github/workflows/feeds.yml`: on demand, weekly, and when the module changes), because the development container's network policy blocks news hosts. The API refuses to add an unverified starter (409). The workflow fails only when an already **verified** feed stops passing (actionable); unverified candidates that fail are reported in the run's annotation but don't turn it red.
 
 ### Verification results
 
-GitHub Actions run of 2026-10-16 (`feeds` workflow, run 38842261299):
+GitHub Actions runs of 2026-10-16 (`feeds` workflow, runs 38842261299 and 38842649580 after the parser fix):
 
-| Feed                     | Result                                                              | Status                                                                     |
-| ------------------------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| stackoverflow-blog       | pass: RSS, 40 items, newest 0 days old                              | verified 2026-10-16                                                        |
-| freecodecamp-news        | pass: RSS, 10 items, newest 1 day old                               | verified 2026-10-16                                                        |
-| mozilla-hacks            | pass: RSS, 20 items, newest 52 days old                             | verified 2026-10-16                                                        |
-| aws-news-blog            | pass: RSS, 20 items, newest 1 day old                               | verified 2026-10-16                                                        |
-| ieee-spectrum            | pass: RSS, 30 items, newest 0 days old                              | verified 2026-10-16                                                        |
-| sciencedaily-computers   | pass: RSS, 60 items, newest 2 days old                              | verified 2026-10-16                                                        |
-| the-hindu-education      | pass: RSS, 60 items, newest 1 day old                               | verified 2026-10-16                                                        |
-| github-blog              | failed: our DTD guard fired (likely a doctype quoted in an article) | parser fixed (CDATA and comments are ignored); re-verified in the next run |
-| nasa-news                | failed: 429, rate-limited on the shared runner IP                   | stays unverified; retried weekly                                           |
-| mit-news-engineering     | failed: newest item 203 days old                                    | removed from the list (stale)                                              |
-| pib-releases             | failed: 403 for our bot                                             | removed: the publisher refuses automated fetching                          |
-| indian-express-education | failed: 403 for our bot                                             | removed: the publisher refuses automated fetching                          |
+| Feed                     | Result                                                                                                                     | Status                                            |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| stackoverflow-blog       | pass: RSS, 40 items, newest 0 days old                                                                                     | verified 2026-10-16                               |
+| freecodecamp-news        | pass: RSS, 10 items, newest 1 day old                                                                                      | verified 2026-10-16                               |
+| mozilla-hacks            | pass: RSS, 20 items, newest 52 days old                                                                                    | verified 2026-10-16                               |
+| aws-news-blog            | pass: RSS, 20 items, newest 1 day old                                                                                      | verified 2026-10-16                               |
+| ieee-spectrum            | pass: RSS, 30 items, newest 0 days old                                                                                     | verified 2026-10-16                               |
+| sciencedaily-computers   | pass: RSS, 60 items, newest 2 days old                                                                                     | verified 2026-10-16                               |
+| the-hindu-education      | pass: RSS, 60 items, newest 1 day old                                                                                      | verified 2026-10-16                               |
+| github-blog              | pass (second run): RSS, 10 items, newest 0 days old; the first run tripped our DTD guard on a doctype quoted in an article | verified 2026-10-16 (parser fixed)                |
+| nasa-news                | failed twice: 429, rate-limited on the shared runner IP                                                                    | stays unverified; retried weekly                  |
+| mit-news-engineering     | failed: newest item 203 days old                                                                                           | removed from the list (stale)                     |
+| pib-releases             | failed: 403 for our bot                                                                                                    | removed: the publisher refuses automated fetching |
+| indian-express-education | failed: 403 for our bot                                                                                                    | removed: the publisher refuses automated fetching |
 
 ## Terms and attribution
 

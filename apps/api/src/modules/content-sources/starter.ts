@@ -27,7 +27,7 @@ export const STARTER_SOURCES: StarterSource[] = [
     topics: ['tech-news', 'web-dev'],
     branches: ['CSE', 'IT'],
     intervalMin: 360,
-    verifiedAt: null,
+    verifiedAt: '2026-10-16',
   },
   {
     key: 'stackoverflow-blog',
