@@ -31,9 +31,11 @@ export class InvitesService {
         continue;
       }
       await InviteModel.findOneAndUpdate(
-        { emailIndex: this.cipher.blindIndex(email) },
+        // Any key's index matches; the write stores the current key's (re-indexes during a rotation).
+        { emailIndex: { $in: this.cipher.blindIndexes(email) } },
         {
           $set: {
+            emailIndex: this.cipher.blindIndex(email),
             kind,
             invitedBy: new Types.ObjectId(actorId),
             expiresAt: new Date(Date.now() + INVITE_TTL_MS),
@@ -65,7 +67,11 @@ export class InvitesService {
   /** Consumes a matching invite after the invitee confirms their email. */
   async consume(email: string): Promise<{ kind: 'student' | 'alumni' | null } | null> {
     const inv = await InviteModel.findOneAndUpdate(
-      { emailIndex: this.cipher.blindIndex(email), acceptedAt: null, expiresAt: { $gt: new Date() } },
+      {
+        emailIndex: { $in: this.cipher.blindIndexes(email) },
+        acceptedAt: null,
+        expiresAt: { $gt: new Date() },
+      },
       { $set: { acceptedAt: new Date() } },
     ).lean();
     return inv ? { kind: (inv.kind as 'student' | 'alumni' | null) ?? null } : null;

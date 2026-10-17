@@ -251,12 +251,13 @@ export class NotificationsService {
   }
 
   async subscribe(viewer: AuthState, body: z.output<typeof pushSubscriptionBody>) {
-    const endpointIndex = this.d.cipher.blindIndex(body.endpoint);
-    // The same browser may move between accounts in a college: the latest sign-in owns it.
+    // The same browser may move between accounts in a college: the latest sign-in owns it. Any
+    // key's index matches; the write stores the current key's (re-indexes during a rotation).
     await PushSubscriptionModel.updateOne(
-      { endpointIndex },
+      { endpointIndex: { $in: this.d.cipher.blindIndexes(body.endpoint) } },
       {
         $set: {
+          endpointIndex: this.d.cipher.blindIndex(body.endpoint),
           userId: new Types.ObjectId(viewer.userId),
           endpointEnc: this.d.cipher.encrypt(body.endpoint),
           keysEnc: this.d.cipher.encrypt(JSON.stringify(body.keys)),
@@ -280,7 +281,7 @@ export class NotificationsService {
   async unsubscribe(viewer: AuthState, endpoint: string) {
     await PushSubscriptionModel.deleteOne({
       userId: viewer.userId,
-      endpointIndex: this.d.cipher.blindIndex(endpoint),
+      endpointIndex: { $in: this.d.cipher.blindIndexes(endpoint) },
     });
     return { subscribed: false };
   }

@@ -53,7 +53,7 @@ import {
 const env = loadEnv();
 if (env.NODE_ENV === 'production') throw new Error('Refusing to seed a production database');
 const password = process.env.SEED_PASSWORD ?? 'Demo-Campus-Link-2026';
-const cipher = new FieldCipher(env.FIELD_ENCRYPTION_KEY);
+const cipher = new FieldCipher(env.FIELD_ENCRYPTION_KEY, env.FIELD_ENCRYPTION_KEYS_PREVIOUS);
 
 const COLLEGES: { slug: string; branding: Branding; domain: string }[] = [
   {

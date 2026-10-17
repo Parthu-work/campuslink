@@ -40,11 +40,39 @@ Secrets live in SSM Parameter Store as SecureString parameters and reach tasks t
 | `JWT_TICKET_SECRET`                                 | Same                                                    | Half-finished 2FA sign-ins must restart                                                 |
 | `MONGODB_URI` password, Redis AUTH                  | Add the new credential, deploy, then remove the old one | No downtime when done in that order                                                     |
 | SES SMTP credentials, `VAPID_*`, `JITSI_APP_SECRET` | Replace and redeploy                                    | Changing VAPID keys invalidates existing push subscriptions; members re-enable push     |
-| `FIELD_ENCRYPTION_KEY`                              | **Not rotatable yet** (see the gaps)                    | Phone numbers, TOTP secrets and list emails are encrypted with it; losing it loses them |
+| `FIELD_ENCRYPTION_KEY`                              | Key ring and re-encryption job (below)                  | No downtime; members notice nothing                                                     |
+
+### Rotating the field encryption key
+
+`FIELD_ENCRYPTION_KEY` encrypts phone numbers, TOTP secrets, list emails and phones, push subscriptions and message bodies, and keys the blind indexes used to look them up. Losing it loses that data, so rotate it by adding a new key, never by replacing the old one in place.
+
+1. **Generate the new key:** `openssl rand -base64 32`. Store it as a new SSM parameter.
+2. **Deploy with both keys:**
+   - set `FIELD_ENCRYPTION_KEY` to the new key and `FIELD_ENCRYPTION_KEYS_PREVIOUS` to the old one;
+   - redeploy.
+   - New writes use the new key. Old values still decrypt, and lookups (list emails, invites, push subscriptions) match old and new blind indexes.
+3. **Check:** run the job with the production environment as a one-off ECS task using the API image: `node dist/scripts/rotate-field-key.js --dry-run`. From a checkout, use `pnpm --filter @campuslink/api rotate-field-key --dry-run`. It reports, per college, how many values would be re-encrypted and re-indexed.
+4. **Rotate:** the same command without `--dry-run`.
+   - It re-encrypts every value not on the new key and recomputes every blind index from the decrypted value.
+   - Each write is guarded on the old ciphertext, so a value the app changes meanwhile is skipped. Run again until nothing is skipped.
+   - Each college gets a `platform.field_key_rotated` audit entry with counts and the key id, never values.
+5. **Confirm:** the same command with `--check` exits 0 when nothing is left on an old key, and prints the date the last open invite expires.
+   - Invites store only a blind index of the email, so they cannot be re-indexed. They expire within 30 days.
+6. **Retire the old key:** after that date, remove `FIELD_ENCRYPTION_KEYS_PREVIOUS` and redeploy.
+   - Keep the old key offline until every backup taken before step 4 has expired (35 days under Object Lock). Restoring one of those backups needs it.
+
+Rehearsed on 2026-10-17 against a seeded copy:
+
+- `--check` failed while values were on the old key;
+- the rotation moved 18 list records and 6 messages across two colleges;
+- `--check` then passed, with and without the old key configured.
+
+The format is `v2.<keyId>.<iv>.<tag>.<ciphertext>`. The key id is a hash prefix of the key, bound to the ciphertext as authenticated data. Values written before rotation existed (`v1.`) decrypt with any configured key, and the job upgrades them.
 
 - **Suspected leak of `FIELD_ENCRYPTION_KEY`:** treat it as an incident.
   1. Restrict SSM access.
-  2. Plan a re-encryption release. The cipher format is versioned (`v1.`), so add a key ring that decrypts `v1` and writes `v2`, re-encrypt in a background job, and recompute the blind indexes.
+  2. Rotate as above, straight away.
+  3. Then decide with the platform owner whether the leaked key's backups need re-encrypting or deleting early.
 
 ## Backups
 
@@ -159,8 +187,7 @@ Also checked on 2026-10-16:
 
 ## Known gaps (operations)
 
-| Gap                                                              | Owner          | Next step                                                         |
-| ---------------------------------------------------------------- | -------------- | ----------------------------------------------------------------- |
-| `FIELD_ENCRYPTION_KEY` rotation (key ring and re-encryption job) | API            | `v2` cipher prefix, background re-encryption, blind index rebuild |
-| Infrastructure as code for the topology and DR standby           | Ops            | Terraform or CDK                                                  |
-| On-call roster and key holders                                   | Platform owner | Fill in the roles table above                                     |
+| Gap                                                    | Owner          | Next step                     |
+| ------------------------------------------------------ | -------------- | ----------------------------- |
+| Infrastructure as code for the topology and DR standby | Ops            | Terraform or CDK              |
+| On-call roster and key holders                         | Platform owner | Fill in the roles table above |

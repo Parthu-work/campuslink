@@ -37,6 +37,22 @@ export const envSchema = z.object({
       message: 'must be 32 bytes, base64-encoded',
     })
     .default('MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY='),
+  /**
+   * Retired field keys, comma-separated, decrypt-only during a rotation (docs/runbook.md). Remove
+   * them once `rotate-field-key --check` reports nothing left on them.
+   */
+  FIELD_ENCRYPTION_KEYS_PREVIOUS: z
+    .string()
+    .default('')
+    .transform((v) =>
+      v
+        .split(',')
+        .map((k) => k.trim())
+        .filter(Boolean),
+    )
+    .refine((keys) => keys.every((k) => Buffer.from(k, 'base64').length === 32), {
+      message: 'each key must be 32 bytes, base64-encoded',
+    }),
   HIBP_ENABLED: bool,
   /** Defaults to true in production. Browsers treat *.localhost as secure, but we keep dev cookies plain for other hosts. */
   COOKIE_SECURE: z
@@ -132,6 +148,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error('Set both JITSI_APP_ID and JITSI_APP_SECRET, or neither');
   if (env.BOT_PROTECTION === 'turnstile' && (!env.TURNSTILE_SECRET || !env.TURNSTILE_SITE_KEY))
     throw new Error('BOT_PROTECTION=turnstile needs TURNSTILE_SECRET and TURNSTILE_SITE_KEY');
+  if (env.FIELD_ENCRYPTION_KEYS_PREVIOUS.includes(env.FIELD_ENCRYPTION_KEY))
+    throw new Error('FIELD_ENCRYPTION_KEYS_PREVIOUS must not contain the current FIELD_ENCRYPTION_KEY');
   if (env.STORAGE_DRIVER === 's3' && !env.S3_BUCKET) throw new Error('STORAGE_DRIVER=s3 needs S3_BUCKET');
   if (!!env.S3_ACCESS_KEY_ID !== !!env.S3_SECRET_ACCESS_KEY)
     throw new Error('Set both S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY, or neither');

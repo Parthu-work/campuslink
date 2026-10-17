@@ -30,6 +30,7 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 | Backup and restore drill                     | `pnpm backup:drill`                                                     |
 | ClamAV and S3 locally (adapter tests)        | `docker compose --profile clamav --profile s3 up -d --wait`             |
 | Staging rehearsal (production images)        | `deploy/staging/up.sh --build`, `smoke.sh`, `down.sh`                   |
+| Re-encrypt after a field key rotation        | `pnpm --filter @campuslink/api rotate-field-key [--dry-run \| --check]` |
 
 ## Folder structure
 
@@ -101,7 +102,7 @@ Watch for these traps:
 - Rate-limit (Redis-backed) auth, messaging, requests, referrals, uploads and search.
 - Uploads: sniff the type, cap the size, use random names, strip metadata, never serve from the app origin with execute rights, and leave an antivirus hook.
 - Defend against NoSQL injection: strict Zod schemas, `middleware/no-operators.ts` and `strictQuery` (not global `sanitizeFilter`; see ADR 0006). Every server-side fetch goes through the SSRF-safe fetcher (blocks private ranges, enforces timeouts and size caps).
-- Secrets come only from env. **Never log secrets or personal data** (Pino redaction is a safety net, not permission). The access log is an allowlist (`httpLogSerializers`: id, method, path, status); keep it that way. Encrypt sensitive fields (such as phone numbers) with AES-256-GCM.
+- Secrets come only from env. **Never log secrets or personal data** (Pino redaction is a safety net, not permission). The access log is an allowlist (`httpLogSerializers`: id, method, path, status); keep it that way. Encrypt sensitive fields (such as phone numbers) with AES-256-GCM through `FieldCipher`: name them `…Enc` and list them in `ENCRYPTED_COLLECTIONS` (`scripts/field-rotation.ts`; a test enforces it). Store `blindIndex()`, but look up with `{ $in: blindIndexes() }` so key rotation never breaks lookups.
 - The audit log is append-only. Record admin actions, role changes, exports, logins and verification decisions in it.
 - The super admin never reads tenant private message content.
 

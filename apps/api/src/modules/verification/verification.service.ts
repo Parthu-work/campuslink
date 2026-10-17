@@ -194,7 +194,11 @@ export class VerificationService {
     if (rec.kind === 'alumni' && rec.gradYear && rec.gradYear !== gradYear) return noMatch;
 
     // The college already has this person's email and they proved they own it at sign-up.
-    if (rec.emailIndex && user.emailVerifiedAt && rec.emailIndex === this.d.cipher.blindIndex(user.email)) {
+    if (
+      rec.emailIndex &&
+      user.emailVerifiedAt &&
+      this.d.cipher.blindIndexes(user.email).includes(rec.emailIndex)
+    ) {
       return (await this.claim(userId, rec._id, 'roll_email_match', meta))
         ? { status: 'verified' as const }
         : noMatch;
@@ -227,7 +231,7 @@ export class VerificationService {
     const user = await UserModel.findById(userId).select('verified roles').lean();
     if (!user || user.verified) return;
     const rec = await WhitelistModel.findOne({
-      emailIndex: this.d.cipher.blindIndex(email),
+      emailIndex: { $in: this.d.cipher.blindIndexes(email) },
       status: 'unclaimed',
     }).lean();
     if (rec && (await this.claim(userId, rec._id, 'list_email_match', meta))) return;

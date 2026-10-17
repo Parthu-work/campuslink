@@ -104,26 +104,26 @@ Indexes are created on boot (`syncIndexes()`), and every compound index leads wi
   - Inject them through the ECS task definition `secrets` field.
   - Never put them in images, task definition plain-text environment, or logs.
 
-| Variable                                                        | Production value                                                                                       |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `NODE_ENV`                                                      | `production`                                                                                           |
-| `APP_ROOT_DOMAIN`                                               | `campuslink.example`                                                                                   |
-| `WEB_ORIGIN`, `CORS_ALLOWED_ORIGINS`                            | `https://campuslink.example`, `https://*.campuslink.example`                                           |
-| `TRUST_PROXY_HOPS`                                              | `1` (the ALB routes `/api/*` straight to the API); `1` on a single host behind nginx                   |
-| `MONGODB_URI`, `REDIS_URL`                                      | SSM SecureString; TLS (`tls=true`, `rediss://`)                                                        |
-| `JWT_ACCESS_SECRET`, `JWT_TICKET_SECRET`                        | SSM; 32+ random bytes each; different values                                                           |
-| `FIELD_ENCRYPTION_KEY`                                          | SSM; 32 random bytes, base64 (`openssl rand -base64 32`). Never rotate without re-encryption (runbook) |
-| `COOKIE_SECURE`                                                 | unset (defaults to `true` in production)                                                               |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | SES SMTP endpoint for `ap-south-1`, port 587, SES SMTP credentials, a verified sender                  |
-| `STORAGE_DRIVER`, `S3_BUCKET`, `S3_REGION`                      | `s3`, the private files bucket, `ap-south-1`                                                           |
-| `S3_SSE`, `S3_KMS_KEY_ID`, `S3_PREFIX`                          | `aws:kms` (default), the customer-managed key, `files/` (default)                                      |
-| `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`       | unset on AWS (the task role supplies credentials); only for S3-compatible stores                       |
-| `MALWARE_SCANNER`, `CLAMAV_ADDRESS`                             | `clamav`, `127.0.0.1:3310` (the sidecar)                                                               |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`        | from `pnpm --filter @campuslink/api vapid`; subject `mailto:` the operator                             |
-| `JITSI_BASE_URL`, `JITSI_APP_ID`, `JITSI_APP_SECRET`            | the self-hosted Jitsi in `ap-south-1`                                                                  |
-| `BOT_PROTECTION`, `TURNSTILE_SECRET`, `TURNSTILE_SITE_KEY`      | `turnstile`, the secret (SSM), the public site key for the college domains                             |
-| `HIBP_ENABLED`                                                  | `true` (k-anonymity; only a 5-character hash prefix leaves the server)                                 |
-| `LOG_LEVEL`                                                     | `info`                                                                                                 |
+| Variable                                                        | Production value                                                                                         |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`                                                      | `production`                                                                                             |
+| `APP_ROOT_DOMAIN`                                               | `campuslink.example`                                                                                     |
+| `WEB_ORIGIN`, `CORS_ALLOWED_ORIGINS`                            | `https://campuslink.example`, `https://*.campuslink.example`                                             |
+| `TRUST_PROXY_HOPS`                                              | `1` (the ALB routes `/api/*` straight to the API); `1` on a single host behind nginx                     |
+| `MONGODB_URI`, `REDIS_URL`                                      | SSM SecureString; TLS (`tls=true`, `rediss://`)                                                          |
+| `JWT_ACCESS_SECRET`, `JWT_TICKET_SECRET`                        | SSM; 32+ random bytes each; different values                                                             |
+| `FIELD_ENCRYPTION_KEY`, `FIELD_ENCRYPTION_KEYS_PREVIOUS`        | SSM; 32 random bytes, base64 (`openssl rand -base64 32`); previous keys only during a rotation (runbook) |
+| `COOKIE_SECURE`                                                 | unset (defaults to `true` in production)                                                                 |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | SES SMTP endpoint for `ap-south-1`, port 587, SES SMTP credentials, a verified sender                    |
+| `STORAGE_DRIVER`, `S3_BUCKET`, `S3_REGION`                      | `s3`, the private files bucket, `ap-south-1`                                                             |
+| `S3_SSE`, `S3_KMS_KEY_ID`, `S3_PREFIX`                          | `aws:kms` (default), the customer-managed key, `files/` (default)                                        |
+| `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`       | unset on AWS (the task role supplies credentials); only for S3-compatible stores                         |
+| `MALWARE_SCANNER`, `CLAMAV_ADDRESS`                             | `clamav`, `127.0.0.1:3310` (the sidecar)                                                                 |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`        | from `pnpm --filter @campuslink/api vapid`; subject `mailto:` the operator                               |
+| `JITSI_BASE_URL`, `JITSI_APP_ID`, `JITSI_APP_SECRET`            | the self-hosted Jitsi in `ap-south-1`                                                                    |
+| `BOT_PROTECTION`, `TURNSTILE_SECRET`, `TURNSTILE_SITE_KEY`      | `turnstile`, the secret (SSM), the public site key for the college domains                               |
+| `HIBP_ENABLED`                                                  | `true` (k-anonymity; only a 5-character hash prefix leaves the server)                                   |
+| `LOG_LEVEL`                                                     | `info`                                                                                                   |
 
 ## Monitoring
 
@@ -217,9 +217,8 @@ Not covered by the rehearsal: AWS itself. The ALB, ACM, KMS, IAM policies, SES, 
 
 ## Gaps before launch
 
-| Gap                                                           | Owner           | Next step                                                                   |
-| ------------------------------------------------------------- | --------------- | --------------------------------------------------------------------------- |
-| `FIELD_ENCRYPTION_KEY` rotation (key ring, re-encryption job) | API             | See [`runbook.md`](runbook.md#secrets)                                      |
-| An external penetration test                                  | Platform owner  | Before the first real college                                               |
-| Infrastructure as code                                        | Ops             | Terraform or CDK for the topology above, including the `ap-south-2` standby |
-| Legal review of the Privacy Policy and Terms drafts           | College / legal | [`legal/`](legal/) templates; name the grievance officer                    |
+| Gap                                                 | Owner           | Next step                                                                   |
+| --------------------------------------------------- | --------------- | --------------------------------------------------------------------------- |
+| An external penetration test                        | Platform owner  | Before the first real college                                               |
+| Infrastructure as code                              | Ops             | Terraform or CDK for the topology above, including the `ap-south-2` standby |
+| Legal review of the Privacy Policy and Terms drafts | College / legal | [`legal/`](legal/) templates; name the grievance officer                    |

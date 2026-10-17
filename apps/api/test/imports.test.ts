@@ -164,7 +164,7 @@ describe('import lifecycle', () => {
     ]);
     const rec = await runInTenant(T._id, () => WhitelistModel.findOne({ rollNumber: '21DP1A0501' }).lean());
     expect(rec).toMatchObject({ name: 'Ananya Kumari', branch: 'CSE', gradYear: 2025, status: 'unclaimed' });
-    expect(rec!.emailEnc).toMatch(/^v1\./);
+    expect(rec!.emailEnc).toMatch(/^v2\.[A-Za-z0-9_-]{8}\./);
     expect(JSON.stringify(rec)).not.toContain('ananya.k@dpit.ac.in');
     const csv = await api(ctx, T.host, admin.token).get(`/admin/imports/${job.id}/errors.csv`);
     expect(csv.headers['content-type']).toContain('text/csv');

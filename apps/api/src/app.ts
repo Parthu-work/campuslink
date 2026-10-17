@@ -133,7 +133,7 @@ export function createApp({
 
   const isAllowedOrigin = buildOriginMatcher(env.CORS_ALLOWED_ORIGINS);
   const tokens = new TokenService(env.JWT_ACCESS_SECRET, env.JWT_TICKET_SECRET, env.JWT_ACCESS_TTL_SECONDS);
-  const cipher = new FieldCipher(env.FIELD_ENCRYPTION_KEY);
+  const cipher = new FieldCipher(env.FIELD_ENCRYPTION_KEY, env.FIELD_ENCRYPTION_KEYS_PREVIOUS);
   const limiters = createLimiters(redis, rateLimitScale);
   const registry: RouteRegistry = [];
   const botProtection =

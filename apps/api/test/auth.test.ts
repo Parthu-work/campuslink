@@ -293,7 +293,7 @@ describe('two-factor authentication', () => {
   it('stores the TOTP secret encrypted at rest', async () => {
     const u = await makeUser(ctx, T, { roles: ['ALUMNI'], mfa: true });
     const raw = await runInTenant(T._id, () => UserModel.findById(u.id).select('+mfa.secretEnc').lean());
-    expect(raw!.mfa!.secretEnc).toMatch(/^v1\./);
+    expect(raw!.mfa!.secretEnc).toMatch(/^v2\.[A-Za-z0-9_-]{8}\./);
     expect(raw!.mfa!.secretEnc).not.toContain(u.mfaSecret);
   });
 

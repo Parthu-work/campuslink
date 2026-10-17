@@ -154,6 +154,8 @@ The control-by-control list is in [`security-checklist.md`](security-checklist.m
 
 - **Fields:** `apps/api/src/lib/crypto.ts` (`FieldCipher`) uses AES-256-GCM with a fresh IV per value and a versioned format (`v1.`), plus an HMAC blind index for lookups. It covers TOTP secrets, list emails and phones, and the profile phone.
   - Tests: `test/lib.test.ts` › "round-trips and uses a fresh IV each time", "detects tampering and unknown formats".
+  - **Key rotation:** a key ring (current plus `FIELD_ENCRYPTION_KEYS_PREVIOUS`). Values are tagged `v2.<keyId>`, with the key id as authenticated data. Lookups match every configured key's blind index. `rotate-field-key` re-encrypts and re-indexes every college, guarded against concurrent writes, with `--check` for completion. Procedure: [`runbook.md`](runbook.md#rotating-the-field-encryption-key).
+    - Tests: `test/field-rotation.test.ts`. It covers legacy `v1` values, relabelling and tampering, a dry run, a full rotation, idempotence, removing the old key, undecryptable values that are reported and never overwritten, and a guard that every `…Enc` schema field is covered.
 - **Transport:** TLS is enforced in production by HSTS (API and web), the ALB HTTPS listener (TLS 1.2+) and the HTTP-to-HTTPS redirect. Cookies are `Secure` in production. See [`deployment.md`](deployment.md).
 - **Backups:** `scripts/backup/backup.sh` uses age (X25519 + ChaCha20-Poly1305) with public-key recipients, so the backup host cannot decrypt.
   - `restore.sh` decrypts fully before restoring and refuses to overwrite the source.
@@ -181,11 +183,10 @@ The control-by-control list is in [`security-checklist.md`](security-checklist.m
 
 ## Gaps and owners
 
-| Gap                                        | Risk                                                                                    | Owner          | Next step                                                                                    |
-| ------------------------------------------ | --------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------- |
-| No `FIELD_ENCRYPTION_KEY` rotation         | A leaked key cannot be rotated without a release                                        | API            | Key ring (`v2`), re-encryption job, blind index rebuild ([`runbook.md`](runbook.md#secrets)) |
-| `style-src 'unsafe-inline'` in the web CSP | Allows inline styles (not scripts); needed for Radix and motion inline style attributes | Web            | Revisit when the UI libraries support nonce-based styles                                     |
-| No external penetration test               | Unknown unknowns                                                                        | Platform owner | Commission one before onboarding the first real college                                      |
+| Gap                                        | Risk                                                                                    | Owner          | Next step                                                |
+| ------------------------------------------ | --------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------- |
+| `style-src 'unsafe-inline'` in the web CSP | Allows inline styles (not scripts); needed for Radix and motion inline style attributes | Web            | Revisit when the UI libraries support nonce-based styles |
+| No external penetration test               | Unknown unknowns                                                                        | Platform owner | Commission one before onboarding the first real college  |
 
 ## How to re-run
 

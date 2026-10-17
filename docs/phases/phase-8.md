@@ -144,7 +144,7 @@ Phase 8 is done when:
 
 - ~~**Bot protection:** the Turnstile web widget.~~ Done in the follow-up.
 - ~~**Missing adapters:** ClamAV and S3.~~ Done in the follow-up.
-- **Key rotation:** `FIELD_ENCRYPTION_KEY` cannot be rotated yet (a key ring and re-encryption job are needed).
+- ~~**Key rotation:** `FIELD_ENCRYPTION_KEY` cannot be rotated yet.~~ Done: key ring, `rotate-field-key` job and runbook procedure (2026-10-17).
 - **Accessibility:** a screen-reader pass with assistive-technology users, light-theme axe on every spec, and a 200% text-zoom check.
 - **Before launch:** infrastructure as code, an external penetration test, and legal review of the policy drafts.
 
