@@ -10,6 +10,8 @@ import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
 import { createApp } from './app.js';
 import { syncIndexes } from './db/connect.js';
+import { ClamdScanner } from './lib/clamav.js';
+import { storageFromEnv } from './lib/storage-factory.js';
 import type { FilesService } from './modules/files/files.service.js';
 import type { RealtimeGateway } from './http/realtime.js';
 import { ContentSourcesService } from './modules/content-sources/sources.service.js';
@@ -47,9 +49,14 @@ async function main() {
     },
   });
 
+  const fileStore = storageFromEnv(env);
+  const clamd = env.MALWARE_SCANNER === 'clamav' ? new ClamdScanner({ address: env.CLAMAV_ADDRESS }) : null;
   const readiness = {
     mongo: async () => mongoose.connection.readyState === 1,
     redis: async () => (await redis.ping()) === 'PONG',
+    // Uploads fail closed without the scanner, so it is part of readiness when configured.
+    ...(clamd ? { clamav: () => clamd.ping() } : {}),
+    ...(fileStore.ready ? { storage: fileStore.ready } : {}),
   };
   const mailer =
     env.MAIL_DRIVER === 'disabled'
@@ -71,6 +78,7 @@ async function main() {
     mailer,
     redis,
     jobs,
+    storage: fileStore.storage,
     rateLimitScale: env.RATE_LIMIT_SCALE,
   });
   const server = app.listen(env.API_PORT, () =>

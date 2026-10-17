@@ -78,22 +78,28 @@ Indexes are created on boot (`syncIndexes()`), and every compound index leads wi
 ### Files
 
 - Files go through `FilesService`. They are sniffed, re-encoded or rebuilt, given random keys and served with `nosniff` and a sandboxed CSP.
-- **Gap:** the `StorageProvider` for S3 is a stub (`S3StorageStub` in `apps/api/src/lib/storage.ts`).
-  - **Until the S3 adapter lands,** run `STORAGE_DRIVER=local` with `STORAGE_LOCAL_DIR` on an encrypted EFS volume shared by all API tasks.
-  - **When it lands:**
-    - use a private bucket in `ap-south-1` with Block Public Access, SSE-KMS (customer-managed key) and versioning;
-    - set a lifecycle rule for incomplete multipart uploads;
-    - grant the API's task role only `s3:GetObject`, `s3:PutObject` and `s3:DeleteObject` on that bucket's prefix.
-- **Antivirus:** `FilesService` calls a `MalwareScanner` hook before storing anything.
-  - In production, implement it with ClamAV (`clamd` as a sidecar container, `INSTREAM` over a Unix socket).
-  - **Gap:** that adapter is not implemented yet. Locally the hook reports `skipped`, never `clean`.
+- **Storage:** `STORAGE_DRIVER=s3` (`apps/api/src/lib/s3-storage.ts`).
+  - Use a private bucket in `ap-south-1` with Block Public Access, SSE-KMS (a customer-managed key in `S3_KMS_KEY_ID`) and versioning.
+  - The adapter never sets an ACL, sends server-side encryption on every put and keeps objects under `S3_PREFIX`.
+  - Set a lifecycle rule for incomplete multipart uploads.
+  - Grant the API's task role only `s3:GetObject`, `s3:PutObject` and `s3:DeleteObject` on `arn:aws:s3:::<bucket>/files/*`, `s3:ListBucket` for the readiness check, and `kms:GenerateDataKey` and `kms:Decrypt` on the key.
+  - In production the API refuses `S3_SSE=none`. `/api/v1/ready` includes the bucket.
+- **Antivirus:** ClamAV `clamd` runs as a sidecar container in each API task (`clamav/clamav:1.5.4`).
+  - Set `CLAMD_CONF_StreamMaxLength=30M`, above the largest upload (25 MB reels).
+  - Let `freshclam` update signatures; leave `CLAMAV_NO_FRESHCLAMD` unset.
+  - The API uses `MALWARE_SCANNER=clamav` and `CLAMAV_ADDRESS=127.0.0.1:3310` (`apps/api/src/lib/clamav.ts`, INSTREAM protocol).
+  - Scanning fails closed: if `clamd` is down, uploads answer 503 and nothing is stored. `/api/v1/ready` includes the scanner, so the ALB stops routing to a task whose scanner is down.
+  - The API refuses to start in production without a scanner.
+  - Give the sidecar about 1.5 GB of memory for the signature database.
 
 ## Configuration and secrets
 
 - All configuration comes from environment variables, validated at boot (`apps/api/src/config/env.ts`). The API refuses to start in production on:
   - placeholder secrets;
   - `RATE_LIMIT_SCALE` above 2;
-  - `MAIL_DRIVER=disabled`.
+  - `MAIL_DRIVER=disabled`;
+  - `MALWARE_SCANNER=none`;
+  - `S3_SSE=none` with S3 storage.
 - Store secrets as SecureString parameters in SSM Parameter Store (KMS-encrypted).
   - Inject them through the ECS task definition `secrets` field.
   - Never put them in images, task definition plain-text environment, or logs.
@@ -109,10 +115,13 @@ Indexes are created on boot (`syncIndexes()`), and every compound index leads wi
 | `FIELD_ENCRYPTION_KEY`                                          | SSM; 32 random bytes, base64 (`openssl rand -base64 32`). Never rotate without re-encryption (runbook) |
 | `COOKIE_SECURE`                                                 | unset (defaults to `true` in production)                                                               |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | SES SMTP endpoint for `ap-south-1`, port 587, SES SMTP credentials, a verified sender                  |
-| `STORAGE_DRIVER`, `STORAGE_LOCAL_DIR`                           | `local` on EFS until the S3 adapter exists                                                             |
+| `STORAGE_DRIVER`, `S3_BUCKET`, `S3_REGION`                      | `s3`, the private files bucket, `ap-south-1`                                                           |
+| `S3_SSE`, `S3_KMS_KEY_ID`, `S3_PREFIX`                          | `aws:kms` (default), the customer-managed key, `files/` (default)                                      |
+| `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`       | unset on AWS (the task role supplies credentials); only for S3-compatible stores                       |
+| `MALWARE_SCANNER`, `CLAMAV_ADDRESS`                             | `clamav`, `127.0.0.1:3310` (the sidecar)                                                               |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`        | from `pnpm --filter @campuslink/api vapid`; subject `mailto:` the operator                             |
 | `JITSI_BASE_URL`, `JITSI_APP_ID`, `JITSI_APP_SECRET`            | the self-hosted Jitsi in `ap-south-1`                                                                  |
-| `BOT_PROTECTION`, `TURNSTILE_SECRET`                            | `none` until the web widget exists (see the gaps below)                                                |
+| `BOT_PROTECTION`, `TURNSTILE_SECRET`, `TURNSTILE_SITE_KEY`      | `turnstile`, the secret (SSM), the public site key for the college domains                             |
 | `HIBP_ENABLED`                                                  | `true` (k-anonymity; only a 5-character hash prefix leaves the server)                                 |
 | `LOG_LEVEL`                                                     | `info`                                                                                                 |
 
@@ -160,6 +169,39 @@ From the load test ([`performance.md`](performance.md)): one API process on one 
 - **Restore:** see the runbook. Restores always go into a separate database first and are verified there.
 - **Drill:** `pnpm backup:drill` (backup, restore and per-collection comparison) runs monthly. Record the result in the runbook.
 
+## Staging rehearsal
+
+`deploy/staging/` runs the production images in production mode, with every production adapter against a real service:
+
+- a TLS edge in place of the ALB;
+- the web container (nginx with the security headers);
+- the API (`NODE_ENV=production`);
+- MongoDB as a replica set, Redis, ClamAV `clamd`, an S3-compatible store (SeaweedFS, SSE-S3), and Mailpit for email.
+
+```sh
+deploy/staging/up.sh --build   # secrets and a self-signed certificate go to .staging/ (gitignored)
+deploy/staging/smoke.sh        # see below
+deploy/staging/down.sh         # --purge also deletes .staging/
+```
+
+The smoke test checks:
+
+- every dependency reports ready (MongoDB, Redis, ClamAV, the bucket);
+- the web and API security headers are present;
+- sign-in works under the production CSP;
+- a photo goes through sniffing, re-encoding, ClamAV and S3, then back out through the API;
+- the service worker registers over HTTPS;
+- the API log holds no request headers, client details or email addresses.
+
+**Rehearsal on 2026-10-17:**
+
+- The images built from this repository; the API passed its production configuration checks and became ready.
+- The smoke test passed.
+- The stored photo had `scanStatus: clean`, and the object was encrypted (SSE-S3, AES256).
+- With `clamd` stopped, `/api/v1/ready` answered 503 (`clamav: false`) and recovered once `clamd` was back.
+
+Not covered by the rehearsal: AWS itself. The ALB, ACM, KMS, IAM policies, SES, and the Hyderabad standby need a real account; use the checklist under "Deploying".
+
 ## Deploying
 
 1. CI must be green on `main`: lint, typecheck, unit and API tests, coverage, build, end-to-end, gitleaks and `pnpm audit`.
@@ -175,10 +217,9 @@ From the load test ([`performance.md`](performance.md)): one API process on one 
 
 ## Gaps before launch
 
-| Gap                                                     | Owner           | Next step                                                                                                                                             |
-| ------------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S3 `StorageProvider` is a stub                          | API             | Implement it with the AWS SDK (SSE-KMS, private bucket); until then, use EFS                                                                          |
-| ClamAV `MalwareScanner` adapter                         | API / Ops       | `clamd` sidecar plus an `INSTREAM` client; fail closed when `clamd` is down                                                                           |
-| Turnstile widget in the web app (server adapter exists) | Web             | Render the widget on sign-up and mentorship requests, send `X-Bot-Token`, and add `https://challenges.cloudflare.com` to `script-src` and `frame-src` |
-| Infrastructure as code                                  | Ops             | Terraform or CDK for the topology above, including the `ap-south-2` standby                                                                           |
-| Legal review of the Privacy Policy and Terms drafts     | College / legal | [`legal/`](legal/) templates; name the grievance officer                                                                                              |
+| Gap                                                           | Owner           | Next step                                                                   |
+| ------------------------------------------------------------- | --------------- | --------------------------------------------------------------------------- |
+| `FIELD_ENCRYPTION_KEY` rotation (key ring, re-encryption job) | API             | See [`runbook.md`](runbook.md#secrets)                                      |
+| An external penetration test                                  | Platform owner  | Before the first real college                                               |
+| Infrastructure as code                                        | Ops             | Terraform or CDK for the topology above, including the `ap-south-2` standby |
+| Legal review of the Privacy Policy and Terms drafts           | College / legal | [`legal/`](legal/) templates; name the grievance officer                    |

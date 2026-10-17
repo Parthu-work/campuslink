@@ -91,11 +91,12 @@ Socket.io at `/api/v1/realtime` (`http/realtime.ts`), with the Redis adapter for
 
 | Interface           | Local                                          | Others                                                           |
 | ------------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
-| `StorageProvider`   | local disk                                     | S3 stub                                                          |
+| `StorageProvider`   | local disk                                     | S3 (SSE-KMS) and S3-compatible stores (`lib/s3-storage.ts`)      |
 | `MailProvider`      | SMTP → Mailpit                                 | any SMTP                                                         |
 | `SmsProvider`       | disabled                                       | (deployment adapter)                                             |
 | `VideoProvider`     | Jitsi (`meet.jit.si`, link-out)                | self-hosted Jitsi + JWT, 100ms and Daily stubs (`docs/video.md`) |
-| `BotProtection`     | disabled                                       | Turnstile                                                        |
+| `BotProtection`     | disabled                                       | Turnstile (server check plus the web widget, `lib/bot-check.ts`) |
+| `MalwareScanner`    | skipped (never "clean")                        | ClamAV `clamd`, fail closed (`lib/clamav.ts`)                    |
 | `PushSender`        | web push (VAPID) when keys set                 | —                                                                |
 | `DataSourceAdapter` | CSV, XLSX, Google Sheets, REST                 | ERP adapters (`docs/data-sources.md`)                            |
 | `JobSourceAdapter`  | Greenhouse, Lever, Ashby, SmartRecruiters, RSS | Adzuna with deployment keys (`docs/job-sources.md`)              |

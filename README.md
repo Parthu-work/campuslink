@@ -78,7 +78,8 @@ Video uses the public `meet.jit.si` locally; for production, self-host Jitsi wit
    - go offline to see the banner; a new build shows a "new version" prompt instead of reloading under you.
 3. **Load test:** `pnpm loadtest` seeds a separate database with 1,000 demo members and prints latency and throughput per route (`docs/performance.md`).
 4. **Backup drill:** `pnpm backup:drill` backs up, encrypts, restores and compares every collection (`docs/runbook.md`).
-5. **Production:** start with `docs/deployment.md` (AWS Mumbai and Hyderabad), `docs/runbook.md` and `docs/security-review.md`.
+5. **Staging rehearsal:** `deploy/staging/up.sh --build` then `deploy/staging/smoke.sh` runs the production images in production mode, with ClamAV, S3-compatible storage and TLS (`docs/deployment.md`).
+6. **Production:** start with `docs/deployment.md` (AWS Mumbai and Hyderabad), `docs/runbook.md` and `docs/security-review.md`.
 
 | Service             | URL                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------- |

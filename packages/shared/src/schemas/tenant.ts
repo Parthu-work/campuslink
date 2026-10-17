@@ -85,10 +85,18 @@ export const updateTenantBody = z.strictObject({
   subscription: subscriptionSchema.partial().optional(),
 });
 
+/** Human check the web app runs when the API answers BOT_CHECK_FAILED (null when it is off). */
+export interface PublicBotCheck {
+  provider: 'turnstile';
+  /** Public site key (not a secret). */
+  siteKey: string;
+}
+
 export interface PublicTenant {
   slug: string;
   kind: 'college' | 'platform';
   status: 'active' | 'suspended';
   branding: Branding;
   features: Record<Feature, boolean>;
+  botCheck: PublicBotCheck | null;
 }

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Types } from 'mongoose';
 import { Redis } from 'ioredis';
-import { LocalDiskStorage, MemoryStorage, S3StorageStub } from '../src/lib/storage.js';
+import { LocalDiskStorage, MemoryStorage } from '../src/lib/storage.js';
 import { DisabledSmsProvider } from '../src/lib/sms.js';
 import { BullJobQueue, InlineJobQueue } from '../src/lib/jobs.js';
 import { getContext } from '../src/lib/context.js';
@@ -24,15 +24,12 @@ describe('storage providers', () => {
     await expect(s.get('ab/../../x')).rejects.toThrow(/Invalid storage key/);
     await rm(dir, { recursive: true, force: true });
   });
-  it('memory storage and the S3 stub', async () => {
+  it('memory storage', async () => {
     const m = new MemoryStorage();
     await m.put(KEY, Buffer.from('x'));
     expect(m.blobs.size).toBe(1);
     await m.delete(KEY);
     expect(await m.get(KEY)).toBeNull();
-    await expect(new S3StorageStub().put()).rejects.toThrow(/not configured/);
-    await expect(new S3StorageStub().get()).rejects.toThrow(/not configured/);
-    await expect(new S3StorageStub().delete()).rejects.toThrow(/not configured/);
   });
   it('SMS is explicitly unavailable', async () => {
     const sms = new DisabledSmsProvider();

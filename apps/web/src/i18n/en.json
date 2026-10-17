@@ -2109,5 +2109,8 @@
     "updateTitle": "A new version is ready",
     "updateBody": "Reload to get the latest fixes. Finish anything you’re typing first.",
     "reload": "Reload"
+  },
+  "botCheck": {
+    "label": "Quick check that you’re a person"
   }
 }

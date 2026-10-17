@@ -30,10 +30,12 @@ import { platformRoutes } from './modules/platform/platform.routes.js';
 import { uploader } from './http/upload.js';
 import { safeFetch } from './lib/safe-fetch.js';
 import { requireTenantId } from './lib/context.js';
-import { LocalDiskStorage, S3StorageStub, type StorageProvider } from './lib/storage.js';
+import type { StorageProvider } from './lib/storage.js';
+import { storageFromEnv } from './lib/storage-factory.js';
 import { InlineJobQueue, type JobQueue } from './lib/jobs.js';
 import { DisabledSmsProvider } from './lib/sms.js';
-import { FilesService } from './modules/files/files.service.js';
+import { FilesService, noopScanner, type MalwareScanner } from './modules/files/files.service.js';
+import { ClamdScanner } from './lib/clamav.js';
 import { fileRoutes } from './modules/files/files.routes.js';
 import { ImportsService, IMPORT_JOB } from './modules/imports/imports.service.js';
 import { WhitelistService } from './modules/imports/whitelist.service.js';
@@ -102,6 +104,8 @@ export interface AppDeps {
   /** SSRF-safe fetcher used for remote imports, push and bot checks (injected in tests). */
   fetcher?: typeof safeFetch;
   bot?: BotProtection;
+  /** Malware scanner for stored files (tests inject one); otherwise from MALWARE_SCANNER. */
+  scanner?: MalwareScanner;
   video?: VideoProvider;
   push?: PushSender;
 }
@@ -118,6 +122,7 @@ export function createApp({
   jobs,
   fetcher = safeFetch,
   bot,
+  scanner,
   video,
   push,
 }: AppDeps) {
@@ -177,11 +182,13 @@ export function createApp({
     hibpEnabled: env.HIBP_ENABLED,
     ...(fetchImpl ? { fetchImpl } : {}),
   });
-  const store =
-    storage ??
-    (env.STORAGE_DRIVER === 's3' ? new S3StorageStub() : new LocalDiskStorage(env.STORAGE_LOCAL_DIR));
+  const store = storage ?? storageFromEnv(env).storage;
   const queue = jobs ?? new InlineJobQueue();
-  const filesService = new FilesService(store);
+  const filesService = new FilesService(
+    store,
+    scanner ??
+      (env.MALWARE_SCANNER === 'clamav' ? new ClamdScanner({ address: env.CLAMAV_ADDRESS }) : noopScanner),
+  );
   const profilesService = new ProfilesService(cipher, filesService);
   const usersService = new UsersService(authService, profilesService);
   const platformService = new PlatformService(authService);
@@ -487,7 +494,18 @@ export function createApp({
 
   app.use(API_PREFIX, healthRouter(readiness));
   app.use(API_PREFIX, limiters.global, tenantResolver(env.APP_ROOT_DOMAIN));
-  app.use(API_PREFIX, defineModule('tenants', tenantRoutes(), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule(
+      'tenants',
+      tenantRoutes(
+        env.BOT_PROTECTION === 'turnstile' && env.TURNSTILE_SITE_KEY
+          ? { provider: 'turnstile', siteKey: env.TURNSTILE_SITE_KEY }
+          : null,
+      ),
+      pipeline,
+    ),
+  );
   app.use(API_PREFIX, defineModule('auth', authRoutes(authService, cookie), pipeline));
   app.use(
     API_PREFIX,

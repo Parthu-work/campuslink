@@ -44,16 +44,3 @@ export class MemoryStorage implements StorageProvider {
     this.blobs.delete(key);
   }
 }
-
-/** Placeholder for deployment (S3 / S3-compatible in ap-south-1). Not functional locally. */
-export class S3StorageStub implements StorageProvider {
-  async put(): Promise<void> {
-    throw new Error('S3 storage is not configured in this environment');
-  }
-  async get(): Promise<Buffer | null> {
-    throw new Error('S3 storage is not configured in this environment');
-  }
-  async delete(): Promise<void> {
-    throw new Error('S3 storage is not configured in this environment');
-  }
-}

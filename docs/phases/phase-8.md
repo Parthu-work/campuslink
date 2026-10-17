@@ -120,10 +120,30 @@ Phase 8 is done when:
 - Load-test figures come from one `tsx` process sharing a 4-vCPU machine with the database and the load generator: a regression baseline, not production capacity.
 - AWS prices are not quoted; they change. The deployment guide names the services to price.
 
+### Follow-up (2026-10-17): the launch gaps closed
+
+- **Bot protection end to end:**
+  - The college config carries the public Turnstile site key.
+  - The web app runs the human check only when the API answers `BOT_CHECK_FAILED`, then retries once with `X-Bot-Token`. This covers all eight protected routes without changing call sites.
+  - The CSP allows `challenges.cloudflare.com` for scripts and frames only.
+  - Tests: `e2e/bot-check.spec.ts`, `test/bot-config.test.ts`.
+- **ClamAV (`lib/clamav.ts`):**
+  - Uses the INSTREAM protocol over TCP or a Unix socket, and fails closed: uploads answer 503 when `clamd` is unreachable.
+  - Readiness includes the scanner, and production refuses to start without one.
+  - Tested against a fake `clamd` for every failure mode, and against a real `clamd` (EICAR detected, a 25 MB upload accepted) locally and in CI.
+- **S3 (`lib/s3-storage.ts`):**
+  - Uses the AWS SDK with SSE on every put (KMS by default), no ACLs, validated keys under a prefix, and a readiness check. Production refuses `S3_SSE=none`.
+  - Tested against a real S3-compatible store (SeaweedFS) locally and in CI.
+  - A test caught the adapter skipping encryption when no SSE option was passed. Fixed before commit.
+- **Staging rehearsal** (`deploy/staging/`, results in [`deployment.md`](../deployment.md#staging-rehearsal)): both production images in production mode with every adapter, behind a TLS edge. The smoke test passed.
+- **Decisions:**
+  - MinIO no longer publishes free community images, so local and CI tests use SeaweedFS (Apache 2.0).
+  - Turnstile is triggered on challenge, not loaded up front: nothing third-party loads unless a write is challenged.
+
 ### Gaps (owners in the linked docs)
 
-- **Bot protection:** the Turnstile web widget (the server adapter exists). Until it ships, `BOT_PROTECTION` stays `none` in production.
-- **Missing adapters:** ClamAV (`MalwareScanner`) and S3 (`StorageProvider`).
+- ~~**Bot protection:** the Turnstile web widget.~~ Done in the follow-up.
+- ~~**Missing adapters:** ClamAV and S3.~~ Done in the follow-up.
 - **Key rotation:** `FIELD_ENCRYPTION_KEY` cannot be rotated yet (a key ring and re-encryption job are needed).
 - **Accessibility:** a screen-reader pass with assistive-technology users, light-theme axe on every spec, and a 200% text-zoom check.
 - **Before launch:** infrastructure as code, an external penetration test, and legal review of the policy drafts.

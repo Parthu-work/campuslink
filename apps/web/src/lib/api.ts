@@ -1,5 +1,6 @@
 import { API_PREFIX, type ApiResponse, type ErrorCode } from '@campuslink/shared';
 import { useSession } from './session';
+import { botCheckEnabled, getBotToken } from './bot-check';
 
 export class ApiError extends Error {
   constructor(
@@ -59,6 +60,8 @@ interface RequestOptions {
   signal?: AbortSignal;
   /** Sensitive writes: the API replays the first response for a repeated key. */
   idempotencyKey?: string;
+  /** Set on the one retry after a BOT_CHECK_FAILED answer (lib/bot-check.ts). */
+  botToken?: string;
 }
 
 export async function apiRequest<T>(
@@ -73,6 +76,7 @@ export async function apiRequest<T>(
   if (token) headers.Authorization = `Bearer ${token}`;
   if (opts.csrf) headers['X-CSRF-Token'] = readCookie('cl_csrf') ?? '';
   if (opts.idempotencyKey) headers['Idempotency-Key'] = opts.idempotencyKey;
+  if (opts.botToken) headers['X-Bot-Token'] = opts.botToken;
 
   let res: Response;
   try {
@@ -95,7 +99,15 @@ export async function apiRequest<T>(
   if (res.status === 204) return { data: undefined as T };
   const body = (await res.json().catch(() => null)) as ApiResponse<T> | null;
   if (!body) throw new ApiError(res.status, 'INTERNAL', 'Something went wrong. Please try again.');
-  if (!body.ok) throw new ApiError(res.status, body.error.code, body.error.message, body.error.details);
+  if (!body.ok) {
+    // A protected write: run the human check once, then retry with its single-use token. The API
+    // checks bots before idempotency and the handler, so the first attempt changed nothing.
+    if (body.error.code === 'BOT_CHECK_FAILED' && !opts.botToken && botCheckEnabled()) {
+      const botToken = await getBotToken().catch(() => null);
+      if (botToken) return apiRequest<T>(path, { ...opts, botToken }, retried);
+    }
+    throw new ApiError(res.status, body.error.code, body.error.message, body.error.details);
+  }
   return { data: body.data, ...(body.meta ? { meta: body.meta } : {}) };
 }
 

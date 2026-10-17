@@ -15,3 +15,6 @@ coverage
 
 # Local encrypted backups (scripts/backup)
 backups/
+
+# Staging rehearsal secrets and certificate (deploy/staging/up.sh)
+.staging/

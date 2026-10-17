@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import sharp from 'sharp';
 import { PDFArray, PDFDict, PDFDocument, PDFName } from 'pdf-lib';
 import { readMp4, stripMp4Metadata } from '../../lib/mp4.js';
+import { ScannerUnavailableError } from '../../lib/clamav.js';
 import { fileTypeFromBuffer } from 'file-type';
 import { Types } from 'mongoose';
 import { ErrorCode, type Permission } from '@campuslink/shared';
@@ -10,7 +11,10 @@ import type { StorageProvider } from '../../lib/storage.js';
 import { AppError, notFound } from '../../lib/errors.js';
 import type { AuthState } from '../../types.js';
 
-/** Malware-scan hook (ClamAV adapter documented for deployment). Locally: skipped, never "clean". */
+/**
+ * Malware-scan hook. `ClamdScanner` (lib/clamav.ts) in production; locally `noopScanner` reports
+ * "skipped", never "clean". A scanner that throws `ScannerUnavailableError` refuses the upload.
+ */
 export interface MalwareScanner {
   scan(data: Buffer): Promise<'clean' | 'infected' | 'skipped'>;
 }
@@ -244,7 +248,16 @@ export class FilesService {
     deleteAfter: Date | null = null,
     extra: { durationSec?: number } = {},
   ) {
-    const scan = await this.scanner.scan(data);
+    const scan = await this.scanner.scan(data).catch((e: unknown) => {
+      // Fail closed: no verdict, no storage.
+      if (e instanceof ScannerUnavailableError)
+        throw new AppError(
+          503,
+          ErrorCode.INTERNAL,
+          'Uploads are paused while the file scanner is unavailable. Please try again shortly.',
+        );
+      throw e;
+    });
     if (scan === 'infected') throw unsupported('This file was flagged by the malware scanner');
     const storageKey = newKey();
     await this.storage.put(storageKey, data);

@@ -1,4 +1,4 @@
-import type { Branding, PublicTenant, Feature } from '@campuslink/shared';
+import type { Branding, PublicBotCheck, PublicTenant, Feature } from '@campuslink/shared';
 import { TenantModel } from './tenant.model.js';
 import { invalidateTenant, type TenantRecord } from './tenant.cache.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
@@ -6,12 +6,13 @@ import { notFound } from '../../lib/errors.js';
 import type { z } from 'zod';
 import type { tenantSettingsBody } from '@campuslink/shared';
 
-export const toPublicTenant = (t: TenantRecord): PublicTenant => ({
+export const toPublicTenant = (t: TenantRecord, botCheck: PublicBotCheck | null = null): PublicTenant => ({
   slug: t.slug,
   kind: t.kind,
   status: t.status,
   branding: t.branding,
   features: t.features,
+  botCheck,
 });
 
 export const tenantsService = {

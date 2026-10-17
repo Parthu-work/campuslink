@@ -38,6 +38,42 @@ services:
       timeout: 3s
       retries: 20
 
+  # Optional services for the production adapters. Start with:
+  #   docker compose --profile clamav --profile s3 up -d --wait
+  # ClamAV (MALWARE_SCANNER=clamav, CLAMAV_ADDRESS=127.0.0.1:3310). Signatures ship in the image;
+  # freshclam stays off so it works offline. Loading signatures takes about a minute.
+  clamav:
+    image: clamav/clamav:1.5.4
+    profiles: [clamav]
+    environment:
+      CLAMAV_NO_FRESHCLAMD: 'true'
+      # Above the largest upload (25 MB reels).
+      CLAMD_CONF_StreamMaxLength: 30M
+    ports: ['127.0.0.1:3310:3310']
+    healthcheck:
+      test: ['CMD-SHELL', 'clamdscan --ping 1']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  # S3-compatible object storage (STORAGE_DRIVER=s3, S3_ENDPOINT=http://127.0.0.1:8333).
+  # Local only: no identities are configured, so any credentials are accepted.
+  s3:
+    image: chrislusf/seaweedfs:4.48
+    profiles: [s3]
+    command:
+      ['server', '-dir=/data', '-s3', '-s3.port=8333', '-master.volumeSizeLimitMB=64', '-volume.max=100']
+    ports: ['127.0.0.1:8333:8333']
+    volumes: [s3-data:/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1:8333/healthz || exit 1']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
 volumes:
   mongo-data:
   redis-data:
+  s3-data:

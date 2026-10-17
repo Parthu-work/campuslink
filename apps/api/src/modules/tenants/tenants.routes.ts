@@ -1,10 +1,11 @@
-import { brandingSchema, tenantSettingsBody } from '@campuslink/shared';
+import { brandingSchema, tenantSettingsBody, type PublicBotCheck } from '@campuslink/shared';
 import type { AnyRouteSpec } from '../../http/registry.js';
 import { authOf, tenantOf } from '../../http/request-context.js';
 import { requestMeta } from '../../lib/request-meta.js';
 import { tenantsService, toPublicTenant } from './tenants.service.js';
 
-export function tenantRoutes(): AnyRouteSpec[] {
+/** `botCheck`: the public half of the bot-protection config (site key), the same for every college. */
+export function tenantRoutes(botCheck: PublicBotCheck | null = null): AnyRouteSpec[] {
   return [
     {
       // Public on purpose: the sign-in page needs the college's name and colours. Contains no personal data.
@@ -14,7 +15,7 @@ export function tenantRoutes(): AnyRouteSpec[] {
       summary: 'Public branding for the college on this subdomain',
       access: { kind: 'public' },
       scope: 'any',
-      handler: async ({ req }) => ({ data: toPublicTenant(tenantOf(req)) }),
+      handler: async ({ req }) => ({ data: toPublicTenant(tenantOf(req), botCheck) }),
     },
     {
       method: 'put',

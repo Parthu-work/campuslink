@@ -10,6 +10,7 @@ import { Button } from '../components/ui/button';
 import { AppRouter } from './router';
 import { SessionBootstrap, Splash } from './guards';
 import { AppStatus } from '../components/layout/app-status';
+import { BotCheckHost } from '../components/layout/bot-check-host';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,6 +76,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <AppStatus />
       <TenantGate />
+      <BotCheckHost />
       <Toaster
         position="bottom-center"
         toastOptions={{ className: '!rounded-[var(--radius-md)] !bg-fg !text-bg !border-0 !font-semibold' }}

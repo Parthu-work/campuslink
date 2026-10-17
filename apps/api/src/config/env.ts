@@ -54,7 +54,27 @@ export const envSchema = z.object({
   MAIL_DRIVER: z.enum(['smtp', 'disabled']).default('smtp'),
   STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
   STORAGE_LOCAL_DIR: z.string().min(1).default('./uploads'),
+  /** S3 storage (STORAGE_DRIVER=s3). Credentials default to the AWS chain (the ECS task role). */
+  S3_BUCKET: z
+    .string()
+    .regex(/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/, 'must be a valid bucket name')
+    .optional(),
+  S3_REGION: z.string().min(1).default('ap-south-1'),
+  /** S3-compatible endpoint (path-style); leave unset for AWS. */
+  S3_ENDPOINT: z.url({ protocol: /^https?$/ }).optional(),
+  S3_PREFIX: z
+    .string()
+    .regex(/^([a-z0-9-]+\/)*$/, 'lowercase path segments ending in /')
+    .default('files/'),
+  S3_SSE: z.enum(['none', 'AES256', 'aws:kms']).default('aws:kms'),
+  S3_KMS_KEY_ID: z.string().min(1).optional(),
+  S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+  S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
   SMS_PROVIDER: z.enum(['disabled']).default('disabled'),
+  /** Malware scanning of every stored file (ClamAV clamd). Required in production; fails closed. */
+  MALWARE_SCANNER: z.enum(['none', 'clamav']).default('none'),
+  /** clamd address: `host:port` or an absolute Unix socket path. */
+  CLAMAV_ADDRESS: z.string().min(1).default('127.0.0.1:3310'),
   /** bullmq (Redis-backed, default) or inline (in-process; tests only). */
   JOBS_DRIVER: z.enum(['bullmq', 'inline']).default('bullmq'),
   /** Multiplies every rate limit. Raised only for automated test runs; capped at 2 in production. */
@@ -68,6 +88,11 @@ export const envSchema = z.object({
   /** Bot protection on sign-up and mentorship requests (Turnstile-style). Disabled locally. */
   BOT_PROTECTION: z.enum(['none', 'turnstile']).default('none'),
   TURNSTILE_SECRET: z.string().min(1).optional(),
+  /** Public Turnstile site key, sent to the web app with the college branding. */
+  TURNSTILE_SITE_KEY: z
+    .string()
+    .regex(/^[0-9A-Za-z_-]{10,100}$/)
+    .optional(),
   /** Web push (VAPID). Without keys, push is reported as unavailable. Generate: pnpm --filter @campuslink/api vapid */
   VAPID_PUBLIC_KEY: z
     .string()
@@ -105,8 +130,11 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const env = parsed.data;
   if (!!env.JITSI_APP_ID !== !!env.JITSI_APP_SECRET)
     throw new Error('Set both JITSI_APP_ID and JITSI_APP_SECRET, or neither');
-  if (env.BOT_PROTECTION === 'turnstile' && !env.TURNSTILE_SECRET)
-    throw new Error('BOT_PROTECTION=turnstile needs TURNSTILE_SECRET');
+  if (env.BOT_PROTECTION === 'turnstile' && (!env.TURNSTILE_SECRET || !env.TURNSTILE_SITE_KEY))
+    throw new Error('BOT_PROTECTION=turnstile needs TURNSTILE_SECRET and TURNSTILE_SITE_KEY');
+  if (env.STORAGE_DRIVER === 's3' && !env.S3_BUCKET) throw new Error('STORAGE_DRIVER=s3 needs S3_BUCKET');
+  if (!!env.S3_ACCESS_KEY_ID !== !!env.S3_SECRET_ACCESS_KEY)
+    throw new Error('Set both S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY, or neither');
   if (!!env.VAPID_PUBLIC_KEY !== !!env.VAPID_PRIVATE_KEY)
     throw new Error('Set both VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY, or neither');
   if (env.NODE_ENV === 'production') {
@@ -117,6 +145,12 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
       throw new Error(`Refusing to start in production with placeholder secrets: ${weak.join(', ')}`);
     if (env.RATE_LIMIT_SCALE > 2) throw new Error('RATE_LIMIT_SCALE above 2 is not allowed in production');
     if (env.MAIL_DRIVER === 'disabled') throw new Error('MAIL_DRIVER=disabled is not allowed in production');
+    if (env.STORAGE_DRIVER === 's3' && env.S3_SSE === 'none')
+      throw new Error('S3_SSE=none is not allowed in production (files must be encrypted at rest)');
+    if (env.MALWARE_SCANNER === 'none')
+      throw new Error(
+        'MALWARE_SCANNER=clamav is required in production (uploads are scanned before storage)',
+      );
   }
   return env;
 }

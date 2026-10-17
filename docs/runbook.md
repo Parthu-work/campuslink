@@ -135,16 +135,18 @@ Also checked on 2026-10-16:
 
 ## Common alerts
 
-| Alert                        | Likely cause                                    | First steps                                                                                                 |
-| ---------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `/ready` failing             | MongoDB or Redis unreachable                    | Check replica set status and ElastiCache health; the API recovers on its own when they return               |
-| 5xx above 1%                 | A bad deploy, or a dependency is down           | Compare with the deploy time; roll back; look up the request ids in the logs                                |
-| p99 above 1.5 s              | Load above capacity, or a slow query            | Scale API tasks out; check the MongoDB profiler for slow operations; the For You feed is the heaviest route |
-| Many 429s                    | Abuse, or a misconfigured client                | Check which limiter and key; block at the WAF if it is abuse; never raise `RATE_LIMIT_SCALE` above 2        |
-| BullMQ failed jobs rising    | Mail (SES) errors, or push endpoints gone       | Check the job error; SES sending quota; expired push subscriptions are removed automatically                |
-| Replication lag above 60 s   | Secondary under-provisioned, or a network issue | Check member health; backups read from secondaries, so check the backup window                              |
-| Backup missing for 26 hours  | Scheduler, credentials or bucket policy         | Run the backup task by hand; check the task logs and the KMS and S3 permissions                             |
-| Feed or job ingestion errors | A source changed or blocked us (robots.txt)     | The source backs off on its own; review it under Admin → Sources or Job sources                             |
+| Alert                                  | Likely cause                                                                          | First steps                                                                                                                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/ready` failing                       | MongoDB or Redis unreachable                                                          | Check replica set status and ElastiCache health; the API recovers on its own when they return                                                   |
+| 5xx above 1%                           | A bad deploy, or a dependency is down                                                 | Compare with the deploy time; roll back; look up the request ids in the logs                                                                    |
+| p99 above 1.5 s                        | Load above capacity, or a slow query                                                  | Scale API tasks out; check the MongoDB profiler for slow operations; the For You feed is the heaviest route                                     |
+| Many 429s                              | Abuse, or a misconfigured client                                                      | Check which limiter and key; block at the WAF if it is abuse; never raise `RATE_LIMIT_SCALE` above 2                                            |
+| BullMQ failed jobs rising              | Mail (SES) errors, or push endpoints gone                                             | Check the job error; SES sending quota; expired push subscriptions are removed automatically                                                    |
+| Replication lag above 60 s             | Secondary under-provisioned, or a network issue                                       | Check member health; backups read from secondaries, so check the backup window                                                                  |
+| Backup missing for 26 hours            | Scheduler, credentials or bucket policy                                               | Run the backup task by hand; check the task logs and the KMS and S3 permissions                                                                 |
+| `/ready` failing with `clamav: false`  | The ClamAV sidecar is down or still loading signatures (about a minute after a start) | Uploads answer 503 until it is back; check the sidecar's memory (about 1.5 GB) and its logs; never set `MALWARE_SCANNER=none` to work around it |
+| `/ready` failing with `storage: false` | Bucket policy, KMS key policy or task-role credentials                                | Check the task role's S3 and KMS permissions and that the bucket exists in `ap-south-1`                                                         |
+| Feed or job ingestion errors           | A source changed or blocked us (robots.txt)                                           | The source backs off on its own; review it under Admin → Sources or Job sources                                                                 |
 
 ## Data requests
 
@@ -160,6 +162,5 @@ Also checked on 2026-10-16:
 | Gap                                                              | Owner          | Next step                                                         |
 | ---------------------------------------------------------------- | -------------- | ----------------------------------------------------------------- |
 | `FIELD_ENCRYPTION_KEY` rotation (key ring and re-encryption job) | API            | `v2` cipher prefix, background re-encryption, blind index rebuild |
-| S3 storage adapter; ClamAV scanner adapter                       | API / Ops      | See [`deployment.md`](deployment.md#gaps-before-launch)           |
 | Infrastructure as code for the topology and DR standby           | Ops            | Terraform or CDK                                                  |
 | On-call roster and key holders                                   | Platform owner | Fill in the roles table above                                     |

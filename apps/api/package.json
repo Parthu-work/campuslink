@@ -21,6 +21,7 @@
     "loadtest": "tsx --env-file-if-exists=../../.env src/scripts/loadtest.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1152.0",
     "@campuslink/shared": "workspace:*",
     "@socket.io/redis-adapter": "^8.3.0",
     "@zxcvbn-ts/core": "^4.2.0",

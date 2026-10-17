@@ -50,6 +50,35 @@ jobs:
         run: pnpm --filter @campuslink/api exec vitest run --coverage --reporter=default --reporter=github-actions
       - run: pnpm build
 
+  # The production adapters against real services: ClamAV (EICAR detection, fail-closed) and an
+  # S3-compatible store (SeaweedFS). Images and versions match docker-compose.yml.
+  adapters:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mongo:
+        image: mongo:8.0
+        ports: ['27017:27017']
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      MONGODB_URI_TEST: mongodb://127.0.0.1:27017/?directConnection=true
+      CLAMAV_TEST_ADDRESS: 127.0.0.1:3310
+      S3_TEST_ENDPOINT: http://127.0.0.1:8333
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Start ClamAV and the S3-compatible store
+        run: docker compose --profile clamav --profile s3 up -d --wait clamav s3
+      - run: pnpm --filter @campuslink/shared build
+      - run: pnpm --filter @campuslink/api exec vitest run test/clamav.test.ts test/s3-storage.test.ts
+
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 25

@@ -28,6 +28,8 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 | Check roadmap library links                  | `pnpm --filter @campuslink/api roadmaps:verify`                         |
 | Load test (1,000 demo members, own database) | `pnpm loadtest`                                                         |
 | Backup and restore drill                     | `pnpm backup:drill`                                                     |
+| ClamAV and S3 locally (adapter tests)        | `docker compose --profile clamav --profile s3 up -d --wait`             |
+| Staging rehearsal (production images)        | `deploy/staging/up.sh --build`, `smoke.sh`, `down.sh`                   |
 
 ## Folder structure
 
@@ -47,7 +49,7 @@ apps/web/src/
 apps/web/e2e/    Playwright specs
 packages/shared/src/  schemas, permissions, constants
 docs/            architecture, ADRs, threat model, privacy, design brief, deployment, runbook
-deploy/          production Dockerfiles and nginx (security headers live here)
+deploy/          production Dockerfiles and nginx (security headers live here); staging/ rehearsal
 scripts/backup/  encrypted backup, restore and drill
 ```
 
@@ -60,7 +62,8 @@ scripts/backup/  encrypted backup, restore and drill
 - Responses use the envelope `{ ok: true, data, meta? }` or `{ ok: false, error: { code, message, requestId } }`. Error codes come from `@campuslink/shared`.
 - Everything is versioned under `/api/v1`. Feeds use cursor pagination. Sensitive writes accept an `Idempotency-Key`.
 - Swappable providers sit behind interfaces: `StorageProvider`, `VideoProvider`, `MailProvider`, `JobSourceAdapter`, `DataSourceAdapter`, `BotProtection`, `SmsProvider`.
-- Files go through `FilesService` only (sniff, re-encode, purpose-based access, `deleteAfter` retention). Declare uploads with `upload` on the route spec so multer runs after authorize.
+- Files go through `FilesService` only (sniff, re-encode, ClamAV scan that fails closed, purpose-based access, `deleteAfter` retention). Declare uploads with `upload` on the route spec so multer runs after authorize. Storage is local disk or S3 (`lib/storage-factory.ts`); never write files anywhere else.
+- Bot checks: mark abuse-prone writes `bot: true`; the web client runs the human check on `BOT_CHECK_FAILED` and retries once (`lib/bot-check.ts`), so call sites need nothing extra.
 - Background work goes through `JobQueue` (`lib/jobs.ts`); handlers run inside `runInTenant`, so the tenancy rules hold in jobs too. Tests use `InlineJobQueue`.
 - The profile is a read model of the user: after changing a user's name, roles, status or verification, call `ProfilesService.sync()`. New import sources follow `docs/data-sources.md`.
 - Realtime: clients only send `typing`. Every other socket event is emitted by a service after an authorised REST write, to `userRoom(tenantId, userId)` (`http/realtime.ts`). New socket events need isolation tests in `test/realtime.test.ts`.

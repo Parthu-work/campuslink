@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseSecurityHeaders, previewSecurityHeaders, SECURITY_HEADERS_FILE } from '../../security-headers';
 
+const TURNSTILE = 'https://challenges.cloudflare.com';
 const headers = parseSecurityHeaders(readFileSync(SECURITY_HEADERS_FILE, 'utf8'));
 const csp = new Map(
   (headers['Content-Security-Policy'] ?? '')
@@ -12,9 +13,11 @@ const csp = new Map(
 );
 
 describe('production security headers (deploy/nginx/security-headers.conf)', () => {
-  it('has a strict CSP: no inline or remote script, no plugins, no framing', () => {
+  it('has a strict CSP: no inline script, no plugins, no framing; one pinned third-party origin', () => {
     expect(csp.get('default-src')).toEqual(["'self'"]);
-    expect(csp.get('script-src')).toEqual(["'self'"]);
+    // The Turnstile human check is the only third-party origin, for its script and iframe only.
+    expect(csp.get('script-src')).toEqual(["'self'", TURNSTILE]);
+    expect(csp.get('frame-src')).toEqual([TURNSTILE]);
     expect(csp.get('object-src')).toEqual(["'none'"]);
     expect(csp.get('base-uri')).toEqual(["'self'"]);
     expect(csp.get('form-action')).toEqual(["'self'"]);
@@ -28,6 +31,12 @@ describe('production security headers (deploy/nginx/security-headers.conf)', () 
       expect(values, name).not.toContain('http:');
       expect(values, name).not.toContain('https:');
       if (name !== 'style-src') expect(values, name).not.toContain("'unsafe-inline'");
+      const remote = values.filter((v) => /^https?:/.test(v));
+      expect(
+        remote.every((v) => v === TURNSTILE),
+        name,
+      ).toBe(true);
+      if (remote.length) expect(['script-src', 'frame-src'], name).toContain(name);
     }
   });
 
@@ -68,7 +77,9 @@ describe('production security headers (deploy/nginx/security-headers.conf)', () 
     const preview = previewSecurityHeaders();
     expect(preview['Strict-Transport-Security']).toBeUndefined();
     expect(preview['Content-Security-Policy']).not.toContain('upgrade-insecure-requests');
-    expect(preview['Content-Security-Policy']).toContain("script-src 'self'");
+    expect(preview['Content-Security-Policy']).toContain(
+      "script-src 'self' https://challenges.cloudflare.com",
+    );
     expect(preview['X-Frame-Options']).toBe('DENY');
   });
 });
