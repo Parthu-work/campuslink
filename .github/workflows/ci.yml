@@ -21,6 +21,10 @@ jobs:
       mongo:
         image: mongo:8.0
         ports: ['27017:27017']
+        # Kernels 6.19 to 7.0.13 (current runners) make mongod refuse to start (SERVER-121912) unless
+        # glibc owns rseq, which keeps tcmalloc off the affected kernel path.
+        env:
+          GLIBC_TUNABLES: glibc.pthread.rseq=1
         options: >-
           --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
           --health-interval 5s --health-timeout 5s --health-retries 20
@@ -59,6 +63,10 @@ jobs:
       mongo:
         image: mongo:8.0
         ports: ['27017:27017']
+        # Kernels 6.19 to 7.0.13 (current runners) make mongod refuse to start (SERVER-121912) unless
+        # glibc owns rseq, which keeps tcmalloc off the affected kernel path.
+        env:
+          GLIBC_TUNABLES: glibc.pthread.rseq=1
         options: >-
           --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
           --health-interval 5s --health-timeout 5s --health-retries 20
@@ -86,6 +94,10 @@ jobs:
       mongo:
         image: mongo:8.0
         ports: ['27017:27017']
+        # Kernels 6.19 to 7.0.13 (current runners) make mongod refuse to start (SERVER-121912) unless
+        # glibc owns rseq, which keeps tcmalloc off the affected kernel path.
+        env:
+          GLIBC_TUNABLES: glibc.pthread.rseq=1
         options: >-
           --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
           --health-interval 5s --health-timeout 5s --health-retries 20

@@ -3,6 +3,10 @@ name: campuslink
 services:
   mongo:
     image: mongo:8.0
+    # Kernels 6.19 to 7.0.13 make mongod refuse to start (SERVER-121912) unless glibc owns rseq,
+    # which keeps tcmalloc off the affected kernel path.
+    environment:
+      GLIBC_TUNABLES: glibc.pthread.rseq=1
     # Single-node replica set: required for multi-document transactions and change streams.
     command: ['--replSet', 'rs0', '--bind_ip_all']
     ports: ['127.0.0.1:27017:27017']
