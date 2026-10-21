@@ -1,0 +1,16 @@
+{
+  "failures": [],
+  "resolved": {},
+  "platformLanding": [
+    {
+      "width": 360,
+      "url": "http://admin.localhost:4173/home",
+      "h1": "We couldn’t find that page."
+    },
+    {
+      "width": 1440,
+      "url": "http://admin.localhost:4173/home",
+      "h1": "We couldn’t find that page."
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "homeBefore": 1200,
+  "jobsOnArrival": 0,
+  "homeAfterTabRoundTrip": 0,
+  "afterTappingActiveTab": 800,
+  "jobsTabRemembersDetail": false,
+  "jobsTabUrl": "/jobs",
+  "barsAtTop": {
+    "headerTop": 0,
+    "headerHeight": 61,
+    "navTop": 715,
+    "navHeight": 65,
+    "vh": 780
+  },
+  "barsAfterScrollDown": {
+    "headerTop": 0,
+    "headerHeight": 61,
+    "navTop": 715,
+    "navHeight": 65,
+    "vh": 780
+  },
+  "barsAfterScrollUp": {
+    "headerTop": 0,
+    "headerHeight": 61,
+    "navTop": 715,
+    "navHeight": 65,
+    "vh": 780
+  },
+  "overflowRows": [
+    {
+      "tag": "UL",
+      "cls": "-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2",
+      "scrollWidth": 896,
+      "clientWidth": 336,
+      "maskOrFade": false
+    },
+    {
+      "tag": "UL",
+      "cls": "-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2",
+      "scrollWidth": 596,
+      "clientWidth": 336,
+      "maskOrFade": false
+    },
+    {
+      "tag": "UL",
+      "cls": "-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2",
+      "scrollWidth": 896,
+      "clientWidth": 336,
+      "maskOrFade": false
+    }
+  ]
+}

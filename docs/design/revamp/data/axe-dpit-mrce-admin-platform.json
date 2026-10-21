@@ -1,0 +1,280 @@
+[
+  {
+    "screen": "admin-home-360-light-dpit",
+    "url": "http://dpit.localhost:4173/home",
+    "violations": []
+  },
+  {
+    "screen": "admin-home-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/home",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-users-360-light-dpit",
+    "url": "http://dpit.localhost:4173/admin",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-users-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/admin",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-imports-360-light-dpit",
+    "url": "http://dpit.localhost:4173/admin/imports",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-imports-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/admin/imports",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-list-360-light-dpit",
+    "url": "http://dpit.localhost:4173/admin/list",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-list-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/admin/list",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-verification-360-light-dpit",
+    "url": "http://dpit.localhost:4173/admin/verification",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-verification-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/admin/verification",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-sources-360-light-dpit",
+    "url": "http://dpit.localhost:4173/admin/sources",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-sources-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/admin/sources",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-rewards-360-light-dpit",
+    "url": "http://dpit.localhost:4173/admin/rewards",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-rewards-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/admin/rewards",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-branding-360-light-dpit",
+    "url": "http://dpit.localhost:4173/admin/branding",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-branding-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/admin/branding",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-features-360-light-dpit",
+    "url": "http://dpit.localhost:4173/admin/features",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-features-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/admin/features",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-audit-360-light-dpit",
+    "url": "http://dpit.localhost:4173/admin/audit",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-audit-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/admin/audit",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-analytics-360-light-dpit",
+    "url": "http://dpit.localhost:4173/admin/analytics",
+    "violations": [
+      {
+        "id": "scrollable-region-focusable",
+        "impact": "serious",
+        "help": "Scrollable region must have keyboard access",
+        "nodes": [".overflow-x-auto.rounded-\\[var\\(--radius-md\\)\\].border"]
+      }
+    ]
+  },
+  {
+    "screen": "admin-admin-analytics-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/admin/analytics",
+    "violations": [
+      {
+        "id": "scrollable-region-focusable",
+        "impact": "serious",
+        "help": "Scrollable region must have keyboard access",
+        "nodes": [".overflow-x-auto.rounded-\\[var\\(--radius-md\\)\\].border"]
+      }
+    ]
+  },
+  {
+    "screen": "admin-home-360-light-mrce",
+    "url": "http://mrce.localhost:4173/home",
+    "violations": []
+  },
+  {
+    "screen": "admin-home-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/home",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-users-360-light-mrce",
+    "url": "http://mrce.localhost:4173/admin",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-users-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/admin",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-imports-360-light-mrce",
+    "url": "http://mrce.localhost:4173/admin/imports",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-imports-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/admin/imports",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-list-360-light-mrce",
+    "url": "http://mrce.localhost:4173/admin/list",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-list-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/admin/list",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-verification-360-light-mrce",
+    "url": "http://mrce.localhost:4173/admin/verification",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-verification-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/admin/verification",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-sources-360-light-mrce",
+    "url": "http://mrce.localhost:4173/admin/sources",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-sources-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/admin/sources",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-rewards-360-light-mrce",
+    "url": "http://mrce.localhost:4173/admin/rewards",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-rewards-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/admin/rewards",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-branding-360-light-mrce",
+    "url": "http://mrce.localhost:4173/admin/branding",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-branding-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/admin/branding",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-features-360-light-mrce",
+    "url": "http://mrce.localhost:4173/admin/features",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-features-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/admin/features",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-audit-360-light-mrce",
+    "url": "http://mrce.localhost:4173/admin/audit",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-audit-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/admin/audit",
+    "violations": []
+  },
+  {
+    "screen": "admin-admin-analytics-360-light-mrce",
+    "url": "http://mrce.localhost:4173/admin/analytics",
+    "violations": [
+      {
+        "id": "scrollable-region-focusable",
+        "impact": "serious",
+        "help": "Scrollable region must have keyboard access",
+        "nodes": [".overflow-x-auto.rounded-\\[var\\(--radius-md\\)\\].border"]
+      }
+    ]
+  },
+  {
+    "screen": "admin-admin-analytics-360-dark-mrce",
+    "url": "http://mrce.localhost:4173/admin/analytics",
+    "violations": [
+      {
+        "id": "scrollable-region-focusable",
+        "impact": "serious",
+        "help": "Scrollable region must have keyboard access",
+        "nodes": [".overflow-x-auto.rounded-\\[var\\(--radius-md\\)\\].border"]
+      }
+    ]
+  },
+  {
+    "screen": "platform-tenants-360-light-platform",
+    "url": "http://admin.localhost:4173/platform",
+    "violations": []
+  },
+  {
+    "screen": "platform-tenants-360-dark-platform",
+    "url": "http://admin.localhost:4173/platform",
+    "violations": []
+  },
+  {
+    "screen": "platform-health-360-light-platform",
+    "url": "http://admin.localhost:4173/platform/health",
+    "violations": []
+  },
+  {
+    "screen": "platform-health-360-dark-platform",
+    "url": "http://admin.localhost:4173/platform/health",
+    "violations": []
+  },
+  {
+    "screen": "platform-settings-360-light-platform",
+    "url": "http://admin.localhost:4173/settings",
+    "violations": []
+  },
+  {
+    "screen": "platform-settings-360-dark-platform",
+    "url": "http://admin.localhost:4173/settings",
+    "violations": []
+  }
+]

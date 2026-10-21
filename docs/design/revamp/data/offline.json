@@ -1,0 +1,15 @@
+{
+  "events-block": {
+    "url": "/events",
+    "h1": "Unexpected Application Error!",
+    "text": "You’re offline. Changes will need a connection.\nUnexpected Application Error!\nFailed to fetch dynamically imported module: http://dpit.localhost:4173/assets/events-CE_y8UHu.js\nTypeError: Failed to fetch dynamically imported module: http://dpit.localhost:4173/assets/events-CE_y8UHu.js",
+    "shell": false
+  },
+  "swControlled": false,
+  "events-allow": {
+    "url": "/events",
+    "h1": "Unexpected Application Error!",
+    "text": "You’re offline. Changes will need a connection.\nUnexpected Application Error!\nFailed to fetch dynamically imported module: http://dpit.localhost:4173/assets/events-CE_y8UHu.js\nTypeError: Failed to fetch dynamically imported module: http://dpit.localhost:4173/assets/events-CE_y8UHu.js",
+    "shell": false
+  }
+}

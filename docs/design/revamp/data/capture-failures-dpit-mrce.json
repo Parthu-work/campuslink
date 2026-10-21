@@ -1,0 +1,19 @@
+{
+  "failures": [],
+  "resolved": {
+    "dpit:student:post": "/posts/6ad8ec6066c51a6257483733",
+    "dpit:student:mentor-profile": "/mentors/6ad8ec6066c51a6257483706",
+    "dpit:student:conversation": "/messages/6ad8ec6066c51a6257483729",
+    "dpit:student:job": "/jobs/6ad8ec6066c51a6257483740",
+    "dpit:student:roadmap": "/roadmaps/sde-dsa",
+    "dpit:student:event": "/events/6ad8ec6066c51a6257483798",
+    "dpit:student:profile-view": "/people/6ad8ec6066c51a6257483714",
+    "mrce:student:post": "/posts/6ad8ec6066c51a62574837f0",
+    "mrce:student:mentor-profile": "/mentors/6ad8ec6066c51a62574837c3",
+    "mrce:student:conversation": "/messages/6ad8ec6066c51a62574837e6",
+    "mrce:student:job": "/jobs/6ad8ec6066c51a62574837fd",
+    "mrce:student:roadmap": "/roadmaps/sde-dsa",
+    "mrce:student:event": "/events/6ad8ec6166c51a6257483855",
+    "mrce:student:profile-view": "/people/6ad8ec6066c51a62574837d1"
+  }
+}

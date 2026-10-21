@@ -1,0 +1,97 @@
+{
+  "scans": 282,
+  "scansWithoutViolations": 270,
+  "rules": [
+    {
+      "id": "scrollable-region-focusable",
+      "impact": "serious",
+      "help": "Scrollable region must have keyboard access",
+      "screens": [
+        "admin-admin-analytics-360-dark-dpit",
+        "admin-admin-analytics-360-dark-mrce",
+        "admin-admin-analytics-360-light-dpit",
+        "admin-admin-analytics-360-light-mrce",
+        "tpo-admin-analytics-360-dark-dpit",
+        "tpo-admin-analytics-360-dark-mrce",
+        "tpo-admin-analytics-360-light-dpit",
+        "tpo-admin-analytics-360-light-mrce"
+      ],
+      "themes": {
+        "light": 4,
+        "dark": 4
+      },
+      "tenants": {
+        "dpit": 4,
+        "mrce": 4
+      },
+      "examples": [
+        {
+          "screen": "admin-admin-analytics-360-light-dpit",
+          "nodes": [".overflow-x-auto.rounded-\\[var\\(--radius-md\\)\\].border"]
+        },
+        {
+          "screen": "admin-admin-analytics-360-dark-dpit",
+          "nodes": [".overflow-x-auto.rounded-\\[var\\(--radius-md\\)\\].border"]
+        },
+        {
+          "screen": "admin-admin-analytics-360-light-mrce",
+          "nodes": [".overflow-x-auto.rounded-\\[var\\(--radius-md\\)\\].border"]
+        },
+        {
+          "screen": "admin-admin-analytics-360-dark-mrce",
+          "nodes": [".overflow-x-auto.rounded-\\[var\\(--radius-md\\)\\].border"]
+        },
+        {
+          "screen": "tpo-admin-analytics-360-light-dpit",
+          "nodes": [".overflow-x-auto.rounded-\\[var\\(--radius-md\\)\\].border"]
+        },
+        {
+          "screen": "tpo-admin-analytics-360-dark-dpit",
+          "nodes": [".overflow-x-auto.rounded-\\[var\\(--radius-md\\)\\].border"]
+        }
+      ],
+      "count": 8
+    },
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "screens": [
+        "student-mentor-profile-360-dark-dpit",
+        "student-mentor-profile-360-dark-mrce",
+        "student-settings-data-360-dark-dpit",
+        "student-settings-data-360-dark-mrce"
+      ],
+      "themes": {
+        "dark": 4
+      },
+      "tenants": {
+        "dpit": 2,
+        "mrce": 2
+      },
+      "examples": [
+        {
+          "screen": "student-mentor-profile-360-dark-dpit",
+          "nodes": [
+            ".min-h-14.justify-between.aria-checked\\:border-brand:nth-child(1) > .text-xs.gap-1.flex"
+          ]
+        },
+        {
+          "screen": "student-settings-data-360-dark-dpit",
+          "nodes": [".border-transparent"]
+        },
+        {
+          "screen": "student-mentor-profile-360-dark-mrce",
+          "nodes": [
+            ".min-h-14.justify-between.aria-checked\\:border-brand:nth-child(1) > .text-xs.gap-1.flex"
+          ]
+        },
+        {
+          "screen": "student-settings-data-360-dark-mrce",
+          "nodes": [".border-transparent"]
+        }
+      ],
+      "count": 4
+    }
+  ]
+}

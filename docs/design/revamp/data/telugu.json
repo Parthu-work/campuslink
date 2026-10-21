@@ -1,0 +1,248 @@
+{
+  "/home": {
+    "lang": "te",
+    "bodyFont": "\"Figtree Variable\", \"Noto Sans Telugu Variable\", ui-sans-serif, system-ui, sans-serif",
+    "lineHeight": "25.2px",
+    "h1": {
+      "text": "నమస్తే, Ananya",
+      "font": "\"Bricolage Grotesque Variable\", \"Noto Sans Telugu Variable\", ui-sans-serif, system-ui, sans-serif",
+      "size": "26px",
+      "lh": "43.68px"
+    },
+    "bottomNavLabels": [
+      {
+        "text": "సెట్టింగ్‌లు",
+        "overflow": false,
+        "w": 0
+      },
+      {
+        "text": "హోమ్",
+        "overflow": false,
+        "w": 27
+      },
+      {
+        "text": "ఉద్యోగాలు",
+        "overflow": false,
+        "w": 47
+      },
+      {
+        "text": "రోడ్‌మ్యాప్స్",
+        "overflow": false,
+        "w": 51
+      },
+      {
+        "text": "మెంటర్లు",
+        "overflow": false,
+        "w": 37
+      },
+      {
+        "text": "మరిన్ని",
+        "overflow": false,
+        "w": 31
+      }
+    ],
+    "horizontalOverflow": false,
+    "fontsLoaded": [
+      "Figtree Variable",
+      "Bricolage Grotesque Variable",
+      "Noto Sans Telugu Variable",
+      "IBM Plex Mono"
+    ]
+  },
+  "/mentors": {
+    "lang": "te",
+    "bodyFont": "\"Figtree Variable\", \"Noto Sans Telugu Variable\", ui-sans-serif, system-ui, sans-serif",
+    "lineHeight": "25.2px",
+    "h1": {
+      "text": "మెంటర్లు",
+      "font": "\"Bricolage Grotesque Variable\", \"Noto Sans Telugu Variable\", ui-sans-serif, system-ui, sans-serif",
+      "size": "26px",
+      "lh": "43.68px"
+    },
+    "bottomNavLabels": [
+      {
+        "text": "సెట్టింగ్‌లు",
+        "overflow": false,
+        "w": 0
+      },
+      {
+        "text": "హోమ్",
+        "overflow": false,
+        "w": 27
+      },
+      {
+        "text": "ఉద్యోగాలు",
+        "overflow": false,
+        "w": 47
+      },
+      {
+        "text": "రోడ్‌మ్యాప్స్",
+        "overflow": false,
+        "w": 51
+      },
+      {
+        "text": "మెంటర్లు",
+        "overflow": false,
+        "w": 37
+      },
+      {
+        "text": "మరిన్ని",
+        "overflow": false,
+        "w": 31
+      }
+    ],
+    "horizontalOverflow": false,
+    "fontsLoaded": [
+      "Figtree Variable",
+      "Bricolage Grotesque Variable",
+      "Noto Sans Telugu Variable",
+      "IBM Plex Mono"
+    ]
+  },
+  "/jobs": {
+    "lang": "te",
+    "bodyFont": "\"Figtree Variable\", \"Noto Sans Telugu Variable\", ui-sans-serif, system-ui, sans-serif",
+    "lineHeight": "25.2px",
+    "h1": {
+      "text": "జాబ్ రాడార్",
+      "font": "\"Bricolage Grotesque Variable\", \"Noto Sans Telugu Variable\", ui-sans-serif, system-ui, sans-serif",
+      "size": "26px",
+      "lh": "43.68px"
+    },
+    "bottomNavLabels": [
+      {
+        "text": "సెట్టింగ్‌లు",
+        "overflow": false,
+        "w": 0
+      },
+      {
+        "text": "హోమ్",
+        "overflow": false,
+        "w": 27
+      },
+      {
+        "text": "ఉద్యోగాలు",
+        "overflow": false,
+        "w": 47
+      },
+      {
+        "text": "రోడ్‌మ్యాప్స్",
+        "overflow": false,
+        "w": 51
+      },
+      {
+        "text": "మెంటర్లు",
+        "overflow": false,
+        "w": 37
+      },
+      {
+        "text": "మరిన్ని",
+        "overflow": false,
+        "w": 31
+      }
+    ],
+    "horizontalOverflow": false,
+    "fontsLoaded": [
+      "Figtree Variable",
+      "Bricolage Grotesque Variable",
+      "Noto Sans Telugu Variable",
+      "IBM Plex Mono",
+      "IBM Plex Mono"
+    ]
+  },
+  "/roadmaps": {
+    "lang": "te",
+    "bodyFont": "\"Figtree Variable\", \"Noto Sans Telugu Variable\", ui-sans-serif, system-ui, sans-serif",
+    "lineHeight": "25.2px",
+    "h1": {
+      "text": "రోడ్‌మ్యాప్స్",
+      "font": "\"Bricolage Grotesque Variable\", \"Noto Sans Telugu Variable\", ui-sans-serif, system-ui, sans-serif",
+      "size": "26px",
+      "lh": "43.68px"
+    },
+    "bottomNavLabels": [
+      {
+        "text": "సెట్టింగ్‌లు",
+        "overflow": false,
+        "w": 0
+      },
+      {
+        "text": "హోమ్",
+        "overflow": false,
+        "w": 27
+      },
+      {
+        "text": "ఉద్యోగాలు",
+        "overflow": false,
+        "w": 47
+      },
+      {
+        "text": "రోడ్‌మ్యాప్స్",
+        "overflow": false,
+        "w": 51
+      },
+      {
+        "text": "మెంటర్లు",
+        "overflow": false,
+        "w": 37
+      },
+      {
+        "text": "మరిన్ని",
+        "overflow": false,
+        "w": 31
+      }
+    ],
+    "horizontalOverflow": false,
+    "fontsLoaded": [
+      "Figtree Variable",
+      "Bricolage Grotesque Variable",
+      "Noto Sans Telugu Variable",
+      "IBM Plex Mono"
+    ]
+  },
+  "/settings/preferences": {
+    "lang": "te",
+    "bodyFont": "\"Figtree Variable\", \"Noto Sans Telugu Variable\", ui-sans-serif, system-ui, sans-serif",
+    "lineHeight": "25.2px",
+    "h1": {
+      "text": "సెట్టింగ్‌లు",
+      "font": "\"Bricolage Grotesque Variable\", \"Noto Sans Telugu Variable\", ui-sans-serif, system-ui, sans-serif",
+      "size": "26px",
+      "lh": "43.68px"
+    },
+    "bottomNavLabels": [
+      {
+        "text": "సెట్టింగ్‌లు",
+        "overflow": false,
+        "w": 0
+      },
+      {
+        "text": "హోమ్",
+        "overflow": false,
+        "w": 27
+      },
+      {
+        "text": "ఉద్యోగాలు",
+        "overflow": false,
+        "w": 47
+      },
+      {
+        "text": "రోడ్‌మ్యాప్స్",
+        "overflow": false,
+        "w": 51
+      },
+      {
+        "text": "మెంటర్లు",
+        "overflow": false,
+        "w": 37
+      },
+      {
+        "text": "మరిన్ని",
+        "overflow": false,
+        "w": 31
+      }
+    ],
+    "horizontalOverflow": false,
+    "fontsLoaded": ["Figtree Variable", "Bricolage Grotesque Variable", "Noto Sans Telugu Variable"]
+  }
+}

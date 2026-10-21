@@ -1,0 +1,25 @@
+{
+  "1440x900": {
+    "railHeight": 900,
+    "railScrollHeight": 1203,
+    "overflowY": "visible",
+    "viewport": 900,
+    "unreachable": ["Notifications", "Profile", "Settings", "Search", "Sign out"]
+  },
+  "1280x720": {
+    "railHeight": 720,
+    "railScrollHeight": 1203,
+    "overflowY": "visible",
+    "viewport": 720,
+    "unreachable": [
+      "Requests",
+      "Following",
+      "Saved",
+      "Notifications",
+      "Profile",
+      "Settings",
+      "Search",
+      "Sign out"
+    ]
+  }
+}

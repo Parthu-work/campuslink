@@ -1,0 +1,2053 @@
+{
+  "/home": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [
+      {
+        "tag": "TIME",
+        "cls": "",
+        "right": 409,
+        "text": "29 minutes ago"
+      },
+      {
+        "tag": "TIME",
+        "cls": "",
+        "right": 401,
+        "text": "29 minutes ago"
+      },
+      {
+        "tag": "TIME",
+        "cls": "",
+        "right": 436,
+        "text": "29 minutes ago"
+      },
+      {
+        "tag": "TIME",
+        "cls": "",
+        "right": 363,
+        "text": "29 minutes ago"
+      }
+    ],
+    "targets": 54,
+    "under44": 38,
+    "under24": 6,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 86,
+        "h": 23
+      },
+      {
+        "label": "Helpful (2)",
+        "w": 49,
+        "h": 40
+      },
+      {
+        "label": "Insightful (0)",
+        "w": 42,
+        "h": 40
+      },
+      {
+        "label": "Celebrate (0)",
+        "w": 42,
+        "h": 40
+      },
+      {
+        "label": "1 comment, open post",
+        "w": 49,
+        "h": 40
+      },
+      {
+        "label": "Save",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "label": "Share",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "label": "For you",
+        "w": 157,
+        "h": 40
+      },
+      {
+        "label": "Following",
+        "w": 157,
+        "h": 40
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 86,
+        "h": 23
+      },
+      {
+        "label": "Helpful (2)",
+        "w": 49,
+        "h": 40
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 86,
+        "h": 23
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 86,
+        "h": 23
+      },
+      {
+        "label": "Srinivas Murthy",
+        "w": 106,
+        "h": 23
+      },
+      {
+        "label": "Arjun Naidu",
+        "w": 81,
+        "h": 23
+      },
+      {
+        "label": "Fatima Begum",
+        "w": 98,
+        "h": 23
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "18.36px": 1,
+      "12px": 12,
+      "18px": 1,
+      "15px": 28,
+      "13.6px": 5,
+      "11px": 16,
+      "14px": 5
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/mentors": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 14,
+    "under44": 5,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Requests",
+        "w": 85,
+        "h": 36
+      },
+      {
+        "label": "Alumni Match",
+        "w": 157,
+        "h": 40
+      },
+      {
+        "label": "Browse",
+        "w": 157,
+        "h": 40
+      },
+      {
+        "label": "My goals",
+        "w": 107,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "13px": 2,
+      "14px": 7,
+      "24.48px": 1,
+      "20px": 1,
+      "18px": 1,
+      "11px": 5,
+      "16px": 2,
+      "12px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/mentors?view=browse": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 17,
+    "under44": 4,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Requests",
+        "w": 85,
+        "h": 36
+      },
+      {
+        "label": "Alumni Match",
+        "w": 157,
+        "h": 40
+      },
+      {
+        "label": "Browse",
+        "w": 157,
+        "h": 40
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "13px": 2,
+      "14px": 6,
+      "15px": 5,
+      "14.96px": 4,
+      "11px": 16,
+      "12px": 4
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/jobs": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 41,
+    "under44": 31,
+    "under24": 2,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "My applications",
+        "w": 147,
+        "h": 36
+      },
+      {
+        "label": "Fresher friendly",
+        "w": 121,
+        "h": 36
+      },
+      {
+        "label": "Alumni work there",
+        "w": 137,
+        "h": 36
+      },
+      {
+        "label": "Remote",
+        "w": 76,
+        "h": 36
+      },
+      {
+        "label": "Any experience\nFresher (0–1 yr)\nJunior (",
+        "w": 160,
+        "h": 40
+      },
+      {
+        "label": "Any type\nFull-time\nInternship\nContract\nP",
+        "w": 160,
+        "h": 40
+      },
+      {
+        "label": "Any branch\nCSE\nIT\nECE\nEEE\nMECH\nCIVIL\nCHE",
+        "w": 160,
+        "h": 40
+      },
+      {
+        "label": "INPUT",
+        "w": 160,
+        "h": 40
+      },
+      {
+        "label": "DEMO: Backend Developer (freshers)",
+        "w": 144,
+        "h": 39
+      },
+      {
+        "label": "Save DEMO: Backend Developer (freshers)",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "label": "DEMO: Data Analyst Intern",
+        "w": 100,
+        "h": 39
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "DEMO: Data Analyst Intern",
+        "w": 187,
+        "h": 18
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 18,
+      "13px": 4,
+      "14px": 13,
+      "18px": 5,
+      "12px": 63,
+      "11px": 33
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/jobs/tracker": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 9,
+    "under44": 2,
+    "under24": 2,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Job Radar",
+        "w": 328,
+        "h": 20
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Job Radar",
+        "w": 328,
+        "h": 20
+      }
+    ],
+    "fontSizes": {
+      "14px": 3,
+      "26px": 1,
+      "15px": 3,
+      "18px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/roadmaps": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 40,
+    "under44": 21,
+    "under24": 19,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Galaxy",
+        "w": 157,
+        "h": 40
+      },
+      {
+        "label": "List",
+        "w": 157,
+        "h": 40
+      },
+      {
+        "label": "Backend Developer",
+        "w": 168,
+        "h": 23
+      },
+      {
+        "label": "Blockchain Developer",
+        "w": 188,
+        "h": 23
+      },
+      {
+        "label": "DevOps and Cloud Engineer",
+        "w": 240,
+        "h": 23
+      },
+      {
+        "label": "Forward Deployed Engineer",
+        "w": 242,
+        "h": 23
+      },
+      {
+        "label": "Frontend Developer",
+        "w": 172,
+        "h": 23
+      },
+      {
+        "label": "Full-Stack Web Developer",
+        "w": 222,
+        "h": 23
+      },
+      {
+        "label": "Game Developer",
+        "w": 143,
+        "h": 23
+      },
+      {
+        "label": "QA, Testing and SDET",
+        "w": 183,
+        "h": 23
+      },
+      {
+        "label": "Site Reliability Engineer",
+        "w": 205,
+        "h": 23
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Backend Developer",
+        "w": 168,
+        "h": 23
+      },
+      {
+        "label": "Blockchain Developer",
+        "w": 188,
+        "h": 23
+      },
+      {
+        "label": "DevOps and Cloud Engineer",
+        "w": 240,
+        "h": 23
+      },
+      {
+        "label": "Forward Deployed Engineer",
+        "w": 242,
+        "h": 23
+      },
+      {
+        "label": "Frontend Developer",
+        "w": 172,
+        "h": 23
+      },
+      {
+        "label": "Full-Stack Web Developer",
+        "w": 222,
+        "h": 23
+      },
+      {
+        "label": "Game Developer",
+        "w": 143,
+        "h": 23
+      },
+      {
+        "label": "QA, Testing and SDET",
+        "w": 183,
+        "h": 23
+      },
+      {
+        "label": "Site Reliability Engineer",
+        "w": 205,
+        "h": 23
+      },
+      {
+        "label": "Data Analyst",
+        "w": 110,
+        "h": 23
+      },
+      {
+        "label": "Data Engineer",
+        "w": 122,
+        "h": 23
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 2,
+      "18px": 34,
+      "14px": 29,
+      "11px": 77,
+      "12px": 3
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/sessions": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 27,
+    "under44": 5,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Upcoming",
+        "w": 157,
+        "h": 40
+      },
+      {
+        "label": "Past",
+        "w": 157,
+        "h": 40
+      },
+      {
+        "label": "Join video",
+        "w": 115,
+        "h": 36
+      },
+      {
+        "label": "Message",
+        "w": 106,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "14px": 3,
+      "13px": 3,
+      "12px": 14,
+      "16px": 11,
+      "14.96px": 1,
+      "15px": 1,
+      "11px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/messages": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 9,
+    "under44": 1,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "14px": 1,
+      "14.96px": 1,
+      "15px": 1,
+      "12px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/events": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 14,
+    "under44": 4,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Upcoming",
+        "w": 103,
+        "h": 40
+      },
+      {
+        "label": "Mine",
+        "w": 103,
+        "h": 40
+      },
+      {
+        "label": "Past",
+        "w": 103,
+        "h": 40
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 1,
+      "14px": 7,
+      "11px": 3,
+      "18px": 2,
+      "12px": 2
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/progress": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 11,
+    "under44": 4,
+    "under24": 2,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Leaderboard",
+        "w": 129,
+        "h": 36
+      },
+      {
+        "label": "Rewards",
+        "w": 105,
+        "h": 36
+      },
+      {
+        "label": "INPUT",
+        "w": 20,
+        "h": 20
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "INPUT",
+        "w": 20,
+        "h": 20
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 12,
+      "13px": 3,
+      "24px": 1,
+      "14px": 22,
+      "30px": 4,
+      "12px": 17,
+      "18px": 3,
+      "11px": 4
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/rewards": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 10,
+    "under44": 3,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Request",
+        "w": 79,
+        "h": 36
+      },
+      {
+        "label": "Not enough points yet",
+        "w": 163,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 3,
+      "14px": 7,
+      "11px": 2,
+      "13px": 2,
+      "18px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/leaderboard": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 10,
+    "under44": 3,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "My college",
+        "w": 157,
+        "h": 40
+      },
+      {
+        "label": "My branch",
+        "w": 157,
+        "h": 40
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 4,
+      "14px": 2,
+      "12.24px": 2,
+      "12px": 2,
+      "11px": 2
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/people": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 24,
+    "under44": 7,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Everyone",
+        "w": 85,
+        "h": 36
+      },
+      {
+        "label": "Alumni",
+        "w": 71,
+        "h": 36
+      },
+      {
+        "label": "Students",
+        "w": 83,
+        "h": 36
+      },
+      {
+        "label": "Faculty",
+        "w": 73,
+        "h": 36
+      },
+      {
+        "label": "Placement cell",
+        "w": 115,
+        "h": 36
+      },
+      {
+        "label": "Any branch\nCSE\nIT\nECE\nEEE\nMECH\nCIVIL\nCHE",
+        "w": 328,
+        "h": 40
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 11,
+      "13px": 5,
+      "14.96px": 9,
+      "14px": 8,
+      "11px": 14
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/profile": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 35,
+    "under44": 19,
+    "under24": 2,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Change photo",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Everyone at DPIT\nAlumni and staff\nOnly m",
+        "w": 186,
+        "h": 36
+      },
+      {
+        "label": "Everyone at DPIT\nAlumni and staff\nOnly m",
+        "w": 186,
+        "h": 36
+      },
+      {
+        "label": "Everyone at DPIT\nAlumni and staff\nOnly m",
+        "w": 186,
+        "h": 36
+      },
+      {
+        "label": "Everyone at DPIT\nAlumni and staff\nOnly m",
+        "w": 186,
+        "h": 36
+      },
+      {
+        "label": "Everyone at DPIT\nAlumni and staff\nOnly m",
+        "w": 186,
+        "h": 36
+      },
+      {
+        "label": "Remove Java",
+        "w": 24,
+        "h": 24
+      },
+      {
+        "label": "Remove Git",
+        "w": 24,
+        "h": 24
+      },
+      {
+        "label": "INPUT",
+        "w": 120,
+        "h": 36
+      },
+      {
+        "label": "Everyone at DPIT\nAlumni and staff\nOnly m",
+        "w": 186,
+        "h": 36
+      },
+      {
+        "label": "INPUT",
+        "w": 268,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Change photo",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "24.48px": 1,
+      "18px": 1,
+      "14px": 6,
+      "13px": 12,
+      "12px": 15
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/notifications": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 9,
+    "under44": 2,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Notification settings",
+        "w": 156,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "14px": 1,
+      "18px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/questions": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 14,
+    "under44": 6,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "All",
+        "w": 45,
+        "h": 36
+      },
+      {
+        "label": "Unanswered",
+        "w": 103,
+        "h": 36
+      },
+      {
+        "label": "Mine",
+        "w": 59,
+        "h": 36
+      },
+      {
+        "label": "Any topic\nPlacements\nInternships\nHigher ",
+        "w": 328,
+        "h": 40
+      },
+      {
+        "label": "DEMO: How many projects should a CSE res",
+        "w": 279,
+        "h": 41
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 2,
+      "14px": 1,
+      "13px": 3,
+      "16px": 1,
+      "11px": 2,
+      "12px": 2
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/reels": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 8,
+    "under44": 1,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 2,
+      "18px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/referrals": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 8,
+    "under44": 1,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 2,
+      "18px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/mentorship": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 11,
+    "under44": 3,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Open chat",
+        "w": 116,
+        "h": 36
+      },
+      {
+        "label": "View session",
+        "w": 131,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "14.96px": 1,
+      "15px": 1,
+      "14px": 4,
+      "11px": 4,
+      "12px": 1,
+      "13px": 2
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/saved": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 8,
+    "under44": 1,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "15px": 2,
+      "18px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/settings": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 27,
+    "under44": 14,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Security",
+        "w": 86,
+        "h": 40
+      },
+      {
+        "label": "Privacy",
+        "w": 79,
+        "h": 40
+      },
+      {
+        "label": "Preferences",
+        "w": 109,
+        "h": 40
+      },
+      {
+        "label": "Notifications",
+        "w": 115,
+        "h": 40
+      },
+      {
+        "label": "Your data",
+        "w": 93,
+        "h": 40
+      },
+      {
+        "label": "Sign out all other devices",
+        "w": 179,
+        "h": 36
+      },
+      {
+        "label": "Sign out",
+        "w": 79,
+        "h": 36
+      },
+      {
+        "label": "Sign out",
+        "w": 79,
+        "h": 36
+      },
+      {
+        "label": "Sign out",
+        "w": 79,
+        "h": 36
+      },
+      {
+        "label": "Sign out",
+        "w": 79,
+        "h": 36
+      },
+      {
+        "label": "Sign out",
+        "w": 79,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "14px": 15,
+      "18px": 3,
+      "11px": 1,
+      "13px": 10,
+      "12px": 9
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/settings/data": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 15,
+    "under44": 6,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Security",
+        "w": 86,
+        "h": 40
+      },
+      {
+        "label": "Privacy",
+        "w": 79,
+        "h": 40
+      },
+      {
+        "label": "Preferences",
+        "w": 109,
+        "h": 40
+      },
+      {
+        "label": "Notifications",
+        "w": 115,
+        "h": 40
+      },
+      {
+        "label": "Your data",
+        "w": 93,
+        "h": 40
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "14px": 9,
+      "18px": 2,
+      "12px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/settings/preferences": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 21,
+    "under44": 14,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Security",
+        "w": 86,
+        "h": 40
+      },
+      {
+        "label": "Privacy",
+        "w": 79,
+        "h": 40
+      },
+      {
+        "label": "Preferences",
+        "w": 109,
+        "h": 40
+      },
+      {
+        "label": "Notifications",
+        "w": 115,
+        "h": 40
+      },
+      {
+        "label": "Your data",
+        "w": 93,
+        "h": 40
+      },
+      {
+        "label": "Match device",
+        "w": 109,
+        "h": 36
+      },
+      {
+        "label": "Dark",
+        "w": 57,
+        "h": 36
+      },
+      {
+        "label": "Light",
+        "w": 60,
+        "h": 36
+      },
+      {
+        "label": "English",
+        "w": 72,
+        "h": 36
+      },
+      {
+        "label": "తెలుగు",
+        "w": 67,
+        "h": 36
+      },
+      {
+        "label": "Match device",
+        "w": 109,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "14px": 5,
+      "13px": 11
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/settings/notifications": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 45,
+    "under44": 37,
+    "under24": 32,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Security",
+        "w": 86,
+        "h": 40
+      },
+      {
+        "label": "Privacy",
+        "w": 79,
+        "h": 40
+      },
+      {
+        "label": "Preferences",
+        "w": 109,
+        "h": 40
+      },
+      {
+        "label": "Notifications",
+        "w": 115,
+        "h": 40
+      },
+      {
+        "label": "Your data",
+        "w": 93,
+        "h": 40
+      },
+      {
+        "label": "In app for Requests",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Email for Requests",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Push for Requests",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "In app for Sessions",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Email for Sessions",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Push for Sessions",
+        "w": 20,
+        "h": 20
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "In app for Requests",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Email for Requests",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Push for Requests",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "In app for Sessions",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Email for Sessions",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Push for Sessions",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "In app for Reminders",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Email for Reminders",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Push for Reminders",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "In app for Messages",
+        "w": 20,
+        "h": 20
+      },
+      {
+        "label": "Email for Messages",
+        "w": 20,
+        "h": 20
+      }
+    ],
+    "fontSizes": {
+      "26px": 1,
+      "14px": 22,
+      "15px": 2,
+      "12px": 11,
+      "13px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/jobs/6ad8ec6066c51a6257483740 (detail of /jobs)": {
+    "docScrollWidth": 406,
+    "viewportWidth": 360,
+    "overflow": [
+      {
+        "tag": "DIV",
+        "cls": "rounded-[var(--radius-md)] border border-line bg-surface-1 grid gap-3 p-5",
+        "right": 406,
+        "text": "DEMO: Backend Developer (freshers)\n\nNimb"
+      },
+      {
+        "tag": "DIV",
+        "cls": "flex items-start gap-3",
+        "right": 385,
+        "text": "DEMO: Backend Developer (freshers)\n\nNimb"
+      },
+      {
+        "tag": "BUTTON",
+        "cls": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full border font-s",
+        "right": 385,
+        "text": ""
+      },
+      {
+        "tag": "svg",
+        "cls": "[object SVGAnimatedString]",
+        "right": 373
+      },
+      {
+        "tag": "circle",
+        "cls": "[object SVGAnimatedString]",
+        "right": 364
+      },
+      {
+        "tag": "circle",
+        "cls": "[object SVGAnimatedString]",
+        "right": 370
+      }
+    ],
+    "targets": 16,
+    "under44": 6,
+    "under24": 4,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Job Radar",
+        "w": 328,
+        "h": 20
+      },
+      {
+        "label": "Save DEMO: Backend Developer (freshers)",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 69,
+        "h": 16
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 87,
+        "h": 23
+      },
+      {
+        "label": "Ask for referral\nRahul Varma",
+        "w": 143,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Job Radar",
+        "w": 328,
+        "h": 20
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 69,
+        "h": 16
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 87,
+        "h": 23
+      }
+    ],
+    "fontSizes": {
+      "14px": 4,
+      "22px": 1,
+      "18px": 1,
+      "12px": 10,
+      "11px": 8,
+      "15px": 5,
+      "13.6px": 2,
+      "13px": 3
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/posts/6ad8ec6066c51a6257483733 (detail of /home)": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [
+      {
+        "tag": "TIME",
+        "cls": "",
+        "right": 401,
+        "text": "29 minutes ago"
+      }
+    ],
+    "targets": 22,
+    "under44": 12,
+    "under24": 4,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Back to feed",
+        "w": 328,
+        "h": 20
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 86,
+        "h": 23
+      },
+      {
+        "label": "Helpful (2)",
+        "w": 49,
+        "h": 40
+      },
+      {
+        "label": "Insightful (0)",
+        "w": 42,
+        "h": 40
+      },
+      {
+        "label": "Celebrate (0)",
+        "w": 42,
+        "h": 40
+      },
+      {
+        "label": "1 comment, open post",
+        "w": 49,
+        "h": 40
+      },
+      {
+        "label": "Save",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "label": "Share",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "label": "Comment",
+        "w": 89,
+        "h": 36
+      },
+      {
+        "label": "Ananya K",
+        "w": 64,
+        "h": 23
+      },
+      {
+        "label": "Reply",
+        "w": 88,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Back to feed",
+        "w": 328,
+        "h": 20
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 86,
+        "h": 23
+      },
+      {
+        "label": "Ananya K",
+        "w": 64,
+        "h": 23
+      }
+    ],
+    "fontSizes": {
+      "14px": 1,
+      "15px": 13,
+      "13.6px": 2,
+      "11px": 4,
+      "12px": 4,
+      "13px": 2
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/mentors/6ad8ec6066c51a6257483706 (detail of /mentors?view=browse)": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 19,
+    "under44": 3,
+    "under24": 2,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "All mentors",
+        "w": 111,
+        "h": 28
+      },
+      {
+        "label": "View full profile",
+        "w": 100,
+        "h": 20
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "View full profile",
+        "w": 100,
+        "h": 20
+      }
+    ],
+    "fontSizes": {
+      "14px": 4,
+      "24.48px": 1,
+      "26px": 1,
+      "15px": 5,
+      "11px": 8,
+      "20px": 1,
+      "13px": 4,
+      "12px": 7,
+      "16px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/events/6ad8ec6066c51a6257483798 (detail of /events)": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 14,
+    "under44": 3,
+    "under24": 2,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "← Events",
+        "w": 328,
+        "h": 20
+      },
+      {
+        "label": "Ask",
+        "w": 52,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "← Events",
+        "w": 328,
+        "h": 20
+      }
+    ],
+    "fontSizes": {
+      "14px": 5,
+      "11px": 1,
+      "26px": 1,
+      "15px": 4,
+      "18px": 1,
+      "13px": 1,
+      "12px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/roadmaps/sde-dsa (detail of /roadmaps)": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 29,
+    "under44": 9,
+    "under24": 2,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Roadmaps",
+        "w": 66,
+        "h": 17
+      },
+      {
+        "label": "Graph",
+        "w": 153,
+        "h": 40
+      },
+      {
+        "label": "List",
+        "w": 153,
+        "h": 40
+      },
+      {
+        "label": "Stop following",
+        "w": 116,
+        "h": 36
+      },
+      {
+        "label": "Data Structures & Algorithms Roadmap – r",
+        "w": 294,
+        "h": 40
+      },
+      {
+        "label": "6.006 Introduction to Algorithms (Spring",
+        "w": 294,
+        "h": 40
+      },
+      {
+        "label": "Programming, Data Structures and Algorit",
+        "w": 294,
+        "h": 40
+      },
+      {
+        "label": "Preparing to Interview and Interviewing ",
+        "w": 294,
+        "h": 40
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Roadmaps",
+        "w": 66,
+        "h": 17
+      }
+    ],
+    "fontSizes": {
+      "14px": 27,
+      "26px": 1,
+      "13px": 2,
+      "15px": 13,
+      "11px": 28,
+      "12px": 5,
+      "18px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/people/6ad8ec6066c51a6257483714 (detail of /people)": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 10,
+    "under44": 2,
+    "under24": 1,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "All people",
+        "w": 101,
+        "h": 28
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "14px": 2,
+      "29.92px": 1,
+      "28px": 1,
+      "15px": 1,
+      "11px": 4,
+      "12px": 2
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/messages/6ad8ec6066c51a6257483729 (detail of /messages)": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 15,
+    "under44": 3,
+    "under24": 2,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "All messages",
+        "w": 121,
+        "h": 28
+      },
+      {
+        "label": "Attach an image or PDF",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "Attach an image or PDF",
+        "w": 1,
+        "h": 1
+      }
+    ],
+    "fontSizes": {
+      "14px": 1,
+      "14.96px": 1,
+      "18px": 1,
+      "15px": 4,
+      "11px": 3
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "/questions/6ad8ec6066c51a625748373c (detail of /questions)": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [
+      {
+        "tag": "TIME",
+        "cls": "",
+        "right": 402,
+        "text": "30 minutes ago"
+      }
+    ],
+    "targets": 13,
+    "under44": 5,
+    "under24": 4,
+    "under44Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "All questions",
+        "w": 328,
+        "h": 20
+      },
+      {
+        "label": "Ananya K",
+        "w": 64,
+        "h": 23
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 86,
+        "h": 23
+      },
+      {
+        "label": "Helpful · 0",
+        "w": 115,
+        "h": 36
+      }
+    ],
+    "under24Examples": [
+      {
+        "label": "Skip to content",
+        "w": 1,
+        "h": 1
+      },
+      {
+        "label": "All questions",
+        "w": 328,
+        "h": 20
+      },
+      {
+        "label": "Ananya K",
+        "w": 64,
+        "h": 23
+      },
+      {
+        "label": "Rahul Varma",
+        "w": 86,
+        "h": 23
+      }
+    ],
+    "fontSizes": {
+      "14px": 1,
+      "13.6px": 2,
+      "15px": 4,
+      "11px": 4,
+      "12px": 4,
+      "22px": 1,
+      "18px": 1,
+      "13px": 1
+    },
+    "imagesWithoutDimensions": 0
+  }
+}

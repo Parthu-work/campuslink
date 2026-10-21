@@ -1,0 +1,312 @@
+{
+  "home": {
+    "entry": "home-DZXtbOlr.js",
+    "extraChunks": 19,
+    "extraGzipKB": 49.9,
+    "chunks": [
+      "home-DZXtbOlr.js",
+      "useMutation-B6v4uPxi.js",
+      "external-link-z-yM1MGN.js",
+      "post-card-DH4OjKrC.js",
+      "bookmark-check-DNCVMwfI.js",
+      "rich-text-DdlVcpKm.js",
+      "content-menu-RmwkdgL3.js",
+      "ban-Zohc1Fog.js",
+      "dist-4oC7m9nc.js",
+      "sparkles-D4KlnQB8.js",
+      "trash-D9sLbUwR.js",
+      "composer-DIsMbucv.js",
+      "link-2-CCS5_QaG.js",
+      "lock-DR6DqVwV.js",
+      "play-DzCEiMZ0.js",
+      "plus-CjF6CpQO.js",
+      "tab-nav-CKz9Y_Q8.js",
+      "feed-list-C1bMd5L-.js",
+      "useInfiniteQuery-CETnFMHH.js"
+    ]
+  },
+  "radar": {
+    "entry": "radar-BCuSN08v.js",
+    "extraChunks": 10,
+    "extraGzipKB": 8.1,
+    "chunks": [
+      "radar-BCuSN08v.js",
+      "useInfiniteQuery-CETnFMHH.js",
+      "useMutation-B6v4uPxi.js",
+      "plus-CjF6CpQO.js",
+      "job-card-CRGduJob.js",
+      "bookmark-check-DNCVMwfI.js",
+      "clock-DU0oclPA.js",
+      "map-pin-CfvZXhpM.js",
+      "sparkles-D4KlnQB8.js",
+      "jobs-CwMT5nL0.js"
+    ]
+  },
+  "galaxy": {
+    "entry": "galaxy-CctmHcQh.js",
+    "extraChunks": 7,
+    "extraGzipKB": 7.1,
+    "chunks": [
+      "galaxy-CctmHcQh.js",
+      "clipboard-check-B6xjPn4p.js",
+      "plus-CjF6CpQO.js",
+      "sparkles-D4KlnQB8.js",
+      "tab-nav-CKz9Y_Q8.js",
+      "roadmaps-CjEoMYUS.js",
+      "useMutation-B6v4uPxi.js"
+    ]
+  },
+  "mentors": {
+    "entry": "mentors-C8u8oa_1.js",
+    "extraChunks": 7,
+    "extraGzipKB": 53.4,
+    "chunks": [
+      "mentors-C8u8oa_1.js",
+      "useMutation-B6v4uPxi.js",
+      "rotate-ccw-CoexJZTY.js",
+      "sparkles-D4KlnQB8.js",
+      "tab-nav-CKz9Y_Q8.js",
+      "tag-input-Doz-cX9b.js",
+      "react-Dxgu4zBI.js"
+    ]
+  },
+  "mentor-page": {
+    "entry": "mentor-page-BtULxLYD.js",
+    "extraChunks": 9,
+    "extraGzipKB": 24,
+    "chunks": [
+      "mentor-page-BtULxLYD.js",
+      "useMutation-B6v4uPxi.js",
+      "arrow-left-bfzDwaLR.js",
+      "slot-picker-BMiC2x38.js",
+      "clock-DU0oclPA.js",
+      "user-x-3Z8yXLQM.js",
+      "safety-menu-rUjlgv4J.js",
+      "ban-Zohc1Fog.js",
+      "dist-4oC7m9nc.js"
+    ]
+  },
+  "job-page": {
+    "entry": "job-page-1K5UFofk.js",
+    "extraChunks": 17,
+    "extraGzipKB": 34.5,
+    "chunks": [
+      "job-page-1K5UFofk.js",
+      "useMutation-B6v4uPxi.js",
+      "arrow-left-bfzDwaLR.js",
+      "external-link-z-yM1MGN.js",
+      "file-text-Dcuy71dH.js",
+      "post-card-DH4OjKrC.js",
+      "bookmark-check-DNCVMwfI.js",
+      "rich-text-DdlVcpKm.js",
+      "content-menu-RmwkdgL3.js",
+      "ban-Zohc1Fog.js",
+      "dist-4oC7m9nc.js",
+      "sparkles-D4KlnQB8.js",
+      "trash-D9sLbUwR.js",
+      "jobs-CwMT5nL0.js",
+      "job-card-CRGduJob.js",
+      "clock-DU0oclPA.js",
+      "map-pin-CfvZXhpM.js"
+    ]
+  },
+  "roadmap-page": {
+    "entry": "roadmap-page-DvjdCSVE.js",
+    "extraChunks": 15,
+    "extraGzipKB": 30.3,
+    "chunks": [
+      "roadmap-page-DvjdCSVE.js",
+      "useMutation-B6v4uPxi.js",
+      "check-C0hf8YGl.js",
+      "dist-4oC7m9nc.js",
+      "external-link-z-yM1MGN.js",
+      "pencil-Cz-_wxN-.js",
+      "plus-CjF6CpQO.js",
+      "rotate-ccw-clock-TiNWwcuY.js",
+      "trash-D9sLbUwR.js",
+      "triangle-alert-Bv_kvbbi.js",
+      "tab-nav-CKz9Y_Q8.js",
+      "content-menu-RmwkdgL3.js",
+      "ban-Zohc1Fog.js",
+      "sparkles-D4KlnQB8.js",
+      "roadmaps-CjEoMYUS.js"
+    ]
+  },
+  "sessions": {
+    "entry": "sessions-BssvYpZw.js",
+    "extraChunks": 9,
+    "extraGzipKB": 7.3,
+    "chunks": [
+      "sessions-BssvYpZw.js",
+      "useMutation-B6v4uPxi.js",
+      "calendar-plus-DtxlNfQw.js",
+      "slot-picker-BMiC2x38.js",
+      "external-link-z-yM1MGN.js",
+      "message-square-B4ZogVgb.js",
+      "star-CSAGwRki.js",
+      "video-BhdVNP5k.js",
+      "tab-nav-CKz9Y_Q8.js"
+    ]
+  },
+  "messages": {
+    "entry": "messages-Bfd_ZtlT.js",
+    "extraChunks": 9,
+    "extraGzipKB": 24.6,
+    "chunks": [
+      "messages-Bfd_ZtlT.js",
+      "useInfiniteQuery-CETnFMHH.js",
+      "useMutation-B6v4uPxi.js",
+      "arrow-left-bfzDwaLR.js",
+      "file-text-Dcuy71dH.js",
+      "lock-DR6DqVwV.js",
+      "safety-menu-rUjlgv4J.js",
+      "ban-Zohc1Fog.js",
+      "dist-4oC7m9nc.js"
+    ]
+  },
+  "events": {
+    "entry": "events-CE_y8UHu.js",
+    "extraChunks": 6,
+    "extraGzipKB": 4.1,
+    "chunks": [
+      "events-CE_y8UHu.js",
+      "map-pin-CfvZXhpM.js",
+      "plus-CjF6CpQO.js",
+      "video-BhdVNP5k.js",
+      "tab-nav-CKz9Y_Q8.js",
+      "events-DIrJlYzb.js"
+    ]
+  },
+  "event-page": {
+    "entry": "event-page-MNpEvLZj.js",
+    "extraChunks": 14,
+    "extraGzipKB": 27.1,
+    "chunks": [
+      "event-page-MNpEvLZj.js",
+      "useMutation-B6v4uPxi.js",
+      "calendar-plus-DtxlNfQw.js",
+      "check-C0hf8YGl.js",
+      "map-pin-CfvZXhpM.js",
+      "pencil-Cz-_wxN-.js",
+      "video-BhdVNP5k.js",
+      "rich-text-DdlVcpKm.js",
+      "events-DIrJlYzb.js",
+      "content-menu-RmwkdgL3.js",
+      "ban-Zohc1Fog.js",
+      "dist-4oC7m9nc.js",
+      "sparkles-D4KlnQB8.js",
+      "trash-D9sLbUwR.js"
+    ]
+  },
+  "progress-page": {
+    "entry": "progress-page-DHEKxSET.js",
+    "extraChunks": 8,
+    "extraGzipKB": 47.9,
+    "chunks": [
+      "progress-page-DHEKxSET.js",
+      "useMutation-B6v4uPxi.js",
+      "download-xbN7FkwQ.js",
+      "gift-BolTa2vk.js",
+      "lock-DR6DqVwV.js",
+      "medal-CdPXpxpm.js",
+      "sparkles-D4KlnQB8.js",
+      "react-Dxgu4zBI.js"
+    ]
+  },
+  "directory": {
+    "entry": "directory-CVnkpQIP.js",
+    "extraChunks": 2,
+    "extraGzipKB": 2.2,
+    "chunks": ["directory-CVnkpQIP.js", "useInfiniteQuery-CETnFMHH.js"]
+  },
+  "profile-view": {
+    "entry": "profile-view-Cu5SsN8H.js",
+    "extraChunks": 9,
+    "extraGzipKB": 22.5,
+    "chunks": [
+      "profile-view-Cu5SsN8H.js",
+      "arrow-left-bfzDwaLR.js",
+      "external-link-z-yM1MGN.js",
+      "lock-DR6DqVwV.js",
+      "user-x-3Z8yXLQM.js",
+      "safety-menu-rUjlgv4J.js",
+      "useMutation-B6v4uPxi.js",
+      "ban-Zohc1Fog.js",
+      "dist-4oC7m9nc.js"
+    ]
+  },
+  "profile-edit": {
+    "entry": "profile-edit-lJAyW72w.js",
+    "extraChunks": 5,
+    "extraGzipKB": 5.3,
+    "chunks": [
+      "profile-edit-lJAyW72w.js",
+      "useMutation-B6v4uPxi.js",
+      "plus-CjF6CpQO.js",
+      "trash-D9sLbUwR.js",
+      "tag-input-Doz-cX9b.js"
+    ]
+  },
+  "notifications": {
+    "entry": "notifications-CEdT867H.js",
+    "extraChunks": 2,
+    "extraGzipKB": 2.1,
+    "chunks": ["notifications-CEdT867H.js", "useMutation-B6v4uPxi.js"]
+  },
+  "post-page": {
+    "entry": "post-page-CUZWsqB9.js",
+    "extraChunks": 14,
+    "extraGzipKB": 41.2,
+    "chunks": [
+      "post-page-CUZWsqB9.js",
+      "useMutation-B6v4uPxi.js",
+      "arrow-left-bfzDwaLR.js",
+      "post-card-DH4OjKrC.js",
+      "bookmark-check-DNCVMwfI.js",
+      "external-link-z-yM1MGN.js",
+      "rich-text-DdlVcpKm.js",
+      "content-menu-RmwkdgL3.js",
+      "ban-Zohc1Fog.js",
+      "dist-4oC7m9nc.js",
+      "sparkles-D4KlnQB8.js",
+      "trash-D9sLbUwR.js",
+      "feed-list-C1bMd5L-.js",
+      "useInfiniteQuery-CETnFMHH.js"
+    ]
+  },
+  "admin": {
+    "entry": "admin-69l3y0xP.js",
+    "extraChunks": 4,
+    "extraGzipKB": 6.2,
+    "chunks": [
+      "admin-69l3y0xP.js",
+      "useInfiniteQuery-CETnFMHH.js",
+      "useMutation-B6v4uPxi.js",
+      "user-x-3Z8yXLQM.js"
+    ]
+  },
+  "analytics-admin": {
+    "entry": "analytics-admin-0Nz7tX8h.js",
+    "extraChunks": 2,
+    "extraGzipKB": 3.4,
+    "chunks": ["analytics-admin-0Nz7tX8h.js", "download-xbN7FkwQ.js"]
+  },
+  "imports": {
+    "entry": "imports-BNPhinry.js",
+    "extraChunks": 5,
+    "extraGzipKB": 5.9,
+    "chunks": [
+      "imports-BNPhinry.js",
+      "useMutation-B6v4uPxi.js",
+      "download-xbN7FkwQ.js",
+      "link-2-CCS5_QaG.js",
+      "undo-2-Cro3F9aZ.js"
+    ]
+  },
+  "platform": {
+    "entry": "platform-B-jbnlG6.js",
+    "extraChunks": 3,
+    "extraGzipKB": 3.6,
+    "chunks": ["platform-B-jbnlG6.js", "useMutation-B6v4uPxi.js", "plus-CjF6CpQO.js"]
+  }
+}

@@ -1,0 +1,1591 @@
+[
+  {
+    "journey": "00-cold",
+    "step": "reload-home",
+    "actError": null,
+    "ms": 2893,
+    "firstChange": 1564,
+    "spinnerFrames": 77,
+    "skeletonFrames": 14,
+    "emptyFrames": 0,
+    "blankFrames": 82,
+    "totalFrames": 137,
+    "shellRemounted": true,
+    "bottomNavRemounted": true,
+    "mainRemounted": true,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "BODY",
+    "pathAfter": "/home",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "index-VPTL2tys.js",
+        "start": 255,
+        "end": 405
+      },
+      {
+        "file": "rolldown-runtime-XKyaHtl9.js",
+        "start": 255,
+        "end": 419
+      },
+      {
+        "file": "misc-BdErMVkz.js",
+        "start": 255,
+        "end": 426
+      },
+      {
+        "file": "i18next-BVoNhSew.js",
+        "start": 255,
+        "end": 434
+      },
+      {
+        "file": "brand-DJr-bauS.js",
+        "start": 255,
+        "end": 411
+      },
+      {
+        "file": "shield-check-DVdMKaWP.js",
+        "start": 255,
+        "end": 441
+      },
+      {
+        "file": "useQuery-CZIOTLdn.js",
+        "start": 255,
+        "end": 583
+      },
+      {
+        "file": "tenant-context-S3v51I07.js",
+        "start": 257,
+        "end": 585
+      },
+      {
+        "file": "hooks-BNz9PFl-.js",
+        "start": 257,
+        "end": 590
+      },
+      {
+        "file": "lib-ByAvklXa.js",
+        "start": 257,
+        "end": 591
+      },
+      {
+        "file": "auth-layout-BJSmKc6F.js",
+        "start": 257,
+        "end": 596
+      },
+      {
+        "file": "home-DZXtbOlr.js",
+        "start": 1568,
+        "end": 1663
+      },
+      {
+        "file": "useMutation-B6v4uPxi.js",
+        "start": 1568,
+        "end": 1672
+      },
+      {
+        "file": "external-link-z-yM1MGN.js",
+        "start": 1568,
+        "end": 1681
+      },
+      {
+        "file": "post-card-DH4OjKrC.js",
+        "start": 1568,
+        "end": 1690
+      },
+      {
+        "file": "bookmark-check-DNCVMwfI.js",
+        "start": 1568,
+        "end": 1691
+      },
+      {
+        "file": "rich-text-DdlVcpKm.js",
+        "start": 1568,
+        "end": 1700
+      },
+      {
+        "file": "content-menu-RmwkdgL3.js",
+        "start": 1568,
+        "end": 1823
+      },
+      {
+        "file": "ban-Zohc1Fog.js",
+        "start": 1569,
+        "end": 1827
+      },
+      {
+        "file": "dist-4oC7m9nc.js",
+        "start": 1569,
+        "end": 1837
+      },
+      {
+        "file": "sparkles-D4KlnQB8.js",
+        "start": 1569,
+        "end": 1843
+      },
+      {
+        "file": "trash-D9sLbUwR.js",
+        "start": 1569,
+        "end": 1851
+      },
+      {
+        "file": "composer-DIsMbucv.js",
+        "start": 1569,
+        "end": 1856
+      },
+      {
+        "file": "link-2-CCS5_QaG.js",
+        "start": 1569,
+        "end": 1977
+      },
+      {
+        "file": "lock-DR6DqVwV.js",
+        "start": 1580,
+        "end": 1988
+      },
+      {
+        "file": "play-DzCEiMZ0.js",
+        "start": 1580,
+        "end": 1992
+      },
+      {
+        "file": "plus-CjF6CpQO.js",
+        "start": 1580,
+        "end": 2012
+      },
+      {
+        "file": "tab-nav-CKz9Y_Q8.js",
+        "start": 1580,
+        "end": 2014
+      },
+      {
+        "file": "feed-list-C1bMd5L-.js",
+        "start": 1580,
+        "end": 2021
+      },
+      {
+        "file": "useInfiniteQuery-CETnFMHH.js",
+        "start": 1580,
+        "end": 2144
+      }
+    ],
+    "api": [
+      {
+        "path": "/tenant",
+        "start": 866,
+        "end": 1041
+      },
+      {
+        "path": "/auth/refresh",
+        "start": 1058,
+        "end": 1225
+      },
+      {
+        "path": "/me",
+        "start": 1273,
+        "end": 1433
+      },
+      {
+        "path": "/conversations/unread",
+        "start": 1580,
+        "end": 2174
+      },
+      {
+        "path": "/notifications/unread-count",
+        "start": 1580,
+        "end": 2180
+      },
+      {
+        "path": "/stories",
+        "start": 2333,
+        "end": 2469
+      },
+      {
+        "path": "/feed/one-useful-thing",
+        "start": 2333,
+        "end": 2503
+      },
+      {
+        "path": "/feed?tab=for_you&limit=15",
+        "start": 2333,
+        "end": 2519
+      },
+      {
+        "path": "/bookings?when=upcoming",
+        "start": 2333,
+        "end": 2519
+      },
+      {
+        "path": "/feed/suggestions",
+        "start": 2333,
+        "end": 2516
+      },
+      {
+        "path": "/me/follows",
+        "start": 2333,
+        "end": 2624
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "01-post",
+    "step": "open-post",
+    "actError": null,
+    "ms": 847,
+    "firstChange": 192,
+    "spinnerFrames": 19,
+    "skeletonFrames": 11,
+    "emptyFrames": 0,
+    "blankFrames": 30,
+    "totalFrames": 79,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 900,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/posts/6ad8f46da0e1759f6729927f",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "post-page-CUZWsqB9.js",
+        "start": 275,
+        "end": 432
+      },
+      {
+        "file": "arrow-left-bfzDwaLR.js",
+        "start": 275,
+        "end": 437
+      }
+    ],
+    "api": [
+      {
+        "path": "/posts/6ad8f46da0e1759f6729927f",
+        "start": 628,
+        "end": 804
+      },
+      {
+        "path": "/posts/6ad8f46da0e1759f6729927f/comments",
+        "start": 845,
+        "end": 1012
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "01-post",
+    "step": "back-home",
+    "actError": null,
+    "ms": 556,
+    "firstChange": 528,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 33,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 222,
+    "focusAfter": "main",
+    "pathAfter": "/home",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/stories",
+        "start": 436,
+        "end": 632
+      },
+      {
+        "path": "/feed?tab=for_you&limit=15",
+        "start": 436,
+        "end": 637
+      },
+      {
+        "path": "/bookings?when=upcoming",
+        "start": 436,
+        "end": 642
+      },
+      {
+        "path": "/me/follows",
+        "start": 437,
+        "end": 646
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "02-mentor",
+    "step": "tab-mentors",
+    "actError": null,
+    "ms": 726,
+    "firstChange": 107,
+    "spinnerFrames": 19,
+    "skeletonFrames": 12,
+    "emptyFrames": 0,
+    "blankFrames": 19,
+    "totalFrames": 80,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 222,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/mentors",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "mentors-C8u8oa_1.js",
+        "start": 167,
+        "end": 326
+      },
+      {
+        "file": "rotate-ccw-CoexJZTY.js",
+        "start": 167,
+        "end": 332
+      },
+      {
+        "file": "tag-input-Doz-cX9b.js",
+        "start": 167,
+        "end": 344
+      },
+      {
+        "file": "react-Dxgu4zBI.js",
+        "start": 167,
+        "end": 368
+      }
+    ],
+    "api": [
+      {
+        "path": "/mentors/match",
+        "start": 508,
+        "end": 688
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "02-mentor",
+    "step": "browse",
+    "actError": null,
+    "ms": 508,
+    "firstChange": 109,
+    "spinnerFrames": 0,
+    "skeletonFrames": 10,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 62,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "BUTTON",
+    "pathAfter": "/mentors?view=browse",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/mentors",
+        "start": 284,
+        "end": 463
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "02-mentor",
+    "step": "open-mentor",
+    "actError": null,
+    "ms": 739,
+    "firstChange": 135,
+    "spinnerFrames": 0,
+    "skeletonFrames": 12,
+    "emptyFrames": 0,
+    "blankFrames": 12,
+    "totalFrames": 79,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/mentors/6ad8f46da0e1759f67299244",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "mentor-page-BtULxLYD.js",
+        "start": 254,
+        "end": 406
+      },
+      {
+        "file": "slot-picker-BMiC2x38.js",
+        "start": 254,
+        "end": 418
+      },
+      {
+        "file": "clock-DU0oclPA.js",
+        "start": 254,
+        "end": 418
+      },
+      {
+        "file": "user-x-3Z8yXLQM.js",
+        "start": 256,
+        "end": 425
+      },
+      {
+        "file": "safety-menu-rUjlgv4J.js",
+        "start": 256,
+        "end": 430
+      }
+    ],
+    "api": [
+      {
+        "path": "/mentors/6ad8f46da0e1759f67299244",
+        "start": 516,
+        "end": 676
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "02-mentor",
+    "step": "send-request",
+    "actError": null,
+    "ms": 466,
+    "firstChange": 466,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 58,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 1032,
+    "scrollAfter": 23,
+    "focusAfter": "BODY",
+    "pathAfter": "/mentors/6ad8f46da0e1759f67299244",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/mentorship/requests",
+        "start": 287,
+        "end": 466
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "02-mentor",
+    "step": "back-after-booking",
+    "actError": null,
+    "ms": 90,
+    "firstChange": 95,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 41,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 23,
+    "scrollAfter": 137,
+    "focusAfter": "main",
+    "pathAfter": "/mentors?view=browse",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/mentors",
+        "start": 107,
+        "end": 301
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "03-tabs",
+    "step": "r0-home",
+    "actError": null,
+    "ms": 525,
+    "firstChange": 117,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 53,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 137,
+    "scrollAfter": 137,
+    "focusAfter": "main",
+    "pathAfter": "/home",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/stories",
+        "start": 524,
+        "end": 618
+      },
+      {
+        "path": "/feed?tab=for_you&limit=15",
+        "start": 526,
+        "end": 622
+      },
+      {
+        "path": "/bookings?when=upcoming",
+        "start": 526,
+        "end": 623
+      },
+      {
+        "path": "/me/follows",
+        "start": 526,
+        "end": 627
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "03-tabs",
+    "step": "r0-jobs",
+    "actError": null,
+    "ms": 764,
+    "firstChange": 108,
+    "spinnerFrames": 18,
+    "skeletonFrames": 12,
+    "emptyFrames": 0,
+    "blankFrames": 18,
+    "totalFrames": 53,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 137,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/jobs",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "radar-BCuSN08v.js",
+        "start": 145,
+        "end": 315
+      },
+      {
+        "file": "job-card-CRGduJob.js",
+        "start": 148,
+        "end": 333
+      },
+      {
+        "file": "map-pin-CfvZXhpM.js",
+        "start": 148,
+        "end": 333
+      },
+      {
+        "file": "jobs-CwMT5nL0.js",
+        "start": 148,
+        "end": 335
+      }
+    ],
+    "api": [
+      {
+        "path": "/jobs/radar",
+        "start": 469,
+        "end": 739
+      },
+      {
+        "path": "/jobs",
+        "start": 471,
+        "end": 665
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "03-tabs",
+    "step": "r0-roadmaps",
+    "actError": null,
+    "ms": 696,
+    "firstChange": 107,
+    "spinnerFrames": 0,
+    "skeletonFrames": 17,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 68,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/roadmaps",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "galaxy-CctmHcQh.js",
+        "start": 183,
+        "end": 337
+      },
+      {
+        "file": "clipboard-check-B6xjPn4p.js",
+        "start": 183,
+        "end": 346
+      },
+      {
+        "file": "roadmaps-CjEoMYUS.js",
+        "start": 184,
+        "end": 350
+      }
+    ],
+    "api": [
+      {
+        "path": "/roadmaps",
+        "start": 505,
+        "end": 749
+      },
+      {
+        "path": "/roadmaps?mine=following",
+        "start": 506,
+        "end": 679
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "03-tabs",
+    "step": "r0-mentors",
+    "actError": null,
+    "ms": 322,
+    "firstChange": 118,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 54,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/mentors",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/mentors/match",
+        "start": 335,
+        "end": 494
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "03-tabs",
+    "step": "r1-home",
+    "actError": null,
+    "ms": 541,
+    "firstChange": 85,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 50,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/home",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/stories",
+        "start": 537,
+        "end": 629
+      },
+      {
+        "path": "/feed?tab=for_you&limit=15",
+        "start": 537,
+        "end": 630
+      },
+      {
+        "path": "/bookings?when=upcoming",
+        "start": 537,
+        "end": 630
+      },
+      {
+        "path": "/me/follows",
+        "start": 538,
+        "end": 634
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "03-tabs",
+    "step": "r1-jobs",
+    "actError": null,
+    "ms": 464,
+    "firstChange": 104,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 54,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/jobs",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/jobs/radar",
+        "start": 523,
+        "end": 731
+      },
+      {
+        "path": "/jobs",
+        "start": 524,
+        "end": 707
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "03-tabs",
+    "step": "r1-roadmaps",
+    "actError": null,
+    "ms": 293,
+    "firstChange": 109,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 50,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/roadmaps",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/roadmaps",
+        "start": 328,
+        "end": 553
+      },
+      {
+        "path": "/roadmaps?mine=following",
+        "start": 328,
+        "end": 499
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "03-tabs",
+    "step": "r1-mentors",
+    "actError": null,
+    "ms": 204,
+    "firstChange": 95,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 49,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/mentors",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/mentors/match",
+        "start": 206,
+        "end": 378
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "03-tabs",
+    "step": "rapid-fire",
+    "actError": null,
+    "ms": 3533,
+    "firstChange": 73,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 184,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/mentors",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/stories",
+        "start": 392,
+        "end": 478
+      },
+      {
+        "path": "/feed?tab=for_you&limit=15",
+        "start": 393,
+        "end": 478
+      },
+      {
+        "path": "/bookings?when=upcoming",
+        "start": 393,
+        "end": 478
+      },
+      {
+        "path": "/me/follows",
+        "start": 393,
+        "end": 484
+      },
+      {
+        "path": "/jobs/radar",
+        "start": 856,
+        "end": 1067
+      },
+      {
+        "path": "/jobs",
+        "start": 857,
+        "end": 1051
+      },
+      {
+        "path": "/roadmaps",
+        "start": 1168,
+        "end": 1436
+      },
+      {
+        "path": "/roadmaps?mine=following",
+        "start": 1169,
+        "end": 1354
+      },
+      {
+        "path": "/mentors/match",
+        "start": 1431,
+        "end": 1614
+      },
+      {
+        "path": "/stories",
+        "start": 2029,
+        "end": 2094
+      },
+      {
+        "path": "/feed?tab=for_you&limit=15",
+        "start": 2030,
+        "end": 2102
+      },
+      {
+        "path": "/bookings?when=upcoming",
+        "start": 2030,
+        "end": 2104
+      },
+      {
+        "path": "/me/follows",
+        "start": 2031,
+        "end": 2104
+      },
+      {
+        "path": "/jobs/radar",
+        "start": 2612,
+        "end": 2824
+      },
+      {
+        "path": "/jobs",
+        "start": 2612,
+        "end": 2832
+      },
+      {
+        "path": "/roadmaps",
+        "start": 3156,
+        "end": 3394
+      },
+      {
+        "path": "/roadmaps?mine=following",
+        "start": 3156,
+        "end": 3329
+      },
+      {
+        "path": "/mentors/match",
+        "start": 3380,
+        "end": 3549
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "04-jobs",
+    "step": "open-job",
+    "actError": null,
+    "ms": 647,
+    "firstChange": 76,
+    "spinnerFrames": 0,
+    "skeletonFrames": 22,
+    "emptyFrames": 0,
+    "blankFrames": 13,
+    "totalFrames": 72,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 1400,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/jobs/6ad8f46da0e1759f6729928c",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "job-page-1K5UFofk.js",
+        "start": 123,
+        "end": 283
+      },
+      {
+        "file": "file-text-Dcuy71dH.js",
+        "start": 123,
+        "end": 294
+      }
+    ],
+    "api": [
+      {
+        "path": "/jobs/6ad8f46da0e1759f6729928c",
+        "start": 407,
+        "end": 580
+      },
+      {
+        "path": "/jobs/6ad8f46da0e1759f6729928c/referrers",
+        "start": 624,
+        "end": 785
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "04-jobs",
+    "step": "back-to-list",
+    "actError": null,
+    "ms": 223,
+    "firstChange": null,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 41,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 1898,
+    "focusAfter": "main",
+    "pathAfter": "/jobs",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/jobs/radar",
+        "start": 180,
+        "end": 342
+      },
+      {
+        "path": "/jobs",
+        "start": 181,
+        "end": 319
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "05-roadmaps",
+    "step": "tab-roadmaps",
+    "actError": null,
+    "ms": 416,
+    "firstChange": 126,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 56,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 1898,
+    "scrollAfter": 1898,
+    "focusAfter": "main",
+    "pathAfter": "/roadmaps",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/roadmaps",
+        "start": 454,
+        "end": 699
+      },
+      {
+        "path": "/roadmaps?mine=following",
+        "start": 454,
+        "end": 630
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "05-roadmaps",
+    "step": "open-roadmap",
+    "actError": null,
+    "ms": 758,
+    "firstChange": 84,
+    "spinnerFrames": 0,
+    "skeletonFrames": 15,
+    "emptyFrames": 0,
+    "blankFrames": 15,
+    "totalFrames": 77,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 1898,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/roadmaps/sde-dsa",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "roadmap-page-DvjdCSVE.js",
+        "start": 154,
+        "end": 307
+      },
+      {
+        "file": "check-C0hf8YGl.js",
+        "start": 154,
+        "end": 316
+      },
+      {
+        "file": "pencil-Cz-_wxN-.js",
+        "start": 154,
+        "end": 328
+      },
+      {
+        "file": "rotate-ccw-clock-TiNWwcuY.js",
+        "start": 154,
+        "end": 330
+      },
+      {
+        "file": "triangle-alert-Bv_kvbbi.js",
+        "start": 154,
+        "end": 341
+      }
+    ],
+    "api": [
+      {
+        "path": "/roadmaps/sde-dsa",
+        "start": 456,
+        "end": 669
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "05-roadmaps",
+    "step": "open-step",
+    "actError": null,
+    "ms": 395,
+    "firstChange": null,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 51,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 325,
+    "focusAfter": "BUTTON",
+    "pathAfter": "/roadmaps/sde-dsa",
+    "dialogOpenAfter": 1,
+    "chunks": [],
+    "api": [],
+    "waterfall": false
+  },
+  {
+    "journey": "05-roadmaps",
+    "step": "back-gesture-with-panel-open",
+    "actError": null,
+    "ms": null,
+    "firstChange": null,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 389,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 325,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/roadmaps",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/roadmaps",
+        "start": 160,
+        "end": 342
+      },
+      {
+        "path": "/roadmaps?mine=following",
+        "start": 161,
+        "end": 282
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "07-profile",
+    "step": "open-profile",
+    "actError": null,
+    "ms": 826,
+    "firstChange": 203,
+    "spinnerFrames": 14,
+    "skeletonFrames": 11,
+    "emptyFrames": 0,
+    "blankFrames": 25,
+    "totalFrames": 71,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/profile",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "profile-edit-lJAyW72w.js",
+        "start": 236,
+        "end": 403
+      }
+    ],
+    "api": [
+      {
+        "path": "/me/profile",
+        "start": 587,
+        "end": 746
+      },
+      {
+        "path": "/me/profile",
+        "start": 801,
+        "end": 954
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "07-profile",
+    "step": "save",
+    "actError": null,
+    "ms": 337,
+    "firstChange": null,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 55,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 1480,
+    "focusAfter": "BODY",
+    "pathAfter": "/profile",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/me/profile",
+        "start": 108,
+        "end": 283
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "08-lazy",
+    "step": "events-first-visit",
+    "actError": null,
+    "ms": 781,
+    "firstChange": 185,
+    "spinnerFrames": 18,
+    "skeletonFrames": 12,
+    "emptyFrames": 0,
+    "blankFrames": 18,
+    "totalFrames": 79,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 1480,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/events",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "events-CE_y8UHu.js",
+        "start": 245,
+        "end": 410
+      },
+      {
+        "file": "video-BhdVNP5k.js",
+        "start": 245,
+        "end": 411
+      },
+      {
+        "file": "events-DIrJlYzb.js",
+        "start": 245,
+        "end": 419
+      }
+    ],
+    "api": [
+      {
+        "path": "/events?when=upcoming",
+        "start": 588,
+        "end": 757
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "08-lazy",
+    "step": "progress-first-visit",
+    "actError": null,
+    "ms": 800,
+    "firstChange": 145,
+    "spinnerFrames": 20,
+    "skeletonFrames": 11,
+    "emptyFrames": 0,
+    "blankFrames": 31,
+    "totalFrames": 80,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/progress",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "progress-page-DHEKxSET.js",
+        "start": 209,
+        "end": 368
+      },
+      {
+        "file": "download-xbN7FkwQ.js",
+        "start": 209,
+        "end": 375
+      },
+      {
+        "file": "gift-BolTa2vk.js",
+        "start": 210,
+        "end": 382
+      },
+      {
+        "file": "medal-CdPXpxpm.js",
+        "start": 210,
+        "end": 386
+      }
+    ],
+    "api": [
+      {
+        "path": "/me/progress",
+        "start": 563,
+        "end": 730
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "08-lazy",
+    "step": "people-first-visit",
+    "actError": null,
+    "ms": 769,
+    "firstChange": 156,
+    "spinnerFrames": 19,
+    "skeletonFrames": 12,
+    "emptyFrames": 0,
+    "blankFrames": 19,
+    "totalFrames": 81,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/people",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "directory-CVnkpQIP.js",
+        "start": 219,
+        "end": 377
+      }
+    ],
+    "api": [
+      {
+        "path": "/directory?limit=20",
+        "start": 560,
+        "end": 746
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "09-history",
+    "step": "back-to-progress",
+    "actError": null,
+    "ms": 133,
+    "firstChange": null,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 40,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/progress",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/me/progress",
+        "start": 105,
+        "end": 294
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "09-history",
+    "step": "back-to-events",
+    "actError": null,
+    "ms": 57,
+    "firstChange": 58,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 40,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/events",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/events?when=upcoming",
+        "start": 65,
+        "end": 240
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "09-history",
+    "step": "forward-to-progress",
+    "actError": null,
+    "ms": 152,
+    "firstChange": null,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 40,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/progress",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/me/progress",
+        "start": 137,
+        "end": 277
+      }
+    ],
+    "waterfall": false
+  },
+  {
+    "journey": "06-notifications",
+    "step": "open-notifications",
+    "actError": null,
+    "ms": 810,
+    "firstChange": 162,
+    "spinnerFrames": 0,
+    "skeletonFrames": 13,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 81,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/notifications",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "notifications-CEdT867H.js",
+        "start": 341,
+        "end": 502
+      }
+    ],
+    "api": [
+      {
+        "path": "/notifications",
+        "start": 621,
+        "end": 790
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "06-notifications",
+    "step": "open-item",
+    "actError": null,
+    "ms": 745,
+    "firstChange": 104,
+    "spinnerFrames": 17,
+    "skeletonFrames": 12,
+    "emptyFrames": 0,
+    "blankFrames": 17,
+    "totalFrames": 78,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "main",
+    "pathAfter": "/mentorship?box=received",
+    "dialogOpenAfter": 0,
+    "chunks": [
+      {
+        "file": "requests-awGT8dkj.js",
+        "start": 174,
+        "end": 328
+      },
+      {
+        "file": "slot-picker-BMiC2x38.js",
+        "start": 174,
+        "end": 330
+      },
+      {
+        "file": "message-square-B4ZogVgb.js",
+        "start": 174,
+        "end": 339
+      },
+      {
+        "file": "video-BhdVNP5k.js",
+        "start": 174,
+        "end": 354
+      },
+      {
+        "file": "safety-menu-rUjlgv4J.js",
+        "start": 175,
+        "end": 435
+      }
+    ],
+    "api": [
+      {
+        "path": "/notifications/read",
+        "start": 111,
+        "end": 279
+      },
+      {
+        "path": "/notifications/unread-count",
+        "start": 287,
+        "end": 451
+      },
+      {
+        "path": "/mentorship/requests?box=received",
+        "start": 525,
+        "end": 690
+      }
+    ],
+    "waterfall": true
+  },
+  {
+    "journey": "06-notifications",
+    "step": "accept-request",
+    "actError": null,
+    "ms": 482,
+    "firstChange": 480,
+    "spinnerFrames": 0,
+    "skeletonFrames": 0,
+    "emptyFrames": 0,
+    "blankFrames": 0,
+    "totalFrames": 66,
+    "shellRemounted": false,
+    "bottomNavRemounted": false,
+    "mainRemounted": false,
+    "scrollBefore": 0,
+    "scrollAfter": 0,
+    "focusAfter": "BODY",
+    "pathAfter": "/mentorship?box=received",
+    "dialogOpenAfter": 0,
+    "chunks": [],
+    "api": [
+      {
+        "path": "/mentorship/requests/6ad8f48351f3a942fdbda731/respond",
+        "start": 130,
+        "end": 310
+      },
+      {
+        "path": "/mentorship/requests?box=received",
+        "start": 318,
+        "end": 485
+      }
+    ],
+    "waterfall": false
+  }
+]

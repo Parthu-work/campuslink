@@ -1,0 +1,306 @@
+{
+  "initialJsGzipKB": 301.1,
+  "initialJsRawKB": 998,
+  "budgetKB": 170,
+  "initial": [
+    {
+      "file": "index-VPTL2tys.js",
+      "raw": 468674,
+      "gzip": 143722,
+      "initial": true
+    },
+    {
+      "file": "misc-BdErMVkz.js",
+      "raw": 182181,
+      "gzip": 56741,
+      "initial": true
+    },
+    {
+      "file": "auth-layout-BJSmKc6F.js",
+      "raw": 215341,
+      "gzip": 55720,
+      "initial": true
+    },
+    {
+      "file": "hooks-BNz9PFl-.js",
+      "raw": 71756,
+      "gzip": 23502,
+      "initial": true
+    },
+    {
+      "file": "i18next-BVoNhSew.js",
+      "raw": 43266,
+      "gzip": 13618,
+      "initial": true
+    },
+    {
+      "file": "lib-ByAvklXa.js",
+      "raw": 22737,
+      "gzip": 8386,
+      "initial": true
+    },
+    {
+      "file": "useQuery-CZIOTLdn.js",
+      "raw": 15724,
+      "gzip": 5281,
+      "initial": true
+    },
+    {
+      "file": "tenant-context-S3v51I07.js",
+      "raw": 1033,
+      "gzip": 531,
+      "initial": true
+    },
+    {
+      "file": "rolldown-runtime-XKyaHtl9.js",
+      "raw": 726,
+      "gzip": 429,
+      "initial": true
+    },
+    {
+      "file": "shield-check-DVdMKaWP.js",
+      "raw": 398,
+      "gzip": 305,
+      "initial": true
+    },
+    {
+      "file": "brand-DJr-bauS.js",
+      "raw": 77,
+      "gzip": 97,
+      "initial": true
+    }
+  ],
+  "css": [
+    {
+      "file": "index-BCMDKeBN.css",
+      "raw": 76648,
+      "gzip": 13580
+    }
+  ],
+  "allChunks": 101,
+  "totalJsGzipKB": 524.2,
+  "largest": [
+    {
+      "file": "index-VPTL2tys.js",
+      "raw": 468674,
+      "gzip": 143722,
+      "initial": true
+    },
+    {
+      "file": "misc-BdErMVkz.js",
+      "raw": 182181,
+      "gzip": 56741,
+      "initial": true
+    },
+    {
+      "file": "auth-layout-BJSmKc6F.js",
+      "raw": 215341,
+      "gzip": 55720,
+      "initial": true
+    },
+    {
+      "file": "react-Dxgu4zBI.js",
+      "raw": 131764,
+      "gzip": 43002,
+      "initial": false
+    },
+    {
+      "file": "hooks-BNz9PFl-.js",
+      "raw": 71756,
+      "gzip": 23502,
+      "initial": true
+    },
+    {
+      "file": "dist-4oC7m9nc.js",
+      "raw": 50616,
+      "gzip": 17727,
+      "initial": false
+    },
+    {
+      "file": "i18next-BVoNhSew.js",
+      "raw": 43266,
+      "gzip": 13618,
+      "initial": true
+    },
+    {
+      "file": "feed-list-C1bMd5L-.js",
+      "raw": 35529,
+      "gzip": 10837,
+      "initial": false
+    },
+    {
+      "file": "mentors-C8u8oa_1.js",
+      "raw": 22910,
+      "gzip": 8794,
+      "initial": false
+    },
+    {
+      "file": "lib-ByAvklXa.js",
+      "raw": 22737,
+      "gzip": 8386,
+      "initial": true
+    },
+    {
+      "file": "home-DZXtbOlr.js",
+      "raw": 20738,
+      "gzip": 6302,
+      "initial": false
+    },
+    {
+      "file": "roadmap-page-DvjdCSVE.js",
+      "raw": 18413,
+      "gzip": 5806,
+      "initial": false
+    },
+    {
+      "file": "useQuery-CZIOTLdn.js",
+      "raw": 15724,
+      "gzip": 5281,
+      "initial": true
+    },
+    {
+      "file": "post-card-DH4OjKrC.js",
+      "raw": 14577,
+      "gzip": 5222,
+      "initial": false
+    },
+    {
+      "file": "admin-69l3y0xP.js",
+      "raw": 13988,
+      "gzip": 4539,
+      "initial": false
+    },
+    {
+      "file": "imports-BNPhinry.js",
+      "raw": 13282,
+      "gzip": 4270,
+      "initial": false
+    },
+    {
+      "file": "mentor-dashboard-Bvl9gsbf.js",
+      "raw": 12511,
+      "gzip": 3733,
+      "initial": false
+    },
+    {
+      "file": "collections-BK10PQA3.js",
+      "raw": 10045,
+      "gzip": 3702,
+      "initial": false
+    },
+    {
+      "file": "list-admin-Bd1wSgOq.js",
+      "raw": 11693,
+      "gzip": 3650,
+      "initial": false
+    },
+    {
+      "file": "sessions-BssvYpZw.js",
+      "raw": 11161,
+      "gzip": 3646,
+      "initial": false
+    },
+    {
+      "file": "progress-page-DHEKxSET.js",
+      "raw": 10579,
+      "gzip": 3570,
+      "initial": false
+    },
+    {
+      "file": "messages-Bfd_ZtlT.js",
+      "raw": 9102,
+      "gzip": 3567,
+      "initial": false
+    },
+    {
+      "file": "editor-CS-IHV8s.js",
+      "raw": 11798,
+      "gzip": 3535,
+      "initial": false
+    },
+    {
+      "file": "composer-DIsMbucv.js",
+      "raw": 8511,
+      "gzip": 3399,
+      "initial": false
+    },
+    {
+      "file": "questions-DWiGKxVn.js",
+      "raw": 10296,
+      "gzip": 3398,
+      "initial": false
+    }
+  ],
+  "minifiedKBByPackage": {
+    "index-VPTL2tys.js": {
+      "npm:react-dom": 202.2,
+      "app-src": 63.2,
+      "npm:react-hook-form": 35.6,
+      "npm:sonner": 32.8,
+      "npm:engine.io-client": 18.3,
+      "npm:socket.io-client": 11.8,
+      "npm:lucide-react": 11.7,
+      "npm:cmdk": 11,
+      "npm:@tanstack/query-core": 9.8,
+      "npm:react-remove-scroll": 5.5,
+      "npm:socket.io-parser": 5.4,
+      "npm:@radix-ui/react-dismissable-layer": 5.1,
+      "[unmapped]": 5.1,
+      "npm:@radix-ui/react-dialog": 4.5,
+      "npm:@radix-ui/react-focus-scope": 4.2,
+      "npm:engine.io-parser": 3.5,
+      "npm:scheduler": 3.4,
+      "npm:@hookform/resolvers": 3.2,
+      "npm:@radix-ui/react-presence": 2.6,
+      "npm:@radix-ui/react-slot": 2.6,
+      "npm:@radix-ui/react-context": 1.7,
+      "npm:react-remove-scroll-bar": 1.5,
+      "npm:aria-hidden": 1.4,
+      "npm:@socket.io/component-emitter": 1.3,
+      "npm:@radix-ui/react-use-controllable-state": 1.2,
+      "npm:use-sidecar": 1.1,
+      "[no source]": 1,
+      "npm:@radix-ui/primitive": 0.9,
+      "npm:@radix-ui/react-focus-guards": 0.7,
+      "npm:tslib": 0.7,
+      "npm:react-style-singleton": 0.7,
+      "npm:use-callback-ref": 0.6,
+      "npm:class-variance-authority": 0.6,
+      "npm:@radix-ui/react-primitive": 0.5
+    },
+    "misc-BdErMVkz.js": {
+      "npm:zod": 92,
+      "npm:tailwind-merge": 26.7,
+      "@campuslink/shared": 25.3,
+      "npm:react": 8,
+      "app-src": 7.2,
+      "npm:@tanstack/query-core": 6.9,
+      "npm:react-i18next": 4.8,
+      "npm:lucide-react": 3,
+      "[no source]": 1.1,
+      "[unmapped]": 1,
+      "npm:use-sync-external-store": 0.7,
+      "npm:zustand": 0.6
+    },
+    "auth-layout-BJSmKc6F.js": {
+      "i18n en.json + te.json": 206.1,
+      "app-src": 4.1
+    },
+    "hooks-BNz9PFl-.js": {
+      "npm:react-router": 69.6
+    },
+    "lib-ByAvklXa.js": {
+      "npm:react-router": 20.2,
+      "[no source]": 1.6
+    },
+    "i18next-BVoNhSew.js": {
+      "npm:i18next": 42.2
+    },
+    "react-Dxgu4zBI.js": {
+      "npm:motion-dom": 99.4,
+      "npm:framer-motion": 27.1,
+      "npm:motion-utils": 1.6
+    }
+  },
+  "note": "minifiedKBByPackage: source-map-explorer attribution of minified bytes per package; gzip is roughly 0.3x for these chunks."
+}
