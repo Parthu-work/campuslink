@@ -7,3 +7,6 @@ pnpm-lock.yaml
 docs/design/prototype.html
 docs/permissions.md
 docs/api/openapi.json
+# Verbatim copies of the owner's brief; formatting must not change them
+docs/design/revamp/master-prompt.md
+docs/specs/ai-study-assistant.md
