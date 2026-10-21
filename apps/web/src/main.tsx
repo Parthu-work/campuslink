@@ -8,6 +8,9 @@ import './styles/index.css';
 import './i18n';
 import './lib/preferences';
 import { App } from './app/App';
+import { installPreloadErrorHandler } from './lib/chunk-reload';
+
+installPreloadErrorHandler();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element missing');

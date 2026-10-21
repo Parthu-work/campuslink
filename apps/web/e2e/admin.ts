@@ -55,7 +55,7 @@ export async function adminSignIn(page: Page, host: string, email: string) {
     await page.keyboard.type(await freshCode(email, saved.secret));
     await page.getByRole('button', { name: 'Verify' }).click();
   }
-  await page.waitForURL(/\/home$/);
+  await page.waitForURL(/\/(home|platform)$/);
 }
 
 /** Latest email to `to` from Mailpit (dev SMTP sink): returns the subject. */

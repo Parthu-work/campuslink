@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { email as emailSchema, type LoginResult } from '@campuslink/shared';
+import { email as emailSchema, safeReturnPath, type LoginResult } from '@campuslink/shared';
 import { AuthLayout, FormError } from '../../components/layout/auth-layout';
 import { Button } from '../../components/ui/button';
 import { Field, Input, PasswordInput } from '../../components/ui/field';
@@ -22,6 +22,7 @@ export function SignInPage() {
   const { t } = useTranslation();
   const tenant = useTenant();
   const navigate = useNavigate();
+  const location = useLocation();
   const qc = useQueryClient();
   const setToken = useSession((s) => s.setToken);
   const [ticket, setTicket] = useState<string | null>(null);
@@ -33,7 +34,9 @@ export function SignInPage() {
   const finish = async (accessToken: string) => {
     setToken(accessToken);
     await qc.invalidateQueries({ queryKey: ['me'] });
-    navigate('/home', { replace: true });
+    // Back to the page that asked for sign-in (a shared post, a push link), else the console or Home.
+    const from = safeReturnPath((location.state as { from?: unknown } | null)?.from);
+    navigate(from ?? (tenant.kind === 'platform' ? '/platform' : '/home'), { replace: true });
   };
 
   const onSubmit = form.handleSubmit(async (values) => {

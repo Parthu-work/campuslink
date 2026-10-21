@@ -12,6 +12,7 @@ import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/mis
 import { RichText } from '../../components/ui/rich-text';
 import { api, apiRequest, ApiError } from '../../lib/api';
 import { useCan } from '../../lib/me';
+import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { formatRelative, newIdempotencyKey } from '../../lib/format';
 import { AuthorLine } from '../feed/post-card';
 import { ContentMenu, RemovalNotice } from '../feed/content-menu';
@@ -125,7 +126,10 @@ export function QuestionsPage() {
   const { t } = useTranslation();
   const canAsk = useCan('qa:ask');
   const [params, setParams] = useSearchParams();
-  const [asking, setAsking] = useState(false);
+  // ?ask=1 opens the form (the Create sheet links here), and Back closes it.
+  const askOverlay = useUrlOverlay('ask');
+  const asking = canAsk && askOverlay.value !== null;
+  const setAsking = (o: boolean) => (o ? askOverlay.open('1') : askOverlay.close());
   const filter = params.get('filter') ?? 'all';
   const topic = params.get('topic') ?? '';
   const qs = new URLSearchParams({

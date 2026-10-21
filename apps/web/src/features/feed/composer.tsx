@@ -7,6 +7,7 @@ import {
   POST_MAX,
   REEL_MAX_SECONDS,
   TOPICS,
+  POST_KINDS,
   type PostKind,
   type PostView,
   type Topic,
@@ -17,6 +18,7 @@ import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/fi
 import { Chip } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
 import { useCan, useMe } from '../../lib/me';
+import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { newIdempotencyKey } from '../../lib/format';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 
@@ -333,11 +335,17 @@ function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; onDone: 
   );
 }
 
+const COMPOSE_KINDS: readonly PostKind[] = POST_KINDS;
+
 /** "Share something useful" entry point; the form remounts per open (fresh idempotency key). */
 export function Composer() {
   const { t } = useTranslation();
   const { data: me } = useMe();
-  const [open, setOpen] = useState<PostKind | null>(null);
+  // The composer's open state lives in the URL (?compose=text), so Back closes it and the Create
+  // sheet can open it from anywhere.
+  const overlay = useUrlOverlay('compose');
+  const open = COMPOSE_KINDS.find((k) => k === overlay.value) ?? null;
+  const setOpen = (kind: PostKind | null) => (kind ? overlay.open(kind) : overlay.close());
   return (
     <>
       <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-line bg-surface-1 p-3">

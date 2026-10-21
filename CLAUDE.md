@@ -81,6 +81,9 @@ scripts/backup/  encrypted backup, restore and drill
 - Bookings: never write `holds` by hand; use `holdsFor()` (`modules/mentorship/slots.ts`). The unique index on holds is what prevents double booking. Delayed jobs carry the booking `version` and must no-op when it changed.
 - Mark sensitive POSTs `idempotent: true` (signed-in JSON routes) and abuse-prone public or social writes `bot: true`.
 - Privacy rights: every module that stores personal data exposes `exportFor(userId)` and `eraseFor(userId)` on its service and registers them with `PrivacyService.register()` in `app.ts`. Erasure deletes private data and detaches shared content ("Former member"); consent records and the audit log are kept. New collections get a case in `test/privacy.test.ts`.
+- Web navigation: every navigation surface (tabs, rail, avatar menu, Create sheet, command palette) comes from `buildNav()` (`packages/shared/src/navigation.ts`) through `useNav()` (`apps/web/src/lib/nav.ts`). Never hard-code tabs or menus per screen.
+- Web routes: declare screens with `screen()` and `layout()` in `app/router.tsx` (React Router `lazy` with `importWithRetry` and an error element). Never add per-route `Suspense` wrappers or full-screen spinners; the shell never unmounts.
+- Overlays a member opens (sheets, dialogs, step panels) keep their open state in the URL through `useUrlOverlay()` (`lib/use-url-overlay.ts`), so Back closes them and they can be linked.
 - Web security headers (CSP, HSTS and the rest) live only in `deploy/nginx/security-headers.conf`. `vite preview` serves the same file, so the end-to-end suite runs under the production CSP. Anything that needs a new source (a script, frame or connection) changes that file and its test.
 
 ## Tenancy rule (non-negotiable)

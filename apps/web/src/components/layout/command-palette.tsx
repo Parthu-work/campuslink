@@ -5,23 +5,14 @@ import { useQuery } from '@tanstack/react-query';
 import { Command } from 'cmdk';
 import { Dialog as D } from 'radix-ui';
 import {
-  BadgeCheck,
-  Bookmark,
   BriefcaseBusiness,
   ListChecks,
-  Film,
-  Home,
   Languages,
   MessageCircleQuestion,
   Newspaper,
-  Settings,
-  Shield,
   SunMoon,
-  User,
-  Users,
   Orbit,
   CalendarDays,
-  Trophy,
 } from 'lucide-react';
 import type {
   EventView,
@@ -33,9 +24,10 @@ import type {
 } from '@campuslink/shared';
 import { api } from '../../lib/api';
 import { usePalette } from '../../lib/palette';
-import { useCan, useMe } from '../../lib/me';
+import { useCan } from '../../lib/me';
 import { usePreferences } from '../../lib/preferences';
 import { PersonAvatar } from '../ui/person-avatar';
+import { useNav } from '../../lib/nav';
 
 const item =
   'flex min-h-11 cursor-pointer items-center gap-3 rounded-[var(--radius-sm)] px-3 text-sm data-[selected=true]:bg-surface-2';
@@ -46,13 +38,8 @@ export function CommandPalette() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { open, setOpen } = usePalette();
-  const { data: me } = useMe();
   const canSearch = useCan('directory:read');
-  const canFeed = useCan('feed:read');
   const canJobs = useCan('jobs:read');
-  const canRoadmaps = useCan('roadmaps:read');
-  const canEvents = useCan('events:rsvp');
-  const canAdmin = useCan('users:read_admin');
   const { setTheme, setLanguage } = usePreferences();
   const [q, setQ] = useState('');
   const dq = useDeferredValue(q.trim());
@@ -75,22 +62,13 @@ export function CommandPalette() {
     setQ('');
     navigate(to);
   };
+  // "Go to" lists the same destinations as the tabs and the avatar menu (one navigation model).
+  const model = useNav();
   const nav = [
-    { to: '/home', label: t('nav.home'), icon: Home, show: true },
-    { to: '/roadmaps', label: t('nav.roadmaps'), icon: Orbit, show: canRoadmaps },
-    { to: '/events', label: t('nav.events'), icon: CalendarDays, show: canEvents },
-    { to: '/progress', label: t('nav.progress'), icon: Trophy, show: true },
-    { to: '/jobs', label: t('nav.jobs'), icon: BriefcaseBusiness, show: canJobs },
-    { to: '/jobs/tracker', label: t('jobs.tracker'), icon: ListChecks, show: canJobs },
-    { to: '/questions', label: t('nav.questions'), icon: MessageCircleQuestion, show: canFeed },
-    { to: '/reels', label: t('nav.reels'), icon: Film, show: canFeed },
-    { to: '/saved', label: t('nav.saved'), icon: Bookmark, show: canFeed },
-    { to: '/people', label: t('nav.people'), icon: Users, show: canSearch },
-    { to: '/profile', label: t('nav.profile'), icon: User, show: true },
-    { to: '/verify', label: t('home.verifyCta'), icon: BadgeCheck, show: !!me && !me.verified },
-    { to: '/settings', label: t('nav.settings'), icon: Settings, show: true },
-    { to: '/admin', label: t('nav.admin'), icon: Shield, show: canAdmin },
-  ].filter((n) => n.show);
+    ...model.tabs.filter((n) => n.id !== 'create'),
+    ...model.menu.flatMap((g) => g.items),
+    ...(canJobs ? [{ id: 'tracker', to: '/jobs/tracker', label: t('jobs.tracker'), icon: ListChecks }] : []),
+  ];
 
   return (
     <D.Root open={open} onOpenChange={(o) => (setOpen(o), o || setQ(''))}>

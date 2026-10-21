@@ -49,6 +49,9 @@ export default defineConfig({
         // Fonts load by unicode-range on demand; only precache the subsets our locales use.
         globIgnores: ['**/*-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese,latin-ext}-*.woff2'],
         navigateFallback: '/index.html',
+        // Take control of the page on first install, so every screen chunk is available offline in
+        // the very first session (audit ST-0). Updates still wait for the member's "Reload".
+        clientsClaim: true,
         // API responses are never cached by the service worker; TanStack Query owns server state.
         navigateFallbackDenylist: [/^\/api\//],
         // Web push and notification clicks (public/push-sw.js).

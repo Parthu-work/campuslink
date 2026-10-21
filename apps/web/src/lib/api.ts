@@ -1,6 +1,7 @@
 import { API_PREFIX, type ApiResponse, type ErrorCode } from '@campuslink/shared';
 import { useSession } from './session';
 import { botCheckEnabled, getBotToken } from './bot-check';
+import { createRefreshCoordinator } from './refresh-coordinator';
 
 export class ApiError extends Error {
   constructor(
@@ -8,6 +9,8 @@ export class ApiError extends Error {
     readonly code: ErrorCode | 'NETWORK',
     message: string,
     readonly details?: unknown,
+    /** The API's request id, shown on error screens so support can find the log line. */
+    readonly requestId?: string,
   ) {
     super(message);
   }
@@ -19,37 +22,55 @@ const readCookie = (name: string) =>
     .find((c) => c.startsWith(`${name}=`))
     ?.slice(name.length + 1);
 
-let refreshing: Promise<boolean> | null = null;
+/** One rotation: the new access token, or null when the session is gone. Never aborted. */
+async function rotate(): Promise<string | null> {
+  const res = await fetch(`${API_PREFIX}/auth/refresh`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'X-CSRF-Token': readCookie('cl_csrf') ?? '' },
+    // Outlives the page, so closing or backgrounding the tab can't strand a rotated cookie.
+    keepalive: true,
+  });
+  if (res.status === 401 || res.status === 403) return null;
+  // Rate limits and server errors leave the cookie unrotated: the session is still good.
+  if (!res.ok) throw new Error(`refresh unavailable (${res.status})`);
+  const body = (await res.json()) as ApiResponse<{ session: { accessToken: string } }>;
+  return body.ok ? body.data.session.accessToken : null;
+}
 
-/** Single-flight refresh: concurrent 401s share one rotation (rotation reuse would revoke the session). */
-export function refreshSession(): Promise<boolean> {
-  refreshing ??= (async () => {
-    // No CSRF cookie means no session cookie either: skip the round trip.
-    if (!readCookie('cl_csrf')) {
+const coordinator = createRefreshCoordinator(rotate, {
+  locks: typeof navigator !== 'undefined' && navigator.locks ? navigator.locks : null,
+  channel: typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('cl:session') : null,
+  now: () => Date.now(),
+  wait: (ms) => new Promise((r) => setTimeout(r, ms)),
+});
+coordinator.onSignedOutElsewhere(() => useSession.getState().signedOut());
+
+/** Tell the other tabs this member signed out. */
+export const announceSignOut = () => coordinator.announceSignOut();
+
+/**
+ * Trade the refresh cookie for an access token. Single-flight in the tab and serialised across tabs
+ * (lib/refresh-coordinator.ts); a dead session signs out, a network failure keeps the session.
+ */
+export async function refreshSession(): Promise<boolean> {
+  // No CSRF cookie means no session cookie either: skip the round trip.
+  if (!readCookie('cl_csrf')) {
+    useSession.getState().signedOut();
+    return false;
+  }
+  try {
+    const token = await coordinator.refresh();
+    if (!token) {
       useSession.getState().signedOut();
       return false;
     }
-    try {
-      const res = await fetch(`${API_PREFIX}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'X-CSRF-Token': readCookie('cl_csrf') ?? '' },
-      });
-      if (!res.ok) {
-        useSession.getState().signedOut();
-        return false;
-      }
-      const body = (await res.json()) as ApiResponse<{ session: { accessToken: string } }>;
-      if (!body.ok) return false;
-      useSession.getState().setToken(body.data.session.accessToken);
-      return true;
-    } catch {
-      return false;
-    } finally {
-      setTimeout(() => (refreshing = null), 0);
-    }
-  })();
-  return refreshing;
+    useSession.getState().setToken(token);
+    return true;
+  } catch {
+    if (useSession.getState().status === 'unknown') useSession.getState().signedOut();
+    return false;
+  }
 }
 
 interface RequestOptions {
@@ -106,7 +127,13 @@ export async function apiRequest<T>(
       const botToken = await getBotToken().catch(() => null);
       if (botToken) return apiRequest<T>(path, { ...opts, botToken }, retried);
     }
-    throw new ApiError(res.status, body.error.code, body.error.message, body.error.details);
+    throw new ApiError(
+      res.status,
+      body.error.code,
+      body.error.message,
+      body.error.details,
+      body.error.requestId,
+    );
   }
   return { data: body.data, ...(body.meta ? { meta: body.meta } : {}) };
 }

@@ -2,59 +2,10 @@ import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { Mesh } from '../../components/ui/mesh';
-import { Avatar, Crest } from '../../components/ui/misc';
+import { Crest } from '../../components/ui/misc';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { useTenant } from '../../lib/tenant-context';
 import { usePreferences } from '../../lib/preferences';
-
-/**
- * DEMO DATA ONLY. The landing page is public, so it must never show real members' names.
- * When a college opts in (later phase), these become opted-in alumni chosen by the college.
- */
-const DEMO_WALL: [string, string, string][] = [
-  ['Rahul Varma', 'SDE II · Nimbus Labs', "CSE '19"],
-  ['Sneha Reddy', 'Data Analyst · Kestrel Analytics', "ECE '20"],
-  ['Arjun Naidu', 'Design Engineer · Ironleaf Motors', "MECH '18"],
-  ['Divya Chowdary', 'SRE · Cloudpeak', "IT '17"],
-  ['Karthik Rao', 'Product Manager · Lumen Pay', "CSE '16"],
-  ['Fatima Begum', 'ML Engineer · Northstar AI', "CSE '20"],
-  ['Praveen Goud', 'Site Engineer · Riverline Infra', "CIVIL '19"],
-  ['Lakshmi Prasanna', 'Process Engineer · Saltmarsh Chemicals', "CHEM '18"],
-  ['Imran Khan', 'Embedded Engineer · Voltix Devices', "EEE '19"],
-  ['Meghana Sharma', 'UX Designer · Pixelbay', "CSE '21"],
-];
-
-function WallRow({ items, reverse }: { items: typeof DEMO_WALL; reverse?: boolean }) {
-  return (
-    <div
-      className="flex w-max gap-3 motion-safe:animate-[drift_calc(70s/max(var(--motion-scale),0.0001))_linear_infinite] [[data-motion=reduce]_&]:animate-none"
-      style={
-        reverse
-          ? {
-              animationDirection: 'reverse',
-              animationDuration: 'calc(85s / max(var(--motion-scale), 0.0001))',
-            }
-          : undefined
-      }
-    >
-      {[...items, ...items].map(([name, role, batch], i) => (
-        <div
-          key={i}
-          className="glass flex min-w-[230px] items-center gap-2.5 rounded-[var(--radius-md)] border border-line py-2.5 pr-4 pl-2.5"
-          aria-hidden={i >= items.length}
-        >
-          <Avatar name={name} verified />
-          <div>
-            <b className="block text-sm">{name}</b>
-            <span className="text-xs text-fg-2">
-              {role} · <span className="font-mono">{batch}</span>
-            </span>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export function LandingPage() {
   const tenant = useTenant();
@@ -103,15 +54,8 @@ export function LandingPage() {
           </Link>
         </div>
       </main>
+      {/* No people or numbers here: social proof stays off until it is real (decisions D3). */}
       <footer>
-        <div
-          className="grid min-w-0 gap-3 overflow-hidden pt-2 pb-7 [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]"
-          aria-label={t('landing.wallLabel')}
-          role="img"
-        >
-          <WallRow items={DEMO_WALL.slice(0, 5)} />
-          <WallRow items={DEMO_WALL.slice(5)} reverse />
-        </div>
         <p className="gutter flex items-center gap-2 pb-[calc(16px+env(safe-area-inset-bottom,0px))] text-xs text-fg-3">
           <ShieldCheck className="size-4 flex-none" aria-hidden /> {t('landing.foot', { college })}
         </p>

@@ -27,13 +27,16 @@ function watch(reg: ServiceWorkerRegistration) {
 }
 
 let started = false;
+/** Set when the member accepts an update; only then does a controller change reload the page. */
+let updating = false;
 /** Registers /sw.js once, in production builds only (the dev server has no worker). */
 export function registerServiceWorker() {
   if (started || !supported() || !import.meta.env.PROD) return;
   started = true;
   let reloading = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloading) return;
+    // The first install claims the page (clientsClaim) without changing any code: no reload then.
+    if (reloading || !updating) return;
     reloading = true;
     location.reload();
   });
@@ -60,6 +63,7 @@ export function useUpdateAvailable(): boolean {
 
 /** Activates the waiting version; the controllerchange listener then reloads the page. */
 export function applyUpdate() {
+  updating = true;
   waiting?.postMessage({ type: 'SKIP_WAITING' });
 }
 

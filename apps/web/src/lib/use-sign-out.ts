@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { api } from './api';
+import { announceSignOut, api } from './api';
 import { useSession } from './session';
 
 export function useSignOut() {
@@ -9,8 +9,9 @@ export function useSignOut() {
   const signedOut = useSession((s) => s.signedOut);
   return async () => {
     await api.post('/auth/logout', undefined, true).catch(() => undefined);
-    signedOut();
+    announceSignOut();
+    signedOut(true);
     qc.clear();
-    navigate('/', { replace: true });
+    navigate('/sign-in', { replace: true });
   };
 }

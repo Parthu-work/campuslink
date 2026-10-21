@@ -51,7 +51,38 @@
     "referrals": "Referrals",
     "roadmaps": "Roadmaps",
     "events": "Events",
-    "progress": "Progress"
+    "progress": "Progress",
+    "create": "Create",
+    "createTitle": "Create something",
+    "study": "Study",
+    "subjects": "Subjects",
+    "review": "Review",
+    "leaderboard": "Leaderboard",
+    "rewards": "Rewards",
+    "verify": "Verify",
+    "account": "Your account",
+    "accountMenu": "Account menu, {{name}}",
+    "messagesUnread_one": "Messages, {{count}} unread",
+    "messagesUnread_other": "Messages, {{count}} unread",
+    "groups": {
+      "explore": "Explore",
+      "community": "Community",
+      "you": "You",
+      "manage": "Manage",
+      "platform": "Platform"
+    },
+    "createActions": {
+      "post": "Write a post",
+      "postHint": "A tip, photo or reel for your college",
+      "question": "Ask a question",
+      "questionHint": "Seniors and faculty answer in Q&A",
+      "event": "Create an event",
+      "eventHint": "A meetup, drive or AMA",
+      "job": "Post an opening",
+      "jobHint": "Share a role at your company",
+      "roadmap": "Draft a roadmap",
+      "roadmapHint": "Step-by-step guidance, with sources"
+    }
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -60,7 +91,6 @@
     "sub": "Verified alumni of {{college}} mentor you, refer you, and show you the exact path from where you are to where they got.",
     "join": "Join with your college email",
     "signIn": "Sign in",
-    "wallLabel": "Example alumni cards (demo data)",
     "foot": "Private to {{college}}. Only verified students, alumni and faculty can see anything here."
   },
   "auth": {
@@ -373,7 +403,17 @@
     "suspendedBody": "Please contact your college administrator.",
     "generic": "Something went wrong. Please try again.",
     "forbidden": "You don’t have access to this page.",
-    "notFound": "We couldn’t find that page."
+    "notFound": "We couldn’t find that page.",
+    "screenTitle": "Couldn’t open this screen",
+    "screenBody": "Something went wrong on our side. The rest of the app still works, so try again or head home.",
+    "offlineTitle": "You’re offline",
+    "offlineBody": "This screen isn’t saved on your phone yet. Reconnect and it will open.",
+    "updatedTitle": "A newer version is ready",
+    "updatedBody": "We updated the app since you opened it. Reload to open this screen.",
+    "reload": "Reload",
+    "goHome": "Go home",
+    "reference": "Reference: {{id}}",
+    "offlineBootBody": "Your college’s app needs a connection to open. Reconnect and try again."
   },
   "verify": {
     "title": "Verify you’re from {{college}}",

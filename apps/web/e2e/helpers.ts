@@ -5,7 +5,7 @@ export const PASSWORD = 'Demo-Campus-Link-2026';
 
 export async function expectNoA11yViolations(page: Page) {
   // Let data load and entrance animations settle (axe would otherwise measure half-faded text).
-  // Infinite ambient loops (the alumni wall) are ignored.
+  // Infinite ambient loops (the landing mesh) are ignored.
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(100);
   await page.waitForFunction(() =>

@@ -22,12 +22,16 @@ export function AppStatus() {
     });
   }, [update, t]);
   if (online) return null;
+  // A pill above the bottom tabs (bottom of the screen on desktop): it never covers the top bar's
+  // controls and never takes taps (audit PW-9).
   return (
     <div
       role="status"
-      className="fixed inset-x-0 top-0 z-[60] flex items-center justify-center gap-2 bg-fg px-4 py-2 pt-[calc(0.5rem+env(safe-area-inset-top,0px))] text-sm font-semibold text-bg"
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(80px+env(safe-area-inset-bottom,0px))] z-[60] flex justify-center px-4 lg:bottom-6"
     >
-      <WifiOff className="size-4" aria-hidden /> {t('common.offline')}
+      <span className="flex items-center gap-2 rounded-full bg-fg px-4 py-2 text-sm font-semibold text-bg shadow-[var(--shadow)]">
+        <WifiOff className="size-4" aria-hidden /> {t('common.offline')}
+      </span>
     </div>
   );
 }

@@ -98,8 +98,43 @@
 .screen-in {
   animation: screen-in calc(380ms * var(--motion-scale)) var(--ease-out) both;
 }
-@keyframes drift {
-  to {
-    transform: translateX(-50%);
+
+/* Loading placeholders appear only if loading takes longer than 200 ms (no flash on fast loads). */
+@keyframes delayed-in {
+  from {
+    opacity: 0;
   }
+}
+.delayed-in {
+  animation: delayed-in 160ms var(--ease-out) 200ms both;
+}
+
+/* Navigation progress: shown after 150 ms, creeps towards the end while waiting. */
+@keyframes nav-progress {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  1% {
+    opacity: 1;
+  }
+  60% {
+    transform: scaleX(0.7);
+  }
+  100% {
+    transform: scaleX(0.92);
+  }
+}
+.nav-progress {
+  animation: nav-progress 8s cubic-bezier(0.1, 0.7, 0.2, 1) 150ms both;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .nav-progress {
+    animation: delayed-in 1ms linear 150ms both;
+    transform: scaleX(0.6);
+  }
+}
+:root[data-motion='reduce'] .nav-progress {
+  animation: delayed-in 1ms linear 150ms both;
+  transform: scaleX(0.6);
 }
