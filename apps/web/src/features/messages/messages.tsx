@@ -328,6 +328,7 @@ export function ConversationPage() {
                   emitTyping(conversationId);
                 }}
                 onKeyDown={onKey}
+                enterKeyHint="send"
                 rows={1}
                 maxLength={MESSAGE_MAX}
                 placeholder={t('messages.write')}

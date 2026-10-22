@@ -212,8 +212,9 @@ function CreateTenantDialog({ onClose }: { onClose: () => void }) {
             {({ id }) => (
               <Input
                 id={id}
-                type="number"
+                type="text"
                 inputMode="numeric"
+                pattern="[0-9]*"
                 {...form.register('subscription.seatLimit', { valueAsNumber: true })}
               />
             )}

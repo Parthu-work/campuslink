@@ -279,7 +279,13 @@ export function AnalyticsAdmin() {
             <h3 id="engagement" className="font-semibold">
               {t('analytics.engagement')}
             </h3>
-            <div className="overflow-x-auto rounded-[var(--radius-md)] border border-line">
+            {/* Focusable so keyboard users can scroll it on phones (A11Y-3). */}
+            <div
+              className="overflow-x-auto rounded-[var(--radius-md)] border border-line"
+              tabIndex={0}
+              role="region"
+              aria-labelledby="engagement"
+            >
               <table className="w-full min-w-[560px] text-left text-sm">
                 <thead className="bg-surface-2 text-fg-2">
                   <tr>

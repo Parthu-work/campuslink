@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { Outlet } from 'react-router';
+import { TabNav } from '../../components/ui/tab-nav';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,7 +20,6 @@ import { useMe } from '../../lib/me';
 import { useSession } from '../../lib/session';
 import { usePreferences, type MotionPref, type ThemePref } from '../../lib/preferences';
 import { applyApiError } from '../../lib/errors';
-import { cn } from '../../lib/cn';
 
 export function SettingsLayout() {
   const { t } = useTranslation();
@@ -33,26 +33,7 @@ export function SettingsLayout() {
   return (
     <>
       <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('settings.title')}</h1>
-      <nav
-        aria-label={t('settings.title')}
-        className="flex gap-1 overflow-x-auto rounded-full border border-line bg-surface-1 p-1"
-      >
-        {tabs.map(([to, label]) => (
-          <NavLink
-            key={to}
-            to={to}
-            end
-            className={({ isActive }) =>
-              cn(
-                'min-h-10 flex-none rounded-full px-4 py-2 text-sm font-semibold text-fg-2',
-                isActive && 'bg-brand text-on-brand',
-              )
-            }
-          >
-            {label}
-          </NavLink>
-        ))}
-      </nav>
+      <TabNav label={t('settings.title')} tabs={tabs} />
       <Outlet />
     </>
   );

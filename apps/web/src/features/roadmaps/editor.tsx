@@ -221,7 +221,9 @@ function NodeEditor({
             <Input
               id={f.id}
               aria-describedby={f.describedBy}
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               min={0}
               max={2000}
               value={node.estimateHours[0]}
@@ -234,7 +236,9 @@ function NodeEditor({
             <Input
               id={f.id}
               aria-describedby={f.describedBy}
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               min={0}
               max={2000}
               value={node.estimateHours[1]}

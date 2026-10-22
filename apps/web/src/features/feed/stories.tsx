@@ -61,11 +61,9 @@ function StoryViewer({
   const [g, setG] = useState(start);
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
   const group = groups[g];
   const story = group?.stories[i];
   const next = useCallback(() => {
-    setElapsed(0);
     if (!group) return;
     if (i + 1 < group.stories.length) setI(i + 1);
     else if (g + 1 < groups.length) {
@@ -74,25 +72,15 @@ function StoryViewer({
     } else onClose();
   }, [g, i, group, groups.length, onClose]);
   const prev = () => {
-    setElapsed(0);
     if (i > 0) setI(i - 1);
     else if (g > 0) {
       setG(g - 1);
       setI((groups[g - 1]?.stories.length ?? 1) - 1);
     }
   };
-  // Auto-advance (WCAG 2.2.2: pausable with the button, Space, or by holding the story).
-  useEffect(() => {
-    if (paused || !story) return;
-    const started = Date.now() - elapsed;
-    const id = setInterval(() => {
-      const e = Date.now() - started;
-      if (e >= STORY_MS) next();
-      else setElapsed(e);
-    }, 100);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- restart only when the story or pause state changes
-  }, [paused, story?.id, next]);
+  // Auto-advance runs on the compositor: the active segment's CSS animation lasts STORY_MS and its
+  // end moves on (audit MO-4). Pausing (button, Space, holding the story) pauses the animation, which
+  // keeps its place (WCAG 2.2.2).
   const remove = useMutation({
     mutationFn: (id: string) => api.delete(`/stories/${id}`),
     onSuccess: () => {
@@ -124,10 +112,22 @@ function StoryViewer({
             <div className="flex gap-1" aria-hidden>
               {group.stories.map((s, j) => (
                 <span key={s.id} className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/30">
-                  <span
-                    className="block h-full origin-left bg-white"
-                    style={{ transform: `scaleX(${j < i ? 1 : j > i ? 0 : elapsed / STORY_MS})` }}
-                  />
+                  {j === i ? (
+                    <span
+                      key={story.id}
+                      className="story-progress block h-full origin-left bg-white"
+                      style={{
+                        animationDuration: `${STORY_MS}ms`,
+                        animationPlayState: paused ? 'paused' : 'running',
+                      }}
+                      onAnimationEnd={next}
+                    />
+                  ) : (
+                    <span
+                      className="block h-full origin-left bg-white"
+                      style={{ transform: `scaleX(${j < i ? 1 : 0})` }}
+                    />
+                  )}
                 </span>
               ))}
             </div>

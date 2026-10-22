@@ -115,6 +115,3 @@ export function usePostActions(post: PostView) {
   });
   return { react, save, share, remove };
 }
-
-export const prefersReducedMotion = () =>
-  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;

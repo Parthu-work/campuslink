@@ -13,11 +13,14 @@
   --fg: #eef1fa;
   --fg-2: #a6afc8;
   --fg-3: #8189a5;
-  --glass: rgb(13 18 34 / 0.72);
+  --glass: rgb(13 18 34 / 0.93);
   --shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px rgb(0 0 0 / 0.35);
   --success: #3dd598;
   --warning: #f5b546;
   --danger: #ff6b81;
+  /* Danger as a fill (buttons): white text at 5.6:1. --danger stays the text colour (A11Y-1). */
+  --danger-fill: #c42747;
+  --on-danger: #ffffff;
   --scrim: rgb(4 6 14 / 0.6);
 
   --brand: #3fb8e6;
@@ -36,7 +39,7 @@
   --font-display:
     'Bricolage Grotesque Variable', 'Noto Sans Telugu Variable', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Figtree Variable', 'Noto Sans Telugu Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-mono: 'IBM Plex Mono', 'Noto Sans Telugu Variable', ui-monospace, monospace;
 
   --radius-sm: 10px;
   --radius-md: 16px;
@@ -62,11 +65,12 @@
     --fg: #0c1226;
     --fg-2: #444e69;
     --fg-3: #5b6480;
-    --glass: rgb(255 255 255 / 0.8);
+    --glass: rgb(255 255 255 / 0.93);
     --shadow: 0 1px 2px rgb(15 25 60 / 0.06), 0 10px 28px rgb(15 25 60 / 0.08);
     --success: #0a7350;
     --warning: #8a4f00;
     --danger: #ad1f3b;
+    --danger-fill: #ad1f3b;
     --scrim: rgb(12 18 38 / 0.45);
     --brand-ink: var(--brand-ink-light, #0a5f84);
     --accent-ink: var(--accent-ink-light, #7a5500);
@@ -83,11 +87,12 @@
   --fg: #0c1226;
   --fg-2: #444e69;
   --fg-3: #5b6480;
-  --glass: rgb(255 255 255 / 0.8);
+  --glass: rgb(255 255 255 / 0.93);
   --shadow: 0 1px 2px rgb(15 25 60 / 0.06), 0 10px 28px rgb(15 25 60 / 0.08);
   --success: #0a7350;
   --warning: #8a4f00;
   --danger: #ad1f3b;
+  --danger-fill: #ad1f3b;
   --scrim: rgb(12 18 38 / 0.45);
   --brand-ink: var(--brand-ink-light, #0a5f84);
   --accent-ink: var(--accent-ink-light, #7a5500);

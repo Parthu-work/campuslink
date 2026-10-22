@@ -11,7 +11,7 @@ export const buttonVariants = cva(
           'border-transparent bg-accent text-on-accent hover:bg-[color-mix(in_srgb,var(--accent)_88%,white)]',
         secondary: 'border-line-strong bg-surface-2 text-fg hover:bg-surface-3',
         ghost: 'border-transparent bg-transparent text-fg hover:bg-surface-2',
-        danger: 'border-transparent bg-danger text-white hover:opacity-90',
+        danger: 'border-transparent bg-danger-fill text-on-danger hover:opacity-90',
       },
       size: {
         sm: 'min-h-9 px-3.5 text-[13px]',

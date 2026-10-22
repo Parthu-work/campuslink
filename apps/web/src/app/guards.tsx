@@ -1,16 +1,18 @@
 import { useEffect, type ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router';
+import { Link, Navigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { CloudOff, Loader2, ShieldAlert } from 'lucide-react';
-import { safeReturnPath, type Permission } from '@campuslink/shared';
+import { BadgeCheck, CloudOff, Loader2, ShieldAlert } from 'lucide-react';
+import { ROLE_PERMISSIONS, safeReturnPath, type Permission } from '@campuslink/shared';
 import { useSession } from '../lib/session';
 import { refreshSession } from '../lib/api';
 import { useMe } from '../lib/me';
+import { useTenant } from '../lib/tenant-context';
 import { AuthLayout } from '../components/layout/auth-layout';
 import { MfaSetup } from '../features/auth/mfa-setup';
 import { EmptyState } from '../components/ui/misc';
 import { ShellSkeleton } from '../components/layout/skeletons';
 import { Button } from '../components/ui/button';
+import { buttonVariants } from '../components/ui/button-variants';
 import { useOnline } from '../lib/pwa';
 
 /** Boot only (college lookup, session): a calm blank canvas; the spinner fades in after 200 ms. */
@@ -98,8 +100,40 @@ export function RequirePermission({
 }) {
   const { data: me } = useMe();
   const { t } = useTranslation();
+  const tenant = useTenant();
   const wanted = Array.isArray(permission) ? permission : [permission];
-  if (!wanted.some((p) => me?.permissions.includes(p)))
-    return <EmptyState icon={<ShieldAlert className="size-6" />} title={t('errors.forbidden')} />;
-  return <>{children}</>;
+  if (wanted.some((p) => me?.permissions.includes(p))) return <>{children}</>;
+  // Unverified members get the reason and the way forward, not a dead end (audit IA-7).
+  // Only when verifying would actually open it (an unverified student is never sent to verify for
+  // the admin area).
+  const needsVerification =
+    !!me && !me.verified && wanted.some((p) => me.roles.some((r) => ROLE_PERMISSIONS[r].includes(p)));
+  return needsVerification ? (
+    <EmptyState
+      icon={<BadgeCheck className="size-6" />}
+      title={t('errors.verifyFirstTitle')}
+      action={
+        <Link to="/verify" className={buttonVariants({ variant: 'primary' })}>
+          {t('home.verifyCta')}
+        </Link>
+      }
+    >
+      {t('errors.verifyFirstBody')}
+    </EmptyState>
+  ) : (
+    <EmptyState
+      icon={<ShieldAlert className="size-6" />}
+      title={t('errors.forbidden')}
+      action={
+        <Link
+          to={tenant.kind === 'platform' ? '/platform' : '/home'}
+          className={buttonVariants({ variant: 'ghost' })}
+        >
+          {t('errors.goHome')}
+        </Link>
+      }
+    >
+      {t('errors.forbiddenBody')}
+    </EmptyState>
+  );
 }

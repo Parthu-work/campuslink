@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, CalendarCheck, Clock, PauseCircle, UserX } from 'lucide-react';
 import {
   isBookable,
@@ -23,6 +23,8 @@ import { SlotPicker } from '../../components/ui/slot-picker';
 import { SafetyMenu } from '../../components/layout/safety-menu';
 import { FormError } from '../../components/layout/auth-layout';
 import { api } from '../../lib/api';
+import { focusOnMount } from '../../lib/focus';
+import { findCached, hasId } from '../../lib/query-seed';
 import { applyApiError } from '../../lib/errors';
 import { formatDateTime, newIdempotencyKey } from '../../lib/format';
 
@@ -65,7 +67,9 @@ function RequestForm({ mentor }: { mentor: MentorCard }) {
     return (
       <Card className="grid justify-items-start gap-3 p-5" role="status">
         <CalendarCheck className="size-8 text-success" aria-hidden />
-        <h2 className="text-xl font-bold">{t('request.sentTitle')}</h2>
+        <h2 ref={focusOnMount} tabIndex={-1} className="text-xl font-bold outline-none">
+          {t('request.sentTitle')}
+        </h2>
         <p className="text-fg-2">
           {send.data.slotStart
             ? t('request.sentBodySlot', { name: mentor.name, time: formatDateTime(send.data.slotStart) })
@@ -98,7 +102,7 @@ function RequestForm({ mentor }: { mentor: MentorCard }) {
                 className="flex min-h-14 items-center justify-between gap-2 rounded-[var(--radius-md)] border border-line-strong px-4 text-left aria-checked:border-brand aria-checked:bg-[color-mix(in_srgb,var(--brand)_14%,transparent)]"
               >
                 <span className="font-semibold">{t(`session.type.${s.type}`)}</span>
-                <span className="flex items-center gap-1 text-xs text-fg-3">
+                <span className="flex items-center gap-1 text-xs text-fg-2">
                   <Clock className="size-3.5" aria-hidden />
                   {s.durationMin ? t('session.minutes', { n: s.durationMin }) : t('session.async')}
                 </span>
@@ -148,10 +152,20 @@ function RequestForm({ mentor }: { mentor: MentorCard }) {
 export function MentorPage() {
   const { userId = '' } = useParams();
   const { t } = useTranslation();
+  const qc = useQueryClient();
   const q = useQuery({
     queryKey: ['mentor', userId],
     queryFn: () => api.get<MentorCard & { timezone: string }>(`/mentors/${userId}`),
     enabled: /^[a-f0-9]{24}$/.test(userId),
+    // The tile the member tapped (Alumni Match or Browse) draws the header at once.
+    placeholderData: () => {
+      const tile = findCached(
+        qc,
+        [['match'], ['mentors']],
+        hasId<MentorCard>('userId', userId, ['sessionTypes', 'headline']),
+      );
+      return tile ? { ...tile, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone } : undefined;
+    },
     retry: false,
   });
   const back = (

@@ -202,6 +202,7 @@ export function JobsPage() {
           />
           <Input
             type="search"
+            enterKeyHint="search"
             value={params.get('q') ?? ''}
             onChange={(e) => set('q', e.target.value)}
             placeholder={t('jobs.search')}

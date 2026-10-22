@@ -128,7 +128,9 @@ function SettingsForm({ initial }: { initial: MentorSettingsView }) {
             <Input
               id={id}
               aria-describedby={describedBy}
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               min={1}
               max={30}
               value={s.weeklyCap}
@@ -281,7 +283,7 @@ function WindowRow({
         aria-label={t('mentor.from', { day: label })}
         value={w.start}
         onChange={(e) => onChange({ ...w, start: e.target.value })}
-        className="min-h-10 w-28"
+        className="min-h-11 min-w-0 flex-1 sm:w-28 sm:flex-none"
       >
         {TIMES.slice(0, -1).map((x) => (
           <option key={x}>{x}</option>
@@ -292,7 +294,7 @@ function WindowRow({
         aria-label={t('mentor.to', { day: label })}
         value={w.end}
         onChange={(e) => onChange({ ...w, end: e.target.value })}
-        className="min-h-10 w-28"
+        className="min-h-11 min-w-0 flex-1 sm:w-28 sm:flex-none"
       >
         {TIMES.slice(1).map((x) => (
           <option key={x} value={x}>
@@ -361,7 +363,7 @@ function AvailabilityEditor({ initial }: { initial: AvailabilityBody }) {
           return (
             <li
               key={d}
-              className="grid gap-2 rounded-[var(--radius-md)] border border-line p-3 sm:grid-cols-[140px_1fr]"
+              className="grid grid-cols-[minmax(0,1fr)] gap-2 rounded-[var(--radius-md)] border border-line p-3 sm:grid-cols-[140px_minmax(0,1fr)]"
             >
               <label className="flex min-h-10 cursor-pointer items-center gap-2 font-semibold">
                 <input

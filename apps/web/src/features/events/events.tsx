@@ -333,7 +333,9 @@ function EventForm({ existing }: { existing: EventView | null }) {
             <Input
               id={fl.id}
               aria-describedby={fl.describedBy}
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               min={1}
               value={f.capacity}
               onChange={(e) => set('capacity', e.target.value)}

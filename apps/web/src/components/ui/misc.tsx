@@ -29,15 +29,18 @@ const tones: Record<Tone, string> = {
   warning: 'bg-[color-mix(in_srgb,var(--warning)_16%,transparent)] text-warning',
   danger: 'bg-[color-mix(in_srgb,var(--danger)_14%,transparent)] text-danger',
 };
+/** Sans by default; `mono` only for records (batch years, roll numbers, scores) (audit TY-2). */
 export function Badge({
   tone = 'neutral',
+  mono = false,
   className,
   ...props
-}: HTMLAttributes<HTMLSpanElement> & { tone?: Tone }) {
+}: HTMLAttributes<HTMLSpanElement> & { tone?: Tone; mono?: boolean }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[11px] leading-relaxed font-medium',
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs leading-relaxed font-medium tabular-nums',
+        mono && 'font-mono',
         tones[tone],
         className,
       )}
@@ -48,7 +51,11 @@ export function Badge({
 
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('rounded-[var(--radius-md)] border border-line bg-surface-1', className)} {...props} />
+    // min-w-0: a card inside a grid or flex row never grows past its track (audit A11Y-4).
+    <div
+      className={cn('min-w-0 rounded-[var(--radius-md)] border border-line bg-surface-1', className)}
+      {...props}
+    />
   );
 }
 

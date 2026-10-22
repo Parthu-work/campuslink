@@ -6,16 +6,14 @@ import { Compass } from 'lucide-react';
 import { ADMIN_PERMISSIONS, type Permission } from '@campuslink/shared';
 import { useTenant } from '../lib/tenant-context';
 import { importWithRetry, setPendingTargetResolver } from '../lib/chunk-reload';
+import { registerPreloadRoutes } from '../lib/preload';
 import { AppShell } from '../components/layout/app-shell';
 import { RouteError } from '../components/layout/route-error';
 import { PageSkeleton } from '../components/layout/skeletons';
 import { buttonVariants } from '../components/ui/button-variants';
 import { EmptyState } from '../components/ui/misc';
-import { PublicOnly, RequireAuth, RequirePermission } from './guards';
+import { PublicOnly, RequireAuth, RequirePermission, Splash } from './guards';
 import { LandingPage } from '../features/landing/landing';
-import { SignInPage } from '../features/auth/sign-in';
-import { SignUpPage } from '../features/auth/sign-up';
-import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '../features/auth/email-links';
 
 /**
  * Route-level code splitting through React Router's `lazy`: the router loads a screen's code
@@ -23,6 +21,9 @@ import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '../featu
  * bar) instead of being replaced by a spinner. Only the public pages are on the first-load path.
  */
 const load = {
+  signIn: () => import('../features/auth/sign-in'),
+  signUp: () => import('../features/auth/sign-up'),
+  emailLinks: () => import('../features/auth/email-links'),
   home: () => import('../features/home/home'),
   settings: () => import('../features/settings/settings'),
   dataSettings: () => import('../features/settings/data-settings'),
@@ -98,7 +99,11 @@ function lazyScreen<M>(importer: () => Promise<M>, name: keyof M & string, gate?
 
 /** A lazily loaded screen, optionally behind a permission (UX only; the API enforces it). */
 function screen<M>(importer: () => Promise<M>, name: keyof M & string, gate: Gate | undefined, place: Place) {
-  const route = { errorElement: <RouteError />, lazy: lazyScreen(importer, name, gate) };
+  const route = {
+    errorElement: <RouteError />,
+    lazy: lazyScreen(importer, name, gate),
+    handle: { preload: importer },
+  };
   return ('index' in place ? { ...route, index: true } : { ...route, path: place.path }) as RouteObject;
 }
 
@@ -110,7 +115,40 @@ function layout<M>(
   path: string,
   children: RouteObject[],
 ): RouteObject {
-  return { path, errorElement: <RouteError />, lazy: lazyScreen(importer, name, gate), children };
+  return {
+    path,
+    errorElement: <RouteError />,
+    lazy: lazyScreen(importer, name, gate),
+    handle: { preload: importer },
+    children,
+  };
+}
+
+/** A public page; signed-in members are sent on (back to where sign-in was asked for, else home). */
+function publicScreen<M>(importer: () => Promise<M>, name: keyof M & string, path: string, home?: string) {
+  return {
+    path,
+    errorElement: <RouteError fullPage />,
+    handle: { preload: importer },
+    lazy: async () => {
+      let mod: M;
+      try {
+        mod = await importWithRetry(importer);
+      } catch (error) {
+        return { element: <RouteError fullPage error={error} /> };
+      }
+      const Page = mod[name] as unknown as ComponentType;
+      return {
+        element: home ? (
+          <PublicOnly home={home}>
+            <Page />
+          </PublicOnly>
+        ) : (
+          <Page />
+        ),
+      };
+    },
+  } satisfies RouteObject;
 }
 
 function NotFound() {
@@ -144,17 +182,10 @@ const settingsRoutes = layout(load.settings, 'SettingsLayout', undefined, 'setti
 ]);
 
 const auth = (home: string): RouteObject[] => [
-  {
-    path: '/sign-in',
-    element: (
-      <PublicOnly home={home}>
-        <SignInPage />
-      </PublicOnly>
-    ),
-  },
-  { path: '/forgot-password', element: <ForgotPasswordPage /> },
-  { path: '/reset-password', element: <ResetPasswordPage /> },
-  { path: '/verify-email', element: <VerifyEmailPage /> },
+  publicScreen(load.signIn, 'SignInPage', '/sign-in', home),
+  publicScreen(load.emailLinks, 'ForgotPasswordPage', '/forgot-password'),
+  publicScreen(load.emailLinks, 'ResetPasswordPage', '/reset-password'),
+  publicScreen(load.emailLinks, 'VerifyEmailPage', '/verify-email'),
 ];
 
 /**
@@ -180,6 +211,7 @@ function collegeRouter() {
   return createBrowserRouter([
     {
       errorElement: <RouteError fullPage />,
+      hydrateFallbackElement: <Splash />,
       children: [
         {
           path: '/',
@@ -189,14 +221,7 @@ function collegeRouter() {
             </PublicOnly>
           ),
         },
-        {
-          path: '/sign-up',
-          element: (
-            <PublicOnly home="/home">
-              <SignUpPage />
-            </PublicOnly>
-          ),
-        },
+        publicScreen(load.signUp, 'SignUpPage', '/sign-up', '/home'),
         ...auth('/home'),
         shell(false, [
           screen(load.home, 'HomePage', undefined, at('/home')),
@@ -263,6 +288,7 @@ function platformRouter() {
   return createBrowserRouter([
     {
       errorElement: <RouteError fullPage />,
+      hydrateFallbackElement: <Splash />,
       children: [
         { path: '/', element: <Navigate to="/platform" replace /> },
         ...auth('/platform'),
@@ -285,6 +311,7 @@ export function AppRouter() {
     tenant.kind === 'platform'
       ? (platformInstance ??= platformRouter())
       : (collegeInstance ??= collegeRouter());
+  registerPreloadRoutes(router.routes);
   setPendingTargetResolver(() => {
     const next = router.state.navigation.location;
     return next ? `${next.pathname}${next.search}${next.hash}` : null;

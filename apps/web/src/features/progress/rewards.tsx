@@ -104,7 +104,9 @@ export function RewardsPage() {
         <h2 id="my-requests" className="font-display text-lg font-semibold">
           {t('rewards.mine')}
         </h2>
-        {!mine.data?.length ? (
+        {mine.isLoading ? (
+          <Skeleton className="h-16" />
+        ) : !mine.data?.length ? (
           <p className="text-sm text-fg-2">{t('rewards.noneYet')}</p>
         ) : (
           <ul className="grid gap-2">
@@ -199,7 +201,9 @@ export function RewardsAdmin() {
             ['rejected', t('rewards.status.rejected')],
           ]}
         />
-        {!reds.data?.length ? (
+        {reds.isLoading ? (
+          <Skeleton className="h-16" />
+        ) : !reds.data?.length ? (
           <p className="text-sm text-fg-2">{t('rewards.admin.noRequests')}</p>
         ) : (
           <ul className="grid gap-2">
@@ -319,7 +323,9 @@ export function RewardsAdmin() {
               {(f) => (
                 <Input
                   id={f.id}
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min={1}
                   value={form.cost}
                   onChange={(e) => setForm({ ...form, cost: Number(e.target.value) })}
@@ -331,7 +337,9 @@ export function RewardsAdmin() {
                 <Input
                   id={f.id}
                   aria-describedby={f.describedBy}
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min={0}
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}

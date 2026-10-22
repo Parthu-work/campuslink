@@ -97,7 +97,9 @@ function QaQueue({ e }: { e: EventView }) {
           </Button>
         </form>
       )}
-      {!q.data?.length ? (
+      {q.isLoading ? (
+        <Skeleton className="h-16" />
+      ) : !q.data?.length ? (
         <p className="text-sm text-fg-2">{t('events.qa.empty')}</p>
       ) : (
         <ol className="grid gap-2" aria-live="polite">
@@ -177,7 +179,9 @@ function Attendees({ e }: { e: EventView }) {
       <h2 id="attendees" className="font-display text-lg font-semibold">
         {t('events.attendees')}
       </h2>
-      {!q.data?.length ? (
+      {q.isLoading ? (
+        <Skeleton className="h-16" />
+      ) : !q.data?.length ? (
         <p className="text-sm text-fg-2">{t('events.noAttendees')}</p>
       ) : (
         <ul className="grid gap-1.5">

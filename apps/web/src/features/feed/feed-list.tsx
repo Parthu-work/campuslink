@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useWindowVirtualizer } from '@tanstack/react-virtual';
+import { useWindowVirtualizer, type VirtualItem } from '@tanstack/react-virtual';
+import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import type { FeedEntry, PostView } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
@@ -26,6 +27,12 @@ export function PostSkeleton() {
 }
 
 type Row = FeedEntry;
+
+/**
+ * Measured row sizes per history entry and list, so Back renders the list at its real height at
+ * once and the saved scroll position lands on the same post (audit TR-3).
+ */
+const measured = new Map<string, VirtualItem[]>();
 
 /**
  * Infinite, virtualised list of feed entries (window scrolling, measured rows). Only rows near the
@@ -68,13 +75,25 @@ export function FeedList({
   useLayoutEffect(() => {
     setMargin(listRef.current ? listRef.current.getBoundingClientRect().top + window.scrollY : 0);
   }, [q.isSuccess]);
+  const location = useLocation();
+  const cacheKey = `${location.key}:${JSON.stringify(queryKey)}`;
   const v = useWindowVirtualizer({
     count: rows.length,
     estimateSize: () => 300,
     overscan: 4,
     gap: 12,
     scrollMargin: margin,
+    initialMeasurementsCache: measured.get(cacheKey) ?? [],
   });
+  // The virtualizer instance is stable, so its latest measurements are read when the list unmounts.
+  useEffect(
+    () => () => {
+      measured.set(cacheKey, v.measurementsCache);
+      // Bounded: a long session never grows this without limit.
+      if (measured.size > 30) measured.delete(measured.keys().next().value as string);
+    },
+    [cacheKey, v],
+  );
   const items = v.getVirtualItems();
   const last = items.at(-1);
   const { hasNextPage, isFetchingNextPage, fetchNextPage } = q;

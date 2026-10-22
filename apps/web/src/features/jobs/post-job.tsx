@@ -189,9 +189,10 @@ export function PostJobPage() {
                 {({ id }) => (
                   <Input
                     id={id}
-                    type="number"
-                    min={0}
+                    type="text"
                     inputMode="numeric"
+                    pattern="[0-9]*"
+                    min={0}
                     {...register('salary.min', { valueAsNumber: true })}
                   />
                 )}
@@ -200,9 +201,10 @@ export function PostJobPage() {
                 {({ id }) => (
                   <Input
                     id={id}
-                    type="number"
-                    min={0}
+                    type="text"
                     inputMode="numeric"
+                    pattern="[0-9]*"
+                    min={0}
                     {...register('salary.max', { valueAsNumber: true })}
                   />
                 )}

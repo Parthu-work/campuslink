@@ -63,6 +63,7 @@ export function ListAdmin() {
           />
           <Input
             type="search"
+            enterKeyHint="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t('admin.listSearch')}

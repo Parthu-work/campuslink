@@ -130,7 +130,8 @@ function ProfileForm({ initial }: { initial: Mine }) {
       <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('profile.title')}</h1>
       <Card className="flex flex-wrap items-center gap-4 p-5">
         <PersonAvatar name={p.name} fileId={p.avatarFileId} size={72} verified={p.verified} />
-        <div className="min-w-0 flex-1">
+        {/* A real basis, so on phones the button wraps below instead of crushing the name (TY-1). */}
+        <div className="min-w-0 flex-1 basis-48">
           <b className="block text-lg">{p.name}</b>
           {(p.fields.branch || p.fields.gradYear) && (
             <p className="text-sm text-fg-2">

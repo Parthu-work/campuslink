@@ -1,5 +1,6 @@
 import { useDeferredValue, useEffect, useState } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { Outlet } from 'react-router';
+import { TabNav } from '../../components/ui/tab-nav';
 import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -23,7 +24,6 @@ import { FormError } from '../../components/layout/auth-layout';
 import { api, apiRequest, ApiError } from '../../lib/api';
 import { useCan, useMe } from '../../lib/me';
 import { applyBranding, useTenant } from '../../lib/tenant-context';
-import { cn } from '../../lib/cn';
 
 export function AdminLayout() {
   const { t } = useTranslation();
@@ -57,28 +57,10 @@ export function AdminLayout() {
   return (
     <>
       <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('nav.admin')}</h1>
-      <nav
-        aria-label={t('nav.admin')}
-        className="flex gap-1 overflow-x-auto rounded-full border border-line bg-surface-1 p-1"
-      >
-        {tabs
-          .filter(([, , ok]) => ok)
-          .map(([to, label]) => (
-            <NavLink
-              key={to}
-              to={to}
-              end
-              className={({ isActive }) =>
-                cn(
-                  'min-h-10 flex-none rounded-full px-4 py-2 text-sm font-semibold text-fg-2',
-                  isActive && 'bg-brand text-on-brand',
-                )
-              }
-            >
-              {label}
-            </NavLink>
-          ))}
-      </nav>
+      <TabNav
+        label={t('nav.admin')}
+        tabs={tabs.filter(([, , ok]) => ok).map(([to, label]) => [to, label] as const)}
+      />
       <Outlet />
     </>
   );
@@ -154,6 +136,7 @@ export function UsersAdmin() {
             placeholder={t('admin.searchUsers')}
             className="pl-11"
             type="search"
+            enterKeyHint="search"
           />
         </label>
         <label className="w-full sm:w-52">

@@ -10,6 +10,7 @@ import { Textarea } from '../../components/ui/field';
 import { Card, EmptyState } from '../../components/ui/misc';
 import { RichText } from '../../components/ui/rich-text';
 import { api, ApiError } from '../../lib/api';
+import { findCached, hasId } from '../../lib/query-seed';
 import { useCan } from '../../lib/me';
 import { patchPost } from '../../lib/feed';
 import { AuthorLine, PostCard } from './post-card';
@@ -151,7 +152,18 @@ export function PostPage() {
   const { t } = useTranslation();
   const { postId = '' } = useParams();
   const canInteract = useCan('feed:interact');
-  const post = useQuery({ queryKey: ['post', postId], queryFn: () => api.get<PostView>(`/posts/${postId}`) });
+  const qc = useQueryClient();
+  const post = useQuery({
+    queryKey: ['post', postId],
+    queryFn: () => api.get<PostView>(`/posts/${postId}`),
+    // The feed card the member tapped draws the post at once; comments load alongside.
+    placeholderData: () =>
+      findCached(
+        qc,
+        [['feed'], ['saved'], ['reels']],
+        hasId<PostView>('id', postId, ['author', 'counts', 'status']),
+      ),
+  });
   const comments = useQuery({
     queryKey: ['comments', postId],
     queryFn: () => api.get<CommentView[]>(`/posts/${postId}/comments`),

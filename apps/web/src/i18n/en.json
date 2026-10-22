@@ -159,20 +159,13 @@
   "home": {
     "greeting": "Hi, {{name}}",
     "unverifiedTitle": "Your account is read-only for now",
-    "unverifiedBody": "Your college still needs to confirm you’re a student or alumnus. Roll-number verification arrives next; until then you can browse but not post or request mentoring.",
-    "phase": {
-      "people": "Alumni directory and roll-number verification",
-      "mentorship": "Mentor requests, booking, chat and video",
-      "jobs": "Job Radar and alumni referrals",
-      "galaxy": "Career Galaxy roadmaps"
-    },
+    "unverifiedBody": "Your college still needs to confirm you’re a student or alumnus. Verify with your roll number to post, ask and request mentoring; until then you can browse.",
     "verifyCta": "Verify now",
     "nextSession": "Next session",
     "noSession": "No sessions booked yet.",
     "findMentor": "Find a mentor from your college",
     "findMentorBody": "Alumni Match suggests people who fit your goals, and explains why.",
-    "rail": "Shortcuts and suggestions",
-    "comingSoon": "Coming next"
+    "rail": "Shortcuts and suggestions"
   },
   "settings": {
     "title": "Settings",
@@ -413,7 +406,10 @@
     "reload": "Reload",
     "goHome": "Go home",
     "reference": "Reference: {{id}}",
-    "offlineBootBody": "Your college’s app needs a connection to open. Reconnect and try again."
+    "offlineBootBody": "Your college’s app needs a connection to open. Reconnect and try again.",
+    "forbiddenBody": "This page is for other roles in your college. Everything you can use is in your menu.",
+    "verifyFirstTitle": "Verify your account to open this",
+    "verifyFirstBody": "Your college confirms students and alumni by roll number. It takes about a minute, and then mentors, messages and posting open up."
   },
   "verify": {
     "title": "Verify you’re from {{college}}",
@@ -458,7 +454,7 @@
     "emptyBody": "Try fewer filters, or search for a skill like “SQL”.",
     "batch": "Batch {{year}}",
     "verifiedCompany": "Work email verified at {{domain}}",
-    "contactPrivate": "Contact details are private. You’ll be able to send a mentorship request when mentorship opens.",
+    "contactPrivate": "Contact details are private. To reach them, send a mentorship request; once they accept, you can message them here.",
     "links": "Links",
     "skills": "Skills",
     "topics": "Guides on",
@@ -628,10 +624,10 @@
     "declineBody": "Pick a reply. A short personal note is optional.",
     "reply": "Reply",
     "decline": {
-      "not_my_area": "Thanks for reaching out, {{name}}! This isn’t my area, so another mentor will help you more.",
-      "fully_booked": "Thanks, {{name}}! I’m fully booked for now. Please try me again in a few weeks.",
-      "try_later": "Thanks, {{name}}! I can’t take this on right now. Do ask me again later.",
-      "suggest_other": "Thanks, {{name}}! Someone else on the mentor list may be a better fit for this."
+      "not_my_area": "Thanks for reaching out, {{name}}. This isn’t my area, so another mentor will help you more.",
+      "fully_booked": "Thanks, {{name}}. I’m fully booked for now. Please try me again in a few weeks.",
+      "try_later": "Thanks, {{name}}. I can’t take this on right now. Do ask me again later.",
+      "suggest_other": "Thanks, {{name}}. Someone else on the mentor list may be a better fit for this."
     },
     "addNote": "Personal note (optional)",
     "sendReply": "Send reply",

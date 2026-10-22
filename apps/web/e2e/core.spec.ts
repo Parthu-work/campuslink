@@ -68,6 +68,10 @@ test.describe('signed-in journeys', () => {
     await expect(page.getByText('Your account is read-only for now')).toBeVisible();
     await page.goto('/admin');
     await expect(page.getByText('You don’t have access to this page.')).toBeVisible();
+    // A page that verification unlocks says so and offers the way forward (audit IA-7).
+    await page.goto('/mentors');
+    await expect(page.getByRole('heading', { name: 'Verify your account to open this' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Verify now' })).toBeVisible();
   });
 
   test('a session on one college does not exist on another (host-only cookies)', async ({ page }) => {

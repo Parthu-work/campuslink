@@ -3,7 +3,8 @@ import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
+import { useReducedMotionPref } from '../../lib/preferences';
 import { Award, Download, Flame, Gift, Lock, Medal, Sparkles, Trophy, Users } from 'lucide-react';
 import { BADGES, type MyProgressView } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
@@ -71,7 +72,7 @@ function ImpactCardButton({ p }: { p: MyProgressView }) {
 export function ProgressPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionPref();
   const canMentor = useCan('mentorship:mentor');
   const q = useQuery({ queryKey: ['progress'], queryFn: () => api.get<MyProgressView>('/me/progress') });
   const prefs = useMutation({

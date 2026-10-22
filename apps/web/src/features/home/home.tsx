@@ -7,7 +7,6 @@ import {
   HeartHandshake,
   Lock,
   MessageCircleQuestion,
-  Orbit,
   Rss,
   Sparkles,
   UserPlus,
@@ -207,7 +206,6 @@ function RightRail() {
   const { t } = useTranslation();
   const canRequest = useCan('mentorship:request');
   const canMentor = useCan('mentorship:mentor');
-  const upcoming = [{ key: 'galaxy', icon: Orbit }] as const;
   return (
     <aside aria-label={t('home.rail')} className="grid content-start gap-3">
       {canRequest && (
@@ -235,17 +233,6 @@ function RightRail() {
         </Card>
       </Link>
       <Suggestions />
-      <Card className="grid gap-2 p-4">
-        <h2 className="text-sm font-semibold">{t('home.comingSoon')}</h2>
-        <ul className="grid gap-2">
-          {upcoming.map(({ key, icon: Icon }) => (
-            <li key={key} className="flex items-start gap-2.5 text-sm text-fg-2">
-              <Icon className="mt-0.5 size-4 flex-none text-accent-ink" aria-hidden />{' '}
-              {t(`home.phase.${key}`)}
-            </li>
-          ))}
-        </ul>
-      </Card>
     </aside>
   );
 }

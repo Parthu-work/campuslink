@@ -23,6 +23,8 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-danger-fill: var(--danger-fill);
+  --color-on-danger: var(--on-danger);
   --color-glass: var(--glass);
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
@@ -137,4 +139,30 @@
 :root[data-motion='reduce'] .nav-progress {
   animation: delayed-in 1ms linear 150ms both;
   transform: scaleX(0.6);
+}
+
+/* Story progress: a timer, not decoration, so it keeps its duration under reduced motion. */
+@keyframes story-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.story-progress {
+  animation-name: story-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+
+/* Horizontal rows fade at an edge that has more content beyond it (audit NB-4). */
+.edge-fade[data-fade='end'] {
+  mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+}
+.edge-fade[data-fade='start'] {
+  mask-image: linear-gradient(to left, #000 calc(100% - 32px), transparent);
+}
+.edge-fade[data-fade='both'] {
+  mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
 }

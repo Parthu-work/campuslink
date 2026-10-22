@@ -93,6 +93,7 @@ export function DirectoryPage() {
           />
           <Input
             type="search"
+            enterKeyHint="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t('people.search')}

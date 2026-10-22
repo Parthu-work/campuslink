@@ -2,7 +2,8 @@ import { useDeferredValue, useState, type KeyboardEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { motion, useMotionValue, useReducedMotion, useTransform, animate, type PanInfo } from 'motion/react';
+import { motion, useMotionValue, useTransform, animate, type PanInfo } from 'motion/react';
+import { useReducedMotionPref } from '../../lib/preferences';
 import { toast } from 'sonner';
 import { Compass, Heart, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { SESSION_TYPES, type MentorCard, type MentorMatch, type MatchReason } from '@campuslink/shared';
@@ -79,7 +80,7 @@ function MatchCard({
   onPick: () => void;
 }) {
   const { t } = useTranslation();
-  const reduce = useReducedMotion();
+  const reduce = useReducedMotionPref();
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-240, 240], [-10, 10]);
   const opacity = useTransform(x, [-260, 0, 260], [0.4, 1, 0.4]);
@@ -288,6 +289,7 @@ function BrowseView() {
           />
           <Input
             type="search"
+            enterKeyHint="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t('mentors.search')}

@@ -68,7 +68,9 @@ function Settings() {
             <Input
               id={id}
               aria-describedby={describedBy}
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               min={1}
               max={20}
               value={v.weeklyCap}

@@ -1,28 +1,47 @@
-import { NavLink } from 'react-router';
+import { useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router';
 import { cn } from '../../lib/cn';
+import { useEdgeFade } from '../../lib/use-edge-fade';
+import { prefersReducedMotion } from '../../lib/preferences';
 
-/** Route tabs (pill bar). */
+/**
+ * Route tabs (pill bar). The row scrolls with momentum and snap, fades at an edge with more tabs
+ * beyond it, and keeps the active tab in view (audit DS-4, NB-4).
+ */
 export function TabNav({ label, tabs }: { label: string; tabs: readonly (readonly [string, string])[] }) {
+  const { ref, fade } = useEdgeFade<HTMLDivElement>();
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const active = ref.current?.querySelector<HTMLElement>('[aria-current="page"]');
+    active?.scrollIntoView({
+      inline: 'center',
+      block: 'nearest',
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+    });
+  }, [pathname, ref]);
   return (
-    <nav
-      aria-label={label}
-      className="flex gap-1 overflow-x-auto rounded-full border border-line bg-surface-1 p-1"
-    >
-      {tabs.map(([to, text]) => (
-        <NavLink
-          key={to}
-          to={to}
-          end
-          className={({ isActive }) =>
-            cn(
-              'min-h-10 flex-none rounded-full px-4 py-2 text-sm font-semibold text-fg-2',
-              isActive && 'bg-brand text-on-brand',
-            )
-          }
-        >
-          {text}
-        </NavLink>
-      ))}
+    <nav aria-label={label} className="rounded-full border border-line bg-surface-1 p-1">
+      <div
+        ref={ref}
+        data-fade={fade}
+        className="edge-fade flex snap-x gap-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {tabs.map(([to, text]) => (
+          <NavLink
+            key={to}
+            to={to}
+            end
+            className={({ isActive }) =>
+              cn(
+                'flex min-h-11 flex-none snap-start items-center rounded-full px-4 text-sm font-semibold text-fg-2 hover:text-fg',
+                isActive && 'bg-brand text-on-brand hover:text-on-brand',
+              )
+            }
+          >
+            {text}
+          </NavLink>
+        ))}
+      </div>
     </nav>
   );
 }

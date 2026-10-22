@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react';
+import { useEffect, useMemo, type MouseEvent } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,6 +9,8 @@ import { useTenant } from '../../lib/tenant-context';
 import { useMe } from '../../lib/me';
 import { useSignOut } from '../../lib/use-sign-out';
 import { useRouteFocus } from '../../lib/route-focus';
+import { useScrollMemory } from '../../lib/scroll-memory';
+import { intentPreload, preloadWhenIdle } from '../../lib/preload';
 import { cn } from '../../lib/cn';
 import { formatDay } from '../../lib/format';
 import { paletteShortcut, useNav, type NavEntry } from '../../lib/nav';
@@ -75,6 +77,10 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
   const location = useLocation();
   const reselect = useReselect();
   useRouteFocus(location.pathname);
+  const tabRoots = useMemo(() => new Set(nav.tabs.map((i) => i.to)), [nav.tabs]);
+  useScrollMemory(tabRoots);
+  // Every tab's code is ready before the first tap (audit TR-1, TR-2).
+  useEffect(() => preloadWhenIdle([...tabRoots]), [tabRoots]);
 
   const tabs = nav.tabs.filter((i) => i.id !== 'create');
   const canCreate = nav.create.length > 0;
@@ -86,6 +92,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       end={i.to === '/platform'}
       title={i.label}
       onClick={reselect(i.to)}
+      {...intentPreload(i.to)}
       className="group relative grid min-h-11 grid-cols-[24px] place-content-center items-center gap-3 rounded-[var(--radius-sm)] px-3 text-sm font-semibold text-fg-3 hover:bg-surface-2 hover:text-fg aria-[current=page]:bg-surface-2 aria-[current=page]:text-fg xl:grid-cols-[24px_1fr] xl:place-content-stretch"
     >
       <span className="relative">
@@ -114,6 +121,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       to={i.to}
       end={i.to === '/platform'}
       onClick={reselect(i.to)}
+      {...intentPreload(i.to)}
       className="group relative grid min-h-[52px] justify-items-center gap-0.5 rounded-[var(--radius-sm)] px-0.5 py-1.5 text-xs font-semibold text-fg-3 hover:text-fg aria-[current=page]:text-fg"
     >
       <span

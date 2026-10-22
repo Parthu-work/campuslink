@@ -39,7 +39,13 @@ export default tseslint.config(
   {
     // Service-worker scripts run in the worker global scope.
     files: ['apps/web/public/**/*.js'],
+    ignores: ['apps/web/public/boot.js'],
     languageOptions: { globals: { ...globals.serviceworker } },
+  },
+  {
+    // The pre-paint boot script runs in the page.
+    files: ['apps/web/public/boot.js'],
+    languageOptions: { globals: { ...globals.browser } },
   },
   {
     // Tenancy guard rails (ADR 0002): raw driver access bypasses the tenant plugin.

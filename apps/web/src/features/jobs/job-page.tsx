@@ -26,6 +26,7 @@ import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, ApiError } from '../../lib/api';
+import { findCached, hasId } from '../../lib/query-seed';
 import { useCan } from '../../lib/me';
 import { formatDateTime, newIdempotencyKey } from '../../lib/format';
 import { formatSalary, useTrack } from '../../lib/jobs';
@@ -257,7 +258,15 @@ export function JobPage() {
   const { jobId = '' } = useParams();
   const qc = useQueryClient();
   const canSave = useCan('jobs:save');
-  const q = useQuery({ queryKey: ['job', jobId], queryFn: () => api.get<JobDetail>(`/jobs/${jobId}`) });
+  const q = useQuery({
+    queryKey: ['job', jobId],
+    queryFn: () => api.get<JobDetail>(`/jobs/${jobId}`),
+    // Draw the card the member tapped at once; the full record replaces it when it arrives.
+    placeholderData: () => {
+      const row = findCached(qc, [['jobs']], hasId<JobView>('id', jobId, ['company', 'applyUrl', 'status']));
+      return row ? { ...row, removal: null } : undefined;
+    },
+  });
   const track = useTrack({ id: jobId });
   const close = useMutation({
     mutationFn: () => api.post(`/jobs/${jobId}/close`, {}),
@@ -285,9 +294,9 @@ export function JobPage() {
         </EmptyState>
       )}
       {j && (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="grid min-w-0 content-start gap-4">
-            <Card className="grid gap-3 p-5">
+            <Card className="grid grid-cols-[minmax(0,1fr)] gap-3 p-5">
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
                   <h1 className="text-[clamp(22px,3.4vw,30px)] leading-tight font-bold">{j.title}</h1>
@@ -355,7 +364,7 @@ export function JobPage() {
                 </div>
               )}
             </Card>
-            <Card className="grid gap-3 p-5">
+            <Card className="grid grid-cols-[minmax(0,1fr)] gap-3 p-5">
               <h2 className="font-semibold">{t('jobs.aboutRole')}</h2>
               <RichText text={j.description || t('jobs.noDescription')} />
               {j.skills.length > 0 && (

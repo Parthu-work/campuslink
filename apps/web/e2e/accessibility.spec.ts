@@ -89,6 +89,24 @@ test('content reflows at 320 CSS px without horizontal scrolling', async ({ brow
     const wide = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     if (wide) overflowing.push(path);
   }
+  // Job detail overflowed before the revamp (audit A11Y-4).
+  await page.goto(`${BASE}/jobs`);
+  await page.locator('a[href^="/jobs/"]:not([href="/jobs/tracker"]):not([href="/jobs/new"])').first().click();
+  await page.waitForURL(/\/jobs\/[a-f0-9]{24}$/);
+  await page.waitForLoadState('networkidle');
+  if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1))
+    overflowing.push('/jobs/:id');
   expect(overflowing).toEqual([]);
   await ctx.close();
+
+  // So did the alumni Mentoring dashboard.
+  const alumni = await browser.newContext({ viewport: { width: 320, height: 640 } });
+  const mentorPage = await alumni.newPage();
+  await signIn(mentorPage, 'rahul@dpit.example');
+  await mentorPage.goto(`${BASE}/mentor`);
+  await mentorPage.waitForLoadState('networkidle');
+  expect(await mentorPage.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)).toBe(
+    false,
+  );
+  await alumni.close();
 });

@@ -81,6 +81,7 @@ export function CommandPalette() {
           <D.Title className="sr-only">{t('palette.label')}</D.Title>
           <Command label={t('palette.label')} shouldFilter={false} loop>
             <Command.Input
+              enterKeyHint="search"
               value={q}
               onValueChange={setQ}
               placeholder={t('palette.placeholder')}

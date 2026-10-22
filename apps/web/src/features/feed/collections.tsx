@@ -10,7 +10,7 @@ import { Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, apiRequest } from '../../lib/api';
-import { prefersReducedMotion } from '../../lib/feed';
+import { prefersReducedMotion } from '../../lib/preferences';
 import { AuthorLine, ReelVideo } from './post-card';
 import { FeedList } from './feed-list';
 

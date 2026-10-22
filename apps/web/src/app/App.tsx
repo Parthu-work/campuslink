@@ -79,6 +79,8 @@ export function App() {
       <BotCheckHost />
       <Toaster
         position="bottom-center"
+        // Above the phone tab bar, never on top of it (NB-5).
+        mobileOffset={{ bottom: 'calc(84px + env(safe-area-inset-bottom, 0px))' }}
         toastOptions={{ className: '!rounded-[var(--radius-md)] !bg-fg !text-bg !border-0 !font-semibold' }}
       />
     </QueryClientProvider>
