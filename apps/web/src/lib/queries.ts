@@ -24,6 +24,10 @@ import type {
   AiStatusView,
   SubjectView,
   SyllabusView,
+  MaterialDetailView,
+  MaterialView,
+  SignedFileView,
+  StudySearchHit,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -268,4 +272,48 @@ export const aiSettings = () =>
   queryOptions({
     queryKey: ['ai-settings'],
     queryFn: ({ signal }) => api.get<AiSettingsView>('/admin/ai', signal),
+  });
+
+export interface MaterialFilter {
+  category?: string;
+  unitId?: string;
+  topicId?: string;
+  status?: 'published' | 'in_review' | 'all';
+}
+export const materials = (subjectId: string, f: MaterialFilter = {}) => {
+  const qs = new URLSearchParams(Object.entries(f).filter(([, v]) => !!v) as [string, string][]).toString();
+  return queryOptions({
+    queryKey: ['materials', subjectId, f],
+    queryFn: ({ signal }) =>
+      api.get<MaterialView[]>(`/study/subjects/${subjectId}/materials${qs ? `?${qs}` : ''}`, signal),
+    enabled: /^[a-f0-9]{24}$/.test(subjectId),
+  });
+};
+
+export const material = (id: string) =>
+  queryOptions({
+    queryKey: ['material', id],
+    queryFn: ({ signal }) => api.get<MaterialDetailView>(`/study/materials/${id}`, signal),
+    enabled: /^[a-f0-9]{24}$/.test(id),
+    retry: false,
+  });
+
+/** A signed link to a material's file; refreshed before its five minutes run out. */
+export const materialFile = (id: string) =>
+  queryOptions({
+    queryKey: ['material-file', id],
+    queryFn: ({ signal }) => api.get<SignedFileView>(`/study/materials/${id}/file`, signal),
+    staleTime: 4 * 60_000,
+    gcTime: 4 * 60_000,
+  });
+
+export const studySearch = (q: string, subjectId?: string) =>
+  queryOptions({
+    queryKey: ['study-search', q, subjectId ?? ''],
+    queryFn: ({ signal }) =>
+      api.get<StudySearchHit[]>(
+        `/study/search?q=${encodeURIComponent(q)}${subjectId ? `&subjectId=${subjectId}` : ''}`,
+        signal,
+      ),
+    enabled: q.trim().length >= 2,
   });

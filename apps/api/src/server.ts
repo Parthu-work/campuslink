@@ -50,7 +50,11 @@ async function main() {
   });
 
   const fileStore = storageFromEnv(env);
-  const clamd = env.MALWARE_SCANNER === 'clamav' ? new ClamdScanner({ address: env.CLAMAV_ADDRESS }) : null;
+  // Three minutes: a 200 MB study video is streamed to clamd and scanned before it is stored.
+  const clamd =
+    env.MALWARE_SCANNER === 'clamav'
+      ? new ClamdScanner({ address: env.CLAMAV_ADDRESS, timeoutMs: 180_000 })
+      : null;
   const readiness = {
     mongo: async () => mongoose.connection.readyState === 1,
     redis: async () => (await redis.ping()) === 'PONG',

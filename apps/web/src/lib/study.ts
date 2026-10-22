@@ -1,5 +1,54 @@
-import type { SyllabusInput, SyllabusView } from '@campuslink/shared';
+import type { SyllabusInput, SyllabusView, SyllabusTopicView } from '@campuslink/shared';
 import { accentOf } from './accent';
+
+/** 65 → "1:05", 3723 → "1:02:03". */
+export function formatDuration(sec: number): string {
+  const s = Math.max(0, Math.round(sec));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const r = String(s % 60).padStart(2, '0');
+  return h ? `${h}:${String(m).padStart(2, '0')}:${r}` : `${m}:${r}`;
+}
+
+/** "1:05 Pumping lemma" lines → chapters (lines that do not start with a time are ignored). */
+export function parseChapters(text: string): { at: number; title: string }[] {
+  const out: { at: number; title: string }[] = [];
+  for (const line of text.split('\n')) {
+    const m = /^\s*(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\s+(.+?)\s*$/.exec(line);
+    if (!m) continue;
+    out.push({
+      at: Number(m[1] ?? 0) * 3600 + Number(m[2]) * 60 + Number(m[3]),
+      title: (m[4] ?? '').slice(0, 120),
+    });
+  }
+  return out.sort((a, b) => a.at - b.at).slice(0, 100);
+}
+
+/** Topics whose title words or keywords appear in a file name: the upload form's suggestion. */
+export function suggestTopics(name: string, topics: (SyllabusTopicView & { unitId: string })[]): string[] {
+  const words = new Set(
+    name
+      .toLowerCase()
+      .replace(/\.[a-z0-9]+$/, '')
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter((w) => w.length > 2),
+  );
+  return topics
+    .map((t) => {
+      const tw = t.title
+        .toLowerCase()
+        .split(/[^\p{L}\p{N}]+/u)
+        .filter((w) => w.length > 2);
+      const hits =
+        tw.filter((w) => words.has(w)).length +
+        t.keywords.filter((k) => words.has(k.toLowerCase())).length * 2;
+      return { id: t.id, score: tw.length ? hits / tw.length : hits };
+    })
+    .filter((x) => x.score >= 0.5)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((x) => x.id);
+}
 
 /** A subject's own colour (one of the eight generated subject accents), from its code. */
 export function subjectAccent(code: string) {

@@ -1,6 +1,6 @@
 # AI study assistant
 
-The subject library and the study chatbot (spec: `docs/specs/ai-study-assistant.md`). This document grows with each delivery step; it currently covers **step 1**: subjects and syllabus, who takes a subject, the settings page, encrypted key storage and the provider adapters.
+The subject library and the study chatbot (spec: `docs/specs/ai-study-assistant.md`). This document grows with each delivery step; it currently covers **steps 1 and 2**: subjects and syllabus, who takes a subject, the settings page, encrypted key storage and the provider adapters, then material upload, the processing pipeline, the viewers and keyword search.
 
 ## What it is, in one paragraph
 
@@ -24,6 +24,13 @@ To stop everything at once, turn on **Stop all AI now** (the kill switch): no re
 | `AI_DEFAULT_PROVIDER`, `AI_DEFAULT_API_KEY`, `AI_DEFAULT_CHAT_MODEL`, `AI_DEFAULT_BASE_URL`                                    | An optional default for colleges that have not chosen a provider. A college's own choice overrides it. The key is the platform owner's and is never shown to colleges.                                                                          |
 | `AI_DEFAULT_EMBEDDING_PROVIDER`, `AI_DEFAULT_EMBEDDING_API_KEY`, `AI_DEFAULT_EMBEDDING_MODEL`, `AI_DEFAULT_EMBEDDING_BASE_URL` | The same for embeddings.                                                                                                                                                                                                                        |
 | `AI_PRIVATE_ENDPOINTS`                                                                                                         | Origins such as `http://ollama:11434` that colleges may use although they are private or plain http (a local Ollama or LM Studio). College admins can only enter public `https` addresses; every call still goes through the SSRF-safe fetcher. |
+
+| Variable        | Purpose                                                                                                                                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `OCR_PROVIDER`  | `auto` (default) reads scanned pages with Tesseract when it is installed (the production API image has it, with the Telugu pack); `tesseract` requires it; `none` turns OCR off. Colleges can also switch OCR off. |
+| `OCR_LANGUAGES` | Tesseract languages, such as `eng+tel` (install the Telugu language pack first).                                                                                                                                   |
+| `MEDIA_TOOLS`   | `auto` (default) uses `ffmpeg`, `ffprobe` and `pdftoppm` when installed: video length, a poster frame, the audio for transcription and page images for OCR. `none` turns them off.                                 |
+| `WHISPER_URL`   | A local Whisper service (the optional `whisper` Docker profile) for video and audio transcripts; nothing leaves the server. Without it, a college that uses OpenAI (with consent) can use it.                      |
 
 A college still accepts the data notice and turns the chatbot on itself when it uses the platform default.
 
@@ -50,6 +57,30 @@ flowchart LR
 - **Providers** implement `LLMProvider` (`generate`, `listModels`) and `EmbeddingProvider` (`embed`, `listModels`) in `apps/api/src/modules/study/ai/`. Each is one file and calls the provider's HTTP API through `safeFetch` (the repository rule for every server-side fetch), so redirects, private addresses, size and time are controlled in one place. Errors become a `ProviderError` with a short message from which the key, and anything key-shaped, is removed.
 - **Anthropic** requests use API version `2026-10-21` (no sampling parameters: temperature is never sent), keep only the text blocks of the answer, report refusals, and on Claude 4.6 and later ask for `low` effort with room for thinking within the answer cap.
 - **The mock provider** needs no key and makes no calls: deterministic embeddings (hashed words) and extractive answers with `[n]` citations from the supplied passages. It deliberately obeys an instruction that reaches it outside the delimited passages, so the injection tests can prove the prompt builder never lets material escape its delimiters.
+
+## Material and processing (step 2)
+
+```mermaid
+flowchart LR
+  U[Upload sheet] -->|multipart, progress| R[materials.routes.ts]
+  R --> F[FilesService: sniff, size cap, clean, ClamAV fail-closed]
+  F --> ST[(storage: local disk or S3)]
+  R --> MS[MaterialsService] --> Q[JobQueue study.process]
+  Q --> P[MaterialPipeline]
+  P --> X[extract: pdf.js, Office XML, notes, captions]
+  P --> O[OCR: Tesseract] & T[transcribe: Whisper or OpenAI]
+  P --> C[clean, neutralise, chunk, tag topics]
+  C --> DB[(materialPages, contentChunks, videoSegments)]
+  P -->|study:material| WS[uploader's socket room]
+```
+
+- **What can be uploaded:** PDF (50 MB), Word and PowerPoint (`.docx`, `.pptx`, 50 MB), images, notes (`.md`, `.txt`), video and audio files (200 MB), YouTube and Vimeo links, and captions (`.vtt`, `.srt`, 2 MB) for any video. Files are sniffed by content, not by name; PDFs are re-saved, images re-encoded, video metadata stripped, and every file is scanned by ClamAV before it is stored (the upload fails if the scanner is down). Archives and executables are refused.
+- **Who uploads:** faculty and admins publish at once; alumni contributors and (when the subject allows it) students go to the subject owners' review queue. Every uploader confirms they have the right to share the file; the attestation is stored with a timestamp. Owners and admins can take material down with a reason the uploader sees.
+- **Processing** runs as one background job per material version (three attempts with exponential back-off, then marked failed with a reason). The stages are scanning, extracting, OCR, transcribing, chunking, embedding and indexed. The uploader watches the stages live and gets a notification when the material is ready or has failed. Anything that could not be done says what to do: "scanned pages need OCR, which is not set up", "upload captions so students can jump to topics".
+- **Passages:** page headers, footers and page numbers are removed, hyphenated line ends rejoined, and instruction-like lines ("ignore previous instructions", "you are now…") replaced with a marker before the text is split into passages of about 500 tokens (never more than 800) at headings, with a small overlap inside a section. Each passage keeps its page or time range and is tagged with the syllabus topics it mentions. Video transcripts are split by time, chapters first.
+- **Files are served through signed links** that last five minutes and re-check access on every request (owner decision Q9). The PDF viewer, the media player and downloads all use them; a link that lapses mid-video is re-signed and the video resumes where it was.
+- **Video links** are shown behind a click-to-load facade: nothing is requested from YouTube or Vimeo until the student presses play, and then only through the privacy-enhanced embeds (`youtube-nocookie.com`, Vimeo with `dnt=1`), the only two frame origins added to the CSP. Their title and length come from oEmbed through `safeFetch`.
+- **Keyword search** looks in the passages of published material in the subjects the member reads, through the passages' text index (`$text` via `db/search.ts`). A result opens the PDF at its page or the video at its moment, with the words highlighted.
 
 ### Adding a provider
 

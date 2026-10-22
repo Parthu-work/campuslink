@@ -14,6 +14,7 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     roadmap: d.roadmap ?? '',
     reward: d.reward ?? '',
     event: d.event ?? '',
+    title: d.title ?? '',
     badge: d.badge ? t(`progress.badge.${d.badge}.name`) : '',
     decision: d.decision ? t(`notify.decision.${d.decision}`) : '',
     type: d.sessionType ? t(`session.type.${d.sessionType}`) : '',
@@ -78,6 +79,12 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
           : d.questionId
             ? `/questions/${d.questionId}`
             : '/notifications';
+      case 'material_ready':
+      case 'material_failed':
+      case 'material_reviewed':
+        return d.subjectId && d.materialId ? `/study/${d.subjectId}/m/${d.materialId}` : '/study';
+      case 'material_review':
+        return d.subjectId ? `/study/${d.subjectId}?review=1` : '/study';
       default:
         return '/sessions';
     }

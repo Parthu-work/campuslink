@@ -107,6 +107,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/platform/tenants` | `platform:tenants` | platform | adminWrite | Create a college and invite its first administrator |
 | `PATCH /api/v1/platform/tenants/:id` | `platform:tenants` | platform | adminWrite | Suspend or resume a college; update subscription |
 | `GET /api/v1/platform/health` | `platform:health` | platform | — | Platform health and aggregate counts |
+| `GET /api/v1/files/:id/signed` | any signed-in user | college | — | A five-minute link to a file you may see (for players and viewers that cannot send headers) |
+| `GET /api/v1/files/s/:token` | public | college | — | Read a file through a signed link (access is checked again on every request; supports ranges) |
 | `GET /api/v1/files/:id` | any signed-in user | college | — | Download a file you are allowed to see (avatars, your own or reviewable ID cards, chat attachments) |
 | `POST /api/v1/admin/imports/preview/upload` | `imports:manage` | college | adminWrite | Upload a CSV or XLSX and get headers, sample rows and a suggested column mapping |
 | `POST /api/v1/admin/imports/preview/remote` | `imports:manage` | college | adminWrite | Preview a Google Sheet (shared link) or a REST/JSON source |
@@ -325,6 +327,19 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `DELETE /api/v1/admin/ai/keys/:target` | `ai:settings` | college | adminWrite | Remove a stored API key |
 | `POST /api/v1/admin/ai/test` | `ai:settings` | college | aiTest | Test connection: one tiny request with the stored key; lists the models it can use |
 | `POST /api/v1/admin/ai/consent` | `ai:settings` | college | adminWrite | Accept the data-processing notice (versioned and audit-logged) |
+| `GET /api/v1/study/subjects/:id/materials` | `study:read` | college | — | Material of a subject (published; your own uploads; managers can list review and drafts) |
+| `POST /api/v1/study/materials` | `study:read` | college | studyUpload | Upload a file (sniffed, scanned and sanitised; rights attestation required); processing starts |
+| `POST /api/v1/study/materials/link` | `study:read` | college | studyUpload | Add a YouTube or Vimeo link (official oEmbed metadata; never downloaded) |
+| `GET /api/v1/study/materials/:id` | `study:read` | college | — | One material with its chapters, transcript and page text |
+| `GET /api/v1/study/materials/:id/file` | `study:read` | college | — | A five-minute signed link to the file (for the viewer and player) |
+| `PATCH /api/v1/study/materials/:id` | `study:read` | college | — | Edit title, description, tags, language or chapters (uploader or managers) |
+| `DELETE /api/v1/study/materials/:id` | `study:read` | college | — | Delete a material everywhere: file, pages, chunks, vectors and transcript |
+| `POST /api/v1/study/materials/:id/versions` | `study:read` | college | studyUpload | Upload a new version (same kind of file); the material is re-indexed |
+| `POST /api/v1/study/materials/:id/transcript` | `study:read` | college | studyUpload | Add captions (WebVTT or SRT) to a video or audio; they become its transcript |
+| `POST /api/v1/study/materials/:id/reprocess` | `study:read` | college | studyUpload | Run processing again (after a failure, or a new OCR or transcription set-up) |
+| `POST /api/v1/study/materials/:id/review` | `study:manage` | college | — | Publish or send back a contribution (subject owners and admins) |
+| `POST /api/v1/study/materials/:id/takedown` | `study:manage` | college | — | Take material down (copyright or policy); hidden from everyone and audit-logged |
+| `GET /api/v1/study/search` | `study:read` | college | search | Keyword search over the material of subjects I take (works without any AI provider) |
 | `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
 | `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |
 | `GET /api/v1/admin/moderation/history/:targetType/:targetId` | `moderation:act` | college | — | Moderation history of one item |

@@ -9,12 +9,16 @@ export const FILE_PURPOSES = [
   'post_media',
   'story_media',
   'referral_resume',
+  'study_material',
+  'study_thumbnail',
+  'study_transcript',
 ] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 
 const fileSchema = new Schema(
   {
-    ownerId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
+    /** null for shared study material whose uploader's account was erased (it stays with the college). */
+    ownerId: { type: Schema.Types.ObjectId, default: null, ref: 'User' },
     purpose: { type: String, enum: FILE_PURPOSES, required: true },
     mime: { type: String, required: true },
     size: { type: Number, required: true },

@@ -99,7 +99,13 @@ services:
     image: clamav/clamav:1.5.4
     environment:
       CLAMAV_NO_FRESHCLAMD: 'true'
-      CLAMD_CONF_StreamMaxLength: 30M
+      # Above the largest upload (200 MB study videos). Files over a limit are reported, not
+      # skipped (AlertExceedsMax), so the API refuses them: scanning stays fail-closed.
+      CLAMD_CONF_StreamMaxLength: 210M
+      CLAMD_CONF_MaxFileSize: 210M
+      CLAMD_CONF_MaxScanSize: 420M
+      CLAMD_CONF_MaxScanTime: 170000
+      CLAMD_CONF_AlertExceedsMax: 'yes'
     healthcheck:
       test: ['CMD-SHELL', 'clamdscan --ping 1']
       interval: 10s

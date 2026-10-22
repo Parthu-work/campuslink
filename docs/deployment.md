@@ -85,12 +85,14 @@ Indexes are created on boot (`syncIndexes()`), and every compound index leads wi
   - Grant the API's task role only `s3:GetObject`, `s3:PutObject` and `s3:DeleteObject` on `arn:aws:s3:::<bucket>/files/*`, `s3:ListBucket` for the readiness check, and `kms:GenerateDataKey` and `kms:Decrypt` on the key.
   - In production the API refuses `S3_SSE=none`. `/api/v1/ready` includes the bucket.
 - **Antivirus:** ClamAV `clamd` runs as a sidecar container in each API task (`clamav/clamav:1.5.4`).
-  - Set `CLAMD_CONF_StreamMaxLength=30M`, above the largest upload (25 MB reels).
+  - Set `CLAMD_CONF_StreamMaxLength=210M` and `CLAMD_CONF_MaxFileSize=210M`, above the largest upload (200 MB study videos), `CLAMD_CONF_MaxScanSize=420M`, `CLAMD_CONF_MaxScanTime=170000` (under the API's three-minute scan timeout), and `CLAMD_CONF_AlertExceedsMax=yes` so a file over a limit is reported (and refused) instead of passing unscanned.
+  - Request bodies: the ALB has no body limit; with nginx in front (`deploy/nginx/campuslink.conf`) the general bound is 30 MB and only the study upload routes allow 210 MB (`/api/v1/study/materials` and `…/versions`).
   - Let `freshclam` update signatures; leave `CLAMAV_NO_FRESHCLAMD` unset.
   - The API uses `MALWARE_SCANNER=clamav` and `CLAMAV_ADDRESS=127.0.0.1:3310` (`apps/api/src/lib/clamav.ts`, INSTREAM protocol).
   - Scanning fails closed: if `clamd` is down, uploads answer 503 and nothing is stored. `/api/v1/ready` includes the scanner, so the ALB stops routing to a task whose scanner is down.
   - The API refuses to start in production without a scanner.
   - Give the sidecar about 1.5 GB of memory for the signature database.
+- **Study material processing** (`docs/ai-assistant.md`): the API image includes `ffmpeg`, `poppler-utils` and Tesseract with English and Telugu (`--build-arg WITH_MEDIA_TOOLS=false` leaves them out; PDFs, documents and uploaded captions still work). Set `OCR_LANGUAGES=eng+tel` to read Telugu scans. For transcripts without a provider key, run a Whisper service (the `whisper` profile in `docker-compose.yml` shows one) and set `WHISPER_URL`.
 
 ## Configuration and secrets
 

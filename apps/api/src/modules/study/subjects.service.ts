@@ -55,6 +55,8 @@ export interface SubjectsDeps {
 export class SubjectsService {
   /** Material counts per subject (the library registers it). */
   materialCounts: (subjectIds: Types.ObjectId[]) => Promise<Map<string, number>> = async () => new Map();
+  /** Whether the college lets students share material for review (AI settings switch). */
+  studentUploadsOpen: () => Promise<boolean> = async () => false;
   /** Topics removed from a syllabus (the library detaches their tags). */
   onTopicsRemoved: (subjectId: Types.ObjectId, topicIds: Types.ObjectId[]) => Promise<void> = async () =>
     undefined;
@@ -145,11 +147,12 @@ export class SubjectsService {
           ])
         ).map((r) => [String(r._id), r.n]),
       );
-    const [units, topics, materials, people] = await Promise.all([
+    const [units, topics, materials, people, open] = await Promise.all([
       count(SyllabusUnitModel),
       count(SyllabusTopicModel),
       this.materialCounts(ids),
       this.d.profiles.refsFor(rows.flatMap((r) => r.ownerIds ?? [])),
+      this.studentUploadsOpen(),
     ]);
     return rows.map((s) => {
       const id = String(s._id);
@@ -168,7 +171,12 @@ export class SubjectsService {
         unitCount: units.get(id) ?? 0,
         topicCount: topics.get(id) ?? 0,
         materialCount: materials.get(id) ?? 0,
-        can: { manage: this.canManage(viewer, s), upload: this.canUpload(viewer, s) },
+        can: {
+          manage: this.canManage(viewer, s),
+          upload:
+            this.canUpload(viewer, s) ||
+            (open && s.status === 'active' && viewer.permissions.has('study:read')),
+        },
         mine: mine.has(id),
         updatedAt: s.updatedAt.toISOString(),
       };
@@ -362,6 +370,10 @@ export class SubjectsService {
     if (goneTopics.length) await this.onTopicsRemoved(s._id, goneTopics);
     await SubjectModel.updateOne({ _id: s._id }, { $set: { updatedAt: new Date() } });
     return this.tree(s._id);
+  }
+
+  async hasUnit(subjectId: Types.ObjectId, unitId: string): Promise<boolean> {
+    return !!(await SyllabusUnitModel.exists({ subjectId, _id: oid(unitId) }));
   }
 
   /** Topic ids that belong to a subject (to validate material tags). */

@@ -92,6 +92,13 @@ import { consentService } from './modules/consent/consent.service.js';
 import { SubjectsService } from './modules/study/subjects.service.js';
 import { AiSettingsService } from './modules/study/ai-settings.service.js';
 import { aiSettingsRoutes, studyRoutes } from './modules/study/study.routes.js';
+import { MaterialsService } from './modules/study/materials.service.js';
+import { materialRoutes } from './modules/study/materials.routes.js';
+import { MaterialPipeline, PROCESS_JOB } from './modules/study/pipeline.js';
+import { CliMediaTools, noMediaTools, type MediaTools } from './modules/study/media/tools.js';
+import { noOcr, TesseractOcr, type OcrProvider } from './modules/study/media/ocr.js';
+import { WhisperServiceTranscriber, type TranscriptionProvider } from './modules/study/media/transcribe.js';
+import { createHmac } from 'node:crypto';
 
 export interface AppDeps {
   env: Env;
@@ -111,6 +118,10 @@ export interface AppDeps {
   scanner?: MalwareScanner;
   video?: VideoProvider;
   push?: PushSender;
+  /** Study processing adapters (tests inject fakes); otherwise from MEDIA_TOOLS, OCR_PROVIDER and WHISPER_URL. */
+  media?: MediaTools;
+  ocr?: OcrProvider;
+  whisper?: TranscriptionProvider | null;
 }
 
 export function createApp({
@@ -128,6 +139,9 @@ export function createApp({
   scanner,
   video,
   push,
+  media,
+  ocr,
+  whisper,
 }: AppDeps) {
   const app = express();
   app.disable('x-powered-by');
@@ -191,6 +205,8 @@ export function createApp({
     store,
     scanner ??
       (env.MALWARE_SCANNER === 'clamav' ? new ClamdScanner({ address: env.CLAMAV_ADDRESS }) : noopScanner),
+    // Signed file links (owner decision Q9): a key derived from a server secret, never stored.
+    createHmac('sha256', env.JWT_TICKET_SECRET).update('signed-files-v1').digest(),
   );
   const profilesService = new ProfilesService(cipher, filesService);
   const usersService = new UsersService(authService, profilesService);
@@ -450,6 +466,46 @@ export function createApp({
         : null,
   });
 
+  const materialPipeline = new MaterialPipeline({
+    files: filesService,
+    subjects: subjectsService,
+    ai: aiSettingsService,
+    notifications: notificationsService,
+    realtime,
+    media: media ?? (env.MEDIA_TOOLS === 'none' ? noMediaTools : new CliMediaTools()),
+    ocr: ocr ?? (env.OCR_PROVIDER === 'none' ? noOcr : new TesseractOcr(env.OCR_LANGUAGES)),
+    whisper:
+      whisper !== undefined
+        ? whisper
+        : env.WHISPER_URL
+          ? new WhisperServiceTranscriber({
+              apiKey: null,
+              baseUrl: env.WHISPER_URL,
+              // Platform-owned service from the environment, typically on the private network.
+              allowPrivateNetwork: true,
+              fetcher,
+            })
+          : null,
+  });
+  const materialsService = new MaterialsService({
+    files: filesService,
+    subjects: subjectsService,
+    ai: aiSettingsService,
+    profiles: profilesService,
+    notifications: notificationsService,
+    jobs: queue,
+    fetcher,
+    pipeline: materialPipeline,
+  });
+  subjectsService.materialCounts = (ids) => materialsService.counts(ids);
+  subjectsService.studentUploadsOpen = async () =>
+    (await aiSettingsService.runtime()).settings.features.studentUploads;
+  subjectsService.onTopicsRemoved = (subjectId, topicIds) =>
+    materialsService.detachTopics(subjectId, topicIds);
+  for (const purpose of ['study_material', 'study_thumbnail'] as const)
+    filesService.registerAccess(purpose, (fileId, viewer) => materialsService.fileAccess(fileId, viewer));
+  queue.register(PROCESS_JOB, (data) => materialPipeline.run(data));
+
   // ── Privacy rights (Phase 8) ─────────────────────────────
   const privacyService = new PrivacyService({ auth: authService, profiles: profilesService, logger });
   const hook = (svc: { exportFor(u: string): Promise<unknown>; eraseFor(u: string): Promise<void> }) => ({
@@ -476,6 +532,7 @@ export function createApp({
   privacyService.register('events', hook(eventsService));
   privacyService.register('notifications', hook(notificationsService));
   privacyService.register('subjects', hook(subjectsService));
+  privacyService.register('materials', hook(materialsService));
   privacyService.register('aiSettings', hook(aiSettingsService));
   privacyService.register('files', hook(filesService));
 
@@ -595,6 +652,7 @@ export function createApp({
     defineModule('study', studyRoutes({ subjects: subjectsService, ai: aiSettingsService }), pipeline),
   );
   app.use(API_PREFIX, defineModule('ai-settings', aiSettingsRoutes(aiSettingsService), pipeline));
+  app.use(API_PREFIX, defineModule('study-materials', materialRoutes(materialsService), pipeline));
   app.use(
     API_PREFIX,
     defineModule(
@@ -651,6 +709,8 @@ export function createApp({
     privacy: privacyService,
     subjects: subjectsService,
     aiSettings: aiSettingsService,
+    materials: materialsService,
+    materialPipeline,
   };
   return app;
 }

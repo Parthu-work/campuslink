@@ -20,7 +20,15 @@ const INITIAL_BUDGET = 170 * KB;
 /** First visit to any screen on top of the initial load (initial + screen ≤ 240 KB gzip). */
 const SCREEN_BUDGET = 70 * KB;
 /** Screens allowed more than SCREEN_BUDGET, with the reason. Keep this list short. */
-const SCREEN_EXCEPTIONS = {};
+const SCREEN_EXCEPTIONS = {
+  // pdf.js (Mozilla's renderer, ~120 KB gzip on its own) for the in-app PDF viewer. It loads only
+  // when a member opens a PDF, after the material page has rendered; no PDF renderer fits 70 KB,
+  // and rendering pages on the server would mean storing page images (spec §14.7: lazy-loaded).
+  'src/features/study/pdf-viewer.tsx': {
+    budget: 140 * KB,
+    reason: 'pdf.js, loaded only when a PDF is opened',
+  },
+};
 
 const dist = new URL('../dist/', import.meta.url).pathname;
 const manifest = JSON.parse(readFileSync(join(dist, '.vite/manifest.json'), 'utf8'));

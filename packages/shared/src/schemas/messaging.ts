@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { objectId } from './common.js';
 import type { PersonRef } from './mentorship.js';
+import type { MaterialProgressEvent } from './study.js';
 
 // ── Messaging ─────────────────────────────
 export const MESSAGE_MAX = 2000;
@@ -47,6 +48,8 @@ export interface ServerEvents {
   'message:read': (r: { conversationId: string; userId: string; readAt: string }) => void;
   typing: (t: { conversationId: string; userId: string }) => void;
   'notification:new': (n: NotificationView) => void;
+  /** Processing progress of a material, to its uploader. */
+  'study:material': (e: MaterialProgressEvent) => void;
 }
 /** Socket events: client → server (validated with the schemas below). */
 export interface ClientEvents {
@@ -89,6 +92,10 @@ export const NOTIFICATION_TYPES = [
   'event_updated',
   'event_cancelled',
   'event_promoted',
+  'material_ready',
+  'material_failed',
+  'material_review',
+  'material_reviewed',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -102,6 +109,7 @@ export const NOTIFICATION_CATEGORIES = [
   'roadmaps',
   'achievements',
   'events',
+  'study',
 ] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
@@ -138,6 +146,10 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   event_updated: 'events',
   event_cancelled: 'events',
   event_promoted: 'events',
+  material_ready: 'study',
+  material_failed: 'study',
+  material_review: 'study',
+  material_reviewed: 'study',
 };
 export const CHANNELS = ['inApp', 'email', 'push'] as const;
 export type Channel = (typeof CHANNELS)[number];
@@ -159,6 +171,8 @@ export const DEFAULT_CHANNELS: Record<NotificationCategory, ChannelPrefs> = {
   achievements: { inApp: true, email: false, push: false },
   // Reminders, changes and waitlist places for events you RSVP'd to.
   events: { inApp: true, email: true, push: true },
+  // Your uploads finished processing (or failed), and review decisions about them.
+  study: { inApp: true, email: false, push: true },
 };
 
 const channelPrefs = z.strictObject({ inApp: z.boolean(), email: z.boolean(), push: z.boolean() });
@@ -173,6 +187,7 @@ export const notificationPrefsBody = z.strictObject({
     jobs: channelPrefs,
     roadmaps: channelPrefs,
     achievements: channelPrefs,
+    study: channelPrefs,
     events: channelPrefs,
   }),
   quietHours: z.strictObject({

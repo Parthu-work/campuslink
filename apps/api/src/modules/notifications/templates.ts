@@ -80,6 +80,13 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     event_updated: { title: 'Event changed', body: '“{event}” has new details. Check the time and place.' },
     event_cancelled: { title: 'Event cancelled', body: '“{event}” was cancelled.' },
     event_promoted: { title: 'You’re in', body: 'A place opened up: you’re now going to “{event}”.' },
+    material_ready: { title: 'Material ready', body: '“{title}” is processed and ready for students.' },
+    material_failed: {
+      title: 'Material needs attention',
+      body: '“{title}” could not be processed. Open it to see why and try again.',
+    },
+    material_review: { title: 'Material to review', body: '{name} shared “{title}” for review.' },
+    material_reviewed: { title: 'Review decision', body: '“{title}” was {decision}.' },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -160,6 +167,16 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'మీకు చోటు దొరికింది',
       body: 'ఒక చోటు ఖాళీ అయింది: మీరు ఇప్పుడు “{event}” కి వెళ్తున్నారు.',
     },
+    material_ready: {
+      title: 'సామగ్రి సిద్ధం',
+      body: '“{title}” ప్రాసెస్ అయింది, విద్యార్థులకు సిద్ధంగా ఉంది.',
+    },
+    material_failed: {
+      title: 'సామగ్రిని పరిశీలించండి',
+      body: '“{title}”ను ప్రాసెస్ చేయలేకపోయాము. కారణం చూసి మళ్ళీ ప్రయత్నించడానికి తెరవండి.',
+    },
+    material_review: { title: 'సమీక్షించాల్సిన సామగ్రి', body: '{name} సమీక్ష కోసం “{title}” పంచుకున్నారు.' },
+    material_reviewed: { title: 'సమీక్ష నిర్ణయం', body: '“{title}” {decision}.' },
   },
 };
 
@@ -222,8 +239,18 @@ const FOOTER: Record<Locale, string> = {
 };
 const OPEN: Record<Locale, string> = { en: 'Open', te: 'తెరవండి' };
 const DECISION: Record<Locale, Record<string, string>> = {
-  en: { fulfilled: 'fulfilled', rejected: 'declined (your points were returned)' },
-  te: { fulfilled: 'పూర్తయింది', rejected: 'తిరస్కరించబడింది (మీ పాయింట్లు తిరిగి ఇచ్చాం)' },
+  en: {
+    fulfilled: 'fulfilled',
+    rejected: 'declined (your points were returned)',
+    published: 'published',
+    not_published: 'not published',
+  },
+  te: {
+    fulfilled: 'పూర్తయింది',
+    rejected: 'తిరస్కరించబడింది (మీ పాయింట్లు తిరిగి ఇచ్చాం)',
+    published: 'ప్రచురించబడింది',
+    not_published: 'ప్రచురించబడలేదు',
+  },
 };
 
 /** In-app path a notification links to. */
@@ -277,6 +304,12 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
     case 'roadmap_approved':
     case 'roadmap_changes_requested':
       return data.slug ? `/roadmaps/${data.slug}` : '/roadmaps';
+    case 'material_ready':
+    case 'material_failed':
+    case 'material_reviewed':
+      return data.subjectId && data.materialId ? `/study/${data.subjectId}/m/${data.materialId}` : '/study';
+    case 'material_review':
+      return data.subjectId ? `/study/${data.subjectId}?review=1` : '/study';
     default:
       return '/sessions';
   }
@@ -307,6 +340,7 @@ export function renderNotification(
       .replace('{roadmap}', data.roadmap ?? '')
       .replace('{reward}', data.reward ?? '')
       .replace('{event}', data.event ?? '')
+      .replace('{title}', data.title ?? '')
       .replace('{decision}', DECISION[locale][data.decision ?? ''] ?? '');
   return { title: fill(t.title), body: fill(t.body), footer: FOOTER[locale], open: OPEN[locale] };
 }

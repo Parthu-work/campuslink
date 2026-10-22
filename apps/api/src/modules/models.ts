@@ -52,3 +52,17 @@ export {
   EventQuestionModel,
   EventQuestionVoteModel,
 } from './events/event.model.js';
+export {
+  SubjectModel,
+  SyllabusUnitModel,
+  SyllabusTopicModel,
+  SubjectEnrollmentModel,
+} from './study/subject.model.js';
+export { AiSettingsModel } from './study/ai-settings.model.js';
+export {
+  MaterialModel,
+  MaterialJobModel,
+  MaterialPageModel,
+  ContentChunkModel,
+  VideoSegmentModel,
+} from './study/material.model.js';

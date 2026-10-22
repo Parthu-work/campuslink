@@ -1,7 +1,8 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import sharp from 'sharp';
 import { PDFArray, PDFDict, PDFDocument, PDFName } from 'pdf-lib';
 import { readMp4, stripMp4Metadata } from '../../lib/mp4.js';
+import { assertSafeZip } from '../../lib/zip-guard.js';
 import { ScannerUnavailableError } from '../../lib/clamav.js';
 import { fileTypeFromBuffer } from 'file-type';
 import { Types } from 'mongoose';
@@ -31,6 +32,34 @@ const IMAGE_RULES: Record<ImagePurpose, { maxEdge: number }> = {
 };
 const VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime']);
 type ClaimablePurpose = 'post_media' | 'story_media' | 'referral_resume';
+const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+const PPTX = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+const AUDIO_TYPES = new Set([
+  'audio/mpeg',
+  'audio/mp4',
+  'audio/x-m4a',
+  'audio/aac',
+  'audio/ogg',
+  'audio/opus',
+  'audio/wav',
+  'audio/vnd.wave',
+  'audio/x-wav',
+]);
+const ARCHIVES = new Set([
+  'application/zip',
+  'application/x-rar-compressed',
+  'application/vnd.rar',
+  'application/x-7z-compressed',
+  'application/gzip',
+  'application/x-tar',
+  'application/x-bzip2',
+  'application/x-xz',
+]);
+const TEXT_TYPES: Record<string, string> = { txt: 'text/plain', md: 'text/markdown', csv: 'text/csv' };
+export type StudyFileKind = 'pdf' | 'doc' | 'slides' | 'notes' | 'image' | 'video_file' | 'audio';
+/** Signed links live this long; authorization is checked again on every request anyway. */
+const SIGNED_TTL_SEC = 300;
+
 /** Uploaded-but-unattached media is purged after a day. */
 const UNATTACHED_TTL_MS = 24 * 3600_000;
 
@@ -81,6 +110,14 @@ export function safeFileName(raw: string, fallback: string): string {
   return clean || fallback;
 }
 
+const isUtf8 = (b: Buffer) => {
+  try {
+    new TextDecoder('utf-8', { fatal: true }).decode(b);
+    return true;
+  } catch {
+    return false;
+  }
+};
 const unsupported = (msg: string) => new AppError(415, ErrorCode.VALIDATION_FAILED, msg);
 const newKey = () => {
   const hex = randomBytes(25).toString('hex');
@@ -102,6 +139,8 @@ export class FilesService {
   constructor(
     private readonly storage: StorageProvider,
     private readonly scanner: MalwareScanner = noopScanner,
+    /** HMAC key for signed file links (derived from a server secret). */
+    private readonly signingKey: Buffer = randomBytes(32),
   ) {}
 
   registerAccess(purpose: FilePurpose, resolver: FileAccessResolver): void {
@@ -240,6 +279,150 @@ export class FilesService {
     return this.store(ownerId, 'import_source', data, mime, new Date(Date.now() + 24 * 3600_000));
   }
 
+  /**
+   * Study material. The real type is sniffed (the name only decides between plain-text kinds):
+   * PDFs are rebuilt without scripts, metadata or attachments; Word and PowerPoint files pass the
+   * zip-bomb check; images are re-encoded; MP4 metadata is neutralised; archives are refused.
+   * `checksum` is of the uploaded bytes (duplicate detection).
+   */
+  async storeStudyMaterial(
+    ownerId: string,
+    data: Buffer,
+    originalName: string,
+    caps: { documentBytes: number; mediaBytes: number },
+  ): Promise<{
+    id: string;
+    mime: string;
+    size: number;
+    checksum: string;
+    kind: StudyFileKind;
+    durationSec: number | null;
+  }> {
+    const checksum = createHash('sha256').update(data).digest('hex');
+    const type = await fileTypeFromBuffer(data);
+    const tooBig = (limit: number) =>
+      new AppError(
+        413,
+        ErrorCode.VALIDATION_FAILED,
+        `File is too large (max ${Math.round(limit / 1048576)} MB)`,
+      );
+    const doc = (kind: StudyFileKind, out: Buffer, mime: string) => {
+      if (data.length > caps.documentBytes) throw tooBig(caps.documentBytes);
+      return { kind, out, mime, durationSec: null as number | null };
+    };
+    let r: { kind: StudyFileKind; out: Buffer; mime: string; durationSec: number | null };
+    if (type?.mime === 'application/pdf') {
+      if (data.length > caps.documentBytes) throw tooBig(caps.documentBytes);
+      try {
+        r = doc('pdf', Buffer.from(await sanitisePdf(data)), 'application/pdf');
+      } catch {
+        throw unsupported('That PDF could not be read (password-protected PDFs are not supported)');
+      }
+    } else if (type?.mime === DOCX || type?.mime === PPTX) {
+      try {
+        assertSafeZip(data, { maxTotal: 150 * 1024 * 1024, maxRatio: 120, maxEntries: 5000 });
+      } catch {
+        throw unsupported('That file expands too much to be safe');
+      }
+      r = doc(type.mime === DOCX ? 'doc' : 'slides', data, type.mime);
+    } else if (type && ARCHIVES.has(type.mime)) {
+      throw unsupported('Archives are not accepted: upload the files themselves');
+    } else if (type && IMAGE_TYPES.has(type.mime)) {
+      if (data.length > caps.documentBytes) throw tooBig(caps.documentBytes);
+      try {
+        const out = await sharp(data, { limitInputPixels: 60_000_000, failOn: 'error' })
+          .rotate()
+          .resize({ width: 3000, height: 3000, fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 85 })
+          .toBuffer();
+        r = { kind: 'image', out, mime: 'image/webp', durationSec: null };
+      } catch {
+        throw unsupported('That image could not be read');
+      }
+    } else if (type && (VIDEO_TYPES.has(type.mime) || type.mime === 'video/webm')) {
+      if (data.length > caps.mediaBytes) throw tooBig(caps.mediaBytes);
+      const mp4 = type.mime === 'video/webm' ? null : readMp4(data);
+      if (type.mime !== 'video/webm' && !mp4) throw unsupported('That video could not be read');
+      r = {
+        kind: 'video_file',
+        out: type.mime === 'video/webm' ? data : stripMp4Metadata(data),
+        mime: type.mime,
+        durationSec: mp4 ? Math.round(mp4.durationSec) : null,
+      };
+    } else if (type && AUDIO_TYPES.has(type.mime)) {
+      if (data.length > caps.mediaBytes) throw tooBig(caps.mediaBytes);
+      r = { kind: 'audio', out: data, mime: type.mime, durationSec: null };
+    } else if (!type) {
+      const ext = /\.([a-z0-9]+)$/i.exec(originalName)?.[1]?.toLowerCase() ?? '';
+      const mime = TEXT_TYPES[ext];
+      if (!mime) throw unsupported('Upload a PDF, Word, PowerPoint, text, image, video or audio file');
+      if (data.length > 5 * 1024 * 1024) throw tooBig(5 * 1024 * 1024);
+      if (data.includes(0) || !isUtf8(data)) throw unsupported('That text file is not UTF-8 text');
+      r = doc('notes', data, `${mime}; charset=utf-8`);
+    } else {
+      throw unsupported('Upload a PDF, Word, PowerPoint, text, image, video or audio file');
+    }
+    const stored = await this.store(ownerId, 'study_material', r.out, r.mime, null, {
+      ...(r.durationSec !== null ? { durationSec: r.durationSec } : {}),
+    });
+    return { ...stored, checksum, kind: r.kind, durationSec: r.durationSec };
+  }
+
+  /** A caption file (WebVTT or SRT) kept with its video; plain UTF-8 text only. */
+  async storeStudyTranscript(ownerId: string, data: Buffer) {
+    if (data.length > 2 * 1024 * 1024) throw unsupported('Caption files can be up to 2 MB');
+    if (data.includes(0) || !isUtf8(data)) throw unsupported('Upload a WebVTT (.vtt) or SRT (.srt) file');
+    return this.store(ownerId, 'study_transcript', data, 'text/vtt; charset=utf-8');
+  }
+
+  /** A video's poster frame (from ffmpeg), re-encoded like every other image. */
+  async storeStudyThumbnail(ownerId: string, data: Buffer) {
+    const out = await sharp(data, { limitInputPixels: 40_000_000, failOn: 'error' })
+      .resize({ width: 640, height: 640, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 78 })
+      .toBuffer();
+    return this.store(ownerId, 'study_thumbnail', out, 'image/webp');
+  }
+
+  // ── Signed links (owner decision Q9) ─────────────────────────────
+  private mac(payload: string) {
+    return createHmac('sha256', this.signingKey).update(payload).digest('base64url');
+  }
+
+  /**
+   * A short-lived link to a file for `viewer`, minted only after their access is checked. It is
+   * bound to the college, file, purpose, member and expiry, and access is checked again on every
+   * request (`readSigned`), so revoking access takes effect at once.
+   */
+  async signedUrl(fileId: string, viewer: AuthState) {
+    const f = await this.authorise(fileId, viewer);
+    const exp = Math.floor(Date.now() / 1000) + SIGNED_TTL_SEC;
+    const payload = Buffer.from(
+      JSON.stringify({ t: String(f.tenantId), f: String(f._id), p: f.purpose, u: viewer.userId, e: exp }),
+    ).toString('base64url');
+    return {
+      token: `${payload}.${this.mac(payload)}`,
+      expiresAt: new Date(exp * 1000).toISOString(),
+    };
+  }
+
+  /** Verifies a signed link; null when it is forged, expired or for another college. */
+  verifySigned(token: string, tenantId: string): { fileId: string; purpose: string; userId: string } | null {
+    const [payload = '', mac = ''] = token.split('.');
+    const want = Buffer.from(this.mac(payload));
+    const got = Buffer.from(mac);
+    if (!payload || want.length !== got.length || !timingSafeEqual(want, got)) return null;
+    try {
+      const p = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as Record<string, unknown>;
+      if (p.t !== tenantId || typeof p.f !== 'string' || typeof p.u !== 'string' || typeof p.p !== 'string')
+        return null;
+      if (typeof p.e !== 'number' || p.e < Date.now() / 1000) return null;
+      return { fileId: p.f, purpose: p.p, userId: p.u };
+    } catch {
+      return null;
+    }
+  }
+
   private async store(
     ownerId: string,
     purpose: FilePurpose,
@@ -288,6 +471,14 @@ export class FilesService {
    * avatar → any signed-in member; id_card → owner or verification reviewers; import_source → never served.
    */
   async readForViewer(fileId: string, viewer: AuthState) {
+    const f = await this.authorise(fileId, viewer);
+    const data = await this.storage.get(f.storageKey);
+    if (!data) throw notFound('File');
+    return { data, mime: f.mime, purpose: f.purpose, name: f.grantName };
+  }
+
+  /** The file record if `viewer` may read it (404 otherwise, like a missing file). */
+  private async authorise(fileId: string, viewer: AuthState) {
     const f = await FileModel.findById(fileId).lean();
     if (!f) throw notFound('File');
     const isOwner = String(f.ownerId) === viewer.userId;
@@ -306,9 +497,22 @@ export class FilesService {
       name = grant?.name ?? null;
     }
     if (!allowed) throw notFound('File');
-    const data = await this.storage.get(f.storageKey);
-    if (!data) throw notFound('File');
-    return { data, mime: f.mime, purpose: f.purpose, name };
+    return { ...f, grantName: name };
+  }
+
+  /**
+   * Shared study material outlives its uploader's account: the files stop belonging to the member
+   * (so erasing them leaves the college's material in place) and keep their access rules.
+   */
+  async detach(fileIds: (string | Types.ObjectId)[]): Promise<void> {
+    if (fileIds.length)
+      await FileModel.updateMany(
+        {
+          _id: { $in: fileIds },
+          purpose: { $in: ['study_material', 'study_thumbnail', 'study_transcript'] },
+        },
+        { $set: { ownerId: null } },
+      );
   }
 
   async remove(fileId: string | Types.ObjectId): Promise<void> {

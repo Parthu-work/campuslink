@@ -1006,7 +1006,25 @@
     },
     "decision": {
       "fulfilled": "handed over",
-      "rejected": "declined (your points were returned)"
+      "rejected": "declined (your points were returned)",
+      "published": "published",
+      "not_published": "not published"
+    },
+    "material_ready": {
+      "title": "Material ready",
+      "body": "“{{title}}” is processed and ready for students."
+    },
+    "material_failed": {
+      "title": "Material needs attention",
+      "body": "“{{title}}” could not be processed. Open it to see why."
+    },
+    "material_review": {
+      "title": "Material to review",
+      "body": "{{name}} shared “{{title}}” for review."
+    },
+    "material_reviewed": {
+      "title": "Review decision",
+      "body": "“{{title}}” was {{decision}}."
     }
   },
   "notifications": {
@@ -1039,7 +1057,8 @@
       "jobs": "Jobs and referrals",
       "roadmaps": "Roadmaps",
       "achievements": "Badges and rewards",
-      "events": "Events"
+      "events": "Events",
+      "study": "Study"
     },
     "catHint": {
       "requests": "New requests, replies, expiries",
@@ -1051,7 +1070,8 @@
       "jobs": "Referral replies and daily job-alert matches",
       "roadmaps": "Weekly goal nudges and review decisions",
       "achievements": "New badges and reward decisions",
-      "events": "Reminders, changes, cancellations and waitlist places"
+      "events": "Reminders, changes, cancellations and waitlist places",
+      "study": "Your uploads finished processing, and review decisions"
     },
     "toggle": "{{channel}} for {{category}}",
     "quiet": "Quiet hours",
@@ -2436,6 +2456,165 @@
       "noContributors": "No contributors yet.",
       "findAlumni": "Find an alumnus",
       "grant": "Invite"
+    },
+    "addMaterial": "Add material",
+    "status": {
+      "in_review": "Waiting for review",
+      "sent_back": "Sent back",
+      "failed": "Processing failed"
+    },
+    "stage": {
+      "uploaded": "Queued",
+      "scanning": "Checking the file",
+      "extracting": "Reading text",
+      "ocr": "Reading scanned pages",
+      "transcribing": "Transcribing",
+      "chunking": "Indexing",
+      "embedding": "Preparing search",
+      "indexed": "Ready",
+      "failed": "Failed"
+    },
+    "type": {
+      "pdf": "PDF",
+      "doc": "Document",
+      "slides": "Slides",
+      "notes": "Notes",
+      "image": "Image",
+      "video_file": "Video",
+      "video_link": "Video link",
+      "audio": "Audio"
+    },
+    "pages_one": "{{count}} page",
+    "pages_other": "{{count}} pages",
+    "pageN": "Page {{n}}",
+    "tab": {
+      "notes": "Notes",
+      "slides": "Slides",
+      "videos": "Videos",
+      "pyqs": "Past papers",
+      "other": "Other"
+    },
+    "emptyTab": {
+      "notes": "No notes yet",
+      "slides": "No slides yet",
+      "videos": "No videos yet",
+      "pyqs": "No past papers yet",
+      "other": "Nothing else yet"
+    },
+    "emptyTabUpload": "Add material with the button above: files, photos of notes, or video links.",
+    "review": {
+      "title_one": "{{count}} contribution waiting for review",
+      "title_other": "{{count}} contributions waiting for review",
+      "publish": "Publish",
+      "sendBack": "Send back",
+      "published": "Published",
+      "sentBack": "Sent back to the uploader"
+    },
+    "filter": {
+      "unit": "Unit",
+      "allUnits": "All units",
+      "topic": "Topic",
+      "allTopics": "All topics"
+    },
+    "searchMaterial": "Search this subject’s material",
+    "noHits": "Nothing in this subject’s material matches that.",
+    "language": {
+      "en": "English",
+      "te": "Telugu",
+      "other": "Another language"
+    },
+    "provider": {
+      "youtube": "YouTube",
+      "vimeo": "Vimeo"
+    },
+    "upload": {
+      "mode": "What to add",
+      "files": "Files",
+      "link": "Video link",
+      "drop": "Drop files here, or choose them",
+      "types": "PDF, Word, PowerPoint, text, images (up to {{doc}} MB), video and audio (up to {{media}} MB)",
+      "camera": "Take a photo",
+      "queue": "Files to upload",
+      "remove": "Remove {{name}}",
+      "titleFor": "Title for {{name}}",
+      "titlePlaceholder": "Title (optional; the file name otherwise)",
+      "categoryFor": "Section for {{name}}",
+      "categoryAuto": "Section: by file type",
+      "unitFor": "Unit for {{name}}",
+      "topicFor": "Topic for {{name}}",
+      "noTopic": "No topic",
+      "uploading": "Uploading",
+      "sent": "Uploaded",
+      "openExisting": "Open it",
+      "tooBig": "Files can be up to {{mb}} MB",
+      "language": "Language of the material",
+      "rights": "I have the right to share these files with students of this college.",
+      "rightsLink": "This video is shared by its owner for viewing, and I may link to it.",
+      "reviewNote": "What you share is reviewed by the subject’s teachers before students see it.",
+      "uploadN_one": "Upload {{count}} file",
+      "uploadN_other": "Upload {{count}} files",
+      "url": "Video address",
+      "urlHint": "A YouTube or Vimeo link. Only its title comes from there; the video is never copied.",
+      "titleOptional": "Title (optional)",
+      "chapters": "Chapters",
+      "chaptersHint": "One per line: a time and a title, like 1:05 Pumping lemma.",
+      "addLink": "Add link",
+      "linkAdded": "Added “{{title}}”."
+    },
+    "viewer": {
+      "chapters": "Chapters",
+      "transcript": "Transcript",
+      "noTranscript": "No transcript yet.",
+      "noMediaSupport": "Your browser cannot play this file. Download it instead.",
+      "speed": "Playback speed",
+      "playFrom": "Play “{{title}}” from {{provider}}",
+      "facadeNote": {
+        "youtube": "Nothing loads from YouTube until you press play (privacy-enhanced mode).",
+        "vimeo": "Nothing loads from Vimeo until you press play (do-not-track on)."
+      },
+      "openOn": "Open on {{provider}}",
+      "pdfFailed": "This PDF could not be shown. Download it instead.",
+      "prev": "Previous page",
+      "next": "Next page",
+      "pageNumber": "Page number",
+      "ofPages_one": "of {{count}}",
+      "ofPages_other": "of {{count}}",
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "searchPdf": "Search in this PDF",
+      "foundOn": "Found on pages:",
+      "noMatch": "Not found in this PDF.",
+      "pageOf": "Page {{page}} of {{count}}",
+      "pageText": "Text of this page",
+      "noText": "No text could be read from this file.",
+      "slideN": "Slide {{n}}",
+      "download": "Download the original",
+      "processing": "Processing",
+      "reprocess": "Process again",
+      "notFound": "We couldn’t find that material",
+      "notFoundBody": "It may have been removed, or it isn’t shared with you.",
+      "sharedBy": "Shared by {{name}}",
+      "version": "Version {{n}}",
+      "edit": "Edit",
+      "reviewNote": "Note from the reviewer: {{note}}",
+      "rightsNote": "Shared under the uploader’s confirmation that they may share it. To report a copyright problem, use Report or tell the subject’s teachers."
+    },
+    "editor2": {
+      "category": "Section",
+      "files": "Files",
+      "captions": "Add captions (.vtt or .srt)",
+      "captionsAdded": "Captions added; the transcript is being indexed",
+      "newVersion": "Upload a new version",
+      "versionAdded": "Version {{n}} uploaded",
+      "takedown": "Take down",
+      "takedownBody": "For copyright or policy problems: students stop seeing it at once, and the record and reason are kept.",
+      "reason": "Reason",
+      "takeDown": "Take it down",
+      "takenDown": "Taken down",
+      "delete": "Delete this material",
+      "deleteConfirm": "Delete it everywhere: the file, its text, its search index and its transcript? This cannot be undone.",
+      "deleteYes": "Delete",
+      "deleted": "Deleted"
     }
   },
   "ai": {

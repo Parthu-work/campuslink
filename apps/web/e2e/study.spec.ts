@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { adminSignIn } from './admin';
 import { expectNoA11yViolations, signIn } from './helpers';
@@ -39,7 +40,15 @@ test.describe('study', () => {
       'aria-expanded',
       'true',
     );
-    await expect(page.getByText('DFA', { exact: true })).toBeVisible();
+    // The library's topic filter lists DFA too: look in the syllabus.
+    await expect(
+      page.getByRole('region', { name: 'Syllabus' }).getByText('DFA', { exact: true }),
+    ).toBeVisible();
+    // The library's filters and tab row must not widen the page on phones. (A phone widens its
+    // layout to fit, so compare with the emulated screen, not innerWidth.)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      page.viewportSize()?.width ?? 0,
+    );
     await expectNoA11yViolations(page);
 
     // Every branch and batch: Ananya (CSE 2027) takes it.
@@ -50,7 +59,9 @@ test.describe('study', () => {
     await page.getByPlaceholder('Search by name or code').fill(name);
     await page.getByRole('link', { name }).click();
     await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
-    await expect(page.getByText('Pumping lemma for regular languages')).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: 'Syllabus' }).getByText('Pumping lemma for regular languages'),
+    ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Edit subject' })).toHaveCount(0);
     await expectNoA11yViolations(page);
   });
@@ -76,5 +87,64 @@ test.describe('study', () => {
     await signIn(page, `ananya@${host}.example`, host);
     await page.goto(`${base}/study`);
     await expect(page.getByText('Demo assistant')).toBeVisible();
+  });
+
+  test('faculty upload notes and a PDF; students read, search and open the right page', async ({
+    page,
+  }, info) => {
+    test.setTimeout(150_000);
+    const host = hostFor(info.project.name);
+    const base = `http://${host}.localhost:4173`;
+    const name = `E2E Library ${info.project.name} ${Date.now() % 100000}`;
+    await signIn(page, `faculty@${host}.example`, host);
+    await page.goto(`${base}/study`);
+    await page.getByRole('button', { name: 'New subject' }).first().click();
+    const dialog = page.getByRole('dialog', { name: 'New subject' });
+    await dialog.getByLabel('Subject name').fill(name);
+    await dialog.getByLabel('Code').fill(`LIB${Date.now() % 100000}`);
+    await dialog.getByRole('button', { name: 'Create subject' }).click();
+    await page.waitForURL(/\/study\/[a-f0-9]{24}$/);
+    const subjectUrl = page.url();
+
+    await page.getByRole('button', { name: 'Add material' }).click();
+    const sheet = page.getByRole('dialog', { name: 'Add material' });
+    await sheet.locator('input[type="file"][multiple]').setInputFiles([
+      {
+        name: 'demo-lecture.pdf',
+        mimeType: 'application/pdf',
+        buffer: readFileSync('e2e/fixtures/demo-lecture.pdf'),
+      },
+      {
+        name: 'demo-notes.md',
+        mimeType: 'text/markdown',
+        buffer: Buffer.from('# Demo notes\n\nA context-free grammar has productions (demo text).\n'),
+      },
+    ]);
+    await expect(sheet.getByText('demo-lecture.pdf')).toBeVisible();
+    await expectNoA11yViolations(page);
+    await sheet.getByText('I have the right to share these files').click();
+    await sheet.getByRole('button', { name: 'Upload 2 files' }).click();
+    await expect(sheet.getByRole('status').filter({ hasText: 'Ready' })).toHaveCount(2, { timeout: 60_000 });
+    await page.goBack();
+    await expect(sheet).toBeHidden();
+    await expect(page.getByRole('link', { name: 'demo lecture' })).toBeVisible();
+    await page.getByRole('link', { name: 'demo lecture' }).click();
+    await page.waitForURL(/\/m\/[a-f0-9]{24}/);
+    await expect(page.getByRole('group', { name: 'Page 1 of 2' })).toBeVisible({ timeout: 20_000 });
+    await page.getByPlaceholder('Search in this PDF').fill('pumping');
+    await expect(page.getByText('Found on pages:')).toBeVisible();
+    await expectNoA11yViolations(page);
+
+    // Ananya (CSE 2027) takes every-branch subjects: she finds the passage and lands on its page.
+    await page.context().clearCookies();
+    await signIn(page, `ananya@${host}.example`, host);
+    await page.goto(subjectUrl);
+    await page.getByPlaceholder('Search this subject’s material').fill('pumping lemma');
+    const hit = page.getByRole('link', { name: /demo lecture/ });
+    await expect(hit).toBeVisible();
+    await hit.click();
+    await page.waitForURL(/page=2/);
+    await expect(page.getByRole('group', { name: 'Page 2 of 2' })).toBeVisible({ timeout: 20_000 });
+    await expectNoA11yViolations(page);
   });
 });

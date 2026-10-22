@@ -219,3 +219,14 @@ Spec §13 step 1 (`docs/phases/phase-9.md` has the step table).
 - **Providers:** Anthropic (Messages API version 2026-10-21, no sampling parameters), OpenAI and OpenAI-compatible, Gemini (key in a header, never the URL), and a deterministic mock, behind `LLMProvider` and `EmbeddingProvider`.
 - **Members:** `/study` and `/study/:id` with a calm notice when AI answers are off (and a "demo" notice for the demo responder); Study is now the students' second tab and Subjects the staff's.
 - **Budget:** initial JS 169.3 KB; the forms, editors and the people sheet load when opened.
+
+## Phase 9 · Study, step 2: material, processing pipeline, viewers and keyword search
+
+Spec §13 step 2.
+
+- **Upload:** PDFs, Word, PowerPoint, images, notes, video and audio files, YouTube and Vimeo links, and captions, from one sheet (several files at once with progress, suggested topics from the file name, a rights attestation). Files are sniffed, capped, cleaned, scanned (fail closed) and stored through `FilesService`; archives are refused. Contributions from alumni (and students, when a subject allows it) wait in the owners' review queue.
+- **Processing:** one background job per material version, with live stages for the uploader (scanning, extracting, OCR, transcribing, chunking, embedding, indexed), three attempts, then a plain-words failure and a notification. Passages are cleaned (headers, footers, page numbers), instruction-like text is neutralised, and each passage keeps its page or moment and its syllabus topics. OCR (Tesseract), media tools (ffmpeg) and transcription (a local Whisper, or OpenAI with consent) are optional and say what is missing.
+- **Viewers:** an in-app PDF viewer (page, zoom, search with highlights, `?page=` links), a media player (speed, chapters, a transcript that follows playback, `?t=` links), YouTube and Vimeo behind a click-to-load facade, and a text view for documents, slides and notes. Every file comes through a five-minute signed link that re-checks access (owner decision Q9).
+- **Search:** each subject's search box finds passages in published material and opens the right page or moment.
+- **CSP:** `frame-src` gains `https://www.youtube-nocookie.com` and `https://player.vimeo.com` (Appendix A requires embedded videos); `img-src` is unchanged.
+- **Budget:** initial JS 169.2 KB (the material-progress store, the upload helper and notification texts moved out of the entry); the PDF viewer adds 128.8 KB only when a PDF is opened, under a recorded exception; every other screen stays under 70 KB.

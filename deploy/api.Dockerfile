@@ -18,6 +18,15 @@ RUN pnpm --filter @campuslink/shared build \
 
 FROM mirror.gcr.io/library/node:22-slim
 ENV NODE_ENV=production
+# Study material processing (MEDIA_TOOLS=auto, OCR_PROVIDER=auto): ffmpeg and ffprobe for video
+# length, poster frames and audio; pdftoppm and Tesseract (English and Telugu) for scanned pages.
+# Build with --build-arg WITH_MEDIA_TOOLS=false for a smaller image without them.
+ARG WITH_MEDIA_TOOLS=true
+RUN if [ "$WITH_MEDIA_TOOLS" = "true" ]; then \
+      apt-get update \
+      && apt-get install -y --no-install-recommends ffmpeg poppler-utils tesseract-ocr tesseract-ocr-eng tesseract-ocr-tel \
+      && rm -rf /var/lib/apt/lists/*; \
+    fi
 WORKDIR /app
 COPY --from=build --chown=node:node /out ./
 USER node

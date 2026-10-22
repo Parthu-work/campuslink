@@ -17,9 +17,20 @@ import {
   SyllabusUnitModel,
 } from '../../src/modules/study/subject.model.js';
 import { AiSettingsModel } from '../../src/modules/study/ai-settings.model.js';
+import {
+  ContentChunkModel,
+  MaterialJobModel,
+  MaterialModel,
+  MaterialPageModel,
+  VideoSegmentModel,
+} from '../../src/modules/study/material.model.js';
 import { withTextSearch } from '../../src/db/search.js';
+import request from 'supertest';
+import { DEMO_VTT, fakeMedia, fakeOcr, textPdf } from '../study-fixtures.js';
+import { fakeMp4 } from '../feed-fixtures.js';
 
-const ctx = testApp({ fetcher: aiFetcher().fn });
+const ctx = testApp({ fetcher: aiFetcher().fn, media: fakeMedia(), ocr: fakeOcr(), whisper: null });
+let materialA: string, videoA: string, fileLinkA: string;
 let A: TestTenant, B: TestTenant;
 let facA: TestUser, adminA: TestUser, studentA: TestUser;
 let facB: TestUser, adminB: TestUser, studentB: TestUser, alumB: TestUser;
@@ -76,6 +87,19 @@ beforeAll(async () => {
   await a(adminA).put('/admin/ai').send(base);
   await a(adminA).put('/admin/ai/keys').send({ target: 'chat', key: GOOD_KEY });
   await a(adminA).post('/admin/ai/consent').send({ version: AI_CONSENT_VERSION, accept: true });
+  const up = (file: Buffer, name: string) =>
+    a(facA)
+      .post('/study/materials')
+      .field('subjectId', subjectA)
+      .field('rights', 'true')
+      .attach('file', file, name);
+  materialA = (
+    await up(await textPdf([['Alpha Zyxquark lecture', 'Zyxquark automata are a demo idea.']]), 'alpha.pdf')
+  ).body.data.id;
+  videoA = (await up(fakeMp4(30), 'alpha.mp4')).body.data.id;
+  await a(facA).post(`/study/materials/${videoA}/transcript`).attach('file', Buffer.from(DEMO_VTT), 'a.vtt');
+  await ctx.queue.drain();
+  fileLinkA = (await a(studentA).get(`/study/materials/${materialA}/file`)).body.data.url;
   // B has its own subject so empty results are meaningful.
   await makeSubject(ctx, B, facB, { name: 'Beta Automata', code: 'ZYX1' });
 });
@@ -119,6 +143,56 @@ describe('HTTP: nothing of college A is reachable from college B', () => {
     );
   });
 
+  it('material, files, transcripts and search', async () => {
+    for (const [u, m, p, body] of [
+      [studentB, 'get', `/study/materials/${materialA}`, undefined],
+      [studentB, 'get', `/study/materials/${materialA}/file`, undefined],
+      [studentB, 'get', `/study/subjects/${subjectA}/materials`, undefined],
+      [facB, 'patch', `/study/materials/${materialA}`, { title: 'Taken over' }],
+      [facB, 'delete', `/study/materials/${materialA}`, undefined],
+      [facB, 'post', `/study/materials/${materialA}/reprocess`, {}],
+      [facB, 'post', `/study/materials/${materialA}/review`, { action: 'publish' }],
+      [facB, 'post', `/study/materials/${materialA}/takedown`, { reason: 'Cross-college attempt' }],
+    ] as const) {
+      const c = inB(u);
+      const res =
+        m === 'get'
+          ? await c.get(p)
+          : m === 'delete'
+            ? await c.delete(p)
+            : m === 'patch'
+              ? await c.patch(p).send(body)
+              : await c.post(p).send(body);
+      expect(res.status, `${m} ${p}`).toBe(404);
+    }
+    expect(
+      (
+        await inB(facB)
+          .post(`/study/materials/${videoA}/transcript`)
+          .attach('file', Buffer.from(DEMO_VTT), 'b.vtt')
+      ).status,
+    ).toBe(404);
+    expect(
+      (
+        await inB(facB)
+          .post('/study/materials')
+          .field('subjectId', subjectA)
+          .field('rights', 'true')
+          .attach('file', Buffer.from('Demo'), 'x.txt')
+      ).status,
+    ).toBe(404);
+    for (const u of [studentB, facB])
+      expect((await inB(u).get('/study/search?q=Zyxquark')).body.data).toEqual([]);
+    expect((await a(studentA).get('/study/search?q=Zyxquark')).body.data[0].materialId).toBe(materialA);
+    // A signed link minted in A is useless on B's address, and so is the file id.
+    const anon = request(ctx.app);
+    expect((await anon.get(fileLinkA).set('Host', A.host)).status).toBe(200);
+    expect((await anon.get(fileLinkA).set('Host', B.host)).status).toBe(404);
+    const fileId = String((await runInTenant(A._id, () => MaterialModel.findById(materialA).lean()))?.fileId);
+    expect((await inB(studentB).get(`/files/${fileId}`)).status).toBe(404);
+    expect((await inB(studentB).get(`/files/${fileId}/signed`)).status).toBe(404);
+  });
+
   it('AI settings, keys and status are per college', async () => {
     const b = (await inB(adminB).get('/admin/ai')).body.data;
     expect(b).toMatchObject({
@@ -147,6 +221,11 @@ describe('database layer: every Phase 9 collection is scoped', () => {
     ['SyllabusTopic', SyllabusTopicModel as Model<unknown>],
     ['SubjectEnrollment', SubjectEnrollmentModel as Model<unknown>],
     ['AiSettings', AiSettingsModel as Model<unknown>],
+    ['Material', MaterialModel as Model<unknown>],
+    ['MaterialJob', MaterialJobModel as Model<unknown>],
+    ['MaterialPage', MaterialPageModel as Model<unknown>],
+    ['ContentChunk', ContentChunkModel as Model<unknown>],
+    ['VideoSegment', VideoSegmentModel as Model<unknown>],
   ];
 
   it.each(MODELS)('%s: B cannot read, search, update or delete A’s documents', async (_name, model) => {
@@ -166,10 +245,13 @@ describe('database layer: every Phase 9 collection is scoped', () => {
     });
   });
 
-  it('Subject search stays in the tenant', async () => {
+  it('Subject and passage search stay in the tenant', async () => {
     await runInTenant(B._id, async () => {
-      const hits = await withTextSearch(SubjectModel.find(), 'Zyxquark').lean();
-      expect(hits).toEqual([]);
+      expect(await withTextSearch(SubjectModel.find(), 'Zyxquark').lean()).toEqual([]);
+      expect(await withTextSearch(ContentChunkModel.find(), 'Zyxquark').lean()).toEqual([]);
+    });
+    await runInTenant(A._id, async () => {
+      expect((await withTextSearch(ContentChunkModel.find(), 'Zyxquark').lean()).length).toBeGreaterThan(0);
     });
   });
 });

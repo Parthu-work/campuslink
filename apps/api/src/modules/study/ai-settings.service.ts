@@ -570,6 +570,23 @@ export class AiSettingsService {
     return this.view();
   }
 
+  /**
+   * A connection to OpenAI with the college's own key, for transcription: only when the college
+   * chose OpenAI (answers or embeddings), the key works, the notice is accepted and AI is not stopped.
+   */
+  openAiConnection(rt: AiRuntime): ProviderConnection | null {
+    const s = rt.settings;
+    if (s.killSwitch || s.consent.version !== AI_CONSENT_VERSION) return null;
+    const k =
+      s.chatProvider === 'openai' && s.keys.chat.status === 'valid'
+        ? s.keys.chat
+        : s.embeddingProvider === 'openai' && this.embeddingKey(s).status === 'valid'
+          ? this.embeddingKey(s)
+          : null;
+    const apiKey = k ? this.decrypt(k) : null;
+    return apiKey ? this.conn(apiKey, null) : null;
+  }
+
   /** The decrypted YouTube key for external video suggestions (server use only), when enabled. */
   async youtubeKey(): Promise<string | null> {
     const s = await this.load();

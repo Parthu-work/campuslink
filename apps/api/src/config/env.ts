@@ -145,6 +145,20 @@ export const envSchema = z.object({
   AI_PRIVATE_ENDPOINTS: csv.refine((xs) => xs.every((x) => URL.canParse(x) && new URL(x).origin === x), {
     message: 'each entry must be an origin such as http://ollama:11434 (no path)',
   }),
+  /** OCR for scanned pages: `auto` uses Tesseract when it is installed (the production image has it). */
+  OCR_PROVIDER: z.enum(['auto', 'tesseract', 'none']).default('auto'),
+  /** Tesseract languages, e.g. `eng+tel` (install the Telugu pack). */
+  OCR_LANGUAGES: z
+    .string()
+    .regex(/^[a-z_]{3,10}(\+[a-z_]{3,10})*$/)
+    .default('eng'),
+  /** ffmpeg, ffprobe and pdftoppm for durations, poster frames, audio and scanned pages (`auto`: when installed). */
+  MEDIA_TOOLS: z.enum(['auto', 'none']).default('auto'),
+  /**
+   * A local Whisper service for transcription (the optional `whisper` Docker profile), e.g.
+   * `http://whisper:9000`. Platform-owned, so it may be on the private network.
+   */
+  WHISPER_URL: z.url({ protocol: /^https?$/ }).optional(),
   VAPID_SUBJECT: z
     .string()
     .regex(/^(mailto:|https:\/\/)/)

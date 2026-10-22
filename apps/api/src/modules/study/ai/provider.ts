@@ -124,6 +124,8 @@ export interface JsonCall {
   method?: 'GET' | 'POST';
   headers?: Record<string, string>;
   body?: unknown;
+  /** A pre-encoded body (multipart uploads); set its content-type in `headers`. */
+  rawBody?: Buffer;
   timeoutMs?: number;
   maxBytes?: number;
 }
@@ -139,7 +141,11 @@ export async function callJson<T>(conn: ProviderConnection, url: string, call: J
         ...(call.body !== undefined ? { 'content-type': 'application/json' } : {}),
         ...call.headers,
       },
-      ...(call.body !== undefined ? { body: JSON.stringify(call.body) } : {}),
+      ...(call.rawBody
+        ? { body: call.rawBody }
+        : call.body !== undefined
+          ? { body: JSON.stringify(call.body) }
+          : {}),
       timeoutMs: call.timeoutMs ?? 30_000,
       maxBytes: call.maxBytes ?? 4 * 1024 * 1024,
       maxRedirects: 0,

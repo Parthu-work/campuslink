@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { parseSecurityHeaders, previewSecurityHeaders, SECURITY_HEADERS_FILE } from '../../security-headers';
 
 const TURNSTILE = 'https://challenges.cloudflare.com';
+/** Study video links: the privacy-enhanced players, framed only after a tap (click-to-load). */
+const PLAYERS = ['https://www.youtube-nocookie.com', 'https://player.vimeo.com'];
 const headers = parseSecurityHeaders(readFileSync(SECURITY_HEADERS_FILE, 'utf8'));
 const csp = new Map(
   (headers['Content-Security-Policy'] ?? '')
@@ -13,11 +15,13 @@ const csp = new Map(
 );
 
 describe('production security headers (deploy/nginx/security-headers.conf)', () => {
-  it('has a strict CSP: no inline script, no plugins, no framing; one pinned third-party origin', () => {
+  it('has a strict CSP: no inline script, no plugins, no framing; pinned third-party origins only', () => {
     expect(csp.get('default-src')).toEqual(["'self'"]);
-    // The Turnstile human check is the only third-party origin, for its script and iframe only.
+    // The Turnstile human check (script and iframe) and the two video players (iframes only).
     expect(csp.get('script-src')).toEqual(["'self'", TURNSTILE]);
-    expect(csp.get('frame-src')).toEqual([TURNSTILE]);
+    expect(csp.get('frame-src')).toEqual([TURNSTILE, ...PLAYERS]);
+    // No image, media or connection reaches a third party (no YouTube thumbnails before a tap).
+    expect(csp.get('img-src')).toEqual(["'self'", 'data:', 'blob:']);
     expect(csp.get('object-src')).toEqual(["'none'"]);
     expect(csp.get('base-uri')).toEqual(["'self'"]);
     expect(csp.get('form-action')).toEqual(["'self'"]);
@@ -33,7 +37,7 @@ describe('production security headers (deploy/nginx/security-headers.conf)', () 
       if (name !== 'style-src') expect(values, name).not.toContain("'unsafe-inline'");
       const remote = values.filter((v) => /^https?:/.test(v));
       expect(
-        remote.every((v) => v === TURNSTILE),
+        remote.every((v) => v === TURNSTILE || (name === 'frame-src' && PLAYERS.includes(v))),
         name,
       ).toBe(true);
       if (remote.length) expect(['script-src', 'frame-src'], name).toContain(name);

@@ -2,7 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, FileText, ListTree, Pencil, Users } from 'lucide-react';
+import { ChevronDown, ListTree, Pencil, Users } from 'lucide-react';
 import type { SubjectView, SyllabusUnitView } from '@campuslink/shared';
 import { AvatarStack } from '../../components/ui/avatar-stack';
 import { BackLink } from '../../components/ui/back-link';
@@ -17,6 +17,7 @@ import { subjectAccent } from '../../lib/study';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { cn } from '../../lib/cn';
 import { AiNotice } from './study';
+import { SubjectLibrary } from './library';
 
 // Editors load when opened: the form library, Zod and the editors themselves (bundle budget).
 const SubjectForm = lazy(() => import('./subject-form').then((m) => ({ default: m.SubjectForm })));
@@ -228,16 +229,7 @@ export function SubjectPage() {
         )}
       </section>
 
-      <section aria-labelledby="library-title" className="grid gap-3">
-        <h2 id="library-title" className="flex items-center gap-2 text-title font-semibold">
-          <FileText className="size-5 text-brand-ink" aria-hidden /> {t('study.library')}
-        </h2>
-        <Card>
-          <EmptyState art={<Illustration kind="study" size={88} />} title={t('study.noMaterial')}>
-            {t('study.noMaterialBody')}
-          </EmptyState>
-        </Card>
-      </section>
+      <SubjectLibrary subject={s} units={units} />
 
       {s.can.manage && (
         <>

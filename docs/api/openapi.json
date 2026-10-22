@@ -1787,6 +1787,71 @@
         "x-permission": "platform:health"
       }
     },
+    "/api/v1/files/{id}/signed": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "A five-minute link to a file you may see (for players and viewers that cannot send headers)",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "files_get_files_id_signed",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/files/s/{token}": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Read a file through a signed link (access is checked again on every request; supports ranges)",
+        "description": "Public. Host scope: college.",
+        "operationId": "files_get_files_s_token",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{20,600}\\.[A-Za-z0-9_-]{43}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
     "/api/v1/files/{id}": {
       "get": {
         "tags": [
@@ -5387,6 +5452,26 @@
                         ],
                         "additionalProperties": false
                       },
+                      "study": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
+                      },
                       "events": {
                         "type": "object",
                         "properties": {
@@ -5418,6 +5503,7 @@
                       "jobs",
                       "roadmaps",
                       "achievements",
+                      "study",
                       "events"
                     ],
                     "additionalProperties": false
@@ -14681,6 +14767,814 @@
           }
         },
         "x-permission": "ai:settings"
+      }
+    },
+    "/api/v1/study/subjects/{id}/materials": {
+      "get": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Material of a subject (published; your own uploads; managers can list review and drafts)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-materials_get_study_subjects_id_materials",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "notes",
+                "slides",
+                "videos",
+                "pyqs",
+                "other"
+              ]
+            }
+          },
+          {
+            "name": "unitId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "topicId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "published",
+              "type": "string",
+              "enum": [
+                "published",
+                "in_review",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study/materials": {
+      "post": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Upload a file (sniffed, scanned and sanitised; rights attestation required); processing starts",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college. Rate limit: studyUpload.",
+        "operationId": "study-materials_post_study_materials",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "subjectId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "title": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 160
+                  },
+                  "description": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 2000
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "notes",
+                      "slides",
+                      "videos",
+                      "pyqs",
+                      "other"
+                    ]
+                  },
+                  "unitId": {
+                    "default": "",
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      {
+                        "type": "string",
+                        "const": ""
+                      }
+                    ]
+                  },
+                  "topicIds": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 625
+                  },
+                  "language": {
+                    "default": "en",
+                    "type": "string",
+                    "enum": [
+                      "en",
+                      "te",
+                      "other"
+                    ]
+                  },
+                  "rights": {
+                    "type": "string",
+                    "const": "true"
+                  }
+                },
+                "required": [
+                  "subjectId",
+                  "rights"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study/materials/link": {
+      "post": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Add a YouTube or Vimeo link (official oEmbed metadata; never downloaded)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college. Rate limit: studyUpload.",
+        "operationId": "study-materials_post_study_materials_link",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "subjectId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "url": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "format": "uri"
+                  },
+                  "title": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 160
+                  },
+                  "description": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 2000
+                  },
+                  "category": {
+                    "default": "videos",
+                    "type": "string",
+                    "enum": [
+                      "notes",
+                      "slides",
+                      "videos",
+                      "pyqs",
+                      "other"
+                    ]
+                  },
+                  "unitId": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "topicIds": {
+                    "default": [],
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  },
+                  "language": {
+                    "default": "en",
+                    "type": "string",
+                    "enum": [
+                      "en",
+                      "te",
+                      "other"
+                    ]
+                  },
+                  "chapters": {
+                    "default": [],
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "at": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 86400
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        }
+                      },
+                      "required": [
+                        "at",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "rights": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                },
+                "required": [
+                  "subjectId",
+                  "url",
+                  "rights"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study/materials/{id}": {
+      "get": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "One material with its chapters, transcript and page text",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-materials_get_study_materials_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      },
+      "patch": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Edit title, description, tags, language or chapters (uploader or managers)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-materials_patch_study_materials_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 2000
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "notes",
+                      "slides",
+                      "videos",
+                      "pyqs",
+                      "other"
+                    ]
+                  },
+                  "unitId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "topicIds": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  },
+                  "language": {
+                    "type": "string",
+                    "enum": [
+                      "en",
+                      "te",
+                      "other"
+                    ]
+                  },
+                  "chapters": {
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "at": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 86400
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        }
+                      },
+                      "required": [
+                        "at",
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      },
+      "delete": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Delete a material everywhere: file, pages, chunks, vectors and transcript",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-materials_delete_study_materials_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study/materials/{id}/file": {
+      "get": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "A five-minute signed link to the file (for the viewer and player)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-materials_get_study_materials_id_file",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study/materials/{id}/versions": {
+      "post": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Upload a new version (same kind of file); the material is re-indexed",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college. Rate limit: studyUpload.",
+        "operationId": "study-materials_post_study_materials_id_versions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study/materials/{id}/transcript": {
+      "post": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Add captions (WebVTT or SRT) to a video or audio; they become its transcript",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college. Rate limit: studyUpload.",
+        "operationId": "study-materials_post_study_materials_id_transcript",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study/materials/{id}/reprocess": {
+      "post": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Run processing again (after a failure, or a new OCR or transcription set-up)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college. Rate limit: studyUpload.",
+        "operationId": "study-materials_post_study_materials_id_reprocess",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study/materials/{id}/review": {
+      "post": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Publish or send back a contribution (subject owners and admins)",
+        "description": "Requires permission `study:manage` (Create subjects and manage syllabi, owners and who takes them). Host scope: college.",
+        "operationId": "study-materials_post_study_materials_id_review",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "publish",
+                      "reject"
+                    ]
+                  },
+                  "reason": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "action"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:manage"
+      }
+    },
+    "/api/v1/study/materials/{id}/takedown": {
+      "post": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Take material down (copyright or policy); hidden from everyone and audit-logged",
+        "description": "Requires permission `study:manage` (Create subjects and manage syllabi, owners and who takes them). Host scope: college.",
+        "operationId": "study-materials_post_study_materials_id_takedown",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:manage"
+      }
+    },
+    "/api/v1/study/search": {
+      "get": {
+        "tags": [
+          "Study material"
+        ],
+        "summary": "Keyword search over the material of subjects I take (works without any AI provider)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college. Rate limit: search.",
+        "operationId": "study-materials_get_study_search",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
       }
     },
     "/api/v1/admin/moderation/summary": {

@@ -14,6 +14,8 @@ import { XpEventModel } from '../src/modules/gamification/gamification.model.js'
 import { ConsentModel } from '../src/modules/consent/consent.model.js';
 import { AuditModel } from '../src/modules/audit/audit.model.js';
 import { SubjectEnrollmentModel, SubjectModel } from '../src/modules/study/subject.model.js';
+import { MaterialModel } from '../src/modules/study/material.model.js';
+import { FileModel } from '../src/modules/files/file.model.js';
 
 const ctx = testApp();
 const services = ctx.app.locals.services as {
@@ -43,6 +45,28 @@ beforeAll(async () => {
       contributorIds: [new Types.ObjectId(alum.id)],
       createdBy: new Types.ObjectId(staff.id),
     });
+    const file = (purpose: string) =>
+      FileModel.create({
+        ownerId: new Types.ObjectId(alum.id),
+        purpose,
+        mime: 'text/plain',
+        size: 4,
+        storageKey: `k/${purpose}${Math.random()}`,
+        sha256: 'x',
+      });
+    const keep = await file('study_material');
+    const drop = await file('study_material');
+    const base = {
+      subjectId: subject._id,
+      type: 'notes',
+      category: 'notes',
+      uploaderId: new Types.ObjectId(alum.id),
+      rightsAttestedAt: new Date(),
+    };
+    await MaterialModel.create([
+      { ...base, title: 'Demo shared notes', fileId: keep._id, visibility: 'published' },
+      { ...base, title: 'Demo pending notes', fileId: drop._id, visibility: 'in_review' },
+    ]);
     await SubjectEnrollmentModel.create({
       subjectId: subject._id,
       userId: new Types.ObjectId(alum.id),
@@ -94,6 +118,10 @@ describe('export', () => {
     ]);
     expect(d.subjects.enrollmentOverrides).toEqual([expect.objectContaining({ kind: 'include' })]);
     expect(d.aiSettings).toEqual([]);
+    expect(d.materials.map((m: { title: string }) => m.title).sort()).toEqual([
+      'Demo pending notes',
+      'Demo shared notes',
+    ]);
     // No secrets or other people's data.
     expect(r.text).not.toContain('passwordHash');
     expect(r.text).not.toContain(other.email);
@@ -148,6 +176,12 @@ describe('deletion', () => {
       expect(await SubjectModel.countDocuments({ contributorIds: alum.id })).toBe(0);
       expect(await SubjectModel.countDocuments({ code: 'PRV101' })).toBe(1);
       expect(await SubjectEnrollmentModel.countDocuments({ userId: alum.id })).toBe(0);
+      // Shared (published) material stays with the college as a former member's; pending uploads go.
+      const shared = await MaterialModel.findOne({ title: 'Demo shared notes' }).lean();
+      expect(shared?.uploaderId).toBeNull();
+      expect((await FileModel.findById(shared?.fileId).lean())?.ownerId).toBeNull();
+      expect(await MaterialModel.countDocuments({ title: 'Demo pending notes' })).toBe(0);
+      expect(await FileModel.countDocuments({ ownerId: alum.id })).toBe(0);
       const mine = await MessageModel.findOne({ senderId: alum.id }).lean();
       expect(mine?.bodyEnc).toBeNull();
       const theirs = await MessageModel.findOne({ senderId: other.id }).lean();
@@ -177,6 +211,7 @@ describe('deletion', () => {
         'files',
         'subjects',
         'aiSettings',
+        'materials',
       ]),
     );
   });

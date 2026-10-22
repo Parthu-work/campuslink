@@ -61,7 +61,7 @@ export function Tabs<T extends string>({
   };
 
   return (
-    <div className={cn('border-b border-line', className)}>
+    <div className={cn('min-w-0 border-b border-line', className)}>
       <div
         ref={ref}
         role="tablist"

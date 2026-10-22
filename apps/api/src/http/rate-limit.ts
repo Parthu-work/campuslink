@@ -24,7 +24,8 @@ export type LimiterName =
   | 'qa'
   | 'referrals'
   | 'privacy'
-  | 'aiTest';
+  | 'aiTest'
+  | 'studyUpload';
 
 const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: boolean }> = {
   global: { windowMs: 60_000, limit: 600 },
@@ -48,6 +49,8 @@ const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: bo
   privacy: { windowMs: 60 * 60_000, limit: 5, perUser: true },
   /** Each "Test connection" calls the provider (and costs the college a little). */
   aiTest: { windowMs: 60 * 60_000, limit: 30, perUser: true },
+  /** Faculty upload a term's material in one sitting; still bounded per person. */
+  studyUpload: { windowMs: 60 * 60_000, limit: 120, perUser: true },
 };
 
 const key = (req: Request, perUser?: boolean) =>

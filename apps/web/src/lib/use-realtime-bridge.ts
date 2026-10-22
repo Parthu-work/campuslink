@@ -2,11 +2,16 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
+import { useMaterialProgress } from './material-progress';
 import { toast } from './toast';
-import type { MessageView, NotificationView } from '@campuslink/shared';
+import type {
+  MaterialDetailView,
+  MaterialProgressEvent,
+  MessageView,
+  NotificationView,
+} from '@campuslink/shared';
 import { connectRealtime, disconnectRealtime, useTyping } from './realtime';
 import { useSession } from './session';
-import { notificationText } from './notification-text';
 
 type MessagePage = { data: MessageView[]; meta?: { nextCursor?: string | null } };
 
@@ -53,11 +58,24 @@ export function useRealtimeBridge() {
       // No toast for the conversation already on screen.
       if (n.type === 'new_message' && window.location.pathname === `/messages/${n.data.conversationId ?? ''}`)
         return;
-      const text = notificationText(t, n);
-      toast(text.title, {
-        description: text.body,
-        action: { label: t('common.open'), onClick: () => void navigate(text.href) },
+      // The wording loads with the first notification, not with the app (bundle budget).
+      void import('./notification-text').then(({ notificationText }) => {
+        const text = notificationText(t, n);
+        toast(text.title, {
+          description: text.body,
+          action: { label: t('common.open'), onClick: () => void navigate(text.href) },
+        });
       });
+    };
+    const onMaterial = (e: MaterialProgressEvent) => {
+      useMaterialProgress.getState().set(e);
+      qc.setQueryData<MaterialDetailView>(['material', e.materialId], (old) =>
+        old ? { ...old, stage: e.stage, progress: e.progress, error: e.error } : old,
+      );
+      if (e.stage === 'indexed' || e.stage === 'failed') {
+        void qc.invalidateQueries({ queryKey: ['material', e.materialId] });
+        void qc.invalidateQueries({ queryKey: ['materials'] });
+      }
     };
     void connectRealtime().then((socket) => {
       if (cancelled) return;
@@ -66,6 +84,7 @@ export function useRealtimeBridge() {
       s.on('message:read', onRead);
       s.on('typing', onTyping);
       s.on('notification:new', onNotification);
+      s.on('study:material', onMaterial);
     });
     return () => {
       cancelled = true;
@@ -73,6 +92,7 @@ export function useRealtimeBridge() {
       s?.off('message:read', onRead);
       s?.off('typing', onTyping);
       s?.off('notification:new', onNotification);
+      s?.off('study:material', onMaterial);
     };
   }, [status, qc, t, navigate]);
 }

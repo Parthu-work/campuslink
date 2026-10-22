@@ -108,3 +108,35 @@ export const GENERATIVE_COMMANDS: readonly SlashCommand[] = [
   'flashcards',
   'important',
 ];
+
+/** Where a material is shown by default, from its type (the uploader can change it). */
+export const DEFAULT_TAB: Record<MaterialType, MaterialTab> = {
+  pdf: 'notes',
+  doc: 'notes',
+  slides: 'slides',
+  notes: 'notes',
+  image: 'other',
+  video_file: 'videos',
+  video_link: 'videos',
+  audio: 'other',
+};
+export const MATERIAL_LANGUAGES = ['en', 'te', 'other'] as const;
+export type MaterialLanguage = (typeof MATERIAL_LANGUAGES)[number];
+/** Size caps (the API enforces them again after sniffing the real type). */
+export const MATERIAL_MAX_MB = { document: 50, media: 200 } as const;
+/** What the upload picker offers (the server sniffs content; extensions are only a hint). */
+export const MATERIAL_ACCEPT =
+  '.pdf,.docx,.pptx,.txt,.md,.csv,.jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,.mp3,.m4a,.ogg,.wav,application/pdf,image/*,video/*,audio/*';
+/** Caption files that can accompany a video (used as its transcript). */
+export const TRANSCRIPT_ACCEPT = '.vtt,.srt,text/vtt';
+/** Hosts whose links are accepted as video links (metadata through their official oEmbed). */
+export const VIDEO_LINK_HOSTS = [
+  'youtube.com',
+  'www.youtube.com',
+  'm.youtube.com',
+  'youtu.be',
+  'vimeo.com',
+  'www.vimeo.com',
+] as const;
+export const CHUNK_EMBEDDING_STATUSES = ['embedding_pending', 'embedded', 'failed'] as const;
+export type ChunkEmbeddingStatus = (typeof CHUNK_EMBEDDING_STATUSES)[number];

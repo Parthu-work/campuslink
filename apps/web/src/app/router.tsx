@@ -50,6 +50,7 @@ const load = {
   aiAdmin: () => import('../features/admin/ai-admin'),
   study: () => import('../features/study/study'),
   subject: () => import('../features/study/subject-page'),
+  material: () => import('../features/study/material-page'),
   directory: () => import('../features/people/directory'),
   landing: () => import('../features/landing/landing'),
   profileView: () => import('../features/people/profile-view'),
@@ -280,7 +281,23 @@ function collegeRoutes(): RouteObject[] {
             qc.ensureQueryData(q.aiStatus()),
           ]),
           screen(load.subject, 'SubjectPage', 'study:read', at('/study/:id'), ({ id }) =>
-            isId(id) ? [qc.ensureQueryData(q.subject(id)), qc.ensureQueryData(q.syllabus(id))] : [],
+            isId(id)
+              ? [
+                  qc.ensureQueryData(q.subject(id)),
+                  qc.ensureQueryData(q.syllabus(id)),
+                  qc.ensureQueryData(q.materials(id, { unitId: '', topicId: '' })),
+                ]
+              : [],
+          ),
+          screen(
+            load.material,
+            'MaterialPage',
+            'study:read',
+            at('/study/:id/m/:materialId'),
+            ({ id, materialId }) =>
+              isId(id) && isId(materialId)
+                ? [qc.ensureQueryData(q.material(materialId)), qc.ensureQueryData(q.subject(id))]
+                : [],
           ),
           screen(load.profileEdit, 'ProfileEdit', undefined, at('/profile')),
           screen(load.directory, 'DirectoryPage', 'directory:read', at('/people')),

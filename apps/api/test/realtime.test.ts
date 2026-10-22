@@ -12,6 +12,7 @@ import { acceptedSession, makeMentor, sendRequest } from './mentorship-fixtures.
 import { TokenService } from '../src/lib/jwt.js';
 import { loadEnv } from '../src/config/env.js';
 import type { RealtimeGateway } from '../src/http/realtime.js';
+import { makeSubject } from './study-fixtures.js';
 
 const ctx = testApp();
 const gateway = (ctx.app.locals.services as { realtime: RealtimeGateway }).realtime;
@@ -178,5 +179,30 @@ describe('delivery is per user and per college', () => {
     expect(n.map((x) => x.type)).toEqual(['request_received']);
     // Notification payloads carry names and ids, never request text.
     expect(JSON.stringify(n)).not.toContain('Crack backend interviews');
+  });
+
+  it('sends study processing progress only to the uploader', async () => {
+    const faculty = await makeUser(ctx, A, { roles: ['FACULTY'] });
+    const other = await makeUser(ctx, A, { roles: ['FACULTY'] });
+    const subject = (await makeSubject(ctx, A, faculty, { branches: [], batches: [] })).id;
+    const mine = connect(A.host, faculty.token);
+    const theirs = connect(A.host, other.token);
+    const student = connect(A.host, outsider.token);
+    const far = connect(B.host, foreign.token);
+    await Promise.all([mine, theirs, student, far].map(connected));
+    const got = [mine, theirs, student, far].map((s) =>
+      collect<{ materialId: string; stage: string; progress: number }>(s, 'study:material', 700),
+    );
+    const up = await api(ctx, A.host, faculty.token)
+      .post('/study/materials')
+      .field('subjectId', subject)
+      .field('rights', 'true')
+      .attach('file', Buffer.from('Demo realtime notes about automata.'), 'rt.txt');
+    expect(up.status).toBe(201);
+    await ctx.queue.drain();
+    const [m, t, st, f] = await Promise.all(got);
+    expect(m?.map((e) => e.stage)).toEqual(expect.arrayContaining(['scanning', 'chunking', 'indexed']));
+    expect(m?.every((e) => e.materialId === up.body.data.id)).toBe(true);
+    expect([t, st, f]).toEqual([[], [], []]);
   });
 });

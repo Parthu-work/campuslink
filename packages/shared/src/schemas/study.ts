@@ -9,6 +9,8 @@ import {
   EMBEDDING_PROVIDERS,
   SEMESTER_MAX,
   SEMESTER_MIN,
+  MATERIAL_LANGUAGES,
+  MATERIAL_TABS,
   SUBJECT_STATUSES,
   SYLLABUS_MAX_TOPICS,
   SYLLABUS_MAX_UNITS,
@@ -17,6 +19,11 @@ import {
   type AiProvider,
   type EmbeddingProvider,
   type KeyStatus,
+  type MaterialLanguage,
+  type MaterialTab,
+  type MaterialType,
+  type MaterialVisibility,
+  type ProcessingStage,
   type SubjectStatus,
 } from '../constants/study.js';
 
@@ -82,6 +89,82 @@ export const enrollmentBody = z.strictObject({
   kind: z.enum(['include', 'exclude']),
 });
 export const contributorBody = z.strictObject({ userId: objectId, grant: z.boolean() });
+
+// ── Materials ─────────────────────────────
+const idList = z
+  .string()
+  .max(25 * 25)
+  .default('')
+  .transform((v) => [
+    ...new Set(
+      v
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean),
+    ),
+  ])
+  .pipe(z.array(objectId).max(20));
+/** Multipart fields that come with an uploaded file (all strings on the wire). */
+export const materialUploadFields = z.strictObject({
+  subjectId: objectId,
+  title: text(0, 160).default(''),
+  description: text(0, 2000).default(''),
+  category: z.enum(MATERIAL_TABS).optional(),
+  unitId: z.union([objectId, z.literal('')]).default(''),
+  /** Comma-separated topic ids. */
+  topicIds: idList,
+  language: z.enum(MATERIAL_LANGUAGES).default('en'),
+  /** "I have the right to share this" must be ticked. */
+  rights: z.literal('true', { error: 'Confirm you have the right to share this' }),
+});
+const chapter = z.strictObject({
+  at: z
+    .number()
+    .int()
+    .min(0)
+    .max(24 * 3600),
+  title: text(1, 120),
+});
+/** A video link (YouTube or Vimeo). Metadata comes from their official oEmbed; nothing is downloaded. */
+export const materialLinkBody = z.strictObject({
+  subjectId: objectId,
+  url: z.url({ protocol: /^https$/, error: 'Use an https:// link' }).max(500),
+  title: text(0, 160).default(''),
+  description: text(0, 2000).default(''),
+  category: z.enum(MATERIAL_TABS).default('videos'),
+  unitId: objectId.nullable().default(null),
+  topicIds: z.array(objectId).max(20).default([]),
+  language: z.enum(MATERIAL_LANGUAGES).default('en'),
+  chapters: z.array(chapter).max(100).default([]),
+  rights: z.literal(true, { error: 'Confirm you have the right to share this' }),
+});
+export const materialUpdateBody = z
+  .strictObject({
+    title: text(1, 160),
+    description: text(0, 2000),
+    category: z.enum(MATERIAL_TABS),
+    unitId: objectId.nullable(),
+    topicIds: z.array(objectId).max(20),
+    language: z.enum(MATERIAL_LANGUAGES),
+    chapters: z.array(chapter).max(100),
+  })
+  .partial();
+export const materialsQuery = z.strictObject({
+  category: z.enum(MATERIAL_TABS).optional(),
+  unitId: objectId.optional(),
+  topicId: objectId.optional(),
+  /** Managers only: drafts and material waiting for review. */
+  status: z.enum(['published', 'in_review', 'all']).default('published'),
+});
+export const materialReviewBody = z.strictObject({
+  action: z.enum(['publish', 'reject']),
+  reason: text(0, 500).default(''),
+});
+export const takedownBody = z.strictObject({ reason: text(5, 500) });
+export const studySearchQuery = z.strictObject({
+  q: text(2, 100),
+  subjectId: objectId.optional(),
+});
 
 // ── AI settings ─────────────────────────────
 /** An OpenAI-compatible endpoint. Only public https is accepted unless the platform allowlists it. */
@@ -176,6 +259,70 @@ export interface EnrollmentView {
   user: PersonRef;
   kind: 'include' | 'exclude';
 }
+export interface MaterialView {
+  id: string;
+  subjectId: string;
+  title: string;
+  description: string;
+  type: MaterialType;
+  category: MaterialTab;
+  language: MaterialLanguage;
+  mime: string | null;
+  size: number;
+  pageCount: number | null;
+  durationSec: number | null;
+  unitId: string | null;
+  topicIds: string[];
+  visibility: MaterialVisibility;
+  version: number;
+  uploader: PersonRef;
+  /** Where processing is, and why it failed (shown to the uploader and managers). */
+  stage: ProcessingStage;
+  progress: number;
+  error: string | null;
+  chunkCount: number;
+  hasTranscript: boolean;
+  thumbnailFileId: string | null;
+  /** For video links: the provider and the privacy-enhanced embed address (loaded only on tap). */
+  link: { provider: 'youtube' | 'vimeo'; url: string; embedUrl: string; author: string } | null;
+  reviewNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+  can: { edit: boolean; review: boolean };
+}
+export interface TranscriptSegmentView {
+  start: number;
+  end: number;
+  text: string;
+}
+export interface MaterialDetailView extends MaterialView {
+  chapters: { at: number; title: string }[];
+  transcript: TranscriptSegmentView[];
+  /** Pages of extracted text (documents), for search inside the viewer. */
+  pages: { page: number; text: string }[];
+}
+export interface SignedFileView {
+  url: string;
+  expiresAt: string;
+}
+export interface StudySearchHit {
+  chunkId: string;
+  materialId: string;
+  subjectId: string;
+  title: string;
+  type: MaterialType;
+  page: number | null;
+  startSec: number | null;
+  snippet: string;
+}
+/** Live processing progress (socket `study:material`, to the uploader). */
+export interface MaterialProgressEvent {
+  materialId: string;
+  stage: ProcessingStage;
+  progress: number;
+  error: string | null;
+}
+
 export interface AiKeyView {
   status: KeyStatus;
   /** The last four characters only; the key itself never leaves the server. */

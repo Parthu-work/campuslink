@@ -145,11 +145,12 @@ export function Select({
   ...props
 }: Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> & { size?: 'md' | 'sm' }) {
   return (
-    <span className={cn('relative block', className)}>
+    // min-w-0: a select is as wide as its longest option; in a grid or flex row it must still shrink.
+    <span className={cn('relative block min-w-0', className)}>
       <select
         className={cn(
           inputClass,
-          'cursor-pointer appearance-none',
+          'min-w-0 cursor-pointer appearance-none truncate',
           size === 'sm' ? 'min-h-11 pr-9 pl-3 text-meta' : 'pr-11',
         )}
         {...props}
