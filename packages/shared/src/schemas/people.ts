@@ -1,10 +1,8 @@
 import { z } from 'zod';
 import { email, objectId, totpCode } from './common.js';
+import { AUDIENCES, BRANCHES, IMPORT_FIELDS, PROFILE_FIELDS } from '../constants/people.js';
 
-// ── Branches ─────────────────────────────
-export const BRANCHES = ['CSE', 'IT', 'ECE', 'EEE', 'MECH', 'CIVIL', 'CHEM', 'AIML', 'DS', 'OTHER'] as const;
-export type Branch = (typeof BRANCHES)[number];
-
+// ── Member identity ─────────────────────────────
 const thisYear = () => new Date().getUTCFullYear();
 export const rollNumber = z
   .string()
@@ -33,10 +31,6 @@ export const phone = z
   .pipe(z.string().regex(/^\+[1-9]\d{7,14}$/, 'Use a valid mobile number'));
 
 // ── Imports ─────────────────────────────
-export const IMPORT_FIELDS = ['rollNumber', 'name', 'branch', 'gradYear', 'email', 'phone', 'kind'] as const;
-export type ImportField = (typeof IMPORT_FIELDS)[number];
-export const REQUIRED_IMPORT_FIELDS: readonly ImportField[] = ['rollNumber', 'name'];
-
 export const importMapping = z.strictObject({
   columns: z.partialRecord(z.enum(IMPORT_FIELDS), z.string().min(1).max(100)),
   /** Used when no `kind` column: derive from graduation year, or force one value. */
@@ -128,40 +122,6 @@ export const FREE_MAIL_DOMAINS = [
 ];
 
 // ── Profiles ─────────────────────────────
-export const AUDIENCES = ['members', 'alumni_staff', 'only_me'] as const;
-export type Audience = (typeof AUDIENCES)[number];
-export const PROFILE_FIELDS = [
-  'headline',
-  'company',
-  'jobTitle',
-  'location',
-  'skills',
-  'topics',
-  'languages',
-  'bio',
-  'links',
-  'email',
-  'phone',
-  'branch',
-  'gradYear',
-] as const;
-export type ProfileField = (typeof PROFILE_FIELDS)[number];
-export const DEFAULT_VISIBILITY: Record<ProfileField, Audience> = {
-  headline: 'members',
-  company: 'members',
-  jobTitle: 'members',
-  location: 'members',
-  skills: 'members',
-  topics: 'members',
-  languages: 'members',
-  bio: 'members',
-  links: 'members',
-  branch: 'members',
-  gradYear: 'members',
-  email: 'only_me',
-  phone: 'only_me',
-};
-
 export const tag = z
   .string()
   .trim()

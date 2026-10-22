@@ -2,7 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Dialog as D } from 'radix-ui';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { ChevronLeft, ChevronRight, ExternalLink, Pause, Play, Plus, Trash2, X } from 'lucide-react';
 import { STORY_BACKGROUNDS, type StoryView } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';

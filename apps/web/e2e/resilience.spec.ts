@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type Route } from '@playwright/test';
 import { signIn } from './helpers';
 
 /**
@@ -63,6 +63,13 @@ test('offline, an unvisited screen shows the offline state and the shell keeps w
   isMobile,
 }) => {
   await ready(page);
+  if (isMobile) {
+    // This test is about a screen: let the shell's own sheet load first (the next test covers it).
+    await page.getByRole('button', { name: /Account menu/ }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toBeHidden();
+  }
   await context.setOffline(true);
   await openEvents(page, !!isMobile);
   await expect(page.getByRole('heading', { name: 'You’re offline' })).toBeVisible({ timeout: 15_000 });
@@ -71,6 +78,30 @@ test('offline, an unvisited screen shows the offline state and the shell keeps w
   await page.getByRole('navigation', { name: 'Main' }).last().getByRole('link', { name: 'Home' }).click();
   await expect(page).toHaveURL(/\/home$/);
   await context.setOffline(false);
+});
+
+test('a shell menu whose code cannot load offline leaves the shell working and arrives once back online', async ({
+  page,
+  context,
+  isMobile,
+}) => {
+  // Hold the account menu's code until the connection drops, then fail it.
+  const menu = /\/assets\/account-menu-[^/]+\.js$/;
+  const held: Route[] = [];
+  await page.route(menu, (route) => void held.push(route));
+  await ready(page);
+  await context.setOffline(true);
+  await expect.poll(() => held.length, { timeout: 10_000 }).toBeGreaterThan(0);
+  for (const route of held) await route.abort('internetdisconnected');
+  await page.waitForTimeout(300);
+  await shellIsAlive(page);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+  await page.unroute(menu);
+  await context.setOffline(false);
+  await page.getByRole('button', { name: /Account menu/ }).click();
+  if (isMobile) await expect(page.getByRole('dialog').getByRole('link', { name: 'Events' })).toBeVisible();
+  else await expect(page.getByRole('menuitem', { name: 'Settings' })).toBeVisible();
 });
 
 test('two tabs opening at once share the session instead of revoking it (PW-8)', async ({ context }) => {

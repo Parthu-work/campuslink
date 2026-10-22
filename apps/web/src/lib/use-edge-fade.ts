@@ -19,7 +19,7 @@ export function useEdgeFade<T extends HTMLElement>() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    measure();
+    // The observer reports once on observe (after layout), so there is no measuring mid-commit.
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     el.addEventListener('scroll', measure, { passive: true });

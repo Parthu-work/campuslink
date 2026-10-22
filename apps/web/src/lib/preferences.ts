@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { create } from 'zustand';
-import i18n from '../i18n';
+import i18n, { loadLanguage } from '../i18n';
 import { prefs } from './storage';
 
 export type ThemePref = 'system' | 'dark' | 'light';
@@ -48,7 +48,7 @@ export const usePreferences = create<PrefState>((set) => ({
   },
   setLanguage: (l) => {
     prefs.set('lang', l);
-    void i18n.changeLanguage(l);
+    void loadLanguage(l).then(() => i18n.changeLanguage(l));
   },
 }));
 

@@ -17,3 +17,10 @@ export const totpCode = z.string().regex(/^\d{6}$/, 'Enter the 6-digit code');
 export const recoveryCode = z
   .string()
   .regex(/^[a-z0-9]{5}-[a-z0-9]{5}$/i, 'Recovery codes look like abcde-12345');
+
+/** Cursor pagination query (`?cursor=&limit=`). */
+export const cursorPageQuery = z.object({
+  cursor: z.string().max(200).optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+export type CursorPageQuery = z.infer<typeof cursorPageQuery>;

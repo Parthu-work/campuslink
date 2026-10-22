@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { BRANCHES, JOB_LEVELS, JOB_MODES, JOB_TYPES, jobBody, type JobView } from '@campuslink/shared';
 import type { z } from 'zod';
 import { BackLink } from '../../components/ui/back-link';

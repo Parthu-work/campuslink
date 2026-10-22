@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { objectId } from './common.js';
-import { BRANCHES, httpsUrl, type Branch } from './people.js';
+import { httpsUrl } from './people.js';
 import type { PersonRef } from './mentorship.js';
+import { BRANCHES, type Branch } from '../constants/people.js';
 
 export const EVENT_KINDS = ['meetup', 'talk', 'drive', 'workshop', 'ama', 'office_hours'] as const;
 export type EventKind = (typeof EVENT_KINDS)[number];

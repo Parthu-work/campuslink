@@ -10,7 +10,7 @@ Branch: the session branch rule applies (`claude/sleepy-euler-bi65m3`, started f
 |     1 | Critical fixes (platform landing, desktop rail, D3, error boundaries, D1)   | Done        |
 |     2 | Quick wins (all 24)                                                         | Done        |
 |     3 | Navigation and transitions (§7a, §7b, role-aware navigation)                | Done        |
-|     4 | Performance (§7d, CI bundle budget)                                         | Not started |
+|     4 | Performance (§7d, CI bundle budget)                                         | Done        |
 |     5 | Foundations (tokens, fonts, palette generator, contrast tests, ADR)         | Not started |
 |     6 | Living style guide (`/design`) — **stop for owner review with screenshots** | Not started |
 |     7 | Primitives (`components/ui/` rebuild, duplicates merged)                    | Not started |
@@ -105,3 +105,42 @@ Tests: `e2e/navigation.spec.ts` adds the persistent shell, scroll-aware chrome, 
 Deferred: the remaining shared-element pairs (roadmap node, story, subject, citation, video) arrive with the screens that have them (phases 8 and 9). Data is not prefetched for every visible card, only on intent, to spare metered connections.
 
 Next: Phase 4 (performance and the CI bundle budget).
+
+## Phase 4 · Performance
+
+`master-prompt.md` §7d. First-load JS went from 301 KB to **166 KB** gzipped (budget 170 KB).
+
+**Bundle budget in CI.** `apps/web/scripts/bundle-budget.mjs` (`pnpm --filter @campuslink/web budget`, run in CI after the build) reads Vite's manifest and fails when the initial JS passes 170 KB or when any screen adds more than 70 KB on top of what is already loaded (so initial + first screen stays under 240 KB). Parts a screen loads on demand are measured against that screen. Exceptions need a reason in the script; there are none.
+
+What left the first load, or a screen:
+
+- **Locales**: only the active language loads (`i18n/index.ts`, `loadLanguage`); a parity test checks keys, variables and empty strings in both.
+- **Socket.io**: loaded after sign-in, when the realtime bridge connects (`lib/realtime.ts`, with a generation guard so a slow load never outlives a sign-out).
+- **Shell extras**: the command palette, account menu and sheet, Create sheet, the admin MFA gate and the toaster load after first render (when idle or on first use). If one cannot load (offline before it arrived), its placeholder stays and it loads when the connection returns; the shell never fails with it (`lib/lazy-part.tsx`, covered by `e2e/resilience.spec.ts`).
+- **Toasts**: `lib/toast.ts` loads sonner on first use; nothing imports sonner directly (lint rule).
+- **Motion**: `lib/motion.ts` (`LazyMotion` + `m`, features in their own chunk); the XP bar is a CSS animation. Direct `motion/react` imports are a lint error.
+- **Zod**: off the first load and off every screen that only needs constants. Shared vocabularies (branches, job levels, session types, roadmap categories…) moved to zod-free `packages/shared/src/constants/`, and a small build plugin (`apps/web/pure-shared.ts`) marks the shared package's top-level schema builders pure so unused ones are dropped. The mentor request form (react-hook-form + Zod) loads beside the mentor header.
+- **Already lazy or small**: charts and the Galaxy are their own screens, markdown is 1 KB, there is no date library (Intl), icons are per-icon imports. PDF.js, KaTeX, the video player and the study chat arrive in phase 9 and stay out of the first screen.
+
+Cold start:
+
+- The college lookup and session refresh start together; the screen the member opened loads its code alongside them and its data as soon as there is a session (`warmLanding`, `lib/preload.ts`), instead of after the router mounts.
+- `index.html` paints the app icon before any script runs, and `Splash` keeps it in place (a spinner fades in below after 200 ms), so the first paint is no longer a blank screen.
+- A second, wasted refresh rotation on every cold start is gone (`SessionBootstrap` now reads the live session state).
+- Main-thread work: tab indicators, edge fades and the scroll-aware bars no longer force a layout while React is committing (measured through `ResizeObserver` or the next frame); date and number formatters are created once per language; the first render runs as a transition.
+
+Lighthouse 12, signed in as a student, mobile, simulated throttling (the audit's settings and machine class; `data/lighthouse/` is the baseline). Cold is a first visit with no HTTP cache and no service worker (two runs); warm is the installed app:
+
+| Screen   | Cold score (audit → now) | Cold LCP (audit → now) | Warm score (audit → now) |
+| -------- | -----------------------: | ---------------------: | -----------------------: |
+| Home     |               54 → 69–73 |            4.9 → 4.6 s |               72 → 89–91 |
+| Jobs     |               68 → 77–78 |            4.3 → 4.4 s |                  87 → 93 |
+| Mentors  |               68 → 65–74 |        4.6 → 4.4–4.8 s |                   – → 90 |
+| Roadmaps |               54 → 78–81 |        4.7 → 4.2–4.4 s |                   – → 95 |
+| Profile  |               70 → 73–80 |            4.1 → 3.9 s |                   – → 94 |
+
+CLS is 0 on every screen (Home was 0.153, Roadmaps 0.189: the followed roadmaps and drafts now load with the list in the route loader). FCP is 2.3 s cold (was 3.1 s) and 0.1 s warm. TBT is 160–600 ms cold and 270–440 ms warm (Home warm was 990 ms).
+
+**Gap: the 85 target is met for the installed app but not for a first visit on a cold cache.** Cold LCP is bound by the request chain an SPA with a refresh-token session has (HTML → JS → session refresh → data, about 0.7 s per step at the simulated latency) plus about 1.5 s of main-thread work at 4× CPU slowdown on Home. Next steps, in the phases that rebuild these surfaces: a lighter menu and sheet primitive in phase 7 (Radix dropdown and dialog are about 30 KB of Home), Home's feed render cost and the shell's first render in phase 8, and cached-first loading (audit B13: show the last-known content on cold start) in phase 11; phase 12 re-measures.
+
+Next: Phase 5 (foundations: tokens, fonts, palette generator, contrast tests, ADR).

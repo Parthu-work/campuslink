@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { motion } from 'motion/react';
-import { useReducedMotionPref } from '../../lib/preferences';
+import { toast } from '../../lib/toast';
 import { Award, Download, Flame, Gift, Lock, Medal, Sparkles, Trophy, Users } from 'lucide-react';
 import { BADGES, type MyProgressView } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
@@ -73,7 +71,6 @@ function ImpactCardButton({ p }: { p: MyProgressView }) {
 export function ProgressPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const reduce = useReducedMotionPref();
   const canMentor = useCan('mentorship:mentor');
   const q = useQuery(progress());
   const prefs = useMutation({
@@ -132,11 +129,9 @@ export function ProgressPage() {
           aria-valuemax={100}
           className="h-3 overflow-hidden rounded-full bg-surface-2"
         >
-          <motion.div
-            className="h-full origin-left rounded-full bg-brand"
-            initial={reduce ? false : { scaleX: 0 }}
-            animate={{ scaleX: pct / 100 }}
-            transition={{ duration: 0.6 }}
+          <div
+            className="fill-in h-full rounded-full bg-brand"
+            style={{ transform: `scaleX(${pct / 100})` }}
           />
         </div>
       </Card>

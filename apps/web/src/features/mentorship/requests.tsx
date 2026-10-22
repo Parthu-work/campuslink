@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { Inbox, MessageSquare, Video } from 'lucide-react';
 import {
   DECLINE_TEMPLATES,

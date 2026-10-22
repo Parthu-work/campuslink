@@ -1,7 +1,7 @@
 import { useDeferredValue, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { Check, ListChecks, MailPlus, Plus, Search, ShieldCheck, Trash2, X } from 'lucide-react';
 import { BRANCHES } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';

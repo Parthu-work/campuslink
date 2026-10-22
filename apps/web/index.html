@@ -12,7 +12,10 @@
     <title>%APP_NAME%</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- The launch mark, painted before any script runs; the app's Splash (app/guards.tsx) keeps it. -->
+      <div class="launch"><img src="/icons/icon.svg" alt="" width="56" height="56" /></div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

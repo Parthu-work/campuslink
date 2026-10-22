@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DropdownMenu } from 'radix-ui';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { Ban, Flag, MoreHorizontal, Sparkles, Trash2 } from 'lucide-react';
 import { REPORT_REASONS, type ContentTarget, type RemovalView } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';

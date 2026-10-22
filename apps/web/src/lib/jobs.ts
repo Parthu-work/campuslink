@@ -1,24 +1,30 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from './toast';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 import type { JobView, Salary, TrackStatus } from '@campuslink/shared';
 import { api, ApiError } from './api';
+
+/** Number formatters by locale and options; building an Intl formatter is slow and lists show many. */
+const numberFormats = new Map<string, Intl.NumberFormat>();
+const numberFormat = (locale: string, options: Intl.NumberFormatOptions = {}) => {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  let f = numberFormats.get(key);
+  if (!f) numberFormats.set(key, (f = new Intl.NumberFormat(locale, options)));
+  return f;
+};
 
 /** "₹4.5L–6L a year" / "₹30k–40k a month" (Indian lakh notation for INR). */
 export function formatSalary(s: Salary): string {
   const locale = i18n.language === 'te' ? 'te-IN' : 'en-IN';
   const inr = s.currency === 'INR';
   const short = (n: number) => {
-    if (inr && n >= 100_000) return `${(n / 100_000).toLocaleString(locale, { maximumFractionDigits: 1 })}L`;
-    if (n >= 1000) return `${(n / 1000).toLocaleString(locale, { maximumFractionDigits: 0 })}k`;
-    return n.toLocaleString(locale);
+    if (inr && n >= 100_000)
+      return `${numberFormat(locale, { maximumFractionDigits: 1 }).format(n / 100_000)}L`;
+    if (n >= 1000) return `${numberFormat(locale, { maximumFractionDigits: 0 }).format(n / 1000)}k`;
+    return numberFormat(locale).format(n);
   };
-  const sym = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: s.currency,
-    maximumFractionDigits: 0,
-  })
+  const sym = numberFormat(locale, { style: 'currency', currency: s.currency, maximumFractionDigits: 0 })
     .formatToParts(0)
     .find((p) => p.type === 'currency')?.value;
   const range =

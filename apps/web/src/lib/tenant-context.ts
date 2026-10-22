@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ensureContrast, onColor, type PublicTenant } from '@campuslink/shared';
-import { api, ApiError } from './api';
+import { tenant as tenantQuery } from './queries';
 
 const INK_RATIO = 5.5;
 
@@ -25,12 +25,7 @@ export function applyBranding(b: PublicTenant['branding']) {
 }
 
 export function useTenantQuery() {
-  return useQuery({
-    queryKey: ['tenant'],
-    queryFn: ({ signal }) => api.get<PublicTenant>('/tenant', signal),
-    staleTime: 5 * 60_000,
-    retry: (n, err) => !(err instanceof ApiError && err.status < 500) && n < 2,
-  });
+  return useQuery(tenantQuery());
 }
 
 export function useTenant(): PublicTenant {

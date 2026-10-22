@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { Link, Navigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { BadgeCheck, CloudOff, Loader2, ShieldAlert } from 'lucide-react';
@@ -7,23 +7,31 @@ import { useSession } from '../lib/session';
 import { refreshSession } from '../lib/api';
 import { useMe } from '../lib/me';
 import { useTenant } from '../lib/tenant-context';
-import { AuthLayout } from '../components/layout/auth-layout';
-import { MfaSetup } from '../features/auth/mfa-setup';
 import { EmptyState } from '../components/ui/misc';
 import { ShellSkeleton } from '../components/layout/skeletons';
 import { Button } from '../components/ui/button';
 import { buttonVariants } from '../components/ui/button-variants';
 import { useOnline } from '../lib/pwa';
 
-/** Boot only (college lookup, session): a calm blank canvas; the spinner fades in after 200 ms. */
+// Only admins ever see it, once: not part of the first load.
+const MfaGate = lazy(() => import('../features/auth/mfa-gate').then((m) => ({ default: m.MfaGate })));
+
+/**
+ * Boot only (college lookup, session): the launch mark index.html painted, so the hand-over is
+ * seamless; a spinner fades in under it after 200 ms.
+ */
 export function Splash() {
   const { t } = useTranslation();
   return (
-    <div className="grid min-h-dvh place-items-center" role="status">
-      <Loader2
-        className="delayed-in size-8 animate-spin text-brand-ink motion-reduce:animate-none"
-        aria-hidden
-      />
+    <div className="launch" role="status">
+      {/* The spinner hangs below the icon, so the icon stays exactly where index.html put it. */}
+      <span className="relative grid">
+        <img src="/icons/icon.svg" alt="" width={56} height={56} />
+        <Loader2
+          className="delayed-in absolute top-full left-1/2 mt-5 -ml-3 size-6 animate-spin text-brand-ink motion-reduce:animate-none"
+          aria-hidden
+        />
+      </span>
       <span className="sr-only">{t('common.loading')}</span>
     </div>
   );
@@ -33,8 +41,10 @@ export function Splash() {
 export function SessionBootstrap({ children }: { children: ReactNode }) {
   const status = useSession((s) => s.status);
   useEffect(() => {
-    if (status === 'unknown') void refreshSession();
-  }, [status]);
+    // startBoot (main.tsx) has usually settled the session by now. Read the live status: a refresh
+    // that finished between render and this effect must not be followed by a second rotation.
+    if (useSession.getState().status === 'unknown') void refreshSession();
+  }, []);
   return status === 'unknown' ? <Splash /> : <>{children}</>;
 }
 
@@ -73,9 +83,9 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   if (isLoading || !me) return <ShellSkeleton />;
   if (me.mfaRequired && !me.mfaEnabled) {
     return (
-      <AuthLayout title={t('mfa.setupTitle')} subtitle={t('mfa.setupWhy')}>
-        <MfaSetup onDone={() => undefined} />
-      </AuthLayout>
+      <Suspense fallback={<Splash />}>
+        <MfaGate />
+      </Suspense>
     );
   }
   return <>{children}</>;

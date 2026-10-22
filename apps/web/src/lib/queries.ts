@@ -6,6 +6,7 @@ import type {
   EventView,
   FeedEntry,
   JobView,
+  MeResponse,
   MentorCard,
   MentorMatch,
   MessageView,
@@ -13,18 +14,36 @@ import type {
   NotificationView,
   OneUsefulThingView,
   PostView,
+  PublicTenant,
   RemovalView,
   RadarView,
   RoadmapSummaryView,
   RoadmapView,
   StoryView,
 } from '@campuslink/shared';
-import { api, apiRequest } from './api';
+import { api, ApiError, apiRequest } from './api';
 
 /**
  * One definition per server read: screens read through these and route loaders prefetch the same
  * keys, so code and data load in parallel (audit TR-2, PF-2) and invalidations keep matching.
  */
+
+/** The college this host belongs to (public; read before anything else). */
+export const tenant = () =>
+  queryOptions({
+    queryKey: ['tenant'],
+    queryFn: ({ signal }) => api.get<PublicTenant>('/tenant', signal),
+    staleTime: 5 * 60_000,
+    retry: (n, err) => !(err instanceof ApiError && err.status < 500) && n < 2,
+  });
+
+/** The signed-in member (roles, permissions, verification). */
+export const me = () =>
+  queryOptions({
+    queryKey: ['me'],
+    queryFn: ({ signal }) => api.get<MeResponse>('/me', signal),
+    staleTime: 60_000,
+  });
 
 export type FeedRow = FeedEntry;
 export interface FeedPage {
@@ -150,6 +169,20 @@ export const roadmapsList = (qs: string) =>
   queryOptions({
     queryKey: ['roadmaps', 'list', qs],
     queryFn: () => api.get<RoadmapSummaryView[]>(`/roadmaps${qs ? `?${qs}` : ''}`),
+  });
+
+/** Roadmaps the member follows, shown above the list (members who can track progress). */
+export const followedRoadmaps = () =>
+  queryOptions({
+    queryKey: ['roadmaps', 'following'],
+    queryFn: () => api.get<RoadmapSummaryView[]>('/roadmaps?mine=following'),
+  });
+
+/** The member's own drafts, shown above the list (authors). */
+export const roadmapDrafts = () =>
+  queryOptions({
+    queryKey: ['roadmaps', 'drafts'],
+    queryFn: () => api.get<RoadmapSummaryView[]>('/roadmaps?status=draft'),
   });
 
 export const roadmap = (slug: string) =>

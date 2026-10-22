@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { Film, ImagePlus, Link2, ListChecks, PenLine, X } from 'lucide-react';
 import {
   POST_MAX,

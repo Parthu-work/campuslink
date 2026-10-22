@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { objectId } from './common.js';
-import { BRANCHES, httpsUrl, type Branch } from './people.js';
+import { httpsUrl } from './people.js';
 import type { PersonRef } from './mentorship.js';
+import { BRANCHES, type Branch } from '../constants/people.js';
 
 // ── Topics ─────────────────────────────
 /** Fixed topic list (labels are translated in the web app). */

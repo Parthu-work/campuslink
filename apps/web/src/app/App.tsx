@@ -1,6 +1,6 @@
+import { lazy, Suspense } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../lib/query-client';
-import { Toaster } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { Building2, PauseCircle } from 'lucide-react';
 import { ApiError } from '../lib/api';
@@ -12,6 +12,10 @@ import { AppRouter } from './router';
 import { SessionBootstrap, Splash } from './guards';
 import { AppStatus } from '../components/layout/app-status';
 import { BotCheckHost } from '../components/layout/bot-check-host';
+import { loadSonner } from '../lib/toast';
+
+// Loads just after the first render; toasts raised before it mounts are replayed by sonner.
+const Toaster = lazy(() => loadSonner().then((m) => ({ default: m.Toaster })));
 
 function TenantGate() {
   const { t } = useTranslation();
@@ -69,12 +73,14 @@ export function App() {
       <AppStatus />
       <TenantGate />
       <BotCheckHost />
-      <Toaster
-        position="bottom-center"
-        // Above the phone tab bar, never on top of it (NB-5).
-        mobileOffset={{ bottom: 'calc(84px + env(safe-area-inset-bottom, 0px))' }}
-        toastOptions={{ className: '!rounded-[var(--radius-md)] !bg-fg !text-bg !border-0 !font-semibold' }}
-      />
+      <Suspense fallback={null}>
+        <Toaster
+          position="bottom-center"
+          // Above the phone tab bar, never on top of it (NB-5).
+          mobileOffset={{ bottom: 'calc(84px + env(safe-area-inset-bottom, 0px))' }}
+          toastOptions={{ className: '!rounded-[var(--radius-md)] !bg-fg !text-bg !border-0 !font-semibold' }}
+        />
+      </Suspense>
     </QueryClientProvider>
   );
 }

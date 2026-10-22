@@ -8,7 +8,7 @@ import {
   useQueryClient,
   type InfiniteData,
 } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { FileText, Lock, MessagesSquare, Paperclip, SendHorizontal } from 'lucide-react';
 import { MESSAGE_MAX, type MessageView } from '@campuslink/shared';
 import { BackLink } from '../../components/ui/back-link';

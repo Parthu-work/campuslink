@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { Download, Trash2, Undo2 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';

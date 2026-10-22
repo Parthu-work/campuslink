@@ -37,6 +37,29 @@ export default tseslint.config(
     },
   },
   {
+    // Bundle budget (master prompt §7d): these load lazily through one module each.
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    ignores: [
+      'apps/web/src/lib/toast.ts',
+      'apps/web/src/lib/motion.ts',
+      'apps/web/src/lib/motion-features.ts',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            { name: 'sonner', message: "Import toast from 'lib/toast' (loads sonner on first use)." },
+            {
+              name: 'motion/react',
+              message: "Import from 'lib/motion' (LazyMotion; features load on demand).",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // Service-worker scripts run in the worker global scope.
     files: ['apps/web/public/**/*.js'],
     ignores: ['apps/web/public/boot.js'],
@@ -75,7 +98,7 @@ export default tseslint.config(
     rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
   },
   {
-    files: ['scripts/**/*.mjs'],
+    files: ['scripts/**/*.mjs', 'apps/*/scripts/**/*.mjs'],
     rules: { 'no-console': 'off' },
   },
   prettier,

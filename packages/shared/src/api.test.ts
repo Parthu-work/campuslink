@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cursorPageQuery, API_PREFIX } from './api.js';
+import { API_PREFIX, REALTIME_PATH } from './api.js';
+import { cursorPageQuery } from './schemas/common.js';
 
 describe('cursorPageQuery', () => {
   it('applies a default limit', () => {
@@ -15,4 +16,5 @@ describe('cursorPageQuery', () => {
 
 describe('API_PREFIX', () => {
   it('is versioned', () => expect(API_PREFIX).toBe('/api/v1'));
+  it('hosts the realtime endpoint', () => expect(REALTIME_PATH).toBe('/api/v1/realtime'));
 });

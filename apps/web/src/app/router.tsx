@@ -15,7 +15,7 @@ import { Compass } from 'lucide-react';
 import { ADMIN_PERMISSIONS, type Permission } from '@campuslink/shared';
 import { useTenant } from '../lib/tenant-context';
 import { importWithRetry, setPendingTargetResolver } from '../lib/chunk-reload';
-import { registerPreloadRoutes } from '../lib/preload';
+import { registerPreloadRoutes, registerRouteTables } from '../lib/preload';
 import { registerRouterState } from '../lib/router-state';
 import { queryClient as qc } from '../lib/query-client';
 import * as q from '../lib/queries';
@@ -245,8 +245,8 @@ const shell = (platform: boolean, children: RouteObject[]): RouteObject => ({
   ],
 });
 
-function collegeRouter() {
-  return createBrowserRouter([
+function collegeRoutes(): RouteObject[] {
+  return [
     {
       errorElement: <RouteError fullPage />,
       hydrateFallbackElement: <Splash />,
@@ -283,6 +283,15 @@ function collegeRouter() {
           screen(load.questions, 'QuestionPage', 'feed:read', at('/questions/:questionId')),
           screen(load.galaxy, 'RoadmapsPage', 'roadmaps:read', at('/roadmaps'), (_, url) => [
             qc.ensureQueryData(q.roadmapsList(q.roadmapFilterQuery(url.searchParams))),
+            // The sections above the list, for members who have them (no layout shift, audit).
+            qc
+              .ensureQueryData(q.me())
+              .then((me) =>
+                Promise.all([
+                  me.permissions.includes('roadmaps:progress') && qc.ensureQueryData(q.followedRoadmaps()),
+                  me.permissions.includes('roadmaps:write') && qc.ensureQueryData(q.roadmapDrafts()),
+                ]),
+              ),
           ]),
           screen(load.roadmapReview, 'RoadmapReviewPage', 'roadmaps:review', at('/roadmaps/review')),
           screen(load.roadmapEditor, 'RoadmapEditorPage', 'roadmaps:write', at('/roadmaps/new')),
@@ -359,11 +368,11 @@ function collegeRouter() {
         ]),
       ],
     },
-  ]);
+  ];
 }
 
-function platformRouter() {
-  return createBrowserRouter([
+function platformRoutes(): RouteObject[] {
+  return [
     {
       errorElement: <RouteError fullPage />,
       hydrateFallbackElement: <Splash />,
@@ -377,8 +386,11 @@ function platformRouter() {
         ]),
       ],
     },
-  ]);
+  ];
 }
+
+// Lets `warmLanding` (lib/preload.ts) match the opened URL before the router exists.
+registerRouteTables((kind) => (kind === 'platform' ? platformRoutes() : collegeRoutes()));
 
 let collegeInstance: ReturnType<typeof createBrowserRouter> | null = null;
 let platformInstance: ReturnType<typeof createBrowserRouter> | null = null;
@@ -410,8 +422,8 @@ export function AppRouter() {
   const tenant = useTenant();
   const router = withViewTransitions(
     tenant.kind === 'platform'
-      ? (platformInstance ??= platformRouter())
-      : (collegeInstance ??= collegeRouter()),
+      ? (platformInstance ??= createBrowserRouter(platformRoutes()))
+      : (collegeInstance ??= createBrowserRouter(collegeRoutes())),
   );
   registerPreloadRoutes(router.routes);
   registerRouterState(() => ({ navigating: router.state.navigation.state !== 'idle' }));

@@ -20,10 +20,27 @@ import { usePalette, usePaletteShortcut } from '../../lib/palette';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { useRealtimeBridge } from '../../lib/use-realtime-bridge';
 import { prefersReducedMotion } from '../../lib/preferences';
-import { CommandPalette } from './command-palette';
-import { AccountMenu, AccountSheet } from './account-menu';
-import { CreateSheet } from './create-sheet';
 import { NavProgress } from './skeletons';
+import { useIdle } from '../../lib/use-idle';
+import { lazyPart } from '../../lib/lazy-part';
+
+// Not needed for the first screen (audit PF-1): the palette (cmdk), the account menu (Radix menu)
+// and the sheets load after the first idle period, or at once when the member opens them.
+// A part that cannot load (offline) keeps its placeholder and retries when the connection returns.
+const CommandPalette = lazyPart(() => import('./command-palette').then((m) => m.CommandPalette));
+const AccountMenu = lazyPart(() => import('./account-menu').then((m) => m.AccountMenu));
+const AccountSheet = lazyPart(() => import('./account-menu').then((m) => m.AccountSheet));
+const CreateSheet = lazyPart(() => import('./create-sheet').then((m) => m.CreateSheet));
+
+/** Same size as the account button, while the menu's code loads (no layout shift). */
+function AccountButtonPlaceholder({ name }: { name: string }) {
+  return (
+    <div aria-hidden className="flex min-h-12 items-center gap-3 px-2">
+      <PersonAvatar name={name || '?'} fileId={null} size={36} />
+      <span className="hidden truncate text-sm font-bold xl:block">{name}</span>
+    </div>
+  );
+}
 
 function RealtimeBridge() {
   useRealtimeBridge();
@@ -76,6 +93,8 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
   usePaletteShortcut();
   const nav = useNav();
   const sheet = useUrlOverlay('sheet');
+  const idle = useIdle();
+  const paletteOpen = usePalette((s) => s.open);
   const reselect = useReselect();
   useRouteFocus(tenant.branding.shortName);
   const tabRoots = useMemo(() => new Set(nav.tabs.map((i) => i.to)), [nav.tabs]);
@@ -209,7 +228,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           ))}
         </div>
         <div className="border-t border-line p-3">
-          <AccountMenu platform={platform} />
+          <AccountMenu platform={platform} fallback={<AccountButtonPlaceholder name={me?.name ?? ''} />} />
         </div>
       </nav>
 
@@ -315,10 +334,10 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         </div>
       </main>
 
-      {!platform && <CommandPalette />}
       {!platform && <RealtimeBridge />}
-      {!platform && <AccountSheet />}
-      {canCreate && <CreateSheet />}
+      {!platform && (idle || paletteOpen) && <CommandPalette />}
+      {!platform && (idle || sheet.value === 'account') && <AccountSheet />}
+      {canCreate && (idle || sheet.value === 'create') && <CreateSheet />}
 
       {/* Phone bottom tabs: role-aware, Create in the middle. */}
       <nav

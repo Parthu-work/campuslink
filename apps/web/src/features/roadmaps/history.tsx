@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { Check, GitCompare, History, MessageSquareWarning } from 'lucide-react';
 import type { RoadmapContent, RoadmapView, VersionView } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';

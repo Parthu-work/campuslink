@@ -2,7 +2,7 @@ import { useId } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import {
   Bookmark,
   BookmarkCheck,

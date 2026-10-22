@@ -2,9 +2,17 @@ import { useDeferredValue, useState, type KeyboardEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { motion, useMotionValue, useTransform, animate, type PanInfo } from 'motion/react';
+import {
+  LazyMotion,
+  m as motion,
+  motionFeatures,
+  useAnimationControls,
+  useMotionValue,
+  useTransform,
+  type PanInfo,
+} from '../../lib/motion';
 import { useReducedMotionPref } from '../../lib/preferences';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { Compass, Heart, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { SESSION_TYPES, type MentorCard, type MentorMatch, type MatchReason } from '@campuslink/shared';
 import { IntentLink } from '../../components/ui/intent-link';
@@ -89,14 +97,16 @@ function MatchCard({
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-240, 240], [-10, 10]);
   const opacity = useTransform(x, [-260, 0, 260], [0.4, 1, 0.4]);
+  // Animating `x` through the controls moves the same motion value the style reads.
+  const controls = useAnimationControls();
   const m = match.mentor;
   const settle = (dir: -1 | 0 | 1, done?: () => void) => {
     if (reduce || dir === 0) {
-      void animate(x, 0, { duration: reduce ? 0 : 0.2 });
+      void controls.start({ x: 0, transition: { duration: reduce ? 0 : 0.2 } });
       done?.();
       return;
     }
-    void animate(x, dir * 480, { duration: 0.22 }).then(() => {
+    void controls.start({ x: dir * 480, transition: { duration: 0.22 } }).then(() => {
       x.set(0);
       done?.();
     });
@@ -109,6 +119,7 @@ function MatchCard({
   return (
     <motion.div
       style={{ x, rotate, opacity }}
+      animate={controls}
       drag={reduce ? false : 'x'}
       dragSnapToOrigin
       onDragEnd={onDragEnd}
@@ -252,7 +263,9 @@ function MatchView() {
           aria-label={t('match.deckLabel', { name: top.mentor.name, left: deck.length })}
           className="mx-auto grid w-full max-w-[460px] gap-4 rounded-[var(--radius-lg)]"
         >
-          <MatchCard key={top.mentor.userId} match={top} onPass={pass} onPick={pick} />
+          <LazyMotion features={motionFeatures} strict>
+            <MatchCard key={top.mentor.userId} match={top} onPass={pass} onPick={pick} />
+          </LazyMotion>
           <div className="flex justify-center gap-4">
             <Button size="lg" onClick={pass} aria-label={t('match.pass', { name: top.mentor.name })}>
               <X className="size-5" aria-hidden /> {t('match.passShort')}

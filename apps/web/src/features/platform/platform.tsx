@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { Building2, Plus } from 'lucide-react';
 import { createTenantBody, type Branding } from '@campuslink/shared';
 import type { z } from 'zod';

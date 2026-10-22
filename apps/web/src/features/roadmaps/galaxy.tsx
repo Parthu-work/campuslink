@@ -14,8 +14,7 @@ import { buttonVariants } from '../../components/ui/button-variants';
 import { Input, Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Segmented } from '../../components/ui/tab-nav';
-import { api } from '../../lib/api';
-import { roadmapsList } from '../../lib/queries';
+import { followedRoadmaps, roadmapDrafts, roadmapsList } from '../../lib/queries';
 import { useCan } from '../../lib/me';
 import { cn } from '../../lib/cn';
 import { defaultRoadmapView, layoutGalaxy, rememberRoadmapView } from '../../lib/roadmaps';
@@ -226,16 +225,9 @@ export function RoadmapsPage() {
     ).toString(),
   );
   const list = useQuery({ ...roadmapsList(qs), placeholderData: keepPreviousData });
-  const mine = useQuery({
-    queryKey: ['roadmaps', 'following'],
-    queryFn: () => api.get<RoadmapSummaryView[]>('/roadmaps?mine=following'),
-    enabled: canProgress,
-  });
-  const drafts = useQuery({
-    queryKey: ['roadmaps', 'drafts'],
-    queryFn: () => api.get<RoadmapSummaryView[]>('/roadmaps?status=draft'),
-    enabled: canWrite,
-  });
+  // The route loader fetches these with the list, so the filters never jump when they arrive.
+  const mine = useQuery({ ...followedRoadmaps(), enabled: canProgress });
+  const drafts = useQuery({ ...roadmapDrafts(), enabled: canWrite });
   const rows = list.data ?? [];
   const byCategory = ROADMAP_CATEGORIES.map((c) => [c, rows.filter((r) => r.category === c)] as const).filter(
     ([, rs]) => rs.length,

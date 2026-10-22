@@ -23,6 +23,7 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 | Unit and API tests                           | `pnpm test`                                                             |
 | End-to-end tests (Playwright plus axe)       | `pnpm test:e2e` (set `PW_CHROMIUM_PATH` to use a preinstalled Chromium) |
 | Build                                        | `pnpm build`                                                            |
+| Web bundle budget (after a build)            | `pnpm --filter @campuslink/web budget`                                  |
 | Seed demo data                               | `pnpm seed` (Phase 1 onwards)                                           |
 | Dependency audit                             | `pnpm audit`                                                            |
 | Check roadmap library links                  | `pnpm --filter @campuslink/api roadmaps:verify`                         |
@@ -84,6 +85,7 @@ scripts/backup/  encrypted backup, restore and drill
 - Web navigation: every navigation surface (tabs, rail, avatar menu, Create sheet, command palette) comes from `buildNav()` (`packages/shared/src/navigation.ts`) through `useNav()` (`apps/web/src/lib/nav.ts`). Never hard-code tabs or menus per screen.
 - Web routes: declare screens with `screen()` and `layout()` in `app/router.tsx` (React Router `lazy` with `importWithRetry` and an error element). Never add per-route `Suspense` wrappers or full-screen spinners; the shell never unmounts.
 - Overlays a member opens are history entries, so Back closes them: linkable ones (sheets, step panels) keep their open state in the URL through `useUrlOverlay()` (`lib/use-url-overlay.ts`); the `Dialog` primitive does the rest through `useDialogHistory()` (pass `history={false}` when the URL already holds the state).
+- Web bundle budget: initial JS at most 170 KB gzipped and at most 70 KB per screen on top of what is already loaded (`pnpm --filter @campuslink/web budget` after a build; CI fails over it). Toasts come from `lib/toast.ts` and animation from `lib/motion.ts` (`LazyMotion` with `m.*`), never from `sonner` or `motion/react` directly (lint rule). Heavy parts a screen does not need for its first paint load with `lazy()`. Constants the web needs live in zod-free `packages/shared/src/constants/<area>.ts`; schema files import them.
 - Web data: server reads are defined once in `lib/queries.ts` (keys and fetchers). Screens read through them, and the route's static `loader` in `app/router.tsx` prefetches the same keys, so code and data load in parallel. Detail screens seed from the list row (`lib/query-seed.ts`); filtered lists keep previous data while refetching. Links to detail screens use `IntentLink`; "back" links use `BackLink`.
 - Web security headers (CSP, HSTS and the rest) live only in `deploy/nginx/security-headers.conf`. `vite preview` serves the same file, so the end-to-end suite runs under the production CSP. Anything that needs a new source (a script, frame or connection) changes that file and its test.
 

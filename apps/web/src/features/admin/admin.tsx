@@ -3,7 +3,7 @@ import { Outlet } from 'react-router';
 import { TabNav } from '../../components/ui/tab-nav';
 import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { Search, UserX, ScrollText } from 'lucide-react';
 import {
   contrast,

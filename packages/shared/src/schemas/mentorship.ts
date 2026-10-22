@@ -1,34 +1,22 @@
 import { z } from 'zod';
 import { objectId } from './common.js';
-import { tag, type Branch } from './people.js';
+import { tag } from './people.js';
+import {
+  type BookingStatus,
+  DECLINE_TEMPLATES,
+  type DeclineTemplate,
+  FEEDBACK_TAGS,
+  MENTEE_AUDIENCES,
+  REQUEST_STATUSES,
+  type RequestStatus,
+  SESSION_DURATIONS,
+  SESSION_TYPES,
+  type SessionType,
+  isBookable,
+} from '../constants/mentorship.js';
+import type { Branch } from '../constants/people.js';
 
 // ── Mentor setup ─────────────────────────────
-export const SESSION_TYPES = ['quick_chat', 'video_1on1', 'mock_interview', 'resume_review'] as const;
-export type SessionType = (typeof SESSION_TYPES)[number];
-/** Quick chat is asynchronous messaging; every other type books a video slot. */
-export const BOOKABLE_TYPES: readonly SessionType[] = ['video_1on1', 'mock_interview', 'resume_review'];
-export const isBookable = (t: SessionType) => BOOKABLE_TYPES.includes(t);
-export const SESSION_DURATIONS = [15, 30, 45, 60] as const;
-export const DEFAULT_DURATIONS: Record<SessionType, number> = {
-  quick_chat: 0,
-  video_1on1: 30,
-  mock_interview: 45,
-  resume_review: 30,
-};
-export const MENTEE_AUDIENCES = ['students', 'alumni', 'both'] as const;
-export type MenteeAudience = (typeof MENTEE_AUDIENCES)[number];
-/** Bookings are held in 15-minute blocks; slot starts sit on this grid. */
-export const BLOCK_MINUTES = 15;
-export const DEFAULT_TIMEZONE = 'Asia/Kolkata';
-export const MAX_RESCHEDULES = 2;
-export const JOIN_EARLY_MINUTES = 10;
-export const JOIN_LATE_MINUTES = 15;
-export const LATE_CANCEL_HOURS = 12;
-export const NO_SHOW_WINDOW_HOURS = 48;
-export const FEEDBACK_WINDOW_DAYS = 14;
-export const REQUEST_TTL_DAYS = 7;
-export const MAX_PENDING_REQUESTS = 3;
-
 export const timezone = z
   .string()
   .min(1)
@@ -129,12 +117,6 @@ export const slotsQuery = z.strictObject({
 });
 
 // ── Requests ─────────────────────────────
-export const REQUEST_STATUSES = ['pending', 'accepted', 'declined', 'withdrawn', 'expired'] as const;
-export type RequestStatus = (typeof REQUEST_STATUSES)[number];
-/** Kind decline replies; the text is localised on the client, the key is stored. */
-export const DECLINE_TEMPLATES = ['not_my_area', 'fully_booked', 'try_later', 'suggest_other'] as const;
-export type DeclineTemplate = (typeof DECLINE_TEMPLATES)[number];
-
 const longText = (min: number, max: number) =>
   z.string().trim().min(min, `At least ${min} characters`).max(max, `At most ${max} characters`);
 export const slotStart = z.iso.datetime({ offset: true });
@@ -177,22 +159,12 @@ export const requestsQuery = z.strictObject({
 });
 
 // ── Bookings & feedback ─────────────────────────────
-export const BOOKING_STATUSES = ['scheduled', 'completed', 'cancelled', 'no_show'] as const;
-export type BookingStatus = (typeof BOOKING_STATUSES)[number];
 export const rescheduleBody = z.strictObject({ slotStart });
 export const cancelBody = z.strictObject({ reason: z.string().trim().max(300).optional() });
 export const bookingsQuery = z.strictObject({
   when: z.enum(['upcoming', 'past']).default('upcoming'),
   cursor: objectId.optional(),
 });
-export const FEEDBACK_TAGS = [
-  'clear_advice',
-  'actionable',
-  'kind',
-  'well_prepared',
-  'ran_late',
-  'not_relevant',
-] as const;
 export const feedbackBody = z.strictObject({
   rating: z.number().int().min(1).max(5),
   tags: z

@@ -1,21 +1,40 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { APP_NAME, DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from '@campuslink/shared';
-import en from './en.json';
-import te from './te.json';
 import { prefs } from '../lib/storage';
+
+/**
+ * Only the member's language is downloaded (audit PF-1: both languages were 54 KB of the first
+ * load). The other one loads when they switch (`loadLanguage`).
+ */
+const bundles: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> = {
+  en: () => import('./en.json'),
+  te: () => import('./te.json'),
+};
 
 const saved = prefs.get('lang');
 const initial: Locale = SUPPORTED_LOCALES.includes(saved as Locale) ? (saved as Locale) : DEFAULT_LOCALE;
 
-void i18n.use(initReactI18next).init({
-  resources: { en: { translation: en }, te: { translation: te } },
-  lng: initial,
-  fallbackLng: 'en',
-  // {{app}} in any string is the product name (single source: packages/shared/src/brand.ts).
-  interpolation: { escapeValue: false, defaultVariables: { app: APP_NAME } },
-  returnNull: false,
-});
+/** Downloads a language's strings once and registers them. */
+export async function loadLanguage(lng: Locale) {
+  if (i18n.hasResourceBundle(lng, 'translation')) return;
+  const { default: strings } = await bundles[lng]();
+  i18n.addResourceBundle(lng, 'translation', strings, true, true);
+}
+
+/** Resolves once the first language is ready; the app renders after it (main.tsx). */
+export const i18nReady = bundles[initial]().then(({ default: strings }) =>
+  i18n.use(initReactI18next).init({
+    resources: { [initial]: { translation: strings } },
+    lng: initial,
+    // Telugu and English are at parity (a unit test checks it), so no fallback bundle is fetched.
+    fallbackLng: false,
+    partialBundledLanguages: true,
+    // {{app}} in any string is the product name (single source: packages/shared/src/brand.ts).
+    interpolation: { escapeValue: false, defaultVariables: { app: APP_NAME } },
+    returnNull: false,
+  }),
+);
 document.documentElement.setAttribute('lang', initial);
 i18n.on('languageChanged', (lng) => document.documentElement.setAttribute('lang', lng));
 

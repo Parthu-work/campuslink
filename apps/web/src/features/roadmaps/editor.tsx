@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { ArrowDown, ArrowUp, Plus, Send, Trash2, X } from 'lucide-react';
 import {
   BRANCHES,

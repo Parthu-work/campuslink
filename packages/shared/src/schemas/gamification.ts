@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { objectId } from './common.js';
 import type { PersonRef } from './mentorship.js';
-import type { Branch } from './people.js';
+import type { Branch } from '../constants/people.js';
 
 // ── Ledger ─────────────────────────────
 export const XP_TRACKS = ['xp', 'impact'] as const;

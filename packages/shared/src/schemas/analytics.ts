@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BRANCHES, type Branch } from './people.js';
+import { BRANCHES, type Branch } from '../constants/people.js';
 
 /** Counts below this are shown as "<5" so nobody is identifiable in a small group. */
 export const SMALL_CELL = 5;

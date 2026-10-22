@@ -53,7 +53,6 @@ export interface ClientEvents {
   typing: (t: { conversationId: string }) => void;
 }
 export const typingEvent = z.strictObject({ conversationId: objectId });
-export const REALTIME_PATH = '/api/v1/realtime';
 
 // ── Notifications ─────────────────────────────
 export const NOTIFICATION_TYPES = [

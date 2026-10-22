@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from './toast';
 import type { MessageView, NotificationView } from '@campuslink/shared';
 import { connectRealtime, disconnectRealtime, useTyping } from './realtime';
 import { useSession } from './session';
@@ -34,7 +34,8 @@ export function useRealtimeBridge() {
       disconnectRealtime();
       return;
     }
-    const s = connectRealtime();
+    let s: Awaited<ReturnType<typeof connectRealtime>> | null = null;
+    let cancelled = false;
     const onMessage = (m: MessageView) => {
       appendMessage(qc, m);
       void qc.invalidateQueries({ queryKey: ['conversations'] });
@@ -58,15 +59,20 @@ export function useRealtimeBridge() {
         action: { label: t('common.open'), onClick: () => void navigate(text.href) },
       });
     };
-    s.on('message:new', onMessage);
-    s.on('message:read', onRead);
-    s.on('typing', onTyping);
-    s.on('notification:new', onNotification);
+    void connectRealtime().then((socket) => {
+      if (cancelled) return;
+      s = socket;
+      s.on('message:new', onMessage);
+      s.on('message:read', onRead);
+      s.on('typing', onTyping);
+      s.on('notification:new', onNotification);
+    });
     return () => {
-      s.off('message:new', onMessage);
-      s.off('message:read', onRead);
-      s.off('typing', onTyping);
-      s.off('notification:new', onNotification);
+      cancelled = true;
+      s?.off('message:new', onMessage);
+      s?.off('message:read', onRead);
+      s?.off('typing', onTyping);
+      s?.off('notification:new', onNotification);
     };
   }, [status, qc, t, navigate]);
 }

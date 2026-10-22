@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { APP_NAME } from '@campuslink/shared';
 import { previewSecurityHeaders } from './security-headers';
+import { pureShared } from './pure-shared';
 
 /** Same-origin API proxy. Sockets that close mid-flight (tab closed) are normal, not errors. */
 const apiProxy = {
@@ -22,6 +23,7 @@ export default defineConfig({
   plugins: [
     // The product name has one home (packages/shared/src/brand.ts); index.html uses %APP_NAME%.
     { name: 'app-name', transformIndexHtml: (html: string) => html.replaceAll('%APP_NAME%', APP_NAME) },
+    pureShared(),
     react(),
     tailwindcss(),
     VitePWA({
@@ -74,5 +76,10 @@ export default defineConfig({
     allowedHosts: ['.localhost'],
     proxy: apiProxy,
   },
-  build: { target: 'es2022', sourcemap: true },
+  build: {
+    target: 'es2022',
+    sourcemap: true,
+    // The manifest feeds the bundle budget check (scripts/bundle-budget.mjs).
+    manifest: true,
+  },
 });

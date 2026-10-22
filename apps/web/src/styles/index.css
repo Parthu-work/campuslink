@@ -156,6 +156,25 @@
   animation-fill-mode: both;
 }
 
+/* The launch mark (index.html and Splash): the app icon in the middle of the screen until the
+   college and session are known. */
+.launch {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+}
+
+/* A bar that fills from empty to its inline scaleX on first paint (XP and similar meters). */
+@keyframes fill-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+.fill-in {
+  transform-origin: left;
+  animation: fill-in calc(600ms * var(--motion-scale)) var(--ease-out) both;
+}
+
 /* Horizontal rows fade at an edge that has more content beyond it (audit NB-4). */
 .edge-fade[data-fade='end'] {
   mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);

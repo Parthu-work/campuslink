@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { MessageCircle, Reply } from 'lucide-react';
 import type { CommentView, PostView } from '@campuslink/shared';
 import { BackLink } from '../../components/ui/back-link';

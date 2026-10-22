@@ -53,6 +53,9 @@ jobs:
         # The github-actions reporter turns any failing test into a readable annotation.
         run: pnpm --filter @campuslink/api exec vitest run --coverage --reporter=default --reporter=github-actions
       - run: pnpm build
+      # Initial JS ≤ 170 KB gzip and a per-screen budget (master prompt §7d).
+      - name: Bundle budget
+        run: pnpm --filter @campuslink/web budget
 
   # The production adapters against real services: ClamAV (EICAR detection, fail-closed) and an
   # S3-compatible store (SeaweedFS). Images and versions match docker-compose.yml.

@@ -66,7 +66,8 @@ export function useScrollChrome() {
     const onTouch = (e: PointerEvent) => {
       if (e.clientY < 24) reveal();
     };
-    update();
+    // First read in the next frame: reading scroll metrics now would force a layout mid-commit.
+    frame = requestAnimationFrame(update);
     window.addEventListener('scroll', onScroll, { passive: true });
     document.addEventListener('focusin', onFocus);
     window.addEventListener('pointerdown', onTouch, { passive: true });

@@ -15,6 +15,7 @@
     "e2e-staging",
     "vite.config.ts",
     "security-headers.ts",
+    "pure-shared.ts",
     "vitest.config.ts",
     "playwright.config.ts",
     "playwright.staging.config.ts"

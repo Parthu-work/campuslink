@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from './toast';
 import { useTranslation } from 'react-i18next';
 import type { RoadmapContent, RoadmapNode, RoadmapSummaryView, RoadmapView } from '@campuslink/shared';
 import { api, ApiError } from './api';

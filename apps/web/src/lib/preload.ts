@@ -41,6 +41,25 @@ export function preloadPath(to: string, { data = true } = {}) {
   }
 }
 
+type RouteTables = (kind: 'college' | 'platform') => RouteObject[];
+let tables: RouteTables | null = null;
+
+export function registerRouteTables(next: RouteTables) {
+  tables = next;
+}
+
+/**
+ * Cold start: the screen the member opened loads its code while the session is still being
+ * restored, and its data as soon as there is a session, instead of after the router mounts.
+ */
+export function warmLanding(kind: 'college' | 'platform', session: Promise<boolean>) {
+  if (!tables) return;
+  registerPreloadRoutes(tables(kind));
+  const here = `${location.pathname}${location.search}`;
+  preloadPath(here, { data: false });
+  void session.then((signedIn) => signedIn && preloadPath(here));
+}
+
 /** Props for a link that warms its destination on intent. */
 export function intentPreload(to: string) {
   const warm = () => preloadPath(to);

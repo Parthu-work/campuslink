@@ -9,7 +9,8 @@
     "preview": "vite preview --port 4173",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "budget": "node scripts/bundle-budget.mjs"
   },
   "dependencies": {
     "@campuslink/shared": "workspace:*",

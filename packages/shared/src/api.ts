@@ -1,7 +1,7 @@
-import { z } from 'zod';
-
 export const API_VERSION = 'v1';
 export const API_PREFIX = `/api/${API_VERSION}`;
+
+// No zod in this module: the web app's boot path imports it (bundle budget, master prompt §7d).
 
 /** Error codes are stable strings clients can branch on; messages are for humans. */
 export const ErrorCode = {
@@ -36,8 +36,5 @@ export interface ApiFailure {
 
 export type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
 
-export const cursorPageQuery = z.object({
-  cursor: z.string().max(200).optional(),
-  limit: z.coerce.number().int().min(1).max(50).default(20),
-});
-export type CursorPageQuery = z.infer<typeof cursorPageQuery>;
+/** The Socket.io endpoint (kept here, free of schemas, so the web app's first load stays small). */
+export const REALTIME_PATH = `${API_PREFIX}/realtime`;

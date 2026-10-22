@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '../../lib/toast';
 import { Download, HandHelping, Inbox, Send } from 'lucide-react';
 import { REFERRAL_DECLINE_TEMPLATES, type ReferralPrefsView, type ReferralView } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
