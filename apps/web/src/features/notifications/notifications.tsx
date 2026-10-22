@@ -5,6 +5,7 @@ import { Bell, CheckCheck } from 'lucide-react';
 import { IntentLink } from '../../components/ui/intent-link';
 import { Button } from '../../components/ui/button';
 import { Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { api } from '../../lib/api';
 import { notifications } from '../../lib/queries';
 import { formatRelative } from '../../lib/format';
@@ -30,22 +31,24 @@ export function NotificationsPage() {
   const unread = list.data?.filter((n) => !n.readAt).length ?? 0;
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('nav.notifications')}</h1>
-        <div className="flex gap-2">
-          <Link
-            to="/settings/notifications"
-            className="rounded-full px-3 py-2 text-sm font-semibold text-brand-ink hover:bg-surface-2"
-          >
-            {t('notifications.settings')}
-          </Link>
-          {unread > 0 && (
-            <Button size="sm" loading={readAll.isPending} onClick={() => readAll.mutate()}>
-              <CheckCheck className="size-4" aria-hidden /> {t('notifications.readAll')}
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title={t('nav.notifications')}
+        actions={
+          <>
+            <Link
+              to="/settings/notifications"
+              className="rounded-full px-3 py-2 text-sm font-semibold text-brand-ink hover:bg-surface-2"
+            >
+              {t('notifications.settings')}
+            </Link>
+            {unread > 0 && (
+              <Button size="sm" loading={readAll.isPending} onClick={() => readAll.mutate()}>
+                <CheckCheck className="size-4" aria-hidden /> {t('notifications.readAll')}
+              </Button>
+            )}
+          </>
+        }
+      />
       {list.isLoading && <Skeleton className="h-40" />}
       {list.isSuccess && !list.data.length && (
         <EmptyState icon={<Bell className="size-6" />} title={t('notifications.empty')} />

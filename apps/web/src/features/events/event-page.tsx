@@ -23,6 +23,8 @@ import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Dialog } from '../../components/ui/dialog';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
+import { PageHeader } from '../../components/ui/page-header';
+import { BackLink } from '../../components/ui/back-link';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
 import { findCached, hasId } from '../../lib/query-seed';
 import { event } from '../../lib/queries';
@@ -293,34 +295,35 @@ export function EventPage() {
   const live = e.status === 'scheduled' && !past;
   return (
     <div className="grid gap-5">
-      <Link to="/events" className="text-sm text-fg-3 hover:text-fg">
-        ← {t('events.title')}
-      </Link>
+      <BackLink to="/events">{t('events.title')}</BackLink>
       <header className="grid gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge tone="brand">{t(`events.kind.${e.kind}`)}</Badge>
           {e.status === 'cancelled' && <Badge tone="danger">{t('events.cancelled')}</Badge>}
           {past && e.status === 'scheduled' && <Badge>{t('events.ended')}</Badge>}
         </div>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <h1 className="text-[clamp(26px,4vw,34px)] leading-tight font-bold">{e.title}</h1>
-          <div className="flex gap-2">
-            {e.canManage && live && (
-              <Link to={`/events/${e.id}/edit`} className={buttonVariants({ size: 'sm' })}>
-                <Pencil className="size-4" aria-hidden /> {t('events.edit')}
-              </Link>
-            )}
-            {!e.isHost && e.status !== 'removed' && (
-              <ContentMenu
-                targetType="event"
-                targetId={e.id}
-                authorId={e.host.userId}
-                authorName={e.host.name}
-                isMine={false}
-              />
-            )}
-          </div>
-        </div>
+        <PageHeader
+          as="div"
+          title={e.title}
+          actions={
+            <>
+              {e.canManage && live && (
+                <Link to={`/events/${e.id}/edit`} className={buttonVariants({ size: 'sm' })}>
+                  <Pencil className="size-4" aria-hidden /> {t('events.edit')}
+                </Link>
+              )}
+              {!e.isHost && e.status !== 'removed' && (
+                <ContentMenu
+                  targetType="event"
+                  targetId={e.id}
+                  authorId={e.host.userId}
+                  authorName={e.host.name}
+                  isMine={false}
+                />
+              )}
+            </>
+          }
+        />
         <p className="flex items-center gap-2 text-fg-2">
           <CalendarDays className="size-5 flex-none" aria-hidden />
           {formatDateTime(e.startsAt)} – {formatTime(e.endsAt)}

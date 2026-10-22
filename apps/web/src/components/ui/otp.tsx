@@ -1,6 +1,9 @@
 import { useRef } from 'react';
 
-/** Six single-digit inputs with auto-advance, backspace and paste support. */
+/**
+ * Six single-digit boxes with auto-advance, backspace, paste and the platform's one-time-code
+ * autofill; the focused box gets the same soft ring as text inputs.
+ */
 export function OtpInput({
   value,
   onChange,
@@ -20,7 +23,7 @@ export function OtpInput({
     onChange(next.join('').slice(0, 6));
   };
   return (
-    <div role="group" aria-label={label} className="flex gap-2">
+    <div role="group" aria-label={label} className="flex justify-center gap-2 sm:gap-2.5">
       {digits.map((d, i) => (
         <input
           key={i}
@@ -33,7 +36,7 @@ export function OtpInput({
           maxLength={1}
           aria-label={`${label} ${i + 1}`}
           autoFocus={autoFocus && i === 0}
-          className="aspect-[1/1.15] w-full max-w-[52px] rounded-[var(--radius-sm)] border border-line-strong bg-surface-1 text-center font-mono text-[22px] font-semibold focus:border-brand focus:ring-4 focus:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)] focus:outline-none"
+          className="aspect-[1/1.2] w-full max-w-14 min-w-0 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 text-center font-mono text-headline font-semibold caret-brand transition-[border-color,box-shadow] duration-[var(--dur-fast)] focus:border-brand focus:shadow-[0_0_0_4px_color-mix(in_oklch,var(--brand)_22%,transparent)] focus:outline-none"
           onChange={(e) => {
             const v = e.target.value.replace(/\D/g, '').slice(-1);
             set(i, v);

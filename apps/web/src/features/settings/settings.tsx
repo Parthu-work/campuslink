@@ -12,6 +12,8 @@ import { password as passwordSchema, SUPPORTED_LOCALES } from '@campuslink/share
 import { Button } from '../../components/ui/button';
 import { Field, PasswordInput } from '../../components/ui/field';
 import { Badge, Card, Chip, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
+import { Switch } from '../../components/ui/switch';
 import { Dialog } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { MfaSetup } from '../auth/mfa-setup';
@@ -32,7 +34,7 @@ export function SettingsLayout() {
   ] as const;
   return (
     <>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('settings.title')}</h1>
+      <PageHeader title={t('settings.title')} />
       <TabNav label={t('settings.title')} tabs={tabs} />
       <Outlet />
     </>
@@ -222,29 +224,32 @@ export function PrivacySettings() {
       {consents.isLoading && <Skeleton className="h-40" />}
       <ul className="grid gap-2">
         {consents.data?.map((c) => (
-          <li key={c.purpose} className="flex items-start gap-3 rounded-[var(--radius-md)] bg-surface-2 p-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-sm">{t(`auth.consent.${c.purpose}`)}</p>
-              {c.updatedAt && (
-                <p className="mt-1 font-mono text-[11px] text-fg-3">
-                  {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
-                </p>
-              )}
-            </div>
+          <li key={c.purpose} className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-2">
             {c.required ? (
-              <Badge>{t('settings.required')}</Badge>
+              <div className="flex items-start gap-3 py-1">
+                <div className="min-w-0 flex-1">
+                  <p className="text-body font-medium">{t(`auth.consent.${c.purpose}`)}</p>
+                  {c.updatedAt && (
+                    <p className="mt-1 font-mono text-caption text-fg-3">
+                      {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
+                    </p>
+                  )}
+                </div>
+                <Badge>{t('settings.required')}</Badge>
+              </div>
             ) : (
-              <label className="relative inline-flex min-h-11 cursor-pointer items-center">
-                <span className="sr-only">{t(`auth.consent.${c.purpose}`)}</span>
-                <input
-                  type="checkbox"
-                  role="switch"
-                  className="peer sr-only"
-                  checked={c.granted}
-                  onChange={(e) => set.mutate({ purpose: c.purpose, granted: e.target.checked })}
-                />
-                <span className="h-7 w-12 rounded-full bg-surface-3 transition-colors peer-checked:bg-brand peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent after:absolute after:top-1/2 after:left-1 after:size-5 after:-translate-y-1/2 after:rounded-full after:bg-white after:transition-transform after:duration-[var(--dur-base)] peer-checked:after:translate-x-5" />
-              </label>
+              <Switch
+                label={t(`auth.consent.${c.purpose}`)}
+                description={
+                  c.updatedAt && (
+                    <span className="font-mono text-caption text-fg-3">
+                      {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
+                    </span>
+                  )
+                }
+                checked={c.granted}
+                onChange={(on) => set.mutate({ purpose: c.purpose, granted: on })}
+              />
             )}
           </li>
         ))}

@@ -30,7 +30,9 @@ import { buttonVariants } from '../../components/ui/button-variants';
 import { Dialog } from '../../components/ui/dialog';
 import { Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { ProgressBar } from '../../components/ui/progress';
 import { Segmented } from '../../components/ui/tab-nav';
+import { PageHeader } from '../../components/ui/page-header';
 import { api, ApiError } from '../../lib/api';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { roadmap } from '../../lib/queries';
@@ -470,16 +472,13 @@ function ProgressCard({ roadmap }: { roadmap: RoadmapView }) {
         </h2>
         <span className="font-mono text-sm text-fg-2">{pct}%</span>
       </div>
-      <div
-        role="progressbar"
-        aria-label={t('roadmaps.yourProgress')}
-        aria-valuenow={pct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        className="h-2 overflow-hidden rounded-full bg-surface-2"
-      >
-        <div className="h-full rounded-full bg-success transition-[width]" style={{ width: `${pct}%` }} />
-      </div>
+      <ProgressBar
+        value={pct}
+        max={100}
+        label={t('roadmaps.yourProgress')}
+        valueText={`${pct}%`}
+        tone="success"
+      />
       <p className="text-sm text-fg-2">{t('roadmaps.doneOf', { done: doneCount, total })}</p>
       <label className="grid gap-1 text-sm">
         <span className="font-semibold">{t('roadmaps.weeklyGoal')}</span>
@@ -564,34 +563,37 @@ export function RoadmapPage() {
         / {t(`roadmaps.cat.${r.category}`)}
       </nav>
       <header className="grid gap-2">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <h1 className="text-[clamp(26px,4vw,34px)] leading-tight font-bold">{r.content.title}</h1>
-          <div className="flex flex-wrap gap-2">
-            <Link to={`/roadmaps/${r.slug}/history`} className={buttonVariants({ size: 'sm' })}>
-              <History className="size-4" aria-hidden />{' '}
-              {r.canReview ? t('roadmaps.reviewChanges') : t('roadmaps.history')}
-            </Link>
-            {r.canEdit && (
-              <Link
-                to={`/roadmaps/${r.slug}/edit`}
-                className={buttonVariants({ size: 'sm', variant: 'primary' })}
-              >
-                <Pencil className="size-4" aria-hidden />{' '}
-                {r.draft ? t('roadmaps.editDraft') : t('roadmaps.suggestEdit')}
+        <PageHeader
+          as="div"
+          title={r.content.title}
+          actions={
+            <>
+              <Link to={`/roadmaps/${r.slug}/history`} className={buttonVariants({ size: 'sm' })}>
+                <History className="size-4" aria-hidden />{' '}
+                {r.canReview ? t('roadmaps.reviewChanges') : t('roadmaps.history')}
               </Link>
-            )}
-            {live && (
-              <ContentMenu
-                targetType="roadmap"
-                targetId={r.id}
-                authorId={r.author?.userId ?? ''}
-                authorName={r.author?.name ?? ''}
-                isMine={r.author?.userId === me?.id}
-                blockable={!!r.author && r.author.userId !== me?.id}
-              />
-            )}
-          </div>
-        </div>
+              {r.canEdit && (
+                <Link
+                  to={`/roadmaps/${r.slug}/edit`}
+                  className={buttonVariants({ size: 'sm', variant: 'primary' })}
+                >
+                  <Pencil className="size-4" aria-hidden />{' '}
+                  {r.draft ? t('roadmaps.editDraft') : t('roadmaps.suggestEdit')}
+                </Link>
+              )}
+              {live && (
+                <ContentMenu
+                  targetType="roadmap"
+                  targetId={r.id}
+                  authorId={r.author?.userId ?? ''}
+                  authorName={r.author?.name ?? ''}
+                  isMine={r.author?.userId === me?.id}
+                  blockable={!!r.author && r.author.userId !== me?.id}
+                />
+              )}
+            </>
+          }
+        />
         <p className="max-w-[70ch] text-fg-2">{r.content.summary}</p>
         <div className="flex flex-wrap gap-1.5">
           <Badge>{t(`roadmaps.cat.${r.category}`)}</Badge>

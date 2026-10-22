@@ -7,7 +7,7 @@ import { useNav, type NavEntry } from '../../lib/nav';
 import { useSignOut } from '../../lib/use-sign-out';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { cn } from '../../lib/cn';
-import { Dialog } from '../ui/dialog';
+import { Sheet } from '../ui/dialog';
 import { PersonAvatar } from '../ui/person-avatar';
 
 const itemClass =
@@ -98,7 +98,7 @@ export function AccountSheet() {
   if (!me) return null;
   const roles = me.roles.map((r) => t(`role.${r}`)).join(', ');
   return (
-    <Dialog
+    <Sheet
       open={sheet.value === 'account'}
       onOpenChange={(o) => !o && sheet.close()}
       title={t('nav.account')}
@@ -124,6 +124,6 @@ export function AccountSheet() {
           <LogOut className="size-5" aria-hidden /> {t('common.signOut')}
         </button>
       </nav>
-    </Dialog>
+    </Sheet>
   );
 }

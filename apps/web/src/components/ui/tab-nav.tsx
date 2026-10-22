@@ -36,7 +36,7 @@ export function TabNav({ label, tabs }: { label: string; tabs: readonly (readonl
       >
         <span
           aria-hidden
-          className="sliding-indicator pointer-events-none absolute inset-y-0 left-0 rounded-full bg-brand"
+          className="sliding-indicator pointer-events-none absolute inset-y-0 left-0 rounded-full bg-brand shadow-elev-1"
           style={indicator}
         />
         {tabs.map(([to, text]) => (
@@ -46,7 +46,7 @@ export function TabNav({ label, tabs }: { label: string; tabs: readonly (readonl
             end
             className={({ isActive }) =>
               cn(
-                'relative flex min-h-11 flex-none snap-start items-center rounded-full px-4 text-sm font-semibold text-fg-2 transition-colors duration-[var(--dur-fast)] hover:text-fg',
+                'relative flex min-h-11 flex-none snap-start items-center rounded-full px-4 text-meta font-semibold whitespace-nowrap text-fg-2 transition-colors duration-[var(--dur-fast)] hover:text-fg',
                 isActive && 'text-on-brand hover:text-on-brand',
               )
             }
@@ -66,7 +66,7 @@ export function TabNav({ label, tabs }: { label: string; tabs: readonly (readonl
             aria-hidden
             onClick={() => scrollRow(side === 'start' ? -1 : 1)}
             className={cn(
-              'absolute top-1/2 hidden size-8 -translate-y-1/2 place-items-center rounded-full border border-line-strong bg-surface-1 text-fg-2 opacity-0 shadow-[var(--shadow)] transition-opacity group-hover/row:opacity-100 hover:text-fg [@media(hover:hover)]:grid',
+              'absolute top-1/2 hidden size-8 -translate-y-1/2 place-items-center rounded-full border border-line-strong bg-surface-1 text-fg-2 opacity-0 shadow-elev-2 transition-opacity group-hover/row:opacity-100 hover:text-fg [@media(hover:hover)]:grid',
               side === 'start' ? 'left-1' : 'right-1',
             )}
           >
@@ -79,8 +79,10 @@ export function TabNav({ label, tabs }: { label: string; tabs: readonly (readonl
 }
 
 /**
- * In-page view switch (buttons with aria-pressed). A highlight slides to the chosen option; when the
- * options don't fit (Telugu, four options on a phone) the row scrolls instead of wrapping (DS-4).
+ * In-page view switch (buttons with aria-pressed), such as For you / Following. A tinted highlight
+ * slides to the chosen option (route tabs use the solid brand fill, so "where you are" and "how you
+ * view it" read differently); when the options don't fit (Telugu, four options on a phone) the row
+ * scrolls instead of wrapping (DS-4).
  */
 export function Segmented<T extends string>({
   label,
@@ -109,7 +111,7 @@ export function Segmented<T extends string>({
     >
       <span
         aria-hidden
-        className="sliding-indicator pointer-events-none absolute inset-y-1 left-0 rounded-full bg-brand"
+        className="sliding-indicator pointer-events-none absolute inset-y-1 left-0 rounded-full bg-brand-surface shadow-elev-1"
         style={indicator}
       />
       {options.map(([v, text]) => (
@@ -118,7 +120,7 @@ export function Segmented<T extends string>({
           type="button"
           aria-pressed={v === value}
           onClick={() => onChange(v)}
-          className="relative min-h-11 flex-1 rounded-full px-3 text-sm font-semibold whitespace-nowrap text-fg-2 transition-colors duration-[var(--dur-fast)] hover:text-fg aria-pressed:text-on-brand"
+          className="relative min-h-11 flex-1 rounded-full px-3 text-meta font-semibold whitespace-nowrap text-fg-2 transition-colors duration-[var(--dur-fast)] hover:text-fg aria-pressed:text-brand-ink"
         >
           {text}
         </button>

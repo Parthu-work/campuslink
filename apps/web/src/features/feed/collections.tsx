@@ -7,6 +7,7 @@ import { TOPICS, type FollowState, type PostView, type PublicProfile, type Topic
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, apiRequest } from '../../lib/api';
@@ -18,8 +19,7 @@ export function SavedPage() {
   const { t } = useTranslation();
   return (
     <div className="mx-auto grid w-full max-w-[680px] gap-4">
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('feed.savedTitle')}</h1>
-      <p className="text-fg-2">{t('feed.savedIntro')}</p>
+      <PageHeader title={t('feed.savedTitle')} intro={t('feed.savedIntro')} />
       <FeedList
         queryKey={['posts', 'saved']}
         path="/posts?saved=true"
@@ -93,8 +93,7 @@ export function ReelsPage() {
   const reels = q.data?.pages.flatMap((p) => p.data) ?? [];
   return (
     <div className="mx-auto grid w-full max-w-[520px] gap-4">
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('feed.reelsTitle')}</h1>
-      <p className="text-fg-2">{t('feed.reelsIntro')}</p>
+      <PageHeader title={t('feed.reelsTitle')} intro={t('feed.reelsIntro')} />
       {q.isLoading && <Skeleton className="aspect-[9/16] w-full" />}
       {q.isSuccess && !reels.length && (
         <EmptyState icon={<Film className="size-6" />} title={t('feed.reelsEmpty')}>
@@ -157,8 +156,7 @@ export function FollowingPage() {
   const f = follows.data;
   return (
     <div className="mx-auto grid w-full max-w-[760px] gap-5">
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('feed.followingTitle')}</h1>
-      <p className="text-fg-2">{t('feed.followingIntro')}</p>
+      <PageHeader title={t('feed.followingTitle')} intro={t('feed.followingIntro')} />
       <Card className="grid gap-3 p-4">
         <h2 className="font-semibold">{t('feed.topics')}</h2>
         <div role="group" aria-label={t('feed.topics')} className="flex flex-wrap gap-1.5">

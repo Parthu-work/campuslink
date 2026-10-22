@@ -22,6 +22,7 @@ import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Input, Select } from '../../components/ui/field';
 import { Chip, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { api, ApiError } from '../../lib/api';
 import { jobsList, jobsRadar } from '../../lib/queries';
 import { useCan } from '../../lib/me';
@@ -172,26 +173,25 @@ export function JobsPage() {
 
   return (
     <div className="grid gap-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="flex items-center gap-2 text-[clamp(26px,4vw,34px)] font-bold">
-            <Radar className="size-7 text-accent-ink" aria-hidden /> {t('jobs.title')}
-          </h1>
-          <p className="text-fg-2">{t('jobs.intro')}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {canSave && (
-            <Link to="/jobs/tracker" className={buttonVariants({ size: 'sm' })}>
-              <ListChecks className="size-4" aria-hidden /> {t('jobs.tracker')}
-            </Link>
-          )}
-          {canPost && (
-            <Link to="/jobs/new" className={buttonVariants({ size: 'sm', variant: 'primary' })}>
-              <Plus className="size-4" aria-hidden /> {t('jobs.postJob')}
-            </Link>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        icon={<Radar />}
+        title={t('jobs.title')}
+        intro={t('jobs.intro')}
+        actions={
+          <>
+            {canSave && (
+              <Link to="/jobs/tracker" className={buttonVariants({ size: 'sm' })}>
+                <ListChecks className="size-4" aria-hidden /> {t('jobs.tracker')}
+              </Link>
+            )}
+            {canPost && (
+              <Link to="/jobs/new" className={buttonVariants({ size: 'sm', variant: 'primary' })}>
+                <Plus className="size-4" aria-hidden /> {t('jobs.postJob')}
+              </Link>
+            )}
+          </>
+        }
+      />
 
       <div className="grid gap-3">
         <label className="relative">
@@ -237,7 +237,7 @@ export function JobsPage() {
             <Select
               value={params.get('level') ?? ''}
               onChange={(e) => set('level', e.target.value)}
-              className="min-h-10"
+              size="sm"
             >
               <option value="">{t('jobs.anyLevel')}</option>
               {JOB_LEVELS.map((l) => (
@@ -249,11 +249,7 @@ export function JobsPage() {
           </label>
           <label>
             <span className="sr-only">{t('jobs.typeLabel')}</span>
-            <Select
-              value={params.get('type') ?? ''}
-              onChange={(e) => set('type', e.target.value)}
-              className="min-h-10"
-            >
+            <Select value={params.get('type') ?? ''} onChange={(e) => set('type', e.target.value)} size="sm">
               <option value="">{t('jobs.anyType')}</option>
               {JOB_TYPES.map((l) => (
                 <option key={l} value={l}>
@@ -267,7 +263,7 @@ export function JobsPage() {
             <Select
               value={params.get('branch') ?? ''}
               onChange={(e) => set('branch', e.target.value)}
-              className="min-h-10"
+              size="sm"
             >
               <option value="">{t('people.anyBranch')}</option>
               {BRANCHES.map((b) => (
@@ -283,7 +279,7 @@ export function JobsPage() {
               value={params.get('location') ?? ''}
               onChange={(e) => set('location', e.target.value)}
               placeholder={t('jobs.location')}
-              className="min-h-10"
+              className="min-h-11 text-meta"
             />
           </label>
         </div>

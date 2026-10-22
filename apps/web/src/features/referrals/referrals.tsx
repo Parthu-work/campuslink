@@ -9,6 +9,7 @@ import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { Segmented } from '../../components/ui/tab-nav';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
@@ -277,12 +278,11 @@ export function ReferralsPage() {
   });
   return (
     <div className="mx-auto grid w-full max-w-[860px] gap-5">
-      <div>
-        <h1 className="flex items-center gap-2 text-[clamp(26px,4vw,34px)] font-bold">
-          <HandHelping className="size-7 text-accent-ink" aria-hidden /> {t('referrals.title')}
-        </h1>
-        <p className="text-fg-2">{canOffer ? t('referrals.introAlumni') : t('referrals.introStudent')}</p>
-      </div>
+      <PageHeader
+        icon={<HandHelping />}
+        title={t('referrals.title')}
+        intro={canOffer ? t('referrals.introAlumni') : t('referrals.introStudent')}
+      />
       {canOffer && canRequest && (
         <Segmented
           label={t('referrals.box')}

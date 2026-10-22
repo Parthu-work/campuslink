@@ -11,7 +11,7 @@ import {
 import { CREATE_ACTIONS, type CreateActionId } from '@campuslink/shared';
 import { useNav } from '../../lib/nav';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
-import { Dialog } from '../ui/dialog';
+import { Sheet } from '../ui/dialog';
 
 const ICONS: Record<CreateActionId, LucideIcon> = {
   post: PenLine,
@@ -28,7 +28,7 @@ export function CreateSheet() {
   const sheet = useUrlOverlay('sheet');
   const actions = CREATE_ACTIONS.filter((a) => nav.create.includes(a.id));
   return (
-    <Dialog
+    <Sheet
       open={sheet.value === 'create'}
       onOpenChange={(o) => !o && sheet.close()}
       title={t('nav.createTitle')}
@@ -42,20 +42,20 @@ export function CreateSheet() {
               <Link
                 to={a.path}
                 replace={sheet.replaceOnLeave}
-                className="flex min-h-14 items-center gap-3.5 rounded-[var(--radius-md)] border border-line px-3.5 py-2.5 hover:border-line-strong hover:bg-surface-2"
+                className="flex min-h-14 items-center gap-3.5 rounded-[var(--radius-md)] border border-line px-3.5 py-2.5 hover:border-line-strong hover:bg-hover"
               >
                 <span className="grid size-10 flex-none place-items-center rounded-full bg-surface-2 text-brand-ink">
                   <Icon className="size-5" aria-hidden />
                 </span>
                 <span className="min-w-0">
-                  <b className="block text-[15px]">{t(`nav.createActions.${a.id}`)}</b>
-                  <span className="block text-sm text-fg-2">{t(`nav.createActions.${a.id}Hint`)}</span>
+                  <b className="block text-body">{t(`nav.createActions.${a.id}`)}</b>
+                  <span className="block text-meta text-fg-2">{t(`nav.createActions.${a.id}Hint`)}</span>
                 </span>
               </Link>
             </li>
           );
         })}
       </ul>
-    </Dialog>
+    </Sheet>
   );
 }

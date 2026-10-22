@@ -20,6 +20,11 @@
   --color-accent-ink: var(--accent-ink);
   --color-on-brand: var(--on-brand);
   --color-on-accent: var(--on-accent);
+  --color-brand-hover: var(--brand-hover);
+  --color-accent-hover: var(--accent-hover);
+  --color-brand-surface: var(--brand-surface);
+  --color-accent-surface: var(--accent-surface);
+  --color-on-aurora: var(--on-aurora);
   --color-brand-50: var(--brand-50);
   --color-brand-100: var(--brand-100);
   --color-brand-200: var(--brand-200);
@@ -323,6 +328,27 @@
   transform: scaleX(0.6);
 }
 
+/* The skeleton sheen (Skeleton): a soft band crossing once per 1.4 s. */
+@keyframes sheen {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(200%);
+  }
+}
+
+/* A ring or badge arriving: a small scale and fade (ProgressRing). */
+@keyframes ring-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+.ring-in {
+  animation: ring-in calc(420ms * var(--motion-scale)) var(--ease-smooth) both;
+}
+
 @keyframes aurora-drift {
   from {
     transform: translate3d(-4%, -3%, 0) rotate(0deg);
@@ -361,9 +387,10 @@
     transform: scaleX(0);
   }
 }
+/* `backwards`, so once it has filled, later value changes can transition (ProgressBar). */
 .fill-in {
   transform-origin: left;
-  animation: fill-in calc(600ms * var(--motion-scale)) var(--ease-out) both;
+  animation: fill-in calc(600ms * var(--motion-scale)) var(--ease-out) backwards;
 }
 
 /* Horizontal rows fade at an edge that has more content beyond it (audit NB-4). */
@@ -601,10 +628,21 @@ main h1[tabindex='-1']:focus {
 .overlay-fade[data-state='closed'] {
   animation: overlay-out calc(160ms * var(--motion-scale)) linear forwards;
 }
-.sheet-motion[data-state='open'] {
-  animation: sheet-up calc(300ms * var(--motion-scale)) var(--ease-out);
+@keyframes side-in {
+  from {
+    transform: translateX(100%);
+  }
 }
-.sheet-motion[data-state='closed'] {
+@keyframes side-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+/* Sheets ride the smooth spring (no overshoot, so no gap opens under a bottom sheet). */
+:is(.sheet-motion, .side-sheet-motion)[data-state='open'] {
+  animation: sheet-up var(--dur-smooth) var(--ease-smooth);
+}
+:is(.sheet-motion, .side-sheet-motion)[data-state='closed'] {
   animation: sheet-down calc(200ms * var(--motion-scale)) ease-in forwards;
 }
 @media (min-width: 48rem) {
@@ -613,5 +651,31 @@ main h1[tabindex='-1']:focus {
   }
   .sheet-motion[data-state='closed'] {
     animation: dialog-out calc(160ms * var(--motion-scale)) ease-in forwards;
+  }
+  .side-sheet-motion[data-state='open'] {
+    animation: side-in var(--dur-smooth) var(--ease-smooth);
+  }
+  .side-sheet-motion[data-state='closed'] {
+    animation: side-out calc(200ms * var(--motion-scale)) ease-in forwards;
+  }
+}
+
+/* Tooltips fade and rise 4px from their side (Radix sets data-side). */
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(4px * var(--motion-scale)));
+  }
+}
+.tooltip-in {
+  animation: tooltip-in calc(140ms * var(--motion-scale)) var(--ease-out);
+}
+.tooltip-in[data-side='bottom'] {
+  animation-name: tooltip-in-down;
+}
+@keyframes tooltip-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-4px * var(--motion-scale)));
   }
 }

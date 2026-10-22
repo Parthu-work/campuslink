@@ -280,12 +280,12 @@ export function JobPage() {
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
                   <h1
-                    className="text-[clamp(22px,3.4vw,30px)] leading-tight font-bold"
+                    className="text-headline leading-tight font-bold"
                     style={{ viewTransitionName: `job-${j.id}` }}
                   >
                     {j.title}
                   </h1>
-                  <p className="text-lg text-fg-2">{j.company}</p>
+                  <p className="text-lead text-fg-2">{j.company}</p>
                 </div>
                 <SaveJobButton job={j} />
                 <ContentMenu

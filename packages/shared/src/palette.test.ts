@@ -100,6 +100,23 @@ describe.each(Object.entries(COLLEGES))('palette for a %s college', (_, hex) => 
     expect(worst(color(t, '--accent-ink'), textBackgrounds(t))).toBeGreaterThanOrEqual(INK_RATIO);
     expect(contrastRatio(color(t, '--on-brand'), color(t, '--brand'))).toBeGreaterThanOrEqual(TEXT_RATIO);
     expect(contrastRatio(color(t, '--on-accent'), color(t, '--accent'))).toBeGreaterThanOrEqual(TEXT_RATIO);
+    // Hovered fills keep (or gain) label contrast.
+    expect(contrastRatio(color(t, '--on-brand'), color(t, '--brand-hover'))).toBeGreaterThanOrEqual(
+      TEXT_RATIO,
+    );
+    expect(contrastRatio(color(t, '--on-accent'), color(t, '--accent-hover'))).toBeGreaterThanOrEqual(
+      TEXT_RATIO,
+    );
+    // Inks also read on their own tinted chip surfaces.
+    expect(contrastRatio(color(t, '--brand-ink'), color(t, '--brand-surface'))).toBeGreaterThanOrEqual(
+      INK_RATIO,
+    );
+    expect(contrastRatio(color(t, '--accent-ink'), color(t, '--accent-surface'))).toBeGreaterThanOrEqual(
+      INK_RATIO,
+    );
+    // Labels on the aurora read on every stop.
+    for (const stop of ['--aurora-1', '--aurora-2', '--aurora-3'])
+      expect(contrastRatio(color(t, '--on-aurora'), color(t, stop)), stop).toBeGreaterThanOrEqual(TEXT_RATIO);
     // The focus ring is the brand ink: 3:1 against the canvas is the WCAG bar for indicators.
     expect(contrastRatio(color(t, '--brand-ink'), color(t, '--bg'))).toBeGreaterThanOrEqual(3);
   });

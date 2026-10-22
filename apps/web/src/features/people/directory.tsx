@@ -6,6 +6,7 @@ import { Search, Users } from 'lucide-react';
 import { BRANCHES, type PublicProfile } from '@campuslink/shared';
 import { Input, Select } from '../../components/ui/field';
 import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { apiRequest } from '../../lib/api';
 
@@ -21,7 +22,7 @@ export function PersonCard({ p }: { p: PublicProfile }) {
   const { t } = useTranslation();
   return (
     <Link to={`/people/${p.userId}`} className="block rounded-[var(--radius-md)]">
-      <Card className="flex h-full items-start gap-3 p-4 transition-colors hover:border-line-strong">
+      <Card variant="interactive" className="flex h-full items-start gap-3 p-4">
         <PersonAvatar name={p.name} fileId={p.avatarFileId} verified={p.verified} />
         <div className="min-w-0 flex-1">
           <b className="block truncate">{p.name}</b>
@@ -83,7 +84,7 @@ export function DirectoryPage() {
 
   return (
     <>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('people.title')}</h1>
+      <PageHeader title={t('people.title')} />
       <div className="grid gap-3">
         <label className="relative">
           <span className="sr-only">{t('people.search')}</span>
@@ -110,7 +111,7 @@ export function DirectoryPage() {
           </div>
           <label className="ml-auto w-full sm:w-44">
             <span className="sr-only">{t('people.branch')}</span>
-            <Select value={branch} onChange={(e) => setBranch(e.target.value)} className="min-h-10">
+            <Select value={branch} onChange={(e) => setBranch(e.target.value)}>
               <option value="">{t('people.anyBranch')}</option>
               {BRANCHES.map((b) => (
                 <option key={b} value={b}>

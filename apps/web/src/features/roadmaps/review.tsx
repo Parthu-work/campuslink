@@ -6,6 +6,8 @@ import { ClipboardCheck, Download, Library, RefreshCw } from 'lucide-react';
 import type { ReviewQueueItem, RoadmapCategory } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
+import { BackLink } from '../../components/ui/back-link';
 import { api, ApiError } from '../../lib/api';
 import { formatDay, formatRelative } from '../../lib/format';
 
@@ -99,14 +101,13 @@ export function RoadmapReviewPage() {
   });
   return (
     <div className="grid gap-6">
-      <div>
-        <Link to="/roadmaps" className="text-sm text-fg-3 hover:text-fg">
-          ← {t('roadmaps.title')}
-        </Link>
-        <h1 className="flex items-center gap-2 text-[clamp(24px,4vw,30px)] font-bold">
-          <ClipboardCheck className="size-6 text-brand-ink" aria-hidden /> {t('roadmaps.review.title')}
-        </h1>
-        <p className="text-fg-2">{t('roadmaps.review.intro')}</p>
+      <div className="grid gap-1">
+        <BackLink to="/roadmaps">{t('roadmaps.title')}</BackLink>
+        <PageHeader
+          icon={<ClipboardCheck />}
+          title={t('roadmaps.review.title')}
+          intro={t('roadmaps.review.intro')}
+        />
       </div>
       <section aria-labelledby="queue" className="grid gap-2">
         <h2 id="queue" className="font-display text-lg font-semibold">

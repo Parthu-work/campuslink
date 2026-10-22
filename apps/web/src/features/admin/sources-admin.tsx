@@ -10,7 +10,7 @@ import { Field, Input, Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
-import { TopicPicker } from '../feed/composer';
+import { TopicPicker } from '../feed/composer-form';
 
 interface Starter {
   key: string;

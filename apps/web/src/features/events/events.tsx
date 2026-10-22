@@ -19,6 +19,7 @@ import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api, ApiError } from '../../lib/api';
 import { events } from '../../lib/queries';
@@ -73,19 +74,20 @@ export function EventsPage() {
   const q = useQuery({ ...events(when, kind), placeholderData: keepPreviousData });
   return (
     <div className="grid gap-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="flex items-center gap-2 text-[clamp(26px,4vw,34px)] font-bold">
-            <CalendarDays className="size-7 text-brand-ink" aria-hidden /> {t('events.title')}
-          </h1>
-          <p className="max-w-[60ch] text-fg-2">{t('events.intro')}</p>
-        </div>
-        {(canCreate || canHost) && (
-          <Link to="/events/new" className={buttonVariants({ size: 'sm', variant: 'primary' })}>
-            <Plus className="size-4" aria-hidden /> {canCreate ? t('events.new') : t('events.newAma')}
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        icon={<CalendarDays />}
+        title={t('events.title')}
+        intro={t('events.intro')}
+        actions={
+          <>
+            {(canCreate || canHost) && (
+              <Link to="/events/new" className={buttonVariants({ size: 'sm', variant: 'primary' })}>
+                <Plus className="size-4" aria-hidden /> {canCreate ? t('events.new') : t('events.newAma')}
+              </Link>
+            )}
+          </>
+        }
+      />
       <div className="grid gap-3 sm:grid-cols-[1fr_220px]">
         <Segmented
           label={t('events.show')}
@@ -250,9 +252,7 @@ function EventForm({ existing }: { existing: EventView | null }) {
         void save();
       }}
     >
-      <h1 className="text-[clamp(24px,4vw,30px)] font-bold">
-        {existing ? t('events.edit') : t('events.new')}
-      </h1>
+      <PageHeader title={existing ? t('events.edit') : t('events.new')} />
       {input('title', t('events.form.title'), { maxLength: 120 })}
       <Field label={t('events.form.description')}>
         {(fl) => (

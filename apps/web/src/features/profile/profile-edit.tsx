@@ -7,6 +7,7 @@ import { AUDIENCES, type Audience, type ProfileField, type PublicProfile } from 
 import { Button } from '../../components/ui/button';
 import { Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Card, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { TagInput } from '../../components/ui/tag-input';
 import { OtpInput } from '../../components/ui/otp';
 import { PersonAvatar } from '../../components/ui/person-avatar';
@@ -113,7 +114,7 @@ function ProfileForm({ initial }: { initial: Mine }) {
       <Select
         value={vis[field]}
         onChange={(e) => setVis({ ...vis, [field]: e.target.value as Audience })}
-        className="min-h-9 py-0 text-sm"
+        size="sm"
       >
         {AUDIENCES.map((a) => (
           <option key={a} value={a}>
@@ -127,7 +128,7 @@ function ProfileForm({ initial }: { initial: Mine }) {
 
   return (
     <>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('profile.title')}</h1>
+      <PageHeader title={t('profile.title')} />
       <Card className="flex flex-wrap items-center gap-4 p-5">
         <PersonAvatar name={p.name} fileId={p.avatarFileId} size={72} verified={p.verified} />
         {/* A real basis, so on phones the button wraps below instead of crushing the name (TY-1). */}

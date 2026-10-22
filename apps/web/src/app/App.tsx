@@ -78,7 +78,17 @@ export function App() {
           position="bottom-center"
           // Above the phone tab bar, never on top of it (NB-5).
           mobileOffset={{ bottom: 'calc(84px + env(safe-area-inset-bottom, 0px))' }}
-          toastOptions={{ className: '!rounded-[var(--radius-md)] !bg-fg !text-bg !border-0 !font-semibold' }}
+          // Inverse (text colour on the canvas colour) so a toast reads over any screen in sunlight.
+          toastOptions={{
+            classNames: {
+              toast:
+                '!gap-3 !rounded-[var(--radius-lg)] !border-0 !bg-fg !px-4 !py-3 !font-sans !text-bg !shadow-elev-3',
+              title: '!text-meta !font-semibold',
+              description: '!text-caption !text-bg',
+              actionButton: '!min-h-9 !rounded-full !bg-bg !px-3 !text-meta !font-semibold !text-fg',
+              cancelButton: '!min-h-9 !rounded-full !bg-transparent !px-3 !text-meta !text-bg',
+            },
+          }}
         />
       </Suspense>
     </QueryClientProvider>

@@ -22,7 +22,8 @@
     "skipToContent": "Skip to content",
     "offline": "You’re offline. Changes will need a connection.",
     "open": "Open",
-    "breadcrumb": "Breadcrumb"
+    "breadcrumb": "Breadcrumb",
+    "plusN": "+{{n}}"
   },
   "nav": {
     "home": "Home",
@@ -387,7 +388,19 @@
     "resume": "Resume college",
     "suspendConfirm": "Suspend {{name}}? Everyone there is signed out until you resume it.",
     "healthTitle": "Platform health",
-    "privacyNote": "You see aggregate counts only. Messages and profiles belong to each college."
+    "privacyNote": "You see aggregate counts only. Messages and profiles belong to each college.",
+    "health": {
+      "colleges": "Colleges",
+      "suspended": "Suspended",
+      "people": "People",
+      "activeSessions": "Active sessions",
+      "uptime": "Uptime (minutes)",
+      "memory": "Memory (MB)",
+      "up": "Up",
+      "down": "Down",
+      "services": "Services",
+      "figures": "Figures"
+    }
   },
   "errors": {
     "noCollegeTitle": "No college lives at this address",
@@ -409,7 +422,10 @@
     "offlineBootBody": "Your college’s app needs a connection to open. Reconnect and try again.",
     "forbiddenBody": "This page is for other roles in your college. Everything you can use is in your menu.",
     "verifyFirstTitle": "Verify your account to open this",
-    "verifyFirstBody": "Your college confirms students and alumni by roll number. It takes about a minute, and then mentors, messages and posting open up."
+    "verifyFirstBody": "Your college confirms students and alumni by roll number. It takes about a minute, and then mentors, messages and posting open up.",
+    "loadFailed": "This didn’t load. It’s usually a moment’s hiccup; try again.",
+    "loadFailedTitle": "Couldn’t load this",
+    "offlineShort": "You’re offline. This will load when you reconnect."
   },
   "verify": {
     "title": "Verify you’re from {{college}}",
@@ -2199,6 +2215,36 @@
     "emptyBody": "Empty states say what will appear here and how to get there.",
     "openDialog": "Open a dialog",
     "dialogTitle": "A dialog",
-    "short": "Your classrooms"
+    "short": "Your classrooms",
+    "outline": "Outline",
+    "ask": "Ask Study",
+    "switchLabel": "Taking requests",
+    "switchHint": "Students and alumni can send you requests.",
+    "choice": "Session type",
+    "choiceA": "Quick chat",
+    "choiceB": "Resume review",
+    "minutes": "{{n}} min",
+    "tabs": "Materials",
+    "tabNotes": "Notes",
+    "tabSlides": "Slides",
+    "tabVideos": "Videos",
+    "tabPanel": "Panel for {{tab}}",
+    "progress": "Syllabus covered",
+    "ring": "XP to the next level",
+    "statSessions": "Sessions",
+    "statStreak": "Streak",
+    "statHint": "Demo figures",
+    "days": "{{n}} days",
+    "table": "Demo table",
+    "colName": "Name",
+    "colBranch": "Branch",
+    "colCount": "Sessions",
+    "stack": "Demo Member and 5 others are going",
+    "tooltip": "Tooltips name an icon; never the only place information lives.",
+    "openSheet": "Open a sheet",
+    "sheetTitle": "A sheet",
+    "sheetBody": "A bottom sheet on phones (swipe down to close), a side sheet on wider screens.",
+    "illustrations": "Illustrations",
+    "errorDemo": "Error state"
   }
 }

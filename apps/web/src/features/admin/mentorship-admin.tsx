@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Star } from 'lucide-react';
 import type { FeedbackView } from '@campuslink/shared';
 import { Badge, Card, Skeleton } from '../../components/ui/misc';
+import { StatCard, StatGrid } from '../../components/ui/stat-card';
 import { api } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
 
@@ -44,14 +45,11 @@ export function MentorshipAdmin() {
       {ov.isLoading ? (
         <Skeleton className="h-28" />
       ) : (
-        <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <StatGrid className="md:grid-cols-3">
           {tiles.map(([label, value]) => (
-            <Card key={label} className="p-4">
-              <dt className="text-xs text-fg-3">{label}</dt>
-              <dd className="font-display text-2xl font-bold">{value}</dd>
-            </Card>
+            <StatCard key={label} label={label} value={value} />
           ))}
-        </dl>
+        </StatGrid>
       )}
       <section className="grid gap-2" aria-labelledby="fb-h">
         <h2 id="fb-h" className="text-lg font-semibold">

@@ -18,6 +18,7 @@ import {
 import { REACTIONS, type AuthorRef, type ItemView, type PostView, type Reaction } from '@campuslink/shared';
 import { IntentLink } from '../../components/ui/intent-link';
 import { Badge, Card } from '../../components/ui/misc';
+import { ProgressBar } from '../../components/ui/progress';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, ApiError } from '../../lib/api';
@@ -160,20 +161,16 @@ function Poll({ post }: { post: PostView }) {
         return showResults ? (
           <div
             key={i}
-            className="relative overflow-hidden rounded-[var(--radius-sm)] border border-line px-3 py-2 text-sm"
+            className="grid gap-1.5 rounded-[var(--radius-sm)] border border-line px-3 py-2 text-meta"
           >
-            <span
-              aria-hidden
-              className="absolute inset-y-0 left-0 origin-left bg-[color-mix(in_srgb,var(--brand)_18%,transparent)]"
-              style={{ width: `${pct}%` }}
-            />
-            <span className="relative flex justify-between gap-3">
+            <span className="flex justify-between gap-3">
               <span className={cn(poll.myVote === i && 'font-semibold')}>
                 {o.text}
                 {poll.myVote === i && <span className="sr-only"> ({t('feed.yourVote')})</span>}
               </span>
-              <span className="font-mono">{pct}%</span>
+              <span className="font-mono tabular-nums">{pct}%</span>
             </span>
+            <ProgressBar value={pct} max={100} size="sm" tone={poll.myVote === i ? 'brand' : 'neutral'} />
           </div>
         ) : (
           <button

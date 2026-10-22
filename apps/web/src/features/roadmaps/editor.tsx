@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
@@ -19,6 +19,8 @@ import {
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Card, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
+import { BackLink } from '../../components/ui/back-link';
 import { api, ApiError } from '../../lib/api';
 import { newIdempotencyKey } from '../../lib/format';
 
@@ -402,14 +404,12 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
         void save(false);
       }}
     >
-      <div>
-        <Link to={r ? `/roadmaps/${r.slug}` : '/roadmaps'} className="text-sm text-fg-3 hover:text-fg">
-          ← {r ? r.title : t('roadmaps.title')}
-        </Link>
-        <h1 className="text-[clamp(24px,4vw,30px)] font-bold">
-          {r ? t('roadmaps.editor.editTitle') : t('roadmaps.editor.newTitle')}
-        </h1>
-        <p className="text-fg-2">{t('roadmaps.editor.intro')}</p>
+      <div className="grid gap-1">
+        <BackLink to={r ? `/roadmaps/${r.slug}` : '/roadmaps'}>{r ? r.title : t('roadmaps.title')}</BackLink>
+        <PageHeader
+          title={r ? t('roadmaps.editor.editTitle') : t('roadmaps.editor.newTitle')}
+          intro={t('roadmaps.editor.intro')}
+        />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">

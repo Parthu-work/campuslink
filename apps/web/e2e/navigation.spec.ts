@@ -154,7 +154,8 @@ test('the shell never remounts while moving between screens', async ({ page, isM
   await expect(nav.first()).toBeVisible();
   await page.evaluate(() => {
     const w = window as unknown as { __shell: Element[] };
-    w.__shell = [...document.querySelectorAll('header, nav[aria-label="Main"], main#main')];
+    // The shell's own bars, not a screen's PageHeader (which is a <header> inside <main>).
+    w.__shell = [...document.querySelectorAll('header:not(main header), nav[aria-label="Main"], main#main')];
   });
   const links = isMobile ? mainTabs(page) : nav.first();
   for (const name of ['Jobs', 'Mentors', 'Home']) {

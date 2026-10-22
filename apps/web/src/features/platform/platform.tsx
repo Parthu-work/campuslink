@@ -10,6 +10,8 @@ import type { z } from 'zod';
 import { Button } from '../../components/ui/button';
 import { Field, Input, Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
+import { StatCard, StatGrid } from '../../components/ui/stat-card';
 import { Dialog } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { api } from '../../lib/api';
@@ -45,12 +47,16 @@ export function PlatformTenants() {
   });
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('platform.title')}</h1>
-        <Button variant="primary" onClick={() => setCreating(true)}>
-          <Plus className="size-4" aria-hidden /> {t('platform.create')}
-        </Button>
-      </div>
+      <PageHeader
+        title={t('platform.title')}
+        actions={
+          <>
+            <Button variant="primary" onClick={() => setCreating(true)}>
+              <Plus className="size-4" aria-hidden /> {t('platform.create')}
+            </Button>
+          </>
+        }
+      />
       <p className="text-sm text-fg-3">{t('platform.privacyNote')}</p>
       {tenants.isLoading && <Skeleton className="h-40" />}
       {tenants.data?.length === 0 && (
@@ -264,35 +270,36 @@ export function PlatformHealth() {
   });
   return (
     <>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('platform.healthTitle')}</h1>
+      <PageHeader title={t('platform.healthTitle')} />
       {!h.data ? (
         <Skeleton className="h-40" />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-3">
-          {Object.entries(h.data.dependencies).map(([k, ok]) => (
-            <Card key={k} className="flex items-center gap-3 p-4">
-              <span className={`size-3 rounded-full ${ok ? 'bg-success' : 'bg-danger'}`} aria-hidden />
-              <b className="font-mono text-sm">{k}</b>
-              <Badge tone={ok ? 'success' : 'danger'} className="ml-auto">
-                {ok ? 'up' : 'down'}
-              </Badge>
-            </Card>
-          ))}
-          {(
-            [
-              ['Colleges', h.data.tenants],
-              ['Suspended', h.data.suspended],
-              ['People', h.data.users],
-              ['Active sessions', h.data.activeSessions],
-              ['Uptime (min)', Math.round(h.data.uptimeSec / 60)],
-              ['Memory (MB)', h.data.memoryMb],
-            ] as const
-          ).map(([label, v]) => (
-            <Card key={label} className="grid gap-1 p-4">
-              <span className="eyebrow">{label}</span>
-              <span className="font-display text-3xl font-bold tabular">{v}</span>
-            </Card>
-          ))}
+        <div className="grid gap-5">
+          <section aria-label={t('platform.health.services')} className="grid gap-3 sm:grid-cols-3">
+            {Object.entries(h.data.dependencies).map(([k, ok]) => (
+              <Card key={k} className="flex items-center gap-3 p-4">
+                <span className={`size-3 rounded-full ${ok ? 'bg-success' : 'bg-danger'}`} aria-hidden />
+                <b className="font-mono text-meta">{k}</b>
+                <Badge tone={ok ? 'success' : 'danger'} className="ml-auto">
+                  {ok ? t('platform.health.up') : t('platform.health.down')}
+                </Badge>
+              </Card>
+            ))}
+          </section>
+          <StatGrid className="sm:grid-cols-3 md:grid-cols-3">
+            {(
+              [
+                ['colleges', h.data.tenants],
+                ['suspended', h.data.suspended],
+                ['people', h.data.users],
+                ['activeSessions', h.data.activeSessions],
+                ['uptime', Math.round(h.data.uptimeSec / 60)],
+                ['memory', h.data.memoryMb],
+              ] as const
+            ).map(([key, v]) => (
+              <StatCard key={key} label={t(`platform.health.${key}`)} value={v} />
+            ))}
+          </StatGrid>
         </div>
       )}
     </>

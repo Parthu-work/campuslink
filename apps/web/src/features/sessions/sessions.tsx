@@ -18,14 +18,17 @@ import { buttonVariants } from '../../components/ui/button-variants';
 import { Dialog } from '../../components/ui/dialog';
 import { Field, Textarea } from '../../components/ui/field';
 import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { SlotPicker } from '../../components/ui/slot-picker';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
 import { bookings } from '../../lib/queries';
 import { formatDay, formatTime, localDateKey, newIdempotencyKey } from '../../lib/format';
+import { useRovingRadio } from '../../lib/use-roving-radio';
 
 const HOUR = 3600_000;
+const STARS = [1, 2, 3, 4, 5] as const;
 
 /** Re-renders every 30 s so "Join" enables itself when the window opens. */
 function useNow() {
@@ -212,6 +215,7 @@ function FeedbackDialog({
 }) {
   const { t } = useTranslation();
   const [rating, setRating] = useState(0);
+  const star = useRovingRadio({ values: STARS, value: rating || null, onChange: setRating });
   const [tags, setTags] = useState<string[]>([]);
   const [comment, setComment] = useState('');
   const opts = useBookingAction(b.id);
@@ -237,17 +241,14 @@ function FeedbackDialog({
       description={t('sessions.feedbackPrivate')}
     >
       <fieldset>
-        <legend className="mb-2 text-[13px] font-semibold">{t('sessions.rating')}</legend>
+        <legend className="mb-2 text-meta font-semibold">{t('sessions.rating')}</legend>
         <div role="radiogroup" aria-label={t('sessions.rating')} className="flex gap-1">
-          {[1, 2, 3, 4, 5].map((n) => (
+          {STARS.map((n, i) => (
             <button
               key={n}
-              type="button"
-              role="radio"
-              aria-checked={rating === n}
+              {...star(i)}
               aria-label={t('sessions.stars', { count: n })}
-              onClick={() => setRating(n)}
-              className="grid size-11 place-items-center rounded-full hover:bg-surface-2"
+              className="grid size-11 place-items-center rounded-full transition-[scale] duration-[var(--dur-fast)] ease-snappy hover:bg-hover active:scale-90"
             >
               <Star
                 className={n <= rating ? 'size-7 fill-[var(--accent)] text-accent-ink' : 'size-7 text-fg-3'}
@@ -458,7 +459,7 @@ export function SessionsPage() {
   const items = (list.data ?? []).filter((b) => when === 'past' || !day || localDateKey(b.start) === day);
   return (
     <>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('nav.sessions')}</h1>
+      <PageHeader title={t('nav.sessions')} />
       <Segmented
         label={t('nav.sessions')}
         value={when}

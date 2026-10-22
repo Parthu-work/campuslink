@@ -13,6 +13,7 @@ import {
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative, newIdempotencyKey } from '../../lib/format';
@@ -52,12 +53,7 @@ export function RewardsPage() {
   const balance = me.data?.balance ?? { xp: 0, impact: 0 };
   return (
     <div className="grid gap-5">
-      <div>
-        <h1 className="flex items-center gap-2 text-[clamp(26px,4vw,34px)] font-bold">
-          <Gift className="size-7 text-accent-ink" aria-hidden /> {t('rewards.title')}
-        </h1>
-        <p className="max-w-[60ch] text-fg-2">{t('rewards.intro')}</p>
-      </div>
+      <PageHeader icon={<Gift />} title={t('rewards.title')} intro={t('rewards.intro')} />
       <p className="text-sm" role="status">
         {t('rewards.balance', { xp: balance.xp, impact: balance.impact })}
       </p>

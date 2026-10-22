@@ -15,6 +15,7 @@ import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { SafetyMenu } from '../../components/layout/safety-menu';
 import { api, apiBlob, apiRequest, ApiError, saveBlob } from '../../lib/api';
@@ -31,8 +32,7 @@ export function MessagesPage() {
   const list = useQuery(conversations());
   return (
     <>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('nav.messages')}</h1>
-      <p className="-mt-3 text-sm text-fg-2">{t('messages.intro')}</p>
+      <PageHeader title={t('nav.messages')} intro={t('messages.intro')} />
       {list.isLoading && <Skeleton className="h-40" />}
       {list.isSuccess && !list.data.length && (
         <EmptyState
@@ -51,7 +51,7 @@ export function MessagesPage() {
         {list.data?.map((c) => (
           <li key={c.id}>
             <Link to={`/messages/${c.id}`} className="block rounded-[var(--radius-md)]">
-              <Card className="flex items-center gap-3 p-3.5 transition-colors hover:border-line-strong">
+              <Card variant="interactive" className="flex items-center gap-3 p-3.5">
                 <PersonAvatar name={c.other.name} fileId={c.other.avatarFileId} />
                 <div className="min-w-0 flex-1">
                   <b className="block truncate">{c.other.name}</b>

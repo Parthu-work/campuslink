@@ -62,6 +62,11 @@ function onFill(fill: Oklch, h: number): { fill: Oklch; on: Oklch } {
   return { fill: f, on: white };
 }
 
+/** A hovered fill: a step away from its label colour, so the label only gains contrast. */
+function hoverOf({ fill, on }: { fill: Oklch; on: Oklch }): Oklch {
+  return toGamut({ ...fill, l: fill.l + (on.l > fill.l ? -0.045 : 0.045) });
+}
+
 export interface Neutrals {
   bg: Oklch;
   s1: Oklch;
@@ -137,12 +142,26 @@ function themeTokens(primary: Oklch, accentBase: Oklch, theme: Theme): Tokens {
   const accent = onFill(accentBase, accentBase.h);
   t['--brand'] = css(brand.fill);
   t['--on-brand'] = css(brand.on);
+  t['--brand-hover'] = css(hoverOf(brand));
   t['--brand-2'] = css(second);
   t['--accent'] = css(accent.fill);
   t['--on-accent'] = css(accent.on);
-  t['--brand-ink'] = css(ink(light ? brand.fill : ok(0.72, primary.c, h), text, INK_RATIO, theme));
+  t['--accent-hover'] = css(hoverOf(accent));
+  // Tinted surfaces for brand and accent chips and badges; the inks are checked against them too.
+  const brandSurface = light ? ok(0.95, 0.035, h) : ok(0.27, 0.05, h);
+  const accentSurface = light ? ok(0.955, 0.04, accentBase.h) : ok(0.27, 0.05, accentBase.h);
+  t['--brand-surface'] = css(brandSurface);
+  t['--accent-surface'] = css(accentSurface);
+  t['--brand-ink'] = css(
+    ink(light ? brand.fill : ok(0.72, primary.c, h), [...text, brandSurface], INK_RATIO, theme),
+  );
   t['--accent-ink'] = css(
-    ink(light ? accent.fill : ok(0.74, accentBase.c, accentBase.h), text, INK_RATIO, theme),
+    ink(
+      light ? accent.fill : ok(0.74, accentBase.c, accentBase.h),
+      [...text, accentSurface],
+      INK_RATIO,
+      theme,
+    ),
   );
   RAMP.forEach((step, i) => {
     t[`--brand-${step}`] = css(ok(RAMP_L[i] ?? 0.5, primary.c * (RAMP_C[i] ?? 1), h));
@@ -152,6 +171,8 @@ function themeTokens(primary: Oklch, accentBase: Oklch, theme: Theme): Tokens {
   AURORA_OFFSETS.forEach((o, i) => {
     t[`--aurora-${i + 1}`] = css(ok(light ? 0.64 : 0.72, light ? 0.17 : 0.16, h + o));
   });
+  // Labels on the aurora (the Create and Ask buttons): near-black reads on every stop.
+  t['--on-aurora'] = css(ok(0.18, 0.02, h));
 
   // Subject accents: same lightness and chroma, hue offsets from the brand.
   SUBJECT_OFFSETS.forEach((o, i) => {

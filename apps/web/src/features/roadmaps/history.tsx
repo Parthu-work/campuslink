@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
@@ -8,6 +8,8 @@ import type { RoadmapContent, RoadmapView, VersionView } from '@campuslink/share
 import { Button } from '../../components/ui/button';
 import { Field, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
+import { BackLink } from '../../components/ui/back-link';
 import { api, ApiError } from '../../lib/api';
 import { cn } from '../../lib/cn';
 import { formatDay } from '../../lib/format';
@@ -146,13 +148,9 @@ export function RoadmapHistoryPage() {
   };
   return (
     <div className="grid gap-5">
-      <div>
-        <Link to={`/roadmaps/${r.slug}`} className="text-sm text-fg-3 hover:text-fg">
-          ← {r.title}
-        </Link>
-        <h1 className="flex items-center gap-2 text-[clamp(24px,4vw,30px)] font-bold">
-          <GitCompare className="size-6 text-brand-ink" aria-hidden /> {t('roadmaps.history')}
-        </h1>
+      <div className="grid gap-1">
+        <BackLink to={`/roadmaps/${r.slug}`}>{r.title}</BackLink>
+        <PageHeader icon={<GitCompare />} title={t('roadmaps.history')} />
       </div>
       <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
         <ol className="grid content-start gap-2" aria-label={t('roadmaps.versions')}>

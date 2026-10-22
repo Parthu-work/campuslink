@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Crown, Medal, Users } from 'lucide-react';
 import type { LeaderboardRow, MyProgressView, WallOfMentorsView } from '@campuslink/shared';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api } from '../../lib/api';
@@ -33,12 +34,7 @@ export function LeaderboardPage() {
   });
   return (
     <div className="grid gap-5">
-      <div>
-        <h1 className="flex items-center gap-2 text-[clamp(26px,4vw,34px)] font-bold">
-          <Medal className="size-7 text-accent-ink" aria-hidden /> {t('progress.leaderboard')}
-        </h1>
-        <p className="max-w-[60ch] text-fg-2">{t('progress.leaderboardIntro')}</p>
-      </div>
+      <PageHeader icon={<Medal />} title={t('progress.leaderboard')} intro={t('progress.leaderboardIntro')} />
       <Segmented
         label={t('progress.scope')}
         value={scope}
@@ -89,12 +85,7 @@ export function WallOfMentorsPage() {
   const motm = q.data?.mentorOfTheMonth;
   return (
     <div className="grid gap-5">
-      <div>
-        <h1 className="flex items-center gap-2 text-[clamp(26px,4vw,34px)] font-bold">
-          <Users className="size-7 text-brand-ink" aria-hidden /> {t('progress.wall')}
-        </h1>
-        <p className="max-w-[60ch] text-fg-2">{t('progress.wallIntro')}</p>
-      </div>
+      <PageHeader icon={<Users />} title={t('progress.wall')} intro={t('progress.wallIntro')} />
       <OptInHint field="showOnWall" />
       {motm && (
         <Card className="flex flex-wrap items-center gap-4 border-[color-mix(in_srgb,var(--accent)_50%,transparent)] p-5">

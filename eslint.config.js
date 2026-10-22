@@ -60,6 +60,21 @@ export default tseslint.config(
     },
   },
   {
+    // Type comes from the scale (text-caption … text-hero) and page titles from PageHeader (audit
+    // DS-1). The landing hero and story canvases size type to their own frames.
+    files: ['apps/web/src/features/**/*.tsx'],
+    ignores: ['apps/web/src/features/landing/**', 'apps/web/src/features/feed/stories.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='className'] Literal[value=/text-\\[clamp\\(/]",
+          message: 'Use a type-scale token (text-headline, text-display…) or <PageHeader>.',
+        },
+      ],
+    },
+  },
+  {
     // Service-worker scripts run in the worker global scope.
     files: ['apps/web/public/**/*.js'],
     ignores: ['apps/web/public/boot.js'],

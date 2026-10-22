@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 
+/** A filter or toggle chip (`aria-pressed`), 44px tall. */
 export function Chip({
   pressed,
   className,
@@ -11,8 +12,8 @@ export function Chip({
       type="button"
       aria-pressed={pressed}
       className={cn(
-        'inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line-strong px-3.5 text-[13px] font-medium text-fg-2 transition-[background-color,color,border-color,transform] duration-[var(--dur-fast)] active:scale-95',
-        'aria-pressed:border-brand aria-pressed:bg-[color-mix(in_srgb,var(--brand)_18%,transparent)] aria-pressed:text-fg',
+        'inline-flex min-h-11 flex-none items-center gap-1.5 rounded-full border border-line-strong px-4 text-meta font-semibold text-fg-2 transition-[background-color,color,border-color,scale] duration-[var(--dur-fast)] ease-snappy hover:text-fg active:scale-[var(--press-scale)] [&_svg]:size-4',
+        'aria-pressed:border-brand aria-pressed:bg-brand-surface aria-pressed:text-fg',
         className,
       )}
       {...props}
@@ -20,14 +21,15 @@ export function Chip({
   );
 }
 
-type Tone = 'neutral' | 'brand' | 'accent' | 'success' | 'warning' | 'danger';
+type Tone = 'neutral' | 'brand' | 'accent' | 'success' | 'warning' | 'danger' | 'info';
 const tones: Record<Tone, string> = {
   neutral: 'bg-surface-2 text-fg-2',
-  brand: 'bg-[color-mix(in_srgb,var(--brand)_16%,transparent)] text-brand-ink',
-  accent: 'bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-accent-ink',
-  success: 'bg-[color-mix(in_srgb,var(--success)_14%,transparent)] text-success',
-  warning: 'bg-[color-mix(in_srgb,var(--warning)_16%,transparent)] text-warning',
-  danger: 'bg-[color-mix(in_srgb,var(--danger)_14%,transparent)] text-danger',
+  brand: 'bg-brand-surface text-brand-ink',
+  accent: 'bg-accent-surface text-accent-ink',
+  success: 'bg-success-surface text-success-ink',
+  warning: 'bg-warning-surface text-warning-ink',
+  danger: 'bg-danger-surface text-danger-ink',
+  info: 'bg-info-surface text-info-ink',
 };
 /** Sans by default; `mono` only for records (batch years, roll numbers, scores) (audit TY-2). */
 export function Badge({
@@ -39,8 +41,8 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs leading-relaxed font-medium tabular-nums',
-        mono && 'font-mono',
+        'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-caption leading-relaxed font-semibold tabular-nums [&_svg]:size-3.5',
+        mono && 'font-mono font-medium',
         tones[tone],
         className,
       )}
@@ -49,22 +51,42 @@ export function Badge({
   );
 }
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+type CardVariant = 'flat' | 'raised' | 'interactive' | 'featured';
+const cardVariants: Record<CardVariant, string> = {
+  flat: '',
+  raised: 'shadow-elev-1',
+  // A card that is (or holds) a link: lifts on hover.
+  interactive:
+    'shadow-elev-1 transition-[box-shadow,border-color] duration-[var(--dur-base)] hover:border-line-strong hover:shadow-elev-2',
+  // The aurora hairline: for the moments ADR 0008 lists (One Useful Thing, a streak, a celebration).
+  featured: 'aurora-border shadow-elev-2',
+};
+export function Card({
+  className,
+  variant = 'flat',
+  ...props
+}: HTMLAttributes<HTMLDivElement> & { variant?: CardVariant }) {
   return (
     // min-w-0: a card inside a grid or flex row never grows past its track (audit A11Y-4).
     <div
-      className={cn('min-w-0 rounded-[var(--radius-md)] border border-line bg-surface-1', className)}
+      className={cn(
+        'min-w-0 rounded-[var(--radius-lg)] border border-line bg-surface-1',
+        cardVariants[variant],
+        className,
+      )}
       {...props}
     />
   );
 }
 
+/** A placeholder in the shape of what is coming; a soft sheen sweeps across it (transform only). */
 export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
       className={cn(
-        'animate-pulse rounded-[var(--radius-sm)] bg-surface-2 motion-reduce:animate-none',
+        'relative overflow-hidden rounded-[var(--radius-sm)] bg-surface-2',
+        'after:absolute after:inset-0 after:-translate-x-full after:bg-[linear-gradient(90deg,transparent,color-mix(in_oklch,var(--fg)_6%,transparent),transparent)] after:animate-[sheen_calc(1.4s*var(--motion-scale))_ease-in-out_infinite] motion-reduce:after:hidden',
         className,
       )}
     />
@@ -73,31 +95,41 @@ export function Skeleton({ className }: { className?: string }) {
 
 export function EmptyState({
   icon,
+  art,
   title,
   children,
   action,
 }: {
-  icon: ReactNode;
+  /** A small icon in a tinted circle; `art` (an Illustration) takes its place when given. */
+  icon?: ReactNode;
+  art?: ReactNode;
   title: string;
   children?: ReactNode;
   action?: ReactNode;
 }) {
   return (
-    <div className="grid justify-items-center gap-2.5 px-5 py-8 text-center">
-      <span className="grid size-14 place-items-center rounded-full bg-surface-2 text-brand-ink" aria-hidden>
-        {icon}
-      </span>
-      <h3 className="text-lg font-semibold">{title}</h3>
+    <div className="grid justify-items-center gap-3 px-5 py-10 text-center">
+      {art ??
+        (icon && (
+          <span
+            className="grid size-14 place-items-center rounded-full bg-brand-surface text-brand-ink [&_svg]:size-6"
+            aria-hidden
+          >
+            {icon}
+          </span>
+        ))}
+      <h3 className="text-title font-semibold text-balance">{title}</h3>
       {children && <div className="max-w-[46ch] text-fg-2">{children}</div>}
-      {action}
+      {action && <div className="mt-1">{action}</div>}
     </div>
   );
 }
 
-function hue(s: string) {
+/** A stable subject accent (1–8) for a name, so a person keeps their colour everywhere. */
+function accentOf(s: string) {
   let h = 7;
-  for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360;
-  return h;
+  for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 9973;
+  return (h % 8) + 1;
 }
 export function Avatar({
   name,
@@ -108,7 +140,7 @@ export function Avatar({
   size?: number;
   verified?: boolean;
 }) {
-  const h = hue(name);
+  const n = accentOf(name);
   const initials = name
     .split(/\s+/)
     .map((p) => p[0] ?? '')
@@ -118,27 +150,33 @@ export function Avatar({
   return (
     <span
       aria-hidden
-      className="relative grid flex-none place-items-center rounded-full font-display font-bold text-white"
+      className="relative grid flex-none place-items-center rounded-full font-display font-bold ring-1 ring-line"
       style={{
         width: size,
         height: size,
-        fontSize: size * 0.34,
-        background: `linear-gradient(135deg, hsl(${h} 70% 50%), hsl(${h + 60} 65% 38%))`,
+        fontSize: size * 0.36,
+        background: `var(--subject-${n}-surface)`,
+        color: `var(--subject-${n}-ink)`,
       }}
     >
       {initials}
-      {verified && (
-        <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full border-2 border-surface-1 bg-brand">
-          <svg viewBox="0 0 24 24" className="size-2.5 fill-none stroke-on-brand stroke-[3.5]">
-            <path d="m5 12.5 4.5 4.5L19 7.5" />
-          </svg>
-        </span>
-      )}
+      {verified && <VerifiedTick />}
     </span>
   );
 }
 
-/** College crest: monogram on a hexagon in tenant colours (logo uploads arrive in Phase 2). */
+/** The verified tick on an avatar's corner. */
+export function VerifiedTick() {
+  return (
+    <span className="absolute -right-0.5 -bottom-0.5 grid size-4 place-items-center rounded-full border-2 border-surface-1 bg-brand">
+      <svg viewBox="0 0 24 24" className="size-2.5 fill-none stroke-on-brand stroke-[3.5]">
+        <path d="m5 12.5 4.5 4.5L19 7.5" />
+      </svg>
+    </span>
+  );
+}
+
+/** College crest: monogram on a hexagon in tenant colours, until the college uploads a logo. */
 export function Crest({ monogram, size = 40, label }: { monogram: string; size?: number; label?: string }) {
   const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true };
   return (

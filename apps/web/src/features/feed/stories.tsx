@@ -7,11 +7,13 @@ import { ChevronLeft, ChevronRight, ExternalLink, Pause, Play, Plus, Trash2, X }
 import { STORY_BACKGROUNDS, type StoryView } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
+import { ChoiceGroup } from '../../components/ui/choice-group';
 import { Field, Input, Textarea } from '../../components/ui/field';
 import { Skeleton } from '../../components/ui/misc';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { api, ApiError } from '../../lib/api';
 import { useDialogHistory } from '../../lib/use-dialog-history';
+import { useRovingRadio } from '../../lib/use-roving-radio';
 import { stories } from '../../lib/queries';
 import { useFileUrl } from '../../lib/files';
 import { formatRelative } from '../../lib/format';
@@ -219,6 +221,7 @@ function StoryComposer({ onDone }: { onDone: () => void }) {
   const [mode, setMode] = useState<'text' | 'photo'>('text');
   const [text, setText] = useState('');
   const [background, setBackground] = useState<(typeof STORY_BACKGROUNDS)[number]>('brand');
+  const swatch = useRovingRadio({ values: STORY_BACKGROUNDS, value: background, onChange: setBackground });
   const [fileId, setFileId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [alt, setAlt] = useState('');
@@ -270,20 +273,13 @@ function StoryComposer({ onDone }: { onDone: () => void }) {
         if (ready) create.mutate();
       }}
     >
-      <div role="radiogroup" aria-label={t('stories.kind')} className="flex gap-1">
-        {(['text', 'photo'] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="radio"
-            aria-checked={mode === m}
-            onClick={() => setMode(m)}
-            className="min-h-10 rounded-full border border-line-strong px-4 text-sm font-medium aria-checked:border-brand aria-checked:bg-[color-mix(in_srgb,var(--brand)_16%,transparent)]"
-          >
-            {t(`stories.kinds.${m}`)}
-          </button>
-        ))}
-      </div>
+      <ChoiceGroup
+        label={t('stories.kind')}
+        variant="chip"
+        value={mode}
+        options={(['text', 'photo'] as const).map((m) => ({ value: m, label: t(`stories.kinds.${m}`) }))}
+        onChange={setMode}
+      />
       {mode === 'photo' && (
         <>
           <input
@@ -328,19 +324,16 @@ function StoryComposer({ onDone }: { onDone: () => void }) {
       </Field>
       {mode === 'text' && (
         <fieldset>
-          <legend id={bgId} className="mb-1.5 text-[13px] font-semibold">
+          <legend id={bgId} className="mb-1.5 text-meta font-semibold">
             {t('stories.background')}
           </legend>
           <div role="radiogroup" aria-labelledby={bgId} className="flex gap-2">
-            {STORY_BACKGROUNDS.map((b) => (
+            {STORY_BACKGROUNDS.map((b, i) => (
               <button
                 key={b}
-                type="button"
-                role="radio"
-                aria-checked={background === b}
+                {...swatch(i)}
                 aria-label={t(`stories.bg.${b}`)}
-                onClick={() => setBackground(b)}
-                className="size-11 rounded-full border-2 border-transparent aria-checked:border-fg"
+                className="size-11 rounded-full border-2 border-transparent transition-[scale] duration-[var(--dur-fast)] ease-snappy active:scale-90 aria-checked:border-fg"
                 style={{ background: storyBackground[b] }}
               />
             ))}

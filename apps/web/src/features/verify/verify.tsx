@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/button';
 import { Field, Input, Textarea } from '../../components/ui/field';
 import { Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { OtpInput } from '../../components/ui/otp';
+import { PageHeader } from '../../components/ui/page-header';
 import { FormError } from '../../components/layout/auth-layout';
 import { api, ApiError } from '../../lib/api';
 import { useTenant } from '../../lib/tenant-context';
@@ -117,9 +118,7 @@ export function VerifyPage() {
 
   return (
     <>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">
-        {t('verify.title', { college: tenant.branding.shortName })}
-      </h1>
+      <PageHeader title={t('verify.title', { college: tenant.branding.shortName })} />
       {status.data?.request?.status === 'rejected' && (
         <FormError
           message={`${t('verify.rejectedTitle')}. ${t('verify.rejectedBody', { reason: status.data.request.reason ?? '' })}`}

@@ -21,6 +21,7 @@ import { oneUsefulThing, upcomingBookings } from '../../lib/queries';
 import { useCan, useMe } from '../../lib/me';
 import { formatDay, formatTime } from '../../lib/format';
 import { buttonVariants } from '../../components/ui/button-variants';
+import { PageHeader } from '../../components/ui/page-header';
 import { ItemCard, PostCard } from '../feed/post-card';
 import { Composer } from '../feed/composer';
 import { StoriesRow } from '../feed/stories';
@@ -71,7 +72,7 @@ function ImpactTeaser() {
   if (!q.data) return null;
   return (
     <Link to="/mentor" className="block rounded-[var(--radius-md)]">
-      <Card className="flex items-center gap-3 p-4 transition-colors hover:border-line-strong">
+      <Card variant="interactive" className="flex items-center gap-3 p-4">
         <HeartHandshake className="size-6 flex-none text-accent-ink" aria-hidden />
         <div className="min-w-0 flex-1">
           <b className="block">{t('mentor.helped', { count: q.data.helpedThisMonth })}</b>
@@ -200,7 +201,7 @@ function RightRail() {
           <NextSession />
           {canMentor && <ImpactTeaser />}
           <Link to="/mentors" className="block rounded-[var(--radius-md)]">
-            <Card className="flex items-center gap-3 p-4 transition-colors hover:border-line-strong">
+            <Card variant="interactive" className="flex items-center gap-3 p-4">
               <Compass className="size-6 flex-none text-brand-ink" aria-hidden />
               <div className="min-w-0 flex-1">
                 <b className="block">{t('home.findMentor')}</b>
@@ -211,7 +212,7 @@ function RightRail() {
         </>
       )}
       <Link to="/questions" className="block rounded-[var(--radius-md)]">
-        <Card className="flex items-center gap-3 p-4 transition-colors hover:border-line-strong">
+        <Card variant="interactive" className="flex items-center gap-3 p-4">
           <MessageCircleQuestion className="size-6 flex-none text-accent-ink" aria-hidden />
           <div className="min-w-0 flex-1">
             <b className="block">{t('qa.teaser')}</b>
@@ -234,13 +235,15 @@ export function HomePage() {
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
       <div className="grid min-w-0 content-start gap-4">
-        <h1 className="text-[clamp(26px,4vw,34px)] font-bold">
-          {isLoading || !me ? (
-            <Skeleton className="h-9 w-56" />
-          ) : (
-            t('home.greeting', { name: me.name.split(' ')[0] })
-          )}
-        </h1>
+        <PageHeader
+          title={
+            isLoading || !me ? (
+              <Skeleton className="h-9 w-56" />
+            ) : (
+              t('home.greeting', { name: me.name.split(' ')[0] })
+            )
+          }
+        />
         {me && !me.verified && (
           <Card
             className="flex gap-3 border-[color-mix(in_srgb,var(--warning)_45%,var(--line))] p-4"

@@ -13,6 +13,8 @@ import { IntentLink } from '../../components/ui/intent-link';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Input, Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
+import { ProgressBar } from '../../components/ui/progress';
 import { Segmented } from '../../components/ui/tab-nav';
 import { followedRoadmaps, roadmapDrafts, roadmapsList } from '../../lib/queries';
 import { useCan } from '../../lib/me';
@@ -29,26 +31,10 @@ const HUE: Record<RoadmapCategory, string> = {
   'exams-higher-studies': 'var(--fg-2)',
 };
 
-function ProgressBar({ done, total, label }: { done: number; total: number; label: string }) {
-  const pct = total ? Math.round((done / total) * 100) : 0;
-  return (
-    <div
-      role="progressbar"
-      aria-label={label}
-      aria-valuenow={pct}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      className="h-1.5 overflow-hidden rounded-full bg-surface-2"
-    >
-      <div className="h-full rounded-full bg-success" style={{ width: `${pct}%` }} />
-    </div>
-  );
-}
-
 export function RoadmapCard({ r }: { r: RoadmapSummaryView }) {
   const { t } = useTranslation();
   return (
-    <Card className="grid h-full gap-2 p-4 transition-colors hover:border-line-strong">
+    <Card variant="interactive" className="grid h-full gap-2 p-4">
       <div className="flex items-start justify-between gap-2">
         <IntentLink
           to={`/roadmaps/${r.slug}`}
@@ -74,11 +60,14 @@ export function RoadmapCard({ r }: { r: RoadmapSummaryView }) {
       {r.progress && (
         <div className="grid gap-1">
           <ProgressBar
-            done={r.progress.done}
-            total={r.progress.total}
+            value={r.progress.done}
+            max={r.progress.total}
             label={t('roadmaps.progressOf', { title: r.title })}
+            valueText={t('roadmaps.doneOf', r.progress)}
+            tone="success"
+            size="sm"
           />
-          <span className="text-xs text-fg-3">{t('roadmaps.doneOf', r.progress)}</span>
+          <span className="text-caption text-fg-3">{t('roadmaps.doneOf', r.progress)}</span>
         </div>
       )}
     </Card>
@@ -235,26 +224,25 @@ export function RoadmapsPage() {
 
   return (
     <div className="grid gap-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="flex items-center gap-2 text-[clamp(26px,4vw,34px)] font-bold">
-            <Orbit className="size-7 text-brand-ink" aria-hidden /> {t('roadmaps.title')}
-          </h1>
-          <p className="max-w-[60ch] text-fg-2">{t('roadmaps.intro')}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {canReview && (
-            <Link to="/roadmaps/review" className={buttonVariants({ size: 'sm' })}>
-              <ClipboardCheck className="size-4" aria-hidden /> {t('roadmaps.review.title')}
-            </Link>
-          )}
-          {canWrite && (
-            <Link to="/roadmaps/new" className={buttonVariants({ size: 'sm', variant: 'primary' })}>
-              <Plus className="size-4" aria-hidden /> {t('roadmaps.new')}
-            </Link>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        icon={<Orbit />}
+        title={t('roadmaps.title')}
+        intro={t('roadmaps.intro')}
+        actions={
+          <>
+            {canReview && (
+              <Link to="/roadmaps/review" className={buttonVariants({ size: 'sm' })}>
+                <ClipboardCheck className="size-4" aria-hidden /> {t('roadmaps.review.title')}
+              </Link>
+            )}
+            {canWrite && (
+              <Link to="/roadmaps/new" className={buttonVariants({ size: 'sm', variant: 'primary' })}>
+                <Plus className="size-4" aria-hidden /> {t('roadmaps.new')}
+              </Link>
+            )}
+          </>
+        }
+      />
 
       {!!mine.data?.length && (
         <section aria-labelledby="my-roadmaps" className="grid gap-2">

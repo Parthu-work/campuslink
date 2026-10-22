@@ -175,3 +175,16 @@ Next: Phase 6 (the `/design` living style guide), then a stop for the owner's re
 How: each column is a `[data-palette][data-theme]` container with that college's generated tokens; `tokens.css` recomputes the derived tokens (aurora, overlays, depth) inside such containers. `parseOklch()` joins the shared colour maths so the guide can print ratios.
 
 **Stopped here for the owner's review**, as the master prompt asks. Phase 7 (primitives) starts after it.
+
+**Review:** the owner approved the Campus Aurora direction and the recommendations for Q7 (logo uploads), Q9 (signed media links) and Q12 (mentor request structure) on 2026-10-22 ("go ahead and complete this"); `decisions.md` records them.
+
+## Phase 7 · Primitives
+
+`components/ui/` rebuilt on the phase 5 tokens, and every duplicate the audit listed (DS-1, DS-3, DS-5) merged into one primitive. Each one is in `/design` in both themes.
+
+- **New:** `Sheet` (bottom on phones with a drag handle and swipe-down to close, side sheet from the right on wider screens), `Tabs`/`TabPanel` (WAI-ARIA tabs, sliding underline, scrolling row with edge fades), `Switch`, `ChoiceGroup` (radio cards and chips, arrow keys like native radios), `PageHeader`, `ProgressBar` and `ProgressRing` (aurora for XP and coverage), `StatCard`/`StatGrid` (a description list, optional sparkline), `Table`, `AvatarStack`, `Tooltip`, `ErrorState`, and eight small aurora `Illustration`s for empty, error and success states.
+- **Rebuilt:** `Button` (pill, 44/48/56 px, `outline` and `aurora` variants, spring press, tested hover fills `--brand-hover`/`--accent-hover`), fields (48 px, soft focus ring, custom checkbox, `Select` with a compact size), OTP boxes, `Chip`, `Badge` (tinted surfaces with inks), `Card` (`flat`, `raised`, `interactive`, `featured`), `Skeleton` (sheen), `EmptyState` (icon or illustration), `Avatar` (subject accents instead of raw HSL), `Dialog` (glass, scrolling body, pinned footer, swipe to close on phones), `TabNav`/`Segmented` (tinted in-page highlight), toasts (inverse, tokens).
+- **Merged duplicates:** 30 page titles → `PageHeader` (plus six more hand-sized headings), with a lint rule that rejects `text-[clamp(` in features; 3 toggles → `Switch`; 6 progress bars → `ProgressBar` (the roadmap bar no longer animates `width`); 6 stat tiles → `StatCard`; 7 radio groups → `ChoiceGroup` or the shared `useRovingRadio` (star rating, story backgrounds); 8 hand-styled link cards → `Card variant="interactive"`; three more hard-coded "←" links → `BackLink`; the More and Create sheets → `Sheet` (the More sheet scrolls instead of clipping Sign out).
+- **New tokens** (generated and tested in `palette.test.ts`): `--brand-hover`, `--accent-hover` (labels stay 4.5:1), `--brand-surface`, `--accent-surface` (inks stay 5.5:1 on them), `--on-aurora` (4.5:1 on every aurora stop).
+- **Fix:** `cn()` now knows the type scale and elevation tokens. Before, `tailwind-merge` read `text-meta` as a colour and dropped it whenever a text colour followed (`lib/cn.test.ts`).
+- **Budget:** the post composer's form loads when it opens (Home's first paint needs only the prompt bar); Home adds 68.7 KB, initial JS 168.6 KB.

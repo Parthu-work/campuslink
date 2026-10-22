@@ -14,21 +14,13 @@ import {
 import { Button } from '../../components/ui/button';
 import { Select } from '../../components/ui/field';
 import { Card, Skeleton } from '../../components/ui/misc';
+import { StatCard, StatGrid } from '../../components/ui/stat-card';
+import { ProgressBar } from '../../components/ui/progress';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
 import { useCan } from '../../lib/me';
 import { cn } from '../../lib/cn';
 
 const num = (c: Count) => (c === '<5' ? null : c);
-
-function Tile({ label, value, hint }: { label: string; value: Count | string; hint?: string | undefined }) {
-  return (
-    <Card className="grid gap-1 p-4">
-      <span className="text-sm text-fg-2">{label}</span>
-      <span className="font-display text-3xl font-bold tabular-nums">{value}</span>
-      {hint && <span className="text-xs text-fg-3">{hint}</span>}
-    </Card>
-  );
-}
 
 /** Single-series monthly bars (one hue), with hover/focus tooltip and a table view. */
 function MonthBars({ title, points }: { title: string; points: MonthPoint[] }) {
@@ -135,11 +127,8 @@ function OutcomeBars({ title, rows }: { title: string; rows: [string, Count][] }
         {rows.map(([k, v]) => (
           <div key={k} className="grid grid-cols-[120px_1fr_44px] items-center gap-2 text-sm">
             <dt className="text-fg-2">{k}</dt>
-            <dd className="h-3 rounded-full bg-surface-2" aria-hidden>
-              <div
-                className="h-full rounded-full bg-brand"
-                style={{ width: `${((num(v) ?? 0) / max) * 100}%` }}
-              />
+            <dd>
+              <ProgressBar value={num(v) ?? 0} max={max} size="lg" />
             </dd>
             <dd className="text-right tabular-nums">{v}</dd>
           </div>
@@ -227,17 +216,17 @@ export function AnalyticsAdmin() {
           <p className="text-xs text-fg-3">
             {t('analytics.meta', { year: v.academicYear })} · {t('analytics.suppressed')}
           </p>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Tile label={t('analytics.students')} value={v.members.students} />
-            <Tile label={t('analytics.alumni')} value={v.members.alumni} />
+          <StatGrid className="lg:grid-cols-4 md:grid-cols-3">
+            <StatCard label={t('analytics.students')} value={v.members.students} />
+            <StatCard label={t('analytics.alumni')} value={v.members.alumni} />
             {v.scope === 'college' && (
-              <Tile
+              <StatCard
                 label={t('analytics.active30')}
                 value={v.active.last30}
                 hint={t('analytics.active7', { value: v.active.last7 })}
               />
             )}
-            <Tile
+            <StatCard
               label={t('analytics.participation')}
               value={v.alumniParticipation.rate === null ? '—' : `${v.alumniParticipation.rate}%`}
               hint={t('analytics.participationHint', {
@@ -245,7 +234,7 @@ export function AnalyticsAdmin() {
                 total: v.alumniParticipation.total,
               })}
             />
-            <Tile
+            <StatCard
               label={t('analytics.sessionsTotal')}
               value={v.sessions.total}
               hint={
@@ -254,16 +243,16 @@ export function AnalyticsAdmin() {
                   : undefined
               }
             />
-            <Tile label={t('analytics.openJobs')} value={v.jobs.open} />
-            <Tile
+            <StatCard label={t('analytics.openJobs')} value={v.jobs.open} />
+            <StatCard
               label={t('analytics.eventsHeld')}
               value={v.events.held}
               hint={t('analytics.attended', { rsvps: v.events.rsvps, attended: v.events.attended })}
             />
             {v.scope === 'college' && (
-              <Tile label={t('analytics.pending')} value={v.members.pendingVerification} />
+              <StatCard label={t('analytics.pending')} value={v.members.pendingVerification} />
             )}
-          </div>
+          </StatGrid>
           <div className="grid gap-3 lg:grid-cols-2">
             <MonthBars title={t('analytics.sessionsByMonth')} points={v.sessions.completed} />
             <MonthBars title={t('analytics.jobsByMonth')} points={v.jobs.posted} />

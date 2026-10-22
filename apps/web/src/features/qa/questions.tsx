@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { RichText } from '../../components/ui/rich-text';
 import { api, apiRequest, ApiError } from '../../lib/api';
 import { useCan } from '../../lib/me';
@@ -17,7 +18,7 @@ import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { formatRelative, newIdempotencyKey } from '../../lib/format';
 import { AuthorLine } from '../feed/post-card';
 import { ContentMenu, RemovalNotice } from '../feed/content-menu';
-import { TopicPicker } from '../feed/composer';
+import { TopicPicker } from '../feed/composer-form';
 
 const STATUS_TONE = {
   pending: 'warning',
@@ -96,7 +97,7 @@ function QuestionRow({ q }: { q: QuestionView }) {
   const { t } = useTranslation();
   return (
     <li>
-      <Card className="grid gap-2 p-4 transition-colors hover:border-line-strong">
+      <Card variant="interactive" className="grid gap-2 p-4">
         <h2 className="text-base leading-snug font-semibold">
           <Link to={`/questions/${q.id}`} className="hover:underline">
             {q.title}
@@ -154,17 +155,19 @@ export function QuestionsPage() {
   };
   return (
     <div className="mx-auto grid w-full max-w-[760px] gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('qa.title')}</h1>
-          <p className="text-fg-2">{t('qa.intro')}</p>
-        </div>
-        {canAsk && (
-          <Button variant="primary" onClick={() => setAsking(true)}>
-            <Plus className="size-4" aria-hidden /> {t('qa.ask')}
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        title={t('qa.title')}
+        intro={t('qa.intro')}
+        actions={
+          <>
+            {canAsk && (
+              <Button variant="primary" onClick={() => setAsking(true)}>
+                <Plus className="size-4" aria-hidden /> {t('qa.ask')}
+              </Button>
+            )}
+          </>
+        }
+      />
       <div className="flex flex-wrap items-center gap-2">
         <div role="group" aria-label={t('qa.filter')} className="flex flex-wrap gap-2">
           {(['all', 'unanswered', ...(canAsk ? ['mine'] : [])] as const).map((f) => (
@@ -175,7 +178,7 @@ export function QuestionsPage() {
         </div>
         <label className="ml-auto w-full sm:w-52">
           <span className="sr-only">{t('feed.topics')}</span>
-          <Select value={topic} onChange={(e) => set('topic', e.target.value)} className="min-h-10">
+          <Select value={topic} onChange={(e) => set('topic', e.target.value)}>
             <option value="">{t('qa.anyTopic')}</option>
             {TOPICS.map((tp) => (
               <option key={tp} value={tp}>
@@ -351,7 +354,7 @@ export function QuestionPage() {
                 deleting={del.isPending}
               />
             </AuthorLine>
-            <h1 className="text-[clamp(22px,3.4vw,28px)] leading-tight font-bold">{question.title}</h1>
+            <h1 className="text-headline leading-tight font-bold">{question.title}</h1>
             {question.isMine && question.status === 'pending' && (
               <p role="status" className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-sm text-fg-2">
                 {t('qa.pendingNote')}

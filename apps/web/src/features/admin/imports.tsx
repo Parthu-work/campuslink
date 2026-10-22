@@ -13,6 +13,8 @@ import {
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select } from '../../components/ui/field';
 import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
+import { StatCard, StatGrid } from '../../components/ui/stat-card';
+import { ProgressBar } from '../../components/ui/progress';
 import { Dialog } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
@@ -369,12 +371,12 @@ function JobView({ id, onNew }: { id: string; onNew: () => void }) {
         : j.status === 'rolled_back'
           ? t('admin.rolledBack')
           : t('admin.running');
-  const tiles: [string, number, (string | undefined)?][] = [
-    [t('admin.created'), j.counts.created, 'text-success'],
+  const tiles: [string, number, ('success' | 'danger' | undefined)?][] = [
+    [t('admin.created'), j.counts.created, 'success'],
     [t('admin.updated'), j.counts.updated],
     [t('admin.unchanged'), j.counts.unchanged],
     [t('admin.skippedClaimed'), j.counts.skippedClaimed],
-    [t('admin.errorsCount'), j.counts.errors, j.counts.errors ? 'text-danger' : undefined],
+    [t('admin.errorsCount'), j.counts.errors, j.counts.errors ? 'danger' : undefined],
   ];
   return (
     <Card className="grid gap-5 p-5">
@@ -386,28 +388,18 @@ function JobView({ id, onNew }: { id: string; onNew: () => void }) {
         <Badge className="ml-auto">{j.sourceLabel}</Badge>
       </div>
       {!done && (
-        <div
-          className="h-2 overflow-hidden rounded-full bg-surface-3"
-          role="progressbar"
-          aria-valuenow={j.progress}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={t('admin.running')}
-        >
-          <div
-            className="h-full origin-left rounded-full bg-gradient-to-r from-brand to-accent transition-transform"
-            style={{ transform: `scaleX(${Math.max(0.03, j.progress / 100)})` }}
-          />
-        </div>
+        <ProgressBar
+          value={Math.max(3, j.progress)}
+          max={100}
+          label={t('admin.running')}
+          valueText={`${j.progress}%`}
+        />
       )}
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-        {tiles.map(([label, n, cls]) => (
-          <div key={label} className="grid gap-1 rounded-[var(--radius-md)] bg-surface-2 p-3">
-            <dt className="text-xs text-fg-2">{label}</dt>
-            <dd className={cn('font-display text-2xl font-bold tabular', cls)}>{n}</dd>
-          </div>
+      <StatGrid className="sm:grid-cols-5 md:grid-cols-5">
+        {tiles.map(([label, n, tone]) => (
+          <StatCard key={label} size="sm" label={label} value={n} tone={tone ?? 'default'} />
         ))}
-      </dl>
+      </StatGrid>
       {j.rowErrors && j.rowErrors.length > 0 && (
         <div
           className="overflow-x-auto rounded-[var(--radius-md)] border border-line"

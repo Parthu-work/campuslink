@@ -8,6 +8,7 @@ import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
 import { useTrack } from '../../lib/jobs';
@@ -42,7 +43,7 @@ function TrackedRow({ row }: { row: TrackedJobView }) {
           <Select
             value={row.status}
             onChange={(e) => track.mutate({ status: e.target.value as TrackStatus })}
-            className="min-h-10"
+            size="sm"
             disabled={!row.job}
           >
             {TRACK_STATUSES.map((s) => (
@@ -110,8 +111,7 @@ export function TrackerPage() {
     <div className="mx-auto grid w-full max-w-[860px] gap-5">
       <BackLink to="/jobs">{t('jobs.back')}</BackLink>
       <div>
-        <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('jobs.tracker')}</h1>
-        <p className="text-fg-2">{t('jobs.trackerIntro')}</p>
+        <PageHeader title={t('jobs.tracker')} intro={t('jobs.trackerIntro')} />
       </div>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="grid content-start gap-5">

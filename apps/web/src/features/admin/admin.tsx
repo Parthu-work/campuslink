@@ -19,6 +19,8 @@ import {
 import { Button } from '../../components/ui/button';
 import { Field, Input, Select } from '../../components/ui/field';
 import { Avatar, Badge, Card, Chip, Crest, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
+import { Switch } from '../../components/ui/switch';
 import { Dialog } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { api, apiRequest, ApiError } from '../../lib/api';
@@ -56,7 +58,7 @@ export function AdminLayout() {
   ] as const;
   return (
     <>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('nav.admin')}</h1>
+      <PageHeader title={t('nav.admin')} />
       <TabNav
         label={t('nav.admin')}
         tabs={tabs.filter(([, , ok]) => ok).map(([to, label]) => [to, label] as const)}
@@ -429,19 +431,12 @@ export function FeaturesAdmin() {
         <p className="text-sm text-fg-2">{t('admin.featuresIntro')}</p>
         <ul className="grid gap-2">
           {(Object.keys(FEATURES) as Feature[]).map((f) => (
-            <li key={f} className="flex items-center gap-3 rounded-[var(--radius-md)] bg-surface-2 p-3">
-              <span className="flex-1 text-sm">{t(`feature.${f}`)}</span>
-              <label className="relative inline-flex min-h-11 cursor-pointer items-center">
-                <span className="sr-only">{t(`feature.${f}`)}</span>
-                <input
-                  type="checkbox"
-                  role="switch"
-                  className="peer sr-only"
-                  checked={settings.data.features[f]}
-                  onChange={(e) => save.mutate({ features: { [f]: e.target.checked } })}
-                />
-                <span className="h-7 w-12 rounded-full bg-surface-3 transition-colors peer-checked:bg-brand peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent after:absolute after:top-1/2 after:left-1 after:size-5 after:-translate-y-1/2 after:rounded-full after:bg-white after:transition-transform after:duration-[var(--dur-base)] peer-checked:after:translate-x-5" />
-              </label>
+            <li key={f} className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-1">
+              <Switch
+                label={t(`feature.${f}`)}
+                checked={settings.data.features[f]}
+                onChange={(on) => save.mutate({ features: { [f]: on } })}
+              />
             </li>
           ))}
         </ul>

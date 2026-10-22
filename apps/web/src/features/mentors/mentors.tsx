@@ -21,6 +21,7 @@ import { buttonVariants } from '../../components/ui/button-variants';
 import { Dialog } from '../../components/ui/dialog';
 import { Field, Input, Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { Segmented } from '../../components/ui/tab-nav';
 import { TagInput } from '../../components/ui/tag-input';
@@ -31,7 +32,7 @@ export function MentorTile({ m }: { m: MentorCard }) {
   const { t } = useTranslation();
   return (
     <IntentLink to={`/mentors/${m.userId}`} className="block h-full rounded-[var(--radius-md)]">
-      <Card className="grid h-full gap-3 p-4 transition-colors hover:border-line-strong">
+      <Card variant="interactive" className="grid h-full gap-3 p-4">
         <div className="flex items-start gap-3">
           {/* Morphs into the mentor page's header (view transition). */}
           <span className="flex-none" style={{ viewTransitionName: `mentor-${m.userId}` }}>
@@ -317,7 +318,7 @@ function BrowseView() {
         </label>
         <Field label={<span className="sr-only">{t('mentors.sessionType')}</span>}>
           {({ id }) => (
-            <Select id={id} value={type} onChange={(e) => setType(e.target.value)} className="min-h-[50px]">
+            <Select id={id} value={type} onChange={(e) => setType(e.target.value)}>
               <option value="">{t('mentors.anyType')}</option>
               {SESSION_TYPES.map((s) => (
                 <option key={s} value={s}>
@@ -357,12 +358,16 @@ export function MentorsPage() {
   const view = params.get('view') === 'browse' ? 'browse' : 'match';
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('mentors.title')}</h1>
-        <Link to="/mentorship" className={buttonVariants({ size: 'sm' })}>
-          {t('nav.requests')}
-        </Link>
-      </div>
+      <PageHeader
+        title={t('mentors.title')}
+        actions={
+          <>
+            <Link to="/mentorship" className={buttonVariants({ size: 'sm' })}>
+              {t('nav.requests')}
+            </Link>
+          </>
+        }
+      />
       <Segmented
         label={t('mentors.title')}
         value={view}

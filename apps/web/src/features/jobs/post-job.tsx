@@ -11,6 +11,7 @@ import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Card, Chip } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { TagInput } from '../../components/ui/tag-input';
 import { api } from '../../lib/api';
 import { applyApiError } from '../../lib/errors';
@@ -54,8 +55,7 @@ export function PostJobPage() {
   return (
     <div className="mx-auto grid w-full max-w-[720px] gap-4">
       <BackLink to="/jobs">{t('jobs.back')}</BackLink>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('jobs.postTitle')}</h1>
-      <p className="text-fg-2">{t('jobs.postIntro')}</p>
+      <PageHeader title={t('jobs.postTitle')} intro={t('jobs.postIntro')} />
       <Card className="p-5">
         <form className="grid gap-4" noValidate onSubmit={handleSubmit((v) => post.mutate(v))}>
           <div className="grid gap-4 sm:grid-cols-2">

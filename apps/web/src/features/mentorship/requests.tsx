@@ -16,6 +16,7 @@ import { buttonVariants } from '../../components/ui/button-variants';
 import { Dialog } from '../../components/ui/dialog';
 import { Field, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { SlotPicker } from '../../components/ui/slot-picker';
 import { Segmented } from '../../components/ui/tab-nav';
@@ -283,7 +284,7 @@ export function RequestsPage() {
   });
   return (
     <>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('nav.requests')}</h1>
+      <PageHeader title={t('nav.requests')} />
       {isMentor && (
         <Segmented
           label={t('nav.requests')}

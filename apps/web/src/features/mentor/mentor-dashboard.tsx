@@ -16,6 +16,9 @@ import {
 import { Button } from '../../components/ui/button';
 import { Field, Input, Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { PageHeader } from '../../components/ui/page-header';
+import { StatCard, StatGrid } from '../../components/ui/stat-card';
+import { Switch } from '../../components/ui/switch';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
 
@@ -60,14 +63,11 @@ function ImpactCard() {
           </h2>
         </div>
       </div>
-      <dl className="relative grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <StatGrid className="relative gap-2">
         {tiles.map(([label, value]) => (
-          <div key={label} className="rounded-[var(--radius-md)] bg-surface-2 p-3">
-            <dt className="text-xs text-fg-3">{label}</dt>
-            <dd className="font-display text-xl font-bold">{value}</dd>
-          </div>
+          <StatCard key={label} size="sm" label={label} value={value} />
         ))}
-      </dl>
+      </StatGrid>
       {i.pendingRequests > 0 && (
         <Link
           to="/mentorship?box=received"
@@ -97,31 +97,16 @@ function SettingsForm({ initial }: { initial: MentorSettingsView }) {
   const set = (patch: Partial<MentorSettingsBody>) => setS((x) => ({ ...x, ...patch }));
   return (
     <Card className="grid gap-5 p-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-semibold">{t('mentor.accepting')}</h2>
-          <p className="text-sm text-fg-2">
-            {s.accepting ? t('mentor.acceptingOn') : t('mentor.acceptingOff')}
-          </p>
-        </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={s.accepting}
-          aria-label={t('mentor.accepting')}
-          onClick={() => {
-            const next = { ...s, accepting: !s.accepting };
-            setS(next);
-            save.mutate(next);
-          }}
-          className="group relative h-8 w-14 flex-none rounded-full border border-line-strong bg-surface-3 transition-colors aria-checked:bg-brand"
-        >
-          <span
-            aria-hidden
-            className="absolute top-1 left-1 size-6 rounded-full bg-white shadow transition-transform duration-[var(--dur-fast)] group-aria-checked:translate-x-6"
-          />
-        </button>
-      </div>
+      <Switch
+        label={<span className="text-title font-semibold">{t('mentor.accepting')}</span>}
+        description={s.accepting ? t('mentor.acceptingOn') : t('mentor.acceptingOff')}
+        checked={s.accepting}
+        onChange={(on) => {
+          const next = { ...s, accepting: on };
+          setS(next);
+          save.mutate(next);
+        }}
+      />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t('mentor.weeklyCap')} hint={t('mentor.weeklyCapHint')}>
           {({ id, describedBy }) => (
@@ -525,7 +510,7 @@ export function MentorDashboard() {
   });
   return (
     <>
-      <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('nav.mentor')}</h1>
+      <PageHeader title={t('nav.mentor')} />
       <ImpactCard />
       {q.isLoading && <Skeleton className="h-80" />}
       {q.data && (

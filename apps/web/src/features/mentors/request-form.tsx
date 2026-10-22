@@ -18,6 +18,7 @@ import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Field, Textarea } from '../../components/ui/field';
 import { Card } from '../../components/ui/misc';
+import { ChoiceGroup } from '../../components/ui/choice-group';
 import { SlotPicker } from '../../components/ui/slot-picker';
 import { FormError } from '../../components/layout/auth-layout';
 import { api } from '../../lib/api';
@@ -85,28 +86,25 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
         <h2 className="text-xl font-bold">{t('request.title', { name: mentor.name.split(' ')[0] })}</h2>
         <p className="-mt-3 text-sm text-fg-2">{t('request.noColdDms')}</p>
         <fieldset className="grid gap-2">
-          <legend className="mb-2 text-[13px] font-semibold">{t('request.sessionType')}</legend>
-          <div role="radiogroup" aria-label={t('request.sessionType')} className="grid gap-2 sm:grid-cols-2">
-            {mentor.sessionTypes.map((s) => (
-              <button
-                key={s.type}
-                type="button"
-                role="radio"
-                aria-checked={type === s.type}
-                onClick={() => {
-                  setType(s.type);
-                  setSlot(null);
-                }}
-                className="flex min-h-14 items-center justify-between gap-2 rounded-[var(--radius-md)] border border-line-strong px-4 text-left aria-checked:border-brand aria-checked:bg-[color-mix(in_srgb,var(--brand)_14%,transparent)]"
-              >
-                <span className="font-semibold">{t(`session.type.${s.type}`)}</span>
-                <span className="flex items-center gap-1 text-xs text-fg-2">
+          <legend className="mb-2 text-meta font-semibold">{t('request.sessionType')}</legend>
+          <ChoiceGroup
+            label={t('request.sessionType')}
+            value={type}
+            options={mentor.sessionTypes.map((s) => ({
+              value: s.type,
+              label: t(`session.type.${s.type}`),
+              detail: (
+                <span className="flex items-center gap-1">
                   <Clock className="size-3.5" aria-hidden />
                   {s.durationMin ? t('session.minutes', { n: s.durationMin }) : t('session.async')}
                 </span>
-              </button>
-            ))}
-          </div>
+              ),
+            }))}
+            onChange={(v) => {
+              setType(v);
+              setSlot(null);
+            }}
+          />
         </fieldset>
         {bookable && (
           <SlotPicker
