@@ -89,6 +89,9 @@ import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
 import { PrivacyService } from './modules/privacy/privacy.service.js';
 import { privacyRoutes } from './modules/privacy/privacy.routes.js';
 import { consentService } from './modules/consent/consent.service.js';
+import { SubjectsService } from './modules/study/subjects.service.js';
+import { AiSettingsService } from './modules/study/ai-settings.service.js';
+import { aiSettingsRoutes, studyRoutes } from './modules/study/study.routes.js';
 
 export interface AppDeps {
   env: Env;
@@ -425,6 +428,28 @@ export function createApp({
     eventHosts: async (since) => (await eventsService.hostsSince(since)).map(String),
   });
 
+  // ── Study and the AI study assistant (Phase 9) ─────────────────────────────
+  const subjectsService = new SubjectsService({ profiles: profilesService });
+  const aiSettingsService = new AiSettingsService({
+    cipher,
+    fetcher,
+    profiles: profilesService,
+    privateEndpoints: env.AI_PRIVATE_ENDPOINTS,
+    platformDefault:
+      env.AI_DEFAULT_PROVIDER && env.AI_DEFAULT_CHAT_MODEL
+        ? {
+            provider: env.AI_DEFAULT_PROVIDER,
+            apiKey: env.AI_DEFAULT_API_KEY ?? null,
+            chatModel: env.AI_DEFAULT_CHAT_MODEL,
+            baseUrl: env.AI_DEFAULT_BASE_URL ?? null,
+            embeddingProvider: env.AI_DEFAULT_EMBEDDING_PROVIDER ?? null,
+            embeddingApiKey: env.AI_DEFAULT_EMBEDDING_API_KEY ?? null,
+            embeddingModel: env.AI_DEFAULT_EMBEDDING_MODEL ?? '',
+            embeddingBaseUrl: env.AI_DEFAULT_EMBEDDING_BASE_URL ?? null,
+          }
+        : null,
+  });
+
   // ── Privacy rights (Phase 8) ─────────────────────────────
   const privacyService = new PrivacyService({ auth: authService, profiles: profilesService, logger });
   const hook = (svc: { exportFor(u: string): Promise<unknown>; eraseFor(u: string): Promise<void> }) => ({
@@ -450,6 +475,8 @@ export function createApp({
   privacyService.register('points', hook(gamificationService));
   privacyService.register('events', hook(eventsService));
   privacyService.register('notifications', hook(notificationsService));
+  privacyService.register('subjects', hook(subjectsService));
+  privacyService.register('aiSettings', hook(aiSettingsService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -565,6 +592,11 @@ export function createApp({
   app.use(API_PREFIX, defineModule('privacy', privacyRoutes(privacyService), pipeline));
   app.use(
     API_PREFIX,
+    defineModule('study', studyRoutes({ subjects: subjectsService, ai: aiSettingsService }), pipeline),
+  );
+  app.use(API_PREFIX, defineModule('ai-settings', aiSettingsRoutes(aiSettingsService), pipeline));
+  app.use(
+    API_PREFIX,
     defineModule(
       'moderation-queue',
       queueRoutes({
@@ -617,6 +649,8 @@ export function createApp({
     events: eventsService,
     analytics: analyticsService,
     privacy: privacyService,
+    subjects: subjectsService,
+    aiSettings: aiSettingsService,
   };
   return app;
 }

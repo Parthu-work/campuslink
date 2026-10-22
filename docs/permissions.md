@@ -8,7 +8,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 - **Deny by default.** A route without an explicit permission is either public (listed below) or open to any signed-in user of that college for self-service only.
 - **Unverified users** (college verification pending) are limited to: `feed:read`, `roadmaps:read`, `jobs:read`, `content:report`.
 - **MFA:** SUPER_ADMIN, COLLEGE_ADMIN have **no** permissions until TOTP is enabled.
-- **Capabilities:** `CERTIFIED_CONTRIBUTOR` adds `roadmaps:write` (students only).
+- **Capabilities:** `CERTIFIED_CONTRIBUTOR` adds `roadmaps:write`, `study:contribute` (students only).
 - **Tenant overrides:** a college admin may grant or revoke permissions per role; `platform:*` permissions can never be granted to a college role.
 - **Escalation guards:** only a college admin can act on another college admin; SUPER_ADMIN cannot be assigned through the college API; the last active college admin cannot be demoted.
 - **Super admin** works only on the platform host and sees aggregate counts — never message content.
@@ -42,6 +42,12 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `roadmaps:progress` Track personal roadmap progress | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `roadmaps:write` Draft and edit roadmaps | · | ✅ | ✅ | ✅ | ✅ | · |
 | `roadmaps:review` Review and publish roadmaps | · | ✅ | ✅ | ✅ | · | · |
+| `study:read` Use the subject library and the study assistant | · | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `study:contribute` Upload study material for subjects an admin granted (reviewed before publishing) | · | ✅ | · | · | ✅ | · |
+| `study:upload` Upload, edit and delete study material | · | ✅ | ✅ | ✅ | · | · |
+| `study:manage` Create subjects and manage syllabi, owners and who takes them | · | ✅ | ✅ | ✅ | · | · |
+| `study:analytics` View study analytics (faculty: their subjects; admins: the college) | · | ✅ | ✅ | ✅ | · | · |
+| `ai:settings` Configure the AI study assistant (provider, key, limits and consent) | · | ✅ | · | · | · | · |
 | `events:rsvp` RSVP to events | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `events:create` Create events, drives and meetups | · | ✅ | ✅ | ✅ | · | · |
 | `announcements:post` Post official announcements | · | ✅ | ✅ | ✅ | · | · |
@@ -300,6 +306,25 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/me/deletion` | any signed-in user | college | — | Whether my account is scheduled for deletion, and when |
 | `POST /api/v1/me/deletion` | any signed-in user | college | privacy | Delete my account after the college’s grace period (password required; signs out everywhere) |
 | `DELETE /api/v1/me/deletion` | any signed-in user | college | — | Cancel my account deletion during the grace period |
+| `GET /api/v1/study/subjects` | `study:read` | college | — | Subjects I take (students) or all subjects (staff, alumni); `scope=mine` for my own |
+| `POST /api/v1/study/subjects` | `study:manage` | college | adminWrite | Create a subject (faculty become its owner) |
+| `GET /api/v1/study/subjects/:id` | `study:read` | college | — | One subject I may read |
+| `PATCH /api/v1/study/subjects/:id` | `study:manage` | college | adminWrite | Edit or archive a subject (owners and admins) |
+| `GET /api/v1/study/subjects/:id/syllabus` | `study:read` | college | — | The syllabus tree (units and topics) |
+| `PUT /api/v1/study/subjects/:id/syllabus` | `study:manage` | college | adminWrite | Replace the syllabus tree (owners and admins); kept ids keep their material tags |
+| `POST /api/v1/study/syllabus/parse` | `study:manage` | college | interact | Suggest a syllabus tree from pasted text (reviewed before saving; nothing is stored) |
+| `GET /api/v1/study/subjects/:id/enrollments` | `study:manage` | college | — | Students added to or excluded from a subject by hand |
+| `PUT /api/v1/study/subjects/:id/enrollments` | `study:manage` | college | adminWrite | Include or exclude one student (overrides the branch and batch rule) |
+| `DELETE /api/v1/study/subjects/:id/enrollments/:userId` | `study:manage` | college | adminWrite | Remove a by-hand override |
+| `GET /api/v1/study/subjects/:id/contributors` | `study:manage` | college | — | Alumni and certified contributors granted to a subject |
+| `PUT /api/v1/study/subjects/:id/contributors` | `capabilities:grant` | college | adminWrite | Grant or revoke a contributor for a subject (admins) |
+| `GET /api/v1/study/ai-status` | `study:read` | college | — | Whether AI answers and semantic search are on for my college (no settings detail) |
+| `GET /api/v1/admin/ai` | `ai:settings` | college | — | AI assistant settings (keys appear only as their last four characters) |
+| `PUT /api/v1/admin/ai` | `ai:settings` | college | adminWrite | Save provider, models, limits and toggles (changing a provider removes its key) |
+| `PUT /api/v1/admin/ai/keys` | `ai:settings` | college | aiTest | Store an API key (encrypted at rest; never returned) and test it |
+| `DELETE /api/v1/admin/ai/keys/:target` | `ai:settings` | college | adminWrite | Remove a stored API key |
+| `POST /api/v1/admin/ai/test` | `ai:settings` | college | aiTest | Test connection: one tiny request with the stored key; lists the models it can use |
+| `POST /api/v1/admin/ai/consent` | `ai:settings` | college | adminWrite | Accept the data-processing notice (versioned and audit-logged) |
 | `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
 | `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |
 | `GET /api/v1/admin/moderation/history/:targetType/:targetId` | `moderation:act` | college | — | Moderation history of one item |

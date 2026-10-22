@@ -41,6 +41,7 @@ export function AdminLayout() {
   const canJobSources = useCan('jobs:sources');
   const canAnalytics = useCan('analytics:cohort');
   const canRewards = useCan('rewards:manage');
+  const canAi = useCan('ai:settings');
   const tabs = [
     ['/admin', t('admin.users'), canUsers],
     ['/admin/imports', t('admin.imports'), canImport],
@@ -54,6 +55,7 @@ export function AdminLayout() {
     ['/admin/rewards', t('admin.rewards'), canRewards],
     ['/admin/branding', t('admin.branding'), canBrand],
     ['/admin/features', t('admin.features'), canSettings],
+    ['/admin/ai', t('admin.ai'), canAi],
     ['/admin/audit', t('admin.audit'), canAudit],
   ] as const;
   return (

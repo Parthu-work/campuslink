@@ -12,3 +12,11 @@ description = "Fictional passphrase fixtures in tests"
 condition = "AND"
 paths = ['''^apps/api/test/''', '''^apps/web/e2e/''']
 regexes = ['''^[A-Za-z]+(-[A-Za-z]+){2,3}-\d{2,4}$''']
+
+[[allowlists]]
+# Fake AI provider keys in tests (key handling, redaction). Scoped to test directories AND a
+# visible DEMO marker in the value, so a real key pasted into a test still fails the scan.
+description = "Marked demo API keys in tests"
+condition = "AND"
+paths = ['''^apps/api/test/''', '''^apps/web/e2e/''']
+regexes = ['''(?i)demo''']

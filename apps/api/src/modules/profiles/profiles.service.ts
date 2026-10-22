@@ -287,12 +287,17 @@ export class ProfilesService {
   }
 
   /** The viewer's own profile values (for matching): never shown to anyone else. */
-  async own(
-    userId: string,
-  ): Promise<{ branch: string | null; skills: string[]; languages: string[]; topics: string[] }> {
+  async own(userId: string): Promise<{
+    branch: string | null;
+    gradYear: number | null;
+    skills: string[];
+    languages: string[];
+    topics: string[];
+  }> {
     const p = await this.load(userId);
     return {
       branch: p.branch ?? null,
+      gradYear: p.gradYear ?? null,
       skills: p.skills ?? [],
       languages: p.languages ?? [],
       topics: p.topics ?? [],

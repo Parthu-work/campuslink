@@ -29,9 +29,15 @@ export interface SafeFetchOptions {
   /** Injected for tests. */
   resolve?: (host: string) => Promise<string[]>;
   allowHttp?: boolean;
-  /** POST is used for push delivery and bot checks; redirects are never followed for POST. */
+  /** POST is used for push delivery, bot checks and AI providers; redirects are never followed for POST. */
   method?: 'GET' | 'POST';
   body?: Buffer | string;
+  /**
+   * Lets this request reach private addresses (and plain http). Only for endpoints the platform
+   * owner allowlisted in the environment (AI_PRIVATE_ENDPOINTS, such as a local Ollama); never set it
+   * from tenant input.
+   */
+  allowPrivateNetwork?: boolean;
 }
 
 export interface SafeResponse {
@@ -139,14 +145,16 @@ export async function safeFetch(
   const deadline = AbortSignal.timeout(timeoutMs);
 
   for (let hop = 0; hop <= maxRedirects; hop++) {
-    if (url.protocol !== 'https:' && !(opts.allowHttp && url.protocol === 'http:'))
+    const http = opts.allowHttp || opts.allowPrivateNetwork;
+    if (url.protocol !== 'https:' && !(http && url.protocol === 'http:'))
       throw new SafeFetchError('Only https URLs are allowed');
     if (url.username || url.password) throw new SafeFetchError('Credentials in URLs are not allowed');
     const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
     if (!hostAllowed(host, opts.allowHosts)) throw new SafeFetchError('This host is not allowed');
     const ips = ipaddr.isValid(host) ? [host] : await resolve(host).catch(() => []);
     if (!ips.length) throw new SafeFetchError('Could not resolve host');
-    if (!ips.every(isPublicAddress)) throw new SafeFetchError('Destination address is not allowed');
+    if (!opts.allowPrivateNetwork && !ips.every(isPublicAddress))
+      throw new SafeFetchError('Destination address is not allowed');
 
     let res: TransportResponse;
     try {

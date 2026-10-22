@@ -13,6 +13,7 @@ import { SavedJobModel } from '../src/modules/jobs/job.model.js';
 import { XpEventModel } from '../src/modules/gamification/gamification.model.js';
 import { ConsentModel } from '../src/modules/consent/consent.model.js';
 import { AuditModel } from '../src/modules/audit/audit.model.js';
+import { SubjectEnrollmentModel, SubjectModel } from '../src/modules/study/subject.model.js';
 
 const ctx = testApp();
 const services = ctx.app.locals.services as {
@@ -35,6 +36,19 @@ beforeAll(async () => {
   jobId = (await postJob(ctx, T, staff)).id;
   await as(alum).put(`/jobs/${jobId}/track`).send({ status: 'applied', note: 'Private note' });
   await runInTenant(T._id, async () => {
+    const subject = await SubjectModel.create({
+      name: 'Demo privacy subject',
+      code: 'PRV101',
+      ownerIds: [new Types.ObjectId(staff.id)],
+      contributorIds: [new Types.ObjectId(alum.id)],
+      createdBy: new Types.ObjectId(staff.id),
+    });
+    await SubjectEnrollmentModel.create({
+      subjectId: subject._id,
+      userId: new Types.ObjectId(alum.id),
+      kind: 'include',
+      by: new Types.ObjectId(staff.id),
+    });
     await services.gamification.award(alum.id, 'event_attended', 'privacy-event', { from: staff.id });
     const conv = await ConversationModel.create({
       participants: [new Types.ObjectId(alum.id), new Types.ObjectId(other.id)],
@@ -75,6 +89,11 @@ describe('export', () => {
     expect(d.jobs.tracker[0]).toMatchObject({ status: 'applied', note: 'Private note' });
     expect(d.points.points[0]).toMatchObject({ kind: 'event_attended', points: 10 });
     expect(Array.isArray(d.consents)).toBe(true);
+    expect(d.subjects.subjects).toEqual([
+      { subject: 'PRV101 Demo privacy subject', owner: false, contributor: true, created: false },
+    ]);
+    expect(d.subjects.enrollmentOverrides).toEqual([expect.objectContaining({ kind: 'include' })]);
+    expect(d.aiSettings).toEqual([]);
     // No secrets or other people's data.
     expect(r.text).not.toContain('passwordHash');
     expect(r.text).not.toContain(other.email);
@@ -126,6 +145,9 @@ describe('deletion', () => {
       expect(await PostModel.countDocuments({ authorId: alum.id })).toBe(0);
       expect(await SavedJobModel.countDocuments({ userId: alum.id })).toBe(0);
       expect(await XpEventModel.countDocuments({ userId: alum.id })).toBe(0);
+      expect(await SubjectModel.countDocuments({ contributorIds: alum.id })).toBe(0);
+      expect(await SubjectModel.countDocuments({ code: 'PRV101' })).toBe(1);
+      expect(await SubjectEnrollmentModel.countDocuments({ userId: alum.id })).toBe(0);
       const mine = await MessageModel.findOne({ senderId: alum.id }).lean();
       expect(mine?.bodyEnc).toBeNull();
       const theirs = await MessageModel.findOne({ senderId: other.id }).lean();
@@ -153,6 +175,8 @@ describe('deletion', () => {
         'points',
         'events',
         'files',
+        'subjects',
+        'aiSettings',
       ]),
     );
   });

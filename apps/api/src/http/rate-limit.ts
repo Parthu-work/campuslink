@@ -23,7 +23,8 @@ export type LimiterName =
   | 'interact'
   | 'qa'
   | 'referrals'
-  | 'privacy';
+  | 'privacy'
+  | 'aiTest';
 
 const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: boolean }> = {
   global: { windowMs: 60_000, limit: 600 },
@@ -45,6 +46,8 @@ const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: bo
   qa: { windowMs: 60 * 60_000, limit: 10, perUser: true },
   referrals: { windowMs: 60 * 60_000, limit: 10, perUser: true },
   privacy: { windowMs: 60 * 60_000, limit: 5, perUser: true },
+  /** Each "Test connection" calls the provider (and costs the college a little). */
+  aiTest: { windowMs: 60 * 60_000, limit: 30, perUser: true },
 };
 
 const key = (req: Request, perUser?: boolean) =>

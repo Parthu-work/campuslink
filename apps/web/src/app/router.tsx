@@ -47,6 +47,9 @@ const load = {
   jobSourcesAdmin: () => import('../features/admin/job-sources-admin'),
   moderationAdmin: () => import('../features/admin/moderation-admin'),
   sourcesAdmin: () => import('../features/admin/sources-admin'),
+  aiAdmin: () => import('../features/admin/ai-admin'),
+  study: () => import('../features/study/study'),
+  subject: () => import('../features/study/subject-page'),
   directory: () => import('../features/people/directory'),
   landing: () => import('../features/landing/landing'),
   profileView: () => import('../features/people/profile-view'),
@@ -268,6 +271,17 @@ function collegeRoutes(): RouteObject[] {
             qc.ensureQueryData(q.stories()),
           ]),
           screen(load.verify, 'VerifyPage', undefined, at('/verify')),
+          screen(load.study, 'StudyPage', 'study:read', at('/study'), () => [
+            qc
+              .ensureQueryData(q.me())
+              .then((me) =>
+                qc.ensureQueryData(q.subjects(me.roles.every((r) => r === 'STUDENT') ? 'all' : 'mine')),
+              ),
+            qc.ensureQueryData(q.aiStatus()),
+          ]),
+          screen(load.subject, 'SubjectPage', 'study:read', at('/study/:id'), ({ id }) =>
+            isId(id) ? [qc.ensureQueryData(q.subject(id)), qc.ensureQueryData(q.syllabus(id))] : [],
+          ),
           screen(load.profileEdit, 'ProfileEdit', undefined, at('/profile')),
           screen(load.directory, 'DirectoryPage', 'directory:read', at('/people')),
           screen(load.profileView, 'ProfileView', 'directory:read', at('/people/:userId')),
@@ -361,6 +375,7 @@ function collegeRoutes(): RouteObject[] {
             screen(load.listAdmin, 'VerificationAdmin', 'verification:review', at('verification')),
             screen(load.admin, 'BrandingAdmin', 'tenant:branding', at('branding')),
             screen(load.admin, 'FeaturesAdmin', 'tenant:settings', at('features')),
+            screen(load.aiAdmin, 'AiAdmin', 'ai:settings', at('ai')),
             screen(load.admin, 'AuditAdmin', 'audit:read', at('audit')),
           ]),
         ]),

@@ -20,6 +20,10 @@ import type {
   RoadmapSummaryView,
   RoadmapView,
   StoryView,
+  AiSettingsView,
+  AiStatusView,
+  SubjectView,
+  SyllabusView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -223,3 +227,45 @@ export const conversation = (id: string) =>
 
 export const progress = () =>
   queryOptions({ queryKey: ['progress'], queryFn: () => api.get<MyProgressView>('/me/progress') });
+
+// ── Study ─────────────────────────────
+export type SubjectScope = 'mine' | 'all';
+export const subjects = (scope: SubjectScope, q = '') =>
+  queryOptions({
+    queryKey: ['subjects', scope, q],
+    queryFn: ({ signal }) =>
+      api.get<SubjectView[]>(
+        `/study/subjects?scope=${scope}${q ? `&q=${encodeURIComponent(q)}` : ''}`,
+        signal,
+      ),
+  });
+
+export const subject = (id: string) =>
+  queryOptions({
+    queryKey: ['subject', id],
+    queryFn: ({ signal }) => api.get<SubjectView>(`/study/subjects/${id}`, signal),
+    enabled: /^[a-f0-9]{24}$/.test(id),
+    retry: false,
+  });
+
+export const syllabus = (id: string) =>
+  queryOptions({
+    queryKey: ['syllabus', id],
+    queryFn: ({ signal }) => api.get<SyllabusView>(`/study/subjects/${id}/syllabus`, signal),
+    enabled: /^[a-f0-9]{24}$/.test(id),
+    retry: false,
+  });
+
+/** Whether AI answers are on for this college (members see the reason, never the settings). */
+export const aiStatus = () =>
+  queryOptions({
+    queryKey: ['ai-status'],
+    queryFn: ({ signal }) => api.get<AiStatusView>('/study/ai-status', signal),
+    staleTime: 5 * 60_000,
+  });
+
+export const aiSettings = () =>
+  queryOptions({
+    queryKey: ['ai-settings'],
+    queryFn: ({ signal }) => api.get<AiSettingsView>('/admin/ai', signal),
+  });

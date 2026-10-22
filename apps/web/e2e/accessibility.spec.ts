@@ -80,6 +80,7 @@ test('content reflows at 320 CSS px without horizontal scrolling', async ({ brow
     '/people',
     '/jobs',
     '/roadmaps',
+    '/study',
     '/events',
     '/progress',
     '/messages',

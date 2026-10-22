@@ -66,7 +66,7 @@ test.describe('role-aware bottom tabs (phones)', () => {
 
   test('students and alumni get their own tabs with Create in the middle', async ({ page }) => {
     await signIn(page, 'ananya@dpit.example');
-    expect(await bottomTabs(page)).toEqual(['Home', 'Roadmaps', 'Create', 'Mentors', 'Jobs']);
+    expect(await bottomTabs(page)).toEqual(['Home', 'Study', 'Create', 'Mentors', 'Jobs']);
     await page.context().clearCookies();
 
     await signIn(page, 'rahul@dpit.example');

@@ -242,6 +242,12 @@
                               "roadmaps:progress",
                               "roadmaps:write",
                               "roadmaps:review",
+                              "study:read",
+                              "study:contribute",
+                              "study:upload",
+                              "study:manage",
+                              "study:analytics",
+                              "ai:settings",
                               "events:rsvp",
                               "events:create",
                               "announcements:post",
@@ -312,6 +318,12 @@
                               "roadmaps:progress",
                               "roadmaps:write",
                               "roadmaps:review",
+                              "study:read",
+                              "study:contribute",
+                              "study:upload",
+                              "study:manage",
+                              "study:analytics",
+                              "ai:settings",
                               "events:rsvp",
                               "events:create",
                               "announcements:post",
@@ -13480,6 +13492,1195 @@
           }
         },
         "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/study/subjects": {
+      "get": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Subjects I take (students) or all subjects (staff, alumni); `scope=mine` for my own",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study_get_study_subjects",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "mine",
+              "type": "string",
+              "enum": [
+                "mine",
+                "all"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "active",
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      },
+      "post": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Create a subject (faculty become its owner)",
+        "description": "Requires permission `study:manage` (Create subjects and manage syllabi, owners and who takes them). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "study_post_study_subjects",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9][A-Z0-9 .\\-/]{0,19}$"
+                  },
+                  "branches": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "CSE",
+                        "IT",
+                        "ECE",
+                        "EEE",
+                        "MECH",
+                        "CIVIL",
+                        "CHEM",
+                        "AIML",
+                        "DS",
+                        "OTHER"
+                      ]
+                    }
+                  },
+                  "batches": {
+                    "default": [],
+                    "maxItems": 8,
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1950,
+                      "maximum": 2100
+                    }
+                  },
+                  "semester": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 8
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "regulation": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 20
+                  },
+                  "description": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 2000
+                  },
+                  "ownerIds": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "code"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:manage"
+      }
+    },
+    "/api/v1/study/subjects/{id}": {
+      "get": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "One subject I may read",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study_get_study_subjects_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      },
+      "patch": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Edit or archive a subject (owners and admins)",
+        "description": "Requires permission `study:manage` (Create subjects and manage syllabi, owners and who takes them). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "study_patch_study_subjects_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9][A-Z0-9 .\\-/]{0,19}$"
+                  },
+                  "branches": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "CSE",
+                        "IT",
+                        "ECE",
+                        "EEE",
+                        "MECH",
+                        "CIVIL",
+                        "CHEM",
+                        "AIML",
+                        "DS",
+                        "OTHER"
+                      ]
+                    }
+                  },
+                  "batches": {
+                    "default": [],
+                    "maxItems": 8,
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1950,
+                      "maximum": 2100
+                    }
+                  },
+                  "semester": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 8
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "regulation": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 20
+                  },
+                  "description": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 2000
+                  },
+                  "ownerIds": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "archived"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:manage"
+      }
+    },
+    "/api/v1/study/subjects/{id}/syllabus": {
+      "get": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "The syllabus tree (units and topics)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study_get_study_subjects_id_syllabus",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      },
+      "put": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Replace the syllabus tree (owners and admins); kept ids keep their material tags",
+        "description": "Requires permission `study:manage` (Create subjects and manage syllabi, owners and who takes them). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "study_put_study_subjects_id_syllabus",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "units": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{24}$"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160
+                        },
+                        "topics": {
+                          "default": [],
+                          "maxItems": 40,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{24}$"
+                              },
+                              "title": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "keywords": {
+                                "default": [],
+                                "maxItems": 12,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 40
+                                }
+                              }
+                            },
+                            "required": [
+                              "title"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "title"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "units"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:manage"
+      }
+    },
+    "/api/v1/study/syllabus/parse": {
+      "post": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Suggest a syllabus tree from pasted text (reviewed before saving; nothing is stored)",
+        "description": "Requires permission `study:manage` (Create subjects and manage syllabi, owners and who takes them). Host scope: college. Rate limit: interact.",
+        "operationId": "study_post_study_syllabus_parse",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20000
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:manage"
+      }
+    },
+    "/api/v1/study/subjects/{id}/enrollments": {
+      "get": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Students added to or excluded from a subject by hand",
+        "description": "Requires permission `study:manage` (Create subjects and manage syllabi, owners and who takes them). Host scope: college.",
+        "operationId": "study_get_study_subjects_id_enrollments",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:manage"
+      },
+      "put": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Include or exclude one student (overrides the branch and batch rule)",
+        "description": "Requires permission `study:manage` (Create subjects and manage syllabi, owners and who takes them). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "study_put_study_subjects_id_enrollments",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "include",
+                      "exclude"
+                    ]
+                  }
+                },
+                "required": [
+                  "userId",
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:manage"
+      }
+    },
+    "/api/v1/study/subjects/{id}/enrollments/{userId}": {
+      "delete": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Remove a by-hand override",
+        "description": "Requires permission `study:manage` (Create subjects and manage syllabi, owners and who takes them). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "study_delete_study_subjects_id_enrollments_userId",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:manage"
+      }
+    },
+    "/api/v1/study/subjects/{id}/contributors": {
+      "get": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Alumni and certified contributors granted to a subject",
+        "description": "Requires permission `study:manage` (Create subjects and manage syllabi, owners and who takes them). Host scope: college.",
+        "operationId": "study_get_study_subjects_id_contributors",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:manage"
+      },
+      "put": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Grant or revoke a contributor for a subject (admins)",
+        "description": "Requires permission `capabilities:grant` (Grant contributor capabilities). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "study_put_study_subjects_id_contributors",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "grant": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "userId",
+                  "grant"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "capabilities:grant"
+      }
+    },
+    "/api/v1/study/ai-status": {
+      "get": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Whether AI answers and semantic search are on for my college (no settings detail)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study_get_study_ai_status",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/admin/ai": {
+      "get": {
+        "tags": [
+          "AI assistant settings"
+        ],
+        "summary": "AI assistant settings (keys appear only as their last four characters)",
+        "description": "Requires permission `ai:settings` (Configure the AI study assistant (provider, key, limits and consent)). Host scope: college.",
+        "operationId": "ai-settings_get_admin_ai",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "ai:settings"
+      },
+      "put": {
+        "tags": [
+          "AI assistant settings"
+        ],
+        "summary": "Save provider, models, limits and toggles (changing a provider removes its key)",
+        "description": "Requires permission `ai:settings` (Configure the AI study assistant (provider, key, limits and consent)). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "ai-settings_put_admin_ai",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "chatProvider": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "mock",
+                          "anthropic",
+                          "openai",
+                          "gemini",
+                          "openai_compatible"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "chatModel": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 120
+                  },
+                  "embeddingProvider": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "mock",
+                          "openai",
+                          "gemini",
+                          "openai_compatible"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "embeddingModel": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 120
+                  },
+                  "baseUrl": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 500,
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "embeddingBaseUrl": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 500,
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "temperature": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "maxAnswerTokens": {
+                    "default": 1024,
+                    "type": "integer",
+                    "minimum": 128,
+                    "maximum": 4096
+                  },
+                  "maxChunks": {
+                    "default": 6,
+                    "type": "integer",
+                    "minimum": 2,
+                    "maximum": 20
+                  },
+                  "monthlyTokenBudget": {
+                    "default": 0,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000
+                  },
+                  "dailyMessagesPerUser": {
+                    "default": 40,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 500
+                  },
+                  "chatRetentionDays": {
+                    "default": 180,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3650
+                  },
+                  "features": {
+                    "type": "object",
+                    "properties": {
+                      "chatbot": {
+                        "type": "boolean"
+                      },
+                      "studentUploads": {
+                        "type": "boolean"
+                      },
+                      "externalVideos": {
+                        "type": "boolean"
+                      },
+                      "ocr": {
+                        "type": "boolean"
+                      },
+                      "transcription": {
+                        "type": "boolean"
+                      },
+                      "facultySeeChats": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "chatbot",
+                      "studentUploads",
+                      "externalVideos",
+                      "ocr",
+                      "transcription",
+                      "facultySeeChats"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "killSwitch": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "chatProvider",
+                  "chatModel",
+                  "embeddingProvider",
+                  "embeddingModel",
+                  "features"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "ai:settings"
+      }
+    },
+    "/api/v1/admin/ai/keys": {
+      "put": {
+        "tags": [
+          "AI assistant settings"
+        ],
+        "summary": "Store an API key (encrypted at rest; never returned) and test it",
+        "description": "Requires permission `ai:settings` (Configure the AI study assistant (provider, key, limits and consent)). Host scope: college. Rate limit: aiTest.",
+        "operationId": "ai-settings_put_admin_ai_keys",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "target": {
+                    "type": "string",
+                    "enum": [
+                      "chat",
+                      "embedding",
+                      "youtube"
+                    ]
+                  },
+                  "key": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 500,
+                    "pattern": "^[\\x21-\\x7e]+$"
+                  }
+                },
+                "required": [
+                  "target",
+                  "key"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "ai:settings"
+      }
+    },
+    "/api/v1/admin/ai/keys/{target}": {
+      "delete": {
+        "tags": [
+          "AI assistant settings"
+        ],
+        "summary": "Remove a stored API key",
+        "description": "Requires permission `ai:settings` (Configure the AI study assistant (provider, key, limits and consent)). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "ai-settings_delete_admin_ai_keys_target",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "target",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "chat",
+                "embedding",
+                "youtube"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "ai:settings"
+      }
+    },
+    "/api/v1/admin/ai/test": {
+      "post": {
+        "tags": [
+          "AI assistant settings"
+        ],
+        "summary": "Test connection: one tiny request with the stored key; lists the models it can use",
+        "description": "Requires permission `ai:settings` (Configure the AI study assistant (provider, key, limits and consent)). Host scope: college. Rate limit: aiTest.",
+        "operationId": "ai-settings_post_admin_ai_test",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "target": {
+                    "type": "string",
+                    "enum": [
+                      "chat",
+                      "embedding"
+                    ]
+                  }
+                },
+                "required": [
+                  "target"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "ai:settings"
+      }
+    },
+    "/api/v1/admin/ai/consent": {
+      "post": {
+        "tags": [
+          "AI assistant settings"
+        ],
+        "summary": "Accept the data-processing notice (versioned and audit-logged)",
+        "description": "Requires permission `ai:settings` (Configure the AI study assistant (provider, key, limits and consent)). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "ai-settings_post_admin_ai_consent",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "const": "2026-10-1"
+                  },
+                  "accept": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                },
+                "required": [
+                  "version",
+                  "accept"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "ai:settings"
       }
     },
     "/api/v1/admin/moderation/summary": {

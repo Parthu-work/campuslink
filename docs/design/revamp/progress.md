@@ -208,3 +208,14 @@ The ten screens of master prompt §8, in order, on the phase 7 primitives. Every
 **Not shown because the API does not provide it (§11: no API changes beyond D1, Appendix A and owner decisions):** a mentor's reply time and next free slot, mentor impact stats and reviews on the mentor page, company logos, and the faces of alumni at a company (only counts). They are listed in the final report as follow-ups.
 
 **Budget:** initial JS 168.6 KB; Home 67.2 KB; every screen under 70 KB.
+
+## Phase 9 · Study, step 1: data model, permissions, subjects, settings and providers
+
+Spec §13 step 1 (`docs/phases/phase-9.md` has the step table).
+
+- **Who reads what:** students see the subjects their branch and batch take (plus by-hand overrides; an excluded subject is a 404 even by direct link); faculty, alumni and admins see every subject. One filter decides it for every route and will scope retrieval and chat.
+- **Subjects and syllabus:** faculty create subjects (and own them); owners and admins edit, archive, set owners and overrides; admins grant alumni contributors. The syllabus editor turns pasted text into a suggested Unit → Topic tree to review (every title comes from the text), then keeps ids through renames and re-orders so material tags survive.
+- **AI settings (`/admin/ai`):** provider and model, a masked key (last four characters) with Save and test, embeddings with the "Anthropic has no embeddings" explanation, the versioned data notice, limits, switches and a kill switch. Keys are encrypted with `FieldCipher`, never returned, logged or audited, and scrubbed from provider errors. Tenant endpoints must be public `https`; private ones need the platform owner's allowlist.
+- **Providers:** Anthropic (Messages API version 2026-10-21, no sampling parameters), OpenAI and OpenAI-compatible, Gemini (key in a header, never the URL), and a deterministic mock, behind `LLMProvider` and `EmbeddingProvider`.
+- **Members:** `/study` and `/study/:id` with a calm notice when AI answers are off (and a "demo" notice for the demo responder); Study is now the students' second tab and Subjects the staff's.
+- **Budget:** initial JS 169.3 KB; the forms, editors and the people sheet load when opened.

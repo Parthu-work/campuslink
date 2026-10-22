@@ -59,6 +59,7 @@ export const ADMIN_PERMISSIONS: readonly Permission[] = [
   'verification:review',
   'tenant:branding',
   'tenant:settings',
+  'ai:settings',
   'audit:read',
 ];
 
@@ -74,9 +75,9 @@ const d = (
 
 export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   home: d('home', '/home', 'main'),
-  // Study ships in Phase 9 with its own permissions; until then it is not in the shipped set.
-  study: d('study', '/study', 'explore'),
-  subjects: d('subjects', '/study', 'explore'),
+  study: d('study', '/study', 'explore', ['study:read']),
+  // Staff see the same library as "Subjects" (they manage it).
+  subjects: d('subjects', '/study', 'explore', ['study:manage']),
   create: d('create', '', 'main'),
   mentors: d('mentors', '/mentors', 'main', ['mentorship:request']),
   jobs: d('jobs', '/jobs', 'main', ['jobs:read']),

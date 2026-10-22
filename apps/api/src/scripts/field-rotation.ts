@@ -19,6 +19,7 @@ import { WhitelistModel } from '../modules/imports/whitelist.model.js';
 import { PushSubscriptionModel } from '../modules/notifications/notification.model.js';
 import { MessageModel } from '../modules/messaging/conversation.model.js';
 import { InviteModel } from '../modules/verification/verification.model.js';
+import { AiSettingsModel } from '../modules/study/ai-settings.model.js';
 
 type AnyModel = Model<Record<string, unknown>>;
 
@@ -56,6 +57,11 @@ export const ENCRYPTED_COLLECTIONS: EncryptedCollection[] = [
     indexes: { endpointIndex: 'endpointEnc' },
   },
   { name: 'messages', model: MessageModel as unknown as AnyModel, fields: ['bodyEnc'] },
+  {
+    name: 'AI settings',
+    model: AiSettingsModel as unknown as AnyModel,
+    fields: ['keys.chat.apiKeyEnc', 'keys.embedding.apiKeyEnc', 'keys.youtube.apiKeyEnc'],
+  },
 ];
 
 export interface CollectionReport {

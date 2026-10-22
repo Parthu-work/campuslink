@@ -51,6 +51,13 @@ export const PERMISSIONS = {
   'roadmaps:progress': 'Track personal roadmap progress',
   'roadmaps:write': 'Draft and edit roadmaps',
   'roadmaps:review': 'Review and publish roadmaps',
+  // Study
+  'study:read': 'Use the subject library and the study assistant',
+  'study:contribute': 'Upload study material for subjects an admin granted (reviewed before publishing)',
+  'study:upload': 'Upload, edit and delete study material',
+  'study:manage': 'Create subjects and manage syllabi, owners and who takes them',
+  'study:analytics': 'View study analytics (faculty: their subjects; admins: the college)',
+  'ai:settings': 'Configure the AI study assistant (provider, key, limits and consent)',
   // Events & announcements
   'events:rsvp': 'RSVP to events',
   'events:create': 'Create events, drives and meetups',
@@ -100,6 +107,7 @@ const STUDENT: Permission[] = [
   'roadmaps:progress',
   'events:rsvp',
   'rewards:redeem',
+  'study:read',
 ];
 const ALUMNI: Permission[] = [
   ...STUDENT,
@@ -110,6 +118,7 @@ const ALUMNI: Permission[] = [
   'jobs:post',
   'referrals:offer',
   'roadmaps:write',
+  'study:contribute',
 ];
 const STAFF: Permission[] = [
   ...STUDENT,
@@ -120,6 +129,9 @@ const STAFF: Permission[] = [
   'jobs:post',
   'roadmaps:write',
   'roadmaps:review',
+  'study:upload',
+  'study:manage',
+  'study:analytics',
   'analytics:cohort',
   'moderation:act',
   'users:invite',
@@ -145,7 +157,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
 };
 
 export const CAPABILITY_PERMISSIONS: Record<Capability, readonly Permission[]> = {
-  CERTIFIED_CONTRIBUTOR: ['roadmaps:write'],
+  CERTIFIED_CONTRIBUTOR: ['roadmaps:write', 'study:contribute'],
 };
 
 /** What a user who has not completed college verification may do: read-only, limited. */

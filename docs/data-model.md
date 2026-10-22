@@ -629,3 +629,65 @@ erDiagram
     enum status "open | answered | hidden | removed"
   }
 ```
+
+## Study and the AI study assistant (Phase 9)
+
+Step 1 of `docs/specs/ai-study-assistant.md`. Materials, processing jobs, chunks, vectors, video segments, chats, usage and unanswered questions join in steps 2 to 5.
+
+```mermaid
+erDiagram
+  SUBJECT ||--o{ SYLLABUS_UNIT : has
+  SYLLABUS_UNIT ||--o{ SYLLABUS_TOPIC : has
+  SUBJECT ||--o{ SUBJECT_ENROLLMENT : "per-student override"
+  USER ||--o{ SUBJECT_ENROLLMENT : "included or excluded"
+  SUBJECT {
+    ObjectId tenantId
+    string name
+    string code "unique with regulation"
+    enum[] branches "empty = every branch"
+    int[] batches "graduation years; empty = every batch"
+    int semester "1-8 or null"
+    string regulation
+    ObjectId[] ownerIds "faculty and staff"
+    ObjectId[] contributorIds "alumni granted by an admin"
+    enum status "active | archived"
+  }
+  SYLLABUS_UNIT {
+    ObjectId tenantId
+    ObjectId subjectId
+    string title
+    int order
+  }
+  SYLLABUS_TOPIC {
+    ObjectId tenantId
+    ObjectId subjectId
+    ObjectId unitId
+    string title
+    int order
+    string[] keywords "tag material and chunks"
+  }
+  SUBJECT_ENROLLMENT {
+    ObjectId tenantId
+    ObjectId subjectId
+    ObjectId userId "unique with subjectId"
+    enum kind "include | exclude"
+    ObjectId by
+  }
+  AI_SETTINGS {
+    ObjectId tenantId "unique: one per college"
+    enum chatProvider "null | mock | anthropic | openai | gemini | openai_compatible"
+    string chatModel
+    enum embeddingProvider "null | mock | openai | gemini | openai_compatible"
+    string embeddingModel
+    string baseUrl "public https, or a platform-allowlisted origin"
+    object keys "chat, embedding, youtube: apiKeyEnc (FieldCipher), last4, status, validatedAt, models, error"
+    object limits "answer tokens, passages, monthly budget, daily messages, chat retention"
+    object features "chatbot, studentUploads, externalVideos, ocr, transcription, facultySeeChats"
+    bool killSwitch
+    object consent "version, acceptedAt, acceptedBy"
+  }
+```
+
+- **Who reads a subject:** students read the active subjects whose branch and batch rule matches their profile, plus subjects an override includes, minus ones it excludes; faculty, placement, alumni and admins read every subject of the college. One filter (`SubjectsService.readableFilter`) decides this for every route, and later for retrieval and chat.
+- **Semester** is descriptive: the platform does not store a student's current semester, so the batches a subject lists are what decide who takes it.
+- **Keys** are encrypted with `FieldCipher` (`keys.*.apiKeyEnc`, covered by `rotate-field-key`); only `last4` is ever returned.

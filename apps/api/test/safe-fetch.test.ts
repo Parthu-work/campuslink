@@ -115,6 +115,22 @@ describe('safeFetch with a fake transport (redirects, size caps, pinning)', () =
     ).rejects.toThrow(/too large/);
   });
 
+  it('reaches a private address only when the platform allowlisted the endpoint', async () => {
+    const transport = async () => reply(200, { 'content-type': 'application/json' }, '{}');
+    await expect(safeFetch('http://internal.example/v1/models', { resolve, transport })).rejects.toThrow(
+      /Only https/,
+    );
+    await expect(safeFetch('https://internal.example/v1/models', { resolve, transport })).rejects.toThrow(
+      /address is not allowed/,
+    );
+    const r = await safeFetch('http://internal.example/v1/models', {
+      resolve,
+      transport,
+      allowPrivateNetwork: true,
+    });
+    expect(r.status).toBe(200);
+  });
+
   it('maps transport failures to a safe message', async () => {
     await expect(
       safeFetch('https://down.example/', {

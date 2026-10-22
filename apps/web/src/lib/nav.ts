@@ -79,9 +79,11 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
 /** i18n keys under `nav.` (a few ids reuse older keys). */
 const LABEL_KEY: Partial<Record<NavId, string>> = { mentoring: 'mentor' };
 
-/** Screens that exist in this build. Study, Subjects and Review join as they ship. */
+/** Screens that exist in this build. Review joins when it ships. */
 const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'home',
+  'study',
+  'subjects',
   'mentors',
   'jobs',
   'requests',

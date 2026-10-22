@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { APP_NAME } from '@campuslink/shared';
+import { AI_PROVIDERS, APP_NAME, EMBEDDING_PROVIDERS } from '@campuslink/shared';
 
 const bool = z
   .enum(['true', 'false'])
@@ -126,6 +126,25 @@ export const envSchema = z.object({
     .enum(['true', 'false'])
     .default('true')
     .transform((v) => v === 'true'),
+  /**
+   * AI study assistant: an optional platform default provider for colleges that have not chosen
+   * their own (their settings override it). Keys here are the platform owner's; never shown to colleges.
+   */
+  AI_DEFAULT_PROVIDER: z.enum(AI_PROVIDERS).optional(),
+  AI_DEFAULT_API_KEY: z.string().min(8).max(500).optional(),
+  AI_DEFAULT_CHAT_MODEL: z.string().min(1).max(120).optional(),
+  AI_DEFAULT_BASE_URL: z.url({ protocol: /^https?$/ }).optional(),
+  AI_DEFAULT_EMBEDDING_PROVIDER: z.enum(EMBEDDING_PROVIDERS).optional(),
+  AI_DEFAULT_EMBEDDING_API_KEY: z.string().min(8).max(500).optional(),
+  AI_DEFAULT_EMBEDDING_MODEL: z.string().min(1).max(120).optional(),
+  AI_DEFAULT_EMBEDDING_BASE_URL: z.url({ protocol: /^https?$/ }).optional(),
+  /**
+   * Origins (`http://ollama:11434`, comma-separated) that may be private or plain http, such as a
+   * local Ollama or LM Studio. Only the platform owner sets this; college admins enter public https only.
+   */
+  AI_PRIVATE_ENDPOINTS: csv.refine((xs) => xs.every((x) => URL.canParse(x) && new URL(x).origin === x), {
+    message: 'each entry must be an origin such as http://ollama:11434 (no path)',
+  }),
   VAPID_SUBJECT: z
     .string()
     .regex(/^(mailto:|https:\/\/)/)
@@ -155,6 +174,10 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error('Set both S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY, or neither');
   if (!!env.VAPID_PUBLIC_KEY !== !!env.VAPID_PRIVATE_KEY)
     throw new Error('Set both VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY, or neither');
+  if (env.AI_DEFAULT_PROVIDER && !env.AI_DEFAULT_CHAT_MODEL)
+    throw new Error('AI_DEFAULT_PROVIDER needs AI_DEFAULT_CHAT_MODEL');
+  if (env.AI_DEFAULT_EMBEDDING_PROVIDER && !env.AI_DEFAULT_EMBEDDING_MODEL)
+    throw new Error('AI_DEFAULT_EMBEDDING_PROVIDER needs AI_DEFAULT_EMBEDDING_MODEL');
   if (env.NODE_ENV === 'production') {
     const weak = (['JWT_ACCESS_SECRET', 'JWT_TICKET_SECRET', 'FIELD_ENCRYPTION_KEY'] as const).filter((k) =>
       INSECURE_DEFAULT_MARKERS.some((m) => env[k].includes(m)),

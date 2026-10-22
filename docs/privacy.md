@@ -78,6 +78,14 @@ File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable pe
 
 **Templates:** `docs/legal/privacy-policy.md` and `docs/legal/terms.md` are drafts that need legal review.
 
+## AI study assistant (Phase 9)
+
+- **Nothing is sent to an AI provider until the college accepts the data notice** (versioned, with who and when, and an audit entry). The notice says that passages of uploaded material and students' questions go to the chosen provider; names, emails, roll numbers and other profile data never do.
+- The built-in demo responder sends nothing anywhere and needs no notice.
+- **Subjects** record faculty owners and granted contributors by id; per-student overrides (included or excluded) are exportable and erased with the account. Erasure removes the member from owners and contributors; the subject stays (it belongs to the college).
+- **AI settings** belong to the college. The admin who set a key is forgotten on erasure; the consent record is kept as evidence, by id.
+- Chats, materials, chunks, vectors, transcripts and usage join the export and erasure as they are built (steps 2 to 5).
+
 ## Residency and backups
 
 India region only (AWS Mumbai `ap-south-1` or Hyderabad `ap-south-2`). Backups are encrypted at rest with a KMS key held in-region. See `deployment.md` (Phase 8).
