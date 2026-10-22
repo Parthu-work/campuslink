@@ -20,6 +20,7 @@ import type {
   RoadmapSummaryView,
   RoadmapView,
   StoryView,
+  AiIndexView,
   AiSettingsView,
   AiStatusView,
   SubjectView,
@@ -272,6 +273,17 @@ export const aiSettings = () =>
   queryOptions({
     queryKey: ['ai-settings'],
     queryFn: ({ signal }) => api.get<AiSettingsView>('/admin/ai', signal),
+  });
+
+/** The semantic index's back-fill progress; polls while vectors are being filled in. */
+export const aiIndex = () =>
+  queryOptions({
+    queryKey: ['ai-index'],
+    queryFn: ({ signal }) => api.get<AiIndexView>('/admin/ai/index', signal),
+    refetchInterval: (q) => {
+      const d = q.state.data;
+      return d && (d.running || (d.semantic && d.pending > 0)) ? 3000 : false;
+    },
   });
 
 export interface MaterialFilter {

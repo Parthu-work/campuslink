@@ -28,6 +28,8 @@ describe('plain text and hashtags', () => {
       'placements',
     ]);
     expect(extractHashtags(Array.from({ length: 15 }, (_, i) => `#tag${i}`).join(' '))).toHaveLength(10);
+    // Telugu vowel signs are combining marks: the whole word is the tag.
+    expect(extractHashtags('Notes for #తెలుగు and #పరీక్ష')).toEqual(['తెలుగు', 'పరీక్ష']);
   });
 
   it('snippets cut on a word boundary', () => {

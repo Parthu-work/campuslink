@@ -159,6 +159,16 @@ export const envSchema = z.object({
    * `http://whisper:9000`. Platform-owned, so it may be on the private network.
    */
   WHISPER_URL: z.url({ protocol: /^https?$/ }).optional(),
+  /**
+   * Where passage vectors are indexed: `qdrant` (production; set QDRANT_URL), `memory` (tests,
+   * development and a single API server), or `auto` (Qdrant when QDRANT_URL is set).
+   */
+  VECTOR_STORE: z.enum(['auto', 'memory', 'qdrant']).default('auto'),
+  /** The Qdrant REST address (the optional `qdrant` Docker profile: http://127.0.0.1:6333). Platform-owned. */
+  QDRANT_URL: z.url({ protocol: /^https?$/ }).optional(),
+  QDRANT_API_KEY: z.string().min(16).optional(),
+  /** `llm` re-orders retrieved passages with the college's chat model (more tokens); `none` keeps fusion order. */
+  AI_RERANKER: z.enum(['none', 'llm']).default('none'),
   VAPID_SUBJECT: z
     .string()
     .regex(/^(mailto:|https:\/\/)/)

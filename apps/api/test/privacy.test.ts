@@ -15,6 +15,7 @@ import { ConsentModel } from '../src/modules/consent/consent.model.js';
 import { AuditModel } from '../src/modules/audit/audit.model.js';
 import { SubjectEnrollmentModel, SubjectModel } from '../src/modules/study/subject.model.js';
 import { MaterialModel } from '../src/modules/study/material.model.js';
+import { AiUsageModel } from '../src/modules/study/ai-usage.model.js';
 import { FileModel } from '../src/modules/files/file.model.js';
 
 const ctx = testApp();
@@ -73,6 +74,19 @@ beforeAll(async () => {
       kind: 'include',
       by: new Types.ObjectId(staff.id),
     });
+    // AI usage counters: the member's own (a search by meaning) and the college's (background work).
+    const day = new Date().toISOString().slice(0, 10);
+    await AiUsageModel.create([
+      {
+        day,
+        userId: new Types.ObjectId(alum.id),
+        kind: 'embedding',
+        model: 'mock:m',
+        requests: 2,
+        inputTokens: 30,
+      },
+      { day, userId: null, kind: 'embedding', model: 'mock:m', requests: 1, inputTokens: 100 },
+    ]);
     await services.gamification.award(alum.id, 'event_attended', 'privacy-event', { from: staff.id });
     const conv = await ConversationModel.create({
       participants: [new Types.ObjectId(alum.id), new Types.ObjectId(other.id)],
@@ -118,6 +132,7 @@ describe('export', () => {
     ]);
     expect(d.subjects.enrollmentOverrides).toEqual([expect.objectContaining({ kind: 'include' })]);
     expect(d.aiSettings).toEqual([]);
+    expect(d.aiUsage).toEqual([expect.objectContaining({ kind: 'embedding', requests: 2, tokens: 30 })]);
     expect(d.materials.map((m: { title: string }) => m.title).sort()).toEqual([
       'Demo pending notes',
       'Demo shared notes',
@@ -176,6 +191,12 @@ describe('deletion', () => {
       expect(await SubjectModel.countDocuments({ contributorIds: alum.id })).toBe(0);
       expect(await SubjectModel.countDocuments({ code: 'PRV101' })).toBe(1);
       expect(await SubjectEnrollmentModel.countDocuments({ userId: alum.id })).toBe(0);
+      // Usage counters fold into the college's anonymous ones, so the month's budget stays true.
+      expect(await AiUsageModel.countDocuments({ userId: alum.id })).toBe(0);
+      expect(await AiUsageModel.findOne({ userId: null, model: 'mock:m' }).lean()).toMatchObject({
+        requests: 3,
+        inputTokens: 130,
+      });
       // Shared (published) material stays with the college as a former member's; pending uploads go.
       const shared = await MaterialModel.findOne({ title: 'Demo shared notes' }).lean();
       expect(shared?.uploaderId).toBeNull();
@@ -212,6 +233,7 @@ describe('deletion', () => {
         'subjects',
         'aiSettings',
         'materials',
+        'aiUsage',
       ]),
     );
   });

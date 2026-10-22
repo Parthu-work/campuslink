@@ -93,6 +93,7 @@ Indexes are created on boot (`syncIndexes()`), and every compound index leads wi
   - The API refuses to start in production without a scanner.
   - Give the sidecar about 1.5 GB of memory for the signature database.
 - **Study material processing** (`docs/ai-assistant.md`): the API image includes `ffmpeg`, `poppler-utils` and Tesseract with English and Telugu (`--build-arg WITH_MEDIA_TOOLS=false` leaves them out; PDFs, documents and uploaded captions still work). Set `OCR_LANGUAGES=eng+tel` to read Telugu scans. For transcripts without a provider key, run a Whisper service (the `whisper` profile in `docker-compose.yml` shows one) and set `WHISPER_URL`.
+- **Vector index:** with more than one API task, run Qdrant (`qdrant/qdrant:v1.19.2`, a managed Qdrant, or the `qdrant` profile locally) and set `QDRANT_URL` (and `QDRANT_API_KEY`); `VECTOR_STORE=qdrant` makes the API refuse to start without it. The default in-memory index suits one server only. Vectors are also stored in MongoDB, so a new or wiped Qdrant is filled again with **Rebuild the index** (Admin › AI assistant) at no provider cost.
 
 ## Configuration and secrets
 

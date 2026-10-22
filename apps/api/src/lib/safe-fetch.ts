@@ -19,6 +19,8 @@ export function isPublicAddress(ip: string): boolean {
   return addr.range() === 'unicast';
 }
 
+export type SafeMethod = 'GET' | 'POST' | 'PUT';
+
 export interface SafeFetchOptions {
   /** Allowed hostnames (exact) or suffixes starting with '.' — empty means any public host. */
   allowHosts?: readonly string[];
@@ -29,8 +31,11 @@ export interface SafeFetchOptions {
   /** Injected for tests. */
   resolve?: (host: string) => Promise<string[]>;
   allowHttp?: boolean;
-  /** POST is used for push delivery, bot checks and AI providers; redirects are never followed for POST. */
-  method?: 'GET' | 'POST';
+  /**
+   * POST is used for push delivery, bot checks and AI providers, PUT for the vector store; redirects
+   * are followed only for GET.
+   */
+  method?: SafeMethod;
   body?: Buffer | string;
   /**
    * Lets this request reach private addresses (and plain http). Only for endpoints the platform
@@ -77,7 +82,7 @@ export type Transport = (
     signal: AbortSignal;
     headers: Record<string, string>;
     timeoutMs: number;
-    method: 'GET' | 'POST';
+    method: SafeMethod;
     body?: Buffer | string | undefined;
   },
 ) => Promise<TransportResponse>;

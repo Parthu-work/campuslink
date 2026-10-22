@@ -1,6 +1,6 @@
 # AI study assistant
 
-The subject library and the study chatbot (spec: `docs/specs/ai-study-assistant.md`). This document grows with each delivery step; it currently covers **steps 1 and 2**: subjects and syllabus, who takes a subject, the settings page, encrypted key storage and the provider adapters, then material upload, the processing pipeline, the viewers and keyword search.
+The subject library and the study chatbot (spec: `docs/specs/ai-study-assistant.md`). This document grows with each delivery step; it currently covers **steps 1 to 3**: subjects and syllabus, who takes a subject, the settings page, encrypted key storage and the provider adapters; material upload, the processing pipeline and the viewers; and embeddings, the vector index and hybrid search.
 
 ## What it is, in one paragraph
 
@@ -11,7 +11,7 @@ Faculty upload material per subject. The material is split into passages, and (w
 1. Sign in as a college admin (two-factor authentication is required for admins) and open **Admin › AI assistant** (`/admin/ai`).
 2. **Choose a provider** under _Answer provider_: Anthropic (Claude), OpenAI, Google Gemini, or an OpenAI-compatible server (enter its public `https://…/v1` address). Choose **Demo (built in)** to try the flow with no key: it quotes your material and sends nothing anywhere. Press **Save settings**.
 3. **Paste the key** in the _API key_ field that appears and press **Save and test**. The key is encrypted at once; the page then shows only its last four characters. The test makes one small request (the provider's model list) and shows _Working_ or the provider's reason for refusing it. Choose the answer model from the models the key can use (Anthropic defaults to `claude-opus-5-5`) and save.
-4. **Semantic search (optional):** under _Semantic search_, choose an embedding provider and model. Anthropic has no embeddings API, so pair Claude answers with OpenAI, Gemini or a compatible server, or leave it off for keyword search. If the embedding provider is the same as the answer provider, the same key is used.
+4. **Semantic search (optional):** under _Semantic search_, choose an embedding provider and model. Anthropic has no embeddings API, so pair Claude answers with OpenAI, Gemini or a compatible server, or leave it off for keyword search. If the embedding provider is the same as the answer provider, the same key is used. Once a working key is saved (and the notice accepted), every passage already in the library gets its vector automatically; the _Search index_ panel shows the progress and the checklist ticks **Search index ready** when nothing is waiting.
 5. **Accept the data notice** (_Data processing notice_): it states that passages of uploaded material and students' questions are sent to the chosen provider. The acceptance is versioned and written to the audit log. External providers stay off until it is accepted.
 6. Turn on **Study chatbot** under _Switches_, check the limits (monthly token budget, questions per member per day, answer length, passages per answer, chat retention) and save. The status at the top reads **On**.
 
@@ -25,12 +25,15 @@ To stop everything at once, turn on **Stop all AI now** (the kill switch): no re
 | `AI_DEFAULT_EMBEDDING_PROVIDER`, `AI_DEFAULT_EMBEDDING_API_KEY`, `AI_DEFAULT_EMBEDDING_MODEL`, `AI_DEFAULT_EMBEDDING_BASE_URL` | The same for embeddings.                                                                                                                                                                                                                        |
 | `AI_PRIVATE_ENDPOINTS`                                                                                                         | Origins such as `http://ollama:11434` that colleges may use although they are private or plain http (a local Ollama or LM Studio). College admins can only enter public `https` addresses; every call still goes through the SSRF-safe fetcher. |
 
-| Variable        | Purpose                                                                                                                                                                                                            |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `OCR_PROVIDER`  | `auto` (default) reads scanned pages with Tesseract when it is installed (the production API image has it, with the Telugu pack); `tesseract` requires it; `none` turns OCR off. Colleges can also switch OCR off. |
-| `OCR_LANGUAGES` | Tesseract languages, such as `eng+tel` (install the Telugu language pack first).                                                                                                                                   |
-| `MEDIA_TOOLS`   | `auto` (default) uses `ffmpeg`, `ffprobe` and `pdftoppm` when installed: video length, a poster frame, the audio for transcription and page images for OCR. `none` turns them off.                                 |
-| `WHISPER_URL`   | A local Whisper service (the optional `whisper` Docker profile) for video and audio transcripts; nothing leaves the server. Without it, a college that uses OpenAI (with consent) can use it.                      |
+| Variable                       | Purpose                                                                                                                                                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `OCR_PROVIDER`                 | `auto` (default) reads scanned pages with Tesseract when it is installed (the production API image has it, with the Telugu pack); `tesseract` requires it; `none` turns OCR off. Colleges can also switch OCR off. |
+| `OCR_LANGUAGES`                | Tesseract languages, such as `eng+tel` (install the Telugu language pack first).                                                                                                                                   |
+| `MEDIA_TOOLS`                  | `auto` (default) uses `ffmpeg`, `ffprobe` and `pdftoppm` when installed: video length, a poster frame, the audio for transcription and page images for OCR. `none` turns them off.                                 |
+| `WHISPER_URL`                  | A local Whisper service (the optional `whisper` Docker profile) for video and audio transcripts; nothing leaves the server. Without it, a college that uses OpenAI (with consent) can use it.                      |
+| `VECTOR_STORE`                 | Where passage vectors are indexed: `auto` (default; Qdrant when `QDRANT_URL` is set, otherwise memory), `memory` or `qdrant`. Use Qdrant whenever more than one API server runs.                                   |
+| `QDRANT_URL`, `QDRANT_API_KEY` | The Qdrant REST address (the optional `qdrant` Docker profile: `http://127.0.0.1:6333`) and its key, if it has one. Platform-owned, so it may be on the private network.                                           |
+| `AI_RERANKER`                  | `none` (default) keeps the fused order; `llm` asks the college's answer model to re-order the passages it is about to use (better order, more tokens).                                                             |
 
 A college still accepts the data notice and turns the chatbot on itself when it uses the platform default.
 
@@ -81,6 +84,44 @@ flowchart LR
 - **Files are served through signed links** that last five minutes and re-check access on every request (owner decision Q9). The PDF viewer, the media player and downloads all use them; a link that lapses mid-video is re-signed and the video resumes where it was.
 - **Video links** are shown behind a click-to-load facade: nothing is requested from YouTube or Vimeo until the student presses play, and then only through the privacy-enhanced embeds (`youtube-nocookie.com`, Vimeo with `dnt=1`), the only two frame origins added to the CSP. Their title and length come from oEmbed through `safeFetch`.
 - **Keyword search** looks in the passages of published material in the subjects the member reads, through the passages' text index (`$text` via `db/search.ts`). A result opens the PDF at its page or the video at its moment, with the words highlighted.
+
+## Embeddings, the vector index and hybrid search (step 3)
+
+```mermaid
+flowchart LR
+  P[MaterialPipeline: passages] -->|embedMaterial| I[IndexingService]
+  K[Admin saves a working key, changes the model, accepts the notice] -->|study.embed job| I
+  I -->|batches of 64, retries| E[EmbeddingProvider]
+  I --> C[(contentChunks: vector bytes, model, status)]
+  I --> V[VectorIndex: tenant from context]
+  V --> Q[(Qdrant, or in memory)]
+  S[Search box, chatbot] --> R[RetrievalService]
+  R -->|readable subjects, published only| V
+  R -->|$text via db/search.ts| C
+  R -->|reciprocal rank fusion, optional re-rank| S
+```
+
+- **Embedding** happens as material is processed and, for everything already in the library, in a **back-fill** that starts the moment a working embedding provider appears (a key saved or tested, the notice accepted, the provider or model changed). One back-fill runs per college at a time (a lease on the college's settings); it works in two-minute slices and hands over to a fresh job. Each passage is embedded with its material's title and heading for context, 64 at a time.
+- **Vectors are stored on the passages** (`contentChunks.vector`, float32 bytes, with the `provider:model` that made them). The vector store is an index over them: a lost or new index is rebuilt from MongoDB without paying the provider again (**Rebuild the index** in the admin panel, or automatically when the store holds fewer vectors than MongoDB). The in-memory store loads a college's vectors the first time they are needed after a restart.
+- **A different model means re-indexing, never mixing:** searches only compare vectors of the current `provider:model`, the back-fill re-embeds passages made by another model, and the old model's vectors are removed from the index.
+- **Failures never block material.** A passage the provider refuses (too long, unreadable) is marked and stays keyword-searchable; the rest of its batch is embedded (a refused batch is split until the passage is found, after a one-word probe proves the model itself works). An outage or rate limit retries with back-off and then tries again ten minutes later; a revoked key is marked invalid for the admin and members fall back to keyword search. Nothing is lost: waiting passages catch up when the provider is back.
+- **Topics by meaning:** when embeddings are on, a passage is also tagged to the syllabus topic whose title and keywords are closest in meaning (cosine similarity at least 0.5), in addition to the keyword tags.
+- **Hybrid retrieval** (`RetrievalService.retrieve`): the passages closest in meaning (the vector index) and the best keyword matches (the text index) are merged with reciprocal rank fusion (k = 60), optionally re-ranked, and every passage is re-read from MongoDB with the same rules (readable subject, published, unit and topic filters) before it is returned, so a stale vector can never leak a passage. Retrieval reports `confident` when the best similarity reaches 0.3 or the top passages contain at least 60% of the question's content words; the chatbot (step 4) will answer only then. The search box drops passages found only by meaning below 0.3 similarity and marks the rest **Similar meaning**.
+- **Isolation:** callers never pass a college. `VectorIndex` takes the tenant from the request or job context (and throws outside one), every store refuses a search or write without a tenant, the readable subjects and a model, and Qdrant points carry the tenant in a tenant-partitioned index. The contract tests run against both stores (`test/vector-store.test.ts`; Qdrant in CI).
+- **Usage:** every embedding request is counted per college, member (null for background work), day and model (`aiUsage`), for the budgets and dashboard of step 5. A search by meaning embeds the question and counts against the member.
+
+### Switching the vector store
+
+1. Start Qdrant (`docker compose --profile qdrant up -d qdrant`, or a managed Qdrant) and set `QDRANT_URL` (and `QDRANT_API_KEY` if it has one). `VECTOR_STORE=auto` picks it up; `VECTOR_STORE=qdrant` makes it required (the API will not start without `QDRANT_URL`).
+2. Restart the API, then press **Rebuild the index** in each college's _Search index_ panel (or wait for the next back-fill): the stored vectors are copied in; nothing is re-embedded.
+3. Another engine (pgvector, MongoDB Atlas Vector Search) is one class implementing `VectorStore` (`modules/study/vector/`); `atlas.ts` is a documented starting point. It must pass the same contract tests.
+
+### Cost-control tips
+
+- Embeddings are cheap next to answers: a 100-page PDF is roughly 50,000 tokens, embedded once. Changing the embedding model re-embeds the whole library, so choose it before uploading a lot.
+- Keep `AI_RERANKER=none` unless answers cite the wrong passages: re-ranking sends the candidate passages to the answer model on every question.
+- **Rebuild the index** never calls the provider; prefer it to changing models when the index looks wrong.
+- Lower _Passages per answer_ before lowering the answer length: passages are most of each question's input tokens.
 
 ### Adding a provider
 

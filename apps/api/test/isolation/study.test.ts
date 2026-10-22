@@ -17,6 +17,7 @@ import {
   SyllabusUnitModel,
 } from '../../src/modules/study/subject.model.js';
 import { AiSettingsModel } from '../../src/modules/study/ai-settings.model.js';
+import { AiUsageModel } from '../../src/modules/study/ai-usage.model.js';
 import {
   ContentChunkModel,
   MaterialJobModel,
@@ -37,6 +38,30 @@ let facB: TestUser, adminB: TestUser, studentB: TestUser, alumB: TestUser;
 let subjectA: string, unitA: string;
 const a = (u: TestUser) => api(ctx, A.host, u.token);
 const inB = (u: TestUser) => api(ctx, B.host, u.token);
+
+const SETTINGS = {
+  chatProvider: 'anthropic',
+  chatModel: '',
+  embeddingProvider: 'mock',
+  embeddingModel: '',
+  baseUrl: null,
+  embeddingBaseUrl: null,
+  temperature: null,
+  maxAnswerTokens: 800,
+  maxChunks: 6,
+  monthlyTokenBudget: 0,
+  dailyMessagesPerUser: 40,
+  chatRetentionDays: 180,
+  features: {
+    chatbot: true,
+    studentUploads: false,
+    externalVideos: false,
+    ocr: true,
+    transcription: true,
+    facultySeeChats: false,
+  },
+  killSwitch: false,
+};
 
 beforeAll(async () => {
   A = await makeTenant('isostudya');
@@ -61,30 +86,7 @@ beforeAll(async () => {
     .send({ units: [{ title: 'Alpha unit', topics: [{ title: 'Alpha topic' }] }] });
   unitA = tree.body.data.units[0].id;
   await a(facA).put(`/study/subjects/${subjectA}/enrollments`).send({ userId: studentA.id, kind: 'include' });
-  const base = {
-    chatProvider: 'anthropic',
-    chatModel: '',
-    embeddingProvider: 'mock',
-    embeddingModel: '',
-    baseUrl: null,
-    embeddingBaseUrl: null,
-    temperature: null,
-    maxAnswerTokens: 800,
-    maxChunks: 6,
-    monthlyTokenBudget: 0,
-    dailyMessagesPerUser: 40,
-    chatRetentionDays: 180,
-    features: {
-      chatbot: true,
-      studentUploads: false,
-      externalVideos: false,
-      ocr: true,
-      transcription: true,
-      facultySeeChats: false,
-    },
-    killSwitch: false,
-  };
-  await a(adminA).put('/admin/ai').send(base);
+  await a(adminA).put('/admin/ai').send(SETTINGS);
   await a(adminA).put('/admin/ai/keys').send({ target: 'chat', key: GOOD_KEY });
   await a(adminA).post('/admin/ai/consent').send({ version: AI_CONSENT_VERSION, accept: true });
   const up = (file: Buffer, name: string) =>
@@ -207,6 +209,21 @@ describe('HTTP: nothing of college A is reachable from college B', () => {
     expect((await a(adminA).get('/admin/ai')).body.data.keys.chat.status).toBe('valid');
   });
 
+  it('the semantic index and its progress are per college', async () => {
+    const idxA = (await a(adminA).get('/admin/ai/index')).body.data;
+    expect(idxA).toMatchObject({ semantic: true, model: 'mock:mock-embed-1', pending: 0 });
+    expect(idxA.embedded).toBeGreaterThan(0);
+    const idxB = (await inB(adminB).get('/admin/ai/index')).body.data;
+    expect(idxB).toMatchObject({ total: 0, embedded: 0 });
+    // B turns on the same demo embeddings: its search by meaning still never reaches A's vectors.
+    await inB(adminB)
+      .put('/admin/ai')
+      .send({ ...SETTINGS, chatProvider: null, embeddingProvider: 'mock' });
+    expect((await inB(adminB).get('/admin/ai/index')).body.data.semantic).toBe(true);
+    const hits = (await inB(studentB).get('/study/search?q=Zyxquark automata demo idea')).body.data;
+    expect(hits).toEqual([]);
+  });
+
   it('a token from A never works on B', async () => {
     const r = await api(ctx, B.host, studentA.token).get('/study/subjects');
     expect(r.status).toBe(401);
@@ -226,6 +243,7 @@ describe('database layer: every Phase 9 collection is scoped', () => {
     ['MaterialPage', MaterialPageModel as Model<unknown>],
     ['ContentChunk', ContentChunkModel as Model<unknown>],
     ['VideoSegment', VideoSegmentModel as Model<unknown>],
+    ['AiUsage', AiUsageModel as Model<unknown>],
   ];
 
   it.each(MODELS)('%s: B cannot read, search, update or delete A’s documents', async (_name, model) => {

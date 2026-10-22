@@ -11,6 +11,7 @@ import sharp from 'sharp';
 import type { MediaTools } from '../src/modules/study/media/tools.js';
 import type { OcrProvider } from '../src/modules/study/media/ocr.js';
 import type { TranscriptionProvider } from '../src/modules/study/media/transcribe.js';
+import { mockVector } from '../src/modules/study/ai/mock.js';
 
 /** Demo keys: obviously fake, and the provider's error echoes the bad one (as real ones do). */
 export const GOOD_KEY = 'sk-ant-demo-GOOD-1111222233334444';
@@ -35,6 +36,8 @@ export interface FakeCall {
 /** A fake SSRF-safe fetcher that answers like the AI providers do (no network). */
 export function aiFetcher() {
   const calls: FakeCall[] = [];
+  /** Switches for the embeddings endpoint: an outage (503) or a key the provider revoked (401). */
+  const state = { embeddingsDown: false, embeddingsRevoked: false, embedRequests: 0 };
   const fn = (async (url: string, opts: SafeFetchOptions = {}) => {
     const body = typeof opts.body === 'string' ? (JSON.parse(opts.body) as Record<string, unknown>) : null;
     calls.push({ url, opts, body });
@@ -51,6 +54,19 @@ export function aiFetcher() {
       if (h.authorization === `Bearer ${OPENAI_KEY}`)
         return json(200, { data: [{ id: 'text-embedding-demo' }, { id: 'chat-demo' }] });
       return json(401, { error: { message: `Incorrect API key provided: ${h.authorization}` } });
+    }
+    if (url === 'https://api.openai.com/v1/embeddings') {
+      state.embedRequests++;
+      if (state.embeddingsDown) return json(503, { error: { message: 'The server is overloaded' } });
+      if (state.embeddingsRevoked || h.authorization !== `Bearer ${OPENAI_KEY}`)
+        return json(401, { error: { message: `Incorrect API key provided: ${h.authorization}` } });
+      const input = (body?.input ?? []) as string[];
+      if (input.some((t) => t.includes('REFUSE-ME')))
+        return json(400, { error: { message: 'This model cannot embed that input' } });
+      return json(200, {
+        data: input.map((t, index) => ({ index, embedding: mockVector(t) })),
+        usage: { prompt_tokens: input.length * 8, total_tokens: input.length * 8 },
+      });
     }
     if (url.startsWith('http://ollama.test:11434/')) {
       if (!opts.allowPrivateNetwork) throw new SafeFetchError('Destination address is not allowed');
@@ -73,7 +89,7 @@ export function aiFetcher() {
       return json(200, { title: 'Demo: DFA minimisation', author_name: 'Demo Vimeo', duration: 754 });
     throw new SafeFetchError('Could not fetch that URL');
   }) as unknown as typeof safeFetch;
-  return { fn, calls };
+  return { fn, calls, state };
 }
 
 export const FLAT_SYLLABUS = [

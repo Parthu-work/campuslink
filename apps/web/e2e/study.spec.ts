@@ -75,6 +75,7 @@ test.describe('study', () => {
     await expect(page.getByRole('heading', { name: 'AI study assistant' })).toBeVisible();
     await expectNoA11yViolations(page);
     await page.getByRole('radio', { name: /Demo \(built in\)/ }).click();
+    await page.getByLabel('Embedding provider').selectOption('mock');
     const chatbot = page.getByRole('switch', { name: 'Study chatbot' });
     if ((await chatbot.getAttribute('aria-checked')) !== 'true') await chatbot.click();
     await page.getByRole('button', { name: 'Save settings' }).click();
@@ -82,6 +83,10 @@ test.describe('study', () => {
     await expect(page.getByText('On (demo)')).toBeVisible();
     // The data notice explains what would leave the college, before any external provider is used.
     await expect(page.getByText('What leaves your college')).toBeVisible();
+    // Semantic search with the demo embeddings: the index panel reports every passage's vector.
+    await expect(page.getByRole('heading', { name: 'Search index' })).toBeVisible();
+    await expect(page.getByText(/passages? can be found by meaning/).first()).toBeVisible();
+    await expectNoA11yViolations(page);
 
     await page.context().clearCookies();
     await signIn(page, `ananya@${host}.example`, host);

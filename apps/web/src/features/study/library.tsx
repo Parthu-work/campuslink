@@ -249,11 +249,17 @@ export function SubjectLibrary({ subject, units }: { subject: SubjectView; units
                   >
                     <span className="font-semibold">{h.title}</span>
                     <span className="text-caption text-fg-3">
-                      {h.startSec !== null
-                        ? formatDuration(h.startSec)
-                        : h.page
-                          ? t('study.pageN', { n: h.page })
-                          : ''}
+                      {[
+                        h.startSec !== null
+                          ? formatDuration(h.startSec)
+                          : h.page
+                            ? t('study.pageN', { n: h.page })
+                            : '',
+                        // Found by meaning only: the words differ, so say why it is here.
+                        h.match === 'semantic' ? t('study.match.semantic') : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </span>
                     <span className="text-meta text-fg-2">{h.snippet}</span>
                   </IntentLink>

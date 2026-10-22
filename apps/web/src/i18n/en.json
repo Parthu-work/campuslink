@@ -2615,6 +2615,9 @@
       "deleteConfirm": "Delete it everywhere: the file, its text, its search index and its transcript? This cannot be undone.",
       "deleteYes": "Delete",
       "deleted": "Deleted"
+    },
+    "match": {
+      "semantic": "Similar meaning"
     }
   },
   "ai": {
@@ -2636,7 +2639,8 @@
       "key": "Paste the key",
       "test": "Test the connection",
       "consent": "Accept the data notice",
-      "on": "Turn answers on"
+      "on": "Turn answers on",
+      "index": "Search index ready"
     },
     "platformDefault": "Your platform provides a default provider. Choosing your own here replaces it.",
     "provider": "Answer provider",
@@ -2721,6 +2725,29 @@
     "youtubeKey": "YouTube Data API key",
     "unsaved": "You have unsaved changes",
     "allSaved": "All changes saved",
-    "save": "Save settings"
+    "save": "Save settings",
+    "index": {
+      "title": "Search index",
+      "progress": "Passages with vectors",
+      "counts": "{{embedded}} of {{total}} passages can be found by meaning.",
+      "pending_one": "{{count}} passage is waiting for its vector.",
+      "pending_other": "{{count}} passages are waiting for their vectors.",
+      "failed_one": "{{count}} passage could not be embedded; it is still found by its words.",
+      "failed_other": "{{count}} passages could not be embedded; they are still found by their words.",
+      "running": "Filling in vectors now…",
+      "model": "Model: {{model}}",
+      "store": "Stored in: {{store}}",
+      "stores": {
+        "memory": "this server's memory (fine for one server)",
+        "qdrant": "Qdrant",
+        "atlas": "MongoDB Atlas"
+      },
+      "lastRun": "Last finished {{when}}",
+      "lastError": "Last problem: {{error}}",
+      "off": "Choose an embedding provider and save a working key: every passage already uploaded gets its vector automatically.",
+      "rebuild": "Rebuild the index",
+      "rebuildHint": "Uses the vectors already saved (no new provider charges), then fills in anything missing.",
+      "rebuilding": "Rebuilding the search index"
+    }
   }
 }

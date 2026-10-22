@@ -82,6 +82,15 @@ services:
       retries: 30
       start_period: 10s
 
+  # Vector index for study passages (VECTOR_STORE=qdrant, QDRANT_URL=http://127.0.0.1:6333). Without
+  # it the API keeps vectors in memory, which suits one server; vectors also live on the passages in
+  # MongoDB, so switching rebuilds the index without calling the embedding provider again.
+  qdrant:
+    image: qdrant/qdrant:v1.19.2
+    profiles: [qdrant]
+    ports: ['127.0.0.1:6333:6333']
+    volumes: [qdrant-data:/qdrant/storage]
+
   # Speech to text for study videos without captions (WHISPER_URL=http://127.0.0.1:9000). Runs on
   # the CPU; nothing leaves the machine. The first start downloads the model (about 150 MB).
   whisper:
@@ -97,4 +106,5 @@ volumes:
   mongo-data:
   redis-data:
   s3-data:
+  qdrant-data:
   whisper-cache:

@@ -30,14 +30,14 @@ export function suggestTopics(name: string, topics: (SyllabusTopicView & { unitI
     name
       .toLowerCase()
       .replace(/\.[a-z0-9]+$/, '')
-      .split(/[^\p{L}\p{N}]+/u)
+      .split(/[^\p{L}\p{M}\p{N}]+/u)
       .filter((w) => w.length > 2),
   );
   return topics
     .map((t) => {
       const tw = t.title
         .toLowerCase()
-        .split(/[^\p{L}\p{N}]+/u)
+        .split(/[^\p{L}\p{M}\p{N}]+/u)
         .filter((w) => w.length > 2);
       const hits =
         tw.filter((w) => words.has(w)).length +

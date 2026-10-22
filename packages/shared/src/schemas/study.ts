@@ -163,7 +163,10 @@ export const materialReviewBody = z.strictObject({
 export const takedownBody = z.strictObject({ reason: text(5, 500) });
 export const studySearchQuery = z.strictObject({
   q: text(2, 100),
+  /** Omitted: every subject the member reads. */
   subjectId: objectId.optional(),
+  unitId: objectId.optional(),
+  topicId: objectId.optional(),
 });
 
 // ── AI settings ─────────────────────────────
@@ -314,6 +317,8 @@ export interface StudySearchHit {
   page: number | null;
   startSec: number | null;
   snippet: string;
+  /** How it was found: by meaning (vectors), by its words, or both. */
+  match: 'semantic' | 'keyword' | 'both';
 }
 /** Live processing progress (socket `study:material`, to the uploader). */
 export interface MaterialProgressEvent {
@@ -374,6 +379,25 @@ export interface AiStatusView {
   reason: AiOffReason | null;
   /** Built-in demo responder (no external provider). */
   demo: boolean;
+}
+/** The college's semantic index (Admin › AI assistant): back-fill progress and where vectors live. */
+export interface AiIndexView {
+  /** An embedding provider is ready (otherwise everything stays keyword-only). */
+  semantic: boolean;
+  /** `provider:model` of the current vectors. */
+  model: string | null;
+  store: 'memory' | 'qdrant' | 'atlas';
+  /** Passages in the library. */
+  total: number;
+  /** Passages with a vector of the current model. */
+  embedded: number;
+  /** Passages waiting for one (new material, a new model, or a provider that was down). */
+  pending: number;
+  /** Passages the provider refused (too long or unreadable); they stay keyword-searchable. */
+  failed: number;
+  running: boolean;
+  lastRunAt: string | null;
+  lastError: string | null;
 }
 export interface AiTestResult {
   ok: boolean;

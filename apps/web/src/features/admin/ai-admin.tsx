@@ -1,7 +1,18 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, CircleAlert, KeyRound, PlugZap, Power, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
+import {
+  Check,
+  CircleAlert,
+  DatabaseZap,
+  KeyRound,
+  PlugZap,
+  Power,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+} from 'lucide-react';
 import {
   AI_FEATURES,
   EMBEDDING_PROVIDERS,
@@ -11,6 +22,7 @@ import {
   type AiProvider,
   type AiSettingsInput,
   type AiSettingsView,
+  type AiIndexView,
   type AiTestResult,
   type EmbeddingProvider,
 } from '@campuslink/shared';
@@ -18,10 +30,11 @@ import { Button } from '../../components/ui/button';
 import { ChoiceGroup } from '../../components/ui/choice-group';
 import { Field, Input, PasswordInput, Select } from '../../components/ui/field';
 import { Badge, Card, Skeleton } from '../../components/ui/misc';
+import { ProgressBar } from '../../components/ui/progress';
 import { Switch } from '../../components/ui/switch';
 import { FormError } from '../../components/layout/auth-layout';
 import { api, ApiError } from '../../lib/api';
-import { aiSettings } from '../../lib/queries';
+import { aiIndex, aiSettings } from '../../lib/queries';
 import { formatDateTime } from '../../lib/format';
 import { toast } from '../../lib/toast';
 import { cn } from '../../lib/cn';
@@ -85,6 +98,79 @@ function KeyStatus({ k }: { k: AiKeyView }) {
   );
 }
 
+/**
+ * The semantic index (spec §7, checklist step 4): how many passages have vectors, what is waiting
+ * or was refused, where vectors live, and a rebuild from the stored vectors (no provider cost).
+ */
+function IndexPanel() {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const q = useQuery(aiIndex());
+  const rebuild = useMutation({
+    mutationFn: () => api.postOnce<AiIndexView>('/admin/ai/reindex', {}, crypto.randomUUID()),
+    onSuccess: (v) => {
+      qc.setQueryData(['ai-index'], v);
+      toast.success(t('ai.index.rebuilding'));
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
+  });
+  const v = q.data;
+  if (!v) return <Skeleton className="h-24" />;
+  return (
+    <div className="grid gap-3 rounded-[var(--radius-md)] border border-line p-4" aria-live="polite">
+      <h3 className="flex items-center gap-2 font-semibold">
+        <DatabaseZap className="size-4 text-brand-ink" aria-hidden /> {t('ai.index.title')}
+      </h3>
+      {v.semantic ? (
+        <>
+          <ProgressBar
+            value={v.embedded}
+            max={Math.max(v.total, 1)}
+            label={t('ai.index.progress')}
+            valueText={t('ai.index.counts', { embedded: v.embedded, total: v.total })}
+          />
+          <p className="text-meta">{t('ai.index.counts', { embedded: v.embedded, total: v.total })}</p>
+          {v.running && <p className="text-meta text-fg-2">{t('ai.index.running')}</p>}
+          {v.pending > 0 && (
+            <p className="text-meta text-fg-2">{t('ai.index.pending', { count: v.pending })}</p>
+          )}
+          {v.failed > 0 && <p className="text-meta text-fg-2">{t('ai.index.failed', { count: v.failed })}</p>}
+          <p className="text-caption text-fg-3">
+            {[
+              v.model ? t('ai.index.model', { model: v.model }) : '',
+              t('ai.index.store', { store: t(`ai.index.stores.${v.store}`) }),
+              v.lastRunAt ? t('ai.index.lastRun', { when: formatDateTime(v.lastRunAt) }) : '',
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+          {v.lastError && (
+            <p className="flex items-start gap-2 text-meta text-warning-ink">
+              <CircleAlert className="mt-0.5 size-4 flex-none" aria-hidden />
+              {t('ai.index.lastError', { error: v.lastError })}
+            </p>
+          )}
+          <div className="grid gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-fit"
+              loading={rebuild.isPending}
+              disabled={v.running}
+              onClick={() => rebuild.mutate()}
+            >
+              <RefreshCw className="size-4" aria-hidden /> {t('ai.index.rebuild')}
+            </Button>
+            <p className="text-caption text-fg-3">{t('ai.index.rebuildHint')}</p>
+          </div>
+        </>
+      ) : (
+        <p className="text-meta text-fg-2">{t('ai.index.off')}</p>
+      )}
+    </div>
+  );
+}
+
 /** Paste a key (never shown again), save and test it in one step; or remove it. */
 function KeyForm({ target, k, label }: { target: AiKeyTarget; k: AiKeyView; label: string }) {
   const { t } = useTranslation();
@@ -102,6 +188,7 @@ function KeyForm({ target, k, label }: { target: AiKeyTarget; k: AiKeyView; labe
       setResult(r.result);
       qc.setQueryData(['ai-settings'], r.settings);
       void qc.invalidateQueries({ queryKey: ['ai-status'] });
+      void qc.invalidateQueries({ queryKey: ['ai-index'] });
     },
     onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
   });
@@ -111,6 +198,7 @@ function KeyForm({ target, k, label }: { target: AiKeyTarget; k: AiKeyView; labe
       setResult(r);
       void qc.invalidateQueries({ queryKey: ['ai-settings'] });
       void qc.invalidateQueries({ queryKey: ['ai-status'] });
+      void qc.invalidateQueries({ queryKey: ['ai-index'] });
     },
   });
   const remove = useMutation({
@@ -119,6 +207,7 @@ function KeyForm({ target, k, label }: { target: AiKeyTarget; k: AiKeyView; labe
       setResult(null);
       qc.setQueryData(['ai-settings'], v);
       void qc.invalidateQueries({ queryKey: ['ai-status'] });
+      void qc.invalidateQueries({ queryKey: ['ai-index'] });
     },
   });
   const shown = result ?? (k.error ? { ok: false, models: [], error: k.error } : null);
@@ -271,6 +360,7 @@ export function AiAdmin() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const q = useQuery(aiSettings());
+  const index = useQuery(aiIndex());
   const [draft, setDraft] = useState<Draft | null>(null);
   const [error, setError] = useState<string>();
   const save = useMutation({
@@ -280,6 +370,7 @@ export function AiAdmin() {
       setDraft(null);
       setError(undefined);
       void qc.invalidateQueries({ queryKey: ['ai-status'] });
+      void qc.invalidateQueries({ queryKey: ['ai-index'] });
       toast.success(t('common.saved'));
     },
     onError: (e) => setError(e instanceof ApiError ? e.message : t('errors.generic')),
@@ -289,6 +380,7 @@ export function AiAdmin() {
     onSuccess: (v) => {
       qc.setQueryData(['ai-settings'], v);
       void qc.invalidateQueries({ queryKey: ['ai-status'] });
+      void qc.invalidateQueries({ queryKey: ['ai-index'] });
       toast.success(t('ai.consentDone'));
     },
   });
@@ -315,6 +407,9 @@ export function AiAdmin() {
     [t('ai.check.test'), savedChat === 'mock' || v.keys.chat.status === 'valid'],
     [t('ai.check.consent'), !external || consentOk],
     [t('ai.check.on'), v.status.answers],
+    ...(v.embeddingProvider
+      ? ([[t('ai.check.index'), !!index.data?.semantic && index.data.pending === 0]] as [string, boolean][])
+      : []),
   ];
 
   return (
@@ -332,7 +427,7 @@ export function AiAdmin() {
           </Badge>
         </div>
         <p className="text-meta text-fg-2">{t('ai.intro')}</p>
-        <ol className="grid gap-2 sm:grid-cols-5" aria-label={t('ai.checklist')}>
+        <ol className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6" aria-label={t('ai.checklist')}>
           {checklist.map(([label, done], i) => (
             <li key={label} className="flex items-center gap-2 text-meta">
               <span
@@ -470,6 +565,7 @@ export function AiAdmin() {
         {!embedSeparate && v.embeddingProvider && v.embeddingProvider !== 'mock' && (
           <KeyStatus k={v.keys.embedding} />
         )}
+        <IndexPanel />
       </Section>
 
       <Section id="ai-consent" icon={<ShieldCheck />} title={t('ai.consent')}>

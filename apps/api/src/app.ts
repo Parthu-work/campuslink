@@ -94,6 +94,11 @@ import { AiSettingsService } from './modules/study/ai-settings.service.js';
 import { aiSettingsRoutes, studyRoutes } from './modules/study/study.routes.js';
 import { MaterialsService } from './modules/study/materials.service.js';
 import { materialRoutes } from './modules/study/materials.routes.js';
+import { AiUsageService } from './modules/study/ai-usage.service.js';
+import { EMBED_JOB, IndexingService } from './modules/study/indexing.service.js';
+import { RetrievalService } from './modules/study/retrieval.service.js';
+import { VectorIndex, type VectorStore } from './modules/study/vector/store.js';
+import { createVectorStore } from './modules/study/vector/factory.js';
 import { MaterialPipeline, PROCESS_JOB } from './modules/study/pipeline.js';
 import { CliMediaTools, noMediaTools, type MediaTools } from './modules/study/media/tools.js';
 import { noOcr, TesseractOcr, type OcrProvider } from './modules/study/media/ocr.js';
@@ -122,6 +127,8 @@ export interface AppDeps {
   media?: MediaTools;
   ocr?: OcrProvider;
   whisper?: TranscriptionProvider | null;
+  /** The passage vector store (tests inject one); otherwise from VECTOR_STORE and QDRANT_URL. */
+  vectorStore?: VectorStore;
 }
 
 export function createApp({
@@ -142,6 +149,7 @@ export function createApp({
   media,
   ocr,
   whisper,
+  vectorStore,
 }: AppDeps) {
   const app = express();
   app.disable('x-powered-by');
@@ -506,6 +514,31 @@ export function createApp({
     filesService.registerAccess(purpose, (fileId, viewer) => materialsService.fileAccess(fileId, viewer));
   queue.register(PROCESS_JOB, (data) => materialPipeline.run(data));
 
+  // Embeddings, the vector index and hybrid retrieval (spec step 3).
+  const vectorIndex = new VectorIndex(vectorStore ?? createVectorStore(env, fetcher));
+  const aiUsageService = new AiUsageService();
+  const indexingService = new IndexingService({
+    ai: aiSettingsService,
+    subjects: subjectsService,
+    vectors: vectorIndex,
+    usage: aiUsageService,
+    queue,
+    logger,
+  });
+  const retrievalService = new RetrievalService({
+    subjects: subjectsService,
+    ai: aiSettingsService,
+    vectors: vectorIndex,
+    usage: aiUsageService,
+    reranker: env.AI_RERANKER,
+    logger,
+  });
+  materialPipeline.embed = (id) => indexingService.embedMaterial(id);
+  materialsService.onVisibility = (id, visibility) => indexingService.materialVisibility(id, visibility);
+  materialsService.onRemoved = (id) => indexingService.materialRemoved(id);
+  aiSettingsService.onEmbeddingReady = () => indexingService.scheduleBackfill();
+  queue.register(EMBED_JOB, (data) => indexingService.runBackfill(data));
+
   // ── Privacy rights (Phase 8) ─────────────────────────────
   const privacyService = new PrivacyService({ auth: authService, profiles: profilesService, logger });
   const hook = (svc: { exportFor(u: string): Promise<unknown>; eraseFor(u: string): Promise<void> }) => ({
@@ -533,6 +566,7 @@ export function createApp({
   privacyService.register('notifications', hook(notificationsService));
   privacyService.register('subjects', hook(subjectsService));
   privacyService.register('materials', hook(materialsService));
+  privacyService.register('aiUsage', hook(aiUsageService));
   privacyService.register('aiSettings', hook(aiSettingsService));
   privacyService.register('files', hook(filesService));
 
@@ -651,8 +685,14 @@ export function createApp({
     API_PREFIX,
     defineModule('study', studyRoutes({ subjects: subjectsService, ai: aiSettingsService }), pipeline),
   );
-  app.use(API_PREFIX, defineModule('ai-settings', aiSettingsRoutes(aiSettingsService), pipeline));
-  app.use(API_PREFIX, defineModule('study-materials', materialRoutes(materialsService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('ai-settings', aiSettingsRoutes(aiSettingsService, indexingService), pipeline),
+  );
+  app.use(
+    API_PREFIX,
+    defineModule('study-materials', materialRoutes(materialsService, retrievalService), pipeline),
+  );
   app.use(
     API_PREFIX,
     defineModule(
@@ -711,6 +751,10 @@ export function createApp({
     aiSettings: aiSettingsService,
     materials: materialsService,
     materialPipeline,
+    indexing: indexingService,
+    retrieval: retrievalService,
+    aiUsage: aiUsageService,
+    vectors: vectorIndex,
   };
   return app;
 }

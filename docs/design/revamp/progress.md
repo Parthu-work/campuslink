@@ -230,3 +230,13 @@ Spec §13 step 2.
 - **Search:** each subject's search box finds passages in published material and opens the right page or moment.
 - **CSP:** `frame-src` gains `https://www.youtube-nocookie.com` and `https://player.vimeo.com` (Appendix A requires embedded videos); `img-src` is unchanged.
 - **Budget:** initial JS 169.2 KB (the material-progress store, the upload helper and notification texts moved out of the entry); the PDF viewer adds 128.8 KB only when a PDF is opened, under a recorded exception; every other screen stays under 70 KB.
+
+## Phase 9 · Study, step 3: embeddings, vector index and hybrid search
+
+Spec §13 step 3.
+
+- **Search by meaning:** once a college has a working embedding provider, every passage gets a vector (new material as it is processed, the existing library in a back-fill with progress in Admin › AI assistant), and the subject search finds passages by meaning and by words together. Without a provider, or when it is down, the same search is keyword-only.
+- **Safe by construction:** vectors are stored on the passages, so a lost index is rebuilt without new provider charges; a model change re-indexes instead of mixing; one refused passage never blocks its material; a revoked key is shown to the admin. The index takes the college from the request, and every passage is re-checked before it is shown.
+- **Qdrant** is an optional Docker profile and the production choice for more than one server; CI runs the same store contract against it as against the in-memory store.
+- **Telugu:** words with vowel signs are no longer split in study search, hashtags, file names and topic suggestions.
+- **Budget:** unchanged (the admin panel is part of the admin screen's chunk).

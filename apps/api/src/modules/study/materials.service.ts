@@ -12,7 +12,6 @@ import {
   type MaterialVisibility,
   type PersonRef,
   type ProcessingStage,
-  type StudySearchHit,
   type materialLinkBody,
   type materialUpdateBody,
   type materialUploadFields,
@@ -25,13 +24,11 @@ import {
   MaterialModel,
   MaterialPageModel,
   VideoSegmentModel,
-  type ContentChunkDoc,
   type MaterialDoc,
 } from './material.model.js';
 import { AppError, badRequest, conflict, forbidden, notFound } from '../../lib/errors.js';
 import { ErrorCode } from '@campuslink/shared';
 import { plainText } from '../../lib/text.js';
-import { withTextSearch } from '../../db/search.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import type { JobQueue } from '../../lib/jobs.js';
 import { requireTenantId } from '../../lib/context.js';
@@ -633,42 +630,6 @@ export class MaterialsService {
   }
 
   // ── Keyword search (works with no AI provider) ─────────────────────────────
-  async search(viewer: AuthState, q: string, subjectId?: string): Promise<StudySearchHit[]> {
-    const readable = await this.d.subjects.readableIds(viewer);
-    const scope = subjectId ? readable.filter((s) => String(s) === subjectId) : readable;
-    if (!scope.length) return [];
-    const rows = await withTextSearch(
-      ContentChunkModel.find({ subjectId: { $in: scope }, visibility: 'published' }),
-      q,
-    )
-      .select({ score: { $meta: 'textScore' }, materialId: 1, subjectId: 1, text: 1, page: 1, startSec: 1 })
-      .sort({ score: { $meta: 'textScore' } })
-      .limit(20)
-      .lean<(ContentChunkDoc & { score: number })[]>();
-    const mats = new Map(
-      (
-        await MaterialModel.find({ _id: { $in: rows.map((r) => r.materialId) } })
-          .select('title type')
-          .lean<MaterialDoc[]>()
-      ).map((m) => [String(m._id), m]),
-    );
-    return rows
-      .filter((r) => mats.has(String(r.materialId)))
-      .map((r) => {
-        const mat = mats.get(String(r.materialId));
-        return {
-          chunkId: String(r._id),
-          materialId: String(r.materialId),
-          subjectId: String(r.subjectId),
-          title: mat?.title ?? '',
-          type: (mat?.type ?? 'pdf') as MaterialType,
-          page: r.page ?? null,
-          startSec: r.startSec ?? null,
-          snippet: snippet(r.text, q),
-        };
-      });
-  }
-
   // ── Privacy ─────────────────────────────
   async exportFor(userId: string) {
     const rows = await MaterialModel.find({ uploaderId: oid(userId) })

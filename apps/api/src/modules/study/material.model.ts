@@ -129,8 +129,8 @@ export const MaterialPageModel = defineTenantModel('MaterialPage', pageSchema);
 
 /**
  * A passage of a material for retrieval: its text, where it is (page or time range), the syllabus
- * topics it is tagged to and, from step 3, its embedding status. `visibility` mirrors the material
- * so searches can filter to published material without a join.
+ * topics it is tagged to, and its embedding (status, model and vector). `visibility` mirrors the
+ * material so searches can filter to published material without a join.
  */
 const chunkSchema = new Schema(
   {
@@ -151,12 +151,18 @@ const chunkSchema = new Schema(
     embeddingStatus: { type: String, enum: CHUNK_EMBEDDING_STATUSES, default: 'embedding_pending' },
     /** `provider:model` that made the stored vector; a different one means re-index, never mix. */
     embeddingModel: { type: String, default: null },
+    /**
+     * The embedding as float32 bytes. The vector store is an index over these, so a lost or new
+     * index is rebuilt without paying the provider again (and the in-memory store reloads them).
+     */
+    vector: { type: Buffer, default: null, select: false },
+    embeddedAt: { type: Date, default: null },
   },
   baseSchemaOptions,
 );
 chunkSchema.index({ tenantId: 1, materialId: 1, index: 1 });
 chunkSchema.index({ tenantId: 1, subjectId: 1, visibility: 1 });
-chunkSchema.index({ tenantId: 1, embeddingStatus: 1 });
+chunkSchema.index({ tenantId: 1, embeddingStatus: 1, embeddingModel: 1 });
 chunkSchema.index(
   { tenantId: 1, text: 'text', heading: 'text' },
   { name: 'chunk_search', weights: { heading: 3, text: 1 }, default_language: 'english' },

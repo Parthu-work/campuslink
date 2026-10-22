@@ -327,6 +327,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `DELETE /api/v1/admin/ai/keys/:target` | `ai:settings` | college | adminWrite | Remove a stored API key |
 | `POST /api/v1/admin/ai/test` | `ai:settings` | college | aiTest | Test connection: one tiny request with the stored key; lists the models it can use |
 | `POST /api/v1/admin/ai/consent` | `ai:settings` | college | adminWrite | Accept the data-processing notice (versioned and audit-logged) |
+| `GET /api/v1/admin/ai/index` | `ai:settings` | college | — | Semantic index: passages with vectors, waiting and refused, and whether a back-fill is running |
+| `POST /api/v1/admin/ai/reindex` | `ai:settings` | college | adminWrite | Rebuild the semantic index from stored vectors, then embed whatever is missing (audit-logged) |
 | `GET /api/v1/study/subjects/:id/materials` | `study:read` | college | — | Material of a subject (published; your own uploads; managers can list review and drafts) |
 | `POST /api/v1/study/materials` | `study:read` | college | studyUpload | Upload a file (sniffed, scanned and sanitised; rights attestation required); processing starts |
 | `POST /api/v1/study/materials/link` | `study:read` | college | studyUpload | Add a YouTube or Vimeo link (official oEmbed metadata; never downloaded) |
@@ -339,7 +341,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/study/materials/:id/reprocess` | `study:read` | college | studyUpload | Run processing again (after a failure, or a new OCR or transcription set-up) |
 | `POST /api/v1/study/materials/:id/review` | `study:manage` | college | — | Publish or send back a contribution (subject owners and admins) |
 | `POST /api/v1/study/materials/:id/takedown` | `study:manage` | college | — | Take material down (copyright or policy); hidden from everyone and audit-logged |
-| `GET /api/v1/study/search` | `study:read` | college | search | Keyword search over the material of subjects I take (works without any AI provider) |
+| `GET /api/v1/study/search` | `study:read` | college | search | Search the material of the subjects I take, by meaning and by words (keyword-only without an embedding provider) |
 | `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
 | `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |
 | `GET /api/v1/admin/moderation/history/:targetType/:targetId` | `moderation:act` | college | — | Moderation history of one item |

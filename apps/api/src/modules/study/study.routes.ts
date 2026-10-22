@@ -20,6 +20,7 @@ import { authOf, tenantOf } from '../../http/request-context.js';
 import { requestMeta } from '../../lib/request-meta.js';
 import type { SubjectsService } from './subjects.service.js';
 import type { AiSettingsService } from './ai-settings.service.js';
+import type { IndexingService } from './indexing.service.js';
 import { parseSyllabus } from './syllabus-parse.js';
 
 const READ = { kind: 'permission', permission: 'study:read' } as const;
@@ -174,7 +175,7 @@ export function studyRoutes(s: { subjects: SubjectsService; ai: AiSettingsServic
   ];
 }
 
-export function aiSettingsRoutes(ai: AiSettingsService): AnyRouteSpec[] {
+export function aiSettingsRoutes(ai: AiSettingsService, indexing: IndexingService): AnyRouteSpec[] {
   const tag = 'AI assistant settings';
   return [
     {
@@ -241,6 +242,26 @@ export function aiSettingsRoutes(ai: AiSettingsService): AnyRouteSpec[] {
       handler: async ({ req, body }) => ({
         data: await ai.acceptConsent(authOf(req), body.version, requestMeta(req)),
       }),
+    },
+    {
+      method: 'get',
+      path: '/admin/ai/index',
+      tag,
+      summary:
+        'Semantic index: passages with vectors, waiting and refused, and whether a back-fill is running',
+      access: AI,
+      handler: async () => ({ data: await indexing.progress() }),
+    },
+    {
+      method: 'post',
+      path: '/admin/ai/reindex',
+      tag,
+      summary:
+        'Rebuild the semantic index from stored vectors, then embed whatever is missing (audit-logged)',
+      access: AI,
+      limiter: 'adminWrite',
+      idempotent: true,
+      handler: async ({ req }) => ({ data: await indexing.reindex(authOf(req), requestMeta(req)) }),
     },
   ];
 }

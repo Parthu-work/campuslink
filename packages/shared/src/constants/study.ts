@@ -139,4 +139,7 @@ export const VIDEO_LINK_HOSTS = [
   'www.vimeo.com',
 ] as const;
 export const CHUNK_EMBEDDING_STATUSES = ['embedding_pending', 'embedded', 'failed'] as const;
+/** What AI usage is counted for (budgets and the admin dashboard). */
+export const AI_USAGE_KINDS = ['chat', 'embedding', 'transcription', 'rerank'] as const;
+export type AiUsageKind = (typeof AI_USAGE_KINDS)[number];
 export type ChunkEmbeddingStatus = (typeof CHUNK_EMBEDDING_STATUSES)[number];

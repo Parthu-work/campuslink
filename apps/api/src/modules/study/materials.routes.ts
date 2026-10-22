@@ -13,6 +13,7 @@ import { idParams } from '../../http/validation.js';
 import { authOf } from '../../http/request-context.js';
 import { requestMeta } from '../../lib/request-meta.js';
 import type { MaterialsService } from './materials.service.js';
+import type { RetrievalService } from './retrieval.service.js';
 
 const READ = { kind: 'permission', permission: 'study:read' } as const;
 const MANAGE = { kind: 'permission', permission: 'study:manage' } as const;
@@ -23,7 +24,7 @@ const FILE = { field: 'file', maxBytes: MATERIAL_MAX_MB.media * 1048576 };
  * Library routes. Upload rights depend on the subject (staff, granted contributors, and students
  * when the college allows it, with review), so they are checked in the service after `study:read`.
  */
-export function materialRoutes(s: MaterialsService): AnyRouteSpec[] {
+export function materialRoutes(s: MaterialsService, retrieval: RetrievalService): AnyRouteSpec[] {
   return [
     {
       method: 'get',
@@ -168,11 +169,12 @@ export function materialRoutes(s: MaterialsService): AnyRouteSpec[] {
       method: 'get',
       path: '/study/search',
       tag,
-      summary: 'Keyword search over the material of subjects I take (works without any AI provider)',
+      summary:
+        'Search the material of the subjects I take, by meaning and by words (keyword-only without an embedding provider)',
       access: READ,
       limiter: 'search',
       query: studySearchQuery,
-      handler: async ({ req, query }) => ({ data: await s.search(authOf(req), query.q, query.subjectId) }),
+      handler: async ({ req, query }) => ({ data: await retrieval.search(authOf(req), query) }),
     },
   ];
 }

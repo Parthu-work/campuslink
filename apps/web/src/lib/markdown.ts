@@ -13,7 +13,7 @@ export type Inline =
 export type Block = { t: 'p'; lines: Inline[][] } | { t: 'ul'; items: Inline[][] };
 
 const URL_RE = /https:\/\/[^\s<>()]+[^\s<>().,;:!?'"]/y;
-const TAG_RE = /#([\p{L}\p{N}_]{2,40})/uy;
+const TAG_RE = /#([\p{L}\p{M}\p{N}_]{2,40})/uy;
 
 /** Only https links survive, and only when the URL parser agrees. */
 export function safeHref(raw: string): string | null {

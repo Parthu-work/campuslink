@@ -21,6 +21,13 @@ describe('markdown subset', () => {
     ]);
   });
 
+  it('keeps a Telugu hashtag whole (vowel signs are combining marks)', () => {
+    expect(parseInline('#తెలుగు notes')).toEqual([
+      { t: 'tag', v: 'తెలుగు' },
+      { t: 'text', v: ' notes' },
+    ]);
+  });
+
   it('never produces non-https links', () => {
     const nodes = parseInline('javascript:alert(1) http://plain.example data:text/html,x');
     expect(nodes.every((n) => n.t === 'text')).toBe(true);

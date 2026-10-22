@@ -57,8 +57,9 @@ jobs:
       - name: Bundle budget
         run: pnpm --filter @campuslink/web budget
 
-  # The production adapters against real services: ClamAV (EICAR detection, fail-closed) and an
-  # S3-compatible store (SeaweedFS). Images and versions match docker-compose.yml.
+  # The production adapters against real services: ClamAV (EICAR detection, fail-closed), an
+  # S3-compatible store (SeaweedFS) and Qdrant (the vector-store contract, tenant filters included).
+  # Images and versions match docker-compose.yml.
   adapters:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -77,6 +78,7 @@ jobs:
       MONGODB_URI_TEST: mongodb://127.0.0.1:27017/?directConnection=true
       CLAMAV_TEST_ADDRESS: 127.0.0.1:3310
       S3_TEST_ENDPOINT: http://127.0.0.1:8333
+      QDRANT_TEST_URL: http://127.0.0.1:6333
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -85,10 +87,12 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Start ClamAV and the S3-compatible store
-        run: docker compose --profile clamav --profile s3 up -d --wait clamav s3
+      - name: Start ClamAV, the S3-compatible store and Qdrant
+        run: |
+          docker compose --profile clamav --profile s3 --profile qdrant up -d --wait clamav s3 qdrant
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:6333/readyz && break; sleep 1; done
       - run: pnpm --filter @campuslink/shared build
-      - run: pnpm --filter @campuslink/api exec vitest run test/clamav.test.ts test/s3-storage.test.ts
+      - run: pnpm --filter @campuslink/api exec vitest run test/clamav.test.ts test/s3-storage.test.ts test/vector-store.test.ts
 
   e2e:
     runs-on: ubuntu-latest

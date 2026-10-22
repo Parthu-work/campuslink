@@ -15,7 +15,7 @@ const stem = (w: string) =>
 
 /** Lower-cased content words (letters and digits in any script), stemmed lightly. */
 export function contentWords(text: string): string[] {
-  return (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [])
+  return (text.toLowerCase().match(/[\p{L}\p{M}\p{N}]+/gu) ?? [])
     .filter((w) => w.length > 1 && !STOP.has(w))
     .map(stem);
 }

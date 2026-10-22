@@ -1,5 +1,5 @@
 import type { AiProvider, EmbeddingProvider as EmbeddingProviderId } from '@campuslink/shared';
-import { SafeFetchError, type safeFetch } from '../../../lib/safe-fetch.js';
+import { SafeFetchError, type SafeMethod, type safeFetch } from '../../../lib/safe-fetch.js';
 
 /**
  * The language-model and embedding adapters. Every provider is one file implementing these
@@ -121,7 +121,7 @@ function reasonOf(body: Buffer, secrets: (string | null)[]): string {
 }
 
 export interface JsonCall {
-  method?: 'GET' | 'POST';
+  method?: SafeMethod;
   headers?: Record<string, string>;
   body?: unknown;
   /** A pre-encoded body (multipart uploads); set its content-type in `headers`. */

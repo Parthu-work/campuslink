@@ -59,6 +59,7 @@ export {
   SubjectEnrollmentModel,
 } from './study/subject.model.js';
 export { AiSettingsModel } from './study/ai-settings.model.js';
+export { AiUsageModel } from './study/ai-usage.model.js';
 export {
   MaterialModel,
   MaterialJobModel,

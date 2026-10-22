@@ -87,6 +87,8 @@ File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable pe
 - **Study material** belongs to the subject once it is published. On erasure, published material stays (it shows "Former member" as the uploader and its files are detached from the member), and so does taken-down material, hidden, for the record; drafts and material waiting for review are deleted with their files, pages, passages and transcripts. Export lists everything the member uploaded with its subject, status, upload date and rights attestation date.
 - **Video links** load nothing from YouTube or Vimeo until the member presses play, and then only the privacy-enhanced players; their title and length are fetched once by the server (oEmbed), not by members' browsers.
 - **Transcription and OCR** run on the server (Tesseract, a local Whisper service). A college that uses OpenAI may have video audio transcribed by OpenAI, only after it has accepted the data notice.
+- **Search by meaning** sends the member's search words to the college's embedding provider (only after the data notice is accepted); nothing identifying the member goes with them. Vectors are stored with the passages and deleted with them.
+- **AI usage counters** (`aiUsage`) record, per member and day, how many requests and tokens were used (no text). They are exported with the member's data; on erasure they fold into the college's anonymous counters, so the month's budget stays correct.
 - Chats, materials, chunks, vectors, transcripts and usage join the export and erasure as they are built (steps 2 to 5).
 
 ## Residency and backups

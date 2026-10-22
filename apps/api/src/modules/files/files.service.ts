@@ -103,7 +103,7 @@ export async function sanitisePdf(data: Buffer): Promise<Uint8Array> {
 export function safeFileName(raw: string, fallback: string): string {
   const base = raw.split(/[\\/]/).pop() ?? '';
   const clean = base
-    .replace(/[^\p{L}\p{N} ._()-]/gu, '_')
+    .replace(/[^\p{L}\p{M}\p{N} ._()-]/gu, '_')
     .replace(/^\.+/, '')
     .slice(0, 100)
     .trim();

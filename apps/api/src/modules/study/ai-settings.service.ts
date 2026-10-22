@@ -557,6 +557,22 @@ export class AiSettingsService {
     return { ok, models: ok ? models.slice(0, 200) : [], error: error?.message ?? null };
   }
 
+  /**
+   * A provider refused the college's key during real work (embedding, answering): mark it invalid
+   * so the admin sees it, and members fall back to keyword mode. The platform's own key is left
+   * alone (it is not the college's to fix).
+   */
+  async keyRejected(target: 'chat' | 'embedding', message: string) {
+    const s = await this.load();
+    const k = target === 'embedding' ? this.embeddingKey(s) : s.keys.chat;
+    if (!k.apiKeyEnc) return;
+    const own = target === 'embedding' && k === s.keys.chat ? 'chat' : target;
+    await AiSettingsModel.updateOne(
+      { [`keys.${own}.apiKeyEnc`]: k.apiKeyEnc },
+      { $set: { [`keys.${own}.status`]: 'invalid', [`keys.${own}.error`]: message.slice(0, 300) } },
+    );
+  }
+
   /** The admin accepts the data-processing notice (versioned and audit-logged). */
   async acceptConsent(viewer: AuthState, version: string, meta: RequestMetaLite) {
     const doc = await this.doc();

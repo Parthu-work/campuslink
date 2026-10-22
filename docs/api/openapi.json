@@ -14769,6 +14769,54 @@
         "x-permission": "ai:settings"
       }
     },
+    "/api/v1/admin/ai/index": {
+      "get": {
+        "tags": [
+          "AI assistant settings"
+        ],
+        "summary": "Semantic index: passages with vectors, waiting and refused, and whether a back-fill is running",
+        "description": "Requires permission `ai:settings` (Configure the AI study assistant (provider, key, limits and consent)). Host scope: college.",
+        "operationId": "ai-settings_get_admin_ai_index",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "ai:settings"
+      }
+    },
+    "/api/v1/admin/ai/reindex": {
+      "post": {
+        "tags": [
+          "AI assistant settings"
+        ],
+        "summary": "Rebuild the semantic index from stored vectors, then embed whatever is missing (audit-logged)",
+        "description": "Requires permission `ai:settings` (Configure the AI study assistant (provider, key, limits and consent)). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "ai-settings_post_admin_ai_reindex",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "ai:settings"
+      }
+    },
     "/api/v1/study/subjects/{id}/materials": {
       "get": {
         "tags": [
@@ -15537,7 +15585,7 @@
         "tags": [
           "Study material"
         ],
-        "summary": "Keyword search over the material of subjects I take (works without any AI provider)",
+        "summary": "Search the material of the subjects I take, by meaning and by words (keyword-only without an embedding provider)",
         "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college. Rate limit: search.",
         "operationId": "study-materials_get_study_search",
         "security": [
@@ -15558,6 +15606,24 @@
           },
           {
             "name": "subjectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "unitId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "topicId",
             "in": "query",
             "required": false,
             "schema": {

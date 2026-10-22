@@ -141,9 +141,8 @@ describe('upload and processing', () => {
     expect((await as(ece).get('/study/search?q=pumping lemma')).body.data).toEqual([]);
     expect((await as(ece).get(`/study/materials/${pdfId}`)).status).toBe(404);
     expect((await as(ece).get(`/study/subjects/${subject}/materials`)).status).toBe(404);
-    expect(
-      (await as(cse).get(`/study/search?q=pumping&subjectId=${new Types.ObjectId()}`)).body.data,
-    ).toEqual([]);
+    // A subject the member does not read (or that does not exist) is a 404, like every subject route.
+    expect((await as(cse).get(`/study/search?q=pumping&subjectId=${new Types.ObjectId()}`)).status).toBe(404);
   });
 
   it('refuses duplicates, archives, missing rights and unknown topics', async () => {

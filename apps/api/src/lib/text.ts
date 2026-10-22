@@ -56,7 +56,7 @@ export function decodeEntities(s: string): string {
 /** `#tags` in text: lowercase, letters/digits/_/-, at most 10. */
 export function extractHashtags(text: string): string[] {
   const out = new Set<string>();
-  for (const m of text.matchAll(/(?:^|[\s(])#([\p{L}\p{N}_-]{2,30})/gu)) {
+  for (const m of text.matchAll(/(?:^|[\s(])#([\p{L}\p{M}\p{N}_-]{2,30})/gu)) {
     out.add((m[1] ?? '').toLowerCase());
     if (out.size >= 10) break;
   }

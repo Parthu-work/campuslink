@@ -43,6 +43,13 @@ const aiSettingsSchema = new Schema(
     },
     killSwitch: { type: Boolean, default: false },
     keys: { chat: key(), embedding: key(), youtube: key() },
+    /** The back-fill lease (one embedding run per college at a time) and its last outcome. */
+    indexing: {
+      owner: { type: String, default: null },
+      until: { type: Date, default: null },
+      lastRunAt: { type: Date, default: null },
+      lastError: { type: String, default: null },
+    },
     /** The admin's acceptance of the data-processing notice (versioned; also in the audit log). */
     consent: {
       version: { type: String, default: null },
