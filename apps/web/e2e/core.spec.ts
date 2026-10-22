@@ -13,10 +13,12 @@ test.describe('landing', () => {
     }
     await page.goto('http://mrce.localhost:4173/');
     await expect(page.getByText('Musi Riverfront College of Engineering').first()).toBeVisible();
+    // The palette is generated from the college's own hue (ADR 0008): MRCE's emerald is 162.8°.
     const brand = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue('--brand').trim(),
     );
-    expect(brand).toBe('#22b07d');
+    const hue = Number(/^oklch\([\d.]+ [\d.]+ ([\d.]+)\)$/.exec(brand)?.[1]);
+    expect(Math.abs(hue - 162.8)).toBeLessThan(1);
   });
 
   test('switches to Telugu and respects reduced motion', async ({ page }) => {

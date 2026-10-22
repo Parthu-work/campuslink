@@ -62,7 +62,7 @@ export function PlatformTenants() {
             <Card className="grid gap-3 p-4">
               <div className="flex items-center gap-3">
                 <span
-                  className="grid size-11 flex-none place-items-center rounded-xl font-display font-bold text-white"
+                  className="grid size-11 flex-none place-items-center rounded-[var(--radius-md)] font-display font-bold text-white"
                   style={{
                     background: `linear-gradient(135deg, ${tn.branding.primary}, ${tn.branding.secondary})`,
                   }}

@@ -1,101 +1,185 @@
 /*
- * CampusLink design tokens ("Night campus", docs/design/design-brief.md).
- * Dark-first. Tenant branding overrides --brand/--brand-2/--accent and the derived
- * --brand-ink/--accent-ink/--on-brand at runtime (src/lib/tenant.tsx). Components use tokens only.
+ * CampusLink design tokens: "Campus Aurora" (docs/adr/0008-design-language.md).
+ *
+ * Colour lives in palette.css, generated from the college's hue by packages/shared/src/palette.ts
+ * (`pnpm --filter @campuslink/web palette` rewrites it; a test keeps it in sync). At runtime
+ * applyBranding() (lib/tenant-context.ts) replaces the hue-driven part with the college's own.
+ * Dark first; light applies for the device setting or a saved choice. Components use tokens only.
  */
-:root {
-  --bg: #070a14;
-  --surface-1: #0d1222;
-  --surface-2: #141b30;
-  --surface-3: #1c2540;
-  --line: rgb(170 190 255 / 0.11);
-  --line-strong: rgb(170 190 255 / 0.22);
-  --fg: #eef1fa;
-  --fg-2: #a6afc8;
-  --fg-3: #8189a5;
-  --glass: rgb(13 18 34 / 0.93);
-  --shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px rgb(0 0 0 / 0.35);
-  --success: #3dd598;
-  --warning: #f5b546;
-  --danger: #ff6b81;
-  /* Danger as a fill (buttons): white text at 5.6:1. --danger stays the text colour (A11Y-1). */
-  --danger-fill: #c42747;
-  --on-danger: #ffffff;
-  --scrim: rgb(4 6 14 / 0.6);
+@import './palette.css';
 
-  --brand: #3fb8e6;
-  --brand-2: #6d5ae6;
-  --accent: #f2b705;
-  /* Inks are derived per theme at runtime as --*-ink-dark/--*-ink-light; never set --brand-ink inline. */
-  --brand-ink: var(--brand-ink-dark, #6ccbf0);
-  --accent-ink: var(--accent-ink-dark, #f7c843);
-  --on-brand: #06101c;
-  --on-accent: #06101c;
+:root {
+  /* Type: a characterful display face, a legible UI face, matching Telugu (ADR 0008). */
+  --font-display:
+    'Bricolage Grotesque Variable', 'Anek Telugu Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Geist Variable', 'Anek Telugu Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', 'Anek Telugu Variable', ui-monospace, monospace;
+
+  /* Fluid type scale, eight steps (px at 360 → 1280 wide). */
+  --text-caption: 0.75rem; /* 12 */
+  --text-meta: 0.8125rem; /* 13 */
+  --text-body: 0.9375rem; /* 15 */
+  --text-lead: clamp(1rem, 0.95rem + 0.22vw, 1.125rem); /* 16 → 18 */
+  --text-title: clamp(1.1875rem, 1.1rem + 0.4vw, 1.375rem); /* 19 → 22 */
+  --text-headline: clamp(1.5rem, 1.34rem + 0.7vw, 1.875rem); /* 24 → 30 */
+  --text-display: clamp(1.875rem, 1.55rem + 1.45vw, 2.625rem); /* 30 → 42 */
+  --text-hero: clamp(2.25rem, 1.75rem + 2.2vw, 3.5rem); /* 36 → 56 */
+
+  /* Shape: chips are full, cards 20, sheets 28. */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 9999px;
+
+  /*
+   * Motion. Transform and opacity only, every duration scaled by --motion-scale (0 under reduced
+   * motion). The springs are sampled into linear() easings (stiffness/damping: snappy 520/38,
+   * smooth 260/30, bouncy 380/15); lib/motion.ts has the same presets for `m.*` components.
+   */
+  --motion-scale: 1;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.22, 1.2, 0.36, 1);
+  --ease-snappy: linear(
+    0,
+    0.065,
+    0.202,
+    0.352,
+    0.506,
+    0.633,
+    0.744,
+    0.826,
+    0.887,
+    0.933,
+    0.963,
+    0.984,
+    0.996,
+    1.003,
+    1.006,
+    1.007,
+    1.007,
+    1.006,
+    1.005,
+    1.004,
+    1.003,
+    1.002,
+    1.002,
+    1.001,
+    1
+  );
+  --ease-smooth: linear(
+    0,
+    0.045,
+    0.144,
+    0.259,
+    0.377,
+    0.488,
+    0.591,
+    0.676,
+    0.746,
+    0.807,
+    0.853,
+    0.889,
+    0.919,
+    0.94,
+    0.956,
+    0.969,
+    0.978,
+    0.985,
+    0.99,
+    0.993,
+    0.996,
+    0.997,
+    0.998,
+    0.999,
+    1
+  );
+  /* Celebrations only. */
+  --ease-bouncy: linear(
+    0,
+    0.205,
+    0.604,
+    0.978,
+    1.206,
+    1.268,
+    1.211,
+    1.103,
+    1.004,
+    0.944,
+    0.928,
+    0.944,
+    0.973,
+    0.999,
+    1.015,
+    1.019,
+    1.015,
+    1.007,
+    1,
+    0.996,
+    0.995,
+    0.996,
+    0.998,
+    1,
+    1
+  );
+  --dur-fast: calc(140ms * var(--motion-scale));
+  --dur-base: calc(260ms * var(--motion-scale));
+  --dur-snappy: calc(300ms * var(--motion-scale));
+  --dur-smooth: calc(460ms * var(--motion-scale));
+  --dur-bouncy: calc(840ms * var(--motion-scale));
+  --press-scale: 0.97;
+
+  /* Interaction. The focus ring is the brand ink (5.5:1 on every surface) with a canvas gap. */
+  --focus-ring: var(--brand-ink);
+  --hover-overlay: color-mix(in oklch, var(--fg) 6%, transparent);
+  --press-overlay: color-mix(in oklch, var(--fg) 11%, transparent);
+  --selection: color-mix(in oklch, var(--brand) 34%, transparent);
+
+  /* Aurora, the signature gradient: rings, XP and streaks, heroes, celebrations, Ask (§4). */
+  --aurora: linear-gradient(115deg, var(--aurora-1), var(--aurora-2) 52%, var(--aurora-3));
+  --aurora-ring: conic-gradient(
+    from 210deg,
+    var(--aurora-1),
+    var(--aurora-2),
+    var(--aurora-3),
+    var(--aurora-1)
+  );
+
   /* Story backgrounds: white text stays at or above 4.5:1 across each gradient. */
   --story-sunset: linear-gradient(150deg, #8f1b3e, #b2471b);
   --story-ocean: linear-gradient(150deg, #0b3f72, #136b80);
   --story-forest: linear-gradient(150deg, #123f24, #2a6a3f);
 
-  --font-display:
-    'Bricolage Grotesque Variable', 'Noto Sans Telugu Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Figtree Variable', 'Noto Sans Telugu Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', 'Noto Sans Telugu Variable', ui-monospace, monospace;
-
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-pill: 999px;
-
-  --motion-scale: 1;
-  --ease-spring: cubic-bezier(0.22, 1.2, 0.36, 1);
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --dur-fast: calc(140ms * var(--motion-scale));
-  --dur-base: calc(260ms * var(--motion-scale));
+  /* Depth in dark: lighter surfaces and a 1px inner highlight instead of heavy shadows. */
+  --elev-0: none;
+  --elev-1: inset 0 1px 0 oklch(1 0 0 / 0.04);
+  --elev-2: inset 0 1px 0 oklch(1 0 0 / 0.06), 0 8px 24px oklch(0 0 0 / 0.28);
+  --elev-3: inset 0 1px 0 oklch(1 0 0 / 0.07), 0 16px 40px oklch(0 0 0 / 0.36);
+  --elev-4: inset 0 1px 0 oklch(1 0 0 / 0.08), 0 28px 64px oklch(0 0 0 / 0.46);
+  --shadow: var(--elev-2);
+  /* How strongly hero meshes paint over the canvas; light keeps text over them at full contrast. */
+  --mesh-strength: 1;
   color-scheme: dark;
 }
 
+/* Depth in light: soft layered shadows tinted by the college hue. */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme='dark']) {
-    --bg: #f3f5fa;
-    --surface-1: #ffffff;
-    --surface-2: #e9edf6;
-    --surface-3: #dde3f0;
-    --line: rgb(20 30 70 / 0.12);
-    --line-strong: rgb(20 30 70 / 0.24);
-    --fg: #0c1226;
-    --fg-2: #444e69;
-    --fg-3: #5b6480;
-    --glass: rgb(255 255 255 / 0.93);
-    --shadow: 0 1px 2px rgb(15 25 60 / 0.06), 0 10px 28px rgb(15 25 60 / 0.08);
-    --success: #0a7350;
-    --warning: #8a4f00;
-    --danger: #ad1f3b;
-    --danger-fill: #ad1f3b;
-    --scrim: rgb(12 18 38 / 0.45);
-    --brand-ink: var(--brand-ink-light, #0a5f84);
-    --accent-ink: var(--accent-ink-light, #7a5500);
+    --elev-1: 0 1px 2px oklch(0.25 0.03 var(--hue) / 0.07);
+    --elev-2: 0 1px 2px oklch(0.25 0.03 var(--hue) / 0.06), 0 8px 20px oklch(0.25 0.03 var(--hue) / 0.07);
+    --elev-3: 0 2px 4px oklch(0.25 0.03 var(--hue) / 0.06), 0 14px 32px oklch(0.25 0.03 var(--hue) / 0.1);
+    --elev-4: 0 4px 8px oklch(0.25 0.03 var(--hue) / 0.07), 0 26px 60px oklch(0.25 0.03 var(--hue) / 0.14);
+    --mesh-strength: 0.16;
     color-scheme: light;
   }
 }
 :root[data-theme='light'] {
-  --bg: #f3f5fa;
-  --surface-1: #ffffff;
-  --surface-2: #e9edf6;
-  --surface-3: #dde3f0;
-  --line: rgb(20 30 70 / 0.12);
-  --line-strong: rgb(20 30 70 / 0.24);
-  --fg: #0c1226;
-  --fg-2: #444e69;
-  --fg-3: #5b6480;
-  --glass: rgb(255 255 255 / 0.93);
-  --shadow: 0 1px 2px rgb(15 25 60 / 0.06), 0 10px 28px rgb(15 25 60 / 0.08);
-  --success: #0a7350;
-  --warning: #8a4f00;
-  --danger: #ad1f3b;
-  --danger-fill: #ad1f3b;
-  --scrim: rgb(12 18 38 / 0.45);
-  --brand-ink: var(--brand-ink-light, #0a5f84);
-  --accent-ink: var(--accent-ink-light, #7a5500);
+  --elev-1: 0 1px 2px oklch(0.25 0.03 var(--hue) / 0.07);
+  --elev-2: 0 1px 2px oklch(0.25 0.03 var(--hue) / 0.06), 0 8px 20px oklch(0.25 0.03 var(--hue) / 0.07);
+  --elev-3: 0 2px 4px oklch(0.25 0.03 var(--hue) / 0.06), 0 14px 32px oklch(0.25 0.03 var(--hue) / 0.1);
+  --elev-4: 0 4px 8px oklch(0.25 0.03 var(--hue) / 0.07), 0 26px 60px oklch(0.25 0.03 var(--hue) / 0.14);
+  --mesh-strength: 0.16;
   color-scheme: light;
 }
 

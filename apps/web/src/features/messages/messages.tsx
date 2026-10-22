@@ -287,7 +287,7 @@ export function ConversationPage() {
                 >
                   <Attachment m={m} mine={mine} />
                   {m.body && <p className="break-words whitespace-pre-wrap">{m.body}</p>}
-                  <span className={cn('text-xs', mine ? 'text-on-brand/75' : 'text-fg-3')}>
+                  <span className={cn('text-xs', mine ? 'text-on-brand' : 'text-fg-3')}>
                     {m.id.startsWith('pending-') ? t('messages.sending') : formatTime(m.createdAt)}
                   </span>
                 </div>

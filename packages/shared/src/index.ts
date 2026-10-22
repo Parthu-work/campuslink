@@ -4,6 +4,8 @@ export * from './locales.js';
 export * from './roles.js';
 export * from './consent.js';
 export * from './color.js';
+export * from './oklch.js';
+export * from './palette.js';
 export * from './constants/people.js';
 export * from './constants/mentorship.js';
 export * from './constants/jobs.js';

@@ -1,9 +1,10 @@
 import { StrictMode, startTransition } from 'react';
 import { createRoot } from 'react-dom/client';
-import '@fontsource-variable/figtree';
+// Self-hosted faces (ADR 0008); each subset downloads only when its characters are on screen.
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
 import '@fontsource-variable/bricolage-grotesque';
-import '@fontsource-variable/noto-sans-telugu';
-import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource-variable/anek-telugu';
 import './styles/index.css';
 import { i18nReady } from './i18n';
 import './lib/preferences';

@@ -71,7 +71,7 @@ export function JobCard({ job, compact = false }: { job: JobView; compact?: bool
       >
         <div className="flex items-start gap-3">
           <span
-            className="grid size-10 flex-none place-items-center rounded-xl bg-surface-2 text-brand-ink"
+            className="grid size-10 flex-none place-items-center rounded-[var(--radius-md)] bg-surface-2 text-brand-ink"
             aria-hidden
           >
             <Building2 className="size-5" />

@@ -11,7 +11,7 @@ Branch: the session branch rule applies (`claude/sleepy-euler-bi65m3`, started f
 |     2 | Quick wins (all 24)                                                         | Done        |
 |     3 | Navigation and transitions (§7a, §7b, role-aware navigation)                | Done        |
 |     4 | Performance (§7d, CI bundle budget)                                         | Done        |
-|     5 | Foundations (tokens, fonts, palette generator, contrast tests, ADR)         | Not started |
+|     5 | Foundations (tokens, fonts, palette generator, contrast tests, ADR)         | Done        |
 |     6 | Living style guide (`/design`) — **stop for owner review with screenshots** | Not started |
 |     7 | Primitives (`components/ui/` rebuild, duplicates merged)                    | Not started |
 |     8 | Showpiece screens                                                           | Not started |
@@ -144,3 +144,22 @@ CLS is 0 on every screen (Home was 0.153, Roadmaps 0.189: the followed roadmaps 
 **Gap: the 85 target is met for the installed app but not for a first visit on a cold cache.** Cold LCP is bound by the request chain an SPA with a refresh-token session has (HTML → JS → session refresh → data, about 0.7 s per step at the simulated latency) plus about 1.5 s of main-thread work at 4× CPU slowdown on Home. Next steps, in the phases that rebuild these surfaces: a lighter menu and sheet primitive in phase 7 (Radix dropdown and dialog are about 30 KB of Home), Home's feed render cost and the shell's first render in phase 8, and cached-first loading (audit B13: show the last-known content on cold start) in phase 11; phase 12 re-measures.
 
 Next: Phase 5 (foundations: tokens, fonts, palette generator, contrast tests, ADR).
+
+## Phase 5 · Foundations
+
+`master-prompt.md` §4–§6; the decisions are in [ADR 0008](../../adr/0008-design-language.md).
+
+- **Generated palette** (`packages/shared/src/palette.ts`, OKLCH maths in `oklch.ts`): every colour comes from the college's primary hue (fallback 275). Brand clamped to lightness 0.55–0.68 and chroma 0.12–0.20; neutrals tinted by the hue; a 50–950 ramp; inks stepped to 5.5:1 on the canvas and every text surface; white or near-black labels at 4.5:1 on fills; aurora stops at `h`, `h + 45`, `h + 100`; eight subject accents with readable inks and chips; fixed-hue status (ink, fg, surface, border), role chips and six chart colours. Everything is gamut-mapped and rounded exactly as written to CSS.
+- **Contrast test** (`palette.test.ts`, 91 cases): maroon, navy, saffron, forest green, neon lime, pure red, teal and purple, each with an awkward accent, in both themes: body text, inks, labels on fills, focus ring, subject and role chips, status inks, charts, gamut, ramp order and neutral chroma.
+- **Runtime**: `applyBranding()` injects the college's palette as one `<style>` element (no CSP change) and updates `theme-color`; `styles/palette.css` holds the default (generated, `pnpm --filter @campuslink/web palette`; a test fails when stale). The college's accent colour survives as `--accent`; the secondary colour now only feeds its logo.
+- **Tokens** (`styles/tokens.css`): an eight-step fluid type scale (`text-caption` … `text-hero`), radii 6/10/14/20/28/full, elevation 0–4 (tinted shadows in light, inner highlights in dark), spring easings (snappy, smooth, bouncy as `linear()`, with matching presets in `lib/motion.ts`), press scale, focus ring, selection, hover and pressed overlays, scrim. Aurora utilities: `bg-aurora`, `aurora-ring`, `aurora-border`, `aurora-mesh`. Glass falls back to solid under reduced transparency and on low-end devices (`data-lowend` from `boot.js`).
+- **Type**: Geist (UI), Bricolage Grotesque (display), Anek Telugu and Geist Mono, self-hosted; chosen from a side-by-side English and Telugu specimen against Figtree, Inter and Noto Sans Telugu (ADR 0008). Only Geist's Latin file is preloaded. Paragraphs wrap pretty, headings balance, Telugu gets looser lines.
+- **Hero contrast**: the landing mesh paints at 16% strength in light mode (`--mesh-strength`), so its paragraph reads at about 6:1 instead of about 3:1. The landing itself is rebuilt in phase 8.
+
+Initial JS is 168 KB (the generator ships in the first load so a college's colours apply before its first screen paints).
+
+Fixed while verifying: tiny font subsets were being inlined as `data:` URLs, which the production CSP (`font-src 'self'`) correctly refuses, so fonts are never inlined now; a chat timestamp at 75% opacity on the brand fill fell under 4.5:1 and is now full strength.
+
+**Open:** `navigation.spec.ts` › "a tab remembers the screen you left it on" failed in 2 of 5 full end-to-end runs since phase 4 (the tapped job link has focus, the URL stays on Jobs) and never in more than 50 targeted runs, including 25 loops under 6× CPU throttling. Causes ruled out: CSS-carrying chunks (only the entry has CSS), blockers, effects that navigate, and the screen's alert-filter rewrite. The spec now attaches the app's navigation state on failure, so the next occurrence says whether the navigation was pending or completed and came back.
+
+Next: Phase 6 (the `/design` living style guide), then a stop for the owner's review.

@@ -24,6 +24,7 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 | End-to-end tests (Playwright plus axe)       | `pnpm test:e2e` (set `PW_CHROMIUM_PATH` to use a preinstalled Chromium) |
 | Build                                        | `pnpm build`                                                            |
 | Web bundle budget (after a build)            | `pnpm --filter @campuslink/web budget`                                  |
+| Regenerate the default palette CSS           | `pnpm --filter @campuslink/web palette`                                 |
 | Seed demo data                               | `pnpm seed` (Phase 1 onwards)                                           |
 | Dependency audit                             | `pnpm audit`                                                            |
 | Check roadmap library links                  | `pnpm --filter @campuslink/api roadmaps:verify`                         |
@@ -127,7 +128,7 @@ Everything runs on localhost with free, open-source tools. Any paid or external 
 - Strict TypeScript, with no `any` and no non-null `!` unless justified in a comment. Use `import type` for types.
 - Name files in kebab-case. Name React components in PascalCase. Prefer named exports.
 - Write no hard-coded UI strings; every string goes through i18next in both `en.json` and `te.json`.
-- Styling uses design tokens only (`bg-surface-1`, `text-fg-2`, `text-brand-ink`), never raw hex values in components. Tenant colours apply at runtime via `applyBranding()`. Use `*-ink` tokens for coloured text; they are contrast-corrected to 5.5:1.
+- Styling uses design tokens only (`bg-surface-1`, `text-fg-2`, `text-brand-ink`, `text-title`, `shadow-elev-2`, `bg-aurora`), never raw colour values in components. Every colour is generated from the college's hue by `packages/shared/src/palette.ts` (ADR 0008): `styles/palette.css` is its output (regenerate with `pnpm --filter @campuslink/web palette`, never edit by hand) and `applyBranding()` swaps in each college's palette at runtime. Use `*-ink` tokens for coloured text; they are contrast-checked to 5.5:1 by `palette.test.ts`. Aurora is for the moments ADR 0008 lists, never for plain text or buttons.
 - Web files that export components export only components (fast refresh): put hooks and helpers in `lib/`.
 - Motion animates transform and opacity only and respects `prefers-reduced-motion` (`--motion-scale`).
 - Use conventional commits (`feat(auth): …`), enforced by commitlint and Husky.

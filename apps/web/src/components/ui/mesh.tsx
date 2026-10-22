@@ -12,6 +12,7 @@ export function Mesh({ className }: { className?: string }) {
     let raf = 0;
     const draw = (ts: number) => {
       const k = ts / 9000;
+      const strength = Number(css('--mesh-strength')) || 1;
       ctx.globalAlpha = 1;
       ctx.fillStyle = css('--bg');
       ctx.fillRect(0, 0, 64, 40);
@@ -19,7 +20,7 @@ export function Mesh({ className }: { className?: string }) {
         const g = ctx.createRadialGradient(x, y, 0, x, y, r);
         g.addColorStop(0, col);
         g.addColorStop(1, 'transparent');
-        ctx.globalAlpha = a;
+        ctx.globalAlpha = a * strength;
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, 64, 40);
       };

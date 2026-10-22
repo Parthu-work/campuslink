@@ -20,19 +20,113 @@
   --color-accent-ink: var(--accent-ink);
   --color-on-brand: var(--on-brand);
   --color-on-accent: var(--on-accent);
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+  --color-aurora-1: var(--aurora-1);
+  --color-aurora-2: var(--aurora-2);
+  --color-aurora-3: var(--aurora-3);
   --color-success: var(--success);
+  --color-success-fg: var(--success-fg);
+  --color-success-surface: var(--success-surface);
+  --color-success-border: var(--success-border);
   --color-warning: var(--warning);
+  --color-warning-fg: var(--warning-fg);
+  --color-warning-surface: var(--warning-surface);
+  --color-warning-border: var(--warning-border);
   --color-danger: var(--danger);
+  --color-danger-fg: var(--danger-fg);
+  --color-danger-surface: var(--danger-surface);
+  --color-danger-border: var(--danger-border);
   --color-danger-fill: var(--danger-fill);
   --color-on-danger: var(--on-danger);
+  --color-info: var(--info);
+  --color-info-fg: var(--info-fg);
+  --color-info-surface: var(--info-surface);
+  --color-info-border: var(--info-border);
+  --color-subject-1: var(--subject-1);
+  --color-subject-1-surface: var(--subject-1-surface);
+  --color-subject-1-ink: var(--subject-1-ink);
+  --color-subject-2: var(--subject-2);
+  --color-subject-2-surface: var(--subject-2-surface);
+  --color-subject-2-ink: var(--subject-2-ink);
+  --color-subject-3: var(--subject-3);
+  --color-subject-3-surface: var(--subject-3-surface);
+  --color-subject-3-ink: var(--subject-3-ink);
+  --color-subject-4: var(--subject-4);
+  --color-subject-4-surface: var(--subject-4-surface);
+  --color-subject-4-ink: var(--subject-4-ink);
+  --color-subject-5: var(--subject-5);
+  --color-subject-5-surface: var(--subject-5-surface);
+  --color-subject-5-ink: var(--subject-5-ink);
+  --color-subject-6: var(--subject-6);
+  --color-subject-6-surface: var(--subject-6-surface);
+  --color-subject-6-ink: var(--subject-6-ink);
+  --color-subject-7: var(--subject-7);
+  --color-subject-7-surface: var(--subject-7-surface);
+  --color-subject-7-ink: var(--subject-7-ink);
+  --color-subject-8: var(--subject-8);
+  --color-subject-8-surface: var(--subject-8-surface);
+  --color-subject-8-ink: var(--subject-8-ink);
+  --color-role-student-surface: var(--role-student-surface);
+  --color-role-student-ink: var(--role-student-ink);
+  --color-role-alumni-surface: var(--role-alumni-surface);
+  --color-role-alumni-ink: var(--role-alumni-ink);
+  --color-role-faculty-surface: var(--role-faculty-surface);
+  --color-role-faculty-ink: var(--role-faculty-ink);
+  --color-role-admin-surface: var(--role-admin-surface);
+  --color-role-admin-ink: var(--role-admin-ink);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
   --color-glass: var(--glass);
+  --color-scrim: var(--scrim);
+  --color-hover: var(--hover-overlay);
+  --color-press: var(--press-overlay);
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
   --font-mono: var(--font-mono);
+  /* Type scale (tokens.css): text-caption … text-hero, each with its line height. */
+  --text-caption: var(--text-caption);
+  --text-caption--line-height: 1.4;
+  --text-meta: var(--text-meta);
+  --text-meta--line-height: 1.45;
+  --text-body: var(--text-body);
+  --text-body--line-height: 1.55;
+  --text-lead: var(--text-lead);
+  --text-lead--line-height: 1.5;
+  --text-title: var(--text-title);
+  --text-title--line-height: 1.3;
+  --text-headline: var(--text-headline);
+  --text-headline--line-height: 1.2;
+  --text-display: var(--text-display);
+  --text-display--line-height: 1.1;
+  --text-hero: var(--text-hero);
+  --text-hero--line-height: 1.04;
+  --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --shadow-elev-1: var(--elev-1);
+  --shadow-elev-2: var(--elev-2);
+  --shadow-elev-3: var(--elev-3);
+  --shadow-elev-4: var(--elev-4);
   --ease-spring: var(--ease-spring);
+  --ease-snappy: var(--ease-snappy);
+  --ease-smooth: var(--ease-smooth);
+  --ease-bouncy: var(--ease-bouncy);
 }
 
 @layer base {
@@ -48,9 +142,6 @@
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
-  :root[lang='te'] body {
-    line-height: 1.68;
-  }
   h1,
   h2,
   h3,
@@ -59,16 +150,28 @@
     text-wrap: balance;
     letter-spacing: -0.01em;
   }
+  p {
+    text-wrap: pretty;
+  }
+  /* Telugu needs room for its vowel signs: looser lines, no tightened headings. */
+  :root[lang='te'] body {
+    line-height: 1.7;
+  }
+  :root[lang='te'] :is(h1, h2, h3, h4) {
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+  /* 2px brand ring with a 2px gap of whatever is behind (5.5:1 or better on every surface). */
   :focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
     border-radius: 6px;
   }
   [tabindex='-1']:focus {
     outline: none;
   }
   ::selection {
-    background: color-mix(in srgb, var(--brand) 35%, transparent);
+    background: var(--selection);
   }
 }
 
@@ -78,10 +181,89 @@
   text-transform: uppercase;
   color: var(--fg-3);
 }
+/* Glass, for floating chrome only. Solid when the member asks for less transparency, and on
+   low-end devices (boot.js sets data-lowend), where a live blur costs frames. */
 @utility glass {
   background: var(--glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  @media (prefers-reduced-transparency: reduce) {
+    background: var(--glass-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  :root[data-lowend] & {
+    background: var(--glass-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+/* Aurora, the signature gradient (§4: rings, XP and streaks, badges, heroes, celebrations, Ask,
+   the slow-navigation bar). Never for text or plain buttons. */
+@utility bg-aurora {
+  background-image: var(--aurora);
+}
+@utility aurora-ring {
+  background-image: var(--aurora-ring);
+}
+/* A 1px aurora border for featured cards: the gradient shows only in the padding ring. */
+@utility aurora-border {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: var(--aurora);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+/* Hero background: three soft aurora blobs drifting (transform only); still under reduced motion. */
+@utility aurora-mesh {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -40%;
+    background:
+      radial-gradient(
+        35% 35% at 30% 35%,
+        color-mix(in oklch, var(--aurora-1) 55%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        30% 30% at 70% 30%,
+        color-mix(in oklch, var(--aurora-2) 45%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        35% 35% at 55% 75%,
+        color-mix(in oklch, var(--aurora-3) 40%, transparent),
+        transparent 70%
+      );
+    animation: aurora-drift calc(18s * var(--motion-scale)) ease-in-out infinite alternate;
+  }
+  &::after {
+    opacity: 0.6;
+    animation-duration: calc(24s * var(--motion-scale));
+    animation-direction: alternate-reverse;
+  }
+}
+/* Pressed feedback for tappable surfaces (0.97, a snappy spring back). */
+@utility pressable {
+  transition: transform var(--dur-snappy) var(--ease-snappy);
+  &:active {
+    transform: scale(var(--press-scale));
+  }
 }
 @utility gutter {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -139,6 +321,15 @@
 :root[data-motion='reduce'] .nav-progress {
   animation: delayed-in 1ms linear 150ms both;
   transform: scaleX(0.6);
+}
+
+@keyframes aurora-drift {
+  from {
+    transform: translate3d(-4%, -3%, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(4%, 3%, 0) rotate(8deg);
+  }
 }
 
 /* Story progress: a timer, not decoration, so it keeps its duration under reduced motion. */

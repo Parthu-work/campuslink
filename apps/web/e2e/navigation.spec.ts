@@ -16,6 +16,32 @@ const scrollTo = async (page: Page, y: number) => {
 
 const mainTabs = (page: Page) => page.getByRole('navigation', { name: 'Main' }).last();
 
+/**
+ * When a test here fails, record where the app was: an intermittent case once left a tapped job
+ * link focused with the URL unchanged, and this tells a pending navigation (progress bar, requests
+ * still open) from one that completed and came back (history length).
+ */
+test.afterEach(async ({ page }, testInfo) => {
+  if (testInfo.status === testInfo.expectedStatus) return;
+  const state = await page
+    .evaluate(() => ({
+      url: location.href,
+      historyLength: history.length,
+      historyState: history.state as unknown,
+      navigationPending: !!document.querySelector('.nav-progress'),
+      active: document.activeElement?.outerHTML.slice(0, 160),
+      open: performance
+        .getEntriesByType('resource')
+        .filter((e) => (e as PerformanceResourceTiming).responseEnd === 0)
+        .map((e) => e.name),
+    }))
+    .catch((error: unknown) => ({ error: String(error) }));
+  await testInfo.attach('app-state.json', {
+    body: JSON.stringify(state, null, 2),
+    contentType: 'application/json',
+  });
+});
+
 /** Taps a bottom tab. After scrolling down the bars are hidden; focusing a tab brings them back. */
 const tapTab = async (page: Page, name: string) => {
   const tab = mainTabs(page).getByRole('link', { name, exact: true });

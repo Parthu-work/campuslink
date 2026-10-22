@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -19,11 +19,35 @@ const apiProxy = {
   },
 };
 
+/** Preloads the UI face's Latin file, the one font every first screen needs (ADR 0008). */
+const preloadUiFont = (): Plugin => ({
+  name: 'preload-ui-font',
+  apply: 'build',
+  transformIndexHtml: {
+    order: 'post',
+    handler: (_html, ctx) => {
+      const file = Object.keys(ctx.bundle ?? {}).find((f) =>
+        /\/geist-latin-wght-normal-[\w-]+\.woff2$/.test(f),
+      );
+      return file
+        ? [
+            {
+              tag: 'link',
+              attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: `/${file}`, crossorigin: '' },
+              injectTo: 'head',
+            },
+          ]
+        : [];
+    },
+  },
+});
+
 export default defineConfig({
   plugins: [
     // The product name has one home (packages/shared/src/brand.ts); index.html uses %APP_NAME%.
     { name: 'app-name', transformIndexHtml: (html: string) => html.replaceAll('%APP_NAME%', APP_NAME) },
     pureShared(),
+    preloadUiFont(),
     react(),
     tailwindcss(),
     VitePWA({
@@ -35,8 +59,8 @@ export default defineConfig({
         name: APP_NAME,
         short_name: APP_NAME,
         description: 'Guidance from your own college.',
-        theme_color: '#070a14',
-        background_color: '#070a14',
+        theme_color: '#0c0d12',
+        background_color: '#0c0d12',
         display: 'standalone',
         start_url: '/',
         icons: [
@@ -49,7 +73,11 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
         // Fonts load by unicode-range on demand; only precache the subsets our locales use.
-        globIgnores: ['**/*-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese,latin-ext}-*.woff2'],
+        // Anek Telugu's Latin files never load (Geist covers Latin first in every stack).
+        globIgnores: [
+          '**/*-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese,latin-ext}-*.woff2',
+          '**/anek-telugu-latin-*.woff2',
+        ],
         navigateFallback: '/index.html',
         // Take control of the page on first install, so every screen chunk is available offline in
         // the very first session (audit ST-0). Updates still wait for the member's "Reload".
@@ -77,6 +105,8 @@ export default defineConfig({
     proxy: apiProxy,
   },
   build: {
+    // Fonts are always files: the production CSP allows fonts from 'self' only, never data: URLs.
+    assetsInlineLimit: (file) => (file.endsWith('.woff2') ? false : undefined),
     target: 'es2022',
     sourcemap: true,
     // The manifest feeds the bundle budget check (scripts/bundle-budget.mjs).

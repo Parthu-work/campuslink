@@ -15,16 +15,24 @@ interface PrefState {
 }
 
 const root = document.documentElement;
-/** Browser chrome colours per theme (index.html sets them per device theme before first paint). */
-const CHROME = { light: '#f3f5fa', dark: '#070a14' } as const;
+/**
+ * Browser chrome colours per theme: the canvas. index.html carries the default palette's before
+ * first paint; the college's palette replaces them (applyBranding).
+ */
+let chrome = { light: '#f9fafe', dark: '#0c0d12' };
 const applyTheme = (t: ThemePref) => {
   if (t === 'system') delete root.dataset.theme;
   else root.dataset.theme = t;
   for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
     const scheme = meta.media.includes('dark') ? 'dark' : 'light';
-    meta.content = CHROME[t === 'system' ? scheme : t];
+    meta.content = chrome[t === 'system' ? scheme : t];
   }
 };
+
+export function setChromeColours(next: { light: string; dark: string }) {
+  chrome = next;
+  applyTheme((prefs.get('theme') as ThemePref | null) ?? 'system');
+}
 const applyMotion = (m: MotionPref) =>
   m === 'system' ? delete root.dataset.motion : (root.dataset.motion = m);
 

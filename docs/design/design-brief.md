@@ -2,6 +2,8 @@
 
 Status: **proposal, awaiting approval.** The clickable prototype lives at `docs/design/prototype.html` (also published as a private Artifact).
 
+> **Superseded in part (2026-10-22):** colour, type, tokens and motion now follow the "Campus Aurora" design language in [ADR 0008](../adr/0008-design-language.md) (`docs/design/revamp/`). The product ideas below still apply.
+
 ## 1. Idea in one line
 
 **"Night campus."** Your college after dark: a sky of the people who walked the same corridors, with your career path drawn as a constellation you light up one star at a time. Instagram's fluidity, carried by LinkedIn's credibility: every face is verified, every claim has a source, every number is real.
