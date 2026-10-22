@@ -104,7 +104,8 @@ test.describe('mentorship', () => {
     await expectNoA11yViolations(page);
     await page.getByRole('button', { name: /^Pass on / }).click();
     await page.getByRole('button', { name: /^Open / }).click();
-    await expect(page.getByRole('heading', { name: 'Ask', exact: false })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Request mentorship' })).toBeVisible();
 
     await page.context().clearCookies();
     await signIn(page, `rahul@${host}.example`, host);

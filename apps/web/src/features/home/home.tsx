@@ -80,7 +80,7 @@ function UpNext() {
   if (!b) return null;
   const other = b.role === 'mentor' ? b.mentee : b.mentor;
   return (
-    <IntentLink to="/sessions" className="block rounded-[var(--radius-lg)] xl:hidden">
+    <IntentLink to="/sessions" className="block min-w-0 rounded-[var(--radius-lg)] xl:hidden">
       <Card variant="interactive" className="flex items-center gap-3 p-3.5">
         <PersonAvatar name={other.name} fileId={other.avatarFileId} size={44} />
         <div className="min-w-0 flex-1">
@@ -274,7 +274,7 @@ export function HomePage() {
   const shown = out.data?.post?.id ?? out.data?.item?.id;
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-      <div className="grid min-w-0 content-start gap-4">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-4">
         <PageHeader
           eyebrow={formatDay(new Date())}
           title={
