@@ -60,9 +60,10 @@ export class RequestsService {
       id: String(r._id),
       status: r.status as RequestView['status'],
       sessionType: r.sessionType as SessionType,
-      goal: r.goal,
-      background: r.background,
-      need: r.need,
+      message: r.message ?? null,
+      goal: r.goal ?? null,
+      background: r.background ?? null,
+      need: r.need ?? null,
       slotStart: r.slotStart ? r.slotStart.toISOString() : null,
       mentor: ref(r.mentorId),
       mentee: ref(r.menteeId),
@@ -111,9 +112,9 @@ export class RequestsService {
         menteeId: me,
         mentorId: new Types.ObjectId(body.mentorId),
         sessionType: body.sessionType,
-        goal: body.goal,
-        background: body.background,
-        need: body.need,
+        ...('message' in body
+          ? { message: body.message }
+          : { goal: body.goal, background: body.background, need: body.need }),
         slotStart,
         expiresAt: new Date(Date.now() + REQUEST_TTL_DAYS * DAY),
       });
@@ -321,7 +322,7 @@ export class RequestsService {
     if (String(r.mentorId) === viewer.userId)
       return {
         subjectUserId: String(r.menteeId),
-        snapshot: `Goal: ${r.goal}\nBackground: ${r.background}\nNeed: ${r.need}`,
+        snapshot: r.message ?? `Goal: ${r.goal}\nBackground: ${r.background}\nNeed: ${r.need}`,
       };
     if (String(r.menteeId) === viewer.userId)
       return {

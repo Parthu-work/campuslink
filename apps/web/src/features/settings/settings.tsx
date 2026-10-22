@@ -11,8 +11,9 @@ import { Laptop, Smartphone } from 'lucide-react';
 import { password as passwordSchema, SUPPORTED_LOCALES } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Field, PasswordInput } from '../../components/ui/field';
-import { Badge, Card, Chip, Skeleton } from '../../components/ui/misc';
+import { Badge, Card, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
+import { ChoiceGroup } from '../../components/ui/choice-group';
 import { Switch } from '../../components/ui/switch';
 import { Dialog } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
@@ -261,55 +262,56 @@ export function PrivacySettings() {
 
 export function PreferenceSettings() {
   const { t, i18n } = useTranslation();
-  const { theme, motion, setTheme, setMotion, setLanguage } = usePreferences();
-  const group = <T extends string>(
-    label: string,
-    value: T,
-    options: [T, string][],
-    onChange: (v: T) => void,
-  ) => (
-    <fieldset className="grid gap-2">
-      <legend className="mb-1 text-[13px] font-semibold">{label}</legend>
-      <div className="flex flex-wrap gap-2">
-        {options.map(([v, l]) => (
-          <Chip key={v} pressed={value === v} onClick={() => onChange(v)}>
-            {l}
-          </Chip>
-        ))}
-      </div>
-    </fieldset>
-  );
+  const { theme, motion, haptics, setTheme, setMotion, setHaptics, setLanguage } = usePreferences();
   return (
     <Card className="grid gap-6 p-5">
-      {group<ThemePref>(
-        t('settings.theme'),
-        theme,
-        [
-          ['system', t('settings.themeSystem')],
-          ['dark', t('settings.themeDark')],
-          ['light', t('settings.themeLight')],
-        ],
-        setTheme,
-      )}
-      {group(
-        t('settings.language'),
-        i18n.language as 'en' | 'te',
-        SUPPORTED_LOCALES.map((l) => [l, l === 'en' ? 'English' : 'తెలుగు'] as ['en' | 'te', string]),
-        (l) => {
-          setLanguage(l);
-          void api.patch('/me', { locale: l }).catch(() => undefined);
-        },
-      )}
-      {group<MotionPref>(
-        t('settings.motion'),
-        motion,
-        [
-          ['system', t('settings.motionSystem')],
-          ['full', t('settings.motionFull')],
-          ['reduce', t('settings.motionReduce')],
-        ],
-        setMotion,
-      )}
+      <fieldset className="grid gap-2">
+        <legend className="mb-1 text-meta font-semibold">{t('settings.theme')}</legend>
+        <ChoiceGroup<ThemePref>
+          variant="chip"
+          label={t('settings.theme')}
+          value={theme}
+          onChange={setTheme}
+          options={[
+            { value: 'system', label: t('settings.themeSystem') },
+            { value: 'dark', label: t('settings.themeDark') },
+            { value: 'light', label: t('settings.themeLight') },
+          ]}
+        />
+      </fieldset>
+      <fieldset className="grid gap-2">
+        <legend className="mb-1 text-meta font-semibold">{t('settings.language')}</legend>
+        <ChoiceGroup<'en' | 'te'>
+          variant="chip"
+          label={t('settings.language')}
+          value={i18n.language as 'en' | 'te'}
+          onChange={(l) => {
+            setLanguage(l);
+            void api.patch('/me', { locale: l }).catch(() => undefined);
+          }}
+          options={SUPPORTED_LOCALES.map((l) => ({ value: l, label: l === 'en' ? 'English' : 'తెలుగు' }))}
+        />
+      </fieldset>
+      <fieldset className="grid gap-2">
+        <legend className="mb-1 text-meta font-semibold">{t('settings.motion')}</legend>
+        <ChoiceGroup<MotionPref>
+          variant="chip"
+          label={t('settings.motion')}
+          value={motion}
+          onChange={setMotion}
+          options={[
+            { value: 'system', label: t('settings.motionSystem') },
+            { value: 'full', label: t('settings.motionFull') },
+            { value: 'reduce', label: t('settings.motionReduce') },
+          ]}
+        />
+      </fieldset>
+      <Switch
+        label={t('settings.haptics')}
+        description={t('settings.hapticsHint')}
+        checked={haptics}
+        onChange={setHaptics}
+      />
     </Card>
   );
 }

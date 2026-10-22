@@ -45,8 +45,10 @@ test.describe('people', () => {
     const code = /\b(\d{6})\b/.exec(subject)?.[1] ?? '';
     await page.getByLabel('Enter the code 1').click();
     await page.keyboard.type(code);
-    await page.getByRole('button', { name: 'Confirm' }).click();
-    await expect(page.getByRole('heading', { name: 'You’re verified' })).toBeVisible();
+    // The sixth digit submits the code (audit FO-6), and the "You're in" moment follows.
+    await expect(page.getByRole('heading', { name: 'You’re in!' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Find a mentor/ })).toBeVisible();
+    await expectNoA11yViolations(page);
     await page.goto(`http://${host}.localhost:4173/home`);
     await expect(page.getByText('Your account is read-only for now')).toHaveCount(0);
   });
@@ -66,6 +68,7 @@ test.describe('people', () => {
     await expect(page.getByText('Rahul Varma')).toHaveCount(0);
     await page.getByText('Fatima Begum').click();
     await expect(page.getByRole('heading', { name: 'Fatima Begum', level: 1 })).toBeVisible();
+    await page.getByRole('tab', { name: 'Contact' }).click();
     await expect(page.getByText(/Contact details are private/)).toBeVisible();
     await expectNoA11yViolations(page);
 

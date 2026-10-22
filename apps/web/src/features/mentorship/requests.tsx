@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -22,6 +22,7 @@ import { SlotPicker } from '../../components/ui/slot-picker';
 import { Segmented } from '../../components/ui/tab-nav';
 import { SafetyMenu } from '../../components/layout/safety-menu';
 import { api, ApiError } from '../../lib/api';
+import { celebrate, firstSighting } from '../../lib/celebrate';
 import { useCan } from '../../lib/me';
 import { formatDateTime, formatRelative, newIdempotencyKey } from '../../lib/format';
 
@@ -51,6 +52,7 @@ function useRespond(id: string) {
       return { before };
     },
     onSuccess: (r) => {
+      if (r.status === 'accepted') celebrate();
       toast.success(
         r.status === 'declined'
           ? t('request.declinedToast', { name: r.mentee.name.split(' ')[0] })
@@ -183,6 +185,10 @@ function DeclineDialog({
   );
 }
 
+/** Accepted in the last three days: worth a second look (and a celebration, once). */
+const justAccepted = (r: RequestView) =>
+  r.status === 'accepted' && !!r.respondedAt && Date.now() - Date.parse(r.respondedAt) < 3 * 86_400_000;
+
 function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -195,12 +201,12 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
   });
   const pending = r.status === 'pending';
   return (
-    <Card className="grid gap-3 p-4">
+    <Card variant={justAccepted(r) ? 'featured' : 'raised'} className="grid gap-3 p-4">
       <div className="flex items-start gap-3">
         <PersonAvatar name={other.name} fileId={other.avatarFileId} />
         <div className="min-w-0 flex-1">
           <b className="block truncate">{other.name}</b>
-          <p className="text-sm text-fg-2">
+          <p className="text-meta text-fg-2">
             {t(`session.type.${r.sessionType}`)}
             {r.slotStart ? ` · ${formatDateTime(r.slotStart)}` : ''}
           </p>
@@ -208,14 +214,20 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
         <Badge tone={STATUS_TONE[r.status]}>{t(`request.status.${r.status}`)}</Badge>
         <SafetyMenu userId={other.userId} name={other.name} target={{ type: 'request', id: r.id }} />
       </div>
-      <dl className="grid gap-2 text-sm">
-        {(['goal', 'background', 'need'] as const).map((f) => (
-          <div key={f}>
-            <dt className="eyebrow">{t(`request.label.${f}`)}</dt>
-            <dd className="whitespace-pre-line">{r[f]}</dd>
-          </div>
-        ))}
-      </dl>
+      {r.message ? (
+        <p className="rounded-[var(--radius-md)] bg-surface-2 px-4 py-3 text-body whitespace-pre-line">
+          {r.message}
+        </p>
+      ) : (
+        <dl className="grid gap-2 text-meta">
+          {(['goal', 'background', 'need'] as const).map((f) => (
+            <div key={f}>
+              <dt className="eyebrow">{t(`request.label.${f}`)}</dt>
+              <dd className="whitespace-pre-line">{r[f]}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
       {r.status === 'declined' && r.declineTemplate && (
         <p className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-sm">
           {t(`request.decline.${r.declineTemplate}`, { name: r.mentee.name.split(' ')[0] })}
@@ -282,6 +294,12 @@ export function RequestsPage() {
     queryKey: ['requests', box],
     queryFn: () => api.get<RequestView[]>(`/mentorship/requests?box=${box}`),
   });
+  // A mentor saying yes is a signature moment (§3): the first time the mentee sees it, celebrate.
+  useEffect(() => {
+    if (box !== 'sent' || !list.data) return;
+    const fresh = list.data.filter(justAccepted).map((r) => r.id);
+    if (fresh.length && firstSighting('accepted-requests', fresh)) celebrate();
+  }, [box, list.data]);
   return (
     <>
       <PageHeader title={t('nav.requests')} />

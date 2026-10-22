@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -11,12 +11,13 @@ import { Checkbox } from '../../components/ui/field';
 import { Badge, Card, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { StatCard, StatGrid } from '../../components/ui/stat-card';
-import { ProgressBar } from '../../components/ui/progress';
+import { ProgressRing } from '../../components/ui/progress';
 import { api, ApiError, saveBlob } from '../../lib/api';
 import { progress } from '../../lib/queries';
 import { useCan, useMe } from '../../lib/me';
 import { useTenant } from '../../lib/tenant-context';
-import { formatRelative } from '../../lib/format';
+import { formatRelative, formatWeekday, localDateKey } from '../../lib/format';
+import { celebrate, firstSighting } from '../../lib/celebrate';
 import { drawImpactCard } from '../../lib/impact-card';
 import { cn } from '../../lib/cn';
 
@@ -49,11 +50,51 @@ function ImpactCardButton({ p }: { p: MyProgressView }) {
   );
 }
 
+/**
+ * The streak and the last seven days: a day is lit when it earned XP (from the recent activity
+ * the API returns), today last.
+ */
+function WeekStrip({ streak, recent }: { streak: number; recent: MyProgressView['recent'] }) {
+  const { t } = useTranslation();
+  const active = new Set(recent.filter((e) => e.points > 0).map((e) => localDateKey(e.createdAt)));
+  const [today] = useState(() => Date.now());
+  const days = Array.from({ length: 7 }, (_, i) => new Date(today - (6 - i) * 86_400_000));
+  const lit = days.filter((d) => active.has(localDateKey(d))).length;
+  return (
+    <div className="grid gap-2">
+      <p className="flex items-center gap-2">
+        <Flame className={cn('size-6', streak > 0 ? 'text-warning' : 'text-fg-3')} aria-hidden />
+        <b className="text-lead">{t('progress.days', { count: streak })}</b>
+        <span className="text-meta text-fg-2">{t('progress.streak')}</span>
+      </p>
+      <ol aria-label={t('progress.weekLabel', { n: lit })} className="flex gap-1.5">
+        {days.map((d) => {
+          const on = active.has(localDateKey(d));
+          return (
+            <li key={d.toISOString()} className="grid flex-1 justify-items-center gap-1" aria-hidden>
+              <span className={cn('h-2 w-full max-w-10 rounded-full', on ? 'bg-aurora' : 'bg-surface-3')} />
+              <span className="text-caption text-fg-3">{formatWeekday(d)}</span>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="text-caption text-fg-3">{t('progress.streakHint')}</p>
+    </div>
+  );
+}
+
 export function ProgressPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const canMentor = useCan('mentorship:mentor');
   const q = useQuery(progress());
+  // A badge earned in the last few days is celebrated the first time this device sees it (§6).
+  useEffect(() => {
+    const fresh = (q.data?.badges ?? [])
+      .filter((b) => Date.now() - Date.parse(b.awardedAt) < 3 * 86_400_000)
+      .map((b) => b.id);
+    if (fresh.length && firstSighting('badges', fresh)) celebrate();
+  }, [q.data]);
   const prefs = useMutation({
     mutationFn: (v: MyProgressView['prefs']) => api.put<MyProgressView['prefs']>('/me/progress/settings', v),
     onSuccess: (prefs) => {
@@ -92,36 +133,42 @@ export function ProgressPage() {
         }
       />
 
-      <Card className="grid gap-3 p-5">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="font-display text-2xl font-bold">
-            {t('progress.levelN', { level: p.level.level })}
-          </h2>
-          <span className="font-mono text-sm text-fg-2">
-            {t('progress.xpToNext', { xp: p.xp, next: p.level.next })}
-          </span>
-        </div>
-        <ProgressBar
+      {/* The hero: XP as an aurora ring and the streak with its week (§8.10). */}
+      <Card
+        variant="featured"
+        className="grid gap-5 p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:p-6"
+      >
+        <ProgressRing
           value={pct}
           max={100}
+          size={136}
+          stroke={11}
+          tone="aurora"
           label={t('progress.toNextLevel')}
           valueText={`${pct}%`}
-          tone="aurora"
-          size="lg"
-        />
+          className="justify-self-center"
+        >
+          <span className="grid justify-items-center">
+            <span className="text-caption font-semibold text-fg-2">{t('progress.level')}</span>
+            <b className="font-display text-display leading-none tabular-nums">{p.level.level}</b>
+          </span>
+        </ProgressRing>
+        <div className="grid gap-4">
+          <div>
+            <h2 className="text-title font-bold">{t('progress.levelN', { level: p.level.level })}</h2>
+            <p className="text-meta text-fg-2 tabular-nums">
+              {t('progress.xpToNext', { xp: p.xp, next: p.level.next })}
+            </p>
+          </div>
+          <WeekStrip streak={p.streak} recent={p.recent} />
+        </div>
       </Card>
 
-      <StatGrid>
+      <StatGrid className="md:grid-cols-3">
         <StatCard
           icon={<Sparkles className="size-4" aria-hidden />}
           label={t('progress.xp')}
           value={String(p.xp)}
-        />
-        <StatCard
-          icon={<Flame className="size-4" aria-hidden />}
-          label={t('progress.streak')}
-          value={t('progress.days', { count: p.streak })}
-          hint={t('progress.streakHint')}
         />
         <StatCard
           icon={<Gift className="size-4" aria-hidden />}
@@ -138,7 +185,7 @@ export function ProgressPage() {
       {(canMentor || p.impact > 0) && (
         <section aria-labelledby="impact" className="grid gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 id="impact" className="font-display text-lg font-semibold">
+            <h2 id="impact" className="text-title font-semibold">
               {t('progress.impactTitle')}
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -175,25 +222,44 @@ export function ProgressPage() {
       )}
 
       <section aria-labelledby="badges" className="grid gap-2">
-        <h2 id="badges" className="font-display text-lg font-semibold">
+        <h2 id="badges" className="flex items-baseline gap-2 text-title font-semibold">
           {t('progress.badges')}
+          <span className="text-meta font-normal text-fg-2 tabular-nums">
+            {t('progress.badgeCount', { n: p.badges.length, total: BADGES.length })}
+          </span>
         </h2>
+        {/* A collection: earned badges in aurora, locked ones as silhouettes with how to earn them. */}
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {BADGES.map((b) => {
             const at = earned.get(b);
             return (
               <li key={b}>
-                <Card className={cn('grid h-full gap-1 p-3', !at && 'border-dashed bg-transparent')}>
-                  <span className="flex items-center gap-2 font-semibold">
-                    {at ? (
-                      <Award className="size-5 text-accent-ink" aria-hidden />
-                    ) : (
-                      <Lock className="size-5 text-fg-3" aria-hidden />
+                <Card
+                  variant={at ? 'raised' : 'flat'}
+                  className={cn(
+                    'grid h-full justify-items-center gap-2 p-4 text-center',
+                    !at && 'border-dashed bg-transparent',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'grid size-16 place-items-center rounded-full',
+                      at ? 'aurora-ring p-[3px]' : 'border-2 border-dashed border-line-strong text-fg-3',
                     )}
+                  >
+                    {at ? (
+                      <span className="grid size-full place-items-center rounded-full bg-surface-1 text-brand-ink">
+                        <Award className="size-7" aria-hidden />
+                      </span>
+                    ) : (
+                      <Lock className="size-6" aria-hidden />
+                    )}
+                  </span>
+                  <span className={cn('text-body font-semibold', !at && 'text-fg-2')}>
                     {t(`progress.badge.${b}.name`)}
                   </span>
-                  <span className="text-sm text-fg-2">{t(`progress.badge.${b}.description`)}</span>
-                  <span className="text-xs text-fg-3">
+                  <span className="text-meta text-fg-2">{t(`progress.badge.${b}.description`)}</span>
+                  <span className={cn('text-caption', at ? 'font-semibold text-brand-ink' : 'text-fg-3')}>
                     {at ? t('progress.earned', { when: formatRelative(at) }) : t('progress.locked')}
                   </span>
                 </Card>
@@ -205,7 +271,7 @@ export function ProgressPage() {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <section aria-labelledby="recent" className="grid content-start gap-2">
-          <h2 id="recent" className="font-display text-lg font-semibold">
+          <h2 id="recent" className="text-title font-semibold">
             {t('progress.recent')}
           </h2>
           {p.recent.length ? (
@@ -213,7 +279,7 @@ export function ProgressPage() {
               {p.recent.map((e) => (
                 <li
                   key={e.id}
-                  className="flex items-center justify-between gap-3 rounded-[var(--radius-sm)] bg-surface-1 px-3 py-2 text-sm"
+                  className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] bg-surface-1 px-3.5 py-2.5 text-meta"
                 >
                   <span>
                     {t(`progress.kind.${e.kind}`)}
@@ -234,7 +300,7 @@ export function ProgressPage() {
           )}
         </section>
         <section aria-labelledby="privacy" className="grid content-start gap-2">
-          <h2 id="privacy" className="font-display text-lg font-semibold">
+          <h2 id="privacy" className="text-title font-semibold">
             {t('progress.privacy')}
           </h2>
           <Card className="grid gap-3 p-4">

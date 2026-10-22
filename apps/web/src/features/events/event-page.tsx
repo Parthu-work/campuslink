@@ -7,6 +7,7 @@ import {
   CalendarDays,
   CalendarPlus,
   Check,
+  CircleCheck,
   ChevronUp,
   EyeOff,
   MapPin,
@@ -109,7 +110,14 @@ function QaQueue({ e }: { e: EventView }) {
         <ol className="grid gap-2" aria-live="polite">
           {q.data.map((x) => (
             <li key={x.id}>
-              <Card className={cn('flex gap-3 p-3', x.status !== 'open' && 'border-dashed bg-transparent')}>
+              <Card
+                variant={x.status === 'open' ? 'raised' : 'flat'}
+                className={cn(
+                  'flex gap-3 p-3 transition-colors duration-[var(--dur-base)]',
+                  x.status === 'answered' && 'border-success-border bg-success-surface',
+                  x.status === 'hidden' && 'border-dashed bg-transparent',
+                )}
+              >
                 <Button
                   variant="ghost"
                   size="icon"
@@ -120,14 +128,19 @@ function QaQueue({ e }: { e: EventView }) {
                   className="grid h-auto flex-none justify-items-center py-1 aria-pressed:text-brand-ink"
                 >
                   <ChevronUp className="size-5" aria-hidden />
-                  <span className="font-mono text-sm">{x.votes}</span>
+                  <span className="text-meta font-semibold tabular-nums">{x.votes}</span>
                 </Button>
                 <div className="grid min-w-0 flex-1 gap-1">
-                  <p className="text-sm">{x.body}</p>
-                  <p className="text-xs text-fg-3">
+                  <p className="text-body">{x.body}</p>
+                  <p className="text-caption text-fg-3">
                     {x.author.name}
                     {x.status !== 'open' && (
-                      <Badge tone={x.status === 'answered' ? 'success' : 'neutral'} className="ml-2">
+                      // Answered questions pop their badge in (§8.9); hidden ones stay quiet.
+                      <Badge
+                        tone={x.status === 'answered' ? 'success' : 'neutral'}
+                        className={cn('ml-2', x.status === 'answered' && 'ring-in')}
+                      >
+                        {x.status === 'answered' && <Check className="size-3" aria-hidden />}
                         {t(`events.qa.status.${x.status}`)}
                       </Badge>
                     )}
@@ -352,23 +365,18 @@ export function EventPage() {
       </header>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
-        <div className="grid min-w-0 content-start gap-5">
-          <Card className="p-4">
-            <RichText text={e.description} />
-          </Card>
-          {e.hasQa && e.status !== 'removed' && <QaQueue e={e} />}
-          {e.canManage && <Attendees e={e} />}
-        </div>
-        <aside className="grid content-start gap-3">
-          <Card className="grid gap-3 p-4">
+        {/* The RSVP and calendar come first in reading order, so on phones they sit above the
+            description and the Q&A (IA-11); on wide screens they are the right-hand column. */}
+        <aside className="grid content-start gap-3 lg:sticky lg:top-5 lg:col-start-2 lg:row-start-1">
+          <Card variant={e.myRsvp === 'going' ? 'featured' : 'raised'} className="grid gap-3 p-4">
             {e.myRsvp === 'waitlist' && (
-              <p className="text-sm" role="status">
+              <p className="text-meta" role="status">
                 {t('events.waitlistPosition', { position: e.myWaitlistPosition ?? 1 })}
               </p>
             )}
             {e.myRsvp === 'going' && (
-              <p className="text-sm font-semibold text-success" role="status">
-                {t('events.youreGoing')}
+              <p className="flex items-center gap-2 text-body font-semibold text-success" role="status">
+                <CircleCheck className="size-5" aria-hidden /> {t('events.youreGoing')}
               </p>
             )}
             {live &&
@@ -378,7 +386,12 @@ export function EventPage() {
                   {t('events.cancelRsvp')}
                 </Button>
               ) : (
-                <Button variant="primary" loading={rsvp.isPending} onClick={() => rsvp.mutate(true)}>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  loading={rsvp.isPending}
+                  onClick={() => rsvp.mutate(true)}
+                >
                   {e.capacity && e.going >= e.capacity ? t('events.joinWaitlist') : t('events.rsvpGoing')}
                 </Button>
               ))}
@@ -404,6 +417,13 @@ export function EventPage() {
             )}
           </Card>
         </aside>
+        <div className="grid min-w-0 content-start gap-5 lg:col-start-1 lg:row-start-1">
+          <Card variant="raised" className="p-4 sm:p-5">
+            <RichText text={e.description} />
+          </Card>
+          {e.hasQa && e.status !== 'removed' && <QaQueue e={e} />}
+          {e.canManage && <Attendees e={e} />}
+        </div>
       </div>
       <Dialog
         open={confirmCancel}

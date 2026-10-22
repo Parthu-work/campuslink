@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { CalendarClock, CalendarPlus, ExternalLink, MessageSquare, Star, Video } from 'lucide-react';
@@ -24,11 +25,18 @@ import { SlotPicker } from '../../components/ui/slot-picker';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
 import { bookings } from '../../lib/queries';
-import { formatDay, formatTime, localDateKey, newIdempotencyKey } from '../../lib/format';
+import { formatDay, formatTime, formatWeekday, localDateKey, newIdempotencyKey } from '../../lib/format';
 import { useRovingRadio } from '../../lib/use-roving-radio';
 
 const HOUR = 3600_000;
 const STARS = [1, 2, 3, 4, 5] as const;
+
+/** "Starts in 2 h 15 min" / "Starts in 12 min" for a session less than a day away. */
+function countdown(t: TFunction, ms: number) {
+  const minutes = Math.max(1, Math.ceil(ms / 60_000));
+  const h = Math.floor(minutes / 60);
+  return h ? t('sessions.startsInHM', { h, m: minutes % 60 }) : t('sessions.startsInM', { m: minutes });
+}
 
 /** Re-renders every 30 s so "Join" enables itself when the window opens. */
 function useNow() {
@@ -312,16 +320,38 @@ function BookingCard({ b, now }: { b: BookingView; now: number }) {
   const upcoming = b.status === 'scheduled' && start > now;
   const ics = async () => saveBlob(await apiBlob(`/bookings/${b.id}/ics`), 'session.ics');
   const open = (d: typeof dialog) => (o: boolean) => setDialog(o ? d : null);
+  const day = new Date(b.start);
+  const soon = upcoming && start - now < 24 * HOUR;
   return (
-    <Card className="grid gap-3 p-4">
+    // The room opening is a signature moment (§3): the card gets the aurora hairline and the
+    // Join button glows, until the window closes.
+    <Card variant={canJoin ? 'featured' : 'raised'} className="grid gap-3 p-4">
       <div className="flex items-start gap-3">
-        <PersonAvatar name={other.name} fileId={other.avatarFileId} />
+        <span
+          aria-hidden
+          className="grid w-14 flex-none justify-items-center rounded-[var(--radius-md)] bg-surface-2 py-1.5"
+        >
+          <span className="text-caption font-semibold text-brand-ink uppercase">{formatWeekday(day)}</span>
+          <b className="font-display text-title leading-tight tabular-nums">{day.getDate()}</b>
+        </span>
         <div className="min-w-0 flex-1">
-          <b className="block truncate">{other.name}</b>
-          <p className="text-sm text-fg-2">
+          <p className="flex min-w-0 items-center gap-2">
+            <PersonAvatar name={other.name} fileId={other.avatarFileId} size={24} />
+            <b className="truncate">{other.name}</b>
+          </p>
+          <p className="text-meta text-fg-2">
             {t(`session.type.${b.sessionType}`)} · {formatDay(b.start)}, {formatTime(b.start)}–
             {formatTime(b.end)}
           </p>
+          {(soon || canJoin) && (
+            <p
+              className={
+                canJoin ? 'text-meta font-semibold text-success' : 'text-meta font-semibold text-brand-ink'
+              }
+            >
+              {canJoin ? t('sessions.openNow') : countdown(t, start - now)}
+            </p>
+          )}
         </div>
         <Badge tone={b.role === 'mentor' ? 'accent' : 'brand'}>{t(`sessions.role.${b.role}`)}</Badge>
       </div>
@@ -336,13 +366,18 @@ function BookingCard({ b, now }: { b: BookingView; now: number }) {
         {b.rescheduleCount > 0 && <Badge>{t('sessions.moves', { count: b.rescheduleCount })}</Badge>}
       </div>
       <div className="flex flex-wrap gap-2">
-        {(b.status === 'scheduled' || canJoin) && (
-          <Button variant="primary" size="sm" disabled={!canJoin} onClick={() => setDialog('join')}>
+        {canJoin && (
+          <Button variant="aurora" className="join-glow" onClick={() => setDialog('join')}>
+            <Video className="size-5" aria-hidden /> {t('sessions.join')}
+          </Button>
+        )}
+        {!canJoin && b.status === 'scheduled' && (
+          <Button variant="primary" size="sm" disabled>
             <Video className="size-4" aria-hidden /> {t('sessions.join')}
           </Button>
         )}
         {!canJoin && upcoming && (
-          <span className="self-center text-xs text-fg-3">
+          <span className="self-center text-caption text-fg-3">
             {t('sessions.joinOpens', { time: formatTime(b.canJoinFrom) })}
           </span>
         )}
@@ -437,10 +472,10 @@ function WeekStrip({
             aria-pressed={day === d}
             onClick={() => onDay(d)}
             aria-label={t('sessions.dayCount', { day: formatDay(`${d}T12:00:00`), count: n })}
-            className="grid min-h-14 min-w-14 flex-none justify-items-center gap-0.5 rounded-[var(--radius-md)] border border-line-strong px-2 py-1.5 text-xs text-fg-2 aria-pressed:border-brand aria-pressed:text-fg"
+            className="pressable grid min-h-14 min-w-14 flex-none justify-items-center gap-0.5 rounded-[var(--radius-md)] border border-line-strong px-2 py-1.5 text-caption text-fg-2 aria-pressed:border-brand aria-pressed:bg-brand-surface aria-pressed:text-fg"
           >
-            <span>{formatDay(`${d}T12:00:00`).split(/[ ,]/)[0]}</span>
-            <b className="font-display text-base text-fg">{Number(d.slice(8))}</b>
+            <span>{formatWeekday(`${d}T12:00:00`)}</span>
+            <b className="font-display text-lead text-fg tabular-nums">{Number(d.slice(8))}</b>
             <span aria-hidden className={n ? 'size-1.5 rounded-full bg-brand' : 'size-1.5'} />
           </button>
         );

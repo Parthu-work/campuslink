@@ -13,7 +13,7 @@ import {
 } from '../../lib/motion';
 import { useReducedMotionPref } from '../../lib/preferences';
 import { toast } from '../../lib/toast';
-import { Compass, Heart, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { BadgeCheck, Compass, Heart, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { SESSION_TYPES, type MentorCard, type MentorMatch, type MatchReason } from '@campuslink/shared';
 import { IntentLink } from '../../components/ui/intent-link';
 import { Button } from '../../components/ui/button';
@@ -23,54 +23,95 @@ import { Field, Input, Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
+import { ProgressRing } from '../../components/ui/progress';
 import { Segmented } from '../../components/ui/tab-nav';
 import { TagInput } from '../../components/ui/tag-input';
 import { api } from '../../lib/api';
 import { mentorMatch } from '../../lib/queries';
+import { coverOf } from '../../lib/accent';
 
+/**
+ * A mentor in a list (§8.4): a large face, what they do and where, their batch, a few topics and
+ * the sessions they offer. Reply time and next free slot are not in the API, so they are not shown.
+ */
 export function MentorTile({ m }: { m: MentorCard }) {
   const { t } = useTranslation();
   return (
-    <IntentLink to={`/mentors/${m.userId}`} className="block h-full rounded-[var(--radius-md)]">
-      <Card variant="interactive" className="grid h-full gap-3 p-4">
-        <div className="flex items-start gap-3">
-          {/* Morphs into the mentor page's header (view transition). */}
-          <span className="flex-none" style={{ viewTransitionName: `mentor-${m.userId}` }}>
-            <PersonAvatar name={m.name} fileId={m.avatarFileId} verified />
-          </span>
-          <div className="min-w-0 flex-1">
-            <b className="block truncate">{m.name}</b>
-            {m.headline && <p className="line-clamp-2 text-sm text-fg-2">{m.headline}</p>}
+    <IntentLink to={`/mentors/${m.userId}`} className="block h-full rounded-[var(--radius-lg)]">
+      <Card variant="interactive" className="grid h-full content-start gap-3 overflow-hidden">
+        <div aria-hidden className="h-14" style={{ background: coverOf(m.name) }} />
+        <div className="-mt-10 grid gap-3 px-4 pb-4">
+          <div className="flex items-end justify-between gap-2">
+            {/* Morphs into the mentor page's header (view transition). */}
+            <span
+              className="flex-none rounded-full ring-4 ring-surface-1"
+              style={{ viewTransitionName: `mentor-${m.userId}` }}
+            >
+              <PersonAvatar name={m.name} fileId={m.avatarFileId} size={64} verified />
+            </span>
+            {!m.open && <Badge tone="warning">{t('mentors.full')}</Badge>}
           </div>
-          {!m.open && <Badge tone="warning">{t('mentors.full')}</Badge>}
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {m.company && <Badge tone={m.companyVerified ? 'success' : 'neutral'}>{m.company}</Badge>}
-          {m.branch && (
-            <Badge>{[m.branch, m.gradYear ? `’${String(m.gradYear).slice(2)}` : ''].join(' ')}</Badge>
+          <div className="min-w-0">
+            <b className="block truncate text-title">{m.name}</b>
+            {(m.jobTitle || m.company) && (
+              <p className="flex min-w-0 items-center gap-1 text-meta text-fg-2">
+                <span className="truncate">{[m.jobTitle, m.company].filter(Boolean).join(' · ')}</span>
+                {m.company && m.companyVerified && (
+                  <BadgeCheck
+                    className="size-4 flex-none text-success"
+                    aria-label={t('people.companyVerified')}
+                  />
+                )}
+              </p>
+            )}
+            {(m.branch || m.gradYear) && (
+              <p className="text-caption text-fg-3">
+                {[m.branch, m.gradYear ? t('people.batch', { year: m.gradYear }) : '']
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
+            )}
+          </div>
+          {m.headline && <p className="line-clamp-2 text-meta text-fg-2">{m.headline}</p>}
+          {m.topics.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {m.topics.slice(0, 3).map((x) => (
+                <Badge key={x} tone="brand">
+                  {x}
+                </Badge>
+              ))}
+            </div>
           )}
-          {m.topics.slice(0, 3).map((x) => (
-            <Badge key={x} tone="brand">
-              {x}
-            </Badge>
-          ))}
+          <ul className="flex flex-wrap gap-1.5 border-t border-line pt-3" aria-label={t('mentors.offers')}>
+            {m.sessionTypes.map((s) => (
+              <li
+                key={s.type}
+                className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-caption font-semibold text-fg-2"
+              >
+                {t(`session.type.${s.type}`)}
+                {s.durationMin > 0 && (
+                  <span className="font-normal">· {t('session.minutes', { n: s.durationMin })}</span>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
-        <p className="text-xs text-fg-3">
-          {m.sessionTypes.map((s) => t(`session.type.${s.type}`)).join(' · ')}
-        </p>
       </Card>
     </IntentLink>
   );
 }
 
+/** Plain-language strength of an Alumni Match score (0–100). */
+const levelOf = (score: number) => (score >= 60 ? 'strong' : score >= 30 ? 'good' : 'some');
+
 function ReasonList({ reasons }: { reasons: MatchReason[] }) {
   const { t } = useTranslation();
-  if (!reasons.length) return <p className="text-sm text-fg-3">{t('match.noReasons')}</p>;
+  if (!reasons.length) return <p className="text-meta text-fg-3">{t('match.noReasons')}</p>;
   return (
-    <ul className="grid gap-1.5 text-sm">
+    <ul className="grid gap-1.5 text-meta">
       {reasons.map((r) => (
         <li key={r.kind} className="flex items-start gap-2">
-          <Sparkles className="mt-0.5 size-4 flex-none text-accent-ink" aria-hidden />
+          <Sparkles className="mt-0.5 size-4 flex-none text-brand-ink" aria-hidden />
           <span>
             {r.kind === 'branch' || r.kind === 'company'
               ? t(`match.reason.${r.kind}`, { value: r.value })
@@ -126,22 +167,34 @@ function MatchCard({
       onDragEnd={onDragEnd}
       className="touch-pan-y"
     >
-      <Card className="relative grid gap-4 overflow-hidden p-5 pt-14">
-        <div
-          aria-hidden
-          className="absolute inset-x-0 top-0 h-20 bg-[radial-gradient(60%_120%_at_15%_0%,color-mix(in_srgb,var(--brand)_55%,transparent),transparent_70%),radial-gradient(60%_140%_at_90%_10%,color-mix(in_srgb,var(--accent)_45%,transparent),transparent_70%)]"
-        />
+      <Card variant="raised" className="relative grid gap-4 overflow-hidden p-5 pt-14">
+        <div aria-hidden className="absolute inset-x-0 top-0 h-20" style={{ background: coverOf(m.name) }} />
         <div className="relative flex items-end gap-3">
           <PersonAvatar name={m.name} fileId={m.avatarFileId} size={72} verified />
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-xl font-bold">{m.name}</h2>
-            {m.headline && <p className="line-clamp-2 text-sm text-fg-2">{m.headline}</p>}
+            <h2 className="truncate text-title font-bold">{m.name}</h2>
+            {(m.jobTitle || m.company) && (
+              <p className="truncate text-meta text-fg-2">
+                {[m.jobTitle, m.company].filter(Boolean).join(' · ')}
+              </p>
+            )}
+            {m.headline && <p className="line-clamp-2 text-meta text-fg-2">{m.headline}</p>}
           </div>
-          <div
-            className="grid size-16 flex-none place-items-center rounded-full border-4 border-[color-mix(in_srgb,var(--brand)_60%,transparent)] font-display text-lg font-bold"
-            aria-label={t('match.score', { score: match.score })}
-          >
-            {match.score}
+          {/* A ring and a word, not a bare number (MC-3: "30" read like a bad grade). */}
+          <div className="grid flex-none justify-items-center gap-1">
+            <ProgressRing
+              value={match.score}
+              max={100}
+              size={60}
+              tone="aurora"
+              label={t('match.score', { score: match.score })}
+              valueText={t(`match.level.${levelOf(match.score)}`)}
+            >
+              <span className="text-meta font-bold tabular-nums">{match.score}</span>
+            </ProgressRing>
+            <span className="text-caption font-semibold text-fg-2" aria-hidden>
+              {t(`match.level.${levelOf(match.score)}`)}
+            </span>
           </div>
         </div>
         <div className="flex flex-wrap gap-1">

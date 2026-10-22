@@ -23,7 +23,9 @@
     "offline": "You’re offline. Changes will need a connection.",
     "open": "Open",
     "breadcrumb": "Breadcrumb",
-    "plusN": "+{{n}}"
+    "plusN": "+{{n}}",
+    "stepDone": "done",
+    "change": "Change"
   },
   "nav": {
     "home": "Home",
@@ -92,7 +94,15 @@
     "sub": "Verified alumni of {{college}} mentor you, refer you, and show you the exact path from where you are to where they got.",
     "join": "Join with your college email",
     "signIn": "Sign in",
-    "foot": "Private to {{college}}. Only verified students, alumni and faculty can see anything here."
+    "foot": "Private to {{college}}. Only verified students, alumni and faculty can see anything here.",
+    "points": {
+      "mentors": "Mentors from your college",
+      "mentorsBody": "Book a call, a mock interview or a resume review with alumni who chose to help.",
+      "roadmaps": "Roadmaps with sources",
+      "roadmapsBody": "Step-by-step career paths your college reviews, every step cited.",
+      "jobs": "Jobs and referrals",
+      "jobsBody": "Openings from alumni and public job boards, and alumni who can refer you."
+    }
   },
   "auth": {
     "signInTitle": "Welcome back",
@@ -166,7 +176,9 @@
     "noSession": "No sessions booked yet.",
     "findMentor": "Find a mentor from your college",
     "findMentorBody": "Alumni Match suggests people who fit your goals, and explains why.",
-    "rail": "Shortcuts and suggestions"
+    "rail": "Shortcuts and suggestions",
+    "startsIn": "Starts {{when}}",
+    "happeningNow": "Happening now"
   },
   "settings": {
     "title": "Settings",
@@ -215,7 +227,9 @@
       "cancelled": "Deletion cancelled. Welcome back.",
       "kept": "Your consent records and the security audit log are kept, as the law requires, without your details.",
       "banner": "Your account is scheduled for deletion on {{date}}. Until then you can only download your data or cancel."
-    }
+    },
+    "haptics": "Vibrate on confirmations",
+    "hapticsHint": "A short buzz when a booking, step or request goes through. Phones that support it only."
   },
   "admin": {
     "users": "People",
@@ -452,7 +466,26 @@
     "rejectedTitle": "Your last request wasn’t approved",
     "rejectedBody": "Reason: {{reason}}. You can try again.",
     "useRoll": "Use my roll number instead",
-    "goHome": "Go to home"
+    "goHome": "Go to home",
+    "steps": {
+      "label": "Verification steps",
+      "find": "Find you",
+      "code": "Confirm",
+      "in": "You’re in",
+      "photo": "ID photo",
+      "review": "Review"
+    },
+    "youreIn": "You’re in!",
+    "youreInBody": "Welcome to {{college}}’s network. Members now see a verified tick next to your name.",
+    "interestsTitle": "What do you want to hear about?",
+    "interestsBody": "Topics you pick come first in your feed. Change them any time under Following.",
+    "nextTitle": "Good next steps",
+    "nextMentor": "Find a mentor",
+    "nextMentorBody": "Alumni who sat in your classrooms, matched to your goals.",
+    "nextProfile": "Finish your profile",
+    "nextProfileBody": "A headline and a few skills help mentors say yes.",
+    "nextRoadmaps": "Explore career roadmaps",
+    "nextRoadmapsBody": "Step-by-step paths, every step with its source."
   },
   "people": {
     "title": "People",
@@ -478,7 +511,15 @@
     "about": "About",
     "contact": "Contact",
     "notFound": "This profile isn’t available",
-    "back": "All people"
+    "back": "All people",
+    "companyVerified": "Company verified",
+    "selfView": "This is how other members of your college see your profile.",
+    "editProfile": "Edit profile",
+    "mentoring": "Taking mentorship requests",
+    "sections": "Profile sections",
+    "skillsTab": "Skills",
+    "noBio": "No bio yet.",
+    "noSkills": "No skills or topics shared."
   },
   "profile": {
     "title": "Your profile",
@@ -565,7 +606,9 @@
     "notFound": "This mentor isn’t available",
     "notFoundBody": "They may have paused requests.",
     "fullProfile": "View full profile",
-    "requestCta": "Request mentorship"
+    "requestCta": "Request mentorship",
+    "topics": "Topics, skills and languages",
+    "offers": "Sessions offered"
   },
   "match": {
     "intro": "Suggestions from your college’s alumni, ranked for you. Swipe or use the buttons.",
@@ -597,7 +640,12 @@
     "done": "You’ve seen everyone for now",
     "empty": "No suggestions yet",
     "emptyBody": "Mentors appear as alumni switch on requests. Browse the full list meanwhile.",
-    "again": "Start again"
+    "again": "Start again",
+    "level": {
+      "strong": "Strong match",
+      "good": "Good match",
+      "some": "Some overlap"
+    }
   },
   "request": {
     "title": "Ask {{name}} for help",
@@ -656,7 +704,18 @@
       "need": "What they need"
     },
     "acceptedToast": "Accepted. {{name}} can message you now.",
-    "declinedToast": "Declined. {{name}} will see your note."
+    "declinedToast": "Declined. {{name}} will see your note.",
+    "steps": "Request steps",
+    "stepSession": "Session and time",
+    "stepMessage": "Your message",
+    "message": "What do you want from this session with {{name}}?",
+    "messageHint": "At least {{min}} characters. The prompts add a heading if you’d like some structure.",
+    "prompts": "Add a heading",
+    "prompt": {
+      "goal": "Goal",
+      "background": "Background",
+      "need": "What I need"
+    }
   },
   "sessions": {
     "upcoming": "Upcoming",
@@ -726,7 +785,10 @@
     "reportNoShow": "Report a no-show",
     "noShowTitle": "Report a no-show",
     "noShowBody": "Only if {{name}} didn’t join at all. This is recorded and can’t be undone.",
-    "noShowConfirm": "Report no-show"
+    "noShowConfirm": "Report no-show",
+    "openNow": "The room is open",
+    "startsInHM": "Starts in {{h}} h {{m}} min",
+    "startsInM": "Starts in {{m}} min"
   },
   "messages": {
     "intro": "Chats open when a mentor accepts a request.",
@@ -749,7 +811,11 @@
     "send": "Send",
     "imageFrom": "Image: {{name}}",
     "download": "Download",
-    "sending": "Sending…"
+    "sending": "Sending…",
+    "pick": "Pick a conversation",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "sent": "Sent"
   },
   "mentor": {
     "impact": "Your impact",
@@ -1187,7 +1253,9 @@
     "sourcesIntro": "Added by your college. We show a headline, a short snippet and a link to the publisher.",
     "noSources": "Your college hasn’t added any sources yet.",
     "peopleTitle": "People",
-    "noPeople": "You don’t follow anyone yet. Find alumni in"
+    "noPeople": "You don’t follow anyone yet. Find alumni in",
+    "openPost": "Open the post",
+    "doubleTapHint": "Double-tap a photo to mark the post helpful"
   },
   "stories": {
     "title": "Stories",
@@ -1224,7 +1292,9 @@
     "link": "Link (optional)",
     "linkHint": "Must start with https://",
     "share": "Share story",
-    "posted": "Story shared for 24 hours"
+    "posted": "Story shared for 24 hours",
+    "openSeen_one": "View {{name}}’s story again",
+    "openSeen_other": "View {{name}}’s {{count}} stories again"
   },
   "qa": {
     "title": "Q&A",
@@ -1521,7 +1591,8 @@
       "expires": "Keep listed for"
     },
     "publish": "Post opening",
-    "postedToast": "Opening posted"
+    "postedToast": "Opening posted",
+    "columnEmpty": "Nothing here yet"
   },
   "referrals": {
     "title": "Referrals",
@@ -1582,7 +1653,8 @@
     "replaceResume": "Replace résumé",
     "resumeHint": "Optional. Only this alumnus can open it.",
     "send": "Send request",
-    "sent": "Request sent to {{name}}"
+    "sent": "Request sent to {{name}}",
+    "howItWorks": "They see your request, your profile and your resume if you add one. If they refer you, they do it through their company’s own system; you’ll hear back here."
   },
   "jobSources": {
     "intro": "Bring openings in from public job boards and notices. Each source is tested first and checked on a schedule; we link to the employer’s own page.",
@@ -1821,7 +1893,13 @@
       "upToDate": "Installed",
       "installed": "Installed",
       "proposed": "Update proposed for review"
-    }
+    },
+    "zoom": {
+      "in": "Zoom in",
+      "out": "Zoom out",
+      "reset": "Show the whole galaxy"
+    },
+    "legend": "The lit ring is your progress"
   },
   "progress": {
     "badge": {
@@ -1925,12 +2003,7 @@
       "detail_other": "across {{count}} sessions",
       "download": "Download impact card"
     },
-    "level": {
-      "bronze": "Bronze mentor",
-      "silver": "Silver mentor",
-      "gold": "Gold mentor",
-      "platinum": "Platinum mentor"
-    },
+    "level": "Level",
     "track": {
       "xp": "XP",
       "impact": "impact"
@@ -1952,7 +2025,10 @@
       "revoked": "Reversed by an admin",
       "redeemed": "Reward requested",
       "refund": "Points returned"
-    }
+    },
+    "badgeCount": "{{n}} of {{total}}",
+    "weekLabel": "Active on {{n}} of the last 7 days",
+    "podium": "Top three"
   },
   "rewards": {
     "title": "Rewards",
@@ -2245,6 +2321,10 @@
     "sheetTitle": "A sheet",
     "sheetBody": "A bottom sheet on phones (swipe down to close), a side sheet on wider screens.",
     "illustrations": "Illustrations",
-    "errorDemo": "Error state"
+    "errorDemo": "Error state",
+    "stepper": "Steps",
+    "stepA": "Find you",
+    "stepB": "Confirm",
+    "stepC": "Done"
   }
 }

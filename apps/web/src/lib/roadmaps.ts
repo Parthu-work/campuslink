@@ -90,6 +90,25 @@ export interface Constellation {
 }
 export const GALAXY_CELL = { w: 500, h: 400 };
 
+/** A star's label on up to two lines (about 16 characters each), cut with an ellipsis after that. */
+export function wrapLabel(title: string, max = 16): string[] {
+  const words = title.split(/\s+/);
+  const lines: string[] = [];
+  let line = '';
+  for (const w of words) {
+    if (!line) line = w;
+    else if (`${line} ${w}`.length <= max) line = `${line} ${w}`;
+    else {
+      lines.push(line);
+      line = w;
+    }
+  }
+  if (line) lines.push(line);
+  if (lines.length <= 2) return lines;
+  const second = lines.slice(1).join(' ');
+  return [lines[0] ?? '', second.length > max ? `${second.slice(0, max - 1).trimEnd()}…` : second];
+}
+
 /**
  * One constellation per category in a grid of cells; its roadmaps sit on an ellipse around the
  * centre with labels pointing outward, so nothing overlaps whatever the count (up to ~12).
@@ -110,16 +129,19 @@ export function layoutGalaxy(
     const stars = mine.map((roadmap, j): Star => {
       const r = 7 + Math.min(7, roadmap.nodeCount / 2);
       if (n === 1) return { roadmap, x: cx, y: cy, r, label: { x: cx, y: cy + r + 20, anchor: 'middle' } };
-      // Two stars sit side by side; more go round the ellipse from the top.
-      const angle = (n === 2 ? Math.PI : -Math.PI / 2) + (j / n) * Math.PI * 2;
+      // Two stars sit side by side; more go round the ellipse from the top. Big constellations
+      // get a wider ellipse, turned half a step so no two labels meet at the bottom.
+      const big = n > 6;
+      const angle = (n === 2 ? Math.PI : -Math.PI / 2) + ((j + (big ? 0.5 : 0)) / n) * Math.PI * 2;
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
-      const x = cx + cos * 72;
-      const y = cy + sin * 120;
+      const x = cx + cos * (big ? 104 : 72);
+      const y = cy + sin * (big ? 132 : 120);
+      const side = big ? 0.12 : 0.3;
       const label =
-        cos > 0.3
+        cos > side
           ? { x: x + r + 8, y: y + 5, anchor: 'start' as const }
-          : cos < -0.3
+          : cos < -side
             ? { x: x - r - 8, y: y + 5, anchor: 'end' as const }
             : { x, y: sin > 0 ? y + r + 20 : y - r - 9, anchor: 'middle' as const };
       return { roadmap, x, y, r, label };

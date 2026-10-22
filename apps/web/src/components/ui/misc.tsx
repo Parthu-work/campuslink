@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import { accentOf } from '../../lib/accent';
 import { cn } from '../../lib/cn';
 
 /** A filter or toggle chip (`aria-pressed`), 44px tall. */
@@ -125,12 +126,6 @@ export function EmptyState({
   );
 }
 
-/** A stable subject accent (1–8) for a name, so a person keeps their colour everywhere. */
-function accentOf(s: string) {
-  let h = 7;
-  for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 9973;
-  return (h % 8) + 1;
-}
 export function Avatar({
   name,
   size = 44,

@@ -2,57 +2,67 @@ import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { BellRing, ListChecks, Trash2 } from 'lucide-react';
+import { BellRing, Trash2 } from 'lucide-react';
 import { TRACK_STATUSES, type JobAlertView, type TrackStatus, type TrackedJobView } from '@campuslink/shared';
 import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { Illustration } from '../../components/ui/illustration';
+import { CompanyMark } from './job-card';
 import { PageHeader } from '../../components/ui/page-header';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
 import { useTrack } from '../../lib/jobs';
 
+/** One application on the board; the status select moves it between columns (keyboard friendly). */
 function TrackedRow({ row }: { row: TrackedJobView }) {
   const { t } = useTranslation();
   const track = useTrack({ id: row.jobId });
   return (
     <li>
-      <Card className="grid gap-2 p-4 sm:grid-cols-[minmax(0,1fr)_200px] sm:items-center">
-        <div className="min-w-0">
-          <h3 className="font-semibold">
-            {row.job ? (
-              <Link to={`/jobs/${row.jobId}`} className="hover:underline">
-                {row.title}
-              </Link>
-            ) : (
-              row.title
-            )}
-          </h3>
-          <p className="text-sm text-fg-2">
-            {row.company} · {t('jobs.updated', { when: formatRelative(row.updatedAt) })}
-          </p>
-          {!row.job && <Badge tone="warning">{t('jobs.listingGone')}</Badge>}
-          {row.job && row.job.status !== 'open' && (
-            <Badge tone="warning">{t(`jobs.statusLabel.${row.job.status}`)}</Badge>
-          )}
-          {row.note && <p className="mt-1 text-sm text-fg-2">“{row.note}”</p>}
+      <Card variant="raised" className="grid gap-2.5 p-3.5">
+        <div className="flex items-start gap-3">
+          <CompanyMark name={row.company} />
+          <div className="min-w-0 flex-1">
+            <h3 className="text-body leading-snug font-semibold">
+              {row.job ? (
+                <Link to={`/jobs/${row.jobId}`} className="hover:underline">
+                  {row.title}
+                </Link>
+              ) : (
+                row.title
+              )}
+            </h3>
+            <p className="truncate text-meta text-fg-2">{row.company}</p>
+          </div>
         </div>
-        <label className="grid gap-1 text-xs font-semibold">
-          <span className="sr-only">{t('jobs.statusFor', { title: row.title })}</span>
-          <Select
-            value={row.status}
-            onChange={(e) => track.mutate({ status: e.target.value as TrackStatus })}
-            size="sm"
-            disabled={!row.job}
-          >
-            {TRACK_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {t(`jobs.track.${s}`)}
-              </option>
-            ))}
-          </Select>
-        </label>
+        {(!row.job || row.job.status !== 'open') && (
+          <Badge tone="warning" className="justify-self-start">
+            {row.job ? t(`jobs.statusLabel.${row.job.status}`) : t('jobs.listingGone')}
+          </Badge>
+        )}
+        {row.note && <p className="text-meta text-fg-2">“{row.note}”</p>}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-caption text-fg-3">
+            {t('jobs.updated', { when: formatRelative(row.updatedAt) })}
+          </span>
+          <label>
+            <span className="sr-only">{t('jobs.statusFor', { title: row.title })}</span>
+            <Select
+              value={row.status}
+              onChange={(e) => track.mutate({ status: e.target.value as TrackStatus })}
+              size="sm"
+              disabled={!row.job}
+            >
+              {TRACK_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {t(`jobs.track.${s}`)}
+                </option>
+              ))}
+            </Select>
+          </label>
+        </div>
       </Card>
     </li>
   );
@@ -104,36 +114,58 @@ export function TrackerPage() {
     queryKey: ['job-tracker'],
     queryFn: () => api.get<TrackedJobView[]>('/me/job-tracker'),
   });
-  const groups = TRACK_STATUSES.map((s) => [s, (q.data ?? []).filter((r) => r.status === s)] as const).filter(
-    ([, rows]) => rows.length,
+  const rows = q.data ?? [];
+  // The four active stages are always columns; closed ones appear only when they hold something.
+  const columns = TRACK_STATUSES.filter(
+    (s) => ['saved', 'applied', 'interviewing', 'offer'].includes(s) || rows.some((r) => r.status === s),
   );
   return (
-    <div className="mx-auto grid w-full max-w-[860px] gap-5">
+    <div className="grid gap-5">
       <BackLink to="/jobs">{t('jobs.back')}</BackLink>
-      <div>
-        <PageHeader title={t('jobs.tracker')} intro={t('jobs.trackerIntro')} />
-      </div>
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="grid content-start gap-5">
-          {q.isLoading && <Skeleton className="h-32" />}
-          {q.isSuccess && !q.data.length && (
-            <EmptyState icon={<ListChecks className="size-6" />} title={t('jobs.trackerEmpty')}>
-              {t('jobs.trackerEmptyBody')}
-            </EmptyState>
-          )}
-          {groups.map(([status, rows]) => (
-            <section key={status} aria-labelledby={`tr-${status}`} className="grid gap-2">
-              <h2 id={`tr-${status}`} className="font-semibold">
-                {t(`jobs.track.${status}`)} <span className="font-mono text-sm text-fg-3">{rows.length}</span>
-              </h2>
-              <ul className="grid gap-2">
-                {rows.map((r) => (
-                  <TrackedRow key={r.jobId} row={r} />
-                ))}
-              </ul>
-            </section>
-          ))}
+      <PageHeader title={t('jobs.tracker')} intro={t('jobs.trackerIntro')} />
+      {q.isLoading && <Skeleton className="h-64 rounded-[var(--radius-xl)]" />}
+      {q.isSuccess && !rows.length && (
+        <EmptyState art={<Illustration kind="empty" />} title={t('jobs.trackerEmpty')}>
+          {t('jobs.trackerEmptyBody')}
+        </EmptyState>
+      )}
+      {rows.length > 0 && (
+        // A kanban (§8.7): columns scroll sideways on phones, sit side by side on wide screens.
+        <div className="-mx-4 flex snap-x gap-3 overflow-x-auto overscroll-x-contain px-4 pb-2 lg:mx-0 lg:grid lg:auto-cols-fr lg:grid-flow-col lg:overflow-visible lg:px-0">
+          {columns.map((status) => {
+            const list = rows.filter((r) => r.status === status);
+            return (
+              <section
+                key={status}
+                aria-labelledby={`tr-${status}`}
+                className="grid w-[min(300px,82vw)] flex-none snap-start content-start gap-2 rounded-[var(--radius-xl)] bg-surface-2 p-3 lg:w-auto"
+              >
+                <h2
+                  id={`tr-${status}`}
+                  className="flex items-center justify-between px-1 text-meta font-semibold"
+                >
+                  {t(`jobs.track.${status}`)}
+                  <span className="rounded-full bg-surface-1 px-2 text-caption text-fg-2 tabular-nums">
+                    {list.length}
+                  </span>
+                </h2>
+                {list.length ? (
+                  <ul className="grid gap-2">
+                    {list.map((r) => (
+                      <TrackedRow key={r.jobId} row={r} />
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="rounded-[var(--radius-md)] border border-dashed border-line-strong px-3 py-6 text-center text-caption text-fg-3">
+                    {t('jobs.columnEmpty')}
+                  </p>
+                )}
+              </section>
+            );
+          })}
         </div>
+      )}
+      <div className="max-w-xl">
         <Alerts />
       </div>
     </div>

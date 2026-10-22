@@ -25,7 +25,6 @@ import { PageSkeleton } from '../components/layout/skeletons';
 import { buttonVariants } from '../components/ui/button-variants';
 import { EmptyState } from '../components/ui/misc';
 import { PublicOnly, RequireAuth, RequirePermission, Splash } from './guards';
-import { LandingPage } from '../features/landing/landing';
 
 /**
  * Route-level code splitting through React Router's `lazy`: the router loads a screen's code
@@ -49,6 +48,7 @@ const load = {
   moderationAdmin: () => import('../features/admin/moderation-admin'),
   sourcesAdmin: () => import('../features/admin/sources-admin'),
   directory: () => import('../features/people/directory'),
+  landing: () => import('../features/landing/landing'),
   profileView: () => import('../features/people/profile-view'),
   profileEdit: () => import('../features/profile/profile-edit'),
   verify: () => import('../features/verify/verify'),
@@ -251,14 +251,8 @@ function collegeRoutes(): RouteObject[] {
       errorElement: <RouteError fullPage />,
       hydrateFallbackElement: <Splash />,
       children: [
-        {
-          path: '/',
-          element: (
-            <PublicOnly home="/home">
-              <LandingPage />
-            </PublicOnly>
-          ),
-        },
+        // Lazy like every screen: signed-in members never download it (bundle budget).
+        publicScreen(load.landing, 'LandingPage', '/', '/home'),
         publicScreen(load.signUp, 'SignUpPage', '/sign-up', '/home'),
         ...auth('/home'),
         // The living style guide (revamp phase 6): development builds only; production leaves it out.

@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { CalendarCheck, Clock } from 'lucide-react';
+import { CalendarClock, Clock, Plus } from 'lucide-react';
 import {
   isBookable,
-  requestText,
+  REQUEST_MESSAGE_MAX,
+  REQUEST_MESSAGE_MIN,
+  requestMessage,
   type MentorCard,
   type RequestView,
   type SessionType,
@@ -16,36 +18,46 @@ import {
 import type { z } from 'zod';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
-import { Field, Textarea } from '../../components/ui/field';
-import { Card } from '../../components/ui/misc';
 import { ChoiceGroup } from '../../components/ui/choice-group';
+import { Field, Textarea } from '../../components/ui/field';
+import { EmptyState } from '../../components/ui/misc';
+import { Illustration } from '../../components/ui/illustration';
 import { SlotPicker } from '../../components/ui/slot-picker';
+import { Stepper } from '../../components/ui/stepper';
 import { FormError } from '../../components/layout/auth-layout';
 import { api } from '../../lib/api';
 import { focusOnMount } from '../../lib/focus';
 import { applyApiError } from '../../lib/errors';
 import { formatDateTime, newIdempotencyKey } from '../../lib/format';
 
-type Text = z.infer<typeof requestText>;
+type Message = z.infer<typeof requestMessage>;
+const PROMPTS = ['goal', 'background', 'need'] as const;
 
-/** Loads after the mentor's header (its own chunk: the form library and Zod). */
+/**
+ * Asking a mentor for help, in two steps (owner decision Q12): the session type and a time, then
+ * one message in the mentee's own words. Optional prompts add "Goal:", "Background:" and "What I
+ * need:" headings so mentors still get structure. Loads in its own chunk (the form library and Zod).
+ */
 export function RequestForm({ mentor }: { mentor: MentorCard }) {
   const { t } = useTranslation();
+  const [step, setStep] = useState<'session' | 'message'>('session');
   const [type, setType] = useState<SessionType>(mentor.sessionTypes[0]?.type ?? 'quick_chat');
   const [slot, setSlot] = useState<string | null>(null);
   const [key, setKey] = useState(newIdempotencyKey);
+  const box = useRef<HTMLTextAreaElement | null>(null);
   const bookable = isBookable(type);
   const slots = useQuery({
     queryKey: ['slots', mentor.userId, type],
     queryFn: () => api.get<SlotsView>(`/mentors/${mentor.userId}/slots?type=${type}&days=14`),
     enabled: bookable,
   });
-  const form = useForm<Text>({
-    resolver: zodResolver(requestText),
-    defaultValues: { goal: '', background: '', need: '' },
+  const form = useForm<Message>({
+    resolver: zodResolver(requestMessage),
+    defaultValues: { message: '' },
   });
+  const length = useWatch({ control: form.control, name: 'message' }).length;
   const send = useMutation({
-    mutationFn: (text: Text) =>
+    mutationFn: (text: Message) =>
       api.postOnce<RequestView>(
         '/mentorship/requests',
         {
@@ -62,34 +74,41 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
       void slots.refetch();
     },
   });
+  const first = mentor.name.split(' ')[0];
+
   if (send.isSuccess)
     return (
-      <Card className="grid justify-items-start gap-3 p-5" role="status">
-        <CalendarCheck className="size-8 text-success" aria-hidden />
-        <h2 ref={focusOnMount} tabIndex={-1} className="text-xl font-bold outline-none">
-          {t('request.sentTitle')}
-        </h2>
-        <p className="text-fg-2">
-          {send.data.slotStart
-            ? t('request.sentBodySlot', { name: mentor.name, time: formatDateTime(send.data.slotStart) })
-            : t('request.sentBody', { name: mentor.name })}
-        </p>
-        <Link to="/mentorship?box=sent" className={buttonVariants({ variant: 'primary' })}>
-          {t('request.track')}
-        </Link>
-      </Card>
+      <div role="status">
+        <EmptyState
+          art={<Illustration kind="done" />}
+          title={t('request.sentTitle')}
+          action={
+            <Link to="/mentorship?box=sent" className={buttonVariants({ variant: 'primary', size: 'lg' })}>
+              {t('request.track')}
+            </Link>
+          }
+        >
+          <span ref={focusOnMount} tabIndex={-1} className="outline-none">
+            {send.data.slotStart
+              ? t('request.sentBodySlot', { name: mentor.name, time: formatDateTime(send.data.slotStart) })
+              : t('request.sentBody', { name: mentor.name })}
+          </span>
+        </EmptyState>
+      </div>
     );
-  const err = form.formState.errors;
-  return (
-    <Card className="p-5">
-      <form className="grid gap-5" onSubmit={form.handleSubmit((v) => send.mutate(v))} noValidate>
-        <h2 className="text-xl font-bold">{t('request.title', { name: mentor.name.split(' ')[0] })}</h2>
-        <p className="-mt-3 text-sm text-fg-2">{t('request.noColdDms')}</p>
+
+  const steps = [t('request.stepSession'), t('request.stepMessage')];
+  if (step === 'session')
+    return (
+      <div className="grid gap-5">
+        <Stepper label={t('request.steps')} steps={steps} current={0} />
+        <p className="text-meta text-fg-2">{t('request.noColdDms')}</p>
         <fieldset className="grid gap-2">
           <legend className="mb-2 text-meta font-semibold">{t('request.sessionType')}</legend>
           <ChoiceGroup
             label={t('request.sessionType')}
             value={type}
+            columns={1}
             options={mentor.sessionTypes.map((s) => ({
               value: s.type,
               label: t(`session.type.${s.type}`),
@@ -115,32 +134,86 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
             loading={slots.isLoading}
           />
         )}
-        {(['goal', 'background', 'need'] as const).map((f) => (
-          <Field key={f} label={t(`request.${f}`)} hint={t(`request.${f}Hint`)} error={err[f]?.message}>
-            {({ id, describedBy, invalid }) => (
-              <Textarea
-                id={id}
-                aria-describedby={describedBy}
-                aria-invalid={invalid}
-                maxLength={f === 'goal' ? 300 : 600}
-                rows={f === 'goal' ? 2 : 3}
-                {...form.register(f)}
-              />
-            )}
-          </Field>
-        ))}
-        <FormError message={err.root?.message} />
         <Button
-          type="submit"
           variant="primary"
           size="lg"
-          loading={send.isPending}
           disabled={!mentor.open || (bookable && !slot)}
+          onClick={() => setStep('message')}
         >
+          {t('common.continue')}
+        </Button>
+        {bookable && !slot && (
+          <p className="-mt-3 text-center text-caption text-fg-3">{t('request.pickFirst')}</p>
+        )}
+      </div>
+    );
+
+  const err = form.formState.errors;
+  const { ref: registerRef, ...message } = form.register('message');
+  const addPrompt = (p: (typeof PROMPTS)[number]) => {
+    const now = form.getValues('message').trimEnd();
+    const heading = `${t(`request.prompt.${p}`)}: `;
+    form.setValue('message', now ? `${now}\n\n${heading}` : heading, { shouldDirty: true });
+    const el = box.current;
+    if (el) {
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    }
+  };
+  return (
+    <form className="grid gap-5" onSubmit={form.handleSubmit((v) => send.mutate(v))} noValidate>
+      <Stepper label={t('request.steps')} steps={steps} current={1} />
+      <div className="flex items-center gap-3 rounded-[var(--radius-md)] bg-surface-2 px-4 py-3">
+        <CalendarClock className="size-5 flex-none text-brand-ink" aria-hidden />
+        <p className="min-w-0 flex-1 text-meta">
+          <b>{t(`session.type.${type}`)}</b>
+          {slot ? ` · ${formatDateTime(slot)}` : ''}
+        </p>
+        <Button variant="ghost" size="sm" onClick={() => setStep('session')}>
+          {t('common.change')}
+        </Button>
+      </div>
+      <Field
+        label={t('request.message', { name: first })}
+        hint={t('request.messageHint', { min: REQUEST_MESSAGE_MIN })}
+        error={err.message?.message}
+        aside={<span className="tabular-nums">{`${length}/${REQUEST_MESSAGE_MAX}`}</span>}
+      >
+        {({ id, describedBy, invalid }) => (
+          <>
+            <div role="group" aria-label={t('request.prompts')} className="mb-1 flex flex-wrap gap-2">
+              {PROMPTS.map((p) => (
+                <Button key={p} size="sm" variant="outline" onClick={() => addPrompt(p)}>
+                  <Plus className="size-4" aria-hidden /> {t(`request.prompt.${p}`)}
+                </Button>
+              ))}
+            </div>
+            <Textarea
+              id={id}
+              aria-describedby={describedBy}
+              aria-invalid={invalid}
+              maxLength={REQUEST_MESSAGE_MAX}
+              rows={6}
+              autoFocus
+              enterKeyHint="enter"
+              ref={(el) => {
+                registerRef(el);
+                box.current = el;
+              }}
+              {...message}
+            />
+          </>
+        )}
+      </Field>
+      <FormError message={err.root?.message} />
+      <div className="grid gap-2 sm:flex sm:flex-row-reverse">
+        <Button type="submit" variant="primary" size="lg" loading={send.isPending} disabled={!mentor.open}>
           {t('request.send')}
         </Button>
-        {bookable && !slot && <p className="-mt-3 text-center text-xs text-fg-3">{t('request.pickFirst')}</p>}
-      </form>
-    </Card>
+        <Button variant="ghost" size="lg" onClick={() => setStep('session')}>
+          {t('common.back')}
+        </Button>
+      </div>
+    </form>
   );
 }

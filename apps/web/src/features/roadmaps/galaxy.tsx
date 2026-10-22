@@ -1,14 +1,9 @@
-import { useDeferredValue, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { lazy, Suspense, useDeferredValue, useState } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { ClipboardCheck, Map as MapIcon, Orbit, Plus, Search, Sparkles } from 'lucide-react';
-import {
-  BRANCHES,
-  ROADMAP_CATEGORIES,
-  type RoadmapCategory,
-  type RoadmapSummaryView,
-} from '@campuslink/shared';
+import { BRANCHES, ROADMAP_CATEGORIES, type RoadmapSummaryView } from '@campuslink/shared';
 import { IntentLink } from '../../components/ui/intent-link';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Input, Select } from '../../components/ui/field';
@@ -19,17 +14,7 @@ import { Segmented } from '../../components/ui/tab-nav';
 import { followedRoadmaps, roadmapDrafts, roadmapsList } from '../../lib/queries';
 import { useCan } from '../../lib/me';
 import { cn } from '../../lib/cn';
-import { defaultRoadmapView, layoutGalaxy, rememberRoadmapView } from '../../lib/roadmaps';
-
-/** Colour per category (design tokens only). */
-const HUE: Record<RoadmapCategory, string> = {
-  software: 'var(--brand)',
-  'data-ai': 'var(--brand-2)',
-  security: 'var(--danger)',
-  'design-product': 'var(--warning)',
-  'core-engineering': 'var(--accent)',
-  'exams-higher-studies': 'var(--fg-2)',
-};
+import { defaultRoadmapView, rememberRoadmapView } from '../../lib/roadmaps';
 
 export function RoadmapCard({ r }: { r: RoadmapSummaryView }) {
   const { t } = useTranslation();
@@ -38,7 +23,7 @@ export function RoadmapCard({ r }: { r: RoadmapSummaryView }) {
       <div className="flex items-start justify-between gap-2">
         <IntentLink
           to={`/roadmaps/${r.slug}`}
-          className="font-display text-lg leading-tight font-semibold after:absolute after:inset-0"
+          className="font-display text-title leading-tight font-semibold after:absolute after:inset-0"
         >
           {r.title}
         </IntentLink>
@@ -74,124 +59,8 @@ export function RoadmapCard({ r }: { r: RoadmapSummaryView }) {
   );
 }
 
-function Galaxy({ roadmaps }: { roadmaps: RoadmapSummaryView[] }) {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  // One column on phones so labels stay readable.
-  const [columns] = useState(() =>
-    typeof matchMedia === 'function' && matchMedia('(max-width: 640px)').matches ? 1 : 2,
-  );
-  const { groups, width, height } = useMemo(
-    () => layoutGalaxy(roadmaps, ROADMAP_CATEGORIES, columns),
-    [roadmaps, columns],
-  );
-  const [focus, setFocus] = useState<RoadmapSummaryView | null>(null);
-  return (
-    <Card className="relative overflow-hidden p-0">
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        role="group"
-        aria-label={t('roadmaps.galaxyLabel')}
-        className="block h-auto w-full bg-[radial-gradient(ellipse_at_50%_40%,var(--surface-2),var(--surface-1)_75%)]"
-      >
-        {groups.map((g) => {
-          const hue = HUE[g.category as RoadmapCategory];
-          return (
-            <g key={g.category}>
-              <text
-                x={g.cx}
-                y={g.titleY}
-                textAnchor="middle"
-                className="fill-[var(--fg-2)] font-display text-[20px] font-semibold"
-                aria-hidden
-              >
-                {t(`roadmaps.cat.${g.category}`)}
-              </text>
-              <circle cx={g.cx} cy={g.cy} r={4} fill={hue} opacity={0.6} aria-hidden />
-              {g.stars.map((s) => (
-                <line
-                  key={`l-${s.roadmap.id}`}
-                  x1={g.cx}
-                  y1={g.cy}
-                  x2={s.x}
-                  y2={s.y}
-                  stroke={hue}
-                  strokeOpacity={0.3}
-                  aria-hidden
-                />
-              ))}
-              {g.stars.map((s) => {
-                const p = s.roadmap.progress;
-                const done = p ? p.done / Math.max(1, p.total) : 0;
-                const name =
-                  s.roadmap.title.length > 18 ? `${s.roadmap.title.slice(0, 17)}…` : s.roadmap.title;
-                return (
-                  <a
-                    key={s.roadmap.id}
-                    href={`/roadmaps/${s.roadmap.slug}`}
-                    aria-label={`${s.roadmap.title}, ${t('roadmaps.steps', { count: s.roadmap.nodeCount })}${
-                      p ? `, ${t('roadmaps.doneOf', p)}` : ''
-                    }`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate(`/roadmaps/${s.roadmap.slug}`);
-                    }}
-                    onFocus={() => setFocus(s.roadmap)}
-                    onMouseEnter={() => setFocus(s.roadmap)}
-                    className="group outline-none"
-                  >
-                    <circle
-                      cx={s.x}
-                      cy={s.y}
-                      r={s.r + 9}
-                      fill={hue}
-                      opacity={0.16 + done * 0.3}
-                      className="transition-opacity group-hover:opacity-50 group-focus-visible:opacity-60"
-                    />
-                    <circle
-                      cx={s.x}
-                      cy={s.y}
-                      r={s.r}
-                      fill={hue}
-                      stroke={done > 0 ? 'var(--success)' : 'var(--surface-1)'}
-                      strokeWidth={done > 0 ? 4 : 2}
-                    />
-                    <circle
-                      cx={s.x}
-                      cy={s.y}
-                      r={s.r + 14}
-                      fill="none"
-                      stroke="var(--fg)"
-                      strokeWidth={3}
-                      className="opacity-0 group-focus-visible:opacity-100"
-                    />
-                    <text
-                      x={s.label.x}
-                      y={s.label.y}
-                      textAnchor={s.label.anchor}
-                      className="pointer-events-none fill-[var(--fg)] text-[15px] font-medium"
-                    >
-                      {name}
-                    </text>
-                  </a>
-                );
-              })}
-            </g>
-          );
-        })}
-      </svg>
-      {focus && (
-        <p
-          className="pointer-events-none absolute inset-x-3 bottom-3 rounded-[var(--radius-sm)] border border-line bg-[var(--glass)] p-3 text-sm backdrop-blur"
-          aria-live="polite"
-        >
-          <span className="font-semibold">{focus.title}</span> · {focus.summary.slice(0, 140)}
-          {focus.summary.length > 140 ? '…' : ''}
-        </p>
-      )}
-    </Card>
-  );
-}
+// The Galaxy renderer loads only when the Galaxy view is shown (bundle budget).
+const GalaxyCanvas = lazy(() => import('./galaxy-canvas').then((m) => ({ default: m.GalaxyCanvas })));
 
 export function RoadmapsPage() {
   const { t } = useTranslation();
@@ -339,7 +208,9 @@ export function RoadmapsPage() {
           {t('roadmaps.emptyBody')}
         </EmptyState>
       ) : view === 'graph' ? (
-        <Galaxy roadmaps={rows} />
+        <Suspense fallback={<Skeleton className="h-[min(78vh,760px)] rounded-[var(--radius-xl)]" />}>
+          <GalaxyCanvas roadmaps={rows} />
+        </Suspense>
       ) : (
         <div className="grid gap-6">
           {byCategory.map(([c, rs]) => (

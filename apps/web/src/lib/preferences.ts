@@ -9,8 +9,11 @@ export type MotionPref = 'system' | 'full' | 'reduce';
 interface PrefState {
   theme: ThemePref;
   motion: MotionPref;
+  /** A short vibration on confirmations (master prompt §6). Off unless the member turns it on. */
+  haptics: boolean;
   setTheme: (t: ThemePref) => void;
   setMotion: (m: MotionPref) => void;
+  setHaptics: (on: boolean) => void;
   setLanguage: (l: 'en' | 'te') => void;
 }
 
@@ -44,6 +47,7 @@ applyMotion(initialMotion);
 export const usePreferences = create<PrefState>((set) => ({
   theme: initialTheme,
   motion: initialMotion,
+  haptics: prefs.get('haptics') === '1',
   setTheme: (theme) => {
     applyTheme(theme);
     prefs.set('theme', theme);
@@ -53,6 +57,10 @@ export const usePreferences = create<PrefState>((set) => ({
     applyMotion(motion);
     prefs.set('motion', motion);
     set({ motion });
+  },
+  setHaptics: (haptics) => {
+    prefs.set('haptics', haptics ? '1' : '0');
+    set({ haptics });
   },
   setLanguage: (l) => {
     prefs.set('lang', l);

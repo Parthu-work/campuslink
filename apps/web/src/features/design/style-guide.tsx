@@ -14,6 +14,9 @@ import { OtpInput } from '../../components/ui/otp';
 import { PageHeader } from '../../components/ui/page-header';
 import { ProgressBar, ProgressRing } from '../../components/ui/progress';
 import { StatCard, StatGrid } from '../../components/ui/stat-card';
+import { RadarSweep } from '../../components/ui/radar-sweep';
+import { RoleChip } from '../../components/ui/role-chip';
+import { Stepper } from '../../components/ui/stepper';
 import { Switch } from '../../components/ui/switch';
 import { Table, THead, Td, TdNum, Th } from '../../components/ui/table';
 import { TabPanel, Tabs } from '../../components/ui/tabs';
@@ -587,6 +590,19 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
           title={t('design.errorDemo')}
           compact
         />
+        <Stepper
+          label={t('design.stepper')}
+          steps={[t('design.stepA'), t('design.stepB'), t('design.stepC')]}
+          current={1}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          {['STUDENT', 'ALUMNI', 'FACULTY', 'COLLEGE_ADMIN'].map((r) => (
+            <RoleChip key={r} role={r} />
+          ))}
+          <span className="text-display text-brand-ink">
+            <RadarSweep />
+          </span>
+        </div>
       </Section>
 
       <Section title={t('design.illustrations')}>

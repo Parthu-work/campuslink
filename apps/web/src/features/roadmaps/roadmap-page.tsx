@@ -27,7 +27,7 @@ import {
 } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
-import { Dialog } from '../../components/ui/dialog';
+import { Sheet } from '../../components/ui/dialog';
 import { Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { ProgressBar } from '../../components/ui/progress';
@@ -37,6 +37,7 @@ import { api, ApiError } from '../../lib/api';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { roadmap } from '../../lib/queries';
 import { useCan, useMe } from '../../lib/me';
+import { celebrate } from '../../lib/celebrate';
 import { cn } from '../../lib/cn';
 import { formatDay, formatRelative } from '../../lib/format';
 import {
@@ -193,7 +194,7 @@ function NodePanel({
   const done = !!roadmap.myProgress?.done.includes(node.id);
   const prereqs = roadmap.content.nodes.filter((n) => node.prerequisites.includes(n.id));
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()} title={node.title} history={false}>
+    <Sheet open onOpenChange={(o) => !o && onClose()} title={node.title} history={false}>
       <div className="grid gap-3">
         <div className="flex flex-wrap gap-1.5">
           <KindBadge kind={node.kind} />
@@ -229,7 +230,11 @@ function NodePanel({
           <Button
             variant={done ? 'secondary' : 'primary'}
             loading={toggle.isPending}
-            onClick={() => toggle.mutate({ nodeId: node.id, done: !done })}
+            onClick={(e) => {
+              // Finishing a step is a moment worth marking (§3); undoing one is quiet.
+              const from = e.currentTarget;
+              toggle.mutate({ nodeId: node.id, done: !done }, { onSuccess: () => !done && celebrate(from) });
+            }}
           >
             {done ? (
               <CircleDashed className="size-4" aria-hidden />
@@ -241,7 +246,7 @@ function NodePanel({
         )}
         {canWrite && <Comments roadmap={roadmap} nodeId={node.id} />}
       </div>
-    </Dialog>
+    </Sheet>
   );
 }
 

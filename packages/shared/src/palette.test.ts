@@ -117,6 +117,11 @@ describe.each(Object.entries(COLLEGES))('palette for a %s college', (_, hex) => 
     // Labels on the aurora read on every stop.
     for (const stop of ['--aurora-1', '--aurora-2', '--aurora-3'])
       expect(contrastRatio(color(t, '--on-aurora'), color(t, stop)), stop).toBeGreaterThanOrEqual(TEXT_RATIO);
+    // The Galaxy's deep space keeps its labels readable in both themes.
+    for (const bg of ['--space', '--space-2']) {
+      expect(contrastRatio(color(t, '--on-space'), color(t, bg)), bg).toBeGreaterThanOrEqual(INK_RATIO);
+      expect(contrastRatio(color(t, '--on-space-2'), color(t, bg)), bg).toBeGreaterThanOrEqual(TEXT_RATIO);
+    }
     // The focus ring is the brand ink: 3:1 against the canvas is the WCAG bar for indicators.
     expect(contrastRatio(color(t, '--brand-ink'), color(t, '--bg'))).toBeGreaterThanOrEqual(3);
   });

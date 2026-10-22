@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Crown, Medal, Users } from 'lucide-react';
 import type { LeaderboardRow, MyProgressView, WallOfMentorsView } from '@campuslink/shared';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { Illustration } from '../../components/ui/illustration';
+import { IntentLink } from '../../components/ui/intent-link';
 import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { Segmented } from '../../components/ui/tab-nav';
@@ -16,12 +18,52 @@ function OptInHint({ field }: { field: 'showOnLeaderboard' | 'showOnWall' }) {
   const me = useQuery({ queryKey: ['progress'], queryFn: () => api.get<MyProgressView>('/me/progress') });
   if (!me.data || me.data.prefs[field]) return null;
   return (
-    <p className="text-sm text-fg-2">
+    <p className="text-meta text-fg-2">
       {t(field === 'showOnLeaderboard' ? 'progress.notOnBoard' : 'progress.notOnWall')}{' '}
       <Link to="/progress" className="font-semibold text-brand-ink underline">
         {t('progress.changeInProgress')}
       </Link>
     </p>
+  );
+}
+
+/**
+ * The top three on a podium (§8.10): first in the middle and tallest. In reading order the list is
+ * still 1, 2, 3; only the layout moves second to the left.
+ */
+function Podium({ rows }: { rows: LeaderboardRow[] }) {
+  const { t } = useTranslation();
+  const place = ['order-2', 'order-1', 'order-3'];
+  const height = ['h-28', 'h-20', 'h-14'];
+  return (
+    <ol aria-label={t('progress.podium')} className="grid grid-cols-3 items-end gap-2 sm:gap-4">
+      {rows.map((r, i) => (
+        <li key={r.person.userId} className={cn('grid justify-items-center gap-2 text-center', place[i])}>
+          <span className={cn('rounded-full p-[3px]', i === 0 ? 'aurora-ring' : 'bg-line-strong')}>
+            <span className="block rounded-full bg-bg p-[2px]">
+              <PersonAvatar name={r.person.name} fileId={r.person.avatarFileId} size={i === 0 ? 72 : 56} />
+            </span>
+          </span>
+          <span className="grid min-w-0 max-w-full">
+            <b className="truncate text-meta">
+              {r.person.name}
+              {r.isMe && <span className="font-normal text-fg-3"> · {t('progress.you')}</span>}
+            </b>
+            <span className="text-caption text-fg-2 tabular-nums">{t('progress.xpN', { xp: r.points })}</span>
+          </span>
+          <span
+            className={cn(
+              'grid w-full place-items-center rounded-t-[var(--radius-md)] font-display text-headline font-bold',
+              i === 0 ? 'bg-aurora text-on-aurora' : 'bg-surface-2 text-fg-2',
+              height[i],
+            )}
+          >
+            <span aria-hidden>{r.rank}</span>
+            <span className="sr-only">{t('progress.rank', { rank: r.rank })}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -51,29 +93,33 @@ export function LeaderboardPage() {
       ) : !q.data?.length ? (
         <EmptyState icon={<Medal className="size-6" />} title={t('progress.boardEmpty')} />
       ) : (
-        <ol className="grid gap-2">
-          {q.data.map((r) => (
-            <li key={r.person.userId}>
-              <Card className={cn('flex items-center gap-3 p-3', r.isMe && 'border-brand')}>
-                <span
-                  className="w-8 text-center font-mono text-lg font-bold"
-                  aria-label={t('progress.rank', { rank: r.rank })}
+        <>
+          {q.data.length >= 3 && <Podium rows={q.data.slice(0, 3)} />}
+          <ol className="grid gap-2" start={q.data.length >= 3 ? 4 : 1}>
+            {(q.data.length >= 3 ? q.data.slice(3) : q.data).map((r) => (
+              <li key={r.person.userId}>
+                <Card
+                  variant="raised"
+                  className={cn('flex items-center gap-3 p-3', r.isMe && 'border-brand bg-brand-surface')}
                 >
-                  {r.rank}
-                </span>
-                <PersonAvatar name={r.person.name} fileId={r.person.avatarFileId} size={36} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">
-                    {r.person.name}
-                    {r.isMe && <span className="text-fg-3"> · {t('progress.you')}</span>}
+                  <span className="w-8 text-center font-display text-lead font-bold tabular-nums">
+                    <span aria-hidden>{r.rank}</span>
+                    <span className="sr-only">{t('progress.rank', { rank: r.rank })}</span>
                   </span>
-                  {r.branch && <span className="text-xs text-fg-3">{r.branch}</span>}
-                </span>
-                <Badge tone="brand">{t('progress.xpN', { xp: r.points })}</Badge>
-              </Card>
-            </li>
-          ))}
-        </ol>
+                  <PersonAvatar name={r.person.name} fileId={r.person.avatarFileId} size={40} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold">
+                      {r.person.name}
+                      {r.isMe && <span className="text-fg-3"> · {t('progress.you')}</span>}
+                    </span>
+                    {r.branch && <span className="text-caption text-fg-3">{r.branch}</span>}
+                  </span>
+                  <Badge tone="brand">{t('progress.xpN', { xp: r.points })}</Badge>
+                </Card>
+              </li>
+            ))}
+          </ol>
+        </>
       )}
     </div>
   );
@@ -88,39 +134,46 @@ export function WallOfMentorsPage() {
       <PageHeader icon={<Users />} title={t('progress.wall')} intro={t('progress.wallIntro')} />
       <OptInHint field="showOnWall" />
       {motm && (
-        <Card className="flex flex-wrap items-center gap-4 border-[color-mix(in_srgb,var(--accent)_50%,transparent)] p-5">
-          <Crown className="size-8 text-accent-ink" aria-hidden />
-          <PersonAvatar name={motm.person.name} fileId={motm.person.avatarFileId} size={56} />
-          <div>
-            <p className="text-sm text-fg-2">{t('progress.motm', { month: motm.month })}</p>
-            <p className="font-display text-2xl font-bold">{motm.person.name}</p>
-            <p className="text-sm text-fg-3">{t('progress.impactN', { impact: motm.impact })}</p>
+        <Card variant="featured" className="flex flex-wrap items-center gap-4 p-5">
+          <span className="aurora-ring rounded-full p-[3px]">
+            <span className="block rounded-full bg-surface-1 p-[2px]">
+              <PersonAvatar name={motm.person.name} fileId={motm.person.avatarFileId} size={72} />
+            </span>
+          </span>
+          <div className="min-w-0">
+            <p className="flex items-center gap-1.5 text-meta font-semibold text-brand-ink">
+              <Crown className="size-4" aria-hidden /> {t('progress.motm', { month: motm.month })}
+            </p>
+            <p className="text-headline font-bold">{motm.person.name}</p>
+            <p className="text-meta text-fg-2">{t('progress.impactN', { impact: motm.impact })}</p>
           </div>
         </Card>
       )}
       {q.isLoading ? (
         <Skeleton className="h-48" />
       ) : !q.data?.mentors.length ? (
-        <EmptyState icon={<Users className="size-6" />} title={t('progress.wallEmpty')} />
+        <EmptyState art={<Illustration kind="people" />} title={t('progress.wallEmpty')} />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        // A mosaic of faces: people first (§3, §8.10).
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {q.data.mentors.map((m) => (
             <li key={m.person.userId}>
-              <Card className="flex items-center gap-3 p-3">
-                <PersonAvatar name={m.person.name} fileId={m.person.avatarFileId} size={44} />
-                <span className="min-w-0 flex-1">
-                  <Link
-                    to={`/people/${m.person.userId}`}
-                    className="block truncate font-semibold hover:underline"
-                  >
-                    {m.person.name}
-                  </Link>
-                  <span className="text-xs text-fg-3">
+              <IntentLink
+                to={`/people/${m.person.userId}`}
+                className="block h-full rounded-[var(--radius-lg)]"
+              >
+                <Card
+                  variant="interactive"
+                  className="grid h-full justify-items-center gap-2 overflow-hidden p-4 text-center"
+                >
+                  <PersonAvatar name={m.person.name} fileId={m.person.avatarFileId} size={80} />
+                  <b className="max-w-full truncate text-body">{m.person.name}</b>
+                  <Badge tone="brand">{t(`progress.level.${m.level}`)}</Badge>
+                  <span className="text-caption text-fg-3">
                     {t('progress.menteesN', { count: m.menteesHelped })}
                   </span>
-                </span>
-                <Badge tone="accent">{t(`progress.level.${m.level}`)}</Badge>
-              </Card>
+                </Card>
+              </IntentLink>
             </li>
           ))}
         </ul>

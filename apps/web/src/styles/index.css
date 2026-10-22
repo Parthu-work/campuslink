@@ -25,6 +25,10 @@
   --color-brand-surface: var(--brand-surface);
   --color-accent-surface: var(--accent-surface);
   --color-on-aurora: var(--on-aurora);
+  --color-space: var(--space);
+  --color-space-2: var(--space-2);
+  --color-on-space: var(--on-space);
+  --color-on-space-2: var(--on-space-2);
   --color-brand-50: var(--brand-50);
   --color-brand-100: var(--brand-100);
   --color-brand-200: var(--brand-200);
@@ -657,6 +661,155 @@ main h1[tabindex='-1']:focus {
   }
   .side-sheet-motion[data-state='closed'] {
     animation: side-out calc(200ms * var(--motion-scale)) ease-in forwards;
+  }
+}
+
+/* The celebration burst (components/ui/burst.tsx): a ring and sparks, transform and opacity only.
+   The sparks fly out along their own angle (--a) for their own distance (--d). */
+@keyframes burst-ring {
+  from {
+    opacity: 0.9;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+@keyframes burst-spark {
+  0% {
+    opacity: 1;
+    transform: rotate(var(--a)) translateX(0) scale(1);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateX(var(--d)) scale(0.3);
+  }
+}
+@keyframes burst-glow {
+  0%,
+  60% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.burst-ring {
+  border: 3px solid transparent;
+  background: var(--aurora-ring) border-box;
+  mask:
+    linear-gradient(#000 0 0) padding-box exclude,
+    linear-gradient(#000 0 0) border-box;
+  animation: burst-ring 700ms var(--ease-out) both;
+}
+.burst-spark {
+  animation: burst-spark 900ms var(--ease-out) both;
+}
+.burst-glow {
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklch, var(--aurora-2) 45%, transparent),
+    transparent
+  );
+  animation: burst-glow 1200ms linear both;
+}
+
+/* A reaction or bookmark switching on pops its icon (bouncy spring, transform only). */
+@keyframes react-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(calc(1 + 0.35 * var(--motion-scale)));
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.react-pop[data-pop] > svg {
+  animation: react-pop calc(420ms * var(--motion-scale)) var(--ease-bouncy);
+}
+
+/* "Join video" once the room is open: a soft aurora glow breathing behind the button (opacity
+   only); still under reduced motion. */
+.join-glow {
+  position: relative;
+  isolation: isolate;
+}
+.join-glow::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--aurora);
+  filter: blur(12px);
+  opacity: 0.55;
+  animation: glow-breathe 2.4s ease-in-out infinite alternate;
+}
+@keyframes glow-breathe {
+  to {
+    opacity: 0.2;
+  }
+}
+:root[data-motion='reduce'] .join-glow::after {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .join-glow::after {
+    animation: none;
+  }
+}
+
+/* The typing bubble's three dots rise in turn (transform and opacity); still under reduced motion. */
+.typing-dots > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--fg-3);
+  animation: typing-dot calc(1.1s * var(--motion-scale)) ease-in-out infinite;
+}
+.typing-dots > span:nth-child(2) {
+  animation-delay: calc(0.15s * var(--motion-scale));
+}
+.typing-dots > span:nth-child(3) {
+  animation-delay: calc(0.3s * var(--motion-scale));
+}
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+/* A few Galaxy background stars twinkle (opacity only); still under reduced motion. */
+.twinkle {
+  animation: twinkle calc(3.2s * var(--motion-scale)) ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+  to {
+    opacity: 0.15;
+  }
+}
+
+/* Job Radar's sweep turns around the centre of its 48-unit box. */
+.radar-sweep {
+  transform-origin: 24px 24px;
+  animation: radar-turn calc(3.6s * var(--motion-scale)) linear infinite;
+}
+@keyframes radar-turn {
+  to {
+    transform: rotate(-360deg);
   }
 }
 

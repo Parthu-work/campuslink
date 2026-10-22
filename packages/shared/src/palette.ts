@@ -173,6 +173,11 @@ function themeTokens(primary: Oklch, accentBase: Oklch, theme: Theme): Tokens {
   });
   // Labels on the aurora (the Create and Ask buttons): near-black reads on every stop.
   t['--on-aurora'] = css(ok(0.18, 0.02, h));
+  // Deep space for the Career Galaxy: dark in both themes (a planetarium window), tinted by h.
+  t['--space'] = css(ok(0.17, 0.035, h));
+  t['--space-2'] = css(ok(0.23, 0.045, h));
+  t['--on-space'] = css(ok(0.96, 0.01, h));
+  t['--on-space-2'] = css(ok(0.8, 0.03, h));
 
   // Subject accents: same lightness and chroma, hue offsets from the brand.
   SUBJECT_OFFSETS.forEach((o, i) => {

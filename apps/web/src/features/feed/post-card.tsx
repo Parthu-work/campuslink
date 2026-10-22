@@ -1,5 +1,5 @@
-import { useId } from 'react';
-import { Link } from 'react-router';
+import { useId, type MouseEvent } from 'react';
+import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
@@ -26,6 +26,7 @@ import { useFileUrl } from '../../lib/files';
 import { formatDateTime, formatRelative } from '../../lib/format';
 import { patchPost, usePostActions } from '../../lib/feed';
 import { useCan } from '../../lib/me';
+import { pop } from '../../lib/celebrate';
 import { cn } from '../../lib/cn';
 import { ContentMenu, RemovalNotice } from './content-menu';
 
@@ -67,7 +68,7 @@ export function AuthorLine({
           )}
           {role && <Badge tone={author.roles.includes('ALUMNI') ? 'accent' : 'neutral'}>{role}</Badge>}
         </p>
-        <p className="truncate text-xs text-fg-3">
+        <p className="truncate text-caption text-fg-3">
           {[author.headline, author.branch].filter(Boolean).join(' · ')}
           {(author.headline || author.branch) && ' · '}
           <time dateTime={at} title={formatDateTime(at)}>
@@ -80,12 +81,23 @@ export function AuthorLine({
   );
 }
 
-function PostImage({ fileId, alt, single }: { fileId: string; alt: string; single: boolean }) {
+function PostImage({
+  fileId,
+  alt,
+  single,
+  onDoubleTap,
+}: {
+  fileId: string;
+  alt: string;
+  single: boolean;
+  onDoubleTap?: () => void;
+}) {
   const url = useFileUrl(fileId);
   return (
     <div
+      onDoubleClick={onDoubleTap}
       className={cn(
-        'overflow-hidden rounded-[var(--radius-sm)] bg-surface-2',
+        'overflow-hidden rounded-[var(--radius-md)] bg-surface-2 [touch-action:manipulation]',
         single ? 'aspect-[4/3]' : 'aspect-square',
       )}
     >
@@ -161,7 +173,7 @@ function Poll({ post }: { post: PostView }) {
         return showResults ? (
           <div
             key={i}
-            className="grid gap-1.5 rounded-[var(--radius-sm)] border border-line px-3 py-2 text-meta"
+            className="grid gap-1.5 rounded-[var(--radius-md)] border border-line px-3.5 py-2.5 text-meta"
           >
             <span className="flex justify-between gap-3">
               <span className={cn(poll.myVote === i && 'font-semibold')}>
@@ -178,13 +190,13 @@ function Poll({ post }: { post: PostView }) {
             type="button"
             disabled={!canVote || vote.isPending}
             onClick={() => vote.mutate(i)}
-            className="min-h-11 rounded-[var(--radius-sm)] border border-line-strong px-3 text-left text-sm font-medium hover:border-brand disabled:opacity-60"
+            className="pressable min-h-11 rounded-[var(--radius-md)] border border-line-strong px-3.5 text-left text-meta font-medium transition-colors hover:border-brand hover:bg-brand-surface disabled:opacity-60"
           >
             {o.text}
           </button>
         );
       })}
-      <p className="text-xs text-fg-3">
+      <p className="text-caption text-fg-3">
         {t('feed.votes', { count: showResults ? poll.total : 0 })}
         {showResults ? '' : ` · ${t('feed.voteToSee')}`} ·{' '}
         {poll.closed ? t('feed.pollClosed') : t('feed.pollCloses', { when: formatRelative(poll.closesAt) })}
@@ -199,13 +211,13 @@ function LinkPreview({ link }: { link: NonNullable<PostView['link']> }) {
       href={link.url}
       target="_blank"
       rel="noopener noreferrer nofollow ugc"
-      className="grid gap-0.5 rounded-[var(--radius-sm)] border border-line p-3 hover:border-line-strong"
+      className="grid gap-0.5 rounded-[var(--radius-md)] border border-line p-3 transition-colors hover:border-line-strong hover:bg-hover"
     >
-      <span className="flex items-center gap-1.5 font-mono text-[11px] text-fg-3">
+      <span className="flex items-center gap-1.5 text-caption text-fg-3">
         <ExternalLink className="size-3.5" aria-hidden /> {link.siteName || link.host}
       </span>
       <b className="line-clamp-2">{link.title || link.url}</b>
-      {link.description && <span className="line-clamp-2 text-sm text-fg-2">{link.description}</span>}
+      {link.description && <span className="line-clamp-2 text-meta text-fg-2">{link.description}</span>}
     </a>
   );
 }
@@ -216,7 +228,7 @@ function ActionBar({ post }: { post: PostView }) {
   const { react, save, share } = usePostActions(post);
   const live = post.status === 'published';
   return (
-    <div className="flex flex-wrap items-center gap-1 border-t border-line pt-2">
+    <div className="-mx-1.5 -mb-1.5 flex flex-wrap items-center gap-0.5 border-t border-line pt-1.5">
       <div role="group" aria-label={t('feed.reactions')} className="flex gap-1">
         {REACTIONS.map((r) => {
           const Icon = REACTION_ICON[r];
@@ -228,12 +240,15 @@ function ActionBar({ post }: { post: PostView }) {
               type="button"
               aria-pressed={on}
               disabled={!canInteract || !live}
-              onClick={() => react.mutate(on ? null : r)}
+              onClick={(e) => {
+                if (!on) pop(e.currentTarget);
+                react.mutate(on ? null : r);
+              }}
               aria-label={t('feed.reactLabel', { reaction: t(`feed.reaction.${r}`), count: n })}
-              className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-2.5 text-sm text-fg-2 transition-transform hover:bg-surface-2 active:scale-95 disabled:opacity-60 aria-pressed:bg-[color-mix(in_srgb,var(--brand)_16%,transparent)] aria-pressed:text-brand-ink"
+              className="react-pop inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-2.5 text-meta text-fg-2 transition-[scale,background-color,color] duration-[var(--dur-fast)] ease-snappy hover:bg-hover active:scale-90 disabled:opacity-60 aria-pressed:bg-brand-surface aria-pressed:text-brand-ink"
             >
-              <Icon className="size-4" aria-hidden />
-              <span aria-hidden className="font-mono text-xs">
+              <Icon className="size-[18px]" aria-hidden />
+              <span aria-hidden className="text-caption font-semibold tabular-nums">
                 {n || ''}
               </span>
             </button>
@@ -242,11 +257,11 @@ function ActionBar({ post }: { post: PostView }) {
       </div>
       <IntentLink
         to={`/posts/${post.id}`}
-        className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-2.5 text-sm text-fg-2 hover:bg-surface-2"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-2.5 text-meta text-fg-2 hover:bg-hover"
         aria-label={t('feed.commentsLabel', { count: post.counts.comments })}
       >
-        <MessageCircle className="size-4" aria-hidden />
-        <span aria-hidden className="font-mono text-xs">
+        <MessageCircle className="size-[18px]" aria-hidden />
+        <span aria-hidden className="text-caption font-semibold tabular-nums">
           {post.counts.comments || ''}
         </span>
       </IntentLink>
@@ -255,12 +270,15 @@ function ActionBar({ post }: { post: PostView }) {
           type="button"
           aria-pressed={post.saved}
           disabled={!canInteract || !live}
-          onClick={() => save.mutate(!post.saved)}
+          onClick={(e) => {
+            if (!post.saved) pop(e.currentTarget);
+            save.mutate(!post.saved);
+          }}
           aria-label={post.saved ? t('feed.unsave') : t('feed.save')}
-          className="grid size-10 place-items-center rounded-full text-fg-2 hover:bg-surface-2 disabled:opacity-60 aria-pressed:text-brand-ink"
+          className="react-pop grid size-11 place-items-center rounded-full text-fg-2 transition-[scale] duration-[var(--dur-fast)] ease-snappy hover:bg-hover active:scale-90 disabled:opacity-60 aria-pressed:text-brand-ink"
         >
           {post.saved ? (
-            <BookmarkCheck className="size-5" aria-hidden />
+            <BookmarkCheck className="size-5 fill-current" aria-hidden />
           ) : (
             <Bookmark className="size-5" aria-hidden />
           )}
@@ -270,7 +288,7 @@ function ActionBar({ post }: { post: PostView }) {
           disabled={!canInteract || !live}
           onClick={() => share.mutate()}
           aria-label={t('feed.share')}
-          className="grid size-10 place-items-center rounded-full text-fg-2 hover:bg-surface-2 disabled:opacity-60"
+          className="grid size-11 place-items-center rounded-full text-fg-2 hover:bg-hover disabled:opacity-60"
         >
           <Share2 className="size-5" aria-hidden />
         </button>
@@ -290,15 +308,30 @@ export function PostCard({
   morph?: boolean;
 }) {
   const { t } = useTranslation();
-  const { remove } = usePostActions(post);
+  const navigate = useNavigate();
+  const canInteract = useCan('feed:interact');
+  const { remove, react } = usePostActions(post);
   const H = headingLevel === 2 ? 'h2' : 'h3';
+  // Tapping the text opens the post (IA-9); links, buttons and selecting text keep their own job.
+  // Keyboard and screen-reader users have the comments link, which goes to the same place.
+  const openFromBody = (e: MouseEvent) => {
+    if ((e.target as HTMLElement).closest('a, button, input, video, summary')) return;
+    if (window.getSelection()?.toString()) return;
+    void navigate(`/posts/${post.id}`);
+  };
+  // Double-tapping a photo marks the post helpful, like the reaction button (§6).
+  const doubleTap =
+    canInteract && post.status === 'published' && !post.myReaction
+      ? () => react.mutate('helpful')
+      : undefined;
   const images = post.media.filter((m) => m.kind === 'image');
   const video = post.media.find((m) => m.kind === 'video');
   return (
     <Card
+      variant="raised"
       className={cn(
         'grid gap-3 p-4',
-        post.announcement && 'border-[color-mix(in_srgb,var(--brand)_45%,var(--line))]',
+        post.announcement && 'border-[color-mix(in_oklch,var(--brand)_45%,var(--line))]',
       )}
     >
       <article
@@ -339,11 +372,21 @@ export function PostCard({
             canAppeal={post.isMine}
           />
         )}
-        {post.body && <RichText text={post.body} />}
+        {post.body && (
+          <div onClick={openFromBody} className="cursor-pointer">
+            <RichText text={post.body} />
+          </div>
+        )}
         {images.length > 0 && (
           <div className={cn('grid gap-1.5', images.length > 1 && 'grid-cols-2')}>
             {images.map((m) => (
-              <PostImage key={m.fileId} fileId={m.fileId} alt={m.alt} single={images.length === 1} />
+              <PostImage
+                key={m.fileId}
+                fileId={m.fileId}
+                alt={m.alt}
+                single={images.length === 1}
+                {...(doubleTap ? { onDoubleTap: doubleTap } : {})}
+              />
             ))}
           </div>
         )}
@@ -370,9 +413,9 @@ export function ItemCard({ item, headingLevel = 2 }: { item: ItemView; headingLe
   const { t } = useTranslation();
   const H = headingLevel === 2 ? 'h2' : 'h3';
   return (
-    <Card className="grid gap-2 p-4">
+    <Card variant="raised" className="grid gap-2 p-4">
       <article className="grid gap-2">
-        <p className="flex items-center gap-2 text-xs text-fg-3">
+        <p className="flex items-center gap-2 text-caption text-fg-3">
           <Rss className="size-3.5 text-accent-ink" aria-hidden />
           <span className="truncate">
             {t('feed.from', { source: item.source.name })} ·{' '}
@@ -381,13 +424,13 @@ export function ItemCard({ item, headingLevel = 2 }: { item: ItemView; headingLe
             </time>
           </span>
         </p>
-        <H className="text-base leading-snug font-semibold">
+        <H className="text-lead leading-snug font-semibold">
           <a href={item.url} target="_blank" rel="noopener noreferrer nofollow" className="hover:underline">
             {item.title}
             <span className="sr-only"> ({t('feed.opensSite', { host: item.host })})</span>
           </a>
         </H>
-        {item.snippet && <p className="line-clamp-3 text-sm text-fg-2">{item.snippet}</p>}
+        {item.snippet && <p className="line-clamp-3 text-meta text-fg-2">{item.snippet}</p>}
         <p className="flex flex-wrap items-center gap-1.5">
           {item.topics.slice(0, 3).map((tp) => (
             <Badge key={tp}>{t(`topics.${tp}`)}</Badge>
@@ -396,7 +439,7 @@ export function ItemCard({ item, headingLevel = 2 }: { item: ItemView; headingLe
             href={item.url}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="ml-auto inline-flex min-h-10 items-center gap-1 rounded-full px-2 text-sm font-semibold text-brand-ink hover:bg-surface-2"
+            className="ml-auto inline-flex min-h-11 items-center gap-1 rounded-full px-2.5 text-meta font-semibold text-brand-ink hover:bg-hover"
             aria-hidden
             tabIndex={-1}
           >

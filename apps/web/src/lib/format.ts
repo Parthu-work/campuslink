@@ -15,11 +15,17 @@ const perLocale = <T>(make: (locale: string) => T) => {
 const day = perLocale(
   (l) => new Intl.DateTimeFormat(l, { weekday: 'short', day: 'numeric', month: 'short' }),
 );
+const weekday = perLocale((l) => new Intl.DateTimeFormat(l, { weekday: 'short' }));
+const month = perLocale((l) => new Intl.DateTimeFormat(l, { month: 'short' }));
 const time = perLocale((l) => new Intl.DateTimeFormat(l, { hour: 'numeric', minute: '2-digit' }));
 const dateTime = perLocale((l) => new Intl.DateTimeFormat(l, { dateStyle: 'medium', timeStyle: 'short' }));
 const relative = perLocale((l) => new Intl.RelativeTimeFormat(l, { numeric: 'auto' }));
 
 export const formatDay = (iso: string | Date) => day().format(new Date(iso));
+/** Short weekday ("Thu"), for date tiles. */
+export const formatWeekday = (iso: string | Date) => weekday().format(new Date(iso));
+/** Short month ("Oct"), for date tiles. */
+export const formatMonth = (iso: string | Date) => month().format(new Date(iso));
 export const formatTime = (iso: string | Date) => time().format(new Date(iso));
 export const formatDateTime = (iso: string | Date) => dateTime().format(new Date(iso));
 export const formatRelative = (iso: string | Date) => {

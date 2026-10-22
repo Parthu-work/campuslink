@@ -9,18 +9,25 @@ export function OtpInput({
   onChange,
   label,
   autoFocus,
+  onComplete,
 }: {
   value: string;
   onChange: (v: string) => void;
   label: string;
   autoFocus?: boolean;
+  /** Called once all six digits are in (typed or pasted), so the form can submit itself (FO-6). */
+  onComplete?: (code: string) => void;
 }) {
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const digits = Array.from({ length: 6 }, (_, i) => value[i] ?? '');
+  const update = (code: string) => {
+    onChange(code);
+    if (/^\d{6}$/.test(code)) onComplete?.(code);
+  };
   const set = (i: number, d: string) => {
     const next = digits.slice();
     next[i] = d;
-    onChange(next.join('').slice(0, 6));
+    update(next.join('').slice(0, 6));
   };
   return (
     <div role="group" aria-label={label} className="flex justify-center gap-2 sm:gap-2.5">
@@ -49,7 +56,7 @@ export function OtpInput({
             const p = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
             if (p.length > 1) {
               e.preventDefault();
-              onChange(p);
+              update(p);
               refs.current[Math.min(p.length, 5)]?.focus();
             }
           }}

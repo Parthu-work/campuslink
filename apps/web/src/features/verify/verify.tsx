@@ -1,17 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { BadgeCheck, Clock, IdCard } from 'lucide-react';
+import { ChevronRight, Compass, IdCard, Orbit, UserRound } from 'lucide-react';
+import { TOPICS, type FollowState } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
+import { buttonVariants } from '../../components/ui/button-variants';
+import { Illustration } from '../../components/ui/illustration';
+import { IntentLink } from '../../components/ui/intent-link';
+import { Stepper } from '../../components/ui/stepper';
 import { Field, Input, Textarea } from '../../components/ui/field';
-import { Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { Card, Chip, Crest, EmptyState, Skeleton } from '../../components/ui/misc';
 import { OtpInput } from '../../components/ui/otp';
 import { PageHeader } from '../../components/ui/page-header';
 import { FormError } from '../../components/layout/auth-layout';
 import { api, ApiError } from '../../lib/api';
 import { useTenant } from '../../lib/tenant-context';
 import { useMe } from '../../lib/me';
+import { celebrate } from '../../lib/celebrate';
+import { useFollow } from '../../lib/follows';
 
 type Status = {
   verified: boolean;
@@ -43,6 +50,7 @@ export function VerifyPage() {
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
   const isAlumni = me?.roles.includes('ALUMNI');
+  const college = tenant.branding.shortName;
 
   const finish = async () => {
     setStep({ kind: 'done' });
@@ -73,13 +81,12 @@ export function VerifyPage() {
     }
   };
 
-  const confirm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (step.kind !== 'code') return;
+  const confirm = async (value = code) => {
+    if (step.kind !== 'code' || busy) return;
     setBusy(true);
     setError(undefined);
     try {
-      await api.post('/verification/roll/confirm', { challengeId: step.challengeId, code });
+      await api.post('/verification/roll/confirm', { challengeId: step.challengeId, code: value });
       await finish();
     } catch (err) {
       setError(errMsg(err, t('errors.generic')));
@@ -88,15 +95,16 @@ export function VerifyPage() {
     }
   };
 
-  if (status.isLoading) return <Skeleton className="h-64" />;
-  if (status.data?.verified || step.kind === 'done') {
+  if (status.isLoading) return <Skeleton className="mx-auto h-80 w-full max-w-[560px]" />;
+  if (step.kind === 'done') return <YoureIn />;
+  if (status.data?.verified) {
     return (
-      <Card className="p-6">
+      <Card className="mx-auto w-full max-w-[560px] p-6">
         <EmptyState
-          icon={<BadgeCheck className="size-6" />}
+          art={<Illustration kind="done" />}
           title={t('verify.done')}
           action={
-            <Link to="/people" className="font-semibold text-brand-ink hover:underline">
+            <Link to="/people" className={buttonVariants({ variant: 'primary' })}>
               {t('nav.people')}
             </Link>
           }
@@ -108,26 +116,42 @@ export function VerifyPage() {
   }
   if (status.data?.request?.status === 'pending') {
     return (
-      <Card className="p-6">
-        <EmptyState icon={<Clock className="size-6" />} title={t('verify.pendingTitle')}>
+      <Card className="mx-auto w-full max-w-[560px] p-6">
+        <EmptyState art={<Illustration kind="calendar" />} title={t('verify.pendingTitle')}>
           {t('verify.pendingBody')}
         </EmptyState>
       </Card>
     );
   }
 
+  const byId = step.kind === 'id';
+  const steps = byId
+    ? [t('verify.steps.photo'), t('verify.steps.review'), t('verify.steps.in')]
+    : [t('verify.steps.find'), t('verify.steps.code'), t('verify.steps.in')];
   return (
-    <>
-      <PageHeader title={t('verify.title', { college: tenant.branding.shortName })} />
+    <div className="mx-auto grid w-full max-w-[560px] gap-4">
+      <section className="aurora-mesh grid justify-items-center gap-3 rounded-[var(--radius-xl)] border border-line px-5 pt-7 pb-5 text-center">
+        <Crest monogram={tenant.branding.monogram} size={56} />
+        <PageHeader
+          className="justify-center text-center [&_p]:mx-auto"
+          title={t('verify.title', { college })}
+          intro={t('verify.intro')}
+        />
+        <Stepper
+          className="mt-2 w-full max-w-[420px]"
+          label={t('verify.steps.label')}
+          steps={steps}
+          current={step.kind === 'code' ? 1 : 0}
+        />
+      </section>
       {status.data?.request?.status === 'rejected' && (
         <FormError
           message={`${t('verify.rejectedTitle')}. ${t('verify.rejectedBody', { reason: status.data.request.reason ?? '' })}`}
         />
       )}
-      <Card className="grid gap-4 p-5">
+      <Card variant="raised" className="grid gap-4 p-5 sm:p-6">
         {step.kind === 'roll' && (
-          <form onSubmit={find} className="grid max-w-md gap-4">
-            <p className="text-fg-2">{t('verify.intro')}</p>
+          <form onSubmit={find} className="grid gap-4">
             <FormError message={error} />
             <Field label={t('verify.roll')}>
               {({ id }) => (
@@ -135,8 +159,10 @@ export function VerifyPage() {
                   id={id}
                   value={roll}
                   onChange={(e) => setRoll(e.target.value)}
-                  className="font-mono uppercase"
+                  className="min-h-14 font-mono text-lead tracking-wider uppercase"
                   autoComplete="off"
+                  autoCapitalize="characters"
+                  enterKeyHint={isAlumni ? 'next' : 'go'}
                   spellCheck={false}
                   required
                   minLength={4}
@@ -152,39 +178,58 @@ export function VerifyPage() {
                     value={gradYear}
                     onChange={(e) => setGradYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
                     inputMode="numeric"
-                    className="font-mono"
+                    enterKeyHint="go"
+                    className="min-h-14 font-mono text-lead"
                   />
                 )}
               </Field>
             )}
             {notice && (
-              <p role="status" className="rounded-[var(--radius-sm)] bg-surface-2 px-3.5 py-2.5 text-sm">
+              <p role="status" className="rounded-[var(--radius-md)] bg-surface-2 px-4 py-3 text-meta">
                 {notice}
               </p>
             )}
-            <div className="flex flex-wrap gap-2">
-              <Button type="submit" variant="primary" loading={busy} disabled={roll.trim().length < 4}>
+            <div className="grid gap-2 sm:flex sm:flex-wrap">
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                loading={busy}
+                disabled={roll.trim().length < 4}
+              >
                 {t('verify.find')}
               </Button>
-              <Button variant="ghost" onClick={() => setStep({ kind: 'id' })}>
-                <IdCard className="size-4" aria-hidden /> {t('verify.useId')}
+              <Button variant="ghost" size="lg" onClick={() => setStep({ kind: 'id' })}>
+                <IdCard className="size-5" aria-hidden /> {t('verify.useId')}
               </Button>
             </div>
           </form>
         )}
         {step.kind === 'code' && (
-          <form onSubmit={confirm} className="grid max-w-md gap-4">
-            <h2 className="text-lg font-semibold">{t('verify.codeTitle')}</h2>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void confirm();
+            }}
+            className="grid gap-4"
+          >
+            <h2 className="text-title font-semibold">{t('verify.codeTitle')}</h2>
             <p className="text-fg-2" role="status">
               {t('verify.codeSent', { destination: step.destination })}
             </p>
             <FormError message={error} />
-            <OtpInput value={code} onChange={setCode} label={t('verify.codeTitle')} autoFocus />
-            <div className="flex flex-wrap gap-2">
-              <Button type="submit" variant="primary" loading={busy} disabled={code.length !== 6}>
+            <OtpInput
+              value={code}
+              onChange={setCode}
+              label={t('verify.codeTitle')}
+              autoFocus
+              onComplete={(c) => void confirm(c)}
+            />
+            <div className="grid gap-2 sm:flex sm:flex-wrap">
+              <Button type="submit" variant="primary" size="lg" loading={busy} disabled={code.length !== 6}>
                 {t('verify.confirm')}
               </Button>
-              <Button variant="ghost" onClick={() => setStep({ kind: 'roll' })}>
+              <Button variant="ghost" size="lg" onClick={() => setStep({ kind: 'roll' })}>
                 {t('common.back')}
               </Button>
             </div>
@@ -198,7 +243,80 @@ export function VerifyPage() {
           />
         )}
       </Card>
-    </>
+    </div>
+  );
+}
+
+/**
+ * The "You're in" moment (master prompt §3): an aurora burst, then the topics to hear about first
+ * and three good next steps. Shown once, right after this member verified.
+ */
+function YoureIn() {
+  const { t } = useTranslation();
+  const tenant = useTenant();
+  const hero = useRef<HTMLHeadingElement>(null);
+  const follows = useQuery({ queryKey: ['follows'], queryFn: () => api.get<FollowState>('/me/follows') });
+  const follow = useFollow();
+  useEffect(() => {
+    celebrate(hero.current);
+    hero.current?.focus();
+  }, []);
+  const f = follows.data;
+  const next = [
+    ['/mentors', Compass, 'verify.nextMentor', 'verify.nextMentorBody'],
+    ['/profile', UserRound, 'verify.nextProfile', 'verify.nextProfileBody'],
+    ['/roadmaps', Orbit, 'verify.nextRoadmaps', 'verify.nextRoadmapsBody'],
+  ] as const;
+  return (
+    <div className="mx-auto grid w-full max-w-[560px] gap-4">
+      <section className="aurora-mesh grid justify-items-center gap-2 rounded-[var(--radius-xl)] border border-line px-5 py-8 text-center">
+        <Illustration kind="done" size={120} />
+        <h1 ref={hero} tabIndex={-1} className="text-display font-bold">
+          {t('verify.youreIn')}
+        </h1>
+        <p className="max-w-[44ch] text-lead text-fg-2">
+          {t('verify.youreInBody', { college: tenant.branding.shortName })}
+        </p>
+      </section>
+      <Card variant="raised" className="grid gap-3 p-5">
+        <div>
+          <h2 className="text-title font-semibold">{t('verify.interestsTitle')}</h2>
+          <p className="text-meta text-fg-2">{t('verify.interestsBody')}</p>
+        </div>
+        <div role="group" aria-label={t('verify.interestsTitle')} className="flex flex-wrap gap-2">
+          {TOPICS.map((tp) => {
+            const on = !!f?.topics.includes(tp);
+            return (
+              <Chip
+                key={tp}
+                pressed={on}
+                disabled={!f}
+                onClick={() => follow.mutate({ type: 'topic', id: tp, on: !on })}
+              >
+                {t(`topics.${tp}`)}
+              </Chip>
+            );
+          })}
+        </div>
+      </Card>
+      <nav aria-label={t('verify.nextTitle')} className="grid gap-2">
+        <h2 className="text-title font-semibold">{t('verify.nextTitle')}</h2>
+        {next.map(([to, Icon, title, body]) => (
+          <IntentLink key={to} to={to} className="block">
+            <Card variant="interactive" className="flex items-center gap-3 p-4">
+              <span className="grid size-11 flex-none place-items-center rounded-full bg-brand-surface text-brand-ink">
+                <Icon className="size-5" aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <b className="block text-body">{t(title)}</b>
+                <span className="block text-meta text-fg-2">{t(body)}</span>
+              </span>
+              <ChevronRight className="size-5 flex-none text-fg-3" aria-hidden />
+            </Card>
+          </IntentLink>
+        ))}
+      </nav>
+    </div>
   );
 }
 
@@ -236,8 +354,8 @@ function IdCardForm({
     }
   };
   return (
-    <form onSubmit={submit} className="grid max-w-md gap-4">
-      <h2 className="text-lg font-semibold">{t('verify.idTitle')}</h2>
+    <form onSubmit={submit} className="grid gap-4">
+      <h2 className="text-title font-semibold">{t('verify.idTitle')}</h2>
       <p className="text-fg-2">{t('verify.idBody')}</p>
       <FormError message={error} />
       <Field label={t('verify.roll')}>
@@ -246,7 +364,8 @@ function IdCardForm({
             id={id}
             value={roll}
             onChange={(e) => setRoll(e.target.value)}
-            className="font-mono uppercase"
+            className="min-h-14 font-mono text-lead tracking-wider uppercase"
+            autoCapitalize="characters"
             required
             minLength={4}
           />
@@ -260,7 +379,7 @@ function IdCardForm({
             accept="image/jpeg,image/png,image/webp"
             capture="environment"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="text-sm file:mr-3 file:min-h-11 file:rounded-full file:border-0 file:bg-surface-2 file:px-4 file:font-semibold file:text-fg"
+            className="text-meta file:mr-3 file:min-h-11 file:rounded-full file:border-0 file:bg-surface-2 file:px-4 file:font-semibold file:text-fg"
             required
           />
         )}
@@ -270,11 +389,17 @@ function IdCardForm({
           <Textarea id={id} value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} />
         )}
       </Field>
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" variant="primary" loading={busy} disabled={!file || roll.trim().length < 4}>
+      <div className="grid gap-2 sm:flex sm:flex-wrap">
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          loading={busy}
+          disabled={!file || roll.trim().length < 4}
+        >
           {t('verify.submit')}
         </Button>
-        <Button variant="ghost" onClick={onBack}>
+        <Button variant="ghost" size="lg" onClick={onBack}>
           {t('verify.useRoll')}
         </Button>
       </div>

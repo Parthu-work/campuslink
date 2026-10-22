@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import {
   useInfiniteQuery,
   useMutation,
@@ -9,12 +10,24 @@ import {
   type InfiniteData,
 } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { FileText, Lock, MessagesSquare, Paperclip, SendHorizontal } from 'lucide-react';
+import {
+  Check,
+  CheckCheck,
+  Clock,
+  FileText,
+  Lock,
+  MessagesSquare,
+  Paperclip,
+  SendHorizontal,
+} from 'lucide-react';
 import { MESSAGE_MAX, type MessageView } from '@campuslink/shared';
 import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { ErrorState } from '../../components/ui/error-state';
+import { Illustration } from '../../components/ui/illustration';
+import { IntentLink } from '../../components/ui/intent-link';
 import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { SafetyMenu } from '../../components/layout/safety-menu';
@@ -24,53 +37,87 @@ import { useFileUrl } from '../../lib/files';
 import { useMe } from '../../lib/me';
 import { emitTyping, useTyping } from '../../lib/realtime';
 import { appendMessage } from '../../lib/use-realtime-bridge';
-import { formatRelative, formatTime, newIdempotencyKey } from '../../lib/format';
+import { formatDay, formatRelative, formatTime, localDateKey, newIdempotencyKey } from '../../lib/format';
 import { cn } from '../../lib/cn';
 
-export function MessagesPage() {
+/** The list of conversations: the Messages screen on phones, the left pane on desktop (IA-12). */
+function ConversationList({ activeId }: { activeId?: string }) {
   const { t } = useTranslation();
   const list = useQuery(conversations());
+  if (list.isLoading)
+    return (
+      <div className="grid gap-2" aria-hidden>
+        {[0, 1, 2].map((k) => (
+          <Skeleton key={k} className="h-[68px] rounded-[var(--radius-lg)]" />
+        ))}
+      </div>
+    );
+  if (list.isError) return <ErrorState error={list.error} onRetry={() => void list.refetch()} compact />;
+  if (!list.data?.length)
+    return (
+      <EmptyState
+        art={<Illustration kind="people" />}
+        title={t('messages.empty')}
+        action={
+          <Link to="/mentors" className={buttonVariants({ variant: 'primary' })}>
+            {t('request.findMentor')}
+          </Link>
+        }
+      >
+        {t('messages.emptyBody')}
+      </EmptyState>
+    );
   return (
-    <>
-      <PageHeader title={t('nav.messages')} intro={t('messages.intro')} />
-      {list.isLoading && <Skeleton className="h-40" />}
-      {list.isSuccess && !list.data.length && (
-        <EmptyState
-          icon={<MessagesSquare className="size-6" />}
-          title={t('messages.empty')}
-          action={
-            <Link to="/mentors" className={buttonVariants({ variant: 'primary' })}>
-              {t('request.findMentor')}
-            </Link>
-          }
-        >
-          {t('messages.emptyBody')}
-        </EmptyState>
-      )}
-      <ul className="grid gap-2">
-        {list.data?.map((c) => (
+    <ul className="grid gap-1.5">
+      {list.data.map((c) => {
+        const active = c.id === activeId;
+        return (
           <li key={c.id}>
-            <Link to={`/messages/${c.id}`} className="block rounded-[var(--radius-md)]">
-              <Card variant="interactive" className="flex items-center gap-3 p-3.5">
+            <IntentLink
+              to={`/messages/${c.id}`}
+              aria-current={active ? 'page' : undefined}
+              className="block rounded-[var(--radius-lg)]"
+            >
+              <Card
+                variant={active ? 'flat' : 'interactive'}
+                className={cn('flex items-center gap-3 p-3', active && 'border-brand bg-brand-surface')}
+              >
                 <PersonAvatar name={c.other.name} fileId={c.other.avatarFileId} />
                 <div className="min-w-0 flex-1">
-                  <b className="block truncate">{c.other.name}</b>
-                  <p className="text-xs text-fg-3">
+                  <b className={cn('block truncate', c.unread > 0 && 'text-fg')}>{c.other.name}</b>
+                  <p className="text-caption text-fg-3">
                     {c.lastMessageAt ? formatRelative(c.lastMessageAt) : t('messages.new')}
                   </p>
                 </div>
                 {c.status === 'blocked' && <Badge>{t('messages.closed')}</Badge>}
                 {c.unread > 0 && (
-                  <Badge tone="brand" aria-label={t('messages.unread', { count: c.unread })}>
-                    {c.unread}
-                  </Badge>
+                  <span className="grid min-w-6 place-items-center rounded-full bg-brand px-1.5 text-caption leading-6 font-bold text-on-brand tabular-nums">
+                    <span aria-hidden>{c.unread}</span>
+                    <span className="sr-only">{t('messages.unread', { count: c.unread })}</span>
+                  </span>
                 )}
               </Card>
-            </Link>
+            </IntentLink>
           </li>
-        ))}
-      </ul>
-    </>
+        );
+      })}
+    </ul>
+  );
+}
+
+export function MessagesPage() {
+  const { t } = useTranslation();
+  return (
+    <div className="grid gap-4 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)] lg:items-start">
+      <div className="grid content-start gap-4">
+        <PageHeader title={t('nav.messages')} intro={t('messages.intro')} />
+        <ConversationList />
+      </div>
+      {/* Desktop: the right pane waits for a conversation. */}
+      <div className="hidden min-h-[60vh] place-items-center rounded-[var(--radius-xl)] border border-dashed border-line-strong lg:grid">
+        <EmptyState art={<Illustration kind="empty" />} title={t('messages.pick')} />
+      </div>
+    </div>
   );
 }
 
@@ -110,6 +157,14 @@ function Attachment({ m, mine }: { m: MessageView; mine: boolean }) {
 }
 
 type Page = { data: MessageView[]; meta?: { nextCursor?: string | null } };
+
+/** "Today", "Yesterday" or the date, between days in a thread. */
+function dayLabel(t: TFunction, iso: string) {
+  const key = localDateKey(iso);
+  if (key === localDateKey(new Date())) return t('messages.today');
+  if (key === localDateKey(new Date(Date.now() - 86_400_000))) return t('messages.yesterday');
+  return formatDay(iso);
+}
 
 export function ConversationPage() {
   const { conversationId = '' } = useParams();
@@ -239,138 +294,196 @@ export function ConversationPage() {
   const closed = c.status !== 'open';
   const seen = !!(last && last.senderId === me?.id && c.otherReadAt && c.otherReadAt >= last.createdAt);
   return (
-    <>
-      {back}
-      <Card className="grid gap-0 overflow-hidden">
-        <header className="flex items-center gap-3 border-b border-line p-3.5">
-          <PersonAvatar name={c.other.name} fileId={c.other.avatarFileId} />
-          <h1 className="min-w-0 flex-1 truncate text-lg font-bold">{c.other.name}</h1>
-          <SafetyMenu userId={c.other.userId} name={c.other.name} />
-        </header>
-        <div
-          ref={scroller}
-          role="log"
-          aria-label={t('messages.history', { name: c.other.name })}
-          aria-live="polite"
-          tabIndex={0}
-          className="grid max-h-[calc(100dvh-330px)] min-h-[40vh] content-start gap-2 overflow-y-auto p-3.5"
-        >
-          {msgs.hasNextPage && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="justify-self-center"
-              loading={msgs.isFetchingNextPage}
-              onClick={() => void msgs.fetchNextPage()}
-            >
-              {t('messages.older')}
-            </Button>
-          )}
-          {msgs.isLoading && <Skeleton className="h-24" />}
-          {msgs.isSuccess && !items.length && (
-            <p className="py-8 text-center text-sm text-fg-3">
-              {t('messages.start', { name: c.other.name.split(' ')[0] })}
-            </p>
-          )}
-          {items.map((m) => {
-            const mine = m.senderId === me?.id;
-            return (
-              <div
-                key={m.id}
-                className={cn('group flex items-end gap-1', mine ? 'justify-end' : 'justify-start')}
-              >
-                <div
-                  className={cn(
-                    'grid max-w-[78%] gap-1.5 rounded-[18px] px-3.5 py-2 text-[15px] leading-snug',
-                    mine ? 'rounded-br-md bg-brand text-on-brand' : 'rounded-bl-md bg-surface-2',
-                  )}
-                >
-                  <Attachment m={m} mine={mine} />
-                  {m.body && <p className="break-words whitespace-pre-wrap">{m.body}</p>}
-                  <span className={cn('text-xs', mine ? 'text-on-brand' : 'text-fg-3')}>
-                    {m.id.startsWith('pending-') ? t('messages.sending') : formatTime(m.createdAt)}
-                  </span>
-                </div>
-                {!mine && (
-                  <span className="opacity-60 focus-within:opacity-100 group-hover:opacity-100">
-                    <SafetyMenu
-                      userId={c.other.userId}
-                      name={c.other.name}
-                      target={{ type: 'message', id: m.id }}
-                    />
-                  </span>
-                )}
-              </div>
-            );
-          })}
-          {seen && <p className="justify-self-end text-[11px] text-fg-3">{t('messages.seen')}</p>}
-        </div>
-        <p aria-live="polite" className="min-h-5 px-3.5 text-xs text-fg-3">
-          {typing ? t('messages.typing', { name: c.other.name.split(' ')[0] }) : ''}
-        </p>
-        {closed ? (
-          <p className="flex items-center gap-2 border-t border-line p-3.5 text-sm text-fg-2">
-            <Lock className="size-4" aria-hidden /> {t('messages.closedBody')}
-          </p>
-        ) : (
-          <form
-            className="flex items-end gap-2 border-t border-line p-2.5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              submit();
-            }}
+    <div className="grid gap-4 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)] lg:items-start">
+      <aside aria-label={t('nav.messages')} className="hidden content-start gap-3 lg:grid">
+        <h2 className="text-title font-semibold">{t('nav.messages')}</h2>
+        <ConversationList activeId={conversationId} />
+      </aside>
+      <div className="grid min-w-0 content-start gap-3">
+        <div className="lg:hidden">{back}</div>
+        <Card variant="raised" className="grid gap-0 overflow-hidden">
+          <header className="flex items-center gap-3 border-b border-line p-3.5">
+            <PersonAvatar name={c.other.name} fileId={c.other.avatarFileId} />
+            <h1 className="min-w-0 flex-1 truncate text-title font-bold">{c.other.name}</h1>
+            <SafetyMenu userId={c.other.userId} name={c.other.name} />
+          </header>
+          <div
+            ref={scroller}
+            role="log"
+            aria-label={t('messages.history', { name: c.other.name })}
+            aria-live="polite"
+            tabIndex={0}
+            className="grid max-h-[calc(100dvh-330px)] min-h-[40vh] content-start overflow-y-auto p-3.5"
           >
-            <input
-              ref={fileInput}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,application/pdf"
-              className="sr-only"
-              tabIndex={-1}
-              aria-label={t('messages.attach')}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) attach.mutate(f);
-                e.target.value = '';
+            {msgs.hasNextPage && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="justify-self-center"
+                loading={msgs.isFetchingNextPage}
+                onClick={() => void msgs.fetchNextPage()}
+              >
+                {t('messages.older')}
+              </Button>
+            )}
+            {msgs.isLoading && <Skeleton className="h-24" />}
+            {msgs.isSuccess && !items.length && (
+              <p className="mx-auto max-w-[40ch] py-8 text-center text-meta text-fg-3">
+                {t('messages.start', { name: c.other.name.split(' ')[0] })}
+              </p>
+            )}
+            {items.map((m, i) => {
+              const mine = m.senderId === me?.id;
+              const prev = items[i - 1];
+              const next = items[i + 1];
+              const newDay = !prev || localDateKey(prev.createdAt) !== localDateKey(m.createdAt);
+              // Messages from one person within five minutes read as one group: one time, tight gaps.
+              const joinsNext =
+                !!next &&
+                next.senderId === m.senderId &&
+                localDateKey(next.createdAt) === localDateKey(m.createdAt) &&
+                Date.parse(next.createdAt) - Date.parse(m.createdAt) < 5 * 60_000;
+              const pending = m.id.startsWith('pending-');
+              const isLast = m.id === last?.id;
+              return (
+                <Fragment key={m.id}>
+                  {newDay && (
+                    <p
+                      role="separator"
+                      className="my-2 flex items-center gap-3 text-caption font-semibold text-fg-3"
+                    >
+                      <span aria-hidden className="h-px flex-1 bg-line" />
+                      {dayLabel(t, m.createdAt)}
+                      <span aria-hidden className="h-px flex-1 bg-line" />
+                    </p>
+                  )}
+                  <div
+                    className={cn(
+                      'group flex items-end gap-1',
+                      mine ? 'justify-end' : 'justify-start',
+                      joinsNext ? 'mb-0.5' : 'mb-2',
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'grid max-w-[78%] gap-1.5 rounded-[20px] px-3.5 py-2 text-body leading-snug',
+                        mine ? 'bg-brand text-on-brand' : 'bg-surface-2',
+                        !joinsNext && (mine ? 'rounded-br-md' : 'rounded-bl-md'),
+                        pending && 'opacity-80',
+                      )}
+                    >
+                      <Attachment m={m} mine={mine} />
+                      {m.body && <p className="break-words whitespace-pre-wrap">{m.body}</p>}
+                      {!joinsNext && (
+                        <span
+                          className={cn(
+                            'flex items-center justify-end gap-1 text-caption',
+                            mine ? 'text-on-brand' : 'text-fg-3',
+                          )}
+                        >
+                          {pending ? t('messages.sending') : formatTime(m.createdAt)}
+                          {mine &&
+                            (pending ? (
+                              <Clock className="size-3.5" aria-hidden />
+                            ) : isLast && seen ? (
+                              <CheckCheck className="size-3.5" aria-label={t('messages.seen')} />
+                            ) : (
+                              <Check className="size-3.5" aria-label={t('messages.sent')} />
+                            ))}
+                        </span>
+                      )}
+                    </div>
+                    {!mine && (
+                      <span className="opacity-60 focus-within:opacity-100 group-hover:opacity-100">
+                        <SafetyMenu
+                          userId={c.other.userId}
+                          name={c.other.name}
+                          target={{ type: 'message', id: m.id }}
+                        />
+                      </span>
+                    )}
+                  </div>
+                </Fragment>
+              );
+            })}
+            {seen && <p className="-mt-1 justify-self-end text-caption text-fg-3">{t('messages.seen')}</p>}
+            {typing && (
+              <div className="flex items-end gap-2" aria-hidden>
+                <span className="typing-dots flex gap-1 rounded-[20px] rounded-bl-md bg-surface-2 px-4 py-3">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              </div>
+            )}
+          </div>
+          <p aria-live="polite" className="min-h-5 px-3.5 text-caption text-fg-3">
+            {typing ? t('messages.typing', { name: c.other.name.split(' ')[0] }) : ''}
+          </p>
+          {closed ? (
+            <p className="flex items-center gap-2 border-t border-line p-3.5 text-meta text-fg-2">
+              <Lock className="size-4" aria-hidden /> {t('messages.closedBody')}
+            </p>
+          ) : (
+            <form
+              className="flex items-end gap-2 border-t border-line p-2.5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                submit();
               }}
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('messages.attach')}
-              loading={attach.isPending}
-              onClick={() => fileInput.current?.click()}
             >
-              {!attach.isPending && <Paperclip className="size-5" aria-hidden />}
-            </Button>
-            <label className="min-w-0 flex-1">
-              <span className="sr-only">{t('messages.write')}</span>
-              <textarea
-                value={draft}
+              <input
+                ref={fileInput}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                className="sr-only"
+                tabIndex={-1}
+                aria-label={t('messages.attach')}
                 onChange={(e) => {
-                  setDraft(e.target.value);
-                  emitTyping(conversationId);
+                  const f = e.target.files?.[0];
+                  if (f) attach.mutate(f);
+                  e.target.value = '';
                 }}
-                onKeyDown={onKey}
-                enterKeyHint="send"
-                rows={1}
-                maxLength={MESSAGE_MAX}
-                placeholder={t('messages.write')}
-                className="max-h-36 min-h-11 w-full resize-none rounded-[22px] border border-line-strong bg-surface-1 px-4 py-2.5 text-base focus:border-brand focus:outline-none"
               />
-            </label>
-            <Button
-              type="submit"
-              variant="primary"
-              size="icon"
-              aria-label={t('messages.send')}
-              loading={send.isPending}
-              disabled={!draft.trim()}
-            >
-              {!send.isPending && <SendHorizontal className="size-5" aria-hidden />}
-            </Button>
-          </form>
-        )}
-      </Card>
-    </>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('messages.attach')}
+                loading={attach.isPending}
+                onClick={() => fileInput.current?.click()}
+              >
+                {!attach.isPending && <Paperclip className="size-5" aria-hidden />}
+              </Button>
+              <label className="min-w-0 flex-1">
+                <span className="sr-only">{t('messages.write')}</span>
+                <textarea
+                  value={draft}
+                  onChange={(e) => {
+                    setDraft(e.target.value);
+                    emitTyping(conversationId);
+                  }}
+                  onKeyDown={onKey}
+                  enterKeyHint="send"
+                  rows={1}
+                  maxLength={MESSAGE_MAX}
+                  placeholder={t('messages.write')}
+                  className="max-h-36 min-h-11 w-full resize-none rounded-[22px] border border-line-strong bg-surface-2 px-4 py-2.5 text-base transition-[border-color,background-color] focus:border-brand focus:bg-surface-1 focus:outline-none"
+                />
+              </label>
+              <Button
+                type="submit"
+                variant="primary"
+                size="icon"
+                aria-label={t('messages.send')}
+                loading={send.isPending}
+                disabled={!draft.trim()}
+              >
+                {!send.isPending && <SendHorizontal className="size-5" aria-hidden />}
+              </Button>
+            </form>
+          )}
+        </Card>
+      </div>
+    </div>
   );
 }

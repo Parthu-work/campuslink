@@ -188,6 +188,23 @@ describe('requests', () => {
     expect((await notifications(s)).map((n) => n.type)).toContain('request_accepted');
   });
 
+  it('takes one message in the mentee’s own words (owner decision Q12), never mixed with the old parts', async () => {
+    const m = await makeMentor(ctx, T);
+    const s = await makeUser(ctx, T, { roles: ['STUDENT'] });
+    const message = 'Goal: crack backend interviews\nWhat I need: one mock system-design round';
+    const send = (body: Record<string, unknown>) =>
+      as(s)
+        .post('/mentorship/requests')
+        .send({ mentorId: m.id, sessionType: 'quick_chat', ...body });
+    expect((await send({ message: 'Too short' })).status).toBe(400);
+    expect((await send({ message, goal: REQUEST_TEXT.goal })).status).toBe(400);
+    const r = await send({ message });
+    expect(r.status).toBe(201);
+    expect(r.body.data).toMatchObject({ message, goal: null, background: null, need: null });
+    const inbox = await as(m).get('/mentorship/requests?box=received');
+    expect(inbox.body.data[0]).toMatchObject({ message, status: 'pending' });
+  });
+
   it('refuses self, unknown, paused, audience mismatch and wrong session types', async () => {
     const paused = await makeMentor(ctx, T, { settings: { accepting: false } });
     const studentsOnly = await makeMentor(ctx, T, { settings: { audience: 'students' } });

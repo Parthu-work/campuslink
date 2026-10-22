@@ -9,7 +9,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { BellPlus, BriefcaseBusiness, ListChecks, Plus, Radar, Search } from 'lucide-react';
+import { BellPlus, BriefcaseBusiness, ListChecks, Plus, Search } from 'lucide-react';
 import {
   BRANCHES,
   JOB_LEVELS,
@@ -23,6 +23,7 @@ import { buttonVariants } from '../../components/ui/button-variants';
 import { Input, Select } from '../../components/ui/field';
 import { Chip, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
+import { RadarSweep } from '../../components/ui/radar-sweep';
 import { api, ApiError } from '../../lib/api';
 import { jobsList, jobsRadar } from '../../lib/queries';
 import { useCan } from '../../lib/me';
@@ -174,7 +175,7 @@ export function JobsPage() {
   return (
     <div className="grid gap-5">
       <PageHeader
-        icon={<Radar />}
+        icon={<RadarSweep />}
         title={t('jobs.title')}
         intro={t('jobs.intro')}
         actions={

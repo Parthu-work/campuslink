@@ -16,6 +16,8 @@ import { formatRelative } from '../../lib/format';
 import { closingSoon, formatSalary, useTrack } from '../../lib/jobs';
 import { useCan } from '../../lib/me';
 import { cn } from '../../lib/cn';
+import { accentOf } from '../../lib/accent';
+import { pop } from '../../lib/celebrate';
 
 export function SaveJobButton({ job, className }: { job: JobView; className?: string }) {
   const { t } = useTranslation();
@@ -28,13 +30,20 @@ export function SaveJobButton({ job, className }: { job: JobView; className?: st
       type="button"
       aria-pressed={saved}
       aria-label={saved ? t('jobs.unsave', { title: job.title }) : t('jobs.save', { title: job.title })}
-      onClick={() => track.mutate({ status: saved ? null : 'saved' })}
+      onClick={(e) => {
+        if (!saved) pop(e.currentTarget);
+        track.mutate({ status: saved ? null : 'saved' });
+      }}
       className={cn(
-        'grid size-10 flex-none place-items-center rounded-full text-fg-2 hover:bg-surface-2 aria-pressed:text-brand-ink',
+        'react-pop grid size-11 flex-none place-items-center rounded-full text-fg-2 transition-[scale] duration-[var(--dur-fast)] ease-snappy hover:bg-hover active:scale-90 aria-pressed:text-brand-ink',
         className,
       )}
     >
-      {saved ? <BookmarkCheck className="size-5" aria-hidden /> : <Bookmark className="size-5" aria-hidden />}
+      {saved ? (
+        <BookmarkCheck className="size-5 fill-current" aria-hidden />
+      ) : (
+        <Bookmark className="size-5" aria-hidden />
+      )}
     </button>
   );
 }
@@ -43,7 +52,7 @@ export function SaveJobButton({ job, className }: { job: JobView; className?: st
 export function JobFacts({ job }: { job: JobView }) {
   const { t } = useTranslation();
   return (
-    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-fg-2">
+    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-fg-2">
       <span className="inline-flex items-center gap-1">
         <MapPin className="size-3.5" aria-hidden /> {job.location}
       </span>
@@ -59,23 +68,48 @@ export function JobFacts({ job }: { job: JobView }) {
   );
 }
 
+/**
+ * The company's initials in its own accent: a stand-in for a logo, since listings carry none
+ * (we never fetch or guess logos).
+ */
+export function CompanyMark({ name, size = 'md' }: { name: string; size?: 'md' | 'lg' }) {
+  const n = accentOf(name);
+  const initials = name
+    .replace(/\(.*?\)/g, '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join('');
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'grid flex-none place-items-center rounded-[var(--radius-md)] font-display font-bold',
+        size === 'lg' ? 'size-14 text-title' : 'size-11 text-body',
+      )}
+      style={{ background: `var(--subject-${n}-surface)`, color: `var(--subject-${n}-ink)` }}
+    >
+      {initials || <Building2 className="size-5" />}
+    </span>
+  );
+}
+
 /** Smart card for Job Radar and lists. */
 export function JobCard({ job, compact = false }: { job: JobView; compact?: boolean }) {
   const { t } = useTranslation();
   const soon = closingSoon(job.expiresAt);
   return (
-    <Card className={cn('flex h-full flex-col gap-2.5 p-4', compact && 'w-[min(300px,80vw)] flex-none')}>
+    <Card
+      variant="interactive"
+      className={cn('flex h-full flex-col gap-2.5 p-4', compact && 'w-[min(300px,80vw)] flex-none')}
+    >
       <article
         className="flex h-full flex-col gap-2.5"
         aria-labelledby={`job-${job.id}${compact ? '-c' : ''}`}
       >
         <div className="flex items-start gap-3">
-          <span
-            className="grid size-10 flex-none place-items-center rounded-[var(--radius-md)] bg-surface-2 text-brand-ink"
-            aria-hidden
-          >
-            <Building2 className="size-5" />
-          </span>
+          <CompanyMark name={job.company} />
           <div className="min-w-0 flex-1">
             <h3
               id={`job-${job.id}${compact ? '-c' : ''}`}
@@ -87,7 +121,7 @@ export function JobCard({ job, compact = false }: { job: JobView; compact?: bool
                 {job.title}
               </IntentLink>
             </h3>
-            <p className="truncate text-sm text-fg-2">{job.company}</p>
+            <p className="truncate text-meta text-fg-2">{job.company}</p>
           </div>
           <SaveJobButton job={job} />
         </div>
@@ -113,9 +147,9 @@ export function JobCard({ job, compact = false }: { job: JobView; compact?: bool
           {job.track && <Badge tone="brand">{t(`jobs.track.${job.track.status}`)}</Badge>}
         </p>
         {!compact && job.skills.length > 0 && (
-          <p className="line-clamp-1 text-xs text-fg-3">{job.skills.slice(0, 6).join(' · ')}</p>
+          <p className="line-clamp-1 text-caption text-fg-3">{job.skills.slice(0, 6).join(' · ')}</p>
         )}
-        <p className="mt-auto flex items-center gap-1 text-xs text-fg-3">
+        <p className="mt-auto flex items-center gap-1 text-caption text-fg-3">
           <Clock className="size-3.5" aria-hidden />
           {soon
             ? t('jobs.closes', { when: formatRelative(job.expiresAt) })

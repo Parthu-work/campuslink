@@ -41,6 +41,7 @@ export function FeedList({
   label,
   empty,
   posts = false,
+  exclude,
 }: {
   queryKey: readonly unknown[];
   /** API path; `cursor` is appended. */
@@ -49,10 +50,14 @@ export function FeedList({
   empty: ReactNode;
   /** The endpoint returns PostView[] rather than FeedEntry[]. */
   posts?: boolean;
+  /** A post or item already shown above the list (today's One Useful Thing), left out of it. */
+  exclude?: string | undefined;
 }) {
   const { t } = useTranslation();
   const q = useInfiniteQuery(feedList(queryKey, path, posts));
-  const rows = q.data?.pages.flatMap((p) => p.rows) ?? [];
+  const rows = (q.data?.pages.flatMap((p) => p.rows) ?? []).filter(
+    (r) => !exclude || (r.type === 'post' ? r.post.id : r.item.id) !== exclude,
+  );
   const listRef = useRef<HTMLDivElement>(null);
   const [margin, setMargin] = useState(0);
   useLayoutEffect(() => {

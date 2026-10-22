@@ -3849,50 +3849,88 @@
             "application/json": {
               "schema": {
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "type": "object",
-                "properties": {
-                  "goal": {
-                    "type": "string",
-                    "minLength": 10,
-                    "maxLength": 300
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "minLength": 20,
+                        "maxLength": 1500
+                      },
+                      "mentorId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "sessionType": {
+                        "type": "string",
+                        "enum": [
+                          "quick_chat",
+                          "video_1on1",
+                          "mock_interview",
+                          "resume_review"
+                        ]
+                      },
+                      "slotStart": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "message",
+                      "mentorId",
+                      "sessionType"
+                    ],
+                    "additionalProperties": false
                   },
-                  "background": {
-                    "type": "string",
-                    "minLength": 10,
-                    "maxLength": 600
-                  },
-                  "need": {
-                    "type": "string",
-                    "minLength": 10,
-                    "maxLength": 600
-                  },
-                  "mentorId": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{24}$"
-                  },
-                  "sessionType": {
-                    "type": "string",
-                    "enum": [
-                      "quick_chat",
-                      "video_1on1",
-                      "mock_interview",
-                      "resume_review"
-                    ]
-                  },
-                  "slotStart": {
-                    "type": "string",
-                    "format": "date-time",
-                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  {
+                    "type": "object",
+                    "properties": {
+                      "goal": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 300
+                      },
+                      "background": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 600
+                      },
+                      "need": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 600
+                      },
+                      "mentorId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "sessionType": {
+                        "type": "string",
+                        "enum": [
+                          "quick_chat",
+                          "video_1on1",
+                          "mock_interview",
+                          "resume_review"
+                        ]
+                      },
+                      "slotStart": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      }
+                    },
+                    "required": [
+                      "goal",
+                      "background",
+                      "need",
+                      "mentorId",
+                      "sessionType"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "goal",
-                  "background",
-                  "need",
-                  "mentorId",
-                  "sessionType"
-                ],
-                "additionalProperties": false
+                ]
               }
             }
           }

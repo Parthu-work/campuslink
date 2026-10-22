@@ -113,4 +113,18 @@ describe('story rings', () => {
     expect(g.map((x) => x.authorId)).toEqual(['me', 'bob', 'ann']);
     expect(g[2]?.stories.map((s) => s.id)).toEqual(['a1', 'a2']);
   });
+  it('puts rings with something new before rings already watched on this device', () => {
+    const g = groupStories(
+      [
+        story('b1', 'bob', '2026-01-01T05:00:00Z'),
+        story('a1', 'ann', '2026-01-01T01:00:00Z'),
+        story('a2', 'ann', '2026-01-01T03:00:00Z'),
+      ],
+      new Set(['b1', 'a1']),
+    );
+    expect(g.map((x) => [x.authorId, x.seen])).toEqual([
+      ['ann', false],
+      ['bob', true],
+    ]);
+  });
 });

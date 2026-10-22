@@ -7,7 +7,7 @@ import { BadgeCheck, BriefcaseBusiness, ExternalLink, FileText, HandHelping, Use
 import { TRACK_STATUSES, type JobView, type ReferrerView, type TrackStatus } from '@campuslink/shared';
 import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
-import { Dialog } from '../../components/ui/dialog';
+import { Sheet } from '../../components/ui/dialog';
 import { Field, Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PersonAvatar } from '../../components/ui/person-avatar';
@@ -20,6 +20,7 @@ import { formatDateTime, newIdempotencyKey } from '../../lib/format';
 import { formatSalary, useTrack } from '../../lib/jobs';
 import { AuthorLine } from '../feed/post-card';
 import { ContentMenu, RemovalNotice } from '../feed/content-menu';
+import { cn } from '../../lib/cn';
 import { JobFacts, SaveJobButton } from './job-card';
 
 function ReferralDialog({
@@ -67,8 +68,10 @@ function ReferralDialog({
     },
     onError: (e) => setError(e instanceof ApiError ? e.message : t('errors.generic')),
   });
+  const enough = why.trim().length >= 30;
   return (
-    <Dialog
+    // A guided sheet (§8.7): who you're asking, why you fit, an optional resume.
+    <Sheet
       open
       onOpenChange={(o) => !o && onClose()}
       title={t('referrals.askTitle', { name: referrer.name })}
@@ -81,7 +84,20 @@ function ReferralDialog({
           send.mutate();
         }}
       >
-        <Field label={t('referrals.why')} hint={t('referrals.whyHint')}>
+        <div className="flex items-center gap-3 rounded-[var(--radius-md)] bg-surface-2 p-3">
+          <PersonAvatar name={referrer.name} fileId={referrer.avatarFileId} size={44} />
+          <div className="min-w-0">
+            <b className="block truncate">{referrer.name}</b>
+            <p className="truncate text-meta text-fg-2">{job.company}</p>
+          </div>
+        </div>
+        <Field
+          label={t('referrals.why')}
+          hint={t('referrals.whyHint')}
+          aside={
+            <span className={cn('tabular-nums', enough && 'text-success')}>{`${why.trim().length}/800`}</span>
+          }
+        >
           {({ id, describedBy }) => (
             <Textarea
               id={id}
@@ -109,28 +125,32 @@ function ReferralDialog({
             <FileText className="size-4" aria-hidden />{' '}
             {resume ? t('referrals.replaceResume') : t('referrals.addResume')}
           </Button>
-          <span className="text-sm text-fg-2" aria-live="polite">
+          <span className="text-meta text-fg-2" aria-live="polite">
             {resume ? resume.name : t('referrals.resumeHint')}
           </span>
         </div>
         {error && (
-          <p role="alert" className="text-sm font-medium text-danger">
+          <p role="alert" className="text-meta font-medium text-danger">
             {error}
           </p>
         )}
-        <div className="flex justify-end gap-2">
-          <Button onClick={onClose}>{t('common.cancel')}</Button>
+        <p className="text-caption text-fg-3">{t('referrals.howItWorks')}</p>
+        <div className="grid gap-2 sm:flex sm:flex-row-reverse">
           <Button
             type="submit"
             variant="primary"
-            disabled={why.trim().length < 30 || upload.isPending}
+            size="lg"
+            disabled={!enough || upload.isPending}
             loading={send.isPending}
           >
             {t('referrals.send')}
           </Button>
+          <Button variant="ghost" size="lg" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
         </div>
       </form>
-    </Dialog>
+    </Sheet>
   );
 }
 

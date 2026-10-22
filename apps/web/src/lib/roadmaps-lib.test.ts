@@ -69,6 +69,15 @@ describe('career galaxy', () => {
     const st = groups[0]?.stars ?? [];
     for (const a of st)
       for (const b of st) if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(a.r + b.r);
+    // A big constellation never stacks two centred labels at the same end (they would collide).
+    const twelve = layoutGalaxy(
+      Array.from({ length: 12 }, (_, i) => r(`t${i}`, 'software')),
+      ['software'],
+      1,
+    ).groups[0];
+    const centred = (twelve?.stars ?? []).filter((s) => s.label.anchor === 'middle');
+    expect(centred.filter((s) => s.y > (twelve?.cy ?? 0)).length).toBeLessThanOrEqual(1);
+    expect(centred.filter((s) => s.y < (twelve?.cy ?? 0)).length).toBeLessThanOrEqual(1);
     expect(layoutGalaxy([r('x', 'software')], ['software'], 1).width).toBe(500);
   });
 });

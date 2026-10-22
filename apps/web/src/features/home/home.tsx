@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -15,11 +16,12 @@ import type { AuthorRef, FollowState, ImpactView, Topic } from '@campuslink/shar
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Segmented } from '../../components/ui/tab-nav';
 import { Button } from '../../components/ui/button';
+import { IntentLink } from '../../components/ui/intent-link';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { api } from '../../lib/api';
 import { oneUsefulThing, upcomingBookings } from '../../lib/queries';
 import { useCan, useMe } from '../../lib/me';
-import { formatDay, formatTime } from '../../lib/format';
+import { formatDay, formatRelative, formatTime } from '../../lib/format';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { PageHeader } from '../../components/ui/page-header';
 import { ItemCard, PostCard } from '../feed/post-card';
@@ -45,7 +47,7 @@ function NextSession() {
             <b className="block truncate">
               {t(`session.type.${b.sessionType}`)} · {(b.role === 'mentor' ? b.mentee : b.mentor).name}
             </b>
-            <p className="text-sm text-fg-2">
+            <p className="text-meta text-fg-2">
               {formatDay(b.start)}, {formatTime(b.start)}
             </p>
           </div>
@@ -53,16 +55,49 @@ function NextSession() {
       ) : (
         <>
           <CalendarClock className="size-6 flex-none text-accent-ink" aria-hidden />
-          <p className="min-w-0 flex-1 text-sm text-fg-2">{t('home.noSession')}</p>
+          <p className="min-w-0 flex-1 text-meta text-fg-2">{t('home.noSession')}</p>
         </>
       )}
       <Link
         to="/sessions"
-        className="rounded-full px-3 py-2 text-sm font-semibold text-brand-ink hover:bg-surface-2"
+        className="inline-flex min-h-11 items-center rounded-full px-3 text-meta font-semibold text-brand-ink hover:bg-hover"
       >
         {t('nav.sessions')}
       </Link>
     </Card>
+  );
+}
+
+/**
+ * Phones: the next session, when there is one, right under the stories (IA-6). Wide screens show
+ * it in the right column instead.
+ */
+function UpNext() {
+  const { t } = useTranslation();
+  const [now] = useState(() => Date.now());
+  const q = useQuery(upcomingBookings());
+  const b = q.data?.[0];
+  if (!b) return null;
+  const other = b.role === 'mentor' ? b.mentee : b.mentor;
+  return (
+    <IntentLink to="/sessions" className="block rounded-[var(--radius-lg)] xl:hidden">
+      <Card variant="interactive" className="flex items-center gap-3 p-3.5">
+        <PersonAvatar name={other.name} fileId={other.avatarFileId} size={44} />
+        <div className="min-w-0 flex-1">
+          <p className="eyebrow">{t('home.nextSession')}</p>
+          <b className="block truncate text-body">
+            {t(`session.type.${b.sessionType}`)} · {other.name}
+          </b>
+          <p className="text-meta text-fg-2">
+            {formatDay(b.start)}, {formatTime(b.start)} ·{' '}
+            {Date.parse(b.start) <= now
+              ? t('home.happeningNow')
+              : t('home.startsIn', { when: formatRelative(b.start) })}
+          </p>
+        </div>
+        <CalendarClock className="size-5 flex-none text-brand-ink" aria-hidden />
+      </Card>
+    </IntentLink>
   );
 }
 
@@ -77,7 +112,7 @@ function ImpactTeaser() {
         <div className="min-w-0 flex-1">
           <b className="block">{t('mentor.helped', { count: q.data.helpedThisMonth })}</b>
           {q.data.pendingRequests > 0 && (
-            <p className="text-sm text-fg-2">{t('mentor.pending', { count: q.data.pendingRequests })}</p>
+            <p className="text-meta text-fg-2">{t('mentor.pending', { count: q.data.pendingRequests })}</p>
           )}
         </div>
       </Card>
@@ -92,12 +127,13 @@ function OneUsefulThing() {
   const v = q.data;
   if (!v || (!v.post && !v.item)) return null;
   return (
+    // The day's hero: the aurora hairline and a soft wash, the one featured surface on Home (§8.3).
     <section
       aria-labelledby="out-title"
-      className="grid gap-2 rounded-[var(--radius-lg)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--accent)_22%,transparent),color-mix(in_srgb,var(--brand)_14%,transparent))] p-2 pt-3"
+      className="aurora-border grid gap-2 rounded-[var(--radius-xl)] bg-[linear-gradient(160deg,color-mix(in_oklch,var(--aurora-1)_16%,var(--surface-1)),var(--surface-1)_60%)] p-2 pt-3 shadow-elev-2"
     >
-      <h2 id="out-title" className="flex items-center gap-2 px-2 font-display text-lg font-semibold">
-        <Sparkles className="size-5 text-accent-ink" aria-hidden /> {t('feed.out')}
+      <h2 id="out-title" className="flex items-center gap-2 px-2.5 text-title font-semibold">
+        <Sparkles className="size-5 text-brand-ink" aria-hidden /> {t('feed.out')}
         {v.curated && <Badge tone="accent">{t('feed.outCurated')}</Badge>}
       </h2>
       {v.post && <PostCard post={v.post} headingLevel={3} />}
@@ -160,9 +196,9 @@ function Suggestions() {
         {q.data.people.slice(0, 4).map((p) => (
           <li key={p.userId} className="flex items-center gap-2.5">
             <PersonAvatar name={p.name} fileId={p.avatarFileId} size={36} />
-            <Link to={`/people/${p.userId}`} className="min-w-0 flex-1 text-sm hover:underline">
+            <Link to={`/people/${p.userId}`} className="min-w-0 flex-1 text-meta hover:underline">
               <b className="block truncate">{p.name}</b>
-              <span className="block truncate text-xs text-fg-3">{p.headline || p.branch}</span>
+              <span className="block truncate text-caption text-fg-3">{p.headline || p.branch}</span>
             </Link>
             <FollowButton type="user" id={p.userId} following={!!f?.users.includes(p.userId)} />
           </li>
@@ -175,15 +211,15 @@ function Suggestions() {
             >
               <Rss className="size-4" />
             </span>
-            <span className="min-w-0 flex-1 text-sm">
+            <span className="min-w-0 flex-1 text-meta">
               <b className="block truncate">{s.name}</b>
-              <span className="block truncate text-xs text-fg-3">{s.host}</span>
+              <span className="block truncate text-caption text-fg-3">{s.host}</span>
             </span>
             <FollowButton type="source" id={s.id} following={!!f?.sources.includes(s.id)} />
           </li>
         ))}
       </ul>
-      <Link to="/following" className="text-sm font-semibold text-brand-ink hover:underline">
+      <Link to="/following" className="text-meta font-semibold text-brand-ink hover:underline">
         {t('feed.manageFollows')}
       </Link>
     </Card>
@@ -205,7 +241,7 @@ function RightRail() {
               <Compass className="size-6 flex-none text-brand-ink" aria-hidden />
               <div className="min-w-0 flex-1">
                 <b className="block">{t('home.findMentor')}</b>
-                <p className="text-sm text-fg-2">{t('home.findMentorBody')}</p>
+                <p className="text-meta text-fg-2">{t('home.findMentorBody')}</p>
               </div>
             </Card>
           </Link>
@@ -216,7 +252,7 @@ function RightRail() {
           <MessageCircleQuestion className="size-6 flex-none text-accent-ink" aria-hidden />
           <div className="min-w-0 flex-1">
             <b className="block">{t('qa.teaser')}</b>
-            <p className="text-sm text-fg-2">{t('qa.teaserBody')}</p>
+            <p className="text-meta text-fg-2">{t('qa.teaserBody')}</p>
           </div>
         </Card>
       </Link>
@@ -230,12 +266,17 @@ export function HomePage() {
   const { t } = useTranslation();
   const { data: me, isLoading } = useMe();
   const canPost = useCan('feed:post');
+  const canRequest = useCan('mentorship:request');
   const [params, setParams] = useSearchParams();
   const tab = params.get('tab') === 'following' ? 'following' : 'for_you';
+  // Today's One Useful Thing sits above the feed, so the feed leaves it out (IA-12).
+  const out = useQuery(oneUsefulThing());
+  const shown = out.data?.post?.id ?? out.data?.item?.id;
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
       <div className="grid min-w-0 content-start gap-4">
         <PageHeader
+          eyebrow={formatDay(new Date())}
           title={
             isLoading || !me ? (
               <Skeleton className="h-9 w-56" />
@@ -245,14 +286,11 @@ export function HomePage() {
           }
         />
         {me && !me.verified && (
-          <Card
-            className="flex gap-3 border-[color-mix(in_srgb,var(--warning)_45%,var(--line))] p-4"
-            role="status"
-          >
+          <Card className="flex gap-3 border-warning-border bg-warning-surface p-4" role="status">
             <Lock className="mt-0.5 size-5 flex-none text-warning" aria-hidden />
             <div>
-              <h2 className="font-semibold">{t('home.unverifiedTitle')}</h2>
-              <p className="text-sm text-fg-2">{t('home.unverifiedBody')}</p>
+              <h2 className="text-body font-semibold">{t('home.unverifiedTitle')}</h2>
+              <p className="text-meta text-fg-2">{t('home.unverifiedBody')}</p>
               <Link
                 to="/verify"
                 className={buttonVariants({ variant: 'primary', size: 'sm', className: 'mt-3' })}
@@ -263,6 +301,7 @@ export function HomePage() {
           </Card>
         )}
         <StoriesRow />
+        {canRequest && <UpNext />}
         <OneUsefulThing />
         {canPost && <Composer />}
         <Segmented
@@ -279,6 +318,7 @@ export function HomePage() {
           queryKey={['feed', tab]}
           path={`/feed?tab=${tab}&limit=15`}
           label={tab === 'following' ? t('feed.followingTab') : t('feed.forYou')}
+          exclude={shown}
           empty={
             <EmptyState
               icon={<Rss className="size-6" />}

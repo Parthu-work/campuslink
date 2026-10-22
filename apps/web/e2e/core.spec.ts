@@ -103,7 +103,7 @@ test.describe('signed-in journeys', () => {
     await expect(page.getByRole('heading', { name: 'Your consent choices' })).toBeVisible();
     await expectNoA11yViolations(page);
     await page.goto('/settings/preferences');
-    await page.getByRole('button', { name: 'Light' }).focus();
+    await page.getByRole('radio', { name: 'Light' }).focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expectNoA11yViolations(page);

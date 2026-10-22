@@ -20,13 +20,17 @@ test.describe('mentorship', () => {
     await page.getByPlaceholder('Search by name, company or topic').fill('Sneha');
     await page.getByRole('link', { name: /Sneha Reddy/ }).click();
     await expect(page.getByRole('heading', { name: 'Sneha Reddy', level: 1 })).toBeVisible();
-    await page.getByRole('radio', { name: /1:1 video call/ }).click();
-    await page.getByRole('radiogroup', { name: 'Time' }).getByRole('radio').first().click();
-    await page.getByLabel('Your goal').fill('Switch from ECE coursework to a data analyst role');
-    await page.getByLabel('Your background').fill('Third-year student, learning SQL and Python on my own');
-    await page
-      .getByLabel('What you need from this session')
-      .fill('A plan for the next three months and project ideas');
+    // Two steps in a sheet (owner decision Q12): session and time, then one message.
+    await page.getByRole('button', { name: 'Request mentorship' }).click();
+    const sheet = page.getByRole('dialog', { name: /Ask Sneha for help/ });
+    await sheet.getByRole('radio', { name: /1:1 video call/ }).click();
+    await sheet.getByRole('radiogroup', { name: 'Time' }).getByRole('radio').first().click();
+    await sheet.getByRole('button', { name: 'Continue' }).click();
+    await sheet.getByRole('button', { name: 'Goal' }).click();
+    await page.keyboard.type('switch from ECE coursework to a data analyst role.');
+    await sheet.getByRole('button', { name: 'What I need' }).click();
+    await page.keyboard.type('a plan for the next three months and project ideas.');
+    await expect(sheet.getByLabel(/What do you want from this session/)).toHaveValue(/^Goal: switch/);
     await expectNoA11yViolations(page);
     await page.getByRole('button', { name: 'Send request' }).click();
     await expect(page.getByRole('heading', { name: 'Request sent' })).toBeVisible();

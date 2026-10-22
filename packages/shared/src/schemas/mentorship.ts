@@ -121,18 +121,29 @@ const longText = (min: number, max: number) =>
   z.string().trim().min(min, `At least ${min} characters`).max(max, `At most ${max} characters`);
 export const slotStart = z.iso.datetime({ offset: true });
 
-/** The structured message of a request (goal, background, what you need). */
+/**
+ * What the mentee wants from the session, in their own words: one box (owner decision Q12,
+ * docs/design/revamp/decisions.md). Optional prompts in the form add "Goal:", "Background:" and
+ * "What I need:" headings, so mentors still get structure.
+ */
+export const REQUEST_MESSAGE_MIN = 20;
+export const REQUEST_MESSAGE_MAX = 1500;
+export const requestMessage = z.strictObject({
+  message: longText(REQUEST_MESSAGE_MIN, REQUEST_MESSAGE_MAX),
+});
+/** The three-part message earlier clients sent (goal, background, what you need); still accepted. */
 export const requestText = z.strictObject({
   goal: longText(10, 300),
   background: longText(10, 600),
   need: longText(10, 600),
 });
-export const mentorshipRequestBody = requestText
-  .extend({
-    mentorId: objectId,
-    sessionType: z.enum(SESSION_TYPES),
-    slotStart: slotStart.optional(),
-  })
+const requestTarget = {
+  mentorId: objectId,
+  sessionType: z.enum(SESSION_TYPES),
+  slotStart: slotStart.optional(),
+};
+export const mentorshipRequestBody = z
+  .union([requestMessage.extend(requestTarget), requestText.extend(requestTarget)])
   .refine((b) => !isBookable(b.sessionType) || !!b.slotStart, {
     message: 'Pick a time for this session',
     path: ['slotStart'],
@@ -218,9 +229,11 @@ export interface RequestView {
   id: string;
   status: RequestStatus;
   sessionType: SessionType;
-  goal: string;
-  background: string;
-  need: string;
+  /** The mentee's message; null on requests sent in the older three-part form. */
+  message: string | null;
+  goal: string | null;
+  background: string | null;
+  need: string | null;
   slotStart: string | null;
   mentor: PersonRef;
   mentee: PersonRef;

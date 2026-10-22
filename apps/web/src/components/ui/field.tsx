@@ -12,8 +12,9 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/cn';
 
 /** Text controls: 48px tall, a calm border that turns brand with a soft ring on focus. */
+// 16px text: iOS zooms the page into any field set smaller.
 const inputClass =
-  'min-h-12 w-full rounded-[var(--radius-md)] border border-line-strong bg-surface-1 px-4 text-body text-fg placeholder:text-fg-3 transition-[border-color,box-shadow] duration-[var(--dur-fast)] hover:border-[color-mix(in_oklch,var(--line-strong),var(--fg)_20%)] focus:border-brand focus:shadow-[0_0_0_4px_color-mix(in_oklch,var(--brand)_22%,transparent)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-danger aria-[invalid=true]:focus:shadow-[0_0_0_4px_color-mix(in_oklch,var(--danger)_20%,transparent)]';
+  'min-h-12 w-full rounded-[var(--radius-md)] border border-line-strong bg-surface-1 px-4 text-base text-fg placeholder:text-fg-3 transition-[border-color,box-shadow] duration-[var(--dur-fast)] hover:border-[color-mix(in_oklch,var(--line-strong),var(--fg)_20%)] focus:border-brand focus:shadow-[0_0_0_4px_color-mix(in_oklch,var(--brand)_22%,transparent)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-danger aria-[invalid=true]:focus:shadow-[0_0_0_4px_color-mix(in_oklch,var(--danger)_20%,transparent)]';
 
 interface FieldProps {
   label: ReactNode;

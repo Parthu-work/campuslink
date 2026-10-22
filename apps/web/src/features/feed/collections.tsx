@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 import { Bookmark, Film, MessageCircle, Rss } from 'lucide-react';
 import { TOPICS, type FollowState, type PostView, type PublicProfile, type Topic } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
@@ -11,6 +11,7 @@ import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, apiRequest } from '../../lib/api';
+import { useFollow } from '../../lib/follows';
 import { prefersReducedMotion } from '../../lib/preferences';
 import { AuthorLine, ReelVideo } from './post-card';
 import { FeedList } from './feed-list';
@@ -112,30 +113,6 @@ export function ReelsPage() {
       )}
     </div>
   );
-}
-
-function useFollow() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ type, id, on }: { type: 'user' | 'topic' | 'source'; id: string; on: boolean }) =>
-      on
-        ? api.post<FollowState>('/follows', { targetType: type, targetId: id })
-        : api.delete<FollowState>(`/follows/${type}/${id}`),
-    onMutate: ({ type, id, on }) => {
-      const prev = qc.getQueryData<FollowState>(['follows']);
-      if (prev) {
-        const k = type === 'user' ? 'users' : type === 'topic' ? 'topics' : 'sources';
-        const list = prev[k] as string[];
-        qc.setQueryData(['follows'], { ...prev, [k]: on ? [...list, id] : list.filter((x) => x !== id) });
-      }
-      return { prev };
-    },
-    onError: (_e, _v, c) => c?.prev && qc.setQueryData(['follows'], c.prev),
-    onSuccess: (state) => {
-      qc.setQueryData(['follows'], state);
-      void qc.invalidateQueries({ queryKey: ['feed'] });
-    },
-  });
 }
 
 export function FollowingPage() {

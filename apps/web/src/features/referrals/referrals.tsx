@@ -13,6 +13,7 @@ import { PageHeader } from '../../components/ui/page-header';
 import { Segmented } from '../../components/ui/tab-nav';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
+import { celebrate } from '../../lib/celebrate';
 import { formatRelative } from '../../lib/format';
 import { useCan } from '../../lib/me';
 
@@ -122,6 +123,8 @@ function RespondDialog({ r, onClose }: { r: ReferralView; onClose: () => void })
           : { action: 'decline', template, ...(note.trim() ? { note: note.trim() } : {}) },
       ),
     onSuccess: () => {
+      // Giving a referral is a moment worth marking (§6); a decline stays quiet.
+      if (mode === 'refer') celebrate();
       toast.success(mode === 'refer' ? t('referrals.referredToast') : t('referrals.declinedToast'));
       void qc.invalidateQueries({ queryKey: ['referrals'] });
       onClose();

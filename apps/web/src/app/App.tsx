@@ -12,9 +12,14 @@ import { AppRouter } from './router';
 import { SessionBootstrap, Splash } from './guards';
 import { AppStatus } from '../components/layout/app-status';
 import { BotCheckHost } from '../components/layout/bot-check-host';
+import { lazyPart } from '../lib/lazy-part';
 import { loadSonner } from '../lib/toast';
 
 // Loads just after the first render; toasts raised before it mounts are replayed by sonner.
+// Celebrations are rare: the host (and its store) load after the first screen, the burst on use.
+const CelebrationHost = lazyPart(() =>
+  import('../components/layout/celebration-host').then((m) => m.CelebrationHost),
+);
 const Toaster = lazy(() => loadSonner().then((m) => ({ default: m.Toaster })));
 
 function TenantGate() {
@@ -73,6 +78,7 @@ export function App() {
       <AppStatus />
       <TenantGate />
       <BotCheckHost />
+      <CelebrationHost />
       <Suspense fallback={null}>
         <Toaster
           position="bottom-center"

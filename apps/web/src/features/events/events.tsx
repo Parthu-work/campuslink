@@ -24,43 +24,65 @@ import { Segmented } from '../../components/ui/tab-nav';
 import { api, ApiError } from '../../lib/api';
 import { events } from '../../lib/queries';
 import { useCan } from '../../lib/me';
-import { formatDateTime, newIdempotencyKey } from '../../lib/format';
+import { formatDateTime, formatMonth, formatWeekday, newIdempotencyKey } from '../../lib/format';
+import { coverOf } from '../../lib/accent';
 import { fromLocalInput, toLocalInput } from '../../lib/events';
 
+/**
+ * An event as a small poster (§8.9): a cover in the event's own accent with a date block, then
+ * the title, time, place and who is going.
+ */
 export function EventCard({ e }: { e: EventView }) {
   const { t } = useTranslation();
+  const start = new Date(e.startsAt);
   return (
-    <Card className="relative grid h-full gap-2 p-4">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <Badge tone="brand">{t(`events.kind.${e.kind}`)}</Badge>
-        {e.status === 'cancelled' && <Badge tone="danger">{t('events.cancelled')}</Badge>}
-        {e.myRsvp && <Badge tone="success">{t(`events.rsvp.${e.myRsvp}`)}</Badge>}
+    <Card variant="interactive" className="relative grid h-full content-start overflow-hidden">
+      <div className="relative h-20" style={{ background: coverOf(e.title) }} aria-hidden>
+        <span className="absolute top-3 right-3">
+          <Badge tone="brand">{t(`events.kind.${e.kind}`)}</Badge>
+        </span>
       </div>
-      <IntentLink
-        to={`/events/${e.id}`}
-        className="font-display text-lg leading-tight font-semibold after:absolute after:inset-0"
-      >
-        {e.title}
-      </IntentLink>
-      <p className="flex items-center gap-1.5 text-sm text-fg-2">
-        <CalendarDays className="size-4 flex-none" aria-hidden /> {formatDateTime(e.startsAt)}
-      </p>
-      <p className="flex items-center gap-1.5 text-sm text-fg-2">
-        {e.mode === 'online' ? (
-          <Video className="size-4 flex-none" aria-hidden />
-        ) : (
-          <MapPin className="size-4 flex-none" aria-hidden />
-        )}
-        {e.mode === 'online' ? t('events.mode.online') : e.location}
-      </p>
-      <p className="flex items-center gap-1.5 text-xs text-fg-3">
-        <Users className="size-3.5" aria-hidden />
-        {e.capacity
-          ? t('events.goingOf', { going: e.going, capacity: e.capacity })
-          : t('events.goingN', { count: e.going })}
-        {' · '}
-        {t('events.hostedBy', { name: e.host.name })}
-      </p>
+      <div className="relative -mt-9 grid gap-2 px-4 pb-4">
+        <span
+          aria-hidden
+          className="grid w-16 justify-items-center rounded-[var(--radius-md)] border border-line bg-surface-1 py-1.5 shadow-elev-2"
+        >
+          <span className="text-caption font-bold text-brand-ink uppercase">{formatMonth(start)}</span>
+          <b className="font-display text-headline leading-none tabular-nums">{start.getDate()}</b>
+          <span className="text-caption text-fg-3">{formatWeekday(start)}</span>
+        </span>
+        <IntentLink
+          to={`/events/${e.id}`}
+          className="mt-1 text-title leading-tight font-semibold after:absolute after:inset-0"
+        >
+          {e.title}
+        </IntentLink>
+        <p className="flex items-center gap-1.5 text-meta text-fg-2">
+          <CalendarDays className="size-4 flex-none" aria-hidden /> {formatDateTime(e.startsAt)}
+        </p>
+        <p className="flex items-center gap-1.5 text-meta text-fg-2">
+          {e.mode === 'online' ? (
+            <Video className="size-4 flex-none" aria-hidden />
+          ) : (
+            <MapPin className="size-4 flex-none" aria-hidden />
+          )}
+          <span className="truncate">{e.mode === 'online' ? t('events.mode.online') : e.location}</span>
+        </p>
+        <div className="flex flex-wrap items-center gap-2 border-t border-line pt-2.5">
+          <p className="flex min-w-0 flex-1 items-center gap-1.5 text-caption text-fg-3">
+            <Users className="size-3.5 flex-none" aria-hidden />
+            <span className="truncate">
+              {e.capacity
+                ? t('events.goingOf', { going: e.going, capacity: e.capacity })
+                : t('events.goingN', { count: e.going })}
+              {' · '}
+              {t('events.hostedBy', { name: e.host.name })}
+            </span>
+          </p>
+          {e.status === 'cancelled' && <Badge tone="danger">{t('events.cancelled')}</Badge>}
+          {e.myRsvp && <Badge tone="success">{t(`events.rsvp.${e.myRsvp}`)}</Badge>}
+        </div>
+      </div>
     </Card>
   );
 }

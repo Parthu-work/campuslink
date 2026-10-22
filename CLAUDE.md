@@ -133,6 +133,7 @@ Everything runs on localhost with free, open-source tools. Any paid or external 
 - New tokens and primitives appear in the living style guide (`/design`, development builds only, `features/design/style-guide.tsx`) in both themes.
 - Build screens from `components/ui/` primitives: `PageHeader` for every screen title (a lint rule rejects `text-[clamp(` in features), `Sheet` for menus, filters and pickers and `Dialog` for focused tasks, `Switch`, `ChoiceGroup` (or `useRovingRadio` for custom radios), `Tabs`, `Segmented`, `ProgressBar`/`ProgressRing`, `StatCard` in a `StatGrid`, `Table`, `EmptyState`/`ErrorState` with an `Illustration`, `Card variant="interactive"` for link cards. Merge classes with `cn()` (it knows the type scale), never by string concatenation.
 - Motion animates transform and opacity only and respects `prefers-reduced-motion` (`--motion-scale`).
+- Celebrate only the moments ADR 0008 lists (request accepted, step done, badge, referral given, verification, quiz complete), through `celebrate()` (`lib/celebrate.ts`), once per device (`firstSighting`); never declines, cancellations or failures. Haptics go through `haptic()` and stay off unless the member turns them on.
 - Use conventional commits (`feat(auth): …`), enforced by commitlint and Husky.
 
 ## Git workflow (owner's instruction)

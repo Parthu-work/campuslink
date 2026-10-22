@@ -42,6 +42,10 @@
   --aurora-2: oklch(0.72 0.16 320);
   --aurora-3: oklch(0.72 0.16 15);
   --on-aurora: oklch(0.18 0.02 275);
+  --space: oklch(0.17 0.035 275);
+  --space-2: oklch(0.23 0.045 275);
+  --on-space: oklch(0.96 0.01 275);
+  --on-space-2: oklch(0.8 0.03 275);
   --subject-1: oklch(0.72 0.13 275);
   --subject-1-surface: oklch(0.27 0.04 275);
   --subject-1-ink: oklch(0.8 0.1 275);
@@ -144,6 +148,10 @@
     --aurora-2: oklch(0.64 0.17 320);
     --aurora-3: oklch(0.64 0.17 15);
     --on-aurora: oklch(0.18 0.02 275);
+    --space: oklch(0.17 0.035 275);
+    --space-2: oklch(0.23 0.045 275);
+    --on-space: oklch(0.96 0.01 275);
+    --on-space-2: oklch(0.8 0.03 275);
     --subject-1: oklch(0.64 0.13 275);
     --subject-1-surface: oklch(0.955 0.021 275);
     --subject-1-ink: oklch(0.5 0.12 275);
@@ -246,6 +254,10 @@
   --aurora-2: oklch(0.64 0.17 320);
   --aurora-3: oklch(0.64 0.17 15);
   --on-aurora: oklch(0.18 0.02 275);
+  --space: oklch(0.17 0.035 275);
+  --space-2: oklch(0.23 0.045 275);
+  --on-space: oklch(0.96 0.01 275);
+  --on-space-2: oklch(0.8 0.03 275);
   --subject-1: oklch(0.64 0.13 275);
   --subject-1-surface: oklch(0.955 0.021 275);
   --subject-1-ink: oklch(0.5 0.12 275);

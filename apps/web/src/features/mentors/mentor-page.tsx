@@ -2,22 +2,33 @@ import { lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { PauseCircle, UserX } from 'lucide-react';
+import { BadgeCheck, Clock, PauseCircle, Send } from 'lucide-react';
 import type { MentorCard } from '@campuslink/shared';
 import { BackLink } from '../../components/ui/back-link';
+import { Button } from '../../components/ui/button';
+import { Sheet } from '../../components/ui/dialog';
+import { Illustration } from '../../components/ui/illustration';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { SafetyMenu } from '../../components/layout/safety-menu';
 import { api } from '../../lib/api';
+import { coverOf } from '../../lib/accent';
 import { findCached, hasId } from '../../lib/query-seed';
+import { useUrlOverlay } from '../../lib/use-url-overlay';
 
-// The form library and Zod load alongside the mentor's header instead of before it (bundle budget).
+// The form library and Zod load with the sheet, not before the mentor's header (bundle budget).
 const RequestForm = lazy(() => import('./request-form').then((m) => ({ default: m.RequestForm })));
 
+/**
+ * A mentor's page (§8.4): a cover in their own accent, a large face, what they do and where, their
+ * batch, the sessions they offer, and one primary action. Requesting opens a sheet (a bottom sheet
+ * on phones) that Back closes.
+ */
 export function MentorPage() {
   const { userId = '' } = useParams();
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const sheet = useUrlOverlay('ask');
   const q = useQuery({
     queryKey: ['mentor', userId],
     queryFn: () => api.get<MentorCard & { timezone: string }>(`/mentors/${userId}`),
@@ -34,67 +45,129 @@ export function MentorPage() {
     retry: false,
   });
   const back = <BackLink to="/mentors">{t('mentors.back')}</BackLink>;
-  if (q.isLoading) return <Skeleton className="h-96" />;
+  if (q.isLoading)
+    return (
+      <div className="mx-auto grid w-full max-w-[760px] gap-4">
+        {back}
+        <Skeleton className="h-80 rounded-[var(--radius-xl)]" />
+      </div>
+    );
   if (!q.data)
     return (
-      <>
+      <div className="mx-auto grid w-full max-w-[760px] gap-4">
         {back}
-        <EmptyState icon={<UserX className="size-6" />} title={t('mentors.notFound')}>
+        <EmptyState art={<Illustration kind="people" />} title={t('mentors.notFound')}>
           {t('mentors.notFoundBody')}
         </EmptyState>
-      </>
+      </div>
     );
   const m = q.data;
+  const role = [m.jobTitle, m.company].filter(Boolean);
   return (
-    <>
+    <div className="mx-auto grid w-full max-w-[760px] gap-4">
       {back}
-      <Card className="grid gap-4 p-5">
-        <div className="flex items-start gap-4">
-          <span className="flex-none" style={{ viewTransitionName: `mentor-${m.userId}` }}>
-            <PersonAvatar name={m.name} fileId={m.avatarFileId} size={72} verified />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-[26px] leading-tight font-bold">{m.name}</h1>
-            {m.headline && <p className="text-fg-2">{m.headline}</p>}
-            {(m.jobTitle || m.company) && (
-              <p className="text-sm">{[m.jobTitle, m.company].filter(Boolean).join(' · ')}</p>
+      <Card variant="raised" className="overflow-hidden">
+        <div aria-hidden className="h-24 sm:h-32" style={{ background: coverOf(m.name) }} />
+        <div className="grid gap-4 px-5 pb-5 sm:px-6 sm:pb-6">
+          <div className="-mt-12 flex items-end justify-between gap-3 sm:-mt-14">
+            <span
+              className="flex-none rounded-full ring-4 ring-surface-1"
+              style={{ viewTransitionName: `mentor-${m.userId}` }}
+            >
+              <PersonAvatar name={m.name} fileId={m.avatarFileId} size={96} verified />
+            </span>
+            <SafetyMenu userId={m.userId} name={m.name} />
+          </div>
+          <div className="grid gap-1">
+            <h1 className="text-headline leading-tight font-bold">{m.name}</h1>
+            {role.length > 0 && (
+              <p className="flex flex-wrap items-center gap-x-1.5 text-lead text-fg-2">
+                {m.jobTitle && <span>{m.jobTitle}</span>}
+                {m.jobTitle && m.company && <span aria-hidden>·</span>}
+                {m.company && (
+                  <span className="inline-flex items-center gap-1 font-semibold text-fg">
+                    {m.company}
+                    {m.companyVerified && (
+                      <BadgeCheck className="size-4 text-success" aria-label={t('people.companyVerified')} />
+                    )}
+                  </span>
+                )}
+              </p>
+            )}
+            {(m.branch || m.gradYear) && (
+              <p className="text-meta text-fg-3">
+                {[m.branch, m.gradYear ? t('people.batch', { year: m.gradYear }) : '']
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
             )}
           </div>
-          <SafetyMenu userId={m.userId} name={m.name} />
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {m.branch && (
-            <Badge>
-              {[m.branch, m.gradYear ? t('people.batch', { year: m.gradYear }) : '']
-                .filter(Boolean)
-                .join(' · ')}
-            </Badge>
+          {m.headline && <p className="max-w-[62ch] text-body">{m.headline}</p>}
+          {(m.topics.length > 0 || m.skills.length > 0 || m.languages.length > 0) && (
+            <ul className="flex flex-wrap gap-1.5" aria-label={t('mentors.topics')}>
+              {[...m.topics, ...m.skills].map((x) => (
+                <li key={x}>
+                  <Badge tone="brand">{x}</Badge>
+                </li>
+              ))}
+              {m.languages.map((x) => (
+                <li key={x}>
+                  <Badge>{x}</Badge>
+                </li>
+              ))}
+            </ul>
           )}
-          {[...m.topics, ...m.skills].map((x) => (
-            <Badge key={x} tone="brand">
-              {x}
-            </Badge>
-          ))}
-          {m.languages.map((x) => (
-            <Badge key={x}>{x}</Badge>
-          ))}
+          <section aria-labelledby="offers" className="grid gap-2">
+            <h2 id="offers" className="eyebrow">
+              {t('mentors.offers')}
+            </h2>
+            <ul className="flex flex-wrap gap-2">
+              {m.sessionTypes.map((s) => (
+                <li
+                  key={s.type}
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line-strong px-3 text-meta font-semibold"
+                >
+                  {t(`session.type.${s.type}`)}
+                  <span className="inline-flex items-center gap-1 font-normal text-fg-2">
+                    <Clock className="size-3.5" aria-hidden />
+                    {s.durationMin ? t('session.minutes', { n: s.durationMin }) : t('session.async')}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          {!m.open && (
+            <p
+              className="flex gap-3 rounded-[var(--radius-md)] bg-warning-surface p-3.5 text-meta"
+              role="status"
+            >
+              <PauseCircle className="mt-0.5 size-5 flex-none text-warning" aria-hidden />
+              {t('mentors.fullBody')}
+            </p>
+          )}
+          <div className="grid gap-2 sm:flex sm:items-center">
+            <Button variant="primary" size="lg" disabled={!m.open} onClick={() => sheet.open('request')}>
+              <Send className="size-5" aria-hidden /> {t('mentors.requestCta')}
+            </Button>
+            <Link
+              to={`/people/${m.userId}`}
+              className="inline-flex min-h-12 items-center justify-center rounded-full px-5 text-body font-semibold text-brand-ink hover:bg-hover"
+            >
+              {t('mentors.fullProfile')}
+            </Link>
+          </div>
         </div>
-        <Link
-          to={`/people/${m.userId}`}
-          className="justify-self-start text-sm font-semibold text-brand-ink hover:underline"
-        >
-          {t('mentors.fullProfile')}
-        </Link>
       </Card>
-      {!m.open && (
-        <Card className="flex gap-3 p-4" role="status">
-          <PauseCircle className="mt-0.5 size-5 flex-none text-warning" aria-hidden />
-          <p className="text-sm">{t('mentors.fullBody')}</p>
-        </Card>
-      )}
-      <Suspense fallback={<Skeleton className="h-96" />}>
-        <RequestForm mentor={m} />
-      </Suspense>
-    </>
+      <Sheet
+        open={sheet.value === 'request'}
+        onOpenChange={(o) => !o && sheet.close()}
+        title={t('request.title', { name: m.name.split(' ')[0] })}
+        history={false}
+      >
+        <Suspense fallback={<Skeleton className="h-96" />}>
+          <RequestForm mentor={m} />
+        </Suspense>
+      </Sheet>
+    </div>
   );
 }
