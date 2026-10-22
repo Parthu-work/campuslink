@@ -11,19 +11,13 @@ import {
   Sparkles,
   UserPlus,
 } from 'lucide-react';
-import type {
-  AuthorRef,
-  BookingView,
-  FollowState,
-  ImpactView,
-  OneUsefulThingView,
-  Topic,
-} from '@campuslink/shared';
+import type { AuthorRef, FollowState, ImpactView, Topic } from '@campuslink/shared';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Segmented } from '../../components/ui/tab-nav';
 import { Button } from '../../components/ui/button';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { api } from '../../lib/api';
+import { oneUsefulThing, upcomingBookings } from '../../lib/queries';
 import { useCan, useMe } from '../../lib/me';
 import { formatDay, formatTime } from '../../lib/format';
 import { buttonVariants } from '../../components/ui/button-variants';
@@ -34,10 +28,7 @@ import { FeedList } from '../feed/feed-list';
 
 function NextSession() {
   const { t } = useTranslation();
-  const q = useQuery({
-    queryKey: ['bookings', 'upcoming'],
-    queryFn: () => api.get<BookingView[]>('/bookings?when=upcoming'),
-  });
+  const q = useQuery(upcomingBookings());
   const b = q.data?.[0];
   if (q.isLoading) return <Skeleton className="h-24" />;
   return (
@@ -95,11 +86,7 @@ function ImpactTeaser() {
 
 function OneUsefulThing() {
   const { t } = useTranslation();
-  const q = useQuery({
-    queryKey: ['out'],
-    queryFn: () => api.get<OneUsefulThingView | null>('/feed/one-useful-thing'),
-    staleTime: 10 * 60_000,
-  });
+  const q = useQuery(oneUsefulThing());
   if (q.isLoading) return <Skeleton className="h-40" />;
   const v = q.data;
   if (!v || (!v.post && !v.item)) return null;

@@ -3,22 +3,9 @@ import { Link, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import {
-  ArrowLeft,
-  BadgeCheck,
-  BriefcaseBusiness,
-  ExternalLink,
-  FileText,
-  HandHelping,
-  Users,
-} from 'lucide-react';
-import {
-  TRACK_STATUSES,
-  type JobView,
-  type ReferrerView,
-  type RemovalView,
-  type TrackStatus,
-} from '@campuslink/shared';
+import { BadgeCheck, BriefcaseBusiness, ExternalLink, FileText, HandHelping, Users } from 'lucide-react';
+import { TRACK_STATUSES, type JobView, type ReferrerView, type TrackStatus } from '@campuslink/shared';
+import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Field, Select, Textarea } from '../../components/ui/field';
@@ -26,6 +13,7 @@ import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, ApiError } from '../../lib/api';
+import { job } from '../../lib/queries';
 import { findCached, hasId } from '../../lib/query-seed';
 import { useCan } from '../../lib/me';
 import { formatDateTime, newIdempotencyKey } from '../../lib/format';
@@ -33,8 +21,6 @@ import { formatSalary, useTrack } from '../../lib/jobs';
 import { AuthorLine } from '../feed/post-card';
 import { ContentMenu, RemovalNotice } from '../feed/content-menu';
 import { JobFacts, SaveJobButton } from './job-card';
-
-type JobDetail = JobView & { removal: RemovalView | null };
 
 function ReferralDialog({
   job,
@@ -259,8 +245,7 @@ export function JobPage() {
   const qc = useQueryClient();
   const canSave = useCan('jobs:save');
   const q = useQuery({
-    queryKey: ['job', jobId],
-    queryFn: () => api.get<JobDetail>(`/jobs/${jobId}`),
+    ...job(jobId),
     // Draw the card the member tapped at once; the full record replaces it when it arrives.
     placeholderData: () => {
       const row = findCached(qc, [['jobs']], hasId<JobView>('id', jobId, ['company', 'applyUrl', 'status']));
@@ -281,12 +266,7 @@ export function JobPage() {
   const j = q.data;
   return (
     <div className="mx-auto grid w-full max-w-[860px] gap-4">
-      <Link
-        to="/jobs"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-ink hover:underline"
-      >
-        <ArrowLeft className="size-4" aria-hidden /> {t('jobs.back')}
-      </Link>
+      <BackLink to="/jobs">{t('jobs.back')}</BackLink>
       {q.isLoading && <Skeleton className="h-60" />}
       {q.isError && (
         <EmptyState icon={<BriefcaseBusiness className="size-6" />} title={t('jobs.gone')}>
@@ -299,7 +279,12 @@ export function JobPage() {
             <Card className="grid grid-cols-[minmax(0,1fr)] gap-3 p-5">
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-[clamp(22px,3.4vw,30px)] leading-tight font-bold">{j.title}</h1>
+                  <h1
+                    className="text-[clamp(22px,3.4vw,30px)] leading-tight font-bold"
+                    style={{ viewTransitionName: `job-${j.id}` }}
+                  >
+                    {j.title}
+                  </h1>
                   <p className="text-lg text-fg-2">{j.company}</p>
                 </div>
                 <SaveJobButton job={j} />

@@ -32,6 +32,7 @@ export function CreateSheet() {
       open={sheet.value === 'create'}
       onOpenChange={(o) => !o && sheet.close()}
       title={t('nav.createTitle')}
+      history={false}
     >
       <ul className="grid gap-1.5">
         {actions.map((a) => {

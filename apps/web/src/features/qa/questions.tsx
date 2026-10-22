@@ -3,8 +3,9 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, CheckCircle2, HandHeart, MessageCircleQuestion, Plus } from 'lucide-react';
+import { CheckCircle2, HandHeart, MessageCircleQuestion, Plus } from 'lucide-react';
 import { TOPICS, type AnswerView, type QuestionView, type Topic } from '@campuslink/shared';
+import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Field, Input, Select, Textarea } from '../../components/ui/field';
@@ -205,7 +206,13 @@ export function QuestionsPage() {
           {t('common.loadMore')}
         </Button>
       )}
-      <Dialog open={asking} onOpenChange={setAsking} title={t('qa.askTitle')} description={t('qa.askBody')}>
+      <Dialog
+        open={asking}
+        onOpenChange={setAsking}
+        title={t('qa.askTitle')}
+        description={t('qa.askBody')}
+        history={false}
+      >
         {asking && <AskForm onDone={() => setAsking(false)} />}
       </Dialog>
     </div>
@@ -323,12 +330,7 @@ export function QuestionPage() {
   const question = q.data?.question;
   return (
     <div className="mx-auto grid w-full max-w-[760px] gap-4">
-      <Link
-        to="/questions"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-ink hover:underline"
-      >
-        <ArrowLeft className="size-4" aria-hidden /> {t('qa.back')}
-      </Link>
+      <BackLink to="/questions">{t('qa.back')}</BackLink>
       {q.isLoading && <Skeleton className="h-40" />}
       {q.isError && (
         <EmptyState icon={<MessageCircleQuestion className="size-6" />} title={t('qa.gone')}>

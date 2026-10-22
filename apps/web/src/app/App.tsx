@@ -1,4 +1,5 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '../lib/query-client';
 import { Toaster } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { Building2, PauseCircle } from 'lucide-react';
@@ -11,15 +12,6 @@ import { AppRouter } from './router';
 import { SessionBootstrap, Splash } from './guards';
 import { AppStatus } from '../components/layout/app-status';
 import { BotCheckHost } from '../components/layout/bot-check-host';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (n, e) => !(e instanceof ApiError && e.status >= 400 && e.status < 500) && n < 2,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 function TenantGate() {
   const { t } = useTranslation();

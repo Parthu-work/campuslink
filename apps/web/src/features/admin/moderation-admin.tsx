@@ -471,7 +471,6 @@ export function ModerationAdmin() {
         label={t('mod.queue')}
         value={tab}
         onChange={setTab}
-        className="grid grid-cols-2 rounded-[var(--radius-md)] sm:flex sm:rounded-full"
         options={[
           ['reports', `${t('mod.tabs.reports')}${n('reports')}`],
           ['questions', `${t('mod.tabs.questions')}${n('pendingQuestions')}`],

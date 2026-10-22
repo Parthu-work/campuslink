@@ -11,6 +11,8 @@ import { Field, Input, Textarea } from '../../components/ui/field';
 import { Skeleton } from '../../components/ui/misc';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { api, ApiError } from '../../lib/api';
+import { useDialogHistory } from '../../lib/use-dialog-history';
+import { stories } from '../../lib/queries';
 import { useFileUrl } from '../../lib/files';
 import { formatRelative } from '../../lib/format';
 import { useCan } from '../../lib/me';
@@ -58,6 +60,8 @@ function StoryViewer({
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  // Back (or the Android back gesture) closes the viewer.
+  const requestChange = useDialogHistory(true, (o) => !o && onClose());
   const [g, setG] = useState(start);
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -92,7 +96,7 @@ function StoryViewer({
   });
   if (!group || !story) return null;
   return (
-    <D.Root open onOpenChange={(o) => !o && onClose()}>
+    <D.Root open onOpenChange={requestChange}>
       <D.Portal>
         <D.Overlay className="fixed inset-0 z-[90] bg-black/90" />
         <D.Content
@@ -376,12 +380,7 @@ export function StoriesRow() {
   const tenant = useTenant();
   const canPost = useCan('feed:post');
   const enabled = tenant.features?.stories !== false;
-  const q = useQuery({
-    queryKey: ['stories'],
-    queryFn: () => api.get<StoryView[]>('/stories'),
-    enabled,
-    refetchInterval: 5 * 60_000,
-  });
+  const q = useQuery({ ...stories(), enabled });
   const [viewing, setViewing] = useState<number | null>(null);
   const [composing, setComposing] = useState(false);
   if (!enabled) return null;

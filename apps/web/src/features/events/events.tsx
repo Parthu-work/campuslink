@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CalendarDays, MapPin, Plus, Users, Video } from 'lucide-react';
 import {
@@ -14,12 +14,14 @@ import {
   type EventKind,
   type EventView,
 } from '@campuslink/shared';
+import { IntentLink } from '../../components/ui/intent-link';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api, ApiError } from '../../lib/api';
+import { events } from '../../lib/queries';
 import { useCan } from '../../lib/me';
 import { formatDateTime, newIdempotencyKey } from '../../lib/format';
 import { fromLocalInput, toLocalInput } from '../../lib/events';
@@ -33,12 +35,12 @@ export function EventCard({ e }: { e: EventView }) {
         {e.status === 'cancelled' && <Badge tone="danger">{t('events.cancelled')}</Badge>}
         {e.myRsvp && <Badge tone="success">{t(`events.rsvp.${e.myRsvp}`)}</Badge>}
       </div>
-      <Link
+      <IntentLink
         to={`/events/${e.id}`}
         className="font-display text-lg leading-tight font-semibold after:absolute after:inset-0"
       >
         {e.title}
-      </Link>
+      </IntentLink>
       <p className="flex items-center gap-1.5 text-sm text-fg-2">
         <CalendarDays className="size-4 flex-none" aria-hidden /> {formatDateTime(e.startsAt)}
       </p>
@@ -68,10 +70,7 @@ export function EventsPage() {
   const canHost = useCan('ama:host');
   const [when, setWhen] = useState<'upcoming' | 'mine' | 'past'>('upcoming');
   const [kind, setKind] = useState<EventKind | ''>('');
-  const q = useQuery({
-    queryKey: ['events', when, kind],
-    queryFn: () => api.get<EventView[]>(`/events?when=${when}${kind ? `&kind=${kind}` : ''}`),
-  });
+  const q = useQuery({ ...events(when, kind), placeholderData: keepPreviousData });
   return (
     <div className="grid gap-5">
       <div className="flex flex-wrap items-end justify-between gap-3">

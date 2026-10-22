@@ -1,8 +1,9 @@
 import { Link, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, BadgeCheck, Compass, ExternalLink, Lock, UserX } from 'lucide-react';
+import { BadgeCheck, Compass, ExternalLink, Lock, UserX } from 'lucide-react';
 import type { MentorCard, PublicProfile } from '@campuslink/shared';
+import { BackLink } from '../../components/ui/back-link';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { SafetyMenu } from '../../components/layout/safety-menu';
 import { useCan, useMe } from '../../lib/me';
@@ -28,14 +29,7 @@ export function ProfileView() {
     enabled: canRequest && !self && /^[a-f0-9]{24}$/.test(userId),
     retry: false,
   });
-  const back = (
-    <Link
-      to="/people"
-      className="inline-flex items-center gap-1.5 justify-self-start rounded-full px-2 py-1 text-sm font-semibold text-fg-2 hover:text-fg"
-    >
-      <ArrowLeft className="size-4" aria-hidden /> {t('people.back')}
-    </Link>
-  );
+  const back = <BackLink to="/people">{t('people.back')}</BackLink>;
   if (q.isLoading) return <Skeleton className="h-72" />;
   if (!q.data)
     return (

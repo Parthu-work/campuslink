@@ -166,3 +166,242 @@
 .edge-fade[data-fade='both'] {
   mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
 }
+
+/* Scroll-aware phone chrome (lib/use-scroll-chrome.ts). Transforms only; the rail never hides. */
+.chrome-top,
+.chrome-bottom {
+  transition:
+    transform calc(240ms * var(--motion-scale)) var(--ease-out),
+    background-color 160ms linear,
+    border-color 160ms linear;
+}
+.chrome-top {
+  border-color: transparent;
+  background: transparent;
+}
+:root[data-scrolled='true'] .chrome-top {
+  border-color: var(--line);
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+:root[data-chrome='hidden'] .chrome-top {
+  transform: translateY(calc(-100% - 1px));
+}
+:root[data-chrome='hidden'] .chrome-bottom {
+  transform: translateY(calc(100% + 1px));
+}
+/* Reduced motion: the bars still get out of the way, with a short fade instead of a slide. */
+:root[data-motion='reduce'][data-chrome='hidden'] :is(.chrome-top, .chrome-bottom) {
+  transform: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 90ms linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full'])[data-chrome='hidden'] :is(.chrome-top, .chrome-bottom) {
+    transform: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 90ms linear;
+  }
+}
+:root {
+  /* Where sticky section headers sit: under the top bar while it shows (phones only). */
+  --chrome-top: calc(60px + env(safe-area-inset-top, 0px));
+}
+:root[data-chrome='hidden'] {
+  --chrome-top: env(safe-area-inset-top, 0px);
+}
+@media (min-width: 64rem) {
+  :root,
+  :root[data-chrome='hidden'] {
+    --chrome-top: 0px;
+  }
+}
+
+/* The highlight that slides to the active tab or option (lib/use-sliding-indicator.ts). Only the
+   position animates; the width changes at once. */
+.sliding-indicator {
+  transition:
+    transform calc(260ms * var(--motion-scale)) var(--ease-spring),
+    opacity 120ms linear;
+}
+
+/*
+ * Screen transitions (View Transitions API, master prompt §7b). The content area slides (push from
+ * the right, Back reverses it), tabs crossfade, the chrome stays put, and shared elements (a card's
+ * avatar or title) morph into the next screen's header. Transform and opacity only, under 300 ms,
+ * scaled by --motion-scale; reduced motion gets a short crossfade.
+ */
+main#main {
+  view-transition-name: page;
+}
+::view-transition-group(*) {
+  animation-duration: calc(260ms * var(--motion-scale));
+  animation-timing-function: var(--ease-out);
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-from-right {
+  from {
+    transform: translateX(calc(32px * var(--motion-scale)));
+  }
+}
+@keyframes vt-to-left {
+  to {
+    transform: translateX(calc(-24px * var(--motion-scale)));
+  }
+}
+@keyframes vt-from-left {
+  from {
+    transform: translateX(calc(-32px * var(--motion-scale)));
+  }
+}
+@keyframes vt-to-right {
+  to {
+    transform: translateX(calc(24px * var(--motion-scale)));
+  }
+}
+:root[data-nav='forward']::view-transition-old(page) {
+  animation:
+    vt-fade-out calc(140ms * var(--motion-scale)) linear both,
+    vt-to-left calc(260ms * var(--motion-scale)) var(--ease-out) both;
+}
+:root[data-nav='forward']::view-transition-new(page) {
+  animation:
+    vt-fade-in calc(200ms * var(--motion-scale)) linear calc(60ms * var(--motion-scale)) both,
+    vt-from-right calc(260ms * var(--motion-scale)) var(--ease-out) both;
+}
+:root[data-nav='back']::view-transition-old(page) {
+  animation:
+    vt-fade-out calc(140ms * var(--motion-scale)) linear both,
+    vt-to-right calc(260ms * var(--motion-scale)) var(--ease-out) both;
+}
+:root[data-nav='back']::view-transition-new(page) {
+  animation:
+    vt-fade-in calc(200ms * var(--motion-scale)) linear calc(60ms * var(--motion-scale)) both,
+    vt-from-left calc(260ms * var(--motion-scale)) var(--ease-out) both;
+}
+:root[data-nav='tab']::view-transition-old(page) {
+  animation: vt-fade-out calc(120ms * var(--motion-scale)) linear both;
+}
+:root[data-nav='tab']::view-transition-new(page) {
+  animation: vt-fade-in calc(150ms * var(--motion-scale)) linear both;
+}
+/* The bars and the rail are captured on their own so they paint above the sliding content, and
+   they never move. Everything else (the canvas) is the root snapshot and stays still too. */
+.chrome-top {
+  view-transition-name: chrome-top;
+}
+.chrome-bottom {
+  view-transition-name: chrome-bottom;
+}
+nav.app-rail {
+  view-transition-name: rail;
+}
+::view-transition-old(root),
+::view-transition-new(root),
+::view-transition-group(chrome-top),
+::view-transition-group(chrome-bottom),
+::view-transition-group(rail),
+::view-transition-new(chrome-top),
+::view-transition-new(chrome-bottom),
+::view-transition-new(rail) {
+  animation: none;
+}
+::view-transition-old(chrome-top),
+::view-transition-old(chrome-bottom),
+::view-transition-old(rail) {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full'])::view-transition-group(*) {
+    animation-duration: 120ms;
+  }
+  :root:not([data-motion='full'])::view-transition-old(page) {
+    animation: vt-fade-out 100ms linear both;
+  }
+  :root:not([data-motion='full'])::view-transition-new(page) {
+    animation: vt-fade-in 120ms linear both;
+  }
+}
+:root[data-motion='reduce']::view-transition-group(*) {
+  animation-duration: 120ms;
+}
+:root[data-motion='reduce']::view-transition-old(page) {
+  animation: vt-fade-out 100ms linear both;
+}
+:root[data-motion='reduce']::view-transition-new(page) {
+  animation: vt-fade-in 120ms linear both;
+}
+
+/* Headings receive focus after navigation (lib/route-focus.ts) so screen readers announce them;
+   that programmatic focus draws no ring. */
+main h1[tabindex='-1']:focus {
+  outline: none;
+}
+
+/* Sheets rise from the bottom on phones and dialogs scale in on wider screens, over a fading scrim;
+   both leave the same way (Radix waits for the exit animation). Transform and opacity only. */
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes sheet-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+/* Centring comes from Tailwind's `translate` property, which composes with these transforms. */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+.overlay-fade[data-state='open'] {
+  animation: overlay-in calc(200ms * var(--motion-scale)) linear;
+}
+.overlay-fade[data-state='closed'] {
+  animation: overlay-out calc(160ms * var(--motion-scale)) linear forwards;
+}
+.sheet-motion[data-state='open'] {
+  animation: sheet-up calc(300ms * var(--motion-scale)) var(--ease-out);
+}
+.sheet-motion[data-state='closed'] {
+  animation: sheet-down calc(200ms * var(--motion-scale)) ease-in forwards;
+}
+@media (min-width: 48rem) {
+  .sheet-motion[data-state='open'] {
+    animation: dialog-in calc(220ms * var(--motion-scale)) var(--ease-out);
+  }
+  .sheet-motion[data-state='closed'] {
+    animation: dialog-out calc(160ms * var(--motion-scale)) ease-in forwards;
+  }
+}

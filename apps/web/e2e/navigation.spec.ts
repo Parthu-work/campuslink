@@ -16,6 +16,14 @@ const scrollTo = async (page: Page, y: number) => {
 
 const mainTabs = (page: Page) => page.getByRole('navigation', { name: 'Main' }).last();
 
+/** Taps a bottom tab. After scrolling down the bars are hidden; focusing a tab brings them back. */
+const tapTab = async (page: Page, name: string) => {
+  const tab = mainTabs(page).getByRole('link', { name, exact: true });
+  await tab.focus();
+  await expect(page.locator('html')).toHaveAttribute('data-chrome', 'shown');
+  await tab.click();
+};
+
 test('Home → post → back lands on the same post', async ({ page }) => {
   await signIn(page, 'ananya@dpit.example');
   const feed = page.getByRole('feed', { name: 'For you' });
@@ -78,17 +86,17 @@ test.describe('tabs (phones)', () => {
     expect(y).toBeGreaterThan(100);
 
     // A new screen starts at the top...
-    await mainTabs(page).getByRole('link', { name: 'Jobs' }).click();
+    await tapTab(page, 'Jobs');
     await page.waitForURL(/\/jobs$/);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
 
     // ...and Home, tapped again, is where it was left.
-    await mainTabs(page).getByRole('link', { name: 'Home' }).click();
+    await tapTab(page, 'Home');
     await page.waitForURL(/\/home$/);
     await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 4000 }).toBeGreaterThan(y - 30);
 
     // Tapping the tab you're on goes back to the top.
-    await mainTabs(page).getByRole('link', { name: 'Home' }).click();
+    await tapTab(page, 'Home');
     await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 4000 }).toBeLessThan(5);
   });
 });
@@ -112,4 +120,87 @@ test('the first paint follows the device theme, and a saved choice applies befor
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await ctx.close();
+});
+
+test('the shell never remounts while moving between screens', async ({ page, isMobile }) => {
+  await signIn(page, 'ananya@dpit.example');
+  const nav = page.getByRole('navigation', { name: 'Main' });
+  await expect(nav.first()).toBeVisible();
+  await page.evaluate(() => {
+    const w = window as unknown as { __shell: Element[] };
+    w.__shell = [...document.querySelectorAll('header, nav[aria-label="Main"], main#main')];
+  });
+  const links = isMobile ? mainTabs(page) : nav.first();
+  for (const name of ['Jobs', 'Mentors', 'Home']) {
+    await links.getByRole('link', { name, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/${name.toLowerCase()}$`));
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  }
+  await page.goBack();
+  await expect(page).toHaveURL(/\/mentors$/);
+  const same = await page.evaluate(() => {
+    const w = window as unknown as { __shell: Element[] };
+    return w.__shell.every((el) => el.isConnected);
+  });
+  expect(same).toBe(true);
+});
+
+test.describe('scroll-aware chrome and tab memory (phones)', () => {
+  test.skip(({ isMobile }) => !isMobile, 'Phone chrome');
+
+  test('bars slide away while reading and come back on the way up', async ({ page }) => {
+    await signIn(page, 'ananya@dpit.example');
+    await expect(page.getByRole('feed', { name: 'For you' }).getByRole('article').first()).toBeVisible();
+    const html = page.locator('html');
+    await page.mouse.move(180, 400);
+    await page.mouse.wheel(0, 600);
+    await expect(html).toHaveAttribute('data-chrome', 'hidden');
+    await expect(html).toHaveAttribute('data-scrolled', 'true');
+    // Still in the accessibility tree while hidden.
+    await expect(mainTabs(page).getByRole('link', { name: 'Jobs' })).toHaveCount(1);
+    await page.mouse.wheel(0, -120);
+    await expect(html).toHaveAttribute('data-chrome', 'shown');
+  });
+
+  test('a tab remembers the screen you left it on; tapping it again goes to its root', async ({ page }) => {
+    await signIn(page, 'ananya@dpit.example');
+    await tapTab(page, 'Jobs');
+    await page.waitForURL(/\/jobs$/);
+    const job = page.locator('a[href^="/jobs/"]:not([href="/jobs/tracker"]):not([href="/jobs/new"])').first();
+    await job.click();
+    await page.waitForURL(/\/jobs\/[a-f0-9]{24}$/);
+    const jobUrl = page.url();
+    await tapTab(page, 'Home');
+    await page.waitForURL(/\/home$/);
+    await tapTab(page, 'Jobs');
+    await expect(page).toHaveURL(jobUrl);
+    await expect(mainTabs(page).getByRole('link', { name: 'Jobs' })).toHaveAttribute('aria-current', 'page');
+    await tapTab(page, 'Jobs');
+    await expect(page).toHaveURL(/\/jobs$/);
+  });
+});
+
+test('Back closes an open sheet instead of leaving the screen', async ({ page, isMobile }) => {
+  await signIn(page, 'ananya@dpit.example');
+  await page.goto(`${BASE}/jobs`);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  if (isMobile) await page.getByRole('button', { name: 'Search' }).click();
+  else await page.keyboard.press('Control+k');
+  const palette = page.getByRole('dialog');
+  await expect(palette).toBeVisible();
+  await page.goBack();
+  await expect(palette).toBeHidden();
+  await expect(page).toHaveURL(/\/jobs$/);
+  // Closing from the UI leaves no extra history entry behind.
+  if (isMobile) await page.getByRole('button', { name: 'Search' }).click();
+  else await page.keyboard.press('Control+k');
+  await expect(palette).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(palette).toBeHidden();
+  // The palette's entry is gone from history before the member's next Back.
+  await expect
+    .poll(() => page.evaluate(() => (history.state as { usr?: { dialog?: string } } | null)?.usr?.dialog))
+    .toBeUndefined();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/home$/);
 });

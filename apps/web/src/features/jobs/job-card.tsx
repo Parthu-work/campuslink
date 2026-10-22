@@ -1,4 +1,3 @@
-import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   Bookmark,
@@ -11,6 +10,7 @@ import {
   Users,
 } from 'lucide-react';
 import type { JobView } from '@campuslink/shared';
+import { IntentLink } from '../../components/ui/intent-link';
 import { Badge, Card } from '../../components/ui/misc';
 import { formatRelative } from '../../lib/format';
 import { closingSoon, formatSalary, useTrack } from '../../lib/jobs';
@@ -77,10 +77,15 @@ export function JobCard({ job, compact = false }: { job: JobView; compact?: bool
             <Building2 className="size-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <h3 id={`job-${job.id}${compact ? '-c' : ''}`} className="leading-snug font-semibold">
-              <Link to={`/jobs/${job.id}`} className="hover:underline">
+            <h3
+              id={`job-${job.id}${compact ? '-c' : ''}`}
+              className="leading-snug font-semibold"
+              // The list card's title morphs into the job page's heading (view transition).
+              style={compact ? undefined : { viewTransitionName: `job-${job.id}` }}
+            >
+              <IntentLink to={`/jobs/${job.id}`} className="hover:underline">
                 {job.title}
-              </Link>
+              </IntentLink>
             </h3>
             <p className="truncate text-sm text-fg-2">{job.company}</p>
           </div>

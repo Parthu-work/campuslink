@@ -3,10 +3,9 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useWindowVirtualizer, type VirtualItem } from '@tanstack/react-virtual';
 import { useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import type { FeedEntry, PostView } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Card, Skeleton } from '../../components/ui/misc';
-import { apiRequest } from '../../lib/api';
+import { feedList } from '../../lib/queries';
 import { ItemCard, PostCard } from './post-card';
 
 export function PostSkeleton() {
@@ -25,8 +24,6 @@ export function PostSkeleton() {
     </Card>
   );
 }
-
-type Row = FeedEntry;
 
 /**
  * Measured row sizes per history entry and list, so Back renders the list at its real height at
@@ -54,21 +51,7 @@ export function FeedList({
   posts?: boolean;
 }) {
   const { t } = useTranslation();
-  const q = useInfiniteQuery({
-    queryKey,
-    initialPageParam: '',
-    queryFn: async ({ pageParam }) => {
-      const sep = path.includes('?') ? '&' : '?';
-      const r = await apiRequest<FeedEntry[] | PostView[]>(
-        `${path}${pageParam ? `${sep}cursor=${encodeURIComponent(pageParam)}` : ''}`,
-      );
-      const rows: Row[] = posts
-        ? (r.data as PostView[]).map((post) => ({ type: 'post', post }))
-        : (r.data as FeedEntry[]);
-      return { rows, next: r.meta?.nextCursor ?? null };
-    },
-    getNextPageParam: (last) => last.next ?? undefined,
-  });
+  const q = useInfiniteQuery(feedList(queryKey, path, posts));
   const rows = q.data?.pages.flatMap((p) => p.rows) ?? [];
   const listRef = useRef<HTMLDivElement>(null);
   const [margin, setMargin] = useState(0);
@@ -138,7 +121,7 @@ export function FeedList({
               className="absolute inset-x-0 top-0"
               style={{ transform: `translateY(${it.start - v.options.scrollMargin}px)` }}
             >
-              {row.type === 'post' ? <PostCard post={row.post} /> : <ItemCard item={row.item} />}
+              {row.type === 'post' ? <PostCard post={row.post} morph /> : <ItemCard item={row.item} />}
             </div>
           );
         })}

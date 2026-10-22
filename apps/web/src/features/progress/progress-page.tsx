@@ -12,6 +12,7 @@ import { buttonVariants } from '../../components/ui/button-variants';
 import { Checkbox } from '../../components/ui/field';
 import { Badge, Card, Skeleton } from '../../components/ui/misc';
 import { api, ApiError, saveBlob } from '../../lib/api';
+import { progress } from '../../lib/queries';
 import { useCan, useMe } from '../../lib/me';
 import { useTenant } from '../../lib/tenant-context';
 import { formatRelative } from '../../lib/format';
@@ -74,7 +75,7 @@ export function ProgressPage() {
   const qc = useQueryClient();
   const reduce = useReducedMotionPref();
   const canMentor = useCan('mentorship:mentor');
-  const q = useQuery({ queryKey: ['progress'], queryFn: () => api.get<MyProgressView>('/me/progress') });
+  const q = useQuery(progress());
   const prefs = useMutation({
     mutationFn: (v: MyProgressView['prefs']) => api.put<MyProgressView['prefs']>('/me/progress/settings', v),
     onSuccess: (prefs) => {

@@ -33,7 +33,12 @@ test.describe('roadmaps', () => {
     await expectNoA11yViolations(page);
     await dialog.getByRole('button', { name: 'Mark as done' }).click();
     await expect(dialog.getByRole('button', { name: 'Mark as not done' })).toBeVisible();
-    await page.keyboard.press('Escape');
+    // The step is in the URL: Back (the Android back gesture) closes it and stays on the roadmap.
+    await expect(page).toHaveURL(/[?&]step=/);
+    await page.goBack();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('heading', { name: 'Backend Developer', level: 1 })).toBeVisible();
+    await expect(page).not.toHaveURL(/[?&]step=/);
     await expect(page.getByText('1 of 10 done')).toBeVisible();
     await page.getByLabel('Weekly goal').selectOption('2');
     await expect(page.getByText('Weekly goal saved')).toBeVisible();

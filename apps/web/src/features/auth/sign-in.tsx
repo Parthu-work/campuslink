@@ -34,6 +34,9 @@ export function SignInPage() {
   const finish = async (accessToken: string) => {
     setToken(accessToken);
     await qc.invalidateQueries({ queryKey: ['me'] });
+    // PublicOnly usually redirects as soon as the token lands; only navigate if we are still here,
+    // so a late redirect can never undo the member's next tap.
+    if (window.location.pathname !== '/sign-in') return;
     // Back to the page that asked for sign-in (a shared post, a push link), else the console or Home.
     const from = safeReturnPath((location.state as { from?: unknown } | null)?.from);
     navigate(from ?? (tenant.kind === 'platform' ? '/platform' : '/home'), { replace: true });

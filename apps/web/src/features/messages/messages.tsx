@@ -1,16 +1,24 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, FileText, Lock, MessagesSquare, Paperclip, SendHorizontal } from 'lucide-react';
-import { MESSAGE_MAX, type ConversationView, type MessageView } from '@campuslink/shared';
+import { FileText, Lock, MessagesSquare, Paperclip, SendHorizontal } from 'lucide-react';
+import { MESSAGE_MAX, type MessageView } from '@campuslink/shared';
+import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { SafetyMenu } from '../../components/layout/safety-menu';
 import { api, apiBlob, apiRequest, ApiError, saveBlob } from '../../lib/api';
+import { conversation, conversations } from '../../lib/queries';
 import { useFileUrl } from '../../lib/files';
 import { useMe } from '../../lib/me';
 import { emitTyping, useTyping } from '../../lib/realtime';
@@ -20,10 +28,7 @@ import { cn } from '../../lib/cn';
 
 export function MessagesPage() {
   const { t } = useTranslation();
-  const list = useQuery({
-    queryKey: ['conversations'],
-    queryFn: () => api.get<ConversationView[]>('/conversations'),
-  });
+  const list = useQuery(conversations());
   return (
     <>
       <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('nav.messages')}</h1>
@@ -77,13 +82,16 @@ function Attachment({ m, mine }: { m: MessageView; mine: boolean }) {
   if (!a) return null;
   if (isImage)
     return url ? (
+      // Same box while loading and loaded, so the thread never jumps (master prompt §7b).
       <img
         src={url}
         alt={t('messages.imageFrom', { name: a.name })}
-        className="max-h-64 rounded-[var(--radius-sm)] object-contain"
+        width={224}
+        height={168}
+        className="h-[168px] w-56 rounded-[var(--radius-sm)] bg-surface-2 object-contain"
       />
     ) : (
-      <Skeleton className="h-40 w-56" />
+      <Skeleton className="h-[168px] w-56" />
     );
   return (
     <button
@@ -109,12 +117,7 @@ export function ConversationPage() {
   const qc = useQueryClient();
   const { data: me } = useMe();
   const valid = /^[a-f0-9]{24}$/.test(conversationId);
-  const conv = useQuery({
-    queryKey: ['conversation', conversationId],
-    queryFn: () => api.get<ConversationView>(`/conversations/${conversationId}`),
-    enabled: valid,
-    retry: false,
-  });
+  const conv = useQuery(conversation(conversationId));
   const msgs = useInfiniteQuery({
     queryKey: ['messages', conversationId],
     initialPageParam: '',
@@ -161,15 +164,42 @@ export function ConversationPage() {
 
   const [draft, setDraft] = useState('');
   const [key, setKey] = useState(newIdempotencyKey);
+  // Optimistic: the message shows at once as "Sending…", then becomes the real one; on failure it
+  // is removed and the text goes back into the box (audit ST-4, B8).
+  const removePending = (id: string) =>
+    qc.setQueryData<InfiniteData<Page>>(['messages', conversationId], (old) =>
+      old
+        ? { ...old, pages: old.pages.map((p) => ({ ...p, data: p.data.filter((m) => m.id !== id) })) }
+        : old,
+    );
   const send = useMutation({
     mutationFn: (body: string) =>
       api.postOnce<MessageView>(`/conversations/${conversationId}/messages`, { body }, key),
-    onSuccess: (m) => {
-      appendMessage(qc, m);
+    onMutate: (body) => {
+      const pendingId = `pending-${key}`;
+      appendMessage(qc, {
+        id: pendingId,
+        conversationId,
+        senderId: me?.id ?? '',
+        body,
+        attachment: null,
+        createdAt: new Date().toISOString(),
+      });
       setDraft('');
+      return { pendingId, body };
+    },
+    onSuccess: (m, _body, ctx) => {
+      removePending(ctx.pendingId);
+      appendMessage(qc, m);
       setKey(newIdempotencyKey());
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
+    onError: (e, _body, ctx) => {
+      if (ctx) {
+        removePending(ctx.pendingId);
+        setDraft((d) => d || ctx.body);
+      }
+      toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
+    },
   });
   const fileInput = useRef<HTMLInputElement>(null);
   const attach = useMutation({
@@ -196,14 +226,7 @@ export function ConversationPage() {
     }
   };
 
-  const back = (
-    <Link
-      to="/messages"
-      className="inline-flex items-center gap-1.5 justify-self-start rounded-full px-2 py-1 text-sm font-semibold text-fg-2 hover:text-fg"
-    >
-      <ArrowLeft className="size-4" aria-hidden /> {t('messages.back')}
-    </Link>
-  );
+  const back = <BackLink to="/messages">{t('messages.back')}</BackLink>;
   if (conv.isLoading) return <Skeleton className="h-96" />;
   if (!conv.data)
     return (
@@ -264,8 +287,8 @@ export function ConversationPage() {
                 >
                   <Attachment m={m} mine={mine} />
                   {m.body && <p className="break-words whitespace-pre-wrap">{m.body}</p>}
-                  <span className={cn('text-[11px]', mine ? 'text-on-brand/75' : 'text-fg-3')}>
-                    {formatTime(m.createdAt)}
+                  <span className={cn('text-xs', mine ? 'text-on-brand/75' : 'text-fg-3')}>
+                    {m.id.startsWith('pending-') ? t('messages.sending') : formatTime(m.createdAt)}
                   </span>
                 </div>
                 {!mine && (

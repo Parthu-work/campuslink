@@ -32,6 +32,8 @@ import { Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api, ApiError } from '../../lib/api';
+import { useUrlOverlay } from '../../lib/use-url-overlay';
+import { roadmap } from '../../lib/queries';
 import { useCan, useMe } from '../../lib/me';
 import { cn } from '../../lib/cn';
 import { formatDay, formatRelative } from '../../lib/format';
@@ -189,7 +191,7 @@ function NodePanel({
   const done = !!roadmap.myProgress?.done.includes(node.id);
   const prereqs = roadmap.content.nodes.filter((n) => node.prerequisites.includes(n.id));
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()} title={node.title}>
+    <Dialog open onOpenChange={(o) => !o && onClose()} title={node.title} history={false}>
       <div className="grid gap-3">
         <div className="flex flex-wrap gap-1.5">
           <KindBadge kind={node.kind} />
@@ -526,11 +528,10 @@ export function RoadmapPage() {
   const canProgress = useCan('roadmaps:progress');
   const { data: me } = useMe();
   const [view, setView] = useState<'graph' | 'list'>(defaultRoadmapView);
-  const [open, setOpen] = useState<RoadmapNode | null>(null);
-  const q = useQuery({
-    queryKey: ['roadmap', slug],
-    queryFn: () => api.get<RoadmapView>(`/roadmaps/${slug}`),
-  });
+  // The open step lives in the URL (?step=), so Back closes it and a step can be linked (audit J5).
+  const stepOverlay = useUrlOverlay('step');
+  const setOpen = (n: RoadmapNode | null) => (n ? stepOverlay.open(n.id) : stepOverlay.close());
+  const q = useQuery(roadmap(slug));
   if (q.isLoading)
     return (
       <div className="grid gap-3" aria-hidden>
@@ -550,8 +551,10 @@ export function RoadmapPage() {
     );
   const [lo, hi] = totalHours(r.content.nodes);
   const live = r.status === 'published';
-  // Keep the open panel in sync with fresh data (progress toggles).
-  const openNode = open ? (r.content.nodes.find((n) => n.id === open.id) ?? null) : null;
+  // Always the fresh node (progress toggles update it in place).
+  const openNode = stepOverlay.value
+    ? (r.content.nodes.find((n) => n.id === stepOverlay.value) ?? null)
+    : null;
   return (
     <div className="grid gap-5">
       <nav aria-label={t('common.breadcrumb', { defaultValue: 'Breadcrumb' })} className="text-sm text-fg-3">

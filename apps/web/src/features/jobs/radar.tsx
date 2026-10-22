@@ -1,7 +1,13 @@
 import { useDeferredValue, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { BellPlus, BriefcaseBusiness, ListChecks, Plus, Radar, Search } from 'lucide-react';
 import {
@@ -11,13 +17,13 @@ import {
   type AlertFilters,
   type JobAlertView,
   type JobView,
-  type RadarView,
 } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Input, Select } from '../../components/ui/field';
 import { Chip, EmptyState, Skeleton } from '../../components/ui/misc';
-import { api, apiRequest, ApiError } from '../../lib/api';
+import { api, ApiError } from '../../lib/api';
+import { jobsList, jobsRadar } from '../../lib/queries';
 import { useCan } from '../../lib/me';
 import { JobCard } from './job-card';
 
@@ -55,7 +61,7 @@ function Section({ title, jobs, empty }: { title: string; jobs: JobView[]; empty
 
 function RadarSections() {
   const { t } = useTranslation();
-  const q = useQuery({ queryKey: ['jobs', 'radar'], queryFn: () => api.get<RadarView>('/jobs/radar') });
+  const q = useQuery(jobsRadar());
   if (q.isLoading)
     return (
       <div className="grid gap-3" aria-hidden>
@@ -151,13 +157,7 @@ export function JobsPage() {
       FILTER_KEYS.flatMap((k) => (params.get(k)?.trim() ? [[k, (params.get(k) as string).trim()]] : [])),
     ).toString(),
   );
-  const list = useInfiniteQuery({
-    queryKey: ['jobs', 'list', qs],
-    initialPageParam: '',
-    queryFn: ({ pageParam }) =>
-      apiRequest<JobView[]>(`/jobs?${qs}${pageParam ? `${qs ? '&' : ''}cursor=${pageParam}` : ''}`),
-    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
-  });
+  const list = useInfiniteQuery({ ...jobsList(qs), placeholderData: keepPreviousData });
   const rows = list.data?.pages.flatMap((p) => p.data) ?? [];
   const filters: AlertFilters = {
     ...(params.get('q') ? { q: params.get('q') as string } : {}),

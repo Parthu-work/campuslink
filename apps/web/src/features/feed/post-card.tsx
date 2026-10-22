@@ -16,6 +16,7 @@ import {
   Share2,
 } from 'lucide-react';
 import { REACTIONS, type AuthorRef, type ItemView, type PostView, type Reaction } from '@campuslink/shared';
+import { IntentLink } from '../../components/ui/intent-link';
 import { Badge, Card } from '../../components/ui/misc';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
@@ -242,7 +243,7 @@ function ActionBar({ post }: { post: PostView }) {
           );
         })}
       </div>
-      <Link
+      <IntentLink
         to={`/posts/${post.id}`}
         className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-2.5 text-sm text-fg-2 hover:bg-surface-2"
         aria-label={t('feed.commentsLabel', { count: post.counts.comments })}
@@ -251,7 +252,7 @@ function ActionBar({ post }: { post: PostView }) {
         <span aria-hidden className="font-mono text-xs">
           {post.counts.comments || ''}
         </span>
-      </Link>
+      </IntentLink>
       <span className="ml-auto flex gap-1">
         <button
           type="button"
@@ -281,7 +282,16 @@ function ActionBar({ post }: { post: PostView }) {
   );
 }
 
-export function PostCard({ post, headingLevel = 2 }: { post: PostView; headingLevel?: 2 | 3 }) {
+export function PostCard({
+  post,
+  headingLevel = 2,
+  morph = false,
+}: {
+  post: PostView;
+  headingLevel?: 2 | 3;
+  /** Name the card for the feed → post page view transition (only where it is unique on screen). */
+  morph?: boolean;
+}) {
   const { t } = useTranslation();
   const { remove } = usePostActions(post);
   const H = headingLevel === 2 ? 'h2' : 'h3';
@@ -294,7 +304,11 @@ export function PostCard({ post, headingLevel = 2 }: { post: PostView; headingLe
         post.announcement && 'border-[color-mix(in_srgb,var(--brand)_45%,var(--line))]',
       )}
     >
-      <article aria-labelledby={`post-${post.id}`} className="grid gap-3">
+      <article
+        aria-labelledby={`post-${post.id}`}
+        className="grid gap-3"
+        style={morph ? { viewTransitionName: `post-${post.id}` } : undefined}
+      >
         <H id={`post-${post.id}`} className="sr-only">
           {t('feed.postBy', { name: post.author.name || t('feed.memberHidden') })}
         </H>

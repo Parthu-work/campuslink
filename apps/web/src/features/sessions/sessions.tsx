@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CalendarClock, CalendarPlus, ExternalLink, MessageSquare, Star, Video } from 'lucide-react';
 import {
@@ -22,6 +22,7 @@ import { PersonAvatar } from '../../components/ui/person-avatar';
 import { SlotPicker } from '../../components/ui/slot-picker';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
+import { bookings } from '../../lib/queries';
 import { formatDay, formatTime, localDateKey, newIdempotencyKey } from '../../lib/format';
 
 const HOUR = 3600_000;
@@ -453,11 +454,7 @@ export function SessionsPage() {
   const [params, setParams] = useSearchParams();
   const when = params.get('when') === 'past' ? 'past' : 'upcoming';
   const [day, setDay] = useState<string | null>(null);
-  const list = useQuery({
-    queryKey: ['bookings', when],
-    queryFn: () => api.get<BookingView[]>(`/bookings?when=${when}`),
-    refetchInterval: 60_000,
-  });
+  const list = useQuery({ ...bookings(when), placeholderData: keepPreviousData });
   const items = (list.data ?? []).filter((b) => when === 'past' || !day || localDateKey(b.start) === day);
   return (
     <>

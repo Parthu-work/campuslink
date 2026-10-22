@@ -39,12 +39,30 @@ function useRespond(id: string) {
   return useMutation({
     mutationFn: (body: Record<string, unknown>) =>
       api.postOnce<RequestView>(`/mentorship/requests/${id}/respond`, body, key),
-    onSuccess: () => {
+    // Optimistic: the card resolves at once and rolls back if the answer fails (audit ST-4, B7).
+    onMutate: async (body) => {
+      await qc.cancelQueries({ queryKey: ['requests'] });
+      const before = qc.getQueriesData<RequestView[]>({ queryKey: ['requests'] });
+      const status: RequestView['status'] = body.action === 'decline' ? 'declined' : 'accepted';
+      qc.setQueriesData<RequestView[]>({ queryKey: ['requests'] }, (list) =>
+        list?.map((r) => (r.id === id ? { ...r, status } : r)),
+      );
+      return { before };
+    },
+    onSuccess: (r) => {
+      toast.success(
+        r.status === 'declined'
+          ? t('request.declinedToast', { name: r.mentee.name.split(' ')[0] })
+          : t('request.acceptedToast', { name: r.mentee.name.split(' ')[0] }),
+      );
       void qc.invalidateQueries({ queryKey: ['requests'] });
       void qc.invalidateQueries({ queryKey: ['bookings'] });
       void qc.invalidateQueries({ queryKey: ['conversations'] });
     },
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
+    onError: (e, _body, ctx) => {
+      for (const [k, v] of ctx?.before ?? []) qc.setQueryData(k, v);
+      toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
+    },
   });
 }
 

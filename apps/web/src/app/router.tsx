@@ -1,5 +1,14 @@
 import type { ComponentType } from 'react';
-import { createBrowserRouter, Link, Navigate, type RouteObject } from 'react-router';
+import {
+  createBrowserRouter,
+  createPath,
+  type Path,
+  Link,
+  Navigate,
+  type LoaderFunctionArgs,
+  type Params,
+  type RouteObject,
+} from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { useTranslation } from 'react-i18next';
 import { Compass } from 'lucide-react';
@@ -7,6 +16,9 @@ import { ADMIN_PERMISSIONS, type Permission } from '@campuslink/shared';
 import { useTenant } from '../lib/tenant-context';
 import { importWithRetry, setPendingTargetResolver } from '../lib/chunk-reload';
 import { registerPreloadRoutes } from '../lib/preload';
+import { registerRouterState } from '../lib/router-state';
+import { queryClient as qc } from '../lib/query-client';
+import * as q from '../lib/queries';
 import { AppShell } from '../components/layout/app-shell';
 import { RouteError } from '../components/layout/route-error';
 import { PageSkeleton } from '../components/layout/skeletons';
@@ -71,6 +83,24 @@ const load = {
 type Gate = Permission | readonly Permission[];
 type Place = { path: string } | { index: true };
 
+/** A screen's first data, started by the route loader in parallel with its code (audit TR-2). */
+type Data = (params: Params, url: URL) => Promise<unknown>[];
+/** Past this, the screen renders with its own loading state rather than holding the old one. */
+const LOADER_WAIT_MS = 1500;
+const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const isId = (v: string | undefined): v is string => !!v && /^[a-f0-9]{24}$/.test(v);
+
+/**
+ * Loaders never fail the navigation: a failed read shows the screen's own error state. They wait
+ * for data (so the current screen stays put, with the progress bar) for at most LOADER_WAIT_MS.
+ */
+const loaderFor =
+  (data: Data) =>
+  async ({ params, request }: LoaderFunctionArgs) => {
+    await Promise.race([Promise.allSettled(data(params, new URL(request.url))), wait(LOADER_WAIT_MS)]);
+    return null;
+  };
+
 /**
  * Loads a screen's module (with stale-chunk recovery) and wraps it in its permission gate. A failed
  * load resolves to the error screen rather than rejecting: React Router keeps a rejected `lazy` and
@@ -98,11 +128,19 @@ function lazyScreen<M>(importer: () => Promise<M>, name: keyof M & string, gate?
 }
 
 /** A lazily loaded screen, optionally behind a permission (UX only; the API enforces it). */
-function screen<M>(importer: () => Promise<M>, name: keyof M & string, gate: Gate | undefined, place: Place) {
+function screen<M>(
+  importer: () => Promise<M>,
+  name: keyof M & string,
+  gate: Gate | undefined,
+  place: Place,
+  data?: Data,
+) {
   const route = {
     errorElement: <RouteError />,
     lazy: lazyScreen(importer, name, gate),
-    handle: { preload: importer },
+    // Intent prefetch (lib/preload.ts) warms the code and, through `prefetch`, the data too.
+    handle: { preload: importer, ...(data ? { prefetch: data } : {}) },
+    ...(data ? { loader: loaderFor(data) } : {}),
   };
   return ('index' in place ? { ...route, index: true } : { ...route, path: place.path }) as RouteObject;
 }
@@ -224,44 +262,84 @@ function collegeRouter() {
         publicScreen(load.signUp, 'SignUpPage', '/sign-up', '/home'),
         ...auth('/home'),
         shell(false, [
-          screen(load.home, 'HomePage', undefined, at('/home')),
+          screen(load.home, 'HomePage', undefined, at('/home'), (_, url) => [
+            qc.ensureInfiniteQueryData(
+              q.homeFeed(url.searchParams.get('tab') === 'following' ? 'following' : 'for_you'),
+            ),
+            qc.ensureQueryData(q.oneUsefulThing()),
+            qc.ensureQueryData(q.stories()),
+          ]),
           screen(load.verify, 'VerifyPage', undefined, at('/verify')),
           screen(load.profileEdit, 'ProfileEdit', undefined, at('/profile')),
           screen(load.directory, 'DirectoryPage', 'directory:read', at('/people')),
           screen(load.profileView, 'ProfileView', 'directory:read', at('/people/:userId')),
-          screen(load.postPage, 'PostPage', 'feed:read', at('/posts/:postId')),
+          screen(load.postPage, 'PostPage', 'feed:read', at('/posts/:postId'), ({ postId }) =>
+            isId(postId) ? [qc.ensureQueryData(q.post(postId)), qc.ensureQueryData(q.comments(postId))] : [],
+          ),
           screen(load.collections, 'SavedPage', 'feed:interact', at('/saved')),
           screen(load.collections, 'ReelsPage', 'feed:read', at('/reels')),
           screen(load.collections, 'FollowingPage', 'sources:follow', at('/following')),
           screen(load.questions, 'QuestionsPage', 'feed:read', at('/questions')),
           screen(load.questions, 'QuestionPage', 'feed:read', at('/questions/:questionId')),
-          screen(load.galaxy, 'RoadmapsPage', 'roadmaps:read', at('/roadmaps')),
+          screen(load.galaxy, 'RoadmapsPage', 'roadmaps:read', at('/roadmaps'), (_, url) => [
+            qc.ensureQueryData(q.roadmapsList(q.roadmapFilterQuery(url.searchParams))),
+          ]),
           screen(load.roadmapReview, 'RoadmapReviewPage', 'roadmaps:review', at('/roadmaps/review')),
           screen(load.roadmapEditor, 'RoadmapEditorPage', 'roadmaps:write', at('/roadmaps/new')),
-          screen(load.roadmap, 'RoadmapPage', 'roadmaps:read', at('/roadmaps/:slug')),
+          screen(load.roadmap, 'RoadmapPage', 'roadmaps:read', at('/roadmaps/:slug'), ({ slug }) =>
+            slug ? [qc.ensureQueryData(q.roadmap(slug))] : [],
+          ),
           screen(load.roadmapHistory, 'RoadmapHistoryPage', 'roadmaps:read', at('/roadmaps/:slug/history')),
           screen(load.roadmapEditor, 'RoadmapEditorPage', 'roadmaps:write', at('/roadmaps/:slug/edit')),
-          screen(load.progress, 'ProgressPage', undefined, at('/progress')),
+          screen(load.progress, 'ProgressPage', undefined, at('/progress'), () => [
+            qc.ensureQueryData(q.progress()),
+          ]),
           screen(load.leaderboard, 'LeaderboardPage', 'directory:read', at('/leaderboard')),
           screen(load.leaderboard, 'WallOfMentorsPage', 'directory:read', at('/wall-of-mentors')),
           screen(load.rewards, 'RewardsPage', 'rewards:redeem', at('/rewards')),
-          screen(load.events, 'EventsPage', 'events:rsvp', at('/events')),
+          screen(load.events, 'EventsPage', 'events:rsvp', at('/events'), () => [
+            qc.ensureQueryData(q.events('upcoming', '')),
+          ]),
           screen(load.events, 'EventFormPage', ['events:create', 'ama:host'], at('/events/new')),
-          screen(load.eventPage, 'EventPage', 'events:rsvp', at('/events/:id')),
+          screen(load.eventPage, 'EventPage', 'events:rsvp', at('/events/:id'), ({ id }) =>
+            isId(id) ? [qc.ensureQueryData(q.event(id))] : [],
+          ),
           screen(load.events, 'EventFormPage', ['events:create', 'ama:host'], at('/events/:id/edit')),
-          screen(load.jobs, 'JobsPage', 'jobs:read', at('/jobs')),
+          screen(load.jobs, 'JobsPage', 'jobs:read', at('/jobs'), (_, url) => [
+            qc.ensureQueryData(q.jobsRadar()),
+            qc.ensureInfiniteQueryData(q.jobsList(q.jobFilterQuery(url.searchParams))),
+          ]),
           screen(load.tracker, 'TrackerPage', 'jobs:save', at('/jobs/tracker')),
           screen(load.postJob, 'PostJobPage', 'jobs:post', at('/jobs/new')),
-          screen(load.jobPage, 'JobPage', 'jobs:read', at('/jobs/:jobId')),
+          screen(load.jobPage, 'JobPage', 'jobs:read', at('/jobs/:jobId'), ({ jobId }) =>
+            isId(jobId) ? [qc.ensureQueryData(q.job(jobId))] : [],
+          ),
           screen(load.referrals, 'ReferralsPage', ['referrals:request', 'referrals:offer'], at('/referrals')),
-          screen(load.mentors, 'MentorsPage', 'mentorship:request', at('/mentors')),
-          screen(load.mentorPage, 'MentorPage', 'mentorship:request', at('/mentors/:userId')),
+          screen(load.mentors, 'MentorsPage', 'mentorship:request', at('/mentors'), (_, url) =>
+            url.searchParams.get('view') === 'browse' ? [] : [qc.ensureQueryData(q.mentorMatch())],
+          ),
+          screen(load.mentorPage, 'MentorPage', 'mentorship:request', at('/mentors/:userId'), ({ userId }) =>
+            isId(userId) ? [qc.ensureQueryData(q.mentor(userId))] : [],
+          ),
           screen(load.requests, 'RequestsPage', 'mentorship:request', at('/mentorship')),
-          screen(load.sessions, 'SessionsPage', 'sessions:book', at('/sessions')),
-          screen(load.messages, 'MessagesPage', 'messages:send', at('/messages')),
-          screen(load.messages, 'ConversationPage', 'messages:send', at('/messages/:conversationId')),
+          screen(load.sessions, 'SessionsPage', 'sessions:book', at('/sessions'), (_, url) => [
+            qc.ensureQueryData(q.bookings(url.searchParams.get('when') === 'past' ? 'past' : 'upcoming')),
+          ]),
+          screen(load.messages, 'MessagesPage', 'messages:send', at('/messages'), () => [
+            qc.ensureQueryData(q.conversations()),
+          ]),
+          screen(
+            load.messages,
+            'ConversationPage',
+            'messages:send',
+            at('/messages/:conversationId'),
+            ({ conversationId }) =>
+              isId(conversationId) ? [qc.ensureQueryData(q.conversation(conversationId))] : [],
+          ),
           screen(load.mentorDashboard, 'MentorDashboard', 'mentorship:mentor', at('/mentor')),
-          screen(load.notifications, 'NotificationsPage', undefined, at('/notifications')),
+          screen(load.notifications, 'NotificationsPage', undefined, at('/notifications'), () => [
+            qc.ensureQueryData(q.notifications()),
+          ]),
           settingsRoutes,
           layout(load.admin, 'AdminLayout', ADMIN_PERMISSIONS, 'admin', [
             screen(load.admin, 'UsersAdmin', 'users:read_admin', index),
@@ -305,13 +383,38 @@ function platformRouter() {
 let collegeInstance: ReturnType<typeof createBrowserRouter> | null = null;
 let platformInstance: ReturnType<typeof createBrowserRouter> | null = null;
 
+type AppRouterInstance = ReturnType<typeof createBrowserRouter>;
+const animated = new WeakSet<AppRouterInstance>();
+
+/**
+ * Every navigation to another screen runs as a view transition (master prompt §7b); React Router
+ * replays it in reverse on Back. Same-screen updates (overlays, filters) never animate. Browsers
+ * without the View Transitions API simply switch screens.
+ */
+function withViewTransitions(router: AppRouterInstance) {
+  if (animated.has(router)) return router;
+  animated.add(router);
+  const navigate = router.navigate.bind(router);
+  router.navigate = ((to: unknown, opts?: Record<string, unknown>) => {
+    if (typeof to === 'number' || to == null || opts?.viewTransition !== undefined)
+      return navigate(to as never, opts as never);
+    const target = typeof to === 'string' ? to : createPath(to as Partial<Path>);
+    const next = new URL(target, window.location.href).pathname;
+    const crossScreen = next !== router.state.location.pathname;
+    return navigate(to as never, { ...opts, viewTransition: crossScreen } as never);
+  }) as AppRouterInstance['navigate'];
+  return router;
+}
+
 export function AppRouter() {
   const tenant = useTenant();
-  const router =
+  const router = withViewTransitions(
     tenant.kind === 'platform'
       ? (platformInstance ??= platformRouter())
-      : (collegeInstance ??= collegeRouter());
+      : (collegeInstance ??= collegeRouter()),
+  );
   registerPreloadRoutes(router.routes);
+  registerRouterState(() => ({ navigating: router.state.navigation.state !== 'idle' }));
   setPendingTargetResolver(() => {
     const next = router.state.navigation.location;
     return next ? `${next.pathname}${next.search}${next.hash}` : null;

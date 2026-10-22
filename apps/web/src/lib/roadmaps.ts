@@ -196,8 +196,27 @@ export function useRoadmapProgress(roadmap: Pick<RoadmapView, 'id' | 'slug'>) {
   const toggle = useMutation({
     mutationFn: (v: { nodeId: string; done: boolean }) =>
       api.put<RoadmapView['myProgress']>(`/roadmaps/${roadmap.id}/progress`, v),
+    // Optimistic: the step ticks at once and unticks if saving fails (audit ST-4).
+    onMutate: ({ nodeId, done }) => {
+      const before = qc.getQueryData<RoadmapView>(['roadmap', roadmap.slug]);
+      const mine = before?.myProgress;
+      if (before && mine) {
+        const set = new Set(mine.done);
+        if (done) set.add(nodeId);
+        else set.delete(nodeId);
+        qc.setQueryData<RoadmapView>(['roadmap', roadmap.slug], {
+          ...before,
+          myProgress: { ...mine, done: [...set] },
+          progress: { done: set.size, total: before.nodeCount },
+        });
+      }
+      return { before };
+    },
     onSuccess: patch,
-    onError,
+    onError: (e, _v, ctx) => {
+      if (ctx?.before) qc.setQueryData(['roadmap', roadmap.slug], ctx.before);
+      onError(e);
+    },
   });
   const goal = useMutation({
     mutationFn: (nodesPerWeek: number) =>

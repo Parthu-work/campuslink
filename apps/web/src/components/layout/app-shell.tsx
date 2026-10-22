@@ -10,6 +10,8 @@ import { useMe } from '../../lib/me';
 import { useSignOut } from '../../lib/use-sign-out';
 import { useRouteFocus } from '../../lib/route-focus';
 import { useScrollMemory } from '../../lib/scroll-memory';
+import { useScrollChrome } from '../../lib/use-scroll-chrome';
+import { useTabMemory } from '../../lib/tab-memory';
 import { intentPreload, preloadWhenIdle } from '../../lib/preload';
 import { cn } from '../../lib/cn';
 import { formatDay } from '../../lib/format';
@@ -74,15 +76,16 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
   usePaletteShortcut();
   const nav = useNav();
   const sheet = useUrlOverlay('sheet');
-  const location = useLocation();
   const reselect = useReselect();
-  useRouteFocus(location.pathname);
+  useRouteFocus(tenant.branding.shortName);
   const tabRoots = useMemo(() => new Set(nav.tabs.map((i) => i.to)), [nav.tabs]);
   useScrollMemory(tabRoots);
+  useScrollChrome();
   // Every tab's code is ready before the first tap (audit TR-1, TR-2).
   useEffect(() => preloadWhenIdle([...tabRoots]), [tabRoots]);
 
   const tabs = nav.tabs.filter((i) => i.id !== 'create');
+  const tabMemory = useTabMemory(tabs);
   const canCreate = nav.create.length > 0;
 
   const railLink = (i: NavEntry) => (
@@ -115,28 +118,32 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
     </NavLink>
   );
 
-  const tabLink = (i: NavEntry) => (
-    <NavLink
-      key={i.id}
-      to={i.to}
-      end={i.to === '/platform'}
-      onClick={reselect(i.to)}
-      {...intentPreload(i.to)}
-      className="group relative grid min-h-[52px] justify-items-center gap-0.5 rounded-[var(--radius-sm)] px-0.5 py-1.5 text-xs font-semibold text-fg-3 hover:text-fg aria-[current=page]:text-fg"
-    >
-      <span
-        aria-hidden
-        className="absolute top-0 hidden h-[3px] w-[22px] rounded-sm bg-brand group-aria-[current=page]:block"
-      />
-      <i.icon className="size-5" aria-hidden />
-      <span className="max-w-full truncate">{i.label}</span>
-      {i.badge > 0 && (
-        <span className="absolute top-0.5 left-[calc(50%+4px)]">
-          <Count n={i.badge} className="min-w-4 px-1 text-[10px] leading-4" />
-        </span>
-      )}
-    </NavLink>
-  );
+  const tabLink = (i: NavEntry) => {
+    const to = tabMemory.hrefFor(i);
+    const lit = tabMemory.active === i.id;
+    return (
+      <Link
+        key={i.id}
+        to={to}
+        aria-current={lit ? 'page' : undefined}
+        onClick={reselect(to)}
+        {...intentPreload(to)}
+        className="group relative grid min-h-[52px] justify-items-center gap-0.5 rounded-[var(--radius-sm)] px-0.5 py-1.5 text-xs font-semibold text-fg-3 hover:text-fg aria-[current=page]:text-fg"
+      >
+        <span
+          aria-hidden
+          className="absolute top-0 hidden h-[3px] w-[22px] rounded-sm bg-brand group-aria-[current=page]:block"
+        />
+        <i.icon className="size-5" aria-hidden />
+        <span className="max-w-full truncate">{i.label}</span>
+        {i.badge > 0 && (
+          <span className="absolute top-0.5 left-[calc(50%+4px)]">
+            <Count n={i.badge} className="min-w-4 px-1 text-[10px] leading-4" />
+          </span>
+        )}
+      </Link>
+    );
+  };
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-[76px_minmax(0,1fr)] xl:grid-cols-[256px_minmax(0,1fr)]">
@@ -151,7 +158,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       {/* Desktop rail: its own scroll area, account menu always visible at the foot. */}
       <nav
         aria-label={t('nav.main')}
-        className="sticky top-0 hidden h-dvh min-h-0 flex-col border-r border-line lg:flex"
+        className="app-rail sticky top-0 hidden h-dvh min-h-0 flex-col border-r border-line lg:flex"
       >
         <Link
           to={platform ? '/platform' : '/home'}
@@ -207,7 +214,10 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       </nav>
 
       {/* Phone top bar. */}
-      <header className="glass gutter fixed inset-x-0 top-0 z-40 flex items-center gap-1 border-b border-line pt-[calc(8px+env(safe-area-inset-top,0px))] pb-2 lg:hidden">
+      <header
+        data-chrome-bar
+        className="chrome-top gutter fixed inset-x-0 top-0 z-40 flex items-center gap-1 border-b pt-[calc(8px+env(safe-area-inset-top,0px))] pb-2 lg:hidden"
+      >
         <Link to={platform ? '/platform' : '/home'} className="flex min-w-0 items-center gap-2.5 pr-2">
           <Crest monogram={tenant.branding.monogram} size={32} />
           <b className="truncate font-display text-base font-semibold">{tenant.branding.shortName}</b>
@@ -313,7 +323,8 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       {/* Phone bottom tabs: role-aware, Create in the middle. */}
       <nav
         aria-label={t('nav.main')}
-        className="glass fixed inset-x-0 bottom-0 z-40 grid border-t border-line px-[max(8px,env(safe-area-inset-left,0px))] pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom,0px))] lg:hidden"
+        data-chrome-bar
+        className="chrome-bottom glass fixed inset-x-0 bottom-0 z-40 grid border-t border-line px-[max(8px,env(safe-area-inset-left,0px))] pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom,0px))] lg:hidden"
         style={{ gridTemplateColumns: `repeat(${nav.tabs.length}, minmax(0, 1fr))` }}
       >
         {nav.tabs.map((i) =>

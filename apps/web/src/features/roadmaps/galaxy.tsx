@@ -1,7 +1,7 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { ClipboardCheck, Map as MapIcon, Orbit, Plus, Search, Sparkles } from 'lucide-react';
 import {
   BRANCHES,
@@ -9,11 +9,13 @@ import {
   type RoadmapCategory,
   type RoadmapSummaryView,
 } from '@campuslink/shared';
+import { IntentLink } from '../../components/ui/intent-link';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Input, Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api } from '../../lib/api';
+import { roadmapsList } from '../../lib/queries';
 import { useCan } from '../../lib/me';
 import { cn } from '../../lib/cn';
 import { defaultRoadmapView, layoutGalaxy, rememberRoadmapView } from '../../lib/roadmaps';
@@ -49,12 +51,12 @@ export function RoadmapCard({ r }: { r: RoadmapSummaryView }) {
   return (
     <Card className="grid h-full gap-2 p-4 transition-colors hover:border-line-strong">
       <div className="flex items-start justify-between gap-2">
-        <Link
+        <IntentLink
           to={`/roadmaps/${r.slug}`}
           className="font-display text-lg leading-tight font-semibold after:absolute after:inset-0"
         >
           {r.title}
-        </Link>
+        </IntentLink>
         {r.featured && (
           <Badge tone="accent">
             <Sparkles className="size-3" aria-hidden /> {t('roadmaps.featured')}
@@ -223,10 +225,7 @@ export function RoadmapsPage() {
       ),
     ).toString(),
   );
-  const list = useQuery({
-    queryKey: ['roadmaps', 'list', qs],
-    queryFn: () => api.get<RoadmapSummaryView[]>(`/roadmaps${qs ? `?${qs}` : ''}`),
-  });
+  const list = useQuery({ ...roadmapsList(qs), placeholderData: keepPreviousData });
   const mine = useQuery({
     queryKey: ['roadmaps', 'following'],
     queryFn: () => api.get<RoadmapSummaryView[]>('/roadmaps?mine=following'),

@@ -2,10 +2,11 @@ import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell, CheckCheck } from 'lucide-react';
-import type { NotificationView } from '@campuslink/shared';
+import { IntentLink } from '../../components/ui/intent-link';
 import { Button } from '../../components/ui/button';
 import { Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { api } from '../../lib/api';
+import { notifications } from '../../lib/queries';
 import { formatRelative } from '../../lib/format';
 import { notificationText } from '../../lib/notification-text';
 import { cn } from '../../lib/cn';
@@ -13,10 +14,7 @@ import { cn } from '../../lib/cn';
 export function NotificationsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const list = useQuery({
-    queryKey: ['notifications'],
-    queryFn: () => api.get<NotificationView[]>('/notifications'),
-  });
+  const list = useQuery(notifications());
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: ['notifications'] });
     void qc.invalidateQueries({ queryKey: ['notifications-unread'] });
@@ -57,7 +55,7 @@ export function NotificationsPage() {
           const text = notificationText(t, n);
           return (
             <li key={n.id}>
-              <Link
+              <IntentLink
                 to={text.href}
                 onClick={() => !n.readAt && readOne.mutate(n.id)}
                 className="block rounded-[var(--radius-md)]"
@@ -84,7 +82,7 @@ export function NotificationsPage() {
                     </p>
                   </div>
                 </Card>
-              </Link>
+              </IntentLink>
             </li>
           );
         })}

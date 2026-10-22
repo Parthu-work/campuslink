@@ -24,6 +24,7 @@ import type {
 } from '@campuslink/shared';
 import { api } from '../../lib/api';
 import { usePalette } from '../../lib/palette';
+import { useDialogHistory } from '../../lib/use-dialog-history';
 import { useCan } from '../../lib/me';
 import { usePreferences } from '../../lib/preferences';
 import { PersonAvatar } from '../ui/person-avatar';
@@ -57,10 +58,18 @@ export function CommandPalette() {
     enabled: open && canSearch && dq.length >= 2,
     staleTime: 30_000,
   });
+  const onOpenChange = (o: boolean) => {
+    setOpen(o);
+    if (!o) setQ('');
+  };
+  // Back closes the palette (it is full screen on phones).
+  const requestChange = useDialogHistory(open, onOpenChange);
   const go = (to: string) => {
     setOpen(false);
     setQ('');
-    navigate(to);
+    // Replace the palette's own history entry, so Back from the destination skips it.
+    const onPaletteEntry = (window.history.state as { usr?: { dialog?: string } } | null)?.usr?.dialog;
+    navigate(to, { replace: onPaletteEntry !== undefined });
   };
   // "Go to" lists the same destinations as the tabs and the avatar menu (one navigation model).
   const model = useNav();
@@ -71,7 +80,7 @@ export function CommandPalette() {
   ];
 
   return (
-    <D.Root open={open} onOpenChange={(o) => (setOpen(o), o || setQ(''))}>
+    <D.Root open={open} onOpenChange={requestChange}>
       <D.Portal>
         <D.Overlay className="fixed inset-0 z-[80] bg-[var(--scrim)] backdrop-blur-[4px]" />
         <D.Content

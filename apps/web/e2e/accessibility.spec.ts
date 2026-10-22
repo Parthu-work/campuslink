@@ -18,8 +18,9 @@ test('keyboard only: sign in, skip to content, open a page from the navigation',
   await page.keyboard.press('Enter');
   await page.waitForURL(/\/home$/);
 
-  // After the client-side navigation, focus moves to the new page's main region.
-  await expect(page.locator('main#main')).toBeFocused();
+  // After the client-side navigation, focus moves to the new screen's heading, and the title follows.
+  await expect(page.locator('main#main h1')).toBeFocused();
+  await expect(page).toHaveTitle(/^Hi, Ananya · DPIT$/);
 
   // On a fresh page load, the first Tab reaches the skip link, which moves focus to the main region.
   await page.reload();

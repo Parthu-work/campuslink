@@ -68,8 +68,17 @@ export function useScrollMemory(tabRoots: ReadonlySet<string>) {
     previous.current = location;
     const key = scrollKey(location, tabRoots);
     keyRef.current = key;
+    const sameScreen = !!prev && prev.pathname === location.pathname;
+    // Direction for the screen transition (styles/index.css): Back reverses a push, tabs crossfade.
+    document.documentElement.dataset.nav = sameScreen
+      ? 'none'
+      : type === 'POP'
+        ? 'back'
+        : key.startsWith('tab:')
+          ? 'tab'
+          : 'forward';
     // Same screen (an overlay opened or closed, a filter changed): leave the page where it is.
-    if (prev && prev.pathname === location.pathname) return;
+    if (sameScreen) return;
 
     let target: number;
     const saved = positions[key];

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, CalendarCheck, Clock, PauseCircle, UserX } from 'lucide-react';
+import { CalendarCheck, Clock, PauseCircle, UserX } from 'lucide-react';
 import {
   isBookable,
   requestText,
@@ -14,6 +14,7 @@ import {
   type SlotsView,
 } from '@campuslink/shared';
 import type { z } from 'zod';
+import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Field, Textarea } from '../../components/ui/field';
@@ -168,14 +169,7 @@ export function MentorPage() {
     },
     retry: false,
   });
-  const back = (
-    <Link
-      to="/mentors"
-      className="inline-flex items-center gap-1.5 justify-self-start rounded-full px-2 py-1 text-sm font-semibold text-fg-2 hover:text-fg"
-    >
-      <ArrowLeft className="size-4" aria-hidden /> {t('mentors.back')}
-    </Link>
-  );
+  const back = <BackLink to="/mentors">{t('mentors.back')}</BackLink>;
   if (q.isLoading) return <Skeleton className="h-96" />;
   if (!q.data)
     return (
@@ -192,7 +186,9 @@ export function MentorPage() {
       {back}
       <Card className="grid gap-4 p-5">
         <div className="flex items-start gap-4">
-          <PersonAvatar name={m.name} fileId={m.avatarFileId} size={72} verified />
+          <span className="flex-none" style={{ viewTransitionName: `mentor-${m.userId}` }}>
+            <PersonAvatar name={m.name} fileId={m.avatarFileId} size={72} verified />
+          </span>
           <div className="min-w-0 flex-1">
             <h1 className="text-[26px] leading-tight font-bold">{m.name}</h1>
             {m.headline && <p className="text-fg-2">{m.headline}</p>}

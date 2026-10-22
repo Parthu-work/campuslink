@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
 import { BRANCHES, JOB_LEVELS, JOB_MODES, JOB_TYPES, jobBody, type JobView } from '@campuslink/shared';
 import type { z } from 'zod';
+import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Card, Chip } from '../../components/ui/misc';
@@ -53,12 +53,7 @@ export function PostJobPage() {
   });
   return (
     <div className="mx-auto grid w-full max-w-[720px] gap-4">
-      <Link
-        to="/jobs"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-ink hover:underline"
-      >
-        <ArrowLeft className="size-4" aria-hidden /> {t('jobs.back')}
-      </Link>
+      <BackLink to="/jobs">{t('jobs.back')}</BackLink>
       <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('jobs.postTitle')}</h1>
       <p className="text-fg-2">{t('jobs.postIntro')}</p>
       <Card className="p-5">

@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, MessageCircle, Reply } from 'lucide-react';
+import { MessageCircle, Reply } from 'lucide-react';
 import type { CommentView, PostView } from '@campuslink/shared';
+import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/field';
 import { Card, EmptyState } from '../../components/ui/misc';
 import { RichText } from '../../components/ui/rich-text';
 import { api, ApiError } from '../../lib/api';
+import { comments as commentsQuery, post as postQuery } from '../../lib/queries';
 import { findCached, hasId } from '../../lib/query-seed';
 import { useCan } from '../../lib/me';
 import { patchPost } from '../../lib/feed';
@@ -154,8 +156,7 @@ export function PostPage() {
   const canInteract = useCan('feed:interact');
   const qc = useQueryClient();
   const post = useQuery({
-    queryKey: ['post', postId],
-    queryFn: () => api.get<PostView>(`/posts/${postId}`),
+    ...postQuery(postId),
     // The feed card the member tapped draws the post at once; comments load alongside.
     placeholderData: () =>
       findCached(
@@ -164,21 +165,13 @@ export function PostPage() {
         hasId<PostView>('id', postId, ['author', 'counts', 'status']),
       ),
   });
-  const comments = useQuery({
-    queryKey: ['comments', postId],
-    queryFn: () => api.get<CommentView[]>(`/posts/${postId}/comments`),
-    enabled: post.isSuccess,
-  });
+  // Loads alongside the post (the route loader starts both), not after it.
+  const comments = useQuery(commentsQuery(postId));
   const top = (comments.data ?? []).filter((c) => !c.parentId);
   const repliesOf = (id: string) => (comments.data ?? []).filter((c) => c.parentId === id);
   return (
     <div className="mx-auto grid w-full max-w-[680px] gap-4">
-      <Link
-        to="/home"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-ink hover:underline"
-      >
-        <ArrowLeft className="size-4" aria-hidden /> {t('feed.backToFeed')}
-      </Link>
+      <BackLink to="/home">{t('feed.backToFeed')}</BackLink>
       <h1 className="sr-only">{t('feed.postTitle')}</h1>
       {post.isLoading && <PostSkeleton />}
       {post.isError && (
@@ -188,7 +181,7 @@ export function PostPage() {
       )}
       {post.data && (
         <>
-          <PostCard post={post.data} />
+          <PostCard post={post.data} morph />
           <Card className="grid gap-4 p-4">
             <h2 className="font-semibold">{t('feed.commentsTitle', { count: post.data.counts.comments })}</h2>
             {canInteract && post.data.status === 'published' && <CommentForm postId={postId} />}

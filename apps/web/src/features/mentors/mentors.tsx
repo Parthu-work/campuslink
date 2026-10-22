@@ -1,12 +1,13 @@
 import { useDeferredValue, useState, type KeyboardEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, useMotionValue, useTransform, animate, type PanInfo } from 'motion/react';
 import { useReducedMotionPref } from '../../lib/preferences';
 import { toast } from 'sonner';
 import { Compass, Heart, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { SESSION_TYPES, type MentorCard, type MentorMatch, type MatchReason } from '@campuslink/shared';
+import { IntentLink } from '../../components/ui/intent-link';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Dialog } from '../../components/ui/dialog';
@@ -16,14 +17,18 @@ import { PersonAvatar } from '../../components/ui/person-avatar';
 import { Segmented } from '../../components/ui/tab-nav';
 import { TagInput } from '../../components/ui/tag-input';
 import { api } from '../../lib/api';
+import { mentorMatch } from '../../lib/queries';
 
 export function MentorTile({ m }: { m: MentorCard }) {
   const { t } = useTranslation();
   return (
-    <Link to={`/mentors/${m.userId}`} className="block h-full rounded-[var(--radius-md)]">
+    <IntentLink to={`/mentors/${m.userId}`} className="block h-full rounded-[var(--radius-md)]">
       <Card className="grid h-full gap-3 p-4 transition-colors hover:border-line-strong">
         <div className="flex items-start gap-3">
-          <PersonAvatar name={m.name} fileId={m.avatarFileId} verified />
+          {/* Morphs into the mentor page's header (view transition). */}
+          <span className="flex-none" style={{ viewTransitionName: `mentor-${m.userId}` }}>
+            <PersonAvatar name={m.name} fileId={m.avatarFileId} verified />
+          </span>
           <div className="min-w-0 flex-1">
             <b className="block truncate">{m.name}</b>
             {m.headline && <p className="line-clamp-2 text-sm text-fg-2">{m.headline}</p>}
@@ -45,7 +50,7 @@ export function MentorTile({ m }: { m: MentorCard }) {
           {m.sessionTypes.map((s) => t(`session.type.${s.type}`)).join(' · ')}
         </p>
       </Card>
-    </Link>
+    </IntentLink>
   );
 }
 
@@ -203,7 +208,7 @@ function MatchView() {
   const navigate = useNavigate();
   const [passed, setPassed] = useState<string[]>([]);
   const [prefsOpen, setPrefsOpen] = useState(false);
-  const q = useQuery({ queryKey: ['match'], queryFn: () => api.get<MentorMatch[]>('/mentors/match') });
+  const q = useQuery(mentorMatch());
   const deck = (q.data ?? []).filter((m) => !passed.includes(m.mentor.userId));
   const top = deck[0];
   const pass = () => top && setPassed((p) => [...p, top.mentor.userId]);
@@ -277,6 +282,7 @@ function BrowseView() {
   const list = useQuery({
     queryKey: ['mentors', dq, type],
     queryFn: () => api.get<MentorCard[]>(`/mentors?${params}`),
+    placeholderData: keepPreviousData,
   });
   return (
     <div className="grid gap-4">

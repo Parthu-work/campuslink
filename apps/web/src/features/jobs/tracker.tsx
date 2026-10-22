@@ -2,8 +2,9 @@ import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, BellRing, ListChecks, Trash2 } from 'lucide-react';
+import { BellRing, ListChecks, Trash2 } from 'lucide-react';
 import { TRACK_STATUSES, type JobAlertView, type TrackStatus, type TrackedJobView } from '@campuslink/shared';
+import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
@@ -107,12 +108,7 @@ export function TrackerPage() {
   );
   return (
     <div className="mx-auto grid w-full max-w-[860px] gap-5">
-      <Link
-        to="/jobs"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-ink hover:underline"
-      >
-        <ArrowLeft className="size-4" aria-hidden /> {t('jobs.back')}
-      </Link>
+      <BackLink to="/jobs">{t('jobs.back')}</BackLink>
       <div>
         <h1 className="text-[clamp(26px,4vw,34px)] font-bold">{t('jobs.tracker')}</h1>
         <p className="text-fg-2">{t('jobs.trackerIntro')}</p>

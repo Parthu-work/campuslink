@@ -375,7 +375,12 @@ export function Composer() {
           <Film className="size-5" aria-hidden />
         </Button>
       </div>
-      <Dialog open={!!open} onOpenChange={(o) => !o && setOpen(null)} title={t('feed.newPost')}>
+      <Dialog
+        open={!!open}
+        onOpenChange={(o) => !o && setOpen(null)}
+        title={t('feed.newPost')}
+        history={false}
+      >
         {open && <ComposerForm initialKind={open} onDone={() => setOpen(null)} />}
       </Dialog>
     </>

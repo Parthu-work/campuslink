@@ -1,4 +1,4 @@
-import { matchRoutes, type RouteObject } from 'react-router';
+import { matchRoutes, type Params, type RouteObject } from 'react-router';
 
 /**
  * Warms a screen's code before the member asks for it: on hover, focus or touch of a link, and for
@@ -7,6 +7,9 @@ import { matchRoutes, type RouteObject } from 'react-router';
  */
 let routes: RouteObject[] = [];
 const warmed = new Set<string>();
+/** When each path's data was last warmed; data is warmed again once it may be stale. */
+const dataWarmed = new Map<string, number>();
+const DATA_FRESH_MS = 30_000;
 
 export function registerPreloadRoutes(next: RouteObject[]) {
   routes = next;
@@ -14,15 +17,27 @@ export function registerPreloadRoutes(next: RouteObject[]) {
 
 interface PreloadHandle {
   preload?: () => Promise<unknown>;
+  prefetch?: (params: Params, url: URL) => Promise<unknown>[];
 }
 
-export function preloadPath(to: string) {
-  const pathname = to.split(/[?#]/)[0] ?? to;
-  if (!pathname || warmed.has(pathname)) return;
-  warmed.add(pathname);
-  for (const m of matchRoutes(routes, pathname) ?? []) {
-    const preload = (m.route.handle as PreloadHandle | undefined)?.preload;
-    if (preload) void preload().catch(() => warmed.delete(pathname));
+/** Warms a destination's code and, where its route declares it, its first data. */
+export function preloadPath(to: string, { data = true } = {}) {
+  const url = new URL(to, location.origin);
+  const pathname = url.pathname;
+  const matches = matchRoutes(routes, pathname) ?? [];
+  if (!warmed.has(pathname)) {
+    warmed.add(pathname);
+    for (const m of matches) {
+      const preload = (m.route.handle as PreloadHandle | undefined)?.preload;
+      if (preload) void preload().catch(() => warmed.delete(pathname));
+    }
+  }
+  const key = `${pathname}${url.search}`;
+  if (!data || Date.now() - (dataWarmed.get(key) ?? 0) < DATA_FRESH_MS) return;
+  dataWarmed.set(key, Date.now());
+  for (const m of matches) {
+    const prefetch = (m.route.handle as PreloadHandle | undefined)?.prefetch;
+    for (const p of prefetch?.(m.params, url) ?? []) void p.catch(() => undefined);
   }
 }
 
@@ -32,9 +47,9 @@ export function intentPreload(to: string) {
   return { onPointerEnter: warm, onFocus: warm, onTouchStart: warm };
 }
 
-/** After the first idle period, warm every given path (the bottom tabs). */
+/** After the first idle period, warm every given path's code (the bottom tabs). */
 export function preloadWhenIdle(paths: readonly string[]) {
-  const run = () => paths.forEach(preloadPath);
+  const run = () => paths.forEach((p) => preloadPath(p, { data: false }));
   // Safari has no requestIdleCallback.
   if (typeof window.requestIdleCallback === 'function') {
     const id = window.requestIdleCallback(run, { timeout: 4000 });

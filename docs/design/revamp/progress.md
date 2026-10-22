@@ -9,7 +9,7 @@ Branch: the session branch rule applies (`claude/sleepy-euler-bi65m3`, started f
 |     0 | Setup (prompt, spec, progress log)                                          | Done        |
 |     1 | Critical fixes (platform landing, desktop rail, D3, error boundaries, D1)   | Done        |
 |     2 | Quick wins (all 24)                                                         | Done        |
-|     3 | Navigation and transitions (§7a, §7b, role-aware navigation)                | Not started |
+|     3 | Navigation and transitions (§7a, §7b, role-aware navigation)                | Done        |
 |     4 | Performance (§7d, CI bundle budget)                                         | Not started |
 |     5 | Foundations (tokens, fonts, palette generator, contrast tests, ADR)         | Not started |
 |     6 | Living style guide (`/design`) — **stop for owner review with screenshots** | Not started |
@@ -78,3 +78,30 @@ Also: MC-4 (no exclamation marks in decline templates). New e2e tests: `e2e/navi
 Decisions: a deliberate sign-out (or account deletion) never carries a "return to" page; an expired session does. Comment boxes keep the Enter key for new lines (no "send" hint) because Enter does not send there.
 
 Next: Phase 3 (navigation and transitions).
+
+## Phase 3 · Navigation and transitions
+
+Role-aware navigation shipped in phase 1. This phase covers `master-prompt.md` §7a and §7b on the current screens.
+
+§7a, scrolling:
+
+- **Scroll-aware chrome** (`lib/use-scroll-chrome.ts`): one passive, frame-throttled listener sets `data-chrome` and `data-scrolled` on `<html>`; CSS slides the top bar and tab bar away after 56 px of downward scroll (8 px threshold) and brings them back on any upward scroll, near the end of the page, on focus (a field, or the bars themselves), on a tap at the top edge and on every new screen. The top bar is clear at the top and turns to glass with a hairline once content runs under it. Reduced motion uses a 90 ms fade. Hidden bars stay in the accessibility tree. `--chrome-top` gives sticky headers their offset. The rail never hides.
+- **Tab memory** (`lib/tab-memory.ts`): each tab remembers the last screen opened from it, a detail screen keeps its tab lit, and tapping the lit tab returns to the tab's root (then scroll to top, then refresh).
+- **Horizontal rows**: `TabNav` and `Segmented` have a sliding indicator (`lib/use-sliding-indicator.ts`, transform only), snap scrolling, edge fades, the active item kept in view and, on pointer devices, arrow buttons. `Segmented` scrolls instead of wrapping into a grid (DS-4).
+
+§7b, between screens:
+
+- **Code and data in parallel** (TR-2, PF-2): reads are defined once in `lib/queries.ts`; static route loaders prefetch the same keys for Home, post, Jobs, job, Mentors, mentor, Roadmaps, roadmap, Events, event, Sessions, Messages, conversation, Notifications and Progress, waiting at most 1.5 s and never failing the navigation. Intent prefetch now warms data too; `IntentLink` warms detail screens' code when they scroll into view and their data on hover, focus or touch. Default `staleTime` is 30 s; feeds and inboxes refresh when the app is resumed. Filtered lists keep previous data while refetching.
+- **One loading state**: the current screen stays (with the progress bar) until the next one has its code and first data; the content-area skeleton only shows on a cold start or a slow read.
+- **View transitions**: every cross-screen navigation is a view transition (push slides in from the right, Back reverses it, tabs crossfade, under 300 ms, scaled by `--motion-scale`, a short crossfade under reduced motion). The bars and rail are captured separately so they never move. Shared elements morph: mentor tile avatar → mentor header, job card title → job heading, feed post → post page.
+- **History-aware overlays**: every `Dialog` pushes a history entry so Back closes it (`lib/use-dialog-history.ts`); the command palette and story viewer too; the roadmap step panel is `?step=` (J5). Dialogs and sheets animate in and out (sheet rises on phones, dialog scales in on wider screens).
+- **Back links** (`BackLink`, IA-4): go back with filters and scroll intact, or to the parent when opened from a link or notification.
+- **Optimistic updates** (ST-4): sending a message (shown as "Sending…", restored to the box on failure), accepting or declining a request (with a confirmation toast, ST-5), RSVP, and marking a roadmap step, each with rollback.
+- **Focus and titles** (A11Y-6b): after navigation focus moves to the screen's heading and the document title follows it; Back returns focus to the link you followed.
+- **Image stability**: chat images keep the same box while loading.
+
+Tests: `e2e/navigation.spec.ts` adds the persistent shell, scroll-aware chrome, tab memory and Back-closes-a-sheet; the roadmap test checks Back closes the step panel.
+
+Deferred: the remaining shared-element pairs (roadmap node, story, subject, citation, video) arrive with the screens that have them (phases 8 and 9). Data is not prefetched for every visible card, only on intent, to spare metered connections.
+
+Next: Phase 4 (performance and the CI bundle budget).

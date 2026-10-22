@@ -24,6 +24,8 @@ import { Dialog } from '../../components/ui/dialog';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
+import { findCached, hasId } from '../../lib/query-seed';
+import { event } from '../../lib/queries';
 import { formatDateTime, formatTime } from '../../lib/format';
 import { cn } from '../../lib/cn';
 import { hasEnded } from '../../lib/events';
@@ -220,10 +222,31 @@ export function EventPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [confirmCancel, setConfirmCancel] = useState(false);
-  const q = useQuery({ queryKey: ['event', id], queryFn: () => api.get<EventView>(`/events/${id}`) });
+  const q = useQuery({
+    ...event(id),
+    // The card the member tapped draws the header at once.
+    placeholderData: () => findCached(qc, [['events']], hasId<EventView>('id', id, ['title', 'startsAt'])),
+  });
   const fail = (e: unknown) => toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
   const rsvp = useMutation({
     mutationFn: (going: boolean) => api.put<EventView>(`/events/${id}/rsvp`, { going }),
+    // Optimistic: the button and counts change at once; a failure puts them back (audit ST-4).
+    onMutate: async (going) => {
+      await qc.cancelQueries({ queryKey: ['event', id] });
+      const before = qc.getQueryData<EventView>(['event', id]);
+      if (before) {
+        const was = before.myRsvp;
+        const full = before.capacity !== null && before.going >= before.capacity;
+        const next = going ? (full && was !== 'going' ? 'waitlist' : 'going') : null;
+        qc.setQueryData<EventView>(['event', id], {
+          ...before,
+          myRsvp: next,
+          going: before.going + (next === 'going' ? 1 : 0) - (was === 'going' ? 1 : 0),
+          waitlist: before.waitlist + (next === 'waitlist' ? 1 : 0) - (was === 'waitlist' ? 1 : 0),
+        });
+      }
+      return { before };
+    },
     onSuccess: (v) => {
       qc.setQueryData(['event', id], v);
       void qc.invalidateQueries({ queryKey: ['events'] });
@@ -235,7 +258,10 @@ export function EventPage() {
             : t('events.rsvpCancelled'),
       );
     },
-    onError: fail,
+    onError: (e, _going, ctx) => {
+      if (ctx?.before) qc.setQueryData(['event', id], ctx.before);
+      fail(e);
+    },
   });
   const cancel = useMutation({
     mutationFn: () => api.post<EventView>(`/events/${id}/cancel`, {}),

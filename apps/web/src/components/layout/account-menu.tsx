@@ -102,6 +102,7 @@ export function AccountSheet() {
       open={sheet.value === 'account'}
       onOpenChange={(o) => !o && sheet.close()}
       title={t('nav.account')}
+      history={false}
     >
       <div className="flex items-center gap-3">
         <PersonAvatar name={me.name} fileId={null} size={48} />

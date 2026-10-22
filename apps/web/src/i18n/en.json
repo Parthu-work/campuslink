@@ -638,7 +638,9 @@
       "goal": "Goal",
       "background": "Background",
       "need": "What they need"
-    }
+    },
+    "acceptedToast": "Accepted. {{name}} can message you now.",
+    "declinedToast": "Declined. {{name}} will see your note."
   },
   "sessions": {
     "upcoming": "Upcoming",
@@ -730,7 +732,8 @@
     "write": "Write a message",
     "send": "Send",
     "imageFrom": "Image: {{name}}",
-    "download": "Download"
+    "download": "Download",
+    "sending": "Sending…"
   },
   "mentor": {
     "impact": "Your impact",
