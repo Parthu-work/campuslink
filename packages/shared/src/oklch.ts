@@ -74,6 +74,12 @@ export function toGamut(color: Oklch): Oklch {
   return round({ l, c: lo, h: color.h });
 }
 
+/** Reads an opaque `oklch(l c h)` value as written by `formatOklch`; null for anything else. */
+export function parseOklch(value: string): Oklch | null {
+  const m = /^oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)$/.exec(value.trim());
+  return m ? { l: Number(m[1]), c: Number(m[2]), h: Number(m[3]) } : null;
+}
+
 export const formatOklch = ({ l, c, h }: Oklch, alpha?: number) =>
   `oklch(${+l.toFixed(3)} ${+c.toFixed(3)} ${+h.toFixed(1)}${alpha === undefined ? '' : ` / ${alpha}`})`;
 

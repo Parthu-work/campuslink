@@ -261,6 +261,10 @@ function collegeRoutes(): RouteObject[] {
         },
         publicScreen(load.signUp, 'SignUpPage', '/sign-up', '/home'),
         ...auth('/home'),
+        // The living style guide (revamp phase 6): development builds only; production leaves it out.
+        ...(import.meta.env.DEV
+          ? [publicScreen(() => import('../features/design/style-guide'), 'StyleGuidePage', '/design')]
+          : []),
         shell(false, [
           screen(load.home, 'HomePage', undefined, at('/home'), (_, url) => [
             qc.ensureInfiniteQueryData(

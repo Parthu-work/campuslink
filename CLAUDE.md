@@ -130,6 +130,7 @@ Everything runs on localhost with free, open-source tools. Any paid or external 
 - Write no hard-coded UI strings; every string goes through i18next in both `en.json` and `te.json`.
 - Styling uses design tokens only (`bg-surface-1`, `text-fg-2`, `text-brand-ink`, `text-title`, `shadow-elev-2`, `bg-aurora`), never raw colour values in components. Every colour is generated from the college's hue by `packages/shared/src/palette.ts` (ADR 0008): `styles/palette.css` is its output (regenerate with `pnpm --filter @campuslink/web palette`, never edit by hand) and `applyBranding()` swaps in each college's palette at runtime. Use `*-ink` tokens for coloured text; they are contrast-checked to 5.5:1 by `palette.test.ts`. Aurora is for the moments ADR 0008 lists, never for plain text or buttons.
 - Web files that export components export only components (fast refresh): put hooks and helpers in `lib/`.
+- New tokens and primitives appear in the living style guide (`/design`, development builds only, `features/design/style-guide.tsx`) in both themes.
 - Motion animates transform and opacity only and respects `prefers-reduced-motion` (`--motion-scale`).
 - Use conventional commits (`feat(auth): …`), enforced by commitlint and Husky.
 

@@ -8,7 +8,10 @@
  */
 @import './palette.css';
 
-:root {
+/* `[data-palette]` containers (the /design style guide) get their own palette and theme, so the
+   tokens derived from it (aurora, overlays, depth) are recomputed there too. */
+:root,
+[data-palette] {
   /* Type: a characterful display face, a legible UI face, matching Telugu (ADR 0008). */
   --font-display:
     'Bricolage Grotesque Variable', 'Anek Telugu Variable', ui-sans-serif, system-ui, sans-serif;
@@ -174,7 +177,8 @@
     color-scheme: light;
   }
 }
-:root[data-theme='light'] {
+:root[data-theme='light'],
+[data-palette][data-theme='light'] {
   --elev-1: 0 1px 2px oklch(0.25 0.03 var(--hue) / 0.07);
   --elev-2: 0 1px 2px oklch(0.25 0.03 var(--hue) / 0.06), 0 8px 20px oklch(0.25 0.03 var(--hue) / 0.07);
   --elev-3: 0 2px 4px oklch(0.25 0.03 var(--hue) / 0.06), 0 14px 32px oklch(0.25 0.03 var(--hue) / 0.1);

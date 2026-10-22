@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, hexToOklch, inGamut, oklchToHex, type Oklch } from './oklch.js';
+import { contrastRatio, hexToOklch, inGamut, oklchToHex, parseOklch, type Oklch } from './oklch.js';
 import {
   brandPrimary,
   generatePalette,
@@ -37,15 +37,21 @@ const ACCENTS: Record<string, string | undefined> = {
 };
 
 const parse = (value: string | undefined): Oklch => {
-  const m = /^oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)$/.exec(value ?? '');
-  if (!m) throw new Error(`Not an opaque oklch() value: ${value}`);
-  return { l: Number(m[1]), c: Number(m[2]), h: Number(m[3]) };
+  const color = parseOklch(value ?? '');
+  if (!color) throw new Error(`Not an opaque oklch() value: ${value}`);
+  return color;
 };
 const color = (t: Tokens, name: string) => parse(t[name]);
 const textBackgrounds = (t: Tokens) => ['--bg', '--surface-1', '--surface-2'].map((k) => color(t, k));
 const worst = (fg: Oklch, bgs: Oklch[]) => Math.min(...bgs.map((b) => contrastRatio(fg, b)));
 
 describe('OKLCH maths', () => {
+  it('reads back what it writes', () => {
+    expect(parseOklch('oklch(0.62 0.17 275)')).toEqual({ l: 0.62, c: 0.17, h: 275 });
+    expect(parseOklch('oklch(1 0 0 / 0.08)')).toBeNull();
+    expect(parseOklch('#ffffff')).toBeNull();
+  });
+
   it('round-trips sRGB colours', () => {
     for (const hex of ['#800000', '#000080', '#ff9933', '#ccff00', '#ffffff', '#3fb8e6']) {
       const back = oklchToHex(hexToOklch(hex));

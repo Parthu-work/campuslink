@@ -4,21 +4,21 @@ The plan is `master-prompt.md` §12; the requirements are `audit.md`; the Study 
 
 Branch: the session branch rule applies (`claude/sleepy-euler-bi65m3`, started from the audit commit `f05e94c`). It overrides `CLAUDE.md`'s "work on `main`", as it did for the audit.
 
-| Phase | Name                                                                        | Status      |
-| ----: | --------------------------------------------------------------------------- | ----------- |
-|     0 | Setup (prompt, spec, progress log)                                          | Done        |
-|     1 | Critical fixes (platform landing, desktop rail, D3, error boundaries, D1)   | Done        |
-|     2 | Quick wins (all 24)                                                         | Done        |
-|     3 | Navigation and transitions (§7a, §7b, role-aware navigation)                | Done        |
-|     4 | Performance (§7d, CI bundle budget)                                         | Done        |
-|     5 | Foundations (tokens, fonts, palette generator, contrast tests, ADR)         | Done        |
-|     6 | Living style guide (`/design`) — **stop for owner review with screenshots** | Not started |
-|     7 | Primitives (`components/ui/` rebuild, duplicates merged)                    | Not started |
-|     8 | Showpiece screens                                                           | Not started |
-|     9 | Study feature (spec §13 steps 1–6, each a stop-for-review point)            | Not started |
-|    10 | Remaining screens                                                           | Not started |
-|    11 | Polish                                                                      | Not started |
-|    12 | Re-audit (`after/`, `summary.md`, scorecard)                                | Not started |
+| Phase | Name                                                                        | Status                            |
+| ----: | --------------------------------------------------------------------------- | --------------------------------- |
+|     0 | Setup (prompt, spec, progress log)                                          | Done                              |
+|     1 | Critical fixes (platform landing, desktop rail, D3, error boundaries, D1)   | Done                              |
+|     2 | Quick wins (all 24)                                                         | Done                              |
+|     3 | Navigation and transitions (§7a, §7b, role-aware navigation)                | Done                              |
+|     4 | Performance (§7d, CI bundle budget)                                         | Done                              |
+|     5 | Foundations (tokens, fonts, palette generator, contrast tests, ADR)         | Done                              |
+|     6 | Living style guide (`/design`) — **stop for owner review with screenshots** | Done, awaiting the owner's review |
+|     7 | Primitives (`components/ui/` rebuild, duplicates merged)                    | Not started                       |
+|     8 | Showpiece screens                                                           | Not started                       |
+|     9 | Study feature (spec §13 steps 1–6, each a stop-for-review point)            | Not started                       |
+|    10 | Remaining screens                                                           | Not started                       |
+|    11 | Polish                                                                      | Not started                       |
+|    12 | Re-audit (`after/`, `summary.md`, scorecard)                                | Not started                       |
 
 ## Phase 0 · Setup
 
@@ -163,3 +163,15 @@ Fixed while verifying: tiny font subsets were being inlined as `data:` URLs, whi
 **Open:** `navigation.spec.ts` › "a tab remembers the screen you left it on" failed in 2 of 5 full end-to-end runs since phase 4 (the tapped job link has focus, the URL stays on Jobs) and never in more than 50 targeted runs, including 25 loops under 6× CPU throttling. Causes ruled out: CSS-carrying chunks (only the entry has CSS), blockers, effects that navigate, and the screen's alert-filter rewrite. The spec now attaches the app's navigation state on failure, so the next occurrence says whether the navigation was pending or completed and came back.
 
 Next: Phase 6 (the `/design` living style guide), then a stop for the owner's review.
+
+## Phase 6 · Living style guide
+
+`/design` (development builds only; production builds leave it out, checked on the build) shows every token and today's primitives side by side in light and dark for any college colour: the two demo colleges plus the eight awkward colours the palette test covers.
+
+- **Colour:** canvas and surfaces, the three text levels with their live contrast ratios, brand and accent fills with their labels, brand and accent inks, the 50–950 ramp, the aurora (bar, story ring, featured-card border, hero mesh), the eight subject accents, status, role chips and chart colours.
+- **Type, shape, depth, motion:** the eight-step scale in English and Telugu with tabular numbers, the six radii, elevation 0–4, glass over the aurora, and the three springs side by side.
+- **Components (as they are before phase 7):** buttons in every variant, size and state, fields with hint and error, select, checkbox, textarea, OTP, chips, badges, segmented control, card with avatar and skeletons, empty state and a dialog.
+
+How: each column is a `[data-palette][data-theme]` container with that college's generated tokens; `tokens.css` recomputes the derived tokens (aurora, overlays, depth) inside such containers. `parseOklch()` joins the shared colour maths so the guide can print ratios.
+
+**Stopped here for the owner's review**, as the master prompt asks. Phase 7 (primitives) starts after it.
