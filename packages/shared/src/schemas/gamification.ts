@@ -16,6 +16,7 @@ export const XP_RULES = {
   session_completed: { track: 'xp', points: 15, dailyCap: null },
   feedback_given: { track: 'xp', points: 5, dailyCap: null },
   event_attended: { track: 'xp', points: 10, dailyCap: null },
+  study_quiz: { track: 'xp', points: 5, dailyCap: 5 },
   session_mentored: { track: 'impact', points: 10, dailyCap: null },
   new_mentee: { track: 'impact', points: 15, dailyCap: null },
   referral_given: { track: 'impact', points: 8, dailyCap: null },

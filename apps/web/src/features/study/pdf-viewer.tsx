@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Search, ZoomIn, ZoomOut } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Sparkles, ZoomIn, ZoomOut } from 'lucide-react';
 import { getDocument, GlobalWorkerOptions, Util, type PDFDocumentProxy } from 'pdfjs-dist';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import type { MaterialDetailView } from '@campuslink/shared';
@@ -27,10 +27,13 @@ export function PdfViewer({
   m,
   initialPage,
   highlight,
+  onAsk,
 }: {
   m: MaterialDetailView;
   initialPage: number | null;
   highlight: string;
+  /** "Ask about this page" (the study assistant). */
+  onAsk?: ((page: number) => void) | undefined;
 }) {
   const { t } = useTranslation();
   const file = useQuery(materialFile(m.id));
@@ -181,6 +184,11 @@ export function PdfViewer({
         >
           <ZoomIn className="size-4" aria-hidden />
         </Button>
+        {onAsk && (
+          <Button variant="ghost" size="sm" onClick={() => onAsk(page)}>
+            <Sparkles className="size-4" aria-hidden /> {t('study.chat.askAboutPage')}
+          </Button>
+        )}
         <label className="relative ml-auto min-w-0 basis-56">
           <span className="sr-only">{t('study.viewer.searchPdf')}</span>
           <Search

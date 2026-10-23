@@ -632,7 +632,7 @@ erDiagram
 
 ## Study and the AI study assistant (Phase 9)
 
-Step 1 of `docs/specs/ai-study-assistant.md`. Materials, processing jobs, chunks, vectors, video segments, chats, usage and unanswered questions join in steps 2 to 5.
+Steps 1 to 4 of `docs/specs/ai-study-assistant.md`: subjects and settings (step 1), material and its processing (step 2), vectors and usage (step 3), and the assistant's conversations (step 4).
 
 ```mermaid
 erDiagram
@@ -691,3 +691,80 @@ erDiagram
 - **Who reads a subject:** students read the active subjects whose branch and batch rule matches their profile, plus subjects an override includes, minus ones it excludes; faculty, placement, alumni and admins read every subject of the college. One filter (`SubjectsService.readableFilter`) decides this for every route, and later for retrieval and chat.
 - **Semester** is descriptive: the platform does not store a student's current semester, so the batches a subject lists are what decide who takes it.
 - **Keys** are encrypted with `FieldCipher` (`keys.*.apiKeyEnc`, covered by `rotate-field-key`); only `last4` is ever returned.
+
+### Material, passages, vectors and conversations (steps 2 to 4)
+
+```mermaid
+erDiagram
+  SUBJECT ||--o{ MATERIAL : has
+  MATERIAL ||--o{ MATERIAL_JOB : "one per version"
+  MATERIAL ||--o{ MATERIAL_PAGE : "extracted text"
+  MATERIAL ||--o{ CONTENT_CHUNK : passages
+  MATERIAL ||--o{ VIDEO_SEGMENT : transcript
+  USER ||--o{ CHAT_SESSION : owns
+  CHAT_SESSION ||--o{ CHAT_MESSAGE : has
+  CHAT_MESSAGE }o--o{ CONTENT_CHUNK : cites
+  USER ||--o{ FLASHCARD_DECK : keeps
+  USER ||--o{ AI_USAGE : "tokens per day"
+  MATERIAL {
+    ObjectId tenantId
+    ObjectId subjectId
+    enum type "pdf | doc | slides | notes | image | video_file | video_link | audio"
+    enum visibility "draft | in_review | published | archived"
+    ObjectId fileId "FilesService, study_material"
+    int version
+    enum stage "uploaded … indexed | failed"
+    date rightsAttestedAt
+  }
+  CONTENT_CHUNK {
+    ObjectId tenantId
+    ObjectId subjectId
+    ObjectId materialId
+    string text "neutralised, never crosses a page"
+    int page "or startSec/endSec for videos"
+    ObjectId[] topicIds "keywords, and meaning when embeddings are on"
+    enum visibility "mirrors the material"
+    enum embeddingStatus "embedding_pending | embedded | failed"
+    string embeddingModel "provider:model"
+    bytes vector "float32, the source of truth for the vector index"
+  }
+  CHAT_SESSION {
+    ObjectId tenantId
+    ObjectId userId "owner only"
+    ObjectId subjectId "null = all readable subjects"
+    enum mode "simple | detailed | exam"
+    date expireAt "college chat retention (TTL)"
+  }
+  CHAT_MESSAGE {
+    ObjectId tenantId
+    ObjectId sessionId
+    enum role "user | assistant"
+    string text "as written; rendered as the answer subset"
+    enum command "videos | notes | summary | explain | quiz | flashcards | important"
+    object[] citations "chunk, material, page or moment"
+    object result "command result or why there is no generated answer"
+    enum status "complete | stopped | failed | refused"
+    object feedback "up | down, reason"
+    int inputTokens
+    int outputTokens
+  }
+  UNANSWERED_QUESTION {
+    ObjectId tenantId
+    ObjectId subjectId
+    string text "personal details removed"
+    ObjectId[] topicIds "nearby syllabus topics"
+  }
+  AI_USAGE {
+    ObjectId tenantId
+    string day "UTC date"
+    ObjectId userId "null for background work"
+    enum kind "chat | embedding | transcription | rerank"
+    string model
+    int requests
+    int inputTokens
+    int outputTokens
+  }
+```
+
+- **Vectors** are stored on the passages; Qdrant (or the in-memory store) is an index over them, filtered by college, readable subjects, model and visibility on every search.
+- **Conversations** are owner-only and expire with the college's retention (TTL on `expireAt` for sessions and messages).

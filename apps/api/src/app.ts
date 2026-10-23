@@ -97,6 +97,8 @@ import { materialRoutes } from './modules/study/materials.routes.js';
 import { AiUsageService } from './modules/study/ai-usage.service.js';
 import { EMBED_JOB, IndexingService } from './modules/study/indexing.service.js';
 import { RetrievalService } from './modules/study/retrieval.service.js';
+import { ChatService } from './modules/study/chat.service.js';
+import { chatRoutes } from './modules/study/chat.routes.js';
 import { VectorIndex, type VectorStore } from './modules/study/vector/store.js';
 import { createVectorStore } from './modules/study/vector/factory.js';
 import { MaterialPipeline, PROCESS_JOB } from './modules/study/pipeline.js';
@@ -538,6 +540,16 @@ export function createApp({
   materialsService.onRemoved = (id) => indexingService.materialRemoved(id);
   aiSettingsService.onEmbeddingReady = () => indexingService.scheduleBackfill();
   queue.register(EMBED_JOB, (data) => indexingService.runBackfill(data));
+  // The study assistant (spec step 4).
+  const chatService = new ChatService({
+    subjects: subjectsService,
+    ai: aiSettingsService,
+    retrieval: retrievalService,
+    materials: materialsService,
+    usage: aiUsageService,
+    award: gamificationService.award,
+    logger,
+  });
 
   // ── Privacy rights (Phase 8) ─────────────────────────────
   const privacyService = new PrivacyService({ auth: authService, profiles: profilesService, logger });
@@ -567,6 +579,7 @@ export function createApp({
   privacyService.register('subjects', hook(subjectsService));
   privacyService.register('materials', hook(materialsService));
   privacyService.register('aiUsage', hook(aiUsageService));
+  privacyService.register('studyChats', hook(chatService));
   privacyService.register('aiSettings', hook(aiSettingsService));
   privacyService.register('files', hook(filesService));
 
@@ -693,6 +706,7 @@ export function createApp({
     API_PREFIX,
     defineModule('study-materials', materialRoutes(materialsService, retrievalService), pipeline),
   );
+  app.use(API_PREFIX, defineModule('study-chat', chatRoutes(chatService, logger), pipeline));
   app.use(
     API_PREFIX,
     defineModule(
@@ -755,6 +769,7 @@ export function createApp({
     retrieval: retrievalService,
     aiUsage: aiUsageService,
     vectors: vectorIndex,
+    chat: chatService,
   };
   return app;
 }

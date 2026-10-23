@@ -27,6 +27,7 @@ import {
   Rss,
   Settings,
   Shield,
+  Sparkles,
   Trophy,
   User,
   Users,
@@ -47,6 +48,7 @@ import { useUnreadMessages, useUnreadNotifications } from './unread';
 export const NAV_ICONS: Record<NavId, LucideIcon> = {
   home: Home,
   study: BookOpen,
+  assistant: Sparkles,
   subjects: Library,
   create: Plus,
   mentors: Compass,
@@ -83,6 +85,7 @@ const LABEL_KEY: Partial<Record<NavId, string>> = { mentoring: 'mentor' };
 const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'home',
   'study',
+  'assistant',
   'subjects',
   'mentors',
   'jobs',

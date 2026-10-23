@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { extractHashtags, plainText, snippet } from '../src/lib/text.js';
+import { extractHashtags, plainText, snippet, modelText } from '../src/lib/text.js';
 import { readMp4, stripMp4Metadata } from '../src/lib/mp4.js';
 import { parseRobots, robotsAllows } from '../src/lib/robots.js';
 import { linkPreview } from '../src/lib/link-preview.js';
@@ -10,6 +10,12 @@ import { autoTags } from '../src/modules/content-sources/tagging.js';
 import { clearRobotsCache, fetchFeed } from '../src/modules/content-sources/fetch.js';
 import { decodeCursor, encodeCursor, rankScore, type RankInput } from '../src/modules/feed/feed.service.js';
 import { fakeFetcher, fakeMp4, rss } from './feed-fixtures.js';
+
+describe('model text', () => {
+  it('keeps code characters but drops control and bidi characters', () => {
+    expect(modelText('Use vector<int> v;\u202e\u0007\r\n\n\n\nDone')).toBe('Use vector<int> v;\n\nDone');
+  });
+});
 
 describe('plain text and hashtags', () => {
   it('strips all markup with the allowlist sanitizer, dropping script contents', () => {

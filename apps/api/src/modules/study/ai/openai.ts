@@ -1,5 +1,6 @@
 import {
   callJson,
+  callSse,
   joinUrl,
   ProviderError,
   requireKey,
@@ -45,18 +46,22 @@ export function openaiChat(conn: ProviderConnection, custom = false): LLMProvide
     id: custom ? 'openai_compatible' : 'openai',
     listModels: () => models(conn, custom),
     async generate(req: GenerateRequest, opts: GenerateOptions = {}): Promise<GenerateResult> {
-      const r = await callJson<ChatCompletion>(conn, joinUrl(base(conn, custom), 'chat/completions'), {
-        method: 'POST',
+      const url = joinUrl(base(conn, custom), 'chat/completions');
+      const call = {
+        method: 'POST' as const,
         headers: auth(conn, custom),
         timeoutMs: 90_000,
-        body: {
-          model: req.model,
-          messages: [{ role: 'system', content: req.system }, ...req.messages],
-          // OpenAI's current parameter; compatible servers still expect max_tokens.
-          ...(custom ? { max_tokens: req.maxTokens } : { max_completion_tokens: req.maxTokens }),
-          ...(req.temperature !== null ? { temperature: req.temperature } : {}),
-        },
-      });
+        signal: opts.signal,
+      };
+      const body = {
+        model: req.model,
+        messages: [{ role: 'system', content: req.system }, ...req.messages],
+        // OpenAI's current parameter; compatible servers still expect max_tokens.
+        ...(custom ? { max_tokens: req.maxTokens } : { max_completion_tokens: req.maxTokens }),
+        ...(req.temperature !== null ? { temperature: req.temperature } : {}),
+      };
+      if (opts.onText) return streamChat(conn, url, call, body, opts.onText);
+      const r = await callJson<ChatCompletion>(conn, url, { ...call, body });
       const choice = r.choices?.[0];
       const usage = {
         inputTokens: r.usage?.prompt_tokens ?? 0,
@@ -66,19 +71,62 @@ export function openaiChat(conn: ProviderConnection, custom = false): LLMProvide
       const text = choice?.message?.content ?? '';
       if (!text && choice?.finish_reason !== 'length')
         throw new ProviderError('bad_request', 'The provider returned no answer');
-      opts.onText?.(text);
-      return {
-        text,
-        ...usage,
-        stopReason:
-          choice?.finish_reason === 'length'
-            ? 'max_tokens'
-            : choice?.finish_reason === 'content_filter'
-              ? 'refusal'
-              : 'end',
-      };
+      return { text, ...usage, stopReason: finish(choice?.finish_reason) };
     },
   };
+}
+
+const finish = (reason: string | null | undefined): GenerateResult['stopReason'] =>
+  reason === 'length' ? 'max_tokens' : reason === 'content_filter' ? 'refusal' : 'end';
+
+interface ChatChunk {
+  choices?: { delta?: { content?: string | null; refusal?: string | null }; finish_reason?: string | null }[];
+  usage?: { prompt_tokens?: number; completion_tokens?: number } | null;
+}
+
+/** Chat completions as server-sent events (`data: [DONE]` ends them); usage comes last. */
+async function streamChat(
+  conn: ProviderConnection,
+  url: string,
+  call: {
+    method: 'POST';
+    headers: Record<string, string>;
+    timeoutMs: number;
+    signal?: AbortSignal | undefined;
+  },
+  body: Record<string, unknown>,
+  onText: (delta: string) => void,
+): Promise<GenerateResult> {
+  let text = '';
+  let refused = false;
+  let reason: string | null = null;
+  let usage = { inputTokens: 0, outputTokens: 0 };
+  await callSse(
+    conn,
+    url,
+    { ...call, body: { ...body, stream: true, stream_options: { include_usage: true } } },
+    (e) => {
+      if (e.data === '[DONE]') return;
+      let c: ChatChunk;
+      try {
+        c = JSON.parse(e.data) as ChatChunk;
+      } catch {
+        return;
+      }
+      const ch = c.choices?.[0];
+      if (ch?.delta?.refusal) refused = true;
+      if (ch?.delta?.content) {
+        text += ch.delta.content;
+        onText(ch.delta.content);
+      }
+      if (ch?.finish_reason) reason = ch.finish_reason;
+      if (c.usage)
+        usage = { inputTokens: c.usage.prompt_tokens ?? 0, outputTokens: c.usage.completion_tokens ?? 0 };
+    },
+  );
+  if (refused) return { text: '', ...usage, stopReason: 'refusal' };
+  if (!text && reason !== 'length') throw new ProviderError('bad_request', 'The provider returned no answer');
+  return { text, ...usage, stopReason: finish(reason) };
 }
 
 export function openaiEmbeddings(conn: ProviderConnection, custom = false): EmbeddingProvider {

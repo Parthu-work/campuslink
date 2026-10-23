@@ -6,7 +6,13 @@ import {
   AI_CONSENT_VERSION,
   AI_KEY_TARGETS,
   AI_PROVIDERS,
+  ANSWER_MODES,
+  CHAT_DIFFICULTIES,
+  CHAT_FEEDBACK_REASONS,
+  CHAT_QUESTION_MAX,
   EMBEDDING_PROVIDERS,
+  QUIZ_SIZE,
+  SERVER_COMMANDS,
   SEMESTER_MAX,
   SEMESTER_MIN,
   MATERIAL_LANGUAGES,
@@ -17,6 +23,7 @@ import {
   type AiFeature,
   type AiKeyTarget,
   type AiProvider,
+  type AnswerMode,
   type EmbeddingProvider,
   type KeyStatus,
   type MaterialLanguage,
@@ -24,6 +31,7 @@ import {
   type MaterialType,
   type MaterialVisibility,
   type ProcessingStage,
+  type ServerCommand,
   type SubjectStatus,
 } from '../constants/study.js';
 
@@ -403,4 +411,141 @@ export interface AiTestResult {
   ok: boolean;
   models: string[];
   error: string | null;
+}
+
+// ── Study chat ─────────────────────────────
+export const chatAskBody = z.strictObject({
+  /** Continue a conversation; omitted starts a new one. */
+  sessionId: objectId.optional(),
+  /** One subject, or null for every subject I read. */
+  subjectId: objectId.nullable().default(null),
+  question: text(1, CHAT_QUESTION_MAX),
+  mode: z.enum(ANSWER_MODES).default('simple'),
+  command: z.enum(SERVER_COMMANDS).optional(),
+  difficulty: z.enum(CHAT_DIFFICULTIES).optional(),
+  count: z.number().int().min(QUIZ_SIZE.min).max(QUIZ_SIZE.max).optional(),
+  /** "Ask about this": the material open in the viewer, where, and the words selected. */
+  context: z
+    .strictObject({
+      materialId: objectId,
+      page: z.number().int().min(1).max(10_000).nullable().default(null),
+      startSec: z.number().min(0).max(86_400).nullable().default(null),
+      text: text(0, 1500).default(''),
+    })
+    .optional(),
+  /** Answer one of my earlier questions again (the assistant message id). */
+  regenerate: objectId.optional(),
+});
+export type ChatAskInput = z.input<typeof chatAskBody>;
+export const chatFeedbackBody = z.strictObject({
+  rating: z.enum(['up', 'down']).nullable(),
+  reason: z.enum(CHAT_FEEDBACK_REASONS).nullable().default(null),
+});
+export const quizAnswersBody = z.strictObject({
+  /** One per question: an option index for multiple choice, the typed answer for short ones. */
+  answers: z
+    .array(z.union([z.number().int().min(0).max(9), text(0, 300)]))
+    .min(1)
+    .max(QUIZ_SIZE.max),
+});
+export const deckBody = z.strictObject({
+  messageId: objectId,
+  title: text(1, 120),
+});
+export const chatSessionsQuery = z.strictObject({ cursor: objectId.optional() });
+
+/** A source an answer cites: opens the material at its page or moment. */
+export interface ChatCitation {
+  n: number;
+  chunkId: string;
+  materialId: string;
+  subjectId: string;
+  title: string;
+  type: MaterialType;
+  page: number | null;
+  startSec: number | null;
+  snippet: string;
+}
+export interface ChatVideo {
+  material: MaterialView;
+  /** The moments that best match the topic (transcript passages). */
+  moments: { startSec: number; text: string }[];
+}
+export interface WebVideo {
+  title: string;
+  url: string;
+  channel: string;
+}
+export type QuizQuestion =
+  | { kind: 'mcq'; q: string; options: string[]; answer: number; explain: string; cite: number | null }
+  | { kind: 'short'; q: string; answer: string; explain: string; cite: number | null };
+/** Structured results of commands and of answers that could not be generated. */
+export type ChatResult =
+  | {
+      kind: 'videos';
+      topic: string;
+      exact: ChatVideo[];
+      related: ChatVideo[];
+      web: WebVideo[] | null;
+      nearby: string[];
+    }
+  | {
+      kind: 'notes';
+      topic: string;
+      items: { material: MaterialView; pages: number[] }[];
+      nearby: string[];
+    }
+  | {
+      kind: 'quiz';
+      topic: string;
+      questions: QuizQuestion[];
+      /** Saved when the member finishes the quiz. */
+      score: { correct: number; total: number; answers: (number | string)[]; at: string } | null;
+    }
+  | { kind: 'flashcards'; topic: string; cards: { front: string; back: string; cite: number | null }[] }
+  /** The material does not cover it (logged for the faculty's content gaps). */
+  | { kind: 'not_covered'; nearby: string[] }
+  /** AI answers are off: the matching passages, quoted, instead of a generated answer. */
+  | { kind: 'passages'; reason: AiOffReason | null };
+export type ChatMessageStatus = 'complete' | 'stopped' | 'failed' | 'refused';
+export interface ChatMessageView {
+  id: string;
+  role: 'user' | 'assistant';
+  text: string;
+  command: ServerCommand | null;
+  citations: ChatCitation[];
+  result: ChatResult | null;
+  status: ChatMessageStatus;
+  /** Answered from passages that cover the question (retrieval was confident). */
+  grounded: boolean;
+  mode: AnswerMode;
+  feedback: 'up' | 'down' | null;
+  createdAt: string;
+}
+export interface ChatSessionView {
+  id: string;
+  title: string;
+  subjectId: string | null;
+  mode: AnswerMode;
+  lastMessageAt: string;
+  messageCount: number;
+}
+export interface ChatSessionDetail extends ChatSessionView {
+  messages: ChatMessageView[];
+}
+/** The server-sent events of one question (POST /study/chat). */
+export type ChatStreamEvent =
+  | { type: 'start'; sessionId: string; question: ChatMessageView; messageId: string }
+  | { type: 'sources'; citations: ChatCitation[] }
+  | { type: 'delta'; text: string }
+  /** The provider refused part-way: replace what was shown. */
+  | { type: 'replace'; text: string }
+  | { type: 'done'; message: ChatMessageView }
+  | { type: 'error'; code: string; message: string };
+export interface FlashcardDeckView {
+  id: string;
+  title: string;
+  subjectId: string | null;
+  cards: { front: string; back: string }[];
+  createdAt: string;
 }

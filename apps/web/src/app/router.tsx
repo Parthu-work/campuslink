@@ -51,6 +51,7 @@ const load = {
   study: () => import('../features/study/study'),
   subject: () => import('../features/study/subject-page'),
   material: () => import('../features/study/material-page'),
+  chat: () => import('../features/study/chat/chat-page'),
   directory: () => import('../features/people/directory'),
   landing: () => import('../features/landing/landing'),
   profileView: () => import('../features/people/profile-view'),
@@ -289,6 +290,14 @@ function collegeRoutes(): RouteObject[] {
                 ]
               : [],
           ),
+          screen(load.chat, 'ChatPage', 'study:read', at('/study/chat'), () => [
+            qc.ensureQueryData(q.chatSessions()),
+            qc.ensureQueryData(q.aiStatus()),
+          ]),
+          screen(load.chat, 'ChatPage', 'study:read', at('/study/chat/:sessionId'), ({ sessionId }) => [
+            qc.ensureQueryData(q.chatSessions()),
+            ...(isId(sessionId) ? [qc.ensureQueryData(q.chatSession(sessionId))] : []),
+          ]),
           screen(
             load.material,
             'MaterialPage',

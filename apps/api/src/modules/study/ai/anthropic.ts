@@ -1,5 +1,6 @@
 import {
   callJson,
+  callSse,
   ProviderError,
   requireKey,
   type GenerateOptions,
@@ -42,19 +43,17 @@ export function anthropicChat(conn: ProviderConnection): LLMProvider {
     },
     async generate(req: GenerateRequest, opts: GenerateOptions = {}): Promise<GenerateResult> {
       const effort = takesEffort(req.model);
-      const r = await callJson<MessagesResponse>(conn, `${BASE}/v1/messages`, {
-        method: 'POST',
-        headers: headers(),
-        timeoutMs: 90_000,
-        body: {
-          model: req.model,
-          // Thinking (always on for current models) counts toward max_tokens: leave it room.
-          max_tokens: effort ? Math.min(req.maxTokens * 4, 16_000) : req.maxTokens,
-          system: req.system,
-          messages: req.messages,
-          ...(effort ? { output_config: { effort: 'low' } } : {}),
-        },
-      });
+      const body = {
+        model: req.model,
+        // Thinking (always on for current models) counts toward max_tokens: leave it room.
+        max_tokens: effort ? Math.min(req.maxTokens * 4, 16_000) : req.maxTokens,
+        system: req.system,
+        messages: req.messages,
+        ...(effort ? { output_config: { effort: 'low' } } : {}),
+      };
+      const call = { method: 'POST' as const, headers: headers(), timeoutMs: 90_000, signal: opts.signal };
+      if (opts.onText) return stream(conn, call, body, opts.onText);
+      const r = await callJson<MessagesResponse>(conn, `${BASE}/v1/messages`, { ...call, body });
       if (r.stop_reason === 'refusal')
         return {
           text: '',
@@ -68,7 +67,6 @@ export function anthropicChat(conn: ProviderConnection): LLMProvider {
         .join('');
       if (!text && r.stop_reason !== 'max_tokens')
         throw new ProviderError('bad_request', 'The provider returned no answer');
-      opts.onText?.(text);
       return {
         text,
         inputTokens: r.usage?.input_tokens ?? 0,
@@ -76,5 +74,63 @@ export function anthropicChat(conn: ProviderConnection): LLMProvider {
         stopReason: r.stop_reason === 'max_tokens' ? 'max_tokens' : r.stop_reason ? 'end' : 'other',
       };
     },
+  };
+}
+
+interface StreamEvent {
+  type?: string;
+  message?: { usage?: { input_tokens?: number; output_tokens?: number } };
+  delta?: { type?: string; text?: string; stop_reason?: string | null };
+  usage?: { input_tokens?: number; output_tokens?: number };
+  error?: { type?: string; message?: string };
+}
+
+/** The Messages API as server-sent events: only text deltas reach the member (never thinking). */
+async function stream(
+  conn: ProviderConnection,
+  call: {
+    method: 'POST';
+    headers: Record<string, string>;
+    timeoutMs: number;
+    signal?: AbortSignal | undefined;
+  },
+  body: Record<string, unknown>,
+  onText: (delta: string) => void,
+): Promise<GenerateResult> {
+  let text = '';
+  let input = 0;
+  let output = 0;
+  let stop: string | null = null;
+  let failed: StreamEvent['error'] | null = null;
+  await callSse(conn, `${BASE}/v1/messages`, { ...call, body: { ...body, stream: true } }, (e) => {
+    let ev: StreamEvent;
+    try {
+      ev = JSON.parse(e.data) as StreamEvent;
+    } catch {
+      return;
+    }
+    if (ev.type === 'message_start') input = ev.message?.usage?.input_tokens ?? 0;
+    else if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta' && ev.delta.text) {
+      text += ev.delta.text;
+      onText(ev.delta.text);
+    } else if (ev.type === 'message_delta') {
+      stop = ev.delta?.stop_reason ?? stop;
+      output = ev.usage?.output_tokens ?? output;
+    } else if (ev.type === 'error') failed = ev.error ?? { message: 'error' };
+  });
+  if (failed)
+    throw new ProviderError(
+      (failed as StreamEvent['error'])?.type === 'overloaded_error' ? 'unavailable' : 'bad_request',
+      'The provider stopped while answering',
+    );
+  if (stop === 'refusal')
+    return { text: '', inputTokens: input, outputTokens: output, stopReason: 'refusal' };
+  if (!text && stop !== 'max_tokens')
+    throw new ProviderError('bad_request', 'The provider returned no answer');
+  return {
+    text,
+    inputTokens: input,
+    outputTokens: output,
+    stopReason: stop === 'max_tokens' ? 'max_tokens' : stop ? 'end' : 'other',
   };
 }

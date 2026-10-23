@@ -143,3 +143,22 @@ export const CHUNK_EMBEDDING_STATUSES = ['embedding_pending', 'embedded', 'faile
 export const AI_USAGE_KINDS = ['chat', 'embedding', 'transcription', 'rerank'] as const;
 export type AiUsageKind = (typeof AI_USAGE_KINDS)[number];
 export type ChunkEmbeddingStatus = (typeof CHUNK_EMBEDDING_STATUSES)[number];
+
+// ── Study chat ─────────────────────────────
+/** Commands the server runs (the rest are handled in the browser). */
+export const SERVER_COMMANDS = [
+  'videos',
+  'notes',
+  'summary',
+  'explain',
+  'quiz',
+  'flashcards',
+  'important',
+] as const;
+export type ServerCommand = (typeof SERVER_COMMANDS)[number];
+export const CHAT_DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
+export type ChatDifficulty = (typeof CHAT_DIFFICULTIES)[number];
+export const QUIZ_SIZE = { min: 3, max: 10, default: 5 } as const;
+export const CHAT_QUESTION_MAX = 2000;
+export const CHAT_FEEDBACK_REASONS = ['wrong', 'not_in_material', 'unclear', 'incomplete', 'other'] as const;
+export type ChatFeedbackReason = (typeof CHAT_FEEDBACK_REASONS)[number];

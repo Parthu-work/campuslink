@@ -1,5 +1,11 @@
 import type { AiProvider, EmbeddingProvider as EmbeddingProviderId } from '@campuslink/shared';
-import { SafeFetchError, type SafeMethod, type safeFetch } from '../../../lib/safe-fetch.js';
+import {
+  SafeFetchError,
+  type SafeFetchOptions,
+  type SafeMethod,
+  type SafeResponse,
+  type safeFetch,
+} from '../../../lib/safe-fetch.js';
 
 /**
  * The language-model and embedding adapters. Every provider is one file implementing these
@@ -128,16 +134,21 @@ export interface JsonCall {
   rawBody?: Buffer;
   timeoutMs?: number;
   maxBytes?: number;
+  signal?: AbortSignal | undefined;
 }
 
-/** One JSON request to a provider through the SSRF-safe fetcher, with errors mapped and redacted. */
-export async function callJson<T>(conn: ProviderConnection, url: string, call: JsonCall = {}): Promise<T> {
-  let res;
+async function send(
+  conn: ProviderConnection,
+  url: string,
+  call: JsonCall,
+  accept: string,
+  onChunk?: SafeFetchOptions['onChunk'],
+) {
   try {
-    res = await conn.fetcher(url, {
+    return await conn.fetcher(url, {
       method: call.method ?? 'GET',
       headers: {
-        accept: 'application/json',
+        accept,
         ...(call.body !== undefined ? { 'content-type': 'application/json' } : {}),
         ...call.headers,
       },
@@ -150,27 +161,77 @@ export async function callJson<T>(conn: ProviderConnection, url: string, call: J
       maxBytes: call.maxBytes ?? 4 * 1024 * 1024,
       maxRedirects: 0,
       allowPrivateNetwork: conn.allowPrivateNetwork,
+      ...(call.signal ? { signal: call.signal } : {}),
+      ...(onChunk ? { onChunk } : {}),
     });
   } catch (e) {
     const why = e instanceof SafeFetchError ? e.message : 'Could not reach the provider';
     throw new ProviderError('network', redactSecrets(why, conn.apiKey));
   }
-  if (res.status < 200 || res.status >= 300) {
-    const kind = KIND_BY_STATUS(res.status);
-    const reason = reasonOf(res.body, [conn.apiKey]);
-    const retry = Number(res.headers?.['retry-after']);
-    throw new ProviderError(
-      kind,
-      reason ? `${MESSAGE[kind]} (${res.status}): ${reason}` : `${MESSAGE[kind]} (${res.status})`,
-      res.status,
-      Number.isFinite(retry) && retry > 0 ? Math.min(retry, 60) * 1000 : null,
-    );
-  }
+}
+
+/** A non-2xx answer as a short, key-free ProviderError. */
+function failure(conn: ProviderConnection, res: SafeResponse): ProviderError {
+  const kind = KIND_BY_STATUS(res.status);
+  const reason = reasonOf(res.body, [conn.apiKey]);
+  const retry = Number(res.headers?.['retry-after']);
+  return new ProviderError(
+    kind,
+    reason ? `${MESSAGE[kind]} (${res.status}): ${reason}` : `${MESSAGE[kind]} (${res.status})`,
+    res.status,
+    Number.isFinite(retry) && retry > 0 ? Math.min(retry, 60) * 1000 : null,
+  );
+}
+
+/** One JSON request to a provider through the SSRF-safe fetcher, with errors mapped and redacted. */
+export async function callJson<T>(conn: ProviderConnection, url: string, call: JsonCall = {}): Promise<T> {
+  const res = await send(conn, url, call, 'application/json');
+  if (res.status < 200 || res.status >= 300) throw failure(conn, res);
   try {
     return JSON.parse(res.body.toString('utf8')) as T;
   } catch {
     throw new ProviderError('bad_request', 'The provider sent a response we could not read');
   }
+}
+
+/** One server-sent event: its `event:` name (or "message") and its `data:` lines joined. */
+export interface SseEvent {
+  event: string;
+  data: string;
+}
+
+/**
+ * A streamed request (server-sent events) through the SSRF-safe fetcher: `onEvent` runs for each
+ * event as it arrives, so answers reach the member while the provider is still writing. Errors
+ * are mapped and redacted like `callJson`.
+ */
+export async function callSse(
+  conn: ProviderConnection,
+  url: string,
+  call: JsonCall,
+  onEvent: (e: SseEvent) => void,
+): Promise<void> {
+  const decoder = new TextDecoder();
+  let pending = '';
+  const flush = (block: string) => {
+    let event = 'message';
+    const data: string[] = [];
+    for (const line of block.split(/\r?\n/)) {
+      if (line.startsWith('event:')) event = line.slice(6).trim();
+      else if (line.startsWith('data:')) data.push(line.slice(5).replace(/^ /, ''));
+    }
+    if (data.length) onEvent({ event, data: data.join('\n') });
+  };
+  const res = await send(conn, url, call, 'text/event-stream', (chunk, status) => {
+    if (status < 200 || status >= 300) return;
+    pending += decoder.decode(chunk, { stream: true });
+    const blocks = pending.split(/\r?\n\r?\n/);
+    pending = blocks.pop() ?? '';
+    for (const b of blocks) flush(b);
+  });
+  if (res.status < 200 || res.status >= 300) throw failure(conn, res);
+  pending += decoder.decode();
+  if (pending.trim()) flush(pending);
 }
 
 /** Joins a base URL and a path without doubling or dropping slashes. */

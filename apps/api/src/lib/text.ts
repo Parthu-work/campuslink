@@ -22,6 +22,22 @@ export function plainText(input: string): string {
   );
 }
 
+/**
+ * Text a language model wrote (study assistant answers): kept as written, because answers about
+ * code are full of `<` and `>` (`vector<int>`), and it is only ever rendered as text. Control
+ * characters and bidi overrides are removed, as for member text.
+ */
+export function modelText(input: string): string {
+  return (
+    input
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\u202a-\u202e\u2066-\u2069]/g, '')
+      .replace(/\r\n?/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .slice(0, 40_000)
+  );
+}
+
 const NAMED: Record<string, string> = {
   amp: '&',
   lt: '<',

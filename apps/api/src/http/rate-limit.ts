@@ -25,7 +25,8 @@ export type LimiterName =
   | 'referrals'
   | 'privacy'
   | 'aiTest'
-  | 'studyUpload';
+  | 'studyUpload'
+  | 'aiChat';
 
 const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: boolean }> = {
   global: { windowMs: 60_000, limit: 600 },
@@ -51,6 +52,8 @@ const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: bo
   aiTest: { windowMs: 60 * 60_000, limit: 30, perUser: true },
   /** Faculty upload a term's material in one sitting; still bounded per person. */
   studyUpload: { windowMs: 60 * 60_000, limit: 120, perUser: true },
+  /** Questions and commands to the study assistant (the daily per-member limit is separate). */
+  aiChat: { windowMs: 60_000, limit: 20, perUser: true },
 };
 
 const key = (req: Request, perUser?: boolean) =>

@@ -131,6 +131,45 @@ describe('safeFetch with a fake transport (redirects, size caps, pinning)', () =
     expect(r.status).toBe(200);
   });
 
+  it('hands each piece of the body over as it arrives, with the status, under the size cap', async () => {
+    const pieces: string[] = [];
+    const r = await safeFetch('https://api.example/stream', {
+      resolve,
+      method: 'POST',
+      transport: async () => ({
+        status: 200,
+        header: () => null,
+        body: (async function* () {
+          yield new TextEncoder().encode('data: 1\n\n');
+          yield new TextEncoder().encode('data: 2\n\n');
+        })(),
+        cancel: async () => undefined,
+      }),
+      onChunk: (c, status) => pieces.push(`${status}:${c.toString()}`),
+    });
+    expect(pieces).toEqual(['200:data: 1\n\n', '200:data: 2\n\n']);
+    expect(r.body.toString()).toBe('data: 1\n\ndata: 2\n\n');
+  });
+
+  it('a cancelled request says so (the member pressed Stop)', async () => {
+    const ac = new AbortController();
+    const slow = async (_u: URL, _ip: string, init: { signal: AbortSignal }) => ({
+      status: 200,
+      header: () => null,
+      body: (async function* () {
+        yield new TextEncoder().encode('first');
+        ac.abort();
+        await new Promise((resolveWait) => setTimeout(resolveWait, 5));
+        if (init.signal.aborted) throw new Error('aborted');
+        yield new TextEncoder().encode('never');
+      })(),
+      cancel: async () => undefined,
+    });
+    await expect(
+      safeFetch('https://api.example/stream', { resolve, transport: slow, signal: ac.signal }),
+    ).rejects.toThrow('The request was cancelled');
+  });
+
   it('maps transport failures to a safe message', async () => {
     await expect(
       safeFetch('https://down.example/', {

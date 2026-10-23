@@ -43,6 +43,13 @@ export interface SafeFetchOptions {
    * from tenant input.
    */
   allowPrivateNetwork?: boolean;
+  /** Cancels the request (a member pressed Stop); the deadline still applies. */
+  signal?: AbortSignal;
+  /**
+   * Called with each piece of the body as it arrives (streamed AI answers), with the status. The
+   * size cap still applies and the whole body is still returned at the end.
+   */
+  onChunk?: (chunk: Buffer, status: number) => void;
 }
 
 export interface SafeResponse {
@@ -147,7 +154,11 @@ export async function safeFetch(
   } catch {
     throw new SafeFetchError('Invalid URL');
   }
-  const deadline = AbortSignal.timeout(timeoutMs);
+  const deadline = opts.signal
+    ? AbortSignal.any([AbortSignal.timeout(timeoutMs), opts.signal])
+    : AbortSignal.timeout(timeoutMs);
+  const why = () =>
+    opts.signal?.aborted ? 'The request was cancelled' : deadline.aborted ? 'The request timed out' : null;
 
   for (let hop = 0; hop <= maxRedirects; hop++) {
     const http = opts.allowHttp || opts.allowPrivateNetwork;
@@ -171,7 +182,7 @@ export async function safeFetch(
         headers: { 'user-agent': `${APP_NAME}-Fetcher/1.0`, ...opts.headers },
       });
     } catch {
-      throw new SafeFetchError(deadline.aborted ? 'The request timed out' : 'Could not fetch that URL');
+      throw new SafeFetchError(why() ?? 'Could not fetch that URL');
     }
     if (res.status >= 300 && res.status < 400 && (opts.method ?? 'GET') === 'GET') {
       const loc = res.header('location');
@@ -193,11 +204,13 @@ export async function safeFetch(
           await res.cancel();
           throw new SafeFetchError('Response is too large');
         }
-        chunks.push(Buffer.from(chunk));
+        const piece = Buffer.from(chunk);
+        chunks.push(piece);
+        opts.onChunk?.(piece, res.status);
       }
     } catch (e) {
       if (e instanceof SafeFetchError) throw e;
-      throw new SafeFetchError(deadline.aborted ? 'The request timed out' : 'Could not fetch that URL');
+      throw new SafeFetchError(why() ?? 'Could not fetch that URL');
     }
     const headers: SafeResponse['headers'] = {};
     for (const h of KEPT_HEADERS) {

@@ -19,11 +19,13 @@ import {
   type AiTestResult,
   type EmbeddingProvider as EmbeddingProviderId,
   type KeyStatus,
+  type WebVideo,
 } from '@campuslink/shared';
 import { AiSettingsModel, type AiSettingsDoc } from './ai-settings.model.js';
 import type { FieldCipher } from '../../lib/crypto.js';
 import { isPublicAddress, type safeFetch } from '../../lib/safe-fetch.js';
 import { badRequest } from '../../lib/errors.js';
+import { decodeEntities, plainText } from '../../lib/text.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
 import type { AuthState } from '../../types.js';
@@ -604,10 +606,42 @@ export class AiSettingsService {
   }
 
   /** The decrypted YouTube key for external video suggestions (server use only), when enabled. */
-  async youtubeKey(): Promise<string | null> {
+  /**
+   * "From the web" for `/videos` (spec §6): YouTube search through the official Data API with the
+   * college's own key, only when the admin turned it on and accepted the data notice. Links only;
+   * the key never leaves this service. null when it is off.
+   */
+  async webVideos(topic: string): Promise<WebVideo[] | null> {
     const s = await this.load();
-    if (s.killSwitch || !s.features.externalVideos || s.keys.youtube.status !== 'valid') return null;
-    return this.decrypt(s.keys.youtube);
+    const consentOk = s.consent?.version === AI_CONSENT_VERSION;
+    if (s.killSwitch || !s.features.externalVideos || s.keys.youtube.status !== 'valid' || !consentOk)
+      return null;
+    const key = this.decrypt(s.keys.youtube);
+    if (!key) return null;
+    const q = new URLSearchParams({
+      part: 'snippet',
+      type: 'video',
+      maxResults: '5',
+      safeSearch: 'strict',
+      q: topic.slice(0, 100),
+    });
+    try {
+      const r = await callJson<{
+        items?: { id?: { videoId?: string }; snippet?: { title?: string; channelTitle?: string } }[];
+      }>(this.conn(key, null), `https://www.googleapis.com/youtube/v3/search?${q.toString()}`, {
+        headers: { 'x-goog-api-key': key },
+        timeoutMs: 8000,
+      });
+      return (r.items ?? [])
+        .filter((i) => /^[\w-]{6,20}$/.test(i.id?.videoId ?? ''))
+        .map((i) => ({
+          title: plainText(decodeEntities(i.snippet?.title ?? '')).slice(0, 200),
+          url: `https://www.youtube.com/watch?v=${i.id?.videoId ?? ''}`,
+          channel: plainText(decodeEntities(i.snippet?.channelTitle ?? '')).slice(0, 100),
+        }));
+    } catch {
+      return [];
+    }
   }
 
   // ── Privacy: settings belong to the college; only the admin's id is personal ─────────────

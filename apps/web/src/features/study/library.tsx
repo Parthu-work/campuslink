@@ -1,24 +1,10 @@
 import { lazy, Suspense, useDeferredValue, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  CircleAlert,
-  FileText,
-  FileType,
-  Image as ImageIcon,
-  Loader,
-  Music,
-  NotebookPen,
-  Plus,
-  Presentation,
-  Search,
-  Video,
-  MonitorPlay,
-} from 'lucide-react';
+import { CircleAlert, FileText, Loader, Plus, Search } from 'lucide-react';
 import {
   MATERIAL_TABS,
   type MaterialTab,
-  type MaterialType,
   type MaterialView,
   type SubjectView,
   type SyllabusUnitView,
@@ -28,6 +14,7 @@ import { Sheet } from '../../components/ui/dialog';
 import { Input, Select } from '../../components/ui/field';
 import { Illustration } from '../../components/ui/illustration';
 import { IntentLink } from '../../components/ui/intent-link';
+import { MATERIAL_ICONS } from '../../lib/material-icons';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { TabPanel, Tabs } from '../../components/ui/tabs';
 import { api, ApiError } from '../../lib/api';
@@ -40,17 +27,6 @@ import { useUrlOverlay } from '../../lib/use-url-overlay';
 
 // The upload form loads when opened (bundle budget).
 const UploadSheet = lazy(() => import('./upload-sheet').then((m) => ({ default: m.UploadSheet })));
-
-const ICONS: Record<MaterialType, typeof FileText> = {
-  pdf: FileText,
-  doc: FileType,
-  slides: Presentation,
-  notes: NotebookPen,
-  image: ImageIcon,
-  video_file: Video,
-  video_link: MonitorPlay,
-  audio: Music,
-};
 
 /** Where processing is, for the uploader and managers ("indexed" shows nothing). */
 function StatusChip({ m }: { m: MaterialView }) {
@@ -76,7 +52,7 @@ function StatusChip({ m }: { m: MaterialView }) {
 
 export function MaterialCard({ m }: { m: MaterialView }) {
   const { t } = useTranslation();
-  const Icon = ICONS[m.type];
+  const Icon = MATERIAL_ICONS[m.type];
   const facts = [
     t(`study.type.${m.type}`),
     m.pageCount ? t('study.pages', { count: m.pageCount }) : '',

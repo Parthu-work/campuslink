@@ -18,6 +18,7 @@ import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { cn } from '../../lib/cn';
 import { AiNotice } from './study';
 import { SubjectLibrary } from './library';
+import { ChatLauncher } from './chat/chat-launcher';
 
 // Editors load when opened: the form library, Zod and the editors themselves (bundle budget).
 const SubjectForm = lazy(() => import('./subject-form').then((m) => ({ default: m.SubjectForm })));
@@ -230,6 +231,7 @@ export function SubjectPage() {
       </section>
 
       <SubjectLibrary subject={s} units={units} />
+      <ChatLauncher subjectId={s.id} />
 
       {s.can.manage && (
         <>

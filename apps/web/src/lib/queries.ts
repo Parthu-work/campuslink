@@ -21,6 +21,9 @@ import type {
   RoadmapView,
   StoryView,
   AiIndexView,
+  ChatSessionDetail,
+  ChatSessionView,
+  FlashcardDeckView,
   AiSettingsView,
   AiStatusView,
   SubjectView,
@@ -273,6 +276,27 @@ export const aiSettings = () =>
   queryOptions({
     queryKey: ['ai-settings'],
     queryFn: ({ signal }) => api.get<AiSettingsView>('/admin/ai', signal),
+  });
+
+/** My conversations with the study assistant (newest first). */
+export const chatSessions = () =>
+  queryOptions({
+    queryKey: ['chat-sessions'],
+    queryFn: ({ signal }) => api.get<ChatSessionView[]>('/study/chat/sessions', signal),
+  });
+
+export const chatSession = (id: string) =>
+  queryOptions({
+    queryKey: ['chat-session', id],
+    queryFn: ({ signal }) => api.get<ChatSessionDetail>(`/study/chat/sessions/${id}`, signal),
+    enabled: /^[a-f0-9]{24}$/.test(id),
+    retry: false,
+  });
+
+export const studyDecks = () =>
+  queryOptions({
+    queryKey: ['study-decks'],
+    queryFn: ({ signal }) => api.get<FlashcardDeckView[]>('/study/decks', signal),
   });
 
 /** The semantic index's back-fill progress; polls while vectors are being filled in. */

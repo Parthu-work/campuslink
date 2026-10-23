@@ -16,6 +16,12 @@ import { AuditModel } from '../src/modules/audit/audit.model.js';
 import { SubjectEnrollmentModel, SubjectModel } from '../src/modules/study/subject.model.js';
 import { MaterialModel } from '../src/modules/study/material.model.js';
 import { AiUsageModel } from '../src/modules/study/ai-usage.model.js';
+import {
+  ChatMessageModel,
+  ChatSessionModel,
+  FlashcardDeckModel,
+  UnansweredQuestionModel,
+} from '../src/modules/study/chat.model.js';
 import { FileModel } from '../src/modules/files/file.model.js';
 
 const ctx = testApp();
@@ -74,6 +80,20 @@ beforeAll(async () => {
       kind: 'include',
       by: new Types.ObjectId(staff.id),
     });
+    // A conversation with the study assistant, a kept deck and a logged gap.
+    const chat = await ChatSessionModel.create({
+      userId: new Types.ObjectId(alum.id),
+      title: 'Demo pumping lemma question',
+      lastMessageAt: new Date(),
+    });
+    await ChatMessageModel.create({
+      sessionId: chat._id,
+      userId: new Types.ObjectId(alum.id),
+      role: 'user',
+      text: 'Demo: what is the pumping lemma?',
+    });
+    await FlashcardDeckModel.create({ userId: new Types.ObjectId(alum.id), title: 'Demo deck', cards: [] });
+    await UnansweredQuestionModel.create({ userId: new Types.ObjectId(alum.id), text: 'Demo gap' });
     // AI usage counters: the member's own (a search by meaning) and the college's (background work).
     const day = new Date().toISOString().slice(0, 10);
     await AiUsageModel.create([
@@ -132,6 +152,9 @@ describe('export', () => {
     ]);
     expect(d.subjects.enrollmentOverrides).toEqual([expect.objectContaining({ kind: 'include' })]);
     expect(d.aiSettings).toEqual([]);
+    expect(d.studyChats.conversations[0]).toMatchObject({ title: 'Demo pumping lemma question' });
+    expect(d.studyChats.conversations[0].messages[0].text).toBe('Demo: what is the pumping lemma?');
+    expect(d.studyChats.decks).toEqual([{ title: 'Demo deck', cards: [] }]);
     expect(d.aiUsage).toEqual([expect.objectContaining({ kind: 'embedding', requests: 2, tokens: 30 })]);
     expect(d.materials.map((m: { title: string }) => m.title).sort()).toEqual([
       'Demo pending notes',
@@ -191,6 +214,8 @@ describe('deletion', () => {
       expect(await SubjectModel.countDocuments({ contributorIds: alum.id })).toBe(0);
       expect(await SubjectModel.countDocuments({ code: 'PRV101' })).toBe(1);
       expect(await SubjectEnrollmentModel.countDocuments({ userId: alum.id })).toBe(0);
+      for (const m of [ChatSessionModel, ChatMessageModel, FlashcardDeckModel, UnansweredQuestionModel])
+        expect(await (m as typeof ChatSessionModel).countDocuments({ userId: alum.id })).toBe(0);
       // Usage counters fold into the college's anonymous ones, so the month's budget stays true.
       expect(await AiUsageModel.countDocuments({ userId: alum.id })).toBe(0);
       expect(await AiUsageModel.findOne({ userId: null, model: 'mock:m' }).lean()).toMatchObject({
@@ -234,6 +259,7 @@ describe('deletion', () => {
         'aiSettings',
         'materials',
         'aiUsage',
+        'studyChats',
       ]),
     );
   });

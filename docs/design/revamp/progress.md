@@ -240,3 +240,14 @@ Spec §13 step 3.
 - **Qdrant** is an optional Docker profile and the production choice for more than one server; CI runs the same store contract against it as against the in-memory store.
 - **Telugu:** words with vowel signs are no longer split in study search, hashtags, file names and topic suggestions.
 - **Budget:** unchanged (the admin panel is part of the admin screen's chunk).
+
+## Phase 9 · Study, step 4: the study assistant and slash commands
+
+Spec §13 step 4.
+
+- **Ask:** a full-screen assistant (`/study/chat`) and an **Ask** launcher on subject and material pages. Answers stream as they are written, cite the page or moment of every fact as chips that open the PDF at that page or the video at that moment, and come only from the college's material in the subjects the member reads. Scope (one subject or all), answer style (simple, detailed, exam-style), suggestions from the syllabus, stop, answer again, copy and thumbs feedback.
+- **Honest when it can't:** a question the material does not cover says so, suggests nearby topics and is logged without the member's name for the faculty's content gaps. Without an AI provider, answers become the matching passages; generative commands say plainly that AI is not on.
+- **Slash commands** with a keyboard-first menu: `/videos` (with moment links, and optional YouTube links), `/notes`, `/summary`, `/explain`, `/quiz` (scored, points, celebrated once), `/flashcards` (flip cards, kept as decks), `/important`, `/syllabus`, `/subject`, `/help`.
+- **"Ask about this page"** in the PDF viewer and **"Ask about this moment"** in the players.
+- **Private by design:** conversations are the member's alone, follow the college's retention, and can be deleted; personal details are removed from questions before they leave; material cannot break out of its source blocks.
+- **Budget:** initial JS 169.7 KB; the chat loads with its screen or the sheet; KaTeX (75 KB) loads only when an answer has maths, under a recorded exception.

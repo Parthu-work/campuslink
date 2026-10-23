@@ -342,6 +342,17 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/study/materials/:id/review` | `study:manage` | college | — | Publish or send back a contribution (subject owners and admins) |
 | `POST /api/v1/study/materials/:id/takedown` | `study:manage` | college | — | Take material down (copyright or policy); hidden from everyone and audit-logged |
 | `GET /api/v1/study/search` | `study:read` | college | search | Search the material of the subjects I take, by meaning and by words (keyword-only without an embedding provider) |
+| `POST /api/v1/study/chat` | `study:read` | college | aiChat | Ask the study assistant or run a slash command; answers stream as server-sent events with citations |
+| `GET /api/v1/study/chat/sessions` | `study:read` | college | — | My conversations with the study assistant, newest first |
+| `GET /api/v1/study/chat/sessions/:id` | `study:read` | college | — | One of my conversations with its messages |
+| `DELETE /api/v1/study/chat/sessions/:id` | `study:read` | college | — | Delete one of my conversations |
+| `DELETE /api/v1/study/chat/sessions` | `study:read` | college | — | Delete my whole chat history |
+| `POST /api/v1/study/chat/messages/:id/feedback` | `study:read` | college | — | Thumbs up or down on an answer, with an optional reason |
+| `POST /api/v1/study/chat/messages/:id/quiz` | `study:read` | college | — | Finish a quiz: scored once, saved as progress, and points through the award rules |
+| `POST /api/v1/study/decks` | `study:read` | college | — | Keep the flashcards of an answer as a deck |
+| `GET /api/v1/study/decks` | `study:read` | college | — | My flashcard decks |
+| `GET /api/v1/study/decks/:id` | `study:read` | college | — | One of my flashcard decks |
+| `DELETE /api/v1/study/decks/:id` | `study:read` | college | — | Delete one of my flashcard decks |
 | `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
 | `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |
 | `GET /api/v1/admin/moderation/history/:targetType/:targetId` | `moderation:act` | college | — | Moderation history of one item |

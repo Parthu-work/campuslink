@@ -35,9 +35,14 @@ export const mockChat: LLMProvider = {
     let text: string;
     if (TRAP.test(outside) || TRAP.test(req.system.replace(SOURCE, ' '))) {
       text = MOCK_INJECTION_MARKER;
+    } else if (/^TASK: (quiz|flashcards)\b/m.test(req.system)) {
+      const count = Number(/with (\d+) (questions|cards)/.exec(req.system)?.[1] ?? 5);
+      text = /^TASK: quiz/m.test(req.system) ? mockQuiz(prompt, count) : mockCards(prompt, count);
     } else {
       const question = QUESTION.exec(prompt)?.[1] ?? outside;
-      const wanted = new Set(contentWords(question));
+      // Like a model reading the conversation: a follow-up ("why?") borrows the last question's words.
+      const before = [...req.messages.slice(0, -1)].reverse().find((m) => m.role === 'user')?.content ?? '';
+      const wanted = new Set(contentWords(question).length ? contentWords(question) : contentWords(before));
       const picks: { sentence: string; id: string; score: number; at: number }[] = [];
       let at = 0;
       for (const m of prompt.matchAll(SOURCE)) {
@@ -49,10 +54,20 @@ export const mockChat: LLMProvider = {
             picks.push({ sentence: sentence.trim(), id, score, at: at++ });
         }
       }
-      const best = picks
+      let best = picks
         .sort((a, b) => b.score - a.score || a.at - b.at)
         .slice(0, 3)
         .sort((a, b) => a.at - b.at);
+      // "Explain this": about the first source (the passage the member selected).
+      const first = SOURCE.exec(prompt);
+      SOURCE.lastIndex = 0;
+      if (!best.length && /\b(this|that|it|these|those)\b|ఇది|అది/i.test(question) && first)
+        best = (first[2] ?? '')
+          .split(/(?<=[.!?])\s+|\n+/)
+          .map((x) => x.trim())
+          .filter((x) => x.length > 12)
+          .slice(0, 2)
+          .map((sentence, at) => ({ sentence, id: first[1] ?? '1', score: 1, at }));
       text = best.length
         ? `From your college's material:\n\n${best.map((p) => `- ${p.sentence} [${p.id}]`).join('\n')}`
         : 'The material provided does not cover this. Try a related topic from the syllabus.';
@@ -99,3 +114,42 @@ export const mockEmbeddings: EmbeddingProvider = {
     };
   },
 };
+
+/** Sentences of the sources with their source number (for the mock's quizzes and flashcards). */
+function sourceSentences(prompt: string): { id: number; sentence: string; key: string }[] {
+  const out: { id: number; sentence: string; key: string }[] = [];
+  for (const m of prompt.matchAll(SOURCE))
+    for (const raw of (m[2] ?? '').split(/(?<=[.!?])\s+|\n+/)) {
+      const sentence = raw.trim();
+      const words = sentence.match(/[\p{L}][\p{L}\p{M}-]{4,}/gu) ?? [];
+      if (words.length < 3) continue;
+      const key = [...words].sort((a, b) => b.length - a.length)[0] ?? '';
+      out.push({ id: Number(m[1]), sentence, key });
+    }
+  return out;
+}
+
+/** A deterministic quiz from the sources: fill-in-the-blank questions, multiple choice when it can. */
+function mockQuiz(prompt: string, count: number): string {
+  const all = sourceSentences(prompt);
+  const questions = all.slice(0, count).map((s, i) => {
+    const q = s.sentence.replace(s.key, '_____');
+    const others = [
+      ...new Set(all.filter((o) => o.key.toLowerCase() !== s.key.toLowerCase()).map((o) => o.key)),
+    ].slice(0, 3);
+    if (others.length < 3) return { type: 'short', q, answer: s.key, explain: s.sentence, cite: s.id };
+    const at = i % 4;
+    const options = [...others];
+    options.splice(at, 0, s.key);
+    return { type: 'mcq', q, options, answer: at, explain: s.sentence, cite: s.id };
+  });
+  return JSON.stringify({ questions });
+}
+
+function mockCards(prompt: string, count: number): string {
+  return JSON.stringify({
+    cards: sourceSentences(prompt)
+      .slice(0, count)
+      .map((s) => ({ front: s.key, back: s.sentence, cite: s.id })),
+  });
+}

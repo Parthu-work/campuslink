@@ -89,6 +89,9 @@ File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable pe
 - **Transcription and OCR** run on the server (Tesseract, a local Whisper service). A college that uses OpenAI may have video audio transcribed by OpenAI, only after it has accepted the data notice.
 - **Search by meaning** sends the member's search words to the college's embedding provider (only after the data notice is accepted); nothing identifying the member goes with them. Vectors are stored with the passages and deleted with them.
 - **AI usage counters** (`aiUsage`) record, per member and day, how many requests and tokens were used (no text). They are exported with the member's data; on erasure they fold into the college's anonymous counters, so the month's budget stays correct.
+- **Conversations with the study assistant** are private to the member: nobody else can open them, not faculty, not college admins, not the platform owner. They are deleted after the college's chat retention period (default 180 days; 0 keeps them until the member deletes them), and members can delete one conversation or all of them at any time. Export includes them; erasure deletes them with any kept flashcard decks.
+- **Questions sent to an AI provider** carry only the question (with email addresses, phone numbers and roll-number-like codes removed) and the passages of material it is answered from; never a name or any profile detail.
+- **Questions the material does not cover** are logged for the faculty's content gaps without the member's name and with personal details removed; faculty see them only as suppressed aggregates (step 5). The member's id is kept on the row only so that erasure can delete it.
 - Chats, materials, chunks, vectors, transcripts and usage join the export and erasure as they are built (steps 2 to 5).
 
 ## Residency and backups

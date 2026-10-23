@@ -18,6 +18,8 @@ export interface HandlerResult {
   meta?: ApiSuccess<unknown>['meta'];
   /** Non-JSON response (file downloads). Headers are set verbatim. */
   raw?: { body: Buffer | string; headers: Record<string, string> };
+  /** The handler wrote the response itself (server-sent events); routes with `stream: true` only. */
+  streamed?: boolean;
 }
 
 export interface UploadSpec {
@@ -49,6 +51,8 @@ export interface RouteSpec<
   idempotent?: boolean;
   /** Requires a bot-protection token (`X-Bot-Token`) when bot protection is enabled. */
   bot?: boolean;
+  /** Answers with server-sent events written by the handler (errors before it starts stay JSON). */
+  stream?: boolean;
   handler: (ctx: {
     req: Request;
     res: Response;
@@ -95,7 +99,7 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
     if (spec.access.kind === 'permission') chain.push(authorize(spec.access.permission));
     if (spec.bot) chain.push(deps.bot);
     if (spec.upload) chain.push(deps.uploader(spec.upload));
-    if (spec.idempotent && (spec.access.kind === 'public' || spec.upload))
+    if (spec.idempotent && (spec.access.kind === 'public' || spec.upload || spec.stream))
       throw new Error(`${spec.method} ${spec.path}: idempotency needs a signed-in JSON route`);
     chain.push(async (req, res) => {
       const idem =
@@ -125,6 +129,11 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
       } catch (e) {
         if (idem.kind === 'fresh') await idem.abort();
         throw e;
+      }
+      if (result.streamed) {
+        if (!spec.stream)
+          throw new Error(`${spec.method} ${spec.path}: only stream routes write their own response`);
+        return;
       }
       if (idem.kind === 'fresh') {
         const envelope = { ok: true, data: result.data, ...(result.meta ? { meta: result.meta } : {}) };

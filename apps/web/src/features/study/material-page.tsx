@@ -1,8 +1,8 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CircleAlert, Download, Loader, Pencil, RotateCcw } from 'lucide-react';
+import { CircleAlert, Download, Loader, Pencil, RotateCcw, Sparkles } from 'lucide-react';
 import type { MaterialDetailView, MaterialView } from '@campuslink/shared';
 import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
@@ -20,6 +20,8 @@ import { useMaterialProgress } from '../../lib/material-progress';
 import { toast } from '../../lib/toast';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { LinkPlayer, MediaPlayer } from './media-player';
+import { ChatLauncher } from './chat/chat-launcher';
+import type { AskContext } from '../../lib/chat';
 
 // pdf.js and its worker load only when a PDF is opened; the editor only when it is opened.
 const PdfViewer = lazy(() => import('./pdf-viewer').then((m) => ({ default: m.PdfViewer })));
@@ -147,6 +149,8 @@ export function MaterialPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const editor = useUrlOverlay('edit');
+  const askSheet = useUrlOverlay('ask');
+  const [ask, setAsk] = useState<AskContext | null>(null);
   const page = Number(params.get('page')) || null;
   const start = Number(params.get('t')) || null;
   const highlight = params.get('q') ?? '';
@@ -177,6 +181,18 @@ export function MaterialPage() {
       </div>
     );
   const m = q.data;
+  // "Ask about this": what the member is looking at (and any words they selected) goes to the chat.
+  const askAbout = (where: { page?: number | null; startSec?: number | null }) => {
+    const selected = window.getSelection()?.toString().trim().slice(0, 1500) ?? '';
+    setAsk({
+      materialId: m.id,
+      title: m.title,
+      page: where.page ?? null,
+      startSec: where.startSec ?? null,
+      text: selected,
+    });
+    askSheet.open('1');
+  };
   const facts = [
     t(`study.type.${m.type}`),
     m.pageCount ? t('study.pages', { count: m.pageCount }) : '',
@@ -215,19 +231,47 @@ export function MaterialPage() {
       <Status m={m} />
       {m.type === 'pdf' ? (
         <Suspense fallback={<Skeleton className="aspect-[3/4] w-full max-w-[900px]" />}>
-          <PdfViewer m={m} initialPage={page} highlight={highlight} />
+          <PdfViewer
+            m={m}
+            initialPage={page}
+            highlight={highlight}
+            onAsk={m.visibility === 'published' ? (p) => askAbout({ page: p }) : undefined}
+          />
         </Suspense>
       ) : m.type === 'video_file' || m.type === 'audio' ? (
-        <MediaPlayer m={m} start={start} highlight={highlight} />
+        <MediaPlayer
+          m={m}
+          start={start}
+          highlight={highlight}
+          onAsk={m.visibility === 'published' ? (sec) => askAbout({ startSec: sec }) : undefined}
+        />
       ) : m.type === 'video_link' ? (
-        <LinkPlayer m={m} start={start} highlight={highlight} />
+        <LinkPlayer
+          m={m}
+          start={start}
+          highlight={highlight}
+          onAsk={m.visibility === 'published' ? (sec) => askAbout({ startSec: sec }) : undefined}
+        />
       ) : m.type === 'image' ? (
         <SignedImage m={m} />
       ) : (
-        <TextPages m={m} highlight={highlight} />
+        <div className="grid gap-3">
+          {m.visibility === 'published' && m.pages.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-fit"
+              onClick={() => askAbout({ page: m.pages[0]?.page ?? 1 })}
+            >
+              <Sparkles className="size-4" aria-hidden /> {t('study.chat.askAboutThis')}
+            </Button>
+          )}
+          <TextPages m={m} highlight={highlight} />
+        </div>
       )}
       {m.mime && m.type !== 'image' && <DownloadButton m={m} />}
       <p className="text-caption text-fg-3">{t('study.viewer.rightsNote')}</p>
+      {m.visibility === 'published' && <ChatLauncher subjectId={id} context={ask} />}
       {m.can.edit && (
         <Sheet
           open={editor.value === 'details'}

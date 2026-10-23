@@ -1,5 +1,6 @@
 import {
   callJson,
+  callSse,
   ProviderError,
   requireKey,
   type EmbeddingProvider,
@@ -42,10 +43,11 @@ export function geminiChat(conn: ProviderConnection): LLMProvider {
     id: 'gemini',
     listModels: () => listBy(conn, 'generateContent'),
     async generate(req: GenerateRequest, opts: GenerateOptions = {}): Promise<GenerateResult> {
-      const r = await callJson<GenerateContent>(conn, `${BASE}/${modelPath(req.model)}:generateContent`, {
-        method: 'POST',
+      const call = {
+        method: 'POST' as const,
         headers: { 'x-goog-api-key': requireKey(conn) },
         timeoutMs: 90_000,
+        signal: opts.signal,
         body: {
           systemInstruction: { parts: [{ text: req.system }] },
           contents: req.messages.map((m) => ({
@@ -57,24 +59,57 @@ export function geminiChat(conn: ProviderConnection): LLMProvider {
             ...(req.temperature !== null ? { temperature: req.temperature } : {}),
           },
         },
-      });
-      const usage = {
-        inputTokens: r.usageMetadata?.promptTokenCount ?? 0,
-        outputTokens: r.usageMetadata?.candidatesTokenCount ?? 0,
       };
-      const c = r.candidates?.[0];
-      if (r.promptFeedback?.blockReason || c?.finishReason === 'SAFETY')
-        return { text: '', ...usage, stopReason: 'refusal' };
-      const text = (c?.content?.parts ?? [])
-        .filter((p) => !p.thought)
-        .map((p) => p.text ?? '')
-        .join('');
-      if (!text && c?.finishReason !== 'MAX_TOKENS')
-        throw new ProviderError('bad_request', 'The provider returned no answer');
-      opts.onText?.(text);
-      return { text, ...usage, stopReason: c?.finishReason === 'MAX_TOKENS' ? 'max_tokens' : 'end' };
+      if (opts.onText) {
+        // The same response objects, one per server-sent event.
+        const onText = opts.onText;
+        const acc: GenerateContent = { candidates: [{ content: { parts: [] } }] };
+        await callSse(conn, `${BASE}/${modelPath(req.model)}:streamGenerateContent?alt=sse`, call, (e) => {
+          let r: GenerateContent;
+          try {
+            r = JSON.parse(e.data) as GenerateContent;
+          } catch {
+            return;
+          }
+          const c = r.candidates?.[0];
+          const piece = (c?.content?.parts ?? [])
+            .filter((p) => !p.thought)
+            .map((p) => p.text ?? '')
+            .join('');
+          if (piece) {
+            acc.candidates?.[0]?.content?.parts?.push({ text: piece });
+            onText(piece);
+          }
+          if (c?.finishReason && acc.candidates?.[0]) acc.candidates[0].finishReason = c.finishReason;
+          if (r.promptFeedback) acc.promptFeedback = r.promptFeedback;
+          if (r.usageMetadata) acc.usageMetadata = r.usageMetadata;
+        });
+        return result(acc);
+      }
+      return result(
+        await callJson<GenerateContent>(conn, `${BASE}/${modelPath(req.model)}:generateContent`, call),
+      );
     },
   };
+}
+
+const REFUSALS = new Set(['SAFETY', 'RECITATION', 'PROHIBITED_CONTENT', 'BLOCKLIST', 'SPII']);
+
+function result(r: GenerateContent): GenerateResult {
+  const usage = {
+    inputTokens: r.usageMetadata?.promptTokenCount ?? 0,
+    outputTokens: r.usageMetadata?.candidatesTokenCount ?? 0,
+  };
+  const c = r.candidates?.[0];
+  if (r.promptFeedback?.blockReason || REFUSALS.has(c?.finishReason ?? ''))
+    return { text: '', ...usage, stopReason: 'refusal' };
+  const text = (c?.content?.parts ?? [])
+    .filter((p) => !p.thought)
+    .map((p) => p.text ?? '')
+    .join('');
+  if (!text && c?.finishReason !== 'MAX_TOKENS')
+    throw new ProviderError('bad_request', 'The provider returned no answer');
+  return { text, ...usage, stopReason: c?.finishReason === 'MAX_TOKENS' ? 'max_tokens' : 'end' };
 }
 
 export function geminiEmbeddings(conn: ProviderConnection): EmbeddingProvider {

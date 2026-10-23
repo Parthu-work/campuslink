@@ -1,6 +1,6 @@
 # AI study assistant
 
-The subject library and the study chatbot (spec: `docs/specs/ai-study-assistant.md`). This document grows with each delivery step; it currently covers **steps 1 to 3**: subjects and syllabus, who takes a subject, the settings page, encrypted key storage and the provider adapters; material upload, the processing pipeline and the viewers; and embeddings, the vector index and hybrid search.
+The subject library and the study chatbot (spec: `docs/specs/ai-study-assistant.md`). This document grows with each delivery step; it currently covers **steps 1 to 4**: subjects and syllabus, who takes a subject, the settings page, encrypted key storage and the provider adapters; material upload, the processing pipeline and the viewers; embeddings, the vector index and hybrid search; and the study assistant with its slash commands.
 
 ## What it is, in one paragraph
 
@@ -122,6 +122,51 @@ flowchart LR
 - Keep `AI_RERANKER=none` unless answers cite the wrong passages: re-ranking sends the candidate passages to the answer model on every question.
 - **Rebuild the index** never calls the provider; prefer it to changing models when the index looks wrong.
 - Lower _Passages per answer_ before lowering the answer length: passages are most of each question's input tokens.
+
+## The study assistant (step 4)
+
+```mermaid
+sequenceDiagram
+  participant W as Web (chat panel)
+  participant A as POST /study/chat
+  participant C as ChatService
+  participant R as RetrievalService
+  participant P as Answer provider
+  W->>A: question, scope, mode (or /command)
+  A->>C: prepare: session, scope, selection (404 if not readable)
+  A-->>W: event: start
+  C->>R: readable subjects, published passages (hybrid)
+  alt not confident
+    C-->>W: done: not covered + nearby topics (logged as a gap)
+  else no answer model
+    C-->>W: sources, done: the matching passages
+  else
+    C-->>W: event: sources
+    C->>P: system rules + numbered <source> blocks + question (streamed)
+    P-->>C: text deltas
+    C-->>W: event: delta …
+    C-->>W: event: done (saved message, cited sources only)
+  end
+```
+
+- **One request per question:** `POST /api/v1/study/chat` answers with server-sent events (`start`, `sources`, `delta`, `replace`, `done`, `error`). Access, validation and limits are checked before the stream starts, so those failures are ordinary JSON errors. The web client reads the stream with `fetch` (`lib/chat-stream.ts`); Stop aborts it, the server stops the provider and saves what was written.
+- **Providers stream:** Anthropic (Messages API events, text deltas only, never thinking), OpenAI and compatible servers (`stream_options.include_usage`), and Gemini (`streamGenerateContent?alt=sse`) all stream through `safeFetch`, which now hands each piece of the body over as it arrives. The demo responder streams word by word.
+- **The prompt** (`modules/study/chat/prompt.ts`) answers only from numbered `<source>` blocks, cites `[n]`, matches the student's language and the answer mode, and treats everything in a source as data. Material and questions cannot open or close our tags; emails, phone numbers and roll-number-like codes are removed from questions; nothing about the member is sent. Up to three earlier turns go with a question (without their old citation numbers); a short follow-up ("why?") borrows the previous question's words for retrieval, with no extra model call.
+- **Grounding:** retrieval must be confident (section on step 3) or the model must cite; otherwise the answer is "not covered" with nearby syllabus topics, and the question (without personal details) is logged in `unansweredQuestions` for the faculty's content gaps (step 5 shows them as suppressed aggregates).
+- **Commands:** see the table below. Commands that need a model show "AI is not enabled for your college yet" without one; the others always work.
+
+| Command                                 | What it does                                                                                                                                                     | Needs the answer model |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `/videos <topic>`                       | Every video the member may watch on the topic, "Exact topic" first, with the best moments as links; "From the web" YouTube links when the college turned them on | No                     |
+| `/notes <topic>`                        | Notes, slides and PDFs on the topic, with the pages that cover it                                                                                                | No                     |
+| `/summary <topic>`                      | A short, sectioned summary with sources                                                                                                                          | Yes                    |
+| `/explain <topic> [easy\|medium\|hard]` | A step-by-step explanation with an example                                                                                                                       | Yes                    |
+| `/quiz <topic> [n]`                     | 3 to 10 questions from the material only; scored on the server once, points through the `study_quiz` rule                                                        | Yes                    |
+| `/flashcards <topic>`                   | Flip cards; **Keep as a deck** saves them                                                                                                                        | Yes                    |
+| `/important <unit>`                     | What a unit's material covers most, labelled as derived from the material (not an exam prediction)                                                               | Yes                    |
+| `/syllabus`, `/subject <name>`, `/help` | The syllabus to jump from, the answer scope, every command (in the browser)                                                                                      | No                     |
+
+- **Conversations** (`chatSessions`, `chatMessages`) are the member's only: nobody else can open them, faculty included. They expire after the college's _Chat retention_ days (0 keeps them), and members delete one or all of them. Answers are stored as text exactly as written (ADR 0007 addendum) and rendered with the answer markdown subset; maths uses KaTeX, loaded only when an answer has maths.
 
 ### Adding a provider
 

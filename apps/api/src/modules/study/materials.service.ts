@@ -169,6 +169,27 @@ export class MaterialsService {
     }));
   }
 
+  /**
+   * Published material by id, as cards, keeping the given order and only what the member may read
+   * (the study assistant's video and notes results).
+   */
+  async summaries(viewer: AuthState, ids: string[]): Promise<MaterialView[]> {
+    if (!ids.length) return [];
+    const rows = await MaterialModel.find({ _id: { $in: ids.map(oid) }, visibility: 'published' }).lean<
+      MaterialDoc[]
+    >();
+    const out: MaterialView[] = [];
+    const bySubject = new Map<string, Access | null>();
+    for (const m of rows) {
+      const key = String(m.subjectId);
+      if (!bySubject.has(key)) bySubject.set(key, await this.access(viewer, key).catch(() => null));
+      const a = bySubject.get(key);
+      if (a) out.push(...(await this.present(viewer, [m], a)));
+    }
+    const at = new Map(ids.map((id, i) => [id, i]));
+    return out.sort((x, y) => (at.get(x.id) ?? 0) - (at.get(y.id) ?? 0));
+  }
+
   async list(
     viewer: AuthState,
     subjectId: string,

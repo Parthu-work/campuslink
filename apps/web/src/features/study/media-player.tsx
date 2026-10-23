@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Play } from 'lucide-react';
+import { Play, Sparkles } from 'lucide-react';
+import { Button } from '../../components/ui/button';
 import type { MaterialDetailView } from '@campuslink/shared';
 import { Card, Skeleton } from '../../components/ui/misc';
 import { Segmented } from '../../components/ui/tab-nav';
@@ -99,10 +100,13 @@ export function MediaPlayer({
   m,
   start,
   highlight,
+  onAsk,
 }: {
   m: MaterialDetailView;
   start: number | null;
   highlight: string;
+  /** "Ask about this moment" (the study assistant). */
+  onAsk?: ((sec: number) => void) | undefined;
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -158,6 +162,11 @@ export function MediaPlayer({
           options={SPEEDS.map((s) => [s, `${s}×`] as const)}
           className="w-full sm:w-auto"
         />
+        {onAsk && (
+          <Button variant="ghost" size="sm" className="w-fit" onClick={() => onAsk(Math.floor(now))}>
+            <Sparkles className="size-4" aria-hidden /> {t('study.chat.askAboutMoment')}
+          </Button>
+        )}
       </div>
       <Timeline m={m} current={now} onSeek={seek} highlight={highlight} />
     </div>
@@ -172,10 +181,12 @@ export function LinkPlayer({
   m,
   start,
   highlight,
+  onAsk,
 }: {
   m: MaterialDetailView;
   start: number | null;
   highlight: string;
+  onAsk?: ((sec: number) => void) | undefined;
 }) {
   const { t } = useTranslation();
   const [at, setAt] = useState<number | null>(null);
@@ -230,6 +241,16 @@ export function LinkPlayer({
         >
           {t('study.viewer.openOn', { provider: t(`study.provider.${link.provider}`) })}
         </a>
+        {onAsk && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-fit"
+            onClick={() => onAsk(Math.floor(at ?? start ?? 0))}
+          >
+            <Sparkles className="size-4" aria-hidden /> {t('study.chat.askAboutMoment')}
+          </Button>
+        )}
       </div>
       <Timeline m={m} current={at ?? 0} onSeek={(s) => setAt(s)} highlight={highlight} />
     </div>

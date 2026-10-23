@@ -67,3 +67,9 @@ export {
   ContentChunkModel,
   VideoSegmentModel,
 } from './study/material.model.js';
+export {
+  ChatSessionModel,
+  ChatMessageModel,
+  UnansweredQuestionModel,
+  FlashcardDeckModel,
+} from './study/chat.model.js';

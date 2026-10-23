@@ -33,6 +33,37 @@ function recorder(reply: { status?: number; body: unknown; headers?: SafeRespons
   });
   return { calls, conn };
 }
+/**
+ * Answers with server-sent events, delivered in uneven pieces (so frames split across chunks) through
+ * `onChunk`, the way the SSRF-safe fetcher streams a body.
+ */
+function sseRecorder(frames: unknown[], opts: { status?: number; done?: boolean } = {}) {
+  const calls: { url: string; opts: SafeFetchOptions; body: Record<string, unknown> }[] = [];
+  const text =
+    frames.map((f) => (typeof f === 'string' ? f : `data: ${JSON.stringify(f)}\n\n`)).join('') +
+    (opts.done ? 'data: [DONE]\n\n' : '');
+  const fetcher = (async (url: string, o: SafeFetchOptions = {}) => {
+    calls.push({ url, opts: o, body: o.body ? JSON.parse(String(o.body)) : {} });
+    const status = opts.status ?? 200;
+    const buf = Buffer.from(text);
+    for (let i = 0; i < buf.length; i += 7) o.onChunk?.(buf.subarray(i, i + 7), status);
+    return {
+      status,
+      contentType: 'text/event-stream',
+      body: buf,
+      finalUrl: url,
+      headers: {},
+    } satisfies SafeResponse;
+  }) as unknown as typeof safeFetch;
+  const conn = (): ProviderConnection => ({
+    apiKey: 'demo-key-123456',
+    baseUrl: null,
+    allowPrivateNetwork: false,
+    fetcher,
+  });
+  return { calls, conn };
+}
+
 const req = {
   model: 'claude-opus-5-5',
   system: 'sys',
@@ -53,10 +84,8 @@ describe('Anthropic adapter', () => {
         usage: { input_tokens: 12, output_tokens: 5 },
       },
     });
-    const deltas: string[] = [];
-    const out = await anthropicChat(r.conn()).generate(req, { onText: (d) => deltas.push(d) });
+    const out = await anthropicChat(r.conn()).generate(req);
     expect(out).toEqual({ text: 'Answer [1]', inputTokens: 12, outputTokens: 5, stopReason: 'end' });
-    expect(deltas).toEqual(['Answer [1]']);
     const c = r.calls[0];
     expect(c?.url).toBe('https://api.anthropic.com/v1/messages');
     expect(c?.opts.headers).toMatchObject({
@@ -71,6 +100,63 @@ describe('Anthropic adapter', () => {
       output_config: { effort: 'low' },
     });
     expect(c?.opts.allowPrivateNetwork).toBe(false);
+  });
+
+  it('streams text deltas (never thinking) as server-sent events', async () => {
+    const r = sseRecorder([
+      'event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":40,"output_tokens":1}}}\n\n',
+      'event: ping\ndata: {"type":"ping"}\n\n',
+      { type: 'content_block_delta', index: 0, delta: { type: 'thinking_delta', thinking: 'secret plan' } },
+      { type: 'content_block_delta', index: 1, delta: { type: 'text_delta', text: 'The pumping ' } },
+      { type: 'content_block_delta', index: 1, delta: { type: 'text_delta', text: 'lemma [1]' } },
+      { type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 9 } },
+      { type: 'message_stop' },
+    ]);
+    const deltas: string[] = [];
+    const ac = new AbortController();
+    const out = await anthropicChat(r.conn()).generate(req, {
+      onText: (d) => deltas.push(d),
+      signal: ac.signal,
+    });
+    expect(deltas).toEqual(['The pumping ', 'lemma [1]']);
+    expect(out).toEqual({
+      text: 'The pumping lemma [1]',
+      inputTokens: 40,
+      outputTokens: 9,
+      stopReason: 'end',
+    });
+    expect(r.calls[0]?.body).toMatchObject({ stream: true, model: 'claude-opus-5-5' });
+    expect(r.calls[0]?.opts.signal).toBe(ac.signal);
+    expect(r.calls[0]?.opts.headers?.accept).toBe('text/event-stream');
+  });
+
+  it('a streamed refusal or error event ends the answer', async () => {
+    const refused = sseRecorder([
+      { type: 'content_block_delta', delta: { type: 'text_delta', text: 'Part' } },
+      { type: 'message_delta', delta: { stop_reason: 'refusal' }, usage: { output_tokens: 1 } },
+    ]);
+    expect((await anthropicChat(refused.conn()).generate(req, { onText: () => undefined })).stopReason).toBe(
+      'refusal',
+    );
+    const overloaded = sseRecorder([
+      { type: 'error', error: { type: 'overloaded_error', message: 'Overloaded' } },
+    ]);
+    await expect(
+      anthropicChat(overloaded.conn()).generate(req, { onText: () => undefined }),
+    ).rejects.toMatchObject({
+      kind: 'unavailable',
+    });
+    const denied = sseRecorder(
+      [{ type: 'error', error: { type: 'authentication_error', message: 'bad key demo-key-123456' } }],
+      {
+        status: 401,
+      },
+    );
+    const e = await anthropicChat(denied.conn())
+      .generate(req, { onText: () => undefined })
+      .catch((x: unknown) => x as ProviderError);
+    expect(e).toMatchObject({ kind: 'auth' });
+    expect(String((e as ProviderError).message)).not.toContain('demo-key-123456');
   });
 
   it('reports refusals and lists models', async () => {
@@ -134,6 +220,64 @@ describe('OpenAI and OpenAI-compatible adapters', () => {
       tokens: 7,
     });
     await expect(openaiEmbeddings(r.conn()).embed(['a', 'b', 'c'], 'e')).rejects.toThrow(/wrong number/);
+  });
+});
+
+describe('streaming from OpenAI and Gemini', () => {
+  it('OpenAI streams content deltas and reads usage from the last chunk', async () => {
+    const r = sseRecorder(
+      [
+        { choices: [{ delta: { role: 'assistant', content: '' } }] },
+        { choices: [{ delta: { content: 'Regular ' } }] },
+        { choices: [{ delta: { content: 'languages [2]' }, finish_reason: 'stop' }] },
+        { choices: [], usage: { prompt_tokens: 30, completion_tokens: 6 } },
+      ],
+      { done: true },
+    );
+    const deltas: string[] = [];
+    const out = await openaiChat(r.conn()).generate(
+      { ...req, model: 'm' },
+      { onText: (d) => deltas.push(d) },
+    );
+    expect(deltas).toEqual(['Regular ', 'languages [2]']);
+    expect(out).toEqual({
+      text: 'Regular languages [2]',
+      inputTokens: 30,
+      outputTokens: 6,
+      stopReason: 'end',
+    });
+    expect(r.calls[0]?.body).toMatchObject({ stream: true, stream_options: { include_usage: true } });
+    const cut = sseRecorder([{ choices: [{ delta: { content: 'Half' }, finish_reason: 'length' }] }], {
+      done: true,
+    });
+    expect((await openaiChat(cut.conn()).generate(req, { onText: () => undefined })).stopReason).toBe(
+      'max_tokens',
+    );
+  });
+
+  it('Gemini streams with alt=sse and skips thought parts', async () => {
+    const r = sseRecorder([
+      { candidates: [{ content: { parts: [{ text: 'thinking', thought: true }] } }] },
+      { candidates: [{ content: { parts: [{ text: 'A DFA ' }] } }] },
+      {
+        candidates: [{ content: { parts: [{ text: 'accepts [1]' }] }, finishReason: 'STOP' }],
+        usageMetadata: { promptTokenCount: 20, candidatesTokenCount: 4 },
+      },
+    ]);
+    const deltas: string[] = [];
+    const out = await geminiChat(r.conn()).generate(
+      { ...req, model: 'gemini-demo' },
+      { onText: (d) => deltas.push(d) },
+    );
+    expect(deltas).toEqual(['A DFA ', 'accepts [1]']);
+    expect(out).toEqual({ text: 'A DFA accepts [1]', inputTokens: 20, outputTokens: 4, stopReason: 'end' });
+    expect(r.calls[0]?.url).toBe(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-demo:streamGenerateContent?alt=sse',
+    );
+    const blocked = sseRecorder([{ candidates: [{ finishReason: 'RECITATION' }] }]);
+    expect((await geminiChat(blocked.conn()).generate(req, { onText: () => undefined })).stopReason).toBe(
+      'refusal',
+    );
   });
 });
 

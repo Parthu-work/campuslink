@@ -8,6 +8,7 @@ import { Role, type Permission } from './roles.js';
 export type NavId =
   | 'home'
   | 'study'
+  | 'assistant'
   | 'subjects'
   | 'create'
   | 'mentors'
@@ -76,6 +77,7 @@ const d = (
 export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   home: d('home', '/home', 'main'),
   study: d('study', '/study', 'explore', ['study:read']),
+  assistant: d('assistant', '/study/chat', 'explore', ['study:read']),
   // Staff see the same library as "Subjects" (they manage it).
   subjects: d('subjects', '/study', 'explore', ['study:manage']),
   create: d('create', '', 'main'),
@@ -140,6 +142,7 @@ const MENU_ORDER: readonly NavId[] = [
   'referrals',
   'study',
   'subjects',
+  'assistant',
   'review',
   'mentoring',
   'requests',

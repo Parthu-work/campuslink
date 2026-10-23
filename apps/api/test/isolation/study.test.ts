@@ -19,6 +19,12 @@ import {
 import { AiSettingsModel } from '../../src/modules/study/ai-settings.model.js';
 import { AiUsageModel } from '../../src/modules/study/ai-usage.model.js';
 import {
+  ChatMessageModel,
+  ChatSessionModel,
+  FlashcardDeckModel,
+  UnansweredQuestionModel,
+} from '../../src/modules/study/chat.model.js';
+import {
   ContentChunkModel,
   MaterialJobModel,
   MaterialModel,
@@ -35,7 +41,7 @@ let materialA: string, videoA: string, fileLinkA: string;
 let A: TestTenant, B: TestTenant;
 let facA: TestUser, adminA: TestUser, studentA: TestUser;
 let facB: TestUser, adminB: TestUser, studentB: TestUser, alumB: TestUser;
-let subjectA: string, unitA: string;
+let subjectA: string, unitA: string, sessionA: string;
 const a = (u: TestUser) => api(ctx, A.host, u.token);
 const inB = (u: TestUser) => api(ctx, B.host, u.token);
 
@@ -104,6 +110,33 @@ beforeAll(async () => {
   fileLinkA = (await a(studentA).get(`/study/materials/${materialA}/file`)).body.data.url;
   // B has its own subject so empty results are meaningful.
   await makeSubject(ctx, B, facB, { name: 'Beta Automata', code: 'ZYX1' });
+  // A's student talks to the assistant (its provider is unreachable here, so the passages answer),
+  // keeps a deck and leaves a gap.
+  const asked = await a(studentA)
+    .post('/study/chat')
+    .send({ question: 'What are Zyxquark automata?' })
+    .buffer(true)
+    .parse((res, cb) => {
+      let d = '';
+      res.setEncoding('utf8');
+      res.on('data', (c: string) => (d += c));
+      res.on('end', () => cb(null, d));
+    });
+  const start = String(asked.body)
+    .split('\n\n')
+    .map((b) => b.split('\n').find((l) => l.startsWith('data: ')))
+    .filter(Boolean)
+    .map((l) => JSON.parse(String(l).slice(6)) as { type: string; sessionId?: string })
+    .find((e) => e.type === 'start');
+  sessionA = start?.sessionId ?? '';
+  await runInTenant(A._id, async () => {
+    await FlashcardDeckModel.create({
+      userId: studentA.id,
+      title: 'Alpha deck',
+      cards: [{ front: 'a', back: 'b' }],
+    });
+    await UnansweredQuestionModel.create({ userId: studentA.id, subjectId: subjectA, text: 'Zyxquark gap' });
+  });
 });
 
 describe('HTTP: nothing of college A is reachable from college B', () => {
@@ -224,6 +257,27 @@ describe('HTTP: nothing of college A is reachable from college B', () => {
     expect(hits).toEqual([]);
   });
 
+  it('conversations, decks and the assistant never cross colleges', async () => {
+    expect(sessionA).toMatch(/^[a-f0-9]{24}$/);
+    expect((await inB(studentB).get(`/study/chat/sessions/${sessionA}`)).status).toBe(404);
+    expect((await inB(studentB).delete(`/study/chat/sessions/${sessionA}`)).status).toBe(404);
+    expect((await inB(studentB).get('/study/chat/sessions')).body.data).toEqual([]);
+    expect((await inB(studentB).get('/study/decks')).body.data).toEqual([]);
+    // B's assistant never cites A's material, even with A's own words.
+    const r = await inB(studentB)
+      .post('/study/chat')
+      .send({ question: 'What are Zyxquark automata? Zyxquark demo idea' })
+      .buffer(true)
+      .parse((res, cb) => {
+        let d = '';
+        res.setEncoding('utf8');
+        res.on('data', (c: string) => (d += c));
+        res.on('end', () => cb(null, d));
+      });
+    expect(String(r.body)).not.toContain(materialA);
+    expect(String(r.body)).not.toMatch(/Zyxquark automata are/);
+  });
+
   it('a token from A never works on B', async () => {
     const r = await api(ctx, B.host, studentA.token).get('/study/subjects');
     expect(r.status).toBe(401);
@@ -244,6 +298,10 @@ describe('database layer: every Phase 9 collection is scoped', () => {
     ['ContentChunk', ContentChunkModel as Model<unknown>],
     ['VideoSegment', VideoSegmentModel as Model<unknown>],
     ['AiUsage', AiUsageModel as Model<unknown>],
+    ['ChatSession', ChatSessionModel as Model<unknown>],
+    ['ChatMessage', ChatMessageModel as Model<unknown>],
+    ['UnansweredQuestion', UnansweredQuestionModel as Model<unknown>],
+    ['FlashcardDeck', FlashcardDeckModel as Model<unknown>],
   ];
 
   it.each(MODELS)('%s: B cannot read, search, update or delete A’s documents', async (_name, model) => {

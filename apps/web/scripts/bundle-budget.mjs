@@ -28,6 +28,12 @@ const SCREEN_EXCEPTIONS = {
     budget: 140 * KB,
     reason: 'pdf.js, loaded only when a PDF is opened',
   },
+  // KaTeX (~75 KB gzip) for maths in study assistant answers (spec §6, §14.7: self-hosted, lazily
+  // loaded). It loads only when an answer contains maths; MathML output needs no fonts or CSS.
+  'src/lib/katex.ts': {
+    budget: 85 * KB,
+    reason: 'KaTeX, loaded only when an answer contains maths',
+  },
 };
 
 const dist = new URL('../dist/', import.meta.url).pathname;
