@@ -66,6 +66,7 @@ export {
   MaterialPageModel,
   ContentChunkModel,
   VideoSegmentModel,
+  MaterialViewStatModel,
 } from './study/material.model.js';
 export {
   ChatSessionModel,

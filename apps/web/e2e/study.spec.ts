@@ -221,4 +221,46 @@ test.describe('study', () => {
     await expect(page.getByText(/You got \d+ of \d+/)).toBeVisible();
     await expectNoA11yViolations(page);
   });
+
+  test('faculty read a subject’s insights; admins see AI usage, budget and coverage', async ({
+    page,
+  }, info) => {
+    test.setTimeout(120_000);
+    const host = hostFor(info.project.name);
+    const base = `http://${host}.localhost:4173`;
+    await signIn(page, `faculty@${host}.example`, host);
+    await page.goto(`${base}/study`);
+    await page.getByRole('button', { name: 'New subject' }).first().click();
+    const dialog = page.getByRole('dialog', { name: 'New subject' });
+    await dialog.getByLabel('Subject name').fill(`E2E Insights ${info.project.name} ${Date.now() % 100000}`);
+    await dialog.getByLabel('Code').fill(`INS${Date.now() % 100000}`);
+    await dialog.getByRole('button', { name: 'Create subject' }).click();
+    await page.waitForURL(/\/study\/[a-f0-9]{24}$/);
+    await page.getByRole('link', { name: 'Insights' }).click();
+    await page.waitForURL(/\/insights$/);
+    await expect(page.getByRole('heading', { name: 'Insights', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Most asked topics' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Content gaps' })).toBeVisible();
+    await page.getByRole('button', { name: 'Last 7 days' }).click();
+    await expect(page.getByRole('button', { name: 'Last 7 days' })).toHaveAttribute('aria-pressed', 'true');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      page.viewportSize()?.width ?? 0,
+    );
+    await expectNoA11yViolations(page);
+
+    await page.context().clearCookies();
+    await adminSignIn(page, host, `admin@${host}.example`);
+    await page.goto(`${base}/admin/ai`);
+    await expect(page.getByRole('heading', { name: 'Usage and health' })).toBeVisible();
+    await expect(page.getByRole('figure', { name: 'Tokens per day' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Coverage by subject' })).toBeVisible();
+    await expect(page.getByText('Prices for the cost estimate')).toBeVisible();
+    // The chart's values are reachable without hovering.
+    await page.getByText('Show as a table').first().click();
+    await expect(page.getByRole('region', { name: 'Tokens per day' })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      page.viewportSize()?.width ?? 0,
+    );
+    await expectNoA11yViolations(page);
+  });
 });

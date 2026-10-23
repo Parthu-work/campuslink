@@ -52,6 +52,7 @@ const load = {
   subject: () => import('../features/study/subject-page'),
   material: () => import('../features/study/material-page'),
   chat: () => import('../features/study/chat/chat-page'),
+  insights: () => import('../features/study/insights-page'),
   directory: () => import('../features/people/directory'),
   landing: () => import('../features/landing/landing'),
   profileView: () => import('../features/people/profile-view'),
@@ -289,6 +290,9 @@ function collegeRoutes(): RouteObject[] {
                   qc.ensureQueryData(q.materials(id, { unitId: '', topicId: '' })),
                 ]
               : [],
+          ),
+          screen(load.insights, 'InsightsPage', 'study:analytics', at('/study/:id/insights'), ({ id }) =>
+            isId(id) ? [qc.ensureQueryData(q.subject(id)), qc.ensureQueryData(q.studyInsights(id, 30))] : [],
           ),
           screen(load.chat, 'ChatPage', 'study:read', at('/study/chat'), () => [
             qc.ensureQueryData(q.chatSessions()),

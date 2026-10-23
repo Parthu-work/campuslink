@@ -1,5 +1,5 @@
 import { Schema, type InferSchemaType, type Types } from 'mongoose';
-import { AI_PROVIDERS, EMBEDDING_PROVIDERS, KEY_STATUSES } from '@campuslink/shared';
+import { AI_PROVIDERS, EMBEDDING_PROVIDERS, KEY_STATUSES, PRICE_CURRENCIES } from '@campuslink/shared';
 import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
 
 /**
@@ -42,6 +42,23 @@ const aiSettingsSchema = new Schema(
       facultySeeChats: { type: Boolean, default: false },
     },
     killSwitch: { type: Boolean, default: false },
+    /** Provider prices per million tokens as the admin entered them (cost estimate only). */
+    prices: {
+      currency: { type: String, enum: PRICE_CURRENCIES, default: 'USD' },
+      chatInput: { type: Number, default: null },
+      chatOutput: { type: Number, default: null },
+      embedding: { type: Number, default: null },
+    },
+    /** Months (`YYYY-MM`) the admins were already told about the budget (once each per month). */
+    alerts: {
+      budgetWarned: { type: String, default: null },
+      budgetReached: { type: String, default: null },
+    },
+    /** The last provider failure while answering (short, key-free), for the admin dashboard. */
+    health: {
+      lastError: { type: String, default: null },
+      lastErrorAt: { type: Date, default: null },
+    },
     keys: { chat: key(), embedding: key(), youtube: key() },
     /** The back-fill lease (one embedding run per college at a time) and its last outcome. */
     indexing: {

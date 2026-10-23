@@ -2,11 +2,13 @@ import { lazy, Suspense, useState } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ListTree, Pencil, Users } from 'lucide-react';
+import { BarChart3, ChevronDown, ListTree, Pencil, Users } from 'lucide-react';
 import type { SubjectView, SyllabusUnitView } from '@campuslink/shared';
 import { AvatarStack } from '../../components/ui/avatar-stack';
 import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
+import { buttonVariants } from '../../components/ui/button-variants';
+import { IntentLink } from '../../components/ui/intent-link';
 import { Dialog, Sheet } from '../../components/ui/dialog';
 import { Illustration } from '../../components/ui/illustration';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
@@ -150,14 +152,26 @@ export function SubjectPage() {
             title={s.name}
             intro={s.description || undefined}
             actions={
-              s.can.manage && (
+              (s.can.manage || s.can.analyse) && (
                 <>
-                  <Button variant="outline" size="sm" onClick={() => sheet.open('subject')}>
-                    <Pencil className="size-4" aria-hidden /> {t('study.edit')}
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => sheet.open('people')}>
-                    <Users className="size-4" aria-hidden /> {t('study.peopleTitle')}
-                  </Button>
+                  {s.can.analyse && (
+                    <IntentLink
+                      to={`/study/${s.id}/insights`}
+                      className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                    >
+                      <BarChart3 className="size-4" aria-hidden /> {t('study.insights.open')}
+                    </IntentLink>
+                  )}
+                  {s.can.manage && (
+                    <>
+                      <Button variant="outline" size="sm" onClick={() => sheet.open('subject')}>
+                        <Pencil className="size-4" aria-hidden /> {t('study.edit')}
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => sheet.open('people')}>
+                        <Users className="size-4" aria-hidden /> {t('study.peopleTitle')}
+                      </Button>
+                    </>
+                  )}
                 </>
               )
             }

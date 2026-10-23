@@ -80,7 +80,13 @@ export function AiNotice() {
     <Card className="flex items-start gap-3 bg-surface-2 p-4" role="note">
       <Sparkles className="mt-0.5 size-5 flex-none text-brand-ink" aria-hidden />
       <div className="grid min-w-0 flex-1 gap-1 text-meta">
-        <p className="font-semibold">{q.data.demo ? t('study.aiDemo') : t('study.aiOff')}</p>
+        <p className="font-semibold">
+          {q.data.demo
+            ? t('study.aiDemo')
+            : q.data.reason === 'budget_exhausted'
+              ? t('study.aiBudget')
+              : t('study.aiOff')}
+        </p>
         <p className="text-fg-2">{q.data.demo ? t('study.aiDemoBody') : t('study.aiOffBody')}</p>
         {canSetUp && !q.data.demo && (
           <Link to="/admin/ai" className="w-fit font-semibold text-brand-ink hover:underline">

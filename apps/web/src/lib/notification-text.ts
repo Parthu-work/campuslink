@@ -19,6 +19,7 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     decision: d.decision ? t(`notify.decision.${d.decision}`) : '',
     type: d.sessionType ? t(`session.type.${d.sessionType}`) : '',
     time: d.start ? formatDateTime(d.start) : '',
+    percent: d.percent ?? '',
   };
   const href = (() => {
     switch (n.type) {
@@ -85,6 +86,10 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return d.subjectId && d.materialId ? `/study/${d.subjectId}/m/${d.materialId}` : '/study';
       case 'material_review':
         return d.subjectId ? `/study/${d.subjectId}?review=1` : '/study';
+      case 'ai_key_invalid':
+      case 'ai_budget_warning':
+      case 'ai_budget_reached':
+        return '/admin/ai';
       default:
         return '/sessions';
     }

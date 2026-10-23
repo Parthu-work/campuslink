@@ -632,7 +632,7 @@ erDiagram
 
 ## Study and the AI study assistant (Phase 9)
 
-Steps 1 to 4 of `docs/specs/ai-study-assistant.md`: subjects and settings (step 1), material and its processing (step 2), vectors and usage (step 3), and the assistant's conversations (step 4).
+Steps 1 to 5 of `docs/specs/ai-study-assistant.md`: subjects and settings (step 1), material and its processing (step 2), vectors and usage (step 3), the assistant's conversations (step 4), and the counters behind insights and budgets (step 5).
 
 ```mermaid
 erDiagram
@@ -685,6 +685,9 @@ erDiagram
     object features "chatbot, studentUploads, externalVideos, ocr, transcription, facultySeeChats"
     bool killSwitch
     object consent "version, acceptedAt, acceptedBy"
+    object prices "currency and per-million prices the admin entered (estimate only)"
+    object alerts "months the budget warning and the budget-used alert were sent"
+    object health "last provider failure (key-free) and when"
   }
 ```
 
@@ -745,8 +748,18 @@ erDiagram
     object result "command result or why there is no generated answer"
     enum status "complete | stopped | failed | refused"
     object feedback "up | down, reason"
+    ObjectId[] subjectIds "scope and subjects of the sources (insights)"
+    ObjectId[] unitIds "units of the sources"
+    ObjectId[] topicIds "topics of the sources, or the topics an uncovered question was near"
     int inputTokens
     int outputTokens
+  }
+  MATERIAL_VIEW_STAT {
+    ObjectId tenantId
+    ObjectId subjectId
+    ObjectId materialId "unique with day"
+    string day "UTC date"
+    int views "no member id; staff previews not counted; TTL about 13 months"
   }
   UNANSWERED_QUESTION {
     ObjectId tenantId
@@ -768,3 +781,4 @@ erDiagram
 
 - **Vectors** are stored on the passages; Qdrant (or the in-memory store) is an index over them, filtered by college, readable subjects, model and visibility on every search.
 - **Conversations** are owner-only and expire with the college's retention (TTL on `expireAt` for sessions and messages).
+- **Insights** read only aggregates: answers grouped by the topics and units on them, uncovered questions grouped by topic (or by words at least 5 students used), and `materialViewStats`; every count goes through `suppress()`.

@@ -1,6 +1,6 @@
 # AI study assistant
 
-The subject library and the study chatbot (spec: `docs/specs/ai-study-assistant.md`). This document grows with each delivery step; it currently covers **steps 1 to 4**: subjects and syllabus, who takes a subject, the settings page, encrypted key storage and the provider adapters; material upload, the processing pipeline and the viewers; embeddings, the vector index and hybrid search; and the study assistant with its slash commands.
+The subject library and the study chatbot (spec: `docs/specs/ai-study-assistant.md`). This document grows with each delivery step; it currently covers **steps 1 to 5**: subjects and syllabus, who takes a subject, the settings page, encrypted key storage and the provider adapters; material upload, the processing pipeline and the viewers; embeddings, the vector index and hybrid search; the study assistant with its slash commands; and budgets, limits, degradation, faculty insights and the admin dashboard.
 
 ## What it is, in one paragraph
 
@@ -14,6 +14,7 @@ Faculty upload material per subject. The material is split into passages, and (w
 4. **Semantic search (optional):** under _Semantic search_, choose an embedding provider and model. Anthropic has no embeddings API, so pair Claude answers with OpenAI, Gemini or a compatible server, or leave it off for keyword search. If the embedding provider is the same as the answer provider, the same key is used. Once a working key is saved (and the notice accepted), every passage already in the library gets its vector automatically; the _Search index_ panel shows the progress and the checklist ticks **Search index ready** when nothing is waiting.
 5. **Accept the data notice** (_Data processing notice_): it states that passages of uploaded material and students' questions are sent to the chosen provider. The acceptance is versioned and written to the audit log. External providers stay off until it is accepted.
 6. Turn on **Study chatbot** under _Switches_, check the limits (monthly token budget, questions per member per day, answer length, passages per answer, chat retention) and save. The status at the top reads **On**.
+7. **Optional, for the cost estimate:** under _Limits_, enter your provider's prices per million tokens exactly as its pricing page lists them (input and output for answers, and embeddings), in the currency you pay in. The app never fills these in. **Usage and health** then shows an estimate for the period and the month.
 
 To stop everything at once, turn on **Stop all AI now** (the kill switch): no request reaches any provider, and search and the library keep working. Removing a key, changing a provider, accepting the notice and every test are audit-logged; the key itself never appears in a response, a log or the audit log.
 
@@ -122,6 +123,37 @@ flowchart LR
 - Keep `AI_RERANKER=none` unless answers cite the wrong passages: re-ranking sends the candidate passages to the answer model on every question.
 - **Rebuild the index** never calls the provider; prefer it to changing models when the index looks wrong.
 - Lower _Passages per answer_ before lowering the answer length: passages are most of each question's input tokens.
+- Set a **monthly token budget** before turning the chatbot on for everyone, and a modest **questions per member per day**; the admins are told at 80% of the budget, and members fall back to passages rather than errors when either runs out.
+- Enter the provider's prices to see the estimate; check _Usage by model_ for what dominates (usually answers, not embeddings).
+
+## Budgets, limits, degradation and insights (step 5)
+
+### What happens when something runs out or breaks
+
+| Situation                                                                                                             | What members see                                                                                                       | What admins see                                                                                                                                                                                                               |
+| --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No provider or key                                                                                                    | Library, keyword search, `/videos`, `/notes`, `/syllabus`; answers are the matching passages                           | The checklist and status say what is missing                                                                                                                                                                                  |
+| The **monthly token budget** is used (UTC month, every kind of usage counts)                                          | Answers become passages ("this month's AI answers are used up"); search is keyword-only; generative commands say why   | A notification at 80% and at 100%, once each per month; the budget meter turns amber, then red. Embedding of new material waits for the 1st (a back-fill is scheduled for then), or resumes at once when the budget is raised |
+| A member reached **questions per member per day** (model answers on the UTC day; `/videos` and `/notes` do not count) | Their questions get passages and generative commands say "You've used today's AI answers"; everyone else is unaffected | –                                                                                                                                                                                                                             |
+| The provider has an outage, a rate limit or a time-out                                                                | One retry if nothing was shown yet; then the passages ("the AI could not be reached just now")                         | _Last provider problem_ on the dashboard; the failed answers count                                                                                                                                                            |
+| Repeated outages (5 in a row)                                                                                         | Passages at once for a minute (no waiting for time-outs), then one try                                                 | _Answers are paused until …_ on the dashboard                                                                                                                                                                                 |
+| The provider rejects the key while answering or embedding                                                             | Passages (reason: key rejected)                                                                                        | The key turns **Rejected**; a notification once; paste a new key or press **Test**                                                                                                                                            |
+| The kill switch                                                                                                       | Library and keyword search only                                                                                        | –                                                                                                                                                                                                                             |
+
+The circuit breaker (`modules/study/ai/breaker.ts`) is per college and endpoint, on each API server; only outages count, never a rejected key or a refused request, and a member pressing Stop is not a failure. The retry happens only before any text reached the member (a retry after that would repeat what they already read).
+
+### Faculty insights (`/study/:id/insights`)
+
+For the subject's owners and the college's admins (`study:analytics`; other faculty get 403). Everything is an aggregate: counts under 5 show as "<5" (`suppress()`), the helpful rate appears only with 5 ratings or more, and no question text, conversation or member is returned.
+
+- **Most asked topics:** questions per syllabus topic, from the topics of the passages each answer used (or, for questions the material did not cover, the topics they were near).
+- **Content gaps:** topics that uncovered questions were near, and words that at least 5 different students asked about and that match no topic (counted by stem, shown in the form asked most often). **Upload material for this** opens the subject's upload sheet with the topic already chosen.
+- **Most used material:** how many answers cited each material, and how often it was opened (an anonymous daily counter, `materialViewStats`, with no member id; staff previews do not count).
+- **Engagement by unit:** questions, distinct students and openings per unit.
+
+### Admin dashboard (Admin › AI assistant › Usage and health)
+
+The month against the budget (with when it starts again), tokens per day (a column chart with a table view), usage by model with the estimate from the admin's prices (the demo is free; transcription is priced per minute, so it has no estimate), answers, failed answers and questions the material did not cover, the last provider problem, whether answers are paused, the processing queue (in progress, failed, the oldest waiting) and, per subject, how much material is ready and how much is searchable by meaning. College totals only: there is no per-member view of usage.
 
 ## The study assistant (step 4)
 

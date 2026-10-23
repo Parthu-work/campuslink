@@ -19,7 +19,79 @@ export const Capability = { CERTIFIED_CONTRIBUTOR: 'CERTIFIED_CONTRIBUTOR' } as 
 export type Capability = (typeof Capability)[keyof typeof Capability];
 export const CAPABILITIES = Object.values(Capability);
 
-export const PERMISSIONS = {
+/**
+ * Every permission id. The descriptions below are a separate map so the web app, which only
+ * checks ids, does not ship their text; the compiler keeps the two in step.
+ */
+export const ALL_PERMISSIONS = [
+  // Feed & content
+  'feed:read',
+  'feed:post',
+  'feed:interact',
+  'qa:ask',
+  'qa:answer',
+  'content:report',
+  'sources:follow',
+  'sources:manage',
+  // People
+  'directory:read',
+  'profile:visibility',
+  // Mentorship
+  'mentorship:request',
+  'mentorship:mentor',
+  'sessions:book',
+  'messages:send',
+  'ama:host',
+  'mentorship:oversee',
+  // Jobs
+  'jobs:read',
+  'jobs:save',
+  'jobs:post',
+  'jobs:sources',
+  'referrals:request',
+  'referrals:offer',
+  // Roadmaps
+  'roadmaps:read',
+  'roadmaps:progress',
+  'roadmaps:write',
+  'roadmaps:review',
+  // Study
+  'study:read',
+  'study:contribute',
+  'study:upload',
+  'study:manage',
+  'study:analytics',
+  'ai:settings',
+  // Events & announcements
+  'events:rsvp',
+  'events:create',
+  'announcements:post',
+  // Moderation & analytics
+  'moderation:act',
+  'analytics:cohort',
+  'analytics:tenant',
+  'reports:export',
+  // Administration
+  'users:invite',
+  'users:approve',
+  'users:read_admin',
+  'users:manage',
+  'roles:assign',
+  'capabilities:grant',
+  'imports:manage',
+  'verification:review',
+  'tenant:branding',
+  'tenant:settings',
+  'audit:read',
+  'rewards:manage',
+  'rewards:redeem',
+  // Platform (super admin only; never grantable through tenant overrides)
+  'platform:tenants',
+  'platform:health',
+] as const;
+export type Permission = (typeof ALL_PERMISSIONS)[number];
+/** What each permission allows (docs/permissions.md and the OpenAPI document). */
+export const PERMISSIONS: Record<Permission, string> = {
   // Feed & content
   'feed:read': 'Browse the college feed',
   'feed:post': 'Publish posts, tips and stories',
@@ -84,9 +156,7 @@ export const PERMISSIONS = {
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants': 'Create, suspend and configure colleges',
   'platform:health': 'View platform health',
-} as const;
-export type Permission = keyof typeof PERMISSIONS;
-export const ALL_PERMISSIONS = Object.keys(PERMISSIONS) as Permission[];
+};
 export const PLATFORM_PERMISSIONS: readonly Permission[] = ['platform:tenants', 'platform:health'];
 
 const STUDENT: Permission[] = [

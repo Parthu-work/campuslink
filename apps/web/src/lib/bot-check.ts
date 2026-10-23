@@ -1,4 +1,4 @@
-import type { PublicBotCheck } from '@campuslink/shared';
+import { BOT_CHECK_HOST_ID, botCheckConfig } from './bot-check-config';
 
 /**
  * The human check (Cloudflare Turnstile) for writes the API protects with `bot: true`.
@@ -7,9 +7,9 @@ import type { PublicBotCheck } from '@campuslink/shared';
  * which loads the Turnstile script once, renders the widget into `#bot-check-host` (shown only if
  * Cloudflare needs an interaction), and resolves with a single-use token. The request is retried
  * once with `X-Bot-Token`. While bot protection is off (the default, and always locally), the
- * college config carries `botCheck: null` and none of this runs.
+ * college config carries `botCheck: null` and none of this runs. This file itself loads only
+ * then (the API client imports it on demand; the config lives in `bot-check-config.ts`).
  */
-export const BOT_CHECK_HOST_ID = 'bot-check-host';
 const SCRIPT_URL = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 const TIMEOUT_MS = 120_000;
 
@@ -30,13 +30,6 @@ declare global {
     turnstile?: Turnstile;
   }
 }
-
-let config: PublicBotCheck | null = null;
-/** Set from the college config (`PublicTenant.botCheck`). */
-export function setBotCheck(c: PublicBotCheck | null) {
-  config = c;
-}
-export const botCheckEnabled = () => config !== null;
 
 let loading: Promise<Turnstile> | null = null;
 function loadTurnstile(): Promise<Turnstile> {
@@ -92,7 +85,7 @@ function runWidget(ts: Turnstile, siteKey: string): Promise<string> {
 // Tokens are single use: one widget at a time, each call gets its own token.
 let queue: Promise<unknown> = Promise.resolve();
 export function getBotToken(): Promise<string> {
-  const c = config;
+  const c = botCheckConfig();
   if (!c) return Promise.reject(new Error('Bot check is not configured'));
   const next = queue.then(async () => runWidget(await loadTurnstile(), c.siteKey));
   queue = next.catch(() => undefined);

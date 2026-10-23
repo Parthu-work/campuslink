@@ -54,6 +54,9 @@ export interface RetrievedPassage {
   endSec: number | null;
   heading: string;
   text: string;
+  /** Syllabus tags of the passage (for the faculty's aggregate insights). */
+  unitId: string | null;
+  topicIds: string[];
   /** Fused rank score. */
   score: number;
   match: 'semantic' | 'keyword' | 'both';
@@ -214,7 +217,7 @@ export class RetrievalService {
     if (!ranked.length) return { ...none, mode };
 
     const rows = await ContentChunkModel.find({ ...filter, _id: { $in: ranked.map(([id]) => oid(id)) } })
-      .select('subjectId materialId text heading page startSec endSec')
+      .select('subjectId materialId text heading page startSec endSec unitId topicIds')
       .lean<(ContentChunkDoc & { _id: Types.ObjectId })[]>();
     const byId = new Map(rows.map((r) => [String(r._id), r]));
     const mats = new Map(
@@ -244,6 +247,8 @@ export class RetrievalService {
         endSec: r.endSec ?? null,
         heading: r.heading ?? '',
         text: r.text,
+        unitId: r.unitId ? String(r.unitId) : null,
+        topicIds: (r.topicIds ?? []).map(String),
         score: f.score,
         match: f.vec && f.kw ? 'both' : f.vec ? 'semantic' : 'keyword',
         similarity: f.similarity,

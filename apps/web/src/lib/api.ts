@@ -1,6 +1,6 @@
 import { API_PREFIX, type ApiResponse, type ErrorCode } from '@campuslink/shared';
 import { useSession } from './session';
-import { botCheckEnabled, getBotToken } from './bot-check';
+import { botCheckEnabled } from './bot-check-config';
 import { createRefreshCoordinator } from './refresh-coordinator';
 
 export class ApiError extends Error {
@@ -124,7 +124,8 @@ export async function apiRequest<T>(
     // A protected write: run the human check once, then retry with its single-use token. The API
     // checks bots before idempotency and the handler, so the first attempt changed nothing.
     if (body.error.code === 'BOT_CHECK_FAILED' && !opts.botToken && botCheckEnabled()) {
-      const botToken = await getBotToken().catch(() => null);
+      // The Turnstile loader is fetched only now, so it stays out of the first load.
+      const botToken = await import('./bot-check').then((m) => m.getBotToken()).catch(() => null);
       if (botToken) return apiRequest<T>(path, { ...opts, botToken }, retried);
     }
     throw new ApiError(

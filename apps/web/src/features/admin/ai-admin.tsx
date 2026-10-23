@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  BarChart3,
   Check,
   CircleAlert,
   DatabaseZap,
@@ -16,9 +17,11 @@ import {
 import {
   AI_FEATURES,
   EMBEDDING_PROVIDERS,
+  PRICE_CURRENCIES,
   type AiFeature,
   type AiKeyTarget,
   type AiKeyView,
+  type AiPrices,
   type AiProvider,
   type AiSettingsInput,
   type AiSettingsView,
@@ -38,6 +41,7 @@ import { aiIndex, aiSettings } from '../../lib/queries';
 import { formatDateTime } from '../../lib/format';
 import { toast } from '../../lib/toast';
 import { cn } from '../../lib/cn';
+import { AiUsagePanel } from './ai-usage';
 
 type Draft = AiSettingsInput;
 const NONE = '';
@@ -57,6 +61,7 @@ const toDraft = (v: AiSettingsView): Draft => ({
   chatRetentionDays: v.chatRetentionDays,
   features: { ...v.features },
   killSwitch: v.killSwitch,
+  prices: { ...v.prices },
 });
 
 function Section({
@@ -350,6 +355,37 @@ function NumberField({
   );
 }
 
+/** A price per million tokens; empty means "not entered" (no estimate for it). */
+function PriceField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (n: number | null) => void;
+}) {
+  return (
+    <Field label={label}>
+      {({ id }) => (
+        <Input
+          id={id}
+          type="number"
+          inputMode="decimal"
+          min={0}
+          max={100000}
+          step="any"
+          value={value ?? ''}
+          onChange={(e) => {
+            const n = Number(e.target.value);
+            onChange(e.target.value === '' || !Number.isFinite(n) ? null : Math.max(0, Math.min(100000, n)));
+          }}
+        />
+      )}
+    </Field>
+  );
+}
+
 /**
  * Settings → AI Assistant (spec §7): the only step left for a college admin. Choose a provider,
  * paste a key (encrypted at rest; only its last four characters come back), test it, accept the
@@ -448,6 +484,12 @@ export function AiAdmin() {
         </ol>
         {v.platformDefault && !savedChat && <p className="text-meta text-fg-2">{t('ai.platformDefault')}</p>}
       </Card>
+
+      {(v.chatProvider || v.embeddingProvider || v.platformDefault) && (
+        <Section id="ai-usage" icon={<BarChart3 />} title={t('ai.usage.title')}>
+          <AiUsagePanel />
+        </Section>
+      )}
 
       <Section id="ai-provider" icon={<Sparkles />} title={t('ai.provider')}>
         <ChoiceGroup<AiProvider | typeof NONE>
@@ -648,6 +690,44 @@ export function AiAdmin() {
               </Select>
             )}
           </Field>
+        </div>
+        <div className="grid gap-3 border-t border-line pt-4">
+          <p className="font-semibold">{t('ai.prices.title')}</p>
+          <p className="text-meta text-fg-2">{t('ai.prices.intro')}</p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Field label={t('ai.prices.currency')}>
+              {({ id }) => (
+                <Select
+                  id={id}
+                  value={d.prices.currency}
+                  onChange={(e) =>
+                    set({ prices: { ...d.prices, currency: e.target.value as AiPrices['currency'] } })
+                  }
+                >
+                  {PRICE_CURRENCIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+            <PriceField
+              label={t('ai.prices.chatInput')}
+              value={d.prices.chatInput}
+              onChange={(n) => set({ prices: { ...d.prices, chatInput: n } })}
+            />
+            <PriceField
+              label={t('ai.prices.chatOutput')}
+              value={d.prices.chatOutput}
+              onChange={(n) => set({ prices: { ...d.prices, chatOutput: n } })}
+            />
+            <PriceField
+              label={t('ai.prices.embedding')}
+              value={d.prices.embedding}
+              onChange={(n) => set({ prices: { ...d.prices, embedding: n } })}
+            />
+          </div>
         </div>
       </Section>
 

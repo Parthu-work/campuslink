@@ -321,6 +321,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/study/subjects/:id/contributors` | `study:manage` | college | — | Alumni and certified contributors granted to a subject |
 | `PUT /api/v1/study/subjects/:id/contributors` | `capabilities:grant` | college | adminWrite | Grant or revoke a contributor for a subject (admins) |
 | `GET /api/v1/study/ai-status` | `study:read` | college | — | Whether AI answers and semantic search are on for my college (no settings detail) |
+| `GET /api/v1/study/subjects/:id/insights` | `study:analytics` | college | — | Aggregate insights for a subject I own (admins: any): topics asked, content gaps, material used, units (counts under 5 suppressed) |
 | `GET /api/v1/admin/ai` | `ai:settings` | college | — | AI assistant settings (keys appear only as their last four characters) |
 | `PUT /api/v1/admin/ai` | `ai:settings` | college | adminWrite | Save provider, models, limits and toggles (changing a provider removes its key) |
 | `PUT /api/v1/admin/ai/keys` | `ai:settings` | college | aiTest | Store an API key (encrypted at rest; never returned) and test it |
@@ -329,6 +330,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/admin/ai/consent` | `ai:settings` | college | adminWrite | Accept the data-processing notice (versioned and audit-logged) |
 | `GET /api/v1/admin/ai/index` | `ai:settings` | college | — | Semantic index: passages with vectors, waiting and refused, and whether a back-fill is running |
 | `POST /api/v1/admin/ai/reindex` | `ai:settings` | college | adminWrite | Rebuild the semantic index from stored vectors, then embed whatever is missing (audit-logged) |
+| `GET /api/v1/admin/ai/usage` | `ai:settings` | college | — | College AI usage: tokens per day and model, the month against the budget, cost estimate from entered prices, failures, queue and coverage |
 | `GET /api/v1/study/subjects/:id/materials` | `study:read` | college | — | Material of a subject (published; your own uploads; managers can list review and drafts) |
 | `POST /api/v1/study/materials` | `study:read` | college | studyUpload | Upload a file (sniffed, scanned and sanitised; rights attestation required); processing starts |
 | `POST /api/v1/study/materials/link` | `study:read` | college | studyUpload | Add a YouTube or Vimeo link (official oEmbed metadata; never downloaded) |

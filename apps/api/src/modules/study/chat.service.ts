@@ -99,7 +99,25 @@ interface Outcome {
   grounded: boolean;
   model: string | null;
   usage: { inputTokens: number; outputTokens: number };
+  /** What the question was about, for the faculty's aggregate insights (ids only). */
+  about: About;
 }
+interface About {
+  subjectIds: string[];
+  unitIds: string[];
+  topicIds: string[];
+}
+const NOWHERE: About = { subjectIds: [], unitIds: [], topicIds: [] };
+const uniq = (xs: (string | null | undefined)[]) => [...new Set(xs.filter((x): x is string => !!x))];
+/** The subjects, units and topics of the passages (or materials) an answer drew on. */
+const aboutOf = (
+  items: { subjectId: string; unitId: string | null; topicIds: string[] }[],
+  scope: string | null = null,
+): About => ({
+  subjectIds: uniq([scope, ...items.map((p) => p.subjectId)]),
+  unitIds: uniq(items.map((p) => p.unitId)),
+  topicIds: uniq(items.flatMap((p) => p.topicIds)),
+});
 
 const whereOf = (p: Pick<RetrievedPassage, 'page' | 'startSec'>) =>
   p.page
@@ -166,7 +184,7 @@ export class ChatService {
 
     return async (sink, signal) => {
       const started = Date.now();
-      const rt = await this.d.ai.runtime();
+      const rt = await this.dailyLimit(viewer, await this.d.ai.runtime());
       const now = new Date();
       const days = rt.settings.chatRetentionDays;
       const expireAt = days > 0 ? new Date(now.getTime() + days * 86_400_000) : null;
@@ -259,6 +277,7 @@ export class ChatService {
         if (!(e instanceof ProviderError) && !signal.aborted) throw e;
         out = await this.fallback(turn, e);
       }
+      const about = { ...out.about, subjectIds: uniq([subjectId, ...out.about.subjectIds]) };
       const saved = await ChatMessageModel.create({
         _id: messageId,
         sessionId,
@@ -277,6 +296,9 @@ export class ChatService {
         result: out.result,
         status: out.status,
         grounded: out.grounded,
+        subjectIds: about.subjectIds.slice(0, 20).map(oid),
+        unitIds: about.unitIds.slice(0, 20).map(oid),
+        topicIds: about.topicIds.slice(0, 40).map(oid),
         model: out.model,
         inputTokens: out.usage.inputTokens,
         outputTokens: out.usage.outputTokens,
@@ -325,6 +347,8 @@ export class ChatService {
       endSec: null,
       heading: '',
       text,
+      unitId: m.unitId,
+      topicIds: m.topicIds,
       score: 1,
       match: 'keyword',
       similarity: null,
@@ -391,13 +415,14 @@ export class ChatService {
     const res = await this.generate(t, task, sources, ask, true);
     if (res.stopReason === 'refusal') {
       t.sink({ type: 'replace', text: '' });
-      return { ...this.empty(), status: 'refused', usage: res };
+      return { ...this.empty(), status: 'refused', usage: res, about: aboutOf(r.passages.slice(0, 3)) };
     }
     if (NOT_COVERED.test(res.text) && !citedNumbers(res.text, sources.length).length) {
       const nc = await this.notCovered(t, query);
       return { ...nc, model: this.modelOf(t), usage: res };
     }
     const cited = citedNumbers(res.text, sources.length);
+    const used = cited.map((n) => r.passages[n - 1] as RetrievedPassage);
     return {
       text: res.text,
       citations: cited.map((n) => citation(r.passages[n - 1] as RetrievedPassage, n, query)),
@@ -406,6 +431,7 @@ export class ChatService {
       grounded: cited.length > 0,
       model: this.modelOf(t),
       usage: res,
+      about: aboutOf(used.length ? used : r.passages.slice(0, 3)),
     };
   }
 
@@ -467,20 +493,27 @@ export class ChatService {
         .filter((c) => c.front && c.back);
       if (cards.length) result = { kind: 'flashcards', topic: t.question, cards };
     }
-    if (!result) return { ...this.empty(), status: 'failed', model: this.modelOf(t), usage: res };
+    if (!result)
+      return {
+        ...this.empty(),
+        status: 'failed',
+        model: this.modelOf(t),
+        usage: res,
+        about: aboutOf(r.passages.slice(0, 3)),
+      };
     const used = new Set<number>();
     if (result.kind === 'quiz') for (const q of result.questions) if (q.cite) used.add(q.cite);
     if (result.kind === 'flashcards') for (const c of result.cards) if (c.cite) used.add(c.cite);
+    const cited = [...used].sort((a, b) => a - b);
     return {
       text: '',
-      citations: [...used]
-        .sort((a, b) => a - b)
-        .map((n) => citation(r.passages[n - 1] as RetrievedPassage, n, t.question)),
+      citations: cited.map((n) => citation(r.passages[n - 1] as RetrievedPassage, n, t.question)),
       result,
       status: 'complete',
       grounded: true,
       model: this.modelOf(t),
       usage: res,
+      about: aboutOf(cited.length ? cited.map((n) => r.passages[n - 1] as RetrievedPassage) : r.passages),
     };
   }
 
@@ -527,6 +560,7 @@ export class ChatService {
         nearby: videos.length ? [] : await this.nearby(t.viewer, t.subjectId, topic),
       },
       grounded: videos.length > 0,
+      about: aboutOf(cards.slice(0, 5)),
     };
   }
 
@@ -559,6 +593,7 @@ export class ChatService {
         nearby: cards.length ? [] : await this.nearby(t.viewer, t.subjectId, topic),
       },
       grounded: cards.length > 0,
+      about: aboutOf(cards.slice(0, 5)),
     };
   }
 
@@ -618,10 +653,22 @@ export class ChatService {
   private async fallback(t: Turn, e: unknown): Promise<Outcome> {
     if (t.signal.aborted) return { ...this.empty(), status: 'stopped' };
     this.d.logger?.warn({ err: e instanceof Error ? e.message : 'unknown' }, 'study chat: provider failed');
+    if (e instanceof ProviderError) await this.d.ai.recordFailure(e.message);
     t.sink({ type: 'replace', text: '' });
     const r = await this.passages(t, t.question).catch(() => null);
     const out = r?.passages.length ? await this.passagesOnly(t, r.passages, t.question) : this.empty();
     return { ...out, status: 'failed' };
+  }
+
+  /**
+   * The per-member daily limit (spec §7): past it, this member's questions get the passages and
+   * the generative commands say why, until the next UTC day. Search and /videos keep working.
+   */
+  private async dailyLimit(viewer: AuthState, rt: AiRuntime): Promise<AiRuntime> {
+    if (!rt.chat) return rt;
+    const used = await this.d.usage.requestsToday(viewer.userId, 'chat');
+    if (used < rt.settings.dailyMessagesPerUser) return rt;
+    return { ...rt, chat: null, status: { ...rt.status, answers: false, reason: 'daily_limit' } };
   }
 
   private empty(): Outcome {
@@ -633,6 +680,7 @@ export class ChatService {
       grounded: false,
       model: null,
       usage: { inputTokens: 0, outputTokens: 0 },
+      about: NOWHERE,
     };
   }
 
@@ -655,6 +703,7 @@ export class ChatService {
       citations,
       result: { kind: 'passages', reason: t.rt.status.reason },
       grounded: true,
+      about: aboutOf(top),
     };
   }
 
@@ -671,6 +720,7 @@ export class ChatService {
     return {
       ...this.empty(),
       result: { kind: 'not_covered', nearby: await this.nearby(t.viewer, t.subjectId, query) },
+      about: aboutOf(topics.slice(0, 3).map((x) => ({ ...x, topicIds: [x.id] }))),
     };
   }
 
@@ -680,12 +730,19 @@ export class ChatService {
       ? [subjectId]
       : (await this.d.subjects.readableIds(viewer)).map(String).slice(0, 20);
     const want = new Set(contentWords(query));
-    const scored: { id: string; title: string; score: number }[] = [];
+    const scored: { id: string; title: string; subjectId: string; unitId: string; score: number }[] = [];
     for (const id of ids) {
       for (const tp of await this.d.subjects.topicsOf(oid(id))) {
         const words = contentWords([tp.title, ...tp.keywords].join(' '));
         const hit = words.filter((w) => want.has(w)).length;
-        if (hit) scored.push({ id: tp.id, title: tp.title, score: hit / Math.max(words.length, 1) });
+        if (hit)
+          scored.push({
+            id: tp.id,
+            title: tp.title,
+            subjectId: id,
+            unitId: tp.unitId,
+            score: hit / Math.max(words.length, 1),
+          });
       }
     }
     return scored.sort((a, b) => b.score - a.score);

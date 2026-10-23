@@ -665,7 +665,11 @@ export function ChatPanel({
           </div>
         </div>
         <p className="text-caption text-fg-3">
-          {status.data?.answers ? t('study.chat.disclaimer') : t('study.chat.passagesOnly')}
+          {status.data?.answers
+            ? t('study.chat.disclaimer')
+            : status.data?.reason === 'budget_exhausted'
+              ? t('study.chat.budgetNote')
+              : t('study.chat.passagesOnly')}
         </p>
       </div>
     </div>

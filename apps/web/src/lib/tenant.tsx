@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import type { PublicTenant } from '@campuslink/shared';
 import { applyBranding, TenantContext } from './tenant-context';
-import { setBotCheck } from './bot-check';
+import { setBotCheck } from './bot-check-config';
 
 export function TenantProvider({ tenant, children }: { tenant: PublicTenant; children: ReactNode }) {
   useEffect(() => {

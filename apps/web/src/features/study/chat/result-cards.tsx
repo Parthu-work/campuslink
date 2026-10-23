@@ -461,19 +461,27 @@ export function ResultCard({
           <Nearby topics={r.nearby} onAsk={onAsk} />
         </div>
       );
-    case 'passages':
+    case 'passages': {
+      // A limit (the college's monthly budget, or my daily answers) rather than AI being off.
+      const limit = r.reason === 'budget_exhausted' || r.reason === 'daily_limit' ? r.reason : null;
       return (
         <div className="grid gap-2">
           <p className="flex flex-wrap items-center gap-2">
             <Badge tone="info">{t('study.chat.passagesBadge')}</Badge>
             {m.status === 'failed'
               ? t('study.chat.providerDown')
-              : m.citations.length
-                ? t('study.chat.passagesIntro')
-                : t('study.chat.aiOff')}
+              : limit
+                ? `${t(`study.chat.limit.${limit}`)} ${
+                    m.citations.length ? t('study.chat.limitPassages') : t('study.chat.limitStillWorks')
+                  }`
+                : m.citations.length
+                  ? t('study.chat.passagesIntro')
+                  : t('study.chat.aiOff')}
           </p>
-          {!m.citations.length && isAdmin && (
-            <p className="text-caption text-fg-3">{t('study.chat.aiOffAdmin')}</p>
+          {!m.citations.length && isAdmin && m.status !== 'failed' && (
+            <p className="text-caption text-fg-3">
+              {limit ? t('study.chat.limitAdmin') : t('study.chat.aiOffAdmin')}
+            </p>
           )}
           {m.citations.length > 0 && (
             <ul className="grid gap-2">
@@ -486,6 +494,7 @@ export function ResultCard({
           )}
         </div>
       );
+    }
   }
 }
 

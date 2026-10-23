@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { BOT_CHECK_HOST_ID } from '../../lib/bot-check';
+import { BOT_CHECK_HOST_ID } from '../../lib/bot-check-config';
 
 /**
  * Where the human-check widget renders (lib/bot-check.ts). Hidden until a protected write needs a

@@ -114,6 +114,18 @@ export class SubjectsService {
     return viewer.permissions.has('study:manage') && (isAdmin(viewer) || has(s.ownerIds, viewer.userId));
   }
 
+  /** Study insights (aggregates only): admins for every subject, faculty for subjects they own. */
+  canAnalyse(viewer: AuthState, s: Pick<SubjectDoc, 'ownerIds'>): boolean {
+    return viewer.permissions.has('study:analytics') && (isAdmin(viewer) || has(s.ownerIds, viewer.userId));
+  }
+
+  /** One subject whose insights this viewer may see, or 403 (404 when it is not readable at all). */
+  async analysable(viewer: AuthState, id: string): Promise<SubjectDoc> {
+    const s = await this.readable(viewer, id);
+    if (!this.canAnalyse(viewer, s)) throw forbidden();
+    return s;
+  }
+
   /** Staff upload to any subject; granted contributors only to theirs (and their uploads are reviewed). */
   canUpload(viewer: AuthState, s: Pick<SubjectDoc, 'contributorIds' | 'status'>): boolean {
     if (s.status !== 'active') return false;
@@ -173,6 +185,7 @@ export class SubjectsService {
         materialCount: materials.get(id) ?? 0,
         can: {
           manage: this.canManage(viewer, s),
+          analyse: this.canAnalyse(viewer, s),
           upload:
             this.canUpload(viewer, s) ||
             (open && s.status === 'active' && viewer.permissions.has('study:read')),
@@ -370,6 +383,20 @@ export class SubjectsService {
     if (goneTopics.length) await this.onTopicsRemoved(s._id, goneTopics);
     await SubjectModel.updateOne({ _id: s._id }, { $set: { updatedAt: new Date() } });
     return this.tree(s._id);
+  }
+
+  /** Every subject's name and code (Admin › AI assistant coverage; callers check permission). */
+  async briefs(): Promise<{ id: string; name: string; code: string; status: SubjectStatus }[]> {
+    const rows = await SubjectModel.find({})
+      .sort({ name: 1 })
+      .select('name code status')
+      .lean<Pick<SubjectDoc, '_id' | 'name' | 'code' | 'status'>[]>();
+    return rows.map((r) => ({
+      id: String(r._id),
+      name: r.name,
+      code: r.code,
+      status: r.status as SubjectStatus,
+    }));
   }
 
   async hasUnit(subjectId: Types.ObjectId, unitId: string): Promise<boolean> {

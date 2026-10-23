@@ -14361,6 +14361,52 @@
         "x-permission": "study:read"
       }
     },
+    "/api/v1/study/subjects/{id}/insights": {
+      "get": {
+        "tags": [
+          "Study"
+        ],
+        "summary": "Aggregate insights for a subject I own (admins: any): topics asked, content gaps, material used, units (counts under 5 suppressed)",
+        "description": "Requires permission `study:analytics` (View study analytics (faculty: their subjects; admins: the college)). Host scope: college.",
+        "operationId": "study_get_study_subjects_id_insights",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:analytics"
+      }
+    },
     "/api/v1/admin/ai": {
       "get": {
         "tags": [
@@ -14551,6 +14597,69 @@
                   "killSwitch": {
                     "default": false,
                     "type": "boolean"
+                  },
+                  "prices": {
+                    "default": {
+                      "currency": "USD",
+                      "chatInput": null,
+                      "chatOutput": null,
+                      "embedding": null
+                    },
+                    "type": "object",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "enum": [
+                          "USD",
+                          "INR",
+                          "EUR",
+                          "GBP"
+                        ]
+                      },
+                      "chatInput": {
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "chatOutput": {
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "embedding": {
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "currency",
+                      "chatInput",
+                      "chatOutput",
+                      "embedding"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -14804,6 +14913,43 @@
         "security": [
           {
             "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "ai:settings"
+      }
+    },
+    "/api/v1/admin/ai/usage": {
+      "get": {
+        "tags": [
+          "AI assistant settings"
+        ],
+        "summary": "College AI usage: tokens per day and model, the month against the budget, cost estimate from entered prices, failures, queue and coverage",
+        "description": "Requires permission `ai:settings` (Configure the AI study assistant (provider, key, limits and consent)). Host scope: college.",
+        "operationId": "ai-settings_get_admin_ai_usage",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
           }
         ],
         "responses": {

@@ -4,6 +4,7 @@ import {
   AI_CONSENT_VERSION,
   AI_KEY_TARGETS,
   AI_PROVIDERS,
+  BUDGET_WARNING_PERCENT,
   CUSTOM_ENDPOINT_PROVIDERS,
   DEFAULT_CHAT_MODEL,
   DEFAULT_EMBEDDING_MODEL,
@@ -12,6 +13,7 @@ import {
   type AiFeature,
   type AiKeyTarget,
   type AiKeyView,
+  type AiPrices,
   type AiProvider,
   type AiSettingsInput,
   type AiSettingsView,
@@ -19,6 +21,7 @@ import {
   type AiTestResult,
   type EmbeddingProvider as EmbeddingProviderId,
   type KeyStatus,
+  type NotificationType,
   type WebVideo,
 } from '@campuslink/shared';
 import { AiSettingsModel, type AiSettingsDoc } from './ai-settings.model.js';
@@ -26,10 +29,13 @@ import type { FieldCipher } from '../../lib/crypto.js';
 import { isPublicAddress, type safeFetch } from '../../lib/safe-fetch.js';
 import { badRequest } from '../../lib/errors.js';
 import { decodeEntities, plainText } from '../../lib/text.js';
+import { requireTenantId } from '../../lib/context.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
 import type { AuthState } from '../../types.js';
 import { chatProvider, embeddingProvider } from './ai/registry.js';
+import { CircuitBreaker, guardedChat, guardedEmbeddings } from './ai/breaker.js';
+import { monthStart, nextMonth, type AiUsageService } from './ai-usage.service.js';
 import {
   callJson,
   ProviderError,
@@ -57,7 +63,10 @@ export interface AiSettingsDeps {
   /** Origins (`scheme://host[:port]`) the platform owner lets be private or plain http. */
   privateEndpoints: readonly string[];
   platformDefault: PlatformAiDefault | null;
+  usage: AiUsageService;
 }
+/** Alerts for the college's admins (wired to NotificationsService in app.ts). */
+export type AiAlert = Extract<NotificationType, 'ai_key_invalid' | 'ai_budget_warning' | 'ai_budget_reached'>;
 
 interface KeyDoc {
   apiKeyEnc: string | null;
@@ -85,8 +94,11 @@ interface Settings {
   chatRetentionDays: number;
   features: Record<AiFeature, boolean>;
   killSwitch: boolean;
+  prices: AiPrices;
   keys: Record<AiKeyTarget, KeyDoc>;
   consent: { version: string | null; acceptedAt: Date | null; acceptedBy: Types.ObjectId | null };
+  health: { lastError: string | null; lastErrorAt: Date | null };
+  alerts: { budgetWarned: string | null; budgetReached: string | null };
 }
 
 /** A ready-to-use provider plus what identifies its output (stored on chunks). */
@@ -107,6 +119,8 @@ export interface AiRuntime {
   status: AiStatusView;
   chat: ActiveChat | null;
   embedding: ActiveEmbedding | null;
+  /** This month's tokens against the budget (0: no budget). */
+  budget: { used: number; limit: number; exhausted: boolean; resetsAt: Date };
 }
 
 const YOUTUBE_PROBE = 'https://www.googleapis.com/youtube/v3/i18nLanguages?part=snippet&hl=en';
@@ -154,6 +168,12 @@ function normalize(d: AiSettingsDoc): Settings {
       facultySeeChats: !!f.facultySeeChats,
     },
     killSwitch: !!d.killSwitch,
+    prices: {
+      currency: (d.prices?.currency ?? 'USD') as AiPrices['currency'],
+      chatInput: d.prices?.chatInput ?? null,
+      chatOutput: d.prices?.chatOutput ?? null,
+      embedding: d.prices?.embedding ?? null,
+    },
     keys: {
       chat: key(d.keys?.chat as Partial<KeyDoc> | null),
       embedding: key(d.keys?.embedding as Partial<KeyDoc> | null),
@@ -164,6 +184,8 @@ function normalize(d: AiSettingsDoc): Settings {
       acceptedAt: d.consent?.acceptedAt ?? null,
       acceptedBy: d.consent?.acceptedBy ?? null,
     },
+    health: { lastError: d.health?.lastError ?? null, lastErrorAt: d.health?.lastErrorAt ?? null },
+    alerts: { budgetWarned: d.alerts?.budgetWarned ?? null, budgetReached: d.alerts?.budgetReached ?? null },
   };
 }
 
@@ -176,6 +198,12 @@ function normalize(d: AiSettingsDoc): Settings {
 export class AiSettingsService {
   /** Back-fill and re-index hook (the indexing service registers it). */
   onEmbeddingReady: () => Promise<void> = async () => undefined;
+  /** Tells the college's admins (key rejected, budget nearly or fully used). */
+  onAlert: (type: AiAlert, data: Record<string, string>) => Promise<void> = async () => undefined;
+  /** Pauses calls to a provider that keeps failing (per college and endpoint, this server). */
+  readonly breaker = new CircuitBreaker();
+  /** Waits before the one retry of an answer (tests replace it). */
+  sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
   constructor(private readonly d: AiSettingsDeps) {}
 
@@ -229,6 +257,26 @@ export class AiSettingsService {
     return { apiKey, baseUrl, allowPrivateNetwork: this.isPrivate(baseUrl), fetcher: this.d.fetcher };
   }
 
+  /** The breaker key: the college's own endpoint, or the platform's (shared by every college). */
+  private breakerKey(kind: 'chat' | 'embedding', platform: boolean, provider: string, base: string | null) {
+    return `${platform ? 'platform' : String(requireTenantId())}:${kind}:${provider}:${base ?? ''}`;
+  }
+
+  private guard(key: string) {
+    return { breaker: this.breaker, key, sleep: (ms: number) => this.sleep(ms) };
+  }
+
+  /** When answers resume after repeated provider failures (this server), or null. */
+  answersPausedUntil(rt: AiRuntime): Date | null {
+    const s = rt.settings;
+    const platform = !s.chatProvider && !!this.d.platformDefault;
+    const provider = platform ? this.d.platformDefault?.provider : s.chatProvider;
+    if (!provider) return null;
+    const base = platform ? (this.d.platformDefault?.baseUrl ?? null) : s.baseUrl;
+    const until = this.breaker.openUntil(this.breakerKey('chat', platform, provider, base));
+    return until ? new Date(until) : null;
+  }
+
   /** What is configured and usable right now, and the providers to call. */
   async runtime(): Promise<AiRuntime> {
     const s = await this.load();
@@ -245,13 +293,19 @@ export class AiSettingsService {
       const model = s.chatModel || DEFAULT_CHAT_MODEL[provider];
       if (usable && model)
         chat = {
-          provider: chatProvider(provider, this.conn(this.decrypt(k), s.baseUrl ?? null)),
+          provider: guardedChat(
+            chatProvider(provider, this.conn(this.decrypt(k), s.baseUrl ?? null)),
+            this.guard(this.breakerKey('chat', false, provider, s.baseUrl ?? null)),
+          ),
           model,
           platform: false,
         };
     } else if (pd && pd.chatModel) {
       chat = {
-        provider: chatProvider(pd.provider, this.conn(pd.apiKey, pd.baseUrl)),
+        provider: guardedChat(
+          chatProvider(pd.provider, this.conn(pd.apiKey, pd.baseUrl)),
+          this.guard(this.breakerKey('chat', true, pd.provider, pd.baseUrl)),
+        ),
         model: pd.chatModel,
         platform: true,
       };
@@ -262,21 +316,23 @@ export class AiSettingsService {
       const provider = s.embeddingProvider as EmbeddingProviderId;
       const k = this.embeddingKey(s);
       const model = s.embeddingModel || DEFAULT_EMBEDDING_MODEL[provider];
+      const base = s.embeddingBaseUrl ?? s.baseUrl ?? null;
       if ((provider === 'mock' || k.status === 'valid') && model)
         embedding = {
-          provider: embeddingProvider(
-            provider,
-            this.conn(this.decrypt(k), s.embeddingBaseUrl ?? s.baseUrl ?? null),
+          provider: guardedEmbeddings(
+            embeddingProvider(provider, this.conn(this.decrypt(k), base)),
+            this.guard(this.breakerKey('embedding', false, provider, base)),
           ),
           model,
           signature: `${provider}:${model}`,
           platform: false,
         };
     } else if (!s.chatProvider && pd?.embeddingProvider && pd.embeddingModel) {
+      const base = pd.embeddingBaseUrl ?? pd.baseUrl;
       embedding = {
-        provider: embeddingProvider(
-          pd.embeddingProvider,
-          this.conn(pd.embeddingApiKey ?? pd.apiKey, pd.embeddingBaseUrl ?? pd.baseUrl),
+        provider: guardedEmbeddings(
+          embeddingProvider(pd.embeddingProvider, this.conn(pd.embeddingApiKey ?? pd.apiKey, base)),
+          this.guard(this.breakerKey('embedding', true, pd.embeddingProvider, base)),
         ),
         model: pd.embeddingModel,
         signature: `${pd.embeddingProvider}:${pd.embeddingModel}`,
@@ -292,6 +348,17 @@ export class AiSettingsService {
       chat = null;
       embedding = null;
     }
+    const waitingConsent = !chat && !consentOk && (s.chatProvider ?? pd?.provider) !== 'mock';
+
+    // The monthly budget: once it is used, every AI call stops and keyword-only mode stays (spec §7).
+    const limit = s.monthlyTokenBudget;
+    const used = limit > 0 && (chat || embedding) ? await this.d.usage.monthTokens() : 0;
+    const exhausted = limit > 0 && used >= limit;
+    if (exhausted) {
+      chat = null;
+      embedding = null;
+    }
+    if (limit > 0 && used >= (limit * BUDGET_WARNING_PERCENT) / 100) await this.budgetAlerts(s, used, limit);
 
     const configured = !!s.chatProvider || !!pd;
     const reason: AiStatusView['reason'] = s.killSwitch
@@ -302,18 +369,53 @@ export class AiSettingsService {
           ? 'not_configured'
           : chatKeyBad
             ? 'key_invalid'
-            : !chat && !consentOk && (s.chatProvider ?? pd?.provider) !== 'mock'
+            : waitingConsent
               ? 'consent_needed'
-              : !chat
-                ? 'not_configured'
-                : null;
+              : exhausted
+                ? 'budget_exhausted'
+                : !chat
+                  ? 'not_configured'
+                  : null;
     const status: AiStatusView = {
       answers: !!chat && s.features.chatbot,
       semantic: !!embedding,
       reason,
       demo: chat?.provider.id === 'mock',
     };
-    return { settings: s, status, chat: status.answers ? chat : null, embedding };
+    return {
+      settings: s,
+      status,
+      chat: status.answers ? chat : null,
+      embedding,
+      budget: { used, limit, exhausted, resetsAt: nextMonth() },
+    };
+  }
+
+  /** Whether the month's budget is used now (checked between embedding batches). */
+  async budgetExhausted(): Promise<boolean> {
+    const limit = (await this.load()).monthlyTokenBudget;
+    return limit > 0 && (await this.d.usage.monthTokens()) >= limit;
+  }
+
+  /** Tells the admins once a month at BUDGET_WARNING_PERCENT and once when the budget is used. */
+  private async budgetAlerts(s: Settings, used: number, limit: number) {
+    const month = monthStart().slice(0, 7);
+    const percent = Math.min(100, Math.floor((used / limit) * 100));
+    if ((percent >= 100 ? s.alerts.budgetReached : s.alerts.budgetWarned) === month) return;
+    const field = percent >= 100 ? 'alerts.budgetReached' : 'alerts.budgetWarned';
+    // Guarded on the month, so concurrent requests and other servers send it once.
+    const r = await AiSettingsModel.updateOne({ [field]: { $ne: month } }, { $set: { [field]: month } });
+    if (!r.modifiedCount) return;
+    if (percent >= 100) await this.onAlert('ai_budget_reached', {});
+    else await this.onAlert('ai_budget_warning', { percent: String(BUDGET_WARNING_PERCENT) });
+  }
+
+  /** A provider failure while answering (short and key-free), for the admin dashboard. */
+  async recordFailure(message: string) {
+    await AiSettingsModel.updateOne(
+      {},
+      { $set: { 'health.lastError': message.slice(0, 300), 'health.lastErrorAt': new Date() } },
+    );
   }
 
   async status(): Promise<AiStatusView> {
@@ -348,6 +450,7 @@ export class AiSettingsService {
       chatRetentionDays: s.chatRetentionDays,
       features: { ...s.features },
       killSwitch: s.killSwitch,
+      prices: { ...s.prices },
       keys: {
         chat: key(s.keys.chat),
         embedding: key(this.embeddingKey(s)),
@@ -419,6 +522,10 @@ export class AiSettingsService {
     set('chatRetentionDays', body.chatRetentionDays);
     set('features', body.features as Settings['features']);
     set('killSwitch', body.killSwitch);
+    set('prices', body.prices);
+    // A new budget starts the month's alerts again (so a raised budget warns again at 80%).
+    if (changed.includes('monthlyTokenBudget'))
+      doc.set('alerts', { budgetWarned: null, budgetReached: null });
     if (before.chat !== body.chatProvider || before.baseUrl !== (chatEndpoint?.url ?? null))
       doc.set('keys.chat', emptyKey());
     if (before.embed !== body.embeddingProvider || before.embedBase !== (embedEndpoint?.url ?? null))
@@ -460,7 +567,13 @@ export class AiSettingsService {
         },
         meta,
       );
-    if (changed.some((c) => c === 'embeddingProvider' || c === 'embeddingModel'))
+    // New vectors are needed, or embedding may resume (a raised budget, the kill switch off).
+    if (
+      changed.some(
+        (c) => c === 'embeddingProvider' || c === 'embeddingModel' || c === 'monthlyTokenBudget',
+      ) ||
+      (before.kill && !body.killSwitch)
+    )
       await this.onEmbeddingReady();
     return this.view();
   }
@@ -569,10 +682,12 @@ export class AiSettingsService {
     const k = target === 'embedding' ? this.embeddingKey(s) : s.keys.chat;
     if (!k.apiKeyEnc) return;
     const own = target === 'embedding' && k === s.keys.chat ? 'chat' : target;
-    await AiSettingsModel.updateOne(
-      { [`keys.${own}.apiKeyEnc`]: k.apiKeyEnc },
+    const r = await AiSettingsModel.updateOne(
+      { [`keys.${own}.apiKeyEnc`]: k.apiKeyEnc, [`keys.${own}.status`]: { $ne: 'invalid' } },
       { $set: { [`keys.${own}.status`]: 'invalid', [`keys.${own}.error`]: message.slice(0, 300) } },
     );
+    // Once per rejection (concurrent failures change the status only once).
+    if (r.modifiedCount) await this.onAlert('ai_key_invalid', { target: own });
   }
 
   /** The admin accepts the data-processing notice (versioned and audit-logged). */
@@ -605,7 +720,6 @@ export class AiSettingsService {
     return apiKey ? this.conn(apiKey, null) : null;
   }
 
-  /** The decrypted YouTube key for external video suggestions (server use only), when enabled. */
   /**
    * "From the web" for `/videos` (spec §6): YouTube search through the official Data API with the
    * college's own key, only when the admin turned it on and accepted the data notice. Links only;

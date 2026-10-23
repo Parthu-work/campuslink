@@ -251,3 +251,13 @@ Spec §13 step 4.
 - **"Ask about this page"** in the PDF viewer and **"Ask about this moment"** in the players.
 - **Private by design:** conversations are the member's alone, follow the college's retention, and can be deleted; personal details are removed from questions before they leave; material cannot break out of its source blocks.
 - **Budget:** initial JS 169.7 KB; the chat loads with its screen or the sheet; KaTeX (75 KB) loads only when an answer has maths, under a recorded exception.
+
+## Phase 9 · Study, step 5: budgets, degradation, insights and the AI dashboard
+
+Spec §13 step 5.
+
+- **Budgets and limits that degrade gently:** when the college's monthly token budget is used, or a member has used today's answers, questions get the matching passages with a plain explanation; search, `/videos` and `/notes` keep working. Admins are told at 80% and at 100%, once each per month; raising the budget resumes answers and embedding at once.
+- **Outages:** one retry before anything is shown, a circuit breaker after repeated failures (passages at once, answers paused for a minute), a rejected key marked for the admin with one alert, and the last problem shown on the dashboard.
+- **Faculty insights** (`/study/:id/insights`, from the subject header): most asked topics, content gaps with **Upload material for this** (the upload sheet opens with the topic chosen), most used material, engagement by unit and feedback, all as suppressed counts with no question or student shown.
+- **Admin › AI assistant › Usage and health:** the month against the budget, tokens per day (a new `ColumnChart` primitive: thin brand-hue columns, keyboard and hover tooltip, table view; in the style guide), usage by model with an estimate from prices the admin enters, failures, the queue and coverage per subject.
+- **Budget:** initial JS 169.0 KB (down from 169.7): the Turnstile loader now loads only when a human check is needed, and the permission descriptions stay on the server.

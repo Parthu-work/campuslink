@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { pinoHttp } from 'pino-http';
 import type { Redis } from 'ioredis';
-import { API_PREFIX } from '@campuslink/shared';
+import { API_PREFIX, Role } from '@campuslink/shared';
 import type { Env } from './config/env.js';
 import { httpLogSerializers, type Logger } from './lib/logger.js';
 import { requestId } from './middleware/request-id.js';
@@ -99,6 +99,7 @@ import { EMBED_JOB, IndexingService } from './modules/study/indexing.service.js'
 import { RetrievalService } from './modules/study/retrieval.service.js';
 import { ChatService } from './modules/study/chat.service.js';
 import { chatRoutes } from './modules/study/chat.routes.js';
+import { StudyInsightsService } from './modules/study/insights.service.js';
 import { VectorIndex, type VectorStore } from './modules/study/vector/store.js';
 import { createVectorStore } from './modules/study/vector/factory.js';
 import { MaterialPipeline, PROCESS_JOB } from './modules/study/pipeline.js';
@@ -456,10 +457,12 @@ export function createApp({
 
   // ── Study and the AI study assistant (Phase 9) ─────────────────────────────
   const subjectsService = new SubjectsService({ profiles: profilesService });
+  const aiUsageService = new AiUsageService();
   const aiSettingsService = new AiSettingsService({
     cipher,
     fetcher,
     profiles: profilesService,
+    usage: aiUsageService,
     privateEndpoints: env.AI_PRIVATE_ENDPOINTS,
     platformDefault:
       env.AI_DEFAULT_PROVIDER && env.AI_DEFAULT_CHAT_MODEL
@@ -475,6 +478,10 @@ export function createApp({
           }
         : null,
   });
+  aiSettingsService.onAlert = async (type, data) => {
+    for (const id of await usersService.activeIdsWithRole(Role.COLLEGE_ADMIN))
+      await notificationsService.notify(id, type, data);
+  };
 
   const materialPipeline = new MaterialPipeline({
     files: filesService,
@@ -518,7 +525,6 @@ export function createApp({
 
   // Embeddings, the vector index and hybrid retrieval (spec step 3).
   const vectorIndex = new VectorIndex(vectorStore ?? createVectorStore(env, fetcher));
-  const aiUsageService = new AiUsageService();
   const indexingService = new IndexingService({
     ai: aiSettingsService,
     subjects: subjectsService,
@@ -549,6 +555,15 @@ export function createApp({
     usage: aiUsageService,
     award: gamificationService.award,
     logger,
+  });
+
+  // Faculty insights and the admin AI dashboard (spec step 5): aggregates only.
+  const insightsService = new StudyInsightsService({
+    subjects: subjectsService,
+    materials: materialsService,
+    ai: aiSettingsService,
+    usage: aiUsageService,
+    indexing: indexingService,
   });
 
   // ── Privacy rights (Phase 8) ─────────────────────────────
@@ -696,11 +711,19 @@ export function createApp({
   app.use(API_PREFIX, defineModule('privacy', privacyRoutes(privacyService), pipeline));
   app.use(
     API_PREFIX,
-    defineModule('study', studyRoutes({ subjects: subjectsService, ai: aiSettingsService }), pipeline),
+    defineModule(
+      'study',
+      studyRoutes({ subjects: subjectsService, ai: aiSettingsService, insights: insightsService }),
+      pipeline,
+    ),
   );
   app.use(
     API_PREFIX,
-    defineModule('ai-settings', aiSettingsRoutes(aiSettingsService, indexingService), pipeline),
+    defineModule(
+      'ai-settings',
+      aiSettingsRoutes(aiSettingsService, indexingService, insightsService),
+      pipeline,
+    ),
   );
   app.use(
     API_PREFIX,

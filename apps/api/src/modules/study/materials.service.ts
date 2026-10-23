@@ -23,9 +23,11 @@ import {
   MaterialJobModel,
   MaterialModel,
   MaterialPageModel,
+  MaterialViewStatModel,
   VideoSegmentModel,
   type MaterialDoc,
 } from './material.model.js';
+import { usageDay } from './ai-usage.service.js';
 import { AppError, badRequest, conflict, forbidden, notFound } from '../../lib/errors.js';
 import { ErrorCode } from '@campuslink/shared';
 import { plainText } from '../../lib/text.js';
@@ -217,6 +219,13 @@ export class MaterialsService {
     const { m, a } = await this.load(viewer, id);
     const [view] = await this.present(viewer, [m], a);
     if (!view) throw notFound('Material');
+    // An anonymous count (no member id) for the faculty's insights; staff previews do not count.
+    if (!a.manage && m.visibility === 'published')
+      await MaterialViewStatModel.updateOne(
+        { materialId: m._id, day: usageDay() },
+        { $inc: { views: 1 }, $setOnInsert: { subjectId: m.subjectId } },
+        { upsert: true },
+      );
     const [segments, pages] = await Promise.all([
       VideoSegmentModel.find({ materialId: m._id }).sort({ start: 1 }).limit(5000).lean(),
       MaterialPageModel.find({ materialId: m._id }).sort({ page: 1 }).select('page text').lean(),
@@ -613,6 +622,7 @@ export class MaterialsService {
     await VideoSegmentModel.deleteMany({ materialId: m._id });
     await MaterialPageModel.deleteMany({ materialId: m._id });
     await MaterialJobModel.deleteMany({ materialId: m._id });
+    await MaterialViewStatModel.deleteMany({ materialId: m._id });
     await this.onRemoved(m._id);
     for (const f of [m.fileId, m.thumbnailFileId]) if (f) await this.d.files.remove(f);
     await MaterialModel.deleteOne({ _id: m._id });
@@ -640,6 +650,81 @@ export class MaterialsService {
     await MaterialModel.updateMany({ subjectId }, { $pull: { topicIds: { $in: topicIds } } });
     await ContentChunkModel.updateMany({ subjectId }, { $pull: { topicIds: { $in: topicIds } } });
     await VideoSegmentModel.updateMany({ subjectId }, { $pull: { topicIds: { $in: topicIds } } });
+  }
+
+  /**
+   * Processing state of the library (Admin › AI assistant): per subject, how much is processed,
+   * still in the pipeline or failed, and the age of the oldest unfinished material.
+   */
+  async processing(): Promise<{
+    bySubject: Map<string, { materials: number; indexed: number; processing: number; failed: number }>;
+    processing: number;
+    failed: number;
+    oldestWaiting: Date | null;
+  }> {
+    const busy = { $not: { $in: ['$stage', ['indexed', 'failed']] } };
+    const rows = await MaterialModel.aggregate<{
+      _id: Types.ObjectId;
+      materials: number;
+      indexed: number;
+      processing: number;
+      failed: number;
+    }>([
+      { $match: { visibility: { $ne: 'archived' } } },
+      {
+        $group: {
+          _id: '$subjectId',
+          materials: { $sum: 1 },
+          indexed: { $sum: { $cond: [{ $eq: ['$stage', 'indexed'] }, 1, 0] } },
+          processing: { $sum: { $cond: [busy, 1, 0] } },
+          failed: { $sum: { $cond: [{ $eq: ['$stage', 'failed'] }, 1, 0] } },
+        },
+      },
+    ]);
+    const oldest = await MaterialModel.findOne({
+      visibility: { $ne: 'archived' },
+      stage: { $nin: ['indexed', 'failed'] },
+    })
+      .sort({ updatedAt: 1 })
+      .select('updatedAt')
+      .lean<{ updatedAt: Date }>();
+    return {
+      bySubject: new Map(rows.map(({ _id, ...r }) => [String(_id), r])),
+      processing: rows.reduce((n, r) => n + r.processing, 0),
+      failed: rows.reduce((n, r) => n + r.failed, 0),
+      oldestWaiting: oldest?.updatedAt ?? null,
+    };
+  }
+
+  /** Published material by id (title, type and syllabus tags), for the faculty's insights. */
+  async titles(
+    ids: string[],
+  ): Promise<Map<string, { title: string; type: MaterialType; unitId: string | null; topicIds: string[] }>> {
+    const rows = await MaterialModel.find({ _id: { $in: ids.map(oid) }, visibility: 'published' })
+      .select('title type unitId topicIds')
+      .lean<Pick<MaterialDoc, '_id' | 'title' | 'type' | 'unitId' | 'topicIds'>[]>();
+    return new Map(
+      rows.map((m) => [
+        String(m._id),
+        {
+          title: m.title,
+          type: m.type as MaterialType,
+          unitId: m.unitId ? String(m.unitId) : null,
+          topicIds: (m.topicIds ?? []).map(String),
+        },
+      ]),
+    );
+  }
+
+  /** Anonymous view counts per material since a UTC day (faculty insights). */
+  async viewCounts(subjectId: Types.ObjectId, sinceDay: string): Promise<Map<string, number>> {
+    const rows = await MaterialViewStatModel.aggregate<{ _id: Types.ObjectId; views: number }>([
+      { $match: { subjectId, day: { $gte: sinceDay } } },
+      { $group: { _id: '$materialId', views: { $sum: '$views' } } },
+      { $sort: { views: -1 } },
+      { $limit: 500 },
+    ]);
+    return new Map(rows.map((r) => [String(r._id), r.views]));
   }
 
   async counts(subjectIds: Types.ObjectId[]): Promise<Map<string, number>> {

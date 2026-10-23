@@ -14,6 +14,7 @@ import { OtpInput } from '../../components/ui/otp';
 import { PageHeader } from '../../components/ui/page-header';
 import { ProgressBar, ProgressRing } from '../../components/ui/progress';
 import { StatCard, StatGrid } from '../../components/ui/stat-card';
+import { ColumnChart } from '../../components/ui/column-chart';
 import { RadarSweep } from '../../components/ui/radar-sweep';
 import { RoleChip } from '../../components/ui/role-chip';
 import { Stepper } from '../../components/ui/stepper';
@@ -566,6 +567,17 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
             tone="brand"
           />
         </StatGrid>
+        <ColumnChart
+          title={t('design.chart')}
+          description={t('design.chartHint')}
+          labelHeader={t('design.chartDay')}
+          valueHeader={t('design.colCount')}
+          points={[1200, 3400, 2100, 0, 5600, 4300, 6100].map((value, i) => ({
+            key: String(i),
+            label: t('design.chartDayN', { n: i + 1 }),
+            value,
+          }))}
+        />
         <Table label={t('design.table')}>
           <THead>
             <tr>

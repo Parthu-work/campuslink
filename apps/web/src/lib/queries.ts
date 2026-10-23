@@ -1,5 +1,7 @@
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import type {
+  AiUsageView,
+  StudyInsightsView,
   BookingView,
   CommentView,
   ConversationView,
@@ -308,6 +310,25 @@ export const aiIndex = () =>
       const d = q.state.data;
       return d && (d.running || (d.semantic && d.pending > 0)) ? 3000 : false;
     },
+  });
+
+/** Admin › AI assistant › Usage: college totals for the last `days` days. */
+export const aiUsage = (days: number) =>
+  queryOptions({
+    queryKey: ['ai-usage', days],
+    queryFn: ({ signal }) => api.get<AiUsageView>(`/admin/ai/usage?days=${days}`, signal),
+    placeholderData: (prev) => prev,
+  });
+
+/** A subject's aggregate insights (owners and admins). */
+export const studyInsights = (subjectId: string, days: number) =>
+  queryOptions({
+    queryKey: ['study-insights', subjectId, days],
+    queryFn: ({ signal }) =>
+      api.get<StudyInsightsView>(`/study/subjects/${subjectId}/insights?days=${days}`, signal),
+    enabled: /^[a-f0-9]{24}$/.test(subjectId),
+    placeholderData: (prev) => prev,
+    retry: false,
   });
 
 export interface MaterialFilter {

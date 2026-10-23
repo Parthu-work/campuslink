@@ -187,3 +187,23 @@ const segmentSchema = new Schema(
 segmentSchema.index({ tenantId: 1, materialId: 1, start: 1 });
 export type VideoSegmentDoc = InferSchemaType<typeof segmentSchema> & { _id: Types.ObjectId };
 export const VideoSegmentModel = defineTenantModel('VideoSegment', segmentSchema);
+
+/**
+ * How often members opened each material, per UTC day: a counter with no member id, for the
+ * faculty's "most used material" insight. Staff previews of their own subjects are not counted.
+ * Rows go after about 13 months.
+ */
+const viewStatSchema = new Schema(
+  {
+    subjectId: { type: Schema.Types.ObjectId, required: true },
+    materialId: { type: Schema.Types.ObjectId, required: true },
+    day: { type: String, required: true, match: /^\d{4}-\d{2}-\d{2}$/ },
+    views: { type: Number, default: 0 },
+  },
+  baseSchemaOptions,
+);
+viewStatSchema.index({ tenantId: 1, materialId: 1, day: 1 }, { unique: true });
+viewStatSchema.index({ tenantId: 1, subjectId: 1, day: 1 });
+viewStatSchema.index({ createdAt: 1 }, { expireAfterSeconds: 400 * 86_400 });
+export type MaterialViewStatDoc = InferSchemaType<typeof viewStatSchema> & { _id: Types.ObjectId };
+export const MaterialViewStatModel = defineTenantModel('MaterialViewStat', viewStatSchema);

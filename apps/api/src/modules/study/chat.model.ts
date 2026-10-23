@@ -57,6 +57,13 @@ const messageSchema = new Schema(
     result: { type: Schema.Types.Mixed, default: null },
     status: { type: String, enum: ['complete', 'stopped', 'failed', 'refused'], default: 'complete' },
     grounded: { type: Boolean, default: false },
+    /**
+     * What the answer was about (the scope and the subjects, units and topics of its sources), so
+     * faculty insights can count questions per topic without reading any conversation.
+     */
+    subjectIds: { type: [Schema.Types.ObjectId], default: [] },
+    unitIds: { type: [Schema.Types.ObjectId], default: [] },
+    topicIds: { type: [Schema.Types.ObjectId], default: [] },
     /** Replaced by a regenerated answer (kept for the record, hidden from the thread). */
     superseded: { type: Boolean, default: false },
     feedback: {
@@ -74,6 +81,8 @@ const messageSchema = new Schema(
 );
 messageSchema.index({ tenantId: 1, sessionId: 1, createdAt: 1 });
 messageSchema.index({ tenantId: 1, userId: 1, createdAt: -1 });
+messageSchema.index({ tenantId: 1, subjectIds: 1, createdAt: -1 });
+messageSchema.index({ tenantId: 1, role: 1, createdAt: -1 });
 messageSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 export type ChatMessageDoc = InferSchemaType<typeof messageSchema> & {
   _id: Types.ObjectId;

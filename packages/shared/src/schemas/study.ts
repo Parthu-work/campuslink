@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { objectId } from './common.js';
 import type { PersonRef } from './mentorship.js';
+import type { Count } from './analytics.js';
 import { BRANCHES, type Branch } from '../constants/people.js';
 import {
   AI_CONSENT_VERSION,
@@ -17,19 +18,24 @@ import {
   SEMESTER_MIN,
   MATERIAL_LANGUAGES,
   MATERIAL_TABS,
+  PRICE_CURRENCIES,
+  STUDY_PERIODS,
   SUBJECT_STATUSES,
   SYLLABUS_MAX_TOPICS,
   SYLLABUS_MAX_UNITS,
   type AiFeature,
   type AiKeyTarget,
   type AiProvider,
+  type AiUsageKind,
   type AnswerMode,
+  type ChatFeedbackReason,
   type EmbeddingProvider,
   type KeyStatus,
   type MaterialLanguage,
   type MaterialTab,
   type MaterialType,
   type MaterialVisibility,
+  type PriceCurrency,
   type ProcessingStage,
   type ServerCommand,
   type SubjectStatus,
@@ -183,6 +189,15 @@ export const endpointUrl = z
   .url({ protocol: /^https?$/, error: 'Use an https:// address' })
   .max(500)
   .refine((u) => !/[?#]/.test(u), 'Leave out query strings and fragments');
+const price = z.number().min(0).max(100_000).nullable();
+/** Per million tokens, as the provider lists them; null until the admin enters one. */
+export const aiPrices = z.strictObject({
+  currency: z.enum(PRICE_CURRENCIES),
+  chatInput: price,
+  chatOutput: price,
+  embedding: price,
+});
+export type AiPrices = z.infer<typeof aiPrices>;
 export const aiSettingsBody = z.strictObject({
   /** null: not configured (members get keyword search and extractive answers). */
   chatProvider: z.enum(AI_PROVIDERS).nullable(),
@@ -212,6 +227,11 @@ export const aiSettingsBody = z.strictObject({
   }),
   /** Stops every AI call at once (keyword-only mode stays). */
   killSwitch: z.boolean().default(false),
+  /**
+   * The provider's prices as the admin read them on its pricing page, per million tokens, for the
+   * dashboard's cost estimate. Never filled in by the app (prices change and differ by account).
+   */
+  prices: aiPrices.default({ currency: 'USD', chatInput: null, chatOutput: null, embedding: null }),
 });
 export type AiSettingsInput = z.infer<typeof aiSettingsBody>;
 export const aiKeyBody = z.strictObject({
@@ -247,7 +267,7 @@ export interface SubjectView {
   topicCount: number;
   materialCount: number;
   /** What this viewer may do (the API enforces it again). */
-  can: { manage: boolean; upload: boolean };
+  can: { manage: boolean; upload: boolean; analyse: boolean };
   /** True when the subject is in the viewer's own list (enrolled, owner or contributor). */
   mine: boolean;
   updatedAt: string;
@@ -368,6 +388,7 @@ export interface AiSettingsView {
   chatRetentionDays: number;
   features: Record<AiFeature, boolean>;
   killSwitch: boolean;
+  prices: AiPrices;
   keys: Record<AiKeyTarget, AiKeyView>;
   consent: { version: string; acceptedAt: string; by: PersonRef } | null;
   consentVersion: string;
@@ -377,7 +398,14 @@ export interface AiSettingsView {
   providers: AiProviderInfo[];
 }
 export type AiOffReason =
-  'not_configured' | 'chatbot_off' | 'kill_switch' | 'consent_needed' | 'key_invalid' | 'budget_exhausted';
+  | 'not_configured'
+  | 'chatbot_off'
+  | 'kill_switch'
+  | 'consent_needed'
+  | 'key_invalid'
+  | 'budget_exhausted'
+  /** This member used today's AI answers (per-member daily limit). */
+  | 'daily_limit';
 /** What members see: whether AI answers are on, and if not, why (no settings detail). */
 export interface AiStatusView {
   /** AI answers (the language model) are available. */
@@ -411,6 +439,107 @@ export interface AiTestResult {
   ok: boolean;
   models: string[];
   error: string | null;
+}
+
+// ── AI usage and study insights (aggregates only) ─────────────────────────────
+/** `?days=` for the admin AI dashboard and the faculty insights. */
+export const studyPeriodQuery = z.strictObject({
+  days: z.coerce
+    .number()
+    .int()
+    .refine((n) => (STUDY_PERIODS as readonly number[]).includes(n), 'Choose 7, 30 or 90 days')
+    .default(30),
+});
+/** Tokens on one UTC day, by what they were for. */
+export interface AiUsageDay {
+  day: string;
+  chat: number;
+  embedding: number;
+  /** Transcription and re-ranking. */
+  other: number;
+  requests: Count;
+}
+export interface AiUsageModelRow {
+  /** `provider:model`. */
+  model: string;
+  kind: AiUsageKind;
+  requests: Count;
+  inputTokens: number;
+  outputTokens: number;
+  /** From the prices the admin entered; null when there is no price for this kind. */
+  cost: number | null;
+}
+/** How much of a subject's material is processed and searchable by meaning. */
+export interface AiSubjectCoverage {
+  subjectId: string;
+  name: string;
+  code: string;
+  materials: number;
+  indexed: number;
+  processing: number;
+  failed: number;
+  passages: number;
+  embedded: number;
+}
+/** Admin › AI assistant › Usage: college totals only, never per member. */
+export interface AiUsageView {
+  days: number;
+  series: AiUsageDay[];
+  month: {
+    /** `YYYY-MM` (UTC). */
+    month: string;
+    used: number;
+    /** 0 means no budget. */
+    budget: number;
+    percent: number | null;
+    exhausted: boolean;
+    /** When the month's count starts again (UTC midnight on the 1st). */
+    resetsAt: string;
+  };
+  models: AiUsageModelRow[];
+  cost: { currency: PriceCurrency; period: number | null; month: number | null; priced: boolean };
+  answers: { total: Count; failed: Count; refused: Count; notCovered: Count };
+  lastError: { message: string; at: string } | null;
+  /** Answers are paused after repeated provider failures (this server), until `until`. */
+  breaker: { open: boolean; until: string | null };
+  queue: {
+    processing: number;
+    failed: number;
+    /** Minutes the oldest unfinished material has waited. */
+    oldestWaitingMin: number | null;
+    embeddingsPending: number;
+    embeddingsRunning: boolean;
+  };
+  coverage: AiSubjectCoverage[];
+}
+/**
+ * Faculty insights for one subject (spec §10): what students ask about, what the material does
+ * not cover, which material helps, and how each unit is used. Counts under 5 are suppressed;
+ * no question text and no member is ever shown.
+ */
+export interface StudyInsightsView {
+  subjectId: string;
+  days: number;
+  generatedAt: string;
+  questions: Count;
+  students: Count;
+  answered: Count;
+  notCovered: Count;
+  feedback: {
+    up: Count;
+    down: Count;
+    /** Share of rated answers marked helpful; null with fewer than 5 ratings. */
+    helpfulRate: number | null;
+    reasons: { reason: ChatFeedbackReason; count: Count }[];
+  };
+  topics: { topicId: string; title: string; unitTitle: string; questions: Count }[];
+  /**
+   * Content gaps: syllabus topics with questions the material did not cover, and words asked
+   * about by at least 5 students that match no topic (`topicId` null).
+   */
+  gaps: { topicId: string | null; unitId: string | null; title: string; questions: Count; students: Count }[];
+  materials: { id: string; title: string; type: MaterialType; cited: Count; views: Count }[];
+  units: { unitId: string; title: string; questions: Count; students: Count; views: Count }[];
 }
 
 // ── Study chat ─────────────────────────────

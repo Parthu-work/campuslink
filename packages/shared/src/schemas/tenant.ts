@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { HEX_COLOR } from '../color.js';
 import { tenantSlug, email, personName } from './common.js';
-import { ALL_PERMISSIONS, PLATFORM_PERMISSIONS, TENANT_ROLES, type Permission } from '../roles.js';
+import { ALL_PERMISSIONS, PLATFORM_PERMISSIONS, TENANT_ROLES } from '../roles.js';
 
 const hex = z
   .string()
@@ -36,7 +36,7 @@ export type Feature = keyof typeof FEATURES;
 const featureKeys = Object.keys(FEATURES) as [Feature, ...Feature[]];
 
 const grantablePermission = z
-  .enum(ALL_PERMISSIONS as [Permission, ...Permission[]])
+  .enum(ALL_PERMISSIONS)
   .refine(
     (p) => !PLATFORM_PERMISSIONS.includes(p),
     'Platform permissions cannot be granted to a college role',

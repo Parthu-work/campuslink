@@ -29,6 +29,7 @@ import {
   MaterialJobModel,
   MaterialModel,
   MaterialPageModel,
+  MaterialViewStatModel,
   VideoSegmentModel,
 } from '../../src/modules/study/material.model.js';
 import { withTextSearch } from '../../src/db/search.js';
@@ -108,6 +109,8 @@ beforeAll(async () => {
   await a(facA).post(`/study/materials/${videoA}/transcript`).attach('file', Buffer.from(DEMO_VTT), 'a.vtt');
   await ctx.queue.drain();
   fileLinkA = (await a(studentA).get(`/study/materials/${materialA}/file`)).body.data.url;
+  // An anonymous view count for A's insights.
+  expect((await a(studentA).get(`/study/materials/${materialA}`)).status).toBe(200);
   // B has its own subject so empty results are meaningful.
   await makeSubject(ctx, B, facB, { name: 'Beta Automata', code: 'ZYX1' });
   // A's student talks to the assistant (its provider is unreachable here, so the passages answer),
@@ -278,6 +281,23 @@ describe('HTTP: nothing of college A is reachable from college B', () => {
     expect(String(r.body)).not.toMatch(/Zyxquark automata are/);
   });
 
+  it('subject insights and the AI dashboard are per college', async () => {
+    expect((await a(facA).get(`/study/subjects/${subjectA}/insights`)).status).toBe(200);
+    expect((await inB(adminB).get(`/study/subjects/${subjectA}/insights`)).status).toBe(404);
+    expect((await inB(facB).get(`/study/subjects/${subjectA}/insights`)).status).toBe(404);
+    const usageA = (await a(adminA).get('/admin/ai/usage')).body.data;
+    expect(usageA.coverage.map((c: { subjectId: string }) => c.subjectId)).toContain(subjectA);
+    const usageB = (await inB(adminB).get('/admin/ai/usage')).body.data;
+    expect(JSON.stringify(usageB)).not.toContain(subjectA);
+    expect(JSON.stringify(usageB)).not.toContain('Zyxquark');
+    // B's month counts B's own usage (its demo searches) only.
+    const own = await runInTenant(B._id, async () =>
+      (await AiUsageModel.find().lean()).reduce((n, r) => n + r.inputTokens + r.outputTokens, 0),
+    );
+    expect(usageB.month.used).toBe(own);
+    expect(usageA.month.used).toBeGreaterThan(own);
+  });
+
   it('a token from A never works on B', async () => {
     const r = await api(ctx, B.host, studentA.token).get('/study/subjects');
     expect(r.status).toBe(401);
@@ -302,6 +322,7 @@ describe('database layer: every Phase 9 collection is scoped', () => {
     ['ChatMessage', ChatMessageModel as Model<unknown>],
     ['UnansweredQuestion', UnansweredQuestionModel as Model<unknown>],
     ['FlashcardDeck', FlashcardDeckModel as Model<unknown>],
+    ['MaterialViewStat', MaterialViewStatModel as Model<unknown>],
   ];
 
   it.each(MODELS)('%s: B cannot read, search, update or delete A’s documents', async (_name, model) => {

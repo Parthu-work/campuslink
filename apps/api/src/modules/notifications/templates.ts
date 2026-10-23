@@ -87,6 +87,18 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     },
     material_review: { title: 'Material to review', body: '{name} shared “{title}” for review.' },
     material_reviewed: { title: 'Review decision', body: '“{title}” was {decision}.' },
+    ai_key_invalid: {
+      title: 'AI key rejected',
+      body: 'The AI provider rejected your college’s key. Students see passages from the material instead of answers until you replace it.',
+    },
+    ai_budget_warning: {
+      title: 'AI budget {percent}% used',
+      body: 'The study assistant has used {percent}% of this month’s token budget.',
+    },
+    ai_budget_reached: {
+      title: 'AI budget used up',
+      body: 'This month’s token budget is used. Students see passages from the material instead of answers until the 1st, or until you raise the budget.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -177,6 +189,18 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     },
     material_review: { title: 'సమీక్షించాల్సిన సామగ్రి', body: '{name} సమీక్ష కోసం “{title}” పంచుకున్నారు.' },
     material_reviewed: { title: 'సమీక్ష నిర్ణయం', body: '“{title}” {decision}.' },
+    ai_key_invalid: {
+      title: 'AI కీ తిరస్కరించబడింది',
+      body: 'AI ప్రొవైడర్ మీ కళాశాల కీని తిరస్కరించింది. మీరు దాన్ని మార్చే వరకు విద్యార్థులకు సమాధానాలకు బదులుగా సామగ్రిలోని భాగాలు కనిపిస్తాయి.',
+    },
+    ai_budget_warning: {
+      title: 'AI బడ్జెట్ {percent}% వాడబడింది',
+      body: 'స్టడీ అసిస్టెంట్ ఈ నెల టోకెన్ బడ్జెట్‌లో {percent}% వాడింది.',
+    },
+    ai_budget_reached: {
+      title: 'AI బడ్జెట్ పూర్తయింది',
+      body: 'ఈ నెల టోకెన్ బడ్జెట్ పూర్తయింది. 1వ తేదీ వరకు, లేదా మీరు బడ్జెట్ పెంచే వరకు, విద్యార్థులకు సమాధానాలకు బదులుగా సామగ్రిలోని భాగాలు కనిపిస్తాయి.',
+    },
   },
 };
 
@@ -310,6 +334,10 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return data.subjectId && data.materialId ? `/study/${data.subjectId}/m/${data.materialId}` : '/study';
     case 'material_review':
       return data.subjectId ? `/study/${data.subjectId}?review=1` : '/study';
+    case 'ai_key_invalid':
+    case 'ai_budget_warning':
+    case 'ai_budget_reached':
+      return '/admin/ai';
     default:
       return '/sessions';
   }

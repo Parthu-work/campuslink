@@ -36,8 +36,19 @@ export interface FakeCall {
 /** A fake SSRF-safe fetcher that answers like the AI providers do (no network). */
 export function aiFetcher() {
   const calls: FakeCall[] = [];
-  /** Switches for the embeddings endpoint: an outage (503) or a key the provider revoked (401). */
-  const state = { embeddingsDown: false, embeddingsRevoked: false, embedRequests: 0 };
+  /**
+   * Switches for the embeddings and chat endpoints: an outage (503), a key the provider revoked
+   * (401), or the next `chatFailures` chat calls failing (503).
+   */
+  const state = {
+    embeddingsDown: false,
+    embeddingsRevoked: false,
+    embedRequests: 0,
+    chatDown: false,
+    chatRevoked: false,
+    chatFailures: 0,
+    chatRequests: 0,
+  };
   const fn = (async (url: string, opts: SafeFetchOptions = {}) => {
     const body = typeof opts.body === 'string' ? (JSON.parse(opts.body) as Record<string, unknown>) : null;
     calls.push({ url, opts, body });
@@ -67,6 +78,27 @@ export function aiFetcher() {
         data: input.map((t, index) => ({ index, embedding: mockVector(t) })),
         usage: { prompt_tokens: input.length * 8, total_tokens: input.length * 8 },
       });
+    }
+    if (url === 'https://api.openai.com/v1/chat/completions') {
+      state.chatRequests++;
+      if (state.chatRevoked || h.authorization !== `Bearer ${OPENAI_KEY}`)
+        return json(401, { error: { message: `Incorrect API key provided: ${h.authorization}` } });
+      if (state.chatDown || state.chatFailures > 0) {
+        state.chatFailures = Math.max(0, state.chatFailures - 1);
+        return json(503, { error: { message: 'The server is overloaded' } });
+      }
+      // A streamed answer citing the first source, in uneven pieces (as safeFetch delivers them).
+      const sse = Buffer.from(
+        [
+          { choices: [{ delta: { content: 'Demo answer: the material covers this ' } }] },
+          { choices: [{ delta: { content: 'in its first source [1].' }, finish_reason: 'stop' }] },
+          { choices: [], usage: { prompt_tokens: 120, completion_tokens: 30 } },
+        ]
+          .map((f) => `data: ${JSON.stringify(f)}\n\n`)
+          .join('') + 'data: [DONE]\n\n',
+      );
+      for (let i = 0; i < sse.length; i += 11) opts.onChunk?.(sse.subarray(i, i + 11), 200);
+      return { status: 200, contentType: 'text/event-stream', body: sse, finalUrl: url, headers: {} };
     }
     if (url.startsWith('http://ollama.test:11434/')) {
       if (!opts.allowPrivateNetwork) throw new SafeFetchError('Destination address is not allowed');

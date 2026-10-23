@@ -13,8 +13,8 @@ import {
   type MaterialDoc,
 } from './material.model.js';
 import { ProviderError, type EmbedResult } from './ai/provider.js';
-import type { ActiveEmbedding, AiSettingsService } from './ai-settings.service.js';
-import type { AiUsageService } from './ai-usage.service.js';
+import type { ActiveEmbedding, AiRuntime, AiSettingsService } from './ai-settings.service.js';
+import { nextMonth, type AiUsageService } from './ai-usage.service.js';
 import type { SubjectsService } from './subjects.service.js';
 import { cosine, type VectorIndex, type VectorPoint } from './vector/store.js';
 import type { AuthState } from '../../types.js';
@@ -128,9 +128,13 @@ export class IndexingService {
     try {
       await this.d.vectors.deleteMaterial(String(materialId));
       const rt = await this.d.ai.runtime();
-      if (!rt.embedding) return;
+      if (!rt.embedding) return await this.afterBudget(rt);
       const most = Math.ceil((await ContentChunkModel.countDocuments({ materialId })) / EMBED_BATCH) + 1;
-      for (let i = 0; i < most; i++) if (!(await this.embedBatch(rt.embedding, { materialId }))) break;
+      for (let i = 0; i < most; i++) {
+        if (!(await this.embedBatch(rt.embedding, { materialId }))) break;
+        // The month's budget ran out part-way: the rest waits for the back-fill next month.
+        if (await this.d.ai.budgetExhausted()) return await this.scheduleBackfill(untilNextMonth());
+      }
     } catch (e) {
       await this.failed(e);
     }
@@ -157,12 +161,16 @@ export class IndexingService {
     let more = false;
     try {
       const rt = await this.d.ai.runtime();
-      if (!rt.embedding) return;
+      if (!rt.embedding) return await this.afterBudget(rt);
       const emb = rt.embedding;
       await this.d.vectors.deleteOtherModels(emb.signature);
       await this.restore(emb.signature, data.rebuild === true);
       const started = Date.now();
       while (await this.embedBatch(emb, {})) {
+        if (await this.d.ai.budgetExhausted()) {
+          await this.scheduleBackfill(untilNextMonth());
+          break;
+        }
         if (Date.now() - started > SLICE_MS) {
           more = true;
           break;
@@ -185,6 +193,11 @@ export class IndexingService {
       );
     }
     if (more) await this.scheduleBackfill();
+  }
+
+  /** Embedding stopped because the month's budget is used: resume when the next month starts. */
+  private async afterBudget(rt: AiRuntime) {
+    if (rt.budget.exhausted) await this.scheduleBackfill(untilNextMonth());
   }
 
   /** Admin: rebuild the index from the stored vectors, then embed whatever is missing. */
@@ -226,6 +239,34 @@ export class IndexingService {
       lastRunAt: s?.indexing?.lastRunAt?.toISOString() ?? null,
       lastError: s?.indexing?.lastError ?? null,
     };
+  }
+
+  /** Passages, and passages with a vector of model `signature`, per subject (Admin › AI assistant). */
+  async coverage(signature: string | null): Promise<Map<string, { passages: number; embedded: number }>> {
+    const rows = await ContentChunkModel.aggregate<{
+      _id: Types.ObjectId;
+      passages: number;
+      embedded: number;
+    }>([
+      {
+        $group: {
+          _id: '$subjectId',
+          passages: { $sum: 1 },
+          embedded: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [{ $eq: ['$embeddingStatus', 'embedded'] }, { $eq: ['$embeddingModel', signature] }],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+        },
+      },
+    ]);
+    return new Map(rows.map(({ _id, ...r }) => [String(_id), r]));
   }
 
   /** Material hook: published, sent back or taken down. The search also re-checks, so a failure here is only logged. */
@@ -439,6 +480,9 @@ export class IndexingService {
     await this.scheduleBackfill(RETRY_LATER_MS);
   }
 }
+
+/** Milliseconds until a minute after the next month starts (UTC), when the budget is fresh. */
+const untilNextMonth = () => nextMonth().getTime() - Date.now() + 60_000;
 
 /** The topic whose vector is closest to the passage's, when close enough. */
 function closest(vector: number[], topics: { id: string; vector: number[] }[]): string | null {

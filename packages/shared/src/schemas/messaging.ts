@@ -96,6 +96,9 @@ export const NOTIFICATION_TYPES = [
   'material_failed',
   'material_review',
   'material_reviewed',
+  'ai_key_invalid',
+  'ai_budget_warning',
+  'ai_budget_reached',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -148,6 +151,9 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   event_promoted: 'events',
   material_ready: 'study',
   material_failed: 'study',
+  ai_key_invalid: 'study',
+  ai_budget_warning: 'study',
+  ai_budget_reached: 'study',
   material_review: 'study',
   material_reviewed: 'study',
 };

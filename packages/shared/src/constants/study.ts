@@ -142,6 +142,14 @@ export const CHUNK_EMBEDDING_STATUSES = ['embedding_pending', 'embedded', 'faile
 /** What AI usage is counted for (budgets and the admin dashboard). */
 export const AI_USAGE_KINDS = ['chat', 'embedding', 'transcription', 'rerank'] as const;
 export type AiUsageKind = (typeof AI_USAGE_KINDS)[number];
+/** Currencies the admin can enter provider prices in (for the dashboard's cost estimate). */
+export const PRICE_CURRENCIES = ['USD', 'INR', 'EUR', 'GBP'] as const;
+export type PriceCurrency = (typeof PRICE_CURRENCIES)[number];
+/** Admins are told once a month when this share of the token budget is used, and again at 100%. */
+export const BUDGET_WARNING_PERCENT = 80;
+/** Periods (days) the admin AI dashboard and the faculty insights cover. */
+export const STUDY_PERIODS = [7, 30, 90] as const;
+export type StudyPeriod = (typeof STUDY_PERIODS)[number];
 export type ChunkEmbeddingStatus = (typeof CHUNK_EMBEDDING_STATUSES)[number];
 
 // ── Study chat ─────────────────────────────

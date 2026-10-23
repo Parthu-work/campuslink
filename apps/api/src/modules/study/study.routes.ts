@@ -8,6 +8,7 @@ import {
   contributorBody,
   enrollmentBody,
   objectId,
+  studyPeriodQuery,
   subjectBody,
   subjectUpdateBody,
   subjectsQuery,
@@ -21,15 +22,21 @@ import { requestMeta } from '../../lib/request-meta.js';
 import type { SubjectsService } from './subjects.service.js';
 import type { AiSettingsService } from './ai-settings.service.js';
 import type { IndexingService } from './indexing.service.js';
+import type { StudyInsightsService } from './insights.service.js';
 import { parseSyllabus } from './syllabus-parse.js';
 
 const READ = { kind: 'permission', permission: 'study:read' } as const;
 const MANAGE = { kind: 'permission', permission: 'study:manage' } as const;
 const AI = { kind: 'permission', permission: 'ai:settings' } as const;
+const ANALYTICS = { kind: 'permission', permission: 'study:analytics' } as const;
 const tag = 'Study';
 const enrollmentParams = z.strictObject({ id: objectId, userId: objectId });
 
-export function studyRoutes(s: { subjects: SubjectsService; ai: AiSettingsService }): AnyRouteSpec[] {
+export function studyRoutes(s: {
+  subjects: SubjectsService;
+  ai: AiSettingsService;
+  insights: StudyInsightsService;
+}): AnyRouteSpec[] {
   return [
     {
       method: 'get',
@@ -172,10 +179,27 @@ export function studyRoutes(s: { subjects: SubjectsService; ai: AiSettingsServic
       access: READ,
       handler: async () => ({ data: await s.ai.status() }),
     },
+    {
+      method: 'get',
+      path: '/study/subjects/:id/insights',
+      tag,
+      summary:
+        'Aggregate insights for a subject I own (admins: any): topics asked, content gaps, material used, units (counts under 5 suppressed)',
+      access: ANALYTICS,
+      params: idParams,
+      query: studyPeriodQuery,
+      handler: async ({ req, params, query }) => ({
+        data: await s.insights.subject(authOf(req), params.id, query.days),
+      }),
+    },
   ];
 }
 
-export function aiSettingsRoutes(ai: AiSettingsService, indexing: IndexingService): AnyRouteSpec[] {
+export function aiSettingsRoutes(
+  ai: AiSettingsService,
+  indexing: IndexingService,
+  insights: StudyInsightsService,
+): AnyRouteSpec[] {
   const tag = 'AI assistant settings';
   return [
     {
@@ -262,6 +286,16 @@ export function aiSettingsRoutes(ai: AiSettingsService, indexing: IndexingServic
       limiter: 'adminWrite',
       idempotent: true,
       handler: async ({ req }) => ({ data: await indexing.reindex(authOf(req), requestMeta(req)) }),
+    },
+    {
+      method: 'get',
+      path: '/admin/ai/usage',
+      tag,
+      summary:
+        'College AI usage: tokens per day and model, the month against the budget, cost estimate from entered prices, failures, queue and coverage',
+      access: AI,
+      query: studyPeriodQuery,
+      handler: async ({ query }) => ({ data: await insights.dashboard(query.days) }),
     },
   ];
 }

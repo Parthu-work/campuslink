@@ -1,10 +1,10 @@
 import i18n from 'i18next';
 
 /** Dates and times in the viewer's own timezone and language. */
-const locale = () => (i18n.language === 'te' ? 'te-IN' : 'en-IN');
+export const locale = () => (i18n.language === 'te' ? 'te-IN' : 'en-IN');
 
 /** One formatter per language, made on first use: building an Intl formatter is slow. */
-const perLocale = <T>(make: (locale: string) => T) => {
+export const perLocale = <T>(make: (locale: string) => T) => {
   let made: { locale: string; value: T } | null = null;
   return () => {
     const l = locale();
@@ -20,7 +20,6 @@ const month = perLocale((l) => new Intl.DateTimeFormat(l, { month: 'short' }));
 const time = perLocale((l) => new Intl.DateTimeFormat(l, { hour: 'numeric', minute: '2-digit' }));
 const dateTime = perLocale((l) => new Intl.DateTimeFormat(l, { dateStyle: 'medium', timeStyle: 'short' }));
 const relative = perLocale((l) => new Intl.RelativeTimeFormat(l, { numeric: 'auto' }));
-
 export const formatDay = (iso: string | Date) => day().format(new Date(iso));
 /** Short weekday ("Thu"), for date tiles. */
 export const formatWeekday = (iso: string | Date) => weekday().format(new Date(iso));

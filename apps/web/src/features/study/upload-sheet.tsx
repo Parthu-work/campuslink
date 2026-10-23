@@ -169,7 +169,9 @@ export function UploadSheet({ subject, units }: { subject: SubjectView; units: S
   const { t } = useTranslation();
   const qc = useQueryClient();
   const sheet = useUrlOverlay('add');
-  const mode = sheet.value === 'link' ? 'link' : 'files';
+  // `files:<topicId>` comes from "Upload material for this" (insights): new files get that topic.
+  const [open = '', preset = ''] = (sheet.value ?? '').split(':');
+  const mode = open === 'link' ? 'link' : 'files';
   const [items, setItems] = useState<Item[]>([]);
   const [rights, setRights] = useState(false);
   const [language, setLanguage] = useState<MaterialLanguage>('en');
@@ -177,10 +179,11 @@ export function UploadSheet({ subject, units }: { subject: SubjectView; units: S
   const [over, setOver] = useState(false);
   const rightsId = useId();
   const allTopics = units.flatMap((u) => u.topics.map((tp) => ({ ...tp, unitId: u.id })));
+  const presetTopic = allTopics.find((tp) => tp.id === preset)?.id;
 
   const add = (files: FileList | File[]) => {
     const next = [...files].slice(0, 20).map((file): Item => {
-      const [topic] = suggestTopics(file.name, allTopics);
+      const [topic] = presetTopic ? [presetTopic] : suggestTopics(file.name, allTopics);
       return {
         key: `f${++seq}`,
         file,

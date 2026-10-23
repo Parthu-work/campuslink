@@ -141,6 +141,15 @@ export class UsersService {
     };
   }
 
+  /** Active members of the college with a role (for alerts to its admins). */
+  async activeIdsWithRole(role: Role): Promise<string[]> {
+    const rows = await UserModel.find({ roles: role, status: 'active' })
+      .select('_id')
+      .limit(50)
+      .lean<{ _id: Types.ObjectId }[]>();
+    return rows.map((r) => String(r._id));
+  }
+
   private async target(id: string) {
     const u = await UserModel.findById(id).select(ADMIN_FIELDS).lean<AdminUserRow>();
     if (!u) throw notFound('User'); // also the answer for ids in other tenants

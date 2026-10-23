@@ -280,7 +280,7 @@ export function SubjectLibrary({ subject, units }: { subject: SubjectView; units
       )}
       {subject.can.upload && (
         <Sheet
-          open={sheet.value === 'files' || sheet.value === 'link'}
+          open={sheet.value?.split(':')[0] === 'files' || sheet.value === 'link'}
           onOpenChange={(o) => !o && sheet.close()}
           title={t('study.addMaterial')}
           history={false}

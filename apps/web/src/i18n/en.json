@@ -26,7 +26,8 @@
     "plusN": "+{{n}}",
     "stepDone": "done",
     "change": "Change",
-    "optional": "Optional"
+    "optional": "Optional",
+    "showTable": "Show as a table"
   },
   "nav": {
     "home": "Home",
@@ -1026,6 +1027,18 @@
     "material_reviewed": {
       "title": "Review decision",
       "body": "“{{title}}” was {{decision}}."
+    },
+    "ai_key_invalid": {
+      "title": "AI key rejected",
+      "body": "The AI provider rejected your college’s key. Students see passages from the material instead of answers until you replace it."
+    },
+    "ai_budget_warning": {
+      "title": "AI budget {{percent}}% used",
+      "body": "The study assistant has used {{percent}}% of this month’s token budget."
+    },
+    "ai_budget_reached": {
+      "title": "AI budget used up",
+      "body": "This month’s token budget is used. Students see passages from the material instead of answers until the 1st, or until you raise the budget."
     }
   },
   "notifications": {
@@ -2349,7 +2362,11 @@
     "stepper": "Steps",
     "stepA": "Find you",
     "stepB": "Confirm",
-    "stepC": "Done"
+    "stepC": "Done",
+    "chart": "Column chart: one series",
+    "chartHint": "Hover or focus a column for its value; every value is also in the table.",
+    "chartDay": "Day",
+    "chartDayN": "Day {{n}}"
   },
   "study": {
     "title": "Study",
@@ -2732,7 +2749,46 @@
       "keepDeck": "Keep as a deck",
       "deckKept": "Kept",
       "deckSaved": "Deck kept",
-      "deck": "Flashcards"
+      "deck": "Flashcards",
+      "limit": {
+        "budget_exhausted": "Your college’s AI answers for this month are used up.",
+        "daily_limit": "You’ve used today’s AI answers."
+      },
+      "limitPassages": "Here are the passages from your material that match.",
+      "limitStillWorks": "Search, /videos, /notes and /syllabus still work.",
+      "limitAdmin": "Admins can change the limits in Admin › AI assistant.",
+      "budgetNote": "This month’s AI answers are used up: you’ll see the passages from your material that match."
+    },
+    "aiBudget": "This month’s AI answers are used up",
+    "insights": {
+      "open": "Insights",
+      "title": "Insights",
+      "intro": "How students use this subject: counts only, never names or questions. Counts under 5 show as “<5”.",
+      "unavailable": "Insights aren’t available",
+      "unavailableBody": "Only the subject’s faculty and the college’s admins can see them.",
+      "questions": "Questions",
+      "students": "Students asking",
+      "notCovered": "Not covered by the material",
+      "helpful": "Found helpful",
+      "fewRatings": "Not enough ratings yet",
+      "ratings": "{{up}} helpful · {{down}} not helpful",
+      "topics": "Most asked topics",
+      "noQuestions": "No questions in this period yet.",
+      "gaps": "Content gaps",
+      "noGaps": "No gaps: the material covered what was asked.",
+      "gapTopic": "{{questions}} questions the material didn’t cover · {{students}} students",
+      "gapWord": "Asked by {{students}} students and matches no syllabus topic · {{questions}} questions",
+      "upload": "Upload material for this",
+      "uploadFor": "Upload material for {{title}}",
+      "material": "Most used material",
+      "materialName": "Material",
+      "cited": "Cited in answers",
+      "opened": "Opened",
+      "noMaterialUse": "No material was opened or cited in this period.",
+      "units": "Engagement by unit",
+      "unit": "Unit",
+      "noUnits": "Add the syllabus to see units.",
+      "privacy": "Built from counts only. Conversations stay private to each student; nobody here can read them."
     }
   },
   "ai": {
@@ -2745,7 +2801,8 @@
       "kill_switch": "Stopped (kill switch)",
       "consent_needed": "Waiting for the data notice",
       "key_invalid": "Key rejected",
-      "budget_exhausted": "Monthly budget used"
+      "budget_exhausted": "Monthly budget used",
+      "daily_limit": "Daily limit reached"
     },
     "intro": "Students get answers from your college’s own material, with sources. The model is not trained on it: only the passages that match a question are sent, and nothing else about the student.",
     "checklist": "Set-up steps",
@@ -2863,6 +2920,73 @@
       "rebuild": "Rebuild the index",
       "rebuildHint": "Uses the vectors already saved (no new provider charges), then fills in anything missing.",
       "rebuilding": "Rebuilding the search index"
+    },
+    "usage": {
+      "title": "Usage and health",
+      "period": "Period",
+      "lastDays_one": "Last day",
+      "lastDays_other": "Last {{count}} days",
+      "tokens": "Tokens",
+      "cost": "Estimated cost",
+      "costHint": "From the prices you entered",
+      "noPrices": "Enter your provider’s prices below to see an estimate",
+      "answers": "Answers",
+      "failed": "Answers that failed",
+      "notCovered": "{{n}} not covered by the material",
+      "perDay": "Tokens per day",
+      "perDayHint": "Answers, search and embeddings, by UTC day",
+      "day": "Day",
+      "breakdown": "Answers {{chat}} · embeddings {{embedding}} · other {{other}}",
+      "byModel": "Usage by model",
+      "model": "Model",
+      "kind": "For",
+      "requests": "Requests",
+      "input": "Input tokens",
+      "output": "Output tokens",
+      "estimate": "Estimate",
+      "kinds": {
+        "chat": "Answers",
+        "embedding": "Embeddings",
+        "transcription": "Transcription",
+        "rerank": "Re-ranking"
+      },
+      "noBudget": "No monthly budget is set. {{used}} tokens used this month.",
+      "month": "This month’s budget",
+      "monthOf": "{{used}} of {{budget}} tokens ({{percent}}%)",
+      "exhausted": "Used up: answers show passages from the material until {{date}}, or until you raise the budget.",
+      "resets": "Starts again on {{date}}",
+      "monthCost": "about {{cost}} this month",
+      "health": "Health",
+      "paused": "Answers are paused until {{time}} after repeated provider failures; students get passages meanwhile.",
+      "lastError": "Last provider problem: {{error}} ({{when}})",
+      "noErrors": "No provider problems recorded.",
+      "processing_one": "{{count}} material processing",
+      "processing_other": "{{count}} materials processing",
+      "failedMaterial_one": "{{count}} material failed",
+      "failedMaterial_other": "{{count}} materials failed",
+      "embedding_one": "Embedding {{count}} passage",
+      "embedding_other": "Embedding {{count}} passages",
+      "waiting_one": "{{count}} passage waiting for search by meaning",
+      "waiting_other": "{{count}} passages waiting for search by meaning",
+      "stuck_one": "The oldest material has been processing for {{count}} minute: check the worker.",
+      "stuck_other": "The oldest material has been processing for {{count}} minutes: check the worker.",
+      "coverage": "Coverage by subject",
+      "subject": "Subject",
+      "materials": "Materials",
+      "ready": "Ready",
+      "inProgress": "In progress",
+      "failedShort": "Failed",
+      "byMeaning": "Searchable by meaning",
+      "byMeaningOf": "Searchable by meaning: {{name}}",
+      "noPassages": "No passages yet"
+    },
+    "prices": {
+      "title": "Prices for the cost estimate",
+      "intro": "Copy them from your provider’s pricing page, per million tokens. They are only used for the estimate above; leave a field empty if you don’t know it.",
+      "currency": "Currency",
+      "chatInput": "Answers: input, per 1M tokens",
+      "chatOutput": "Answers: output, per 1M tokens",
+      "embedding": "Embeddings, per 1M tokens"
     }
   }
 }
