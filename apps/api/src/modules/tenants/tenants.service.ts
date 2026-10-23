@@ -1,5 +1,7 @@
+import { Types } from 'mongoose';
 import type { Branding, PublicBotCheck, PublicTenant, Feature } from '@campuslink/shared';
 import { TenantModel } from './tenant.model.js';
+import type { FilesService } from '../files/files.service.js';
 import { invalidateTenant, type TenantRecord } from './tenant.cache.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import { notFound } from '../../lib/errors.js';
@@ -11,6 +13,8 @@ export const toPublicTenant = (t: TenantRecord, botCheck: PublicBotCheck | null 
   kind: t.kind,
   status: t.status,
   branding: t.branding,
+  // The file id in the link makes a replaced logo a new URL, so caches never show the old one.
+  logoUrl: t.logo?.fileId ? `/api/v1/tenant/logo?v=${String(t.logo.fileId)}` : null,
   features: t.features,
   botCheck,
 });
@@ -30,6 +34,56 @@ export const tenantsService = {
       meta,
     );
     return toPublicTenant({ ...tenant, branding });
+  },
+
+  /** Replaces the college logo (the old file is deleted); recorded in the audit log. */
+  async setLogo(
+    files: FilesService,
+    tenant: TenantRecord,
+    actorId: string,
+    data: Buffer,
+    meta: RequestMetaLite,
+  ) {
+    const file = await files.storeLogo(data);
+    const fileId = new Types.ObjectId(file.id);
+    const before = await TenantModel.findOneAndUpdate(
+      { _id: tenant._id },
+      { $set: { 'logo.fileId': fileId } },
+      { returnDocument: 'before' },
+    ).lean<TenantRecord>();
+    const old = before?.logo?.fileId;
+    if (old) await files.remove(old);
+    invalidateTenant(tenant.slug);
+    await audit.record(
+      {
+        action: 'tenant.logo_changed',
+        actorId,
+        targetType: 'tenant',
+        targetId: String(tenant._id),
+        meta: { size: file.size },
+      },
+      meta,
+    );
+    return toPublicTenant({ ...tenant, logo: { fileId } });
+  },
+
+  /** Back to the monogram. */
+  async removeLogo(files: FilesService, tenant: TenantRecord, actorId: string, meta: RequestMetaLite) {
+    const before = await TenantModel.findOneAndUpdate(
+      { _id: tenant._id },
+      { $set: { 'logo.fileId': null } },
+      { returnDocument: 'before' },
+    ).lean<TenantRecord>();
+    const old = before?.logo?.fileId;
+    if (old) {
+      await files.remove(old);
+      await audit.record(
+        { action: 'tenant.logo_removed', actorId, targetType: 'tenant', targetId: String(tenant._id) },
+        meta,
+      );
+    }
+    invalidateTenant(tenant.slug);
+    return toPublicTenant({ ...tenant, logo: { fileId: null } });
   },
 
   async settings(tenant: TenantRecord) {

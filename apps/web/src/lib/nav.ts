@@ -35,6 +35,9 @@ import {
 } from 'lucide-react';
 import {
   buildNav,
+  type AdminGroup,
+  type AdminSectionId,
+  type SettingsSectionId,
   type CreateActionId,
   type NavDestination,
   type NavGroup,
@@ -120,18 +123,22 @@ export interface NavEntry {
   badge: number;
 }
 
-/** The first admin screen this member may open (the admin area has no shared index). */
-function adminHome(can: (p: string) => boolean): string {
-  const order: [string, string][] = [
-    ['users:read_admin', '/admin'],
-    ['mentorship:oversee', '/admin/mentorship'],
-    ['moderation:act', '/admin/moderation'],
-    ['jobs:sources', '/admin/job-sources'],
-    ['analytics:cohort', '/admin/analytics'],
-    ['sources:manage', '/admin/sources'],
-    ['rewards:manage', '/admin/rewards'],
-  ];
-  return order.find(([p]) => can(p))?.[1] ?? '/admin/rewards';
+/** i18n keys under `admin.` for the admin sections (one reuses an older key). */
+const ADMIN_LABEL: Partial<Record<AdminSectionId, string>> = { mentorship: 'mentorshipTab' };
+
+/** i18n keys for the settings sections. */
+const SETTINGS_LABEL: Record<SettingsSectionId, string> = {
+  security: 'settings.security',
+  privacy: 'settings.privacy',
+  preferences: 'settings.preferences',
+  notifications: 'settings.notifications',
+  data: 'settings.data.tab',
+};
+
+export interface AdminNavGroup {
+  group: AdminGroup;
+  label: string;
+  items: { id: AdminSectionId; to: string; label: string }[];
 }
 
 /** Role-aware navigation for every surface: tabs, rail, avatar menu and the Create sheet. */
@@ -159,7 +166,7 @@ export function useNav() {
     };
     const entry = (d: NavDestination): NavEntry => ({
       id: d.id,
-      to: d.id === 'admin' ? adminHome((p) => permissions.includes(p)) : d.path,
+      to: d.path,
       label: t(`nav.${LABEL_KEY[d.id] ?? d.id}`),
       icon: NAV_ICONS[d.id],
       badge: badges[d.id] ?? 0,
@@ -173,6 +180,14 @@ export function useNav() {
         items: g.items.map(entry),
       })),
       create: model.create as CreateActionId[],
+      /** The admin area's sections, grouped (its side menu and overview add the icons). */
+      admin: model.admin.map((g): AdminNavGroup => ({
+        group: g.group,
+        label: t(`admin.groups.${g.group}`),
+        items: g.items.map((x) => ({ id: x.id, to: x.path, label: t(`admin.${ADMIN_LABEL[x.id] ?? x.id}`) })),
+      })),
+      /** The settings tab row: [path, label]. */
+      settings: model.settings.map((x) => [x.path, t(SETTINGS_LABEL[x.id])] as const),
       unreadMessages,
       unreadNotifications,
       canMessage: permissions.includes('messages:send'),

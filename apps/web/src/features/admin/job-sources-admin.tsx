@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { BriefcaseBusiness, CheckCircle2, Pause, Play, RefreshCw, Trash2, TriangleAlert } from 'lucide-react';
+import { CheckCircle2, Pause, Play, RefreshCw, Trash2, TriangleAlert } from 'lucide-react';
 import { JOB_SOURCE_KINDS, type JobSourceKind, type JobSourceView } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Checkbox, Field, Input, Select } from '../../components/ui/field';
+import { ErrorState } from '../../components/ui/error-state';
+import { Illustration } from '../../components/ui/illustration';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
@@ -139,7 +141,7 @@ function AddJobSource({ onDone }: { onDone: () => void }) {
         </Button>
       </div>
       {result && (
-        <div role="status" className="rounded-[var(--radius-sm)] border border-line p-3 text-sm">
+        <div role="status" className="rounded-[var(--radius-sm)] border border-line p-3 text-meta">
           {result.ok ? (
             <>
               <p className="flex items-center gap-1.5 font-semibold text-success">
@@ -207,15 +209,15 @@ function SourceRow({ s }: { s: JobSourceView }) {
             {s.status === 'paused' ? t('sources.paused') : t(`sources.health.${h.state}`)}
           </Badge>
         </div>
-        <p className="truncate font-mono text-xs text-fg-3">{s.target}</p>
-        <p className="text-sm text-fg-2">
+        <p className="truncate font-mono text-caption text-fg-3">{s.target}</p>
+        <p className="text-meta text-fg-2">
           {t('jobSources.openJobs', { count: h.openJobs })} ·{' '}
           {h.lastFetchedAt
             ? t('jobSources.fetched', { when: formatRelative(h.lastFetchedAt) })
             : t('sources.never')}
         </p>
         {h.lastError && (
-          <p className="text-sm text-danger">
+          <p className="text-meta text-danger">
             {t('sources.lastError', { error: h.lastError, count: h.consecutiveFailures })}
           </p>
         )}
@@ -288,8 +290,9 @@ export function JobSourcesAdmin() {
         </Button>
       </div>
       {list.isLoading && <Skeleton className="h-32" />}
+      {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
       {list.data && !list.data.length && (
-        <EmptyState icon={<BriefcaseBusiness className="size-6" />} title={t('jobSources.empty')}>
+        <EmptyState art={<Illustration kind="empty" />} title={t('jobSources.empty')}>
           {t('jobSources.emptyBody')}
         </EmptyState>
       )}
@@ -299,19 +302,19 @@ export function JobSourcesAdmin() {
         ))}
       </ul>
       <section aria-labelledby="job-starter" className="grid gap-3">
-        <h2 id="job-starter" className="text-lg font-semibold">
+        <h2 id="job-starter" className="text-title font-semibold">
           {t('jobSources.starter')}
         </h2>
-        <p className="text-sm text-fg-2">{t('jobSources.starterIntro')}</p>
+        <p className="text-meta text-fg-2">{t('jobSources.starterIntro')}</p>
         <ul className="grid gap-2 sm:grid-cols-2">
           {starters.data?.map((s) => (
             <li key={s.key}>
               <Card className="grid h-full gap-1.5 p-3">
-                <b className="text-sm">{s.company}</b>
-                <p className="text-xs text-fg-3">
+                <b className="text-meta">{s.company}</b>
+                <p className="text-caption text-fg-3">
                   {t(`jobSources.kind.${s.kind}`)} · {s.board}
                 </p>
-                <p className="text-xs">
+                <p className="text-caption">
                   {s.verifiedAt ? (
                     <Badge tone="success">{t('sources.verifiedOn', { date: s.verifiedAt })}</Badge>
                   ) : (

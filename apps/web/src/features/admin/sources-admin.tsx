@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { CheckCircle2, Pause, Play, RefreshCw, Rss, Trash2, TriangleAlert } from 'lucide-react';
+import { CheckCircle2, Pause, Play, RefreshCw, Trash2, TriangleAlert } from 'lucide-react';
 import { FETCH_INTERVALS, type SourceView, type Topic } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Field, Input, Select } from '../../components/ui/field';
+import { ErrorState } from '../../components/ui/error-state';
+import { Illustration } from '../../components/ui/illustration';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
@@ -87,7 +89,7 @@ function AddSource({ onDone }: { onDone: () => void }) {
         )}
       </Field>
       {result && (
-        <div role="status" className="rounded-[var(--radius-sm)] border border-line p-3 text-sm">
+        <div role="status" className="rounded-[var(--radius-sm)] border border-line p-3 text-meta">
           {result.ok ? (
             <>
               <p className="flex items-center gap-1.5 font-semibold text-success">
@@ -178,32 +180,34 @@ function SourceRow({ s }: { s: SourceView }) {
             {s.status === 'paused' ? t('sources.paused') : t(`sources.health.${h.state}`)}
           </Badge>
         </div>
-        <p className="truncate font-mono text-xs text-fg-3">{s.url}</p>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
+        <p className="truncate font-mono text-caption text-fg-3">{s.url}</p>
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-meta sm:grid-cols-4">
           <div>
-            <dt className="text-xs text-fg-3">{t('sources.items7d')}</dt>
+            <dt className="text-caption text-fg-3">{t('sources.items7d')}</dt>
             <dd className="font-mono">{h.itemsLast7d}</dd>
           </div>
           <div>
-            <dt className="text-xs text-fg-3">{t('sources.held7d')}</dt>
+            <dt className="text-caption text-fg-3">{t('sources.held7d')}</dt>
             <dd className="font-mono">{h.heldLast7d}</dd>
           </div>
           <div>
-            <dt className="text-xs text-fg-3">{t('sources.followers')}</dt>
+            <dt className="text-caption text-fg-3">{t('sources.followers')}</dt>
             <dd className="font-mono">{s.followers}</dd>
           </div>
           <div>
-            <dt className="text-xs text-fg-3">{t('sources.lastFetch')}</dt>
+            <dt className="text-caption text-fg-3">{t('sources.lastFetch')}</dt>
             <dd>{h.lastFetchedAt ? formatRelative(h.lastFetchedAt) : t('sources.never')}</dd>
           </div>
         </dl>
         {h.lastError && (
-          <p className="text-sm text-danger">
+          <p className="text-meta text-danger">
             {t('sources.lastError', { error: h.lastError, count: h.consecutiveFailures })}
           </p>
         )}
         {h.nextFetchAt && (
-          <p className="text-xs text-fg-3">{t('sources.next', { when: formatRelative(h.nextFetchAt) })}</p>
+          <p className="text-caption text-fg-3">
+            {t('sources.next', { when: formatRelative(h.nextFetchAt) })}
+          </p>
         )}
         <div className="flex flex-wrap justify-end gap-2">
           <Button
@@ -274,8 +278,9 @@ export function SourcesAdmin() {
         </Button>
       </div>
       {list.isLoading && <Skeleton className="h-32" />}
+      {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
       {list.data && !list.data.length && (
-        <EmptyState icon={<Rss className="size-6" />} title={t('sources.empty')}>
+        <EmptyState art={<Illustration kind="empty" />} title={t('sources.empty')}>
           {t('sources.emptyBody')}
         </EmptyState>
       )}
@@ -285,19 +290,19 @@ export function SourcesAdmin() {
         ))}
       </ul>
       <section aria-labelledby="starter" className="grid gap-3">
-        <h2 id="starter" className="text-lg font-semibold">
+        <h2 id="starter" className="text-title font-semibold">
           {t('sources.starter')}
         </h2>
-        <p className="text-sm text-fg-2">{t('sources.starterIntro')}</p>
+        <p className="text-meta text-fg-2">{t('sources.starterIntro')}</p>
         <ul className="grid gap-2 sm:grid-cols-2">
           {starters.data?.map((s) => (
             <li key={s.key}>
               <Card className="grid h-full gap-1.5 p-3">
-                <b className="text-sm">{s.name}</b>
-                <p className="text-xs text-fg-3">
+                <b className="text-meta">{s.name}</b>
+                <p className="text-caption text-fg-3">
                   {s.publisher} · {new URL(s.url).hostname}
                 </p>
-                <p className="text-xs">
+                <p className="text-caption">
                   {s.verifiedAt ? (
                     <Badge tone="success">{t('sources.verifiedOn', { date: s.verifiedAt })}</Badge>
                   ) : (

@@ -20,23 +20,18 @@ import { FormError } from '../../components/layout/auth-layout';
 import { MfaSetup } from '../auth/mfa-setup';
 import { api } from '../../lib/api';
 import { useMe } from '../../lib/me';
+import { useNav } from '../../lib/nav';
 import { useSession } from '../../lib/session';
 import { usePreferences, type MotionPref, type ThemePref } from '../../lib/preferences';
 import { applyApiError } from '../../lib/errors';
 
 export function SettingsLayout() {
   const { t } = useTranslation();
-  const tabs = [
-    ['/settings', t('settings.security')],
-    ['/settings/privacy', t('settings.privacy')],
-    ['/settings/preferences', t('settings.preferences')],
-    ['/settings/notifications', t('settings.notifications')],
-    ['/settings/data', t('settings.data.tab')],
-  ] as const;
+  const { settings } = useNav();
   return (
     <>
       <PageHeader title={t('settings.title')} />
-      <TabNav label={t('settings.title')} tabs={tabs} />
+      <TabNav label={t('settings.title')} tabs={settings} />
       <Outlet />
     </>
   );
@@ -76,7 +71,7 @@ export function SecuritySettings() {
     <div className="grid gap-5">
       <Card className="grid gap-3 p-5">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-lg font-semibold">{t('settings.twoFactor')}</h2>
+          <h2 className="text-title font-semibold">{t('settings.twoFactor')}</h2>
           <Badge tone={me?.mfaEnabled ? 'success' : 'neutral'}>
             {me?.mfaEnabled ? t('mfa.on') : t('mfa.off')}
           </Badge>
@@ -94,7 +89,7 @@ export function SecuritySettings() {
 
       <Card className="grid gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold">{t('settings.sessions')}</h2>
+          <h2 className="text-title font-semibold">{t('settings.sessions')}</h2>
           <Button
             size="sm"
             onClick={() => revokeOthers.mutate()}
@@ -114,8 +109,8 @@ export function SecuritySettings() {
                 <Laptop className="size-5 text-fg-2" aria-hidden />
               )}
               <div className="min-w-0 flex-1">
-                <b className="block text-sm">{s.device}</b>
-                <span className="text-xs text-fg-2">
+                <b className="block text-meta">{s.device}</b>
+                <span className="text-caption text-fg-2">
                   {s.current
                     ? t('settings.thisDevice')
                     : t('settings.lastActive', { when: relative(s.lastUsedAt, i18n.language) })}
@@ -157,7 +152,7 @@ function ChangePassword() {
   return (
     <Card className="p-5">
       <form onSubmit={onSubmit} noValidate className="grid max-w-md gap-4">
-        <h2 className="text-lg font-semibold">{t('settings.changePassword')}</h2>
+        <h2 className="text-title font-semibold">{t('settings.changePassword')}</h2>
         <FormError message={form.formState.errors.root?.message} />
         <Field label={t('settings.currentPassword')} error={form.formState.errors.currentPassword?.message}>
           {({ id, describedBy, invalid }) => (
@@ -219,8 +214,8 @@ export function PrivacySettings() {
   return (
     <Card className="grid gap-4 p-5">
       <div>
-        <h2 className="text-lg font-semibold">{t('settings.consentsTitle')}</h2>
-        <p className="text-sm text-fg-2">{t('settings.consentsBody')}</p>
+        <h2 className="text-title font-semibold">{t('settings.consentsTitle')}</h2>
+        <p className="text-meta text-fg-2">{t('settings.consentsBody')}</p>
       </div>
       {consents.isLoading && <Skeleton className="h-40" />}
       <ul className="grid gap-2">
@@ -255,7 +250,7 @@ export function PrivacySettings() {
           </li>
         ))}
       </ul>
-      <p className="text-xs text-fg-3">{t('settings.rights')}</p>
+      <p className="text-caption text-fg-3">{t('settings.rights')}</p>
     </Card>
   );
 }

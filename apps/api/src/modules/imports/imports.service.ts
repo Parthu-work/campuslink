@@ -430,6 +430,18 @@ export class ImportsService {
   }
 
   // ── read / report / rollback ─────────────────────────────
+  /** Imports queued or running, and those that failed in the last 7 days (Admin › Overview). */
+  async activityCounts() {
+    const [running, failedThisWeek] = await Promise.all([
+      ImportJobModel.countDocuments({ status: { $in: ['queued', 'running'] } }),
+      ImportJobModel.countDocuments({
+        status: 'failed',
+        updatedAt: { $gte: new Date(Date.now() - 7 * 86_400_000) },
+      }),
+    ]);
+    return { running, failedThisWeek };
+  }
+
   async list() {
     const jobs = await ImportJobModel.find({}).sort({ _id: -1 }).limit(20).select('-rowErrors').lean();
     return jobs.map(({ mapping: _m, ...j }) => ({ ...j, id: String(j._id) }));

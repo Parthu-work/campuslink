@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import { useState, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from 'react';
 import { accentOf } from '../../lib/accent';
 import { cn } from '../../lib/cn';
 
@@ -171,9 +171,36 @@ export function VerifiedTick() {
   );
 }
 
-/** College crest: monogram on a hexagon in tenant colours, until the college uploads a logo. */
-export function Crest({ monogram, size = 40, label }: { monogram: string; size?: number; label?: string }) {
+/**
+ * The college's mark: its uploaded logo (contained in a square, transparency kept), or the monogram
+ * on a hexagon in the college's colours when there is none or it fails to load.
+ */
+export function Crest({
+  monogram,
+  logoUrl,
+  size = 40,
+  label,
+}: {
+  monogram: string;
+  logoUrl?: string | null;
+  size?: number;
+  label?: string;
+}) {
+  const [failed, setFailed] = useState<string | null>(null);
   const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true };
+  if (logoUrl && failed !== logoUrl)
+    return (
+      <img
+        src={logoUrl}
+        alt={label ?? ''}
+        width={size}
+        height={size}
+        decoding="async"
+        className="flex-none object-contain"
+        style={{ width: size, height: size }}
+        onError={() => setFailed(logoUrl)}
+      />
+    );
   return (
     <svg viewBox="0 0 40 40" width={size} height={size} className="flex-none" {...a11y}>
       <path d="M20 2 36 11v18L20 38 4 29V11z" fill="var(--brand-2)" />

@@ -4,8 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '../../lib/toast';
-import { Building2, Plus } from 'lucide-react';
-import { createTenantBody, type Branding } from '@campuslink/shared';
+import { Building2, Plus, Power } from 'lucide-react';
+import { createTenantBody, onColor, type Branding } from '@campuslink/shared';
 import type { z } from 'zod';
 import { Button } from '../../components/ui/button';
 import { Field, Input, Select } from '../../components/ui/field';
@@ -57,7 +57,7 @@ export function PlatformTenants() {
           </>
         }
       />
-      <p className="text-sm text-fg-3">{t('platform.privacyNote')}</p>
+      <p className="text-meta text-fg-3">{t('platform.privacyNote')}</p>
       {tenants.isLoading && <Skeleton className="h-40" />}
       {tenants.data?.length === 0 && (
         <EmptyState icon={<Building2 className="size-6" />} title={t('platform.create')} />
@@ -68,9 +68,11 @@ export function PlatformTenants() {
             <Card className="grid gap-3 p-4">
               <div className="flex items-center gap-3">
                 <span
-                  className="grid size-11 flex-none place-items-center rounded-[var(--radius-md)] font-display font-bold text-white"
+                  className="grid size-11 flex-none place-items-center rounded-[var(--radius-md)] font-display font-bold"
                   style={{
+                    // The college's own colours (data), with readable text picked for them.
                     background: `linear-gradient(135deg, ${tn.branding.primary}, ${tn.branding.secondary})`,
+                    color: onColor(tn.branding.primary),
                   }}
                   aria-hidden
                 >
@@ -78,11 +80,13 @@ export function PlatformTenants() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <b className="block truncate">{tn.branding.displayName}</b>
-                  <span className="font-mono text-xs text-fg-2">{tn.slug}</span>
+                  <span className="font-mono text-caption text-fg-2">{tn.slug}</span>
                 </div>
-                <Badge tone={tn.status === 'active' ? 'success' : 'danger'}>{tn.status}</Badge>
+                <Badge tone={tn.status === 'active' ? 'success' : 'danger'}>
+                  {t(`platform.status.${tn.status}`)}
+                </Badge>
               </div>
-              <dl className="grid grid-cols-2 gap-2 text-sm">
+              <dl className="grid grid-cols-2 gap-2 text-meta">
                 <div>
                   <dt className="eyebrow">{t('platform.plan')}</dt>
                   <dd className="font-mono">
@@ -96,16 +100,20 @@ export function PlatformTenants() {
                   </dd>
                 </div>
               </dl>
-              <Button
-                size="sm"
-                variant={tn.status === 'active' ? 'ghost' : 'primary'}
-                className="justify-self-start"
-                onClick={() =>
-                  tn.status === 'active' ? setConfirm(tn) : update.mutate({ id: tn.id, status: 'active' })
-                }
-              >
-                {tn.status === 'active' ? t('platform.suspend') : t('platform.resume')}
-              </Button>
+              {/* A clearly separate, clearly destructive action (it asks first), not a text link. */}
+              <div className="flex justify-end border-t border-line pt-3">
+                <Button
+                  size="sm"
+                  variant={tn.status === 'active' ? 'outline' : 'primary'}
+                  className={tn.status === 'active' ? 'text-danger-ink' : undefined}
+                  onClick={() =>
+                    tn.status === 'active' ? setConfirm(tn) : update.mutate({ id: tn.id, status: 'active' })
+                  }
+                >
+                  <Power className="size-4" aria-hidden />
+                  {tn.status === 'active' ? t('platform.suspend') : t('platform.resume')}
+                </Button>
+              </div>
             </Card>
           </li>
         ))}

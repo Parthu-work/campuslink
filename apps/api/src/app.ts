@@ -100,6 +100,8 @@ import { RetrievalService } from './modules/study/retrieval.service.js';
 import { ChatService } from './modules/study/chat.service.js';
 import { chatRoutes } from './modules/study/chat.routes.js';
 import { StudyInsightsService } from './modules/study/insights.service.js';
+import { AdminOverviewService } from './modules/admin/overview.service.js';
+import { adminOverviewRoutes } from './modules/admin/overview.routes.js';
 import { VectorIndex, type VectorStore } from './modules/study/vector/store.js';
 import { createVectorStore } from './modules/study/vector/factory.js';
 import { MaterialPipeline, PROCESS_JOB } from './modules/study/pipeline.js';
@@ -566,6 +568,22 @@ export function createApp({
     indexing: indexingService,
   });
 
+  // Admin › Overview: what is waiting for staff and admins (revamp phase 10).
+  const overviewService = new AdminOverviewService({
+    users: usersService,
+    verification: verificationService,
+    safety: safetyService,
+    moderation: moderationService,
+    qa: qaService,
+    sources: sourcesService,
+    roadmaps: roadmapsService,
+    materials: materialsService,
+    imports: importsService,
+    analytics: analyticsService,
+    ai: aiSettingsService,
+    usage: aiUsageService,
+  });
+
   // ── Privacy rights (Phase 8) ─────────────────────────────
   const privacyService = new PrivacyService({ auth: authService, profiles: profilesService, logger });
   const hook = (svc: { exportFor(u: string): Promise<unknown>; eraseFor(u: string): Promise<void> }) => ({
@@ -645,6 +663,7 @@ export function createApp({
     defineModule(
       'tenants',
       tenantRoutes(
+        filesService,
         env.BOT_PROTECTION === 'turnstile' && env.TURNSTILE_SITE_KEY
           ? { provider: 'turnstile', siteKey: env.TURNSTILE_SITE_KEY }
           : null,
@@ -730,6 +749,7 @@ export function createApp({
     defineModule('study-materials', materialRoutes(materialsService, retrievalService), pipeline),
   );
   app.use(API_PREFIX, defineModule('study-chat', chatRoutes(chatService, logger), pipeline));
+  app.use(API_PREFIX, defineModule('admin-overview', adminOverviewRoutes(overviewService), pipeline));
   app.use(
     API_PREFIX,
     defineModule(

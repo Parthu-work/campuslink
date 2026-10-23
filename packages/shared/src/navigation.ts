@@ -64,6 +64,68 @@ export const ADMIN_PERMISSIONS: readonly Permission[] = [
   'audit:read',
 ];
 
+/** The admin area's sections, grouped (desktop side menu, phone overview). Each needs one permission. */
+export type AdminGroup = 'people' | 'community' | 'insights' | 'college';
+export type AdminSectionId =
+  | 'users'
+  | 'verification'
+  | 'imports'
+  | 'list'
+  | 'moderation'
+  | 'mentorship'
+  | 'sources'
+  | 'jobSources'
+  | 'rewards'
+  | 'analytics'
+  | 'branding'
+  | 'features'
+  | 'ai'
+  | 'audit';
+export interface AdminSection {
+  id: AdminSectionId;
+  path: string;
+  permission: Permission;
+  group: AdminGroup;
+}
+const section = (
+  id: AdminSectionId,
+  path: string,
+  permission: Permission,
+  group: AdminGroup,
+): AdminSection => ({
+  id,
+  path,
+  permission,
+  group,
+});
+export const ADMIN_SECTIONS: readonly AdminSection[] = [
+  section('users', '/admin/users', 'users:read_admin', 'people'),
+  section('verification', '/admin/verification', 'verification:review', 'people'),
+  section('imports', '/admin/imports', 'imports:manage', 'people'),
+  section('list', '/admin/list', 'imports:manage', 'people'),
+  section('moderation', '/admin/moderation', 'moderation:act', 'community'),
+  section('mentorship', '/admin/mentorship', 'mentorship:oversee', 'community'),
+  section('sources', '/admin/sources', 'sources:manage', 'community'),
+  section('jobSources', '/admin/job-sources', 'jobs:sources', 'community'),
+  section('rewards', '/admin/rewards', 'rewards:manage', 'community'),
+  section('analytics', '/admin/analytics', 'analytics:cohort', 'insights'),
+  section('branding', '/admin/branding', 'tenant:branding', 'college'),
+  section('features', '/admin/features', 'tenant:settings', 'college'),
+  section('ai', '/admin/ai', 'ai:settings', 'college'),
+  section('audit', '/admin/audit', 'audit:read', 'college'),
+];
+const ADMIN_GROUPS: readonly AdminGroup[] = ['people', 'community', 'insights', 'college'];
+
+/** The settings area's sections: the same for every member (its tab row). */
+export type SettingsSectionId = 'security' | 'privacy' | 'preferences' | 'notifications' | 'data';
+export const SETTINGS_SECTIONS: readonly { id: SettingsSectionId; path: string }[] = [
+  { id: 'security', path: '/settings' },
+  { id: 'privacy', path: '/settings/privacy' },
+  { id: 'preferences', path: '/settings/preferences' },
+  { id: 'notifications', path: '/settings/notifications' },
+  { id: 'data', path: '/settings/data' },
+];
+
 /** Permissions that open the staff review queue (any one). */
 export const REVIEW_PERMISSIONS: readonly Permission[] = ['moderation:act', 'roadmaps:review'];
 
@@ -182,6 +244,9 @@ export interface NavModel {
   /** Grouped destinations for the avatar menu and the desktop rail (tabs excluded). */
   menu: { group: NavGroup; items: NavDestination[] }[];
   create: CreateActionId[];
+  /** The admin sections this member may open, grouped (empty without admin access). */
+  admin: { group: AdminGroup; items: AdminSection[] }[];
+  settings: typeof SETTINGS_SECTIONS;
 }
 
 const may = (perms: readonly Permission[], wanted: readonly Permission[]) =>
@@ -218,7 +283,11 @@ export function buildNav(subject: NavSubject, shipped: ReadonlySet<NavId>): NavM
       items: deduped.map((id) => NAV_DESTINATIONS[id]).filter((x) => x.group === group),
     }))
     .filter((g) => g.items.length > 0);
-  return { persona, tabs, menu, create };
+  const admin = ADMIN_GROUPS.map((group) => ({
+    group,
+    items: ADMIN_SECTIONS.filter((x) => x.group === group && subject.permissions.includes(x.permission)),
+  })).filter((g) => g.items.length > 0);
+  return { persona, tabs, menu, create, admin, settings: SETTINGS_SECTIONS };
 }
 
 /** Where a member lands after signing in (and the target of the first tab). */

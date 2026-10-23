@@ -2,10 +2,12 @@ import { useDeferredValue, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { Check, ListChecks, MailPlus, Plus, Search, ShieldCheck, Trash2, X } from 'lucide-react';
+import { Check, MailPlus, Plus, Search, Trash2, X } from 'lucide-react';
 import { BRANCHES } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
+import { ErrorState } from '../../components/ui/error-state';
+import { Illustration } from '../../components/ui/illustration';
 import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Dialog } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
@@ -93,13 +95,14 @@ export function ListAdmin() {
         ))}
       </div>
       {list.isLoading && <Skeleton className="h-48" />}
+      {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
       {list.isSuccess && !rows.length && (
-        <EmptyState icon={<ListChecks className="size-6" />} title={t('admin.noUsers')} />
+        <EmptyState art={<Illustration kind="people" />} title={t('admin.noUsers')} />
       )}
       {rows.length > 0 && (
         <Card className="overflow-x-auto" tabIndex={0} role="region" aria-label={t('admin.list')}>
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="border-b border-line text-xs text-fg-3">
+          <table className="w-full min-w-[640px] text-left text-meta">
+            <thead className="border-b border-line text-caption text-fg-3">
               <tr>
                 <th scope="col" className="px-4 py-3 font-medium">
                   {t('admin.rollNumber')}
@@ -124,17 +127,17 @@ export function ListAdmin() {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id} className="border-b border-line last:border-0">
-                  <td className="px-4 py-2.5 font-mono text-xs">{r.rollNumber}</td>
+                  <td className="px-4 py-2.5 font-mono text-caption">{r.rollNumber}</td>
                   <td className="px-4 py-2.5">
                     {r.name}
-                    <span className="block text-xs text-fg-3">
+                    <span className="block text-caption text-fg-3">
                       {[r.branch, r.gradYear].filter(Boolean).join(' · ')}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 text-xs">
+                  <td className="px-4 py-2.5 text-caption">
                     {r.kind === 'alumni' ? t('admin.alumnus') : t('admin.student')}
                   </td>
-                  <td className="px-4 py-2.5 font-mono text-xs text-fg-2">
+                  <td className="px-4 py-2.5 font-mono text-caption text-fg-2">
                     {r.email ?? (r.hasPhone ? t('profile.phone') : '—')}
                   </td>
                   <td className="px-4 py-2.5">
@@ -319,11 +322,11 @@ function InviteDialog({ onClose }: { onClose: () => void }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={6}
-            className="font-mono text-sm"
+            className="font-mono text-meta"
           />
         )}
       </Field>
-      <p className="text-xs text-fg-3">{t('admin.phoneInvites')}</p>
+      <p className="text-caption text-fg-3">{t('admin.phoneInvites')}</p>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onClose}>
           {t('common.cancel')}
@@ -371,8 +374,9 @@ export function VerificationAdmin() {
         ))}
       </div>
       {q.isLoading && <Skeleton className="h-48" />}
+      {q.isError && <ErrorState error={q.error} onRetry={() => void q.refetch()} />}
       {q.isSuccess && !q.data.length && (
-        <EmptyState icon={<ShieldCheck className="size-6" />} title={t('admin.queueEmpty')} />
+        <EmptyState art={<Illustration kind="done" />} title={t('admin.queueEmpty')} />
       )}
       <ul className="grid gap-3">
         {q.data?.map((r) => (
@@ -420,20 +424,22 @@ function RequestCard({ r }: { r: Request }) {
       <div className="grid content-start gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <b>{r.user?.name}</b>
-          <span className="text-sm text-fg-2">{r.user?.email}</span>
+          <span className="text-meta text-fg-2">{r.user?.email}</span>
         </div>
-        <p className="font-mono text-sm">
+        <p className="font-mono text-meta">
           {r.rollNumber}
           {r.gradYear ? ` · ${r.gradYear}` : ''}
         </p>
-        <p className={r.listMatch ? 'text-sm text-success' : 'text-sm text-warning'}>
+        <p className={r.listMatch ? 'text-meta text-success' : 'text-meta text-warning'}>
           {r.listMatch
             ? t('admin.listMatch', { name: r.listMatch.name, year: r.listMatch.gradYear ?? '—' })
             : t('admin.noListMatch')}
         </p>
-        {r.note && <p className="rounded-[var(--radius-sm)] bg-surface-2 p-2 text-sm">“{r.note}”</p>}
-        <p className="font-mono text-xs text-fg-3">{new Date(r.createdAt).toLocaleString(i18n.language)}</p>
-        {r.reason && <p className="text-sm text-fg-2">{r.reason}</p>}
+        {r.note && <p className="rounded-[var(--radius-sm)] bg-surface-2 p-2 text-meta">“{r.note}”</p>}
+        <p className="font-mono text-caption text-fg-3">
+          {new Date(r.createdAt).toLocaleString(i18n.language)}
+        </p>
+        {r.reason && <p className="text-meta text-fg-2">{r.reason}</p>}
         {r.status === 'pending' && (
           <div className="flex flex-wrap gap-2 pt-1">
             <Button

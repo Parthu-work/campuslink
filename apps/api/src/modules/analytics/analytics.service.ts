@@ -73,6 +73,16 @@ export class AnalyticsService {
     return keys.map((month) => ({ month, value: suppress(counts.get(month) ?? 0) }));
   }
 
+  /** Members active in the last 7 and 30 days, suppressed (Admin › Overview). */
+  async activity() {
+    const now = Date.now();
+    const [last7, last30] = await Promise.all([
+      this.s.activeSince(new Date(now - 7 * DAY)),
+      this.s.activeSince(new Date(now - 30 * DAY)),
+    ]);
+    return { last7: suppress(last7), last30: suppress(last30) };
+  }
+
   async dashboard(viewer: AuthState, q: z.output<typeof analyticsQuery>): Promise<AnalyticsView> {
     const scope = viewer.permissions.has('analytics:tenant') ? 'college' : 'cohort';
     const key = `${String(requireTenantId())}|${scope}|${q.months}|${q.branch ?? ''}|${q.gradYear ?? ''}`;

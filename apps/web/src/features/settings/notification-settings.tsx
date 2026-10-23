@@ -40,7 +40,7 @@ function PushCard() {
       <BellRing className="size-6 flex-none text-accent-ink" aria-hidden />
       <div className="min-w-0 flex-1">
         <h2 className="font-semibold">{t('notifications.push')}</h2>
-        <p className="text-sm text-fg-2">
+        <p className="text-meta text-fg-2">
           {!available
             ? t('notifications.pushOff')
             : sub.data
@@ -72,7 +72,7 @@ function PrefsForm({ initial }: { initial: NotificationPrefs }) {
   return (
     <Card className="grid gap-5 p-5">
       <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={t('notifications.channels')}>
-        <table className="w-full min-w-[420px] text-sm">
+        <table className="w-full min-w-[420px] text-meta">
           <caption className="mb-2 text-left font-semibold">{t('notifications.channels')}</caption>
           <thead>
             <tr className="text-left text-fg-3">
@@ -91,7 +91,7 @@ function PrefsForm({ initial }: { initial: NotificationPrefs }) {
               <tr key={cat} className="border-t border-line">
                 <th scope="row" className="py-3 pr-3 text-left font-semibold">
                   {t(`notifications.cat.${cat}`)}
-                  <span className="block text-xs font-normal text-fg-3">
+                  <span className="block text-caption font-normal text-fg-3">
                     {t(`notifications.catHint.${cat}`)}
                   </span>
                 </th>
@@ -165,7 +165,7 @@ function PrefsForm({ initial }: { initial: NotificationPrefs }) {
             </Field>
           </div>
         )}
-        <p className="text-xs text-fg-3">{t('notifications.quietNote')}</p>
+        <p className="text-caption text-fg-3">{t('notifications.quietNote')}</p>
       </fieldset>
       <Button
         variant="primary"

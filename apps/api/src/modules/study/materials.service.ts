@@ -727,6 +727,14 @@ export class MaterialsService {
     return new Map(rows.map((r) => [String(r._id), r.views]));
   }
 
+  /** Contributor uploads waiting for review in the subjects this viewer manages (Admin › Overview). */
+  async reviewCount(viewer: AuthState): Promise<number> {
+    const ids = await this.d.subjects.manageableIds(viewer);
+    return ids.length
+      ? MaterialModel.countDocuments({ subjectId: { $in: ids }, visibility: 'in_review' })
+      : 0;
+  }
+
   async counts(subjectIds: Types.ObjectId[]): Promise<Map<string, number>> {
     const rows = await MaterialModel.aggregate<{ _id: Types.ObjectId; n: number }>([
       { $match: { subjectId: { $in: subjectIds }, visibility: 'published' } },

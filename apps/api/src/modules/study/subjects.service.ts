@@ -92,6 +92,15 @@ export class SubjectsService {
     };
   }
 
+  /** Ids of the subjects this viewer manages (admins: every subject). */
+  async manageableIds(viewer: AuthState): Promise<Types.ObjectId[]> {
+    if (!viewer.permissions.has('study:manage')) return [];
+    const rows = await SubjectModel.find(isAdmin(viewer) ? {} : { ownerIds: oid(viewer.userId) })
+      .select('_id')
+      .lean<{ _id: Types.ObjectId }[]>();
+    return rows.map((r) => r._id);
+  }
+
   /** Ids of every subject this viewer may read (retrieval and chat scope to these). */
   async readableIds(viewer: AuthState): Promise<Types.ObjectId[]> {
     const rows = await SubjectModel.find(await this.readableFilter(viewer))

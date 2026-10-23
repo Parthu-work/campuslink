@@ -9,7 +9,8 @@ import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Field, Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
-import { Segmented } from '../../components/ui/tab-nav';
+import { Tabs, TabPanel } from '../../components/ui/tabs';
+import { ErrorState } from '../../components/ui/error-state';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
 
@@ -154,7 +155,7 @@ function RemoveDialog({
 
 function Snapshot({ text }: { text: string }) {
   return (
-    <blockquote className="max-h-40 overflow-y-auto rounded-[var(--radius-sm)] border-l-4 border-line-strong bg-surface-2 p-3 text-sm whitespace-pre-wrap">
+    <blockquote className="max-h-40 overflow-y-auto rounded-[var(--radius-sm)] border-l-4 border-line-strong bg-surface-2 p-3 text-meta whitespace-pre-wrap">
       {text}
     </blockquote>
   );
@@ -176,6 +177,8 @@ function Reports() {
     onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
   });
   if (q.isLoading) return <Skeleton className="h-32" />;
+  // A failed load is not an empty queue (audit: they looked the same).
+  if (q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} compact />;
   if (!q.data?.length) return <EmptyState icon={<Inbox className="size-6" />} title={t('mod.noReports')} />;
   return (
     <>
@@ -185,7 +188,7 @@ function Reports() {
           return (
             <li key={r.id}>
               <Card className="grid gap-2 p-4">
-                <p className="flex flex-wrap items-center gap-2 text-sm">
+                <p className="flex flex-wrap items-center gap-2 text-meta">
                   <Badge tone="warning">{t(`content.${r.targetType}`)}</Badge>
                   <b>{t(`safety.reasons.${r.reason}`)}</b>
                   <span className="text-fg-3">
@@ -195,14 +198,16 @@ function Reports() {
                     })}
                   </span>
                 </p>
-                {r.subject && <p className="text-sm text-fg-2">{t('mod.about', { name: r.subject.name })}</p>}
-                {r.note && <p className="text-sm">“{r.note}”</p>}
+                {r.subject && (
+                  <p className="text-meta text-fg-2">{t('mod.about', { name: r.subject.name })}</p>
+                )}
+                {r.note && <p className="text-meta">“{r.note}”</p>}
                 {r.snapshot && <Snapshot text={r.snapshot} />}
                 <div className="flex flex-wrap gap-2">
                   {href && (
                     <Link
                       to={href}
-                      className="inline-flex min-h-9 items-center gap-1 text-sm font-semibold text-brand-ink hover:underline"
+                      className="inline-flex min-h-9 items-center gap-1 text-meta font-semibold text-brand-ink hover:underline"
                     >
                       {t('mod.view')} <ExternalLink className="size-3.5" aria-hidden />
                     </Link>
@@ -252,6 +257,7 @@ function HeldItems() {
     onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
   });
   if (q.isLoading) return <Skeleton className="h-32" />;
+  if (q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} compact />;
   if (!q.data?.length)
     return <EmptyState icon={<ShieldCheck className="size-6" />} title={t('mod.noHeld')} />;
   return (
@@ -259,7 +265,7 @@ function HeldItems() {
       {q.data.map((i) => (
         <li key={i.id}>
           <Card className="grid gap-2 p-4">
-            <p className="flex flex-wrap gap-1.5 text-xs text-fg-3">
+            <p className="flex flex-wrap gap-1.5 text-caption text-fg-3">
               {i.source.name} ·{' '}
               {i.quality.map((x) => (
                 <Badge key={x} tone="warning">
@@ -268,13 +274,13 @@ function HeldItems() {
               ))}
             </p>
             <b>{i.title}</b>
-            {i.snippet && <p className="text-sm text-fg-2">{i.snippet}</p>}
+            {i.snippet && <p className="text-meta text-fg-2">{i.snippet}</p>}
             <div className="flex flex-wrap items-center gap-2">
               <a
                 href={i.url}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
-                className="text-sm font-semibold text-brand-ink hover:underline"
+                className="text-meta font-semibold text-brand-ink hover:underline"
               >
                 {i.host}
               </a>
@@ -321,6 +327,7 @@ function PendingQuestions() {
     onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
   });
   if (q.isLoading) return <Skeleton className="h-32" />;
+  if (q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} compact />;
   if (!q.data?.length)
     return <EmptyState icon={<CheckCircle2 className="size-6" />} title={t('mod.noQuestions')} />;
   return (
@@ -329,11 +336,11 @@ function PendingQuestions() {
         {q.data.map((x) => (
           <li key={x.id}>
             <Card className="grid gap-2 p-4">
-              <p className="text-xs text-fg-3">
+              <p className="text-caption text-fg-3">
                 {t('mod.askedBy', { name: x.author?.name ?? '?', when: formatRelative(x.createdAt) })}
               </p>
               <b>{x.title}</b>
-              {x.body && <p className="text-sm whitespace-pre-wrap text-fg-2">{x.body}</p>}
+              {x.body && <p className="text-meta whitespace-pre-wrap text-fg-2">{x.body}</p>}
               <div className="flex justify-end gap-2">
                 <Button size="sm" onClick={() => setRejecting(x.id)}>
                   {t('admin.reject')}
@@ -404,6 +411,7 @@ function Appeals() {
     onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
   });
   if (q.isLoading) return <Skeleton className="h-32" />;
+  if (q.isError) return <ErrorState error={q.error} onRetry={() => void q.refetch()} compact />;
   if (!q.data?.length) return <EmptyState icon={<Gavel className="size-6" />} title={t('mod.noAppeals')} />;
   return (
     <ul className="grid gap-3">
@@ -412,7 +420,7 @@ function Appeals() {
         return (
           <li key={a.id}>
             <Card className="grid gap-2 p-4">
-              <p className="flex flex-wrap items-center gap-2 text-sm">
+              <p className="flex flex-wrap items-center gap-2 text-meta">
                 <Badge tone="warning">{t(`content.${a.targetType}`)}</Badge>
                 {a.removal && <b>{t(`mod.reasons.${a.removal.reason}`)}</b>}
                 <span className="text-fg-3">
@@ -420,15 +428,15 @@ function Appeals() {
                 </span>
               </p>
               {a.snapshot && <Snapshot text={a.snapshot} />}
-              <p className="text-sm">
+              <p className="text-meta">
                 <span className="font-semibold">{t('mod.authorSays')}</span> “{a.message}”
               </p>
               {a.removal?.note && (
-                <p className="text-sm text-fg-2">{t('mod.removalNote', { note: a.removal.note })}</p>
+                <p className="text-meta text-fg-2">{t('mod.removalNote', { note: a.removal.note })}</p>
               )}
               <div className="flex flex-wrap items-center gap-2">
                 {href && (
-                  <Link to={href} className="text-sm font-semibold text-brand-ink hover:underline">
+                  <Link to={href} className="text-meta font-semibold text-brand-ink hover:underline">
                     {t('mod.view')}
                   </Link>
                 )}
@@ -445,7 +453,7 @@ function Appeals() {
                   </Button>
                 </span>
               </div>
-              <p className="text-xs text-fg-3">{t('mod.secondPair')}</p>
+              <p className="text-caption text-fg-3">{t('mod.secondPair')}</p>
             </Card>
           </li>
         );
@@ -463,25 +471,35 @@ export function ModerationAdmin() {
     queryFn: () => api.get<Summary>('/admin/moderation/summary'),
     refetchInterval: 60_000,
   });
-  const n = (k: keyof Summary) => (s.data?.[k] ? ` (${s.data[k]})` : '');
+  // A count only when something is waiting (the summary is still loading, or the queue is empty).
+  const item = (id: Tab, label: string, k: keyof Summary) => ({
+    id,
+    label,
+    ...(s.data?.[k] ? { count: s.data[k] } : {}),
+  });
+  const idBase = 'moderation';
   return (
     <div className="grid gap-4">
       <p className="text-fg-2">{t('mod.intro')}</p>
-      <Segmented
+      {/* One scrolling row of tabs with counts (it was a 2 × 2 grid of buttons on phones). */}
+      <Tabs<Tab>
         label={t('mod.queue')}
+        idBase={idBase}
         value={tab}
         onChange={setTab}
-        options={[
-          ['reports', `${t('mod.tabs.reports')}${n('reports')}`],
-          ['questions', `${t('mod.tabs.questions')}${n('pendingQuestions')}`],
-          ['items', `${t('mod.tabs.items')}${n('heldItems')}`],
-          ['appeals', `${t('mod.tabs.appeals')}${n('appeals')}`],
+        tabs={[
+          item('reports', t('mod.tabs.reports'), 'reports'),
+          item('questions', t('mod.tabs.questions'), 'pendingQuestions'),
+          item('items', t('mod.tabs.items'), 'heldItems'),
+          item('appeals', t('mod.tabs.appeals'), 'appeals'),
         ]}
       />
-      {tab === 'reports' && <Reports />}
-      {tab === 'items' && <HeldItems />}
-      {tab === 'questions' && <PendingQuestions />}
-      {tab === 'appeals' && <Appeals />}
+      <TabPanel idBase={idBase} id={tab}>
+        {tab === 'reports' && <Reports />}
+        {tab === 'items' && <HeldItems />}
+        {tab === 'questions' && <PendingQuestions />}
+        {tab === 'appeals' && <Appeals />}
+      </TabPanel>
     </div>
   );
 }

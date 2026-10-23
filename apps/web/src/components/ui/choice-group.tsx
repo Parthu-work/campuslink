@@ -66,7 +66,8 @@ export function ChoiceGroup<T extends string>({
             'aria-checked:border-brand aria-checked:bg-brand-surface aria-checked:text-fg',
             variant === 'chip'
               ? 'inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line-strong px-4 text-meta font-semibold text-fg-2 hover:border-[color-mix(in_oklch,var(--line-strong),var(--fg)_25%)]'
-              : 'flex min-h-14 items-center justify-between gap-3 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 px-4 py-2.5 text-left hover:bg-surface-2',
+              : // Wraps: a short detail sits on the right, a long one drops below the label.
+                'flex min-h-14 flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 px-4 py-2.5 text-left hover:bg-surface-2',
           )}
         >
           <span className="flex min-w-0 items-center gap-2.5">
@@ -83,7 +84,9 @@ export function ChoiceGroup<T extends string>({
             <span className={cn('min-w-0', variant === 'card' && 'font-semibold text-fg')}>{o.label}</span>
           </span>
           {o.detail && (
-            <span className={cn('flex-none text-fg-2', variant === 'card' ? 'text-meta' : 'text-caption')}>
+            <span
+              className={cn('text-fg-2', variant === 'card' ? 'min-w-0 text-meta' : 'flex-none text-caption')}
+            >
               {o.detail}
             </span>
           )}

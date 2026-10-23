@@ -18,7 +18,7 @@ export function LandingPage() {
       <Mesh className="absolute inset-0 -z-20 size-full saturate-[1.15]" />
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_50%_110%,var(--bg)_25%,transparent_70%)]" />
       <header className="gutter flex items-center gap-3 pt-[calc(18px+env(safe-area-inset-top,0px))]">
-        <Crest monogram={tenant.branding.monogram} />
+        <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} />
         <div className="min-w-0 font-display text-meta leading-tight font-semibold">
           {college}
           {tenant.branding.city && (
@@ -36,7 +36,7 @@ export function LandingPage() {
       </header>
       <main id="main" className="gutter screen-in grid max-w-[880px] gap-6 self-center py-10">
         <span className="hidden sm:block">
-          <Crest monogram={tenant.branding.monogram} size={64} />
+          <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} size={64} />
         </span>
         <span className="eyebrow">{t('landing.eyebrow')}</span>
         <h1 className="text-hero leading-[0.98] font-bold tracking-[-0.035em] [:root[lang=te]_&]:text-display [:root[lang=te]_&]:leading-tight [:root[lang=te]_&]:tracking-normal">

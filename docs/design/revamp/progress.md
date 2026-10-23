@@ -13,12 +13,13 @@ Branch: the session branch rule applies (`claude/sleepy-euler-bi65m3`, started f
 |     4 | Performance (§7d, CI bundle budget)                                         | Done                              |
 |     5 | Foundations (tokens, fonts, palette generator, contrast tests, ADR)         | Done                              |
 |     6 | Living style guide (`/design`) — **stop for owner review with screenshots** | Done, awaiting the owner's review |
-|     7 | Primitives (`components/ui/` rebuild, duplicates merged)                    | Not started                       |
-|     8 | Showpiece screens                                                           | Not started                       |
-|     9 | Study feature (spec §13 steps 1–6, each a stop-for-review point)            | Not started                       |
-|    10 | Remaining screens                                                           | Not started                       |
+|     7 | Primitives (`components/ui/` rebuild, duplicates merged)                    | Done                              |
+|     8 | Showpiece screens                                                           | Done                              |
+|     9 | Study feature (spec §13 steps 1–6, each a stop-for-review point)            | Done                              |
+|    10 | Remaining screens                                                           | Done                              |
 |    11 | Polish                                                                      | Not started                       |
 |    12 | Re-audit (`after/`, `summary.md`, scorecard)                                | Not started                       |
+|    13 | Final report                                                                | Not started                       |
 
 ## Phase 0 · Setup
 
@@ -270,3 +271,20 @@ Spec §13 step 6.
 - **Hardened:** an injection suite over hostile PDFs, file names, transcripts, selections and syllabus titles (two real gaps fixed), and the isolation suite now also covers subjects a student does not take inside their own college.
 - **A separate worker** runs the media tools and every background job; the API image no longer contains ffmpeg or Tesseract.
 - **Fast enough:** 50,000 passages, retrieval p95 153 ms, first streamed words under 260 ms with the demo responder.
+
+## Phase 10 · Remaining screens
+
+Settings, admin, analytics, moderation, imports, sources and the platform console, on the phase 7 primitives.
+
+- **Admin home and side menu (audit §7, NB-4):** `/admin` is now an **Overview**: "What’s waiting", one card per queue the member may act on (verification, moderation with reports, questions, appeals and held items, roadmap reviews, study material reviews, imports running and failed this week), then members, the last 7 days of activity and the AI assistant's state and budget, each a tap into its section. The thirteen tabs in one scrolling row became a grouped side menu on desktop (People, Community, Insights, College: sticky, 44 px rows, current section marked); on phones the overview lists the sections and every section has a way back. The sections come from `ADMIN_SECTIONS` through `buildNav()` and `useNav()`, so each member sees only what they may open.
+- **Moderation:** the four queues are `Tabs` with their counts, and each queue shows an `ErrorState` with retry when it cannot load (it used to look empty).
+- **Analytics:** KPIs as `StatCard`s, the monthly charts on the shared `ColumnChart` (it now draws a suppressed month as "<5" with no column, in the chart, tooltip and table alike), referrals by outcome with the count in text, engagement in the `Table` primitive, filters with visible labels that keep the previous figures while new ones load, an error state, and a route prefetch for the default view.
+- **Settings:** the tab row now comes from `buildNav()` (`SETTINGS_SECTIONS`) like every other navigation surface. Delete my account shows a three-step timeline (requested, the 30-day window with the days left, permanent erasure) instead of a sentence.
+- **Imports, sources, job sources, the member list, verification and people:** error states with retry, empty states with an `Illustration`, and type on the scale (`text-caption`, `text-meta`, `text-title` instead of raw `text-xs`, `text-sm`, `text-lg`; 105 replacements in these screens, audit DS-2 and TY-3).
+- **College logo (decision 7, approved by the owner):** Admin › Branding uploads, replaces or removes a PNG or WebP logo (at most 512 KB; SVG refused), checked in the browser first and then by the server (sniffed, re-encoded to WebP at most 512 px, scanned, audited). The crest shows it in the rail, the phone top bar, sign-in, the landing page and verification, and falls back to the monogram. It belongs to the college, so erasing the uploading admin's account keeps it.
+- **Fixes found on the way:** the admin section for accounts is now **Members** (it shared the name "People" with the directory, so two different links read the same to a screen reader); `ChoiceGroup` cards let a long detail drop below the label instead of widening the page (the AI provider choice overflowed at 1280 px in the narrower admin column); and the `Table` region contains its own width, so a wide table scrolls inside it.
+- **Platform console:** a college's monogram text uses `onColor()` on its own colour (contrast on any accent), the status badge is translated, and **Suspend college** sits apart from neutral actions with danger weight (audit DS-7).
+
+**Deviation from §11 for the owner to confirm:** the overview needs queue sizes that no endpoint returned, so this phase adds one read-only endpoint, `GET /api/v1/admin/overview`. It only counts what the member can already list in each section, each part behind the permission that already opens that section (403 without any admin permission), with member and activity counts through `suppress()`. It changes no existing behaviour, auth or tenancy, and it is in `docs/permissions.md` with authorization tests (`test/admin-overview.test.ts`). If the owner prefers no API additions in the revamp, the module can be removed and the overview reduced to the section list.
+
+**Budget:** initial JS 169.4 KB; every screen under 70 KB except the recorded PDF viewer and KaTeX exceptions.

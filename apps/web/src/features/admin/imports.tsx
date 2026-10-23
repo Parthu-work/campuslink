@@ -12,6 +12,8 @@ import {
 } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select } from '../../components/ui/field';
+import { ErrorState } from '../../components/ui/error-state';
+import { Illustration } from '../../components/ui/illustration';
 import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
 import { StatCard, StatGrid } from '../../components/ui/stat-card';
 import { ProgressBar } from '../../components/ui/progress';
@@ -95,7 +97,7 @@ function SourceStep({ onPreview }: { onPreview: (p: ImportPreview) => void }) {
   ];
   return (
     <Card className="grid gap-4 p-5">
-      <h2 className="text-lg font-semibold">{t('admin.source')}</h2>
+      <h2 className="text-title font-semibold">{t('admin.source')}</h2>
       <div role="group" aria-label={t('admin.source')} className="flex flex-wrap gap-2">
         {tabs.map(([k, label, Icon]) => (
           <Chip key={k} pressed={source === k} onClick={() => setSource(k)}>
@@ -239,10 +241,10 @@ function MappingStep({
   return (
     <Card className="grid gap-5 p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold">{t('admin.mapTitle')}</h2>
+        <h2 className="text-title font-semibold">{t('admin.mapTitle')}</h2>
         <Badge>{t('admin.rows', { count: preview.totalRows })}</Badge>
       </div>
-      <p className="text-sm text-fg-2">{t('admin.mapIntro')}</p>
+      <p className="text-meta text-fg-2">{t('admin.mapIntro')}</p>
       <FormError message={error} />
       <div className="grid gap-3 sm:grid-cols-2">
         {IMPORT_FIELDS.map((f: ImportField) => (
@@ -290,8 +292,8 @@ function MappingStep({
           role="region"
           aria-label={t('admin.previewRows')}
         >
-          <table className="w-full min-w-[560px] text-left text-sm">
-            <thead className="border-b border-line bg-surface-2 text-xs text-fg-2">
+          <table className="w-full min-w-[560px] text-left text-meta">
+            <thead className="border-b border-line bg-surface-2 text-caption text-fg-2">
               <tr>
                 {mapped.map((f) => (
                   <th key={f} scope="col" className="px-3 py-2 font-medium">
@@ -304,7 +306,7 @@ function MappingStep({
               {preview.rows.map((r, i) => (
                 <tr key={i} className="border-b border-line last:border-0">
                   {mapped.map((f) => (
-                    <td key={f} className="max-w-[220px] truncate px-3 py-2 font-mono text-xs">
+                    <td key={f} className="max-w-[220px] truncate px-3 py-2 font-mono text-caption">
                       {r[columns[f] ?? ''] ?? ''}
                     </td>
                   ))}
@@ -382,7 +384,7 @@ function JobView({ id, onNew }: { id: string; onNew: () => void }) {
     <Card className="grid gap-5 p-5">
       <div className="flex flex-wrap items-center gap-3">
         {done && j.status === 'completed' && <CheckCircle2 className="size-6 text-success" aria-hidden />}
-        <h2 className="text-lg font-semibold" role="status">
+        <h2 className="text-title font-semibold" role="status">
           {title}
         </h2>
         <Badge className="ml-auto">{j.sourceLabel}</Badge>
@@ -407,8 +409,8 @@ function JobView({ id, onNew }: { id: string; onNew: () => void }) {
           role="region"
           aria-label={t('admin.errorsCount')}
         >
-          <table className="w-full min-w-[420px] text-left text-sm">
-            <thead className="border-b border-line bg-surface-2 text-xs text-fg-2">
+          <table className="w-full min-w-[420px] text-left text-meta">
+            <thead className="border-b border-line bg-surface-2 text-caption text-fg-2">
               <tr>
                 <th scope="col" className="px-3 py-2 font-medium">
                   {t('admin.row')}
@@ -424,11 +426,11 @@ function JobView({ id, onNew }: { id: string; onNew: () => void }) {
             <tbody>
               {j.rowErrors.slice(0, 20).map((e, i) => (
                 <tr key={i} className="border-b border-line last:border-0">
-                  <td className="px-3 py-2 font-mono text-xs tabular">{e.row}</td>
-                  <td className="px-3 py-2 text-xs">
+                  <td className="px-3 py-2 font-mono text-caption tabular">{e.row}</td>
+                  <td className="px-3 py-2 text-caption">
                     {IMPORT_FIELDS.includes(e.field as ImportField) ? t(`admin.field.${e.field}`) : e.field}
                   </td>
-                  <td className="px-3 py-2 text-xs">{e.message}</td>
+                  <td className="px-3 py-2 text-caption">{e.message}</td>
                 </tr>
               ))}
             </tbody>
@@ -483,11 +485,12 @@ function JobView({ id, onNew }: { id: string; onNew: () => void }) {
 function History({ onOpen, current }: { onOpen: (id: string) => void; current: string | null }) {
   const { t, i18n } = useTranslation();
   const jobs = useQuery({ queryKey: ['imports'], queryFn: () => api.get<Job[]>('/admin/imports') });
+  if (jobs.isError) return <ErrorState error={jobs.error} onRetry={() => void jobs.refetch()} compact />;
   if (!jobs.data?.length)
     return jobs.isLoading ? (
       <Skeleton className="h-24" />
     ) : (
-      <EmptyState icon={<FileSpreadsheet className="size-6" />} title={t('admin.noImports')} />
+      <EmptyState art={<Illustration kind="empty" />} title={t('admin.noImports')} />
     );
   return (
     <section className="grid gap-2">
@@ -499,7 +502,7 @@ function History({ onOpen, current }: { onOpen: (id: string) => void; current: s
               type="button"
               onClick={() => onOpen(j.id)}
               aria-current={current === j.id}
-              className="flex w-full flex-wrap items-center gap-2 rounded-[var(--radius-md)] border border-line bg-surface-1 p-3 text-left text-sm hover:border-line-strong aria-[current=true]:border-brand"
+              className="flex w-full flex-wrap items-center gap-2 rounded-[var(--radius-md)] border border-line bg-surface-1 p-3 text-left text-meta hover:border-line-strong aria-[current=true]:border-brand"
             >
               <b className="min-w-0 flex-1 truncate">{j.sourceLabel}</b>
               {j.dryRun && <Badge>dry run</Badge>}
@@ -508,10 +511,10 @@ function History({ onOpen, current }: { onOpen: (id: string) => void; current: s
               >
                 {j.status.replace('_', ' ')}
               </Badge>
-              <span className="font-mono text-xs text-fg-3 tabular">
+              <span className="font-mono text-caption text-fg-3 tabular">
                 +{j.counts.created} · ~{j.counts.updated} · !{j.counts.errors}
               </span>
-              <span className="font-mono text-xs text-fg-3">
+              <span className="font-mono text-caption text-fg-3">
                 {new Date(j.createdAt).toLocaleString(i18n.language)}
               </span>
             </button>

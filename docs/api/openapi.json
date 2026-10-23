@@ -112,6 +112,80 @@
         "x-permission": "tenant:branding"
       }
     },
+    "/api/v1/tenant/logo": {
+      "get": {
+        "tags": [
+          "Tenant"
+        ],
+        "summary": "The college logo (re-encoded WebP)",
+        "description": "Public. Host scope: college.",
+        "operationId": "tenants_get_tenant_logo",
+        "parameters": [
+          {
+            "name": "v",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      },
+      "post": {
+        "tags": [
+          "Tenant"
+        ],
+        "summary": "Upload the college logo (PNG or WebP up to 512 KB; re-encoded, scanned, audited)",
+        "description": "Requires permission `tenant:branding` (Change college branding). Host scope: college. Rate limit: upload.",
+        "operationId": "tenants_post_tenant_logo",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:branding"
+      },
+      "delete": {
+        "tags": [
+          "Tenant"
+        ],
+        "summary": "Remove the college logo (the monogram shows again; audited)",
+        "description": "Requires permission `tenant:branding` (Change college branding). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "tenants_delete_tenant_logo",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:branding"
+      }
+    },
     "/api/v1/tenant/settings": {
       "get": {
         "tags": [
@@ -16353,6 +16427,30 @@
           }
         },
         "x-permission": "study:read"
+      }
+    },
+    "/api/v1/admin/overview": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "What is waiting for me: queue sizes I may act on, and member and activity counts (suppressed); 403 without admin access",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "admin-overview_get_admin_overview",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
       }
     },
     "/api/v1/admin/moderation/summary": {

@@ -141,6 +141,16 @@ export class UsersService {
     };
   }
 
+  /** Members by state (Admin › Overview; the caller suppresses small counts). */
+  async memberCounts() {
+    const [active, unverified, suspended] = await Promise.all([
+      UserModel.countDocuments({ status: 'active' }),
+      UserModel.countDocuments({ status: 'active', verified: false }),
+      UserModel.countDocuments({ status: 'suspended' }),
+    ]);
+    return { active, unverified, suspended };
+  }
+
   /** Active members of the college with a role (for alerts to its admins). */
   async activeIdsWithRole(role: Role): Promise<string[]> {
     const rows = await UserModel.find({ roles: role, status: 'active' })

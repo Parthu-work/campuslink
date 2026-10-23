@@ -1,6 +1,8 @@
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import type {
+  AdminOverviewView,
   AiUsageView,
+  AnalyticsView,
   StudyInsightsView,
   BookingView,
   CommentView,
@@ -311,6 +313,30 @@ export const aiIndex = () =>
       return d && (d.running || (d.semantic && d.pending > 0)) ? 3000 : false;
     },
   });
+
+/** Admin › Overview: what is waiting for this member (only the queues they may act on). */
+export const adminOverview = () =>
+  queryOptions({
+    queryKey: ['admin-overview'],
+    queryFn: ({ signal }) => api.get<AdminOverviewView>('/admin/overview', signal),
+  });
+
+/** The analytics screen's first view (also what its route prefetches). */
+export const ANALYTICS_DEFAULTS = { months: 6, branch: '', gradYear: '' };
+
+/** Admin › Analytics: aggregate counts for a period and an optional branch and batch. */
+export const analytics = (f: { months: number; branch: string; gradYear: string }) => {
+  const qs = new URLSearchParams({
+    months: String(f.months),
+    ...(f.branch ? { branch: f.branch } : {}),
+    ...(f.gradYear ? { gradYear: f.gradYear } : {}),
+  }).toString();
+  return queryOptions({
+    queryKey: ['analytics', qs],
+    queryFn: ({ signal }) => api.get<AnalyticsView>(`/admin/analytics?${qs}`, signal),
+    placeholderData: (prev) => prev,
+  });
+};
 
 /** Admin › AI assistant › Usage: college totals for the last `days` days. */
 export const aiUsage = (days: number) =>

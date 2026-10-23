@@ -77,7 +77,7 @@ test.describe('feed and moderation', () => {
     await expectNoA11yViolations(page);
 
     // The removing moderator cannot keep it removed; another moderator restores it.
-    await faculty.page.getByRole('button', { name: /^Appeals/ }).click();
+    await faculty.page.getByRole('tab', { name: /^Appeals/ }).click();
     const appeal = faculty.page.getByRole('listitem').filter({ hasText: 'this is my own study habit' });
     await appeal.getByRole('button', { name: 'Keep removed' }).click();
     await expect(
@@ -85,7 +85,7 @@ test.describe('feed and moderation', () => {
     ).toBeVisible();
     const tpo = await as(browser, `tpo@${host}.example`, host);
     await tpo.page.goto(`${base}/admin/moderation`);
-    await tpo.page.getByRole('button', { name: /^Appeals/ }).click();
+    await tpo.page.getByRole('tab', { name: /^Appeals/ }).click();
     await tpo.page
       .getByRole('listitem')
       .filter({ hasText: 'this is my own study habit' })
@@ -113,7 +113,7 @@ test.describe('feed and moderation', () => {
 
     const faculty = await as(browser, `faculty@${host}.example`, host);
     await faculty.page.goto(`${base}/admin/moderation`);
-    await faculty.page.getByRole('button', { name: /^Questions/ }).click();
+    await faculty.page.getByRole('tab', { name: /^Questions/ }).click();
     await faculty.page
       .getByRole('listitem')
       .filter({ hasText: title })

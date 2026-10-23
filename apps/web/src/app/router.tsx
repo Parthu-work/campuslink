@@ -40,6 +40,7 @@ const load = {
   dataSettings: () => import('../features/settings/data-settings'),
   notificationSettings: () => import('../features/settings/notification-settings'),
   admin: () => import('../features/admin/admin'),
+  adminOverview: () => import('../features/admin/admin-overview'),
   imports: () => import('../features/admin/imports'),
   listAdmin: () => import('../features/admin/list-admin'),
   mentorshipAdmin: () => import('../features/admin/mentorship-admin'),
@@ -393,12 +394,17 @@ function collegeRoutes(): RouteObject[] {
           ]),
           settingsRoutes,
           layout(load.admin, 'AdminLayout', ADMIN_PERMISSIONS, 'admin', [
-            screen(load.admin, 'UsersAdmin', 'users:read_admin', index),
+            screen(load.adminOverview, 'AdminOverview', undefined, index, () => [
+              qc.ensureQueryData(q.adminOverview()),
+            ]),
+            screen(load.admin, 'UsersAdmin', 'users:read_admin', at('users')),
             screen(load.mentorshipAdmin, 'MentorshipAdmin', 'mentorship:oversee', at('mentorship')),
             screen(load.moderationAdmin, 'ModerationAdmin', 'moderation:act', at('moderation')),
             screen(load.sourcesAdmin, 'SourcesAdmin', 'sources:manage', at('sources')),
             screen(load.jobSourcesAdmin, 'JobSourcesAdmin', 'jobs:sources', at('job-sources')),
-            screen(load.analyticsAdmin, 'AnalyticsAdmin', 'analytics:cohort', at('analytics')),
+            screen(load.analyticsAdmin, 'AnalyticsAdmin', 'analytics:cohort', at('analytics'), () => [
+              qc.ensureQueryData(q.analytics(q.ANALYTICS_DEFAULTS)),
+            ]),
             screen(load.rewards, 'RewardsAdmin', 'rewards:manage', at('rewards')),
             screen(load.imports, 'ImportsAdmin', 'imports:manage', at('imports')),
             screen(load.listAdmin, 'ListAdmin', 'imports:manage', at('list')),

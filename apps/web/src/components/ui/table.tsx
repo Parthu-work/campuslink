@@ -22,7 +22,12 @@ export function Table({
       role="region"
       aria-label={label}
       tabIndex={0}
-      className={cn('overflow-x-auto rounded-[var(--radius-lg)] border border-line bg-surface-1', className)}
+      // Inline-size containment: a wide table scrolls inside its region instead of widening every
+      // grid and flex parent up the tree (and with them, the page).
+      className={cn(
+        'overflow-x-auto rounded-[var(--radius-lg)] border border-line bg-surface-1 [contain:inline-size]',
+        className,
+      )}
     >
       <table className="w-full border-collapse text-left text-meta tabular-nums">
         <caption className="sr-only">{caption ?? label}</caption>

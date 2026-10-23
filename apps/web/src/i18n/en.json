@@ -229,13 +229,27 @@
       "cancel": "Cancel deletion",
       "cancelled": "Deletion cancelled. Welcome back.",
       "kept": "Your consent records and the security audit log are kept, as the law requires, without your details.",
-      "banner": "Your account is scheduled for deletion on {{date}}. Until then you can only download your data or cancel."
+      "banner": "Your account is scheduled for deletion on {{date}}. Until then you can only download your data or cancel.",
+      "tl": {
+        "label": "What happens when you delete your account",
+        "today": "Today",
+        "requested": "You asked to delete",
+        "todayBody": "You’re signed out everywhere and your profile is hidden at once.",
+        "grace": "The grace period (usually 30 days)",
+        "graceLeft_one": "{{count}} day left to change your mind",
+        "graceLeft_other": "{{count}} days left to change your mind",
+        "graceBody": "Sign in and cancel, and everything is as it was.",
+        "erased": "Erased",
+        "erasedOn": "Erased on {{date}}",
+        "erasedBody": "Your data is erased; what you shared with others stays as “Former member”.",
+        "now": "you are here"
+      }
     },
     "haptics": "Vibrate on confirmations",
     "hapticsHint": "A short buzz when a booking, step or request goes through. Phones that support it only."
   },
   "admin": {
-    "users": "People",
+    "users": "Members",
     "branding": "Branding",
     "audit": "Audit log",
     "features": "Features",
@@ -371,7 +385,48 @@
     "jobSources": "Job sources",
     "analytics": "Analytics",
     "rewards": "Rewards",
-    "ai": "AI assistant"
+    "ai": "AI assistant",
+    "overview": "Overview",
+    "sectionsNav": "Admin sections",
+    "groups": {
+      "people": "People",
+      "community": "Community",
+      "insights": "Insights",
+      "college": "College"
+    },
+    "ov": {
+      "title": "What’s waiting",
+      "waiting": "Waiting",
+      "sections": "All sections",
+      "verification": "Verification requests",
+      "verificationHint": "Students waiting for a decision on their roll number",
+      "moderation": "Moderation",
+      "moderationHint": "{{reports}} reports · {{questions}} questions · {{appeals}} appeals · {{held}} held items",
+      "roadmaps": "Roadmaps to review",
+      "roadmapsHint": "Drafts submitted by alumni and staff",
+      "material": "Study material to review",
+      "materialHint": "Contributor uploads in the subjects you manage",
+      "imports": "Imports running",
+      "importsHint": "{{failed}} failed this week",
+      "members": "Active members",
+      "membersHint": "{{unverified}} not yet verified · {{suspended}} suspended",
+      "activity": "Active this week",
+      "activityHint": "{{last30}} in the last 30 days",
+      "ai": "AI study assistant",
+      "aiBudget": "{{percent}}% of this month’s token budget used",
+      "aiNoBudget": "No monthly budget set"
+    },
+    "logo": {
+      "label": "Logo",
+      "upload": "Upload logo",
+      "replace": "Replace logo",
+      "remove": "Remove logo",
+      "hint": "PNG or WebP, up to {{kb}} KB. A square logo with a transparent background looks best. Without a logo, the monogram is shown.",
+      "type": "Choose a PNG or WebP image (SVG files are not accepted).",
+      "tooBig": "That image is larger than {{kb}} KB.",
+      "saved": "Logo updated",
+      "removed": "Logo removed; the monogram is shown again"
+    }
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -418,6 +473,10 @@
       "down": "Down",
       "services": "Services",
       "figures": "Figures"
+    },
+    "status": {
+      "active": "Active",
+      "suspended": "Suspended"
     }
   },
   "errors": {
@@ -2245,7 +2304,6 @@
     "notSet": "Not set",
     "exports": "Download reports (CSV)",
     "exportHint": "Each download is recorded in the audit log.",
-    "showTable": "Show as a table",
     "month": "Month",
     "count": "Count",
     "ref": {
@@ -2271,7 +2329,8 @@
       "referrals": "Referrals",
       "events": "Events"
     },
-    "active7": "{{value}} in the last 7 days"
+    "active7": "{{value}} in the last 7 days",
+    "noEngagement": "No members match these filters yet."
   },
   "pwa": {
     "updateTitle": "A new version is ready",

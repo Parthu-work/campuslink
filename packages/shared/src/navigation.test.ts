@@ -23,6 +23,38 @@ describe('role-aware navigation', () => {
     expect(tabs([Role.SUPER_ADMIN])).toEqual(['platform', 'health', 'settings']);
   });
 
+  it('groups the admin sections a member may open (none for students)', () => {
+    const admin = (roles: Role[]) =>
+      buildNav({ roles, permissions: perms(roles), verified: true }, today).admin.map((g) => [
+        g.group,
+        g.items.map((i) => i.id),
+      ]);
+    expect(admin([Role.COLLEGE_ADMIN])).toEqual([
+      ['people', ['users', 'verification', 'imports', 'list']],
+      ['community', ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards']],
+      ['insights', ['analytics']],
+      ['college', ['branding', 'features', 'ai', 'audit']],
+    ]);
+    expect(admin([Role.FACULTY])).toEqual([
+      ['community', ['moderation']],
+      ['insights', ['analytics']],
+    ]);
+    expect(admin([Role.STUDENT])).toEqual([]);
+  });
+
+  it('gives every member the same settings sections', () => {
+    for (const r of [Role.STUDENT, Role.FACULTY, Role.COLLEGE_ADMIN, Role.SUPER_ADMIN])
+      expect(
+        buildNav({ roles: [r], permissions: perms([r]), verified: true }, today).settings.map((s) => s.path),
+      ).toEqual([
+        '/settings',
+        '/settings/privacy',
+        '/settings/preferences',
+        '/settings/notifications',
+        '/settings/data',
+      ]);
+  });
+
   it('falls back while a destination has not shipped', () => {
     expect(tabs([Role.STUDENT])).toEqual(['home', 'roadmaps', 'create', 'mentors', 'jobs']);
     expect(tabs([Role.FACULTY])).toEqual(['home', 'roadmaps', 'create', 'admin', 'jobs']);

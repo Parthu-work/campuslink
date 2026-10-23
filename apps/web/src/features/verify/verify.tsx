@@ -131,7 +131,7 @@ export function VerifyPage() {
   return (
     <div className="mx-auto grid w-full max-w-[560px] gap-4">
       <section className="aurora-mesh grid justify-items-center gap-3 rounded-[var(--radius-xl)] border border-line px-5 pt-7 pb-5 text-center">
-        <Crest monogram={tenant.branding.monogram} size={56} />
+        <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} size={56} />
         <PageHeader
           className="justify-center text-center [&_p]:mx-auto"
           title={t('verify.title', { college })}

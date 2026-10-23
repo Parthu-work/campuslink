@@ -27,6 +27,8 @@ test.describe('people', () => {
     await expect(tile('Problems')).toHaveText('3');
     await expect(page.getByRole('button', { name: 'Download problem report' })).toBeVisible();
 
+    // Phones reach the other sections through the overview; desktops through the side menu.
+    if (info.project.name === 'mobile') await page.getByRole('link', { name: 'Overview' }).click();
     await page.getByRole('link', { name: 'College list' }).click();
     await page.getByPlaceholder('Search roll number or name').fill('25DP1A0501');
     await expect(page.getByRole('cell', { name: /Akhil Varma/ })).toBeVisible();

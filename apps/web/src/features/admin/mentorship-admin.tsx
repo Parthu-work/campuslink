@@ -41,7 +41,7 @@ export function MentorshipAdmin() {
     : [];
   return (
     <>
-      <p className="text-sm text-fg-2">{t('admin.mentorship.intro')}</p>
+      <p className="text-meta text-fg-2">{t('admin.mentorship.intro')}</p>
       {ov.isLoading ? (
         <Skeleton className="h-28" />
       ) : (
@@ -52,15 +52,15 @@ export function MentorshipAdmin() {
         </StatGrid>
       )}
       <section className="grid gap-2" aria-labelledby="fb-h">
-        <h2 id="fb-h" className="text-lg font-semibold">
+        <h2 id="fb-h" className="text-title font-semibold">
           {t('admin.mentorship.feedback')}
         </h2>
-        {fb.isSuccess && !fb.data.length && <p className="text-sm text-fg-3">{t('mentor.noFeedback')}</p>}
+        {fb.isSuccess && !fb.data.length && <p className="text-meta text-fg-3">{t('mentor.noFeedback')}</p>}
         <ul className="grid gap-2">
           {fb.data?.map((f) => (
             <li key={f.id}>
               <Card className="grid gap-1 p-4">
-                <p className="text-sm">
+                <p className="text-meta">
                   <b>{f.mentee.name}</b> → <b>{f.mentor.name}</b>
                 </p>
                 <span role="img" aria-label={t('sessions.stars', { count: f.rating })} className="flex">
@@ -79,8 +79,8 @@ export function MentorshipAdmin() {
                     <Badge key={tag}>{t(`sessions.tag.${tag}`)}</Badge>
                   ))}
                 </div>
-                {f.comment && <p className="text-sm">{f.comment}</p>}
-                <p className="text-xs text-fg-3">{formatRelative(f.createdAt)}</p>
+                {f.comment && <p className="text-meta">{f.comment}</p>}
+                <p className="text-caption text-fg-3">{formatRelative(f.createdAt)}</p>
               </Card>
             </li>
           ))}

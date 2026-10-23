@@ -1,136 +1,55 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from '../../lib/toast';
-import { BarChart3, Download, Printer } from 'lucide-react';
-import {
-  BRANCHES,
-  REPORTS,
-  type AnalyticsView,
-  type Count,
-  type MonthPoint,
-  type ReportId,
-} from '@campuslink/shared';
+import { Download, Printer } from 'lucide-react';
+import { BRANCHES, REPORTS, type Count, type MonthPoint, type ReportId } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
-import { Select } from '../../components/ui/field';
+import { ColumnChart, type ColumnPoint } from '../../components/ui/column-chart';
+import { ErrorState } from '../../components/ui/error-state';
+import { Field, Select } from '../../components/ui/field';
 import { Card, Skeleton } from '../../components/ui/misc';
-import { StatCard, StatGrid } from '../../components/ui/stat-card';
 import { ProgressBar } from '../../components/ui/progress';
-import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
-import { useCan } from '../../lib/me';
+import { StatCard, StatGrid } from '../../components/ui/stat-card';
+import { Table, THead, Td, TdNum, Th } from '../../components/ui/table';
+import { apiBlob, ApiError, saveBlob } from '../../lib/api';
 import { cn } from '../../lib/cn';
+import { formatMonth, perLocale } from '../../lib/format';
+import { useCan } from '../../lib/me';
+import { formatNumber } from '../../lib/numbers';
+import { analytics, ANALYTICS_DEFAULTS } from '../../lib/queries';
+import { toast } from '../../lib/toast';
 
 const num = (c: Count) => (c === '<5' ? null : c);
+const shown = (c: Count) => (c === '<5' ? '<5' : formatNumber(c));
+const year = perLocale((l) => new Intl.DateTimeFormat(l, { year: 'numeric' }));
 
-/** Single-series monthly bars (one hue), with hover/focus tooltip and a table view. */
-function MonthBars({ title, points }: { title: string; points: MonthPoint[] }) {
-  const { t } = useTranslation();
-  const [active, setActive] = useState<number | null>(null);
-  const W = 560;
-  const H = 180;
-  const pad = { l: 8, r: 8, t: 18, b: 26 };
-  const max = Math.max(1, ...points.map((p) => num(p.value) ?? 0));
-  const bw = (W - pad.l - pad.r) / Math.max(1, points.length);
-  const label = (m: string) =>
-    new Intl.DateTimeFormat(undefined, { month: 'short', timeZone: 'UTC' }).format(
-      new Date(`${m}-01T00:00:00Z`),
-    );
-  const cur = active !== null ? points[active] : null;
-  return (
-    <Card className="grid gap-2 p-4">
-      <h3 className="font-semibold">{title}</h3>
-      <div className="relative">
-        <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="group" aria-label={title}>
-          <line x1={pad.l} x2={W - pad.r} y1={H - pad.b} y2={H - pad.b} stroke="var(--line)" />
-          {points.map((p, i) => {
-            const v = num(p.value);
-            const h = v === null ? 0 : ((H - pad.t - pad.b) * v) / max;
-            const x = pad.l + i * bw + 1;
-            const w = Math.max(2, bw - 2);
-            return (
-              <g
-                key={p.month}
-                tabIndex={0}
-                role="img"
-                aria-label={`${label(p.month)}: ${p.value}`}
-                onMouseEnter={() => setActive(i)}
-                onMouseLeave={() => setActive(null)}
-                onFocus={() => setActive(i)}
-                onBlur={() => setActive(null)}
-                className="outline-none"
-              >
-                {/* Hit target taller than the bar. */}
-                <rect x={x} y={pad.t} width={w} height={H - pad.t - pad.b} fill="transparent" />
-                {v === null ? (
-                  <text
-                    x={x + w / 2}
-                    y={H - pad.b - 6}
-                    textAnchor="middle"
-                    className="fill-[var(--fg-3)] text-[11px]"
-                  >
-                    {'<5'}
-                  </text>
-                ) : (
-                  <path
-                    d={`M ${x} ${H - pad.b} V ${H - pad.b - h + Math.min(4, h)} Q ${x} ${H - pad.b - h} ${x + Math.min(4, h)} ${H - pad.b - h} H ${x + w - Math.min(4, h)} Q ${x + w} ${H - pad.b - h} ${x + w} ${H - pad.b - h + Math.min(4, h)} V ${H - pad.b} Z`}
-                    fill="var(--brand)"
-                    opacity={active === null || active === i ? 1 : 0.55}
-                  />
-                )}
-                <text x={x + w / 2} y={H - 8} textAnchor="middle" className="fill-[var(--fg-3)] text-[11px]">
-                  {label(p.month)}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-        {cur && (
-          <div
-            className="pointer-events-none absolute top-0 right-0 rounded-[var(--radius-sm)] border border-line bg-surface-1 px-2 py-1 text-xs shadow-[var(--shadow)]"
-            role="status"
-          >
-            <span className="font-semibold">{label(cur.month)}</span> ·{' '}
-            <span className="tabular-nums">{cur.value}</span>
-          </div>
-        )}
-      </div>
-      <details className="text-sm">
-        <summary className="cursor-pointer text-fg-2">{t('analytics.showTable')}</summary>
-        <table className="mt-2 w-full text-left">
-          <thead>
-            <tr className="text-fg-3">
-              <th className="py-1 font-medium">{t('analytics.month')}</th>
-              <th className="py-1 font-medium">{t('analytics.count')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {points.map((p) => (
-              <tr key={p.month} className="border-t border-line">
-                <td className="py-1">{p.month}</td>
-                <td className="py-1 tabular-nums">{p.value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </details>
-    </Card>
-  );
-}
+/** Months as chart columns: mid-month, so no timezone moves a month; "<5" draws no column. */
+const columns = (points: MonthPoint[]): ColumnPoint[] =>
+  points.map((p) => {
+    const at = `${p.month}-15T12:00:00Z`;
+    return {
+      key: p.month,
+      label: formatMonth(at),
+      detail: year().format(new Date(at)),
+      value: num(p.value) ?? 0,
+      ...(p.value === '<5' ? { display: '<5' } : {}),
+    };
+  });
 
-/** Magnitude by outcome: horizontal bars in one hue, labelled in text ink. */
+/** Magnitude by outcome: a bar in one hue per row, with the count in text (never colour-only). */
 function OutcomeBars({ title, rows }: { title: string; rows: [string, Count][] }) {
   const max = Math.max(1, ...rows.map(([, v]) => num(v) ?? 0));
   return (
-    <Card className="grid gap-2 p-4">
+    <Card variant="raised" className="grid gap-3 p-5">
       <h3 className="font-semibold">{title}</h3>
-      <dl className="grid gap-2">
+      <dl className="grid gap-3">
         {rows.map(([k, v]) => (
-          <div key={k} className="grid grid-cols-[120px_1fr_44px] items-center gap-2 text-sm">
+          <div key={k} className="grid grid-cols-[7rem_minmax(0,1fr)_3rem] items-center gap-3 text-meta">
             <dt className="text-fg-2">{k}</dt>
             <dd>
-              <ProgressBar value={num(v) ?? 0} max={max} size="lg" />
+              <ProgressBar value={num(v) ?? 0} max={max} />
             </dd>
-            <dd className="text-right tabular-nums">{v}</dd>
+            <dd className="text-right font-semibold tabular-nums">{shown(v)}</dd>
           </div>
         ))}
       </dl>
@@ -138,24 +57,26 @@ function OutcomeBars({ title, rows }: { title: string; rows: [string, Count][] }
   );
 }
 
+/**
+ * Admin › Analytics: college or cohort aggregates for a period, filtered by branch and batch.
+ * Counts only (every one through `suppress()` on the server, "<5" here); the charts are the shared
+ * `ColumnChart`, each with a table view, and the engagement breakdown is a `Table`.
+ */
 export function AnalyticsAdmin() {
   const { t } = useTranslation();
   const canExport = useCan('reports:export');
-  const [months, setMonths] = useState(6);
-  const [branch, setBranch] = useState('');
-  const [gradYear, setGradYear] = useState('');
-  const qs = new URLSearchParams({
-    months: String(months),
-    ...(branch ? { branch } : {}),
-    ...(gradYear ? { gradYear } : {}),
-  }).toString();
-  const q = useQuery({
-    queryKey: ['analytics', qs],
-    queryFn: () => api.get<AnalyticsView>(`/admin/analytics?${qs}`),
-  });
+  const [filters, setFilters] = useState(ANALYTICS_DEFAULTS);
+  const set = (patch: Partial<typeof filters>) => setFilters((f) => ({ ...f, ...patch }));
+  const q = useQuery(analytics(filters));
   const exportCsv = async (report: ReportId) => {
+    const qs = new URLSearchParams({
+      months: String(filters.months),
+      ...(filters.branch ? { branch: filters.branch } : {}),
+      ...(filters.gradYear ? { gradYear: filters.gradYear } : {}),
+      report,
+    });
     try {
-      saveBlob(await apiBlob(`/admin/analytics/export?${qs}&report=${report}`), `${report}.csv`);
+      saveBlob(await apiBlob(`/admin/analytics/export?${qs}`), `${report}.csv`);
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
     }
@@ -164,98 +85,123 @@ export function AnalyticsAdmin() {
   const years = Array.from({ length: 12 }, (_, i) => new Date().getFullYear() + 4 - i);
   return (
     <div className="grid gap-5 print:gap-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="flex items-center gap-2 font-display text-2xl font-bold">
-            <BarChart3 className="size-6 text-brand-ink" aria-hidden /> {t('analytics.title')}
-          </h2>
-          <p className="max-w-[65ch] text-sm text-fg-2">{t('analytics.intro')}</p>
-        </div>
-        <Button size="sm" className="print:hidden" onClick={() => window.print()}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="max-w-[65ch] text-meta text-fg-2">{t('analytics.intro')}</p>
+        <Button variant="outline" size="sm" className="print:hidden" onClick={() => window.print()}>
           <Printer className="size-4" aria-hidden /> {t('analytics.print')}
         </Button>
       </div>
-      {/* Filters in one row above the charts. */}
-      <div className="grid gap-2 sm:grid-cols-3 print:hidden">
-        <Select
-          aria-label={t('analytics.period')}
-          value={months}
-          onChange={(e) => setMonths(Number(e.target.value))}
-        >
-          {[3, 6, 12, 24].map((m) => (
-            <option key={m} value={m}>
-              {t('analytics.lastMonths', { count: m })}
-            </option>
-          ))}
-        </Select>
-        <Select aria-label={t('analytics.branch')} value={branch} onChange={(e) => setBranch(e.target.value)}>
-          <option value="">{t('analytics.allBranches')}</option>
-          {BRANCHES.map((b) => (
-            <option key={b} value={b}>
-              {b}
-            </option>
-          ))}
-        </Select>
-        <Select
-          aria-label={t('analytics.batch')}
-          value={gradYear}
-          onChange={(e) => setGradYear(e.target.value)}
-        >
-          <option value="">{t('analytics.allBatches')}</option>
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </Select>
+      {/* Filters in one row above the charts, each with a visible label. */}
+      <div className="grid gap-3 sm:grid-cols-3 print:hidden">
+        <Field label={t('analytics.period')}>
+          {({ id }) => (
+            <Select id={id} value={filters.months} onChange={(e) => set({ months: Number(e.target.value) })}>
+              {[3, 6, 12, 24].map((m) => (
+                <option key={m} value={m}>
+                  {t('analytics.lastMonths', { count: m })}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+        <Field label={t('analytics.branch')}>
+          {({ id }) => (
+            <Select id={id} value={filters.branch} onChange={(e) => set({ branch: e.target.value })}>
+              <option value="">{t('analytics.allBranches')}</option>
+              {BRANCHES.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
+        <Field label={t('analytics.batch')}>
+          {({ id }) => (
+            <Select id={id} value={filters.gradYear} onChange={(e) => set({ gradYear: e.target.value })}>
+              <option value="">{t('analytics.allBatches')}</option>
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </Select>
+          )}
+        </Field>
       </div>
-      {q.isLoading || !v ? (
-        <Skeleton className="h-80" />
+      {q.isError ? (
+        <ErrorState error={q.error} onRetry={() => void q.refetch()} />
+      ) : !v ? (
+        <div className="grid gap-3">
+          <Skeleton className="h-28 rounded-[var(--radius-lg)]" />
+          <Skeleton className="h-64 rounded-[var(--radius-lg)]" />
+        </div>
       ) : (
-        <>
-          <p className="text-xs text-fg-3">
+        <div className={cn('grid gap-5', q.isPlaceholderData && 'opacity-70 transition-opacity')}>
+          <p className="text-caption text-fg-3">
             {t('analytics.meta', { year: v.academicYear })} · {t('analytics.suppressed')}
           </p>
-          <StatGrid className="lg:grid-cols-4 md:grid-cols-3">
-            <StatCard label={t('analytics.students')} value={v.members.students} />
-            <StatCard label={t('analytics.alumni')} value={v.members.alumni} />
+          <StatGrid className="md:grid-cols-3 lg:grid-cols-4">
+            <StatCard label={t('analytics.students')} value={shown(v.members.students)} />
+            <StatCard label={t('analytics.alumni')} value={shown(v.members.alumni)} />
             {v.scope === 'college' && (
               <StatCard
                 label={t('analytics.active30')}
-                value={v.active.last30}
-                hint={t('analytics.active7', { value: v.active.last7 })}
+                value={shown(v.active.last30)}
+                hint={t('analytics.active7', { value: shown(v.active.last7) })}
               />
             )}
             <StatCard
               label={t('analytics.participation')}
               value={v.alumniParticipation.rate === null ? '—' : `${v.alumniParticipation.rate}%`}
               hint={t('analytics.participationHint', {
-                active: v.alumniParticipation.active,
-                total: v.alumniParticipation.total,
+                active: shown(v.alumniParticipation.active),
+                total: shown(v.alumniParticipation.total),
               })}
             />
             <StatCard
               label={t('analytics.sessionsTotal')}
-              value={v.sessions.total}
+              value={shown(v.sessions.total)}
               hint={
                 v.sessions.averageRating
                   ? t('analytics.rating', { rating: v.sessions.averageRating })
                   : undefined
               }
             />
-            <StatCard label={t('analytics.openJobs')} value={v.jobs.open} />
+            <StatCard label={t('analytics.openJobs')} value={shown(v.jobs.open)} />
             <StatCard
               label={t('analytics.eventsHeld')}
-              value={v.events.held}
-              hint={t('analytics.attended', { rsvps: v.events.rsvps, attended: v.events.attended })}
+              value={shown(v.events.held)}
+              hint={t('analytics.attended', {
+                rsvps: shown(v.events.rsvps),
+                attended: shown(v.events.attended),
+              })}
             />
             {v.scope === 'college' && (
-              <StatCard label={t('analytics.pending')} value={v.members.pendingVerification} />
+              <StatCard
+                label={t('analytics.pending')}
+                value={shown(v.members.pendingVerification)}
+                tone={num(v.members.pendingVerification) ? 'warning' : 'default'}
+              />
             )}
           </StatGrid>
-          <div className="grid gap-3 lg:grid-cols-2">
-            <MonthBars title={t('analytics.sessionsByMonth')} points={v.sessions.completed} />
-            <MonthBars title={t('analytics.jobsByMonth')} points={v.jobs.posted} />
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Card variant="raised" className="p-5">
+              <ColumnChart
+                title={t('analytics.sessionsByMonth')}
+                points={columns(v.sessions.completed)}
+                labelHeader={t('analytics.month')}
+                valueHeader={t('analytics.count')}
+              />
+            </Card>
+            <Card variant="raised" className="p-5">
+              <ColumnChart
+                title={t('analytics.jobsByMonth')}
+                points={columns(v.jobs.posted)}
+                labelHeader={t('analytics.month')}
+                valueHeader={t('analytics.count')}
+              />
+            </Card>
           </div>
           <OutcomeBars
             title={t('analytics.referrals')}
@@ -264,66 +210,55 @@ export function AnalyticsAdmin() {
               v.referrals[k],
             ])}
           />
-          <section aria-labelledby="engagement" className="grid gap-2">
+          <section aria-labelledby="engagement" className="grid gap-3">
             <h3 id="engagement" className="font-semibold">
               {t('analytics.engagement')}
             </h3>
-            {/* Focusable so keyboard users can scroll it on phones (A11Y-3). */}
-            <div
-              className="overflow-x-auto rounded-[var(--radius-md)] border border-line"
-              tabIndex={0}
-              role="region"
-              aria-labelledby="engagement"
-            >
-              <table className="w-full min-w-[560px] text-left text-sm">
-                <thead className="bg-surface-2 text-fg-2">
+            {v.engagement.length ? (
+              <Table label={t('analytics.engagement')}>
+                <THead>
                   <tr>
-                    {['branch', 'batch', 'members', 'posts', 'answers', 'sessions', 'steps'].map((h) => (
-                      <th
-                        key={h}
-                        scope="col"
-                        className={cn(
-                          'px-3 py-2 font-medium',
-                          h !== 'branch' && h !== 'batch' && 'text-right',
-                        )}
-                      >
-                        {t(`analytics.col.${h}`)}
-                      </th>
-                    ))}
+                    {(['branch', 'batch', 'members', 'posts', 'answers', 'sessions', 'steps'] as const).map(
+                      (h) => (
+                        <Th key={h} className={cn(h !== 'branch' && h !== 'batch' && 'text-right')}>
+                          {t(`analytics.col.${h}`)}
+                        </Th>
+                      ),
+                    )}
                   </tr>
-                </thead>
+                </THead>
                 <tbody>
                   {v.engagement.map((r) => (
-                    <tr key={`${r.branch}-${r.gradYear}`} className="border-t border-line">
-                      <td className="px-3 py-2">{r.branch ?? t('analytics.notSet')}</td>
-                      <td className="px-3 py-2">{r.gradYear ?? t('analytics.notSet')}</td>
+                    <tr key={`${r.branch}-${r.gradYear}`}>
+                      <Td>{r.branch ?? t('analytics.notSet')}</Td>
+                      <Td>{r.gradYear ?? t('analytics.notSet')}</Td>
                       {[r.members, r.posts, r.answers, r.sessions, r.roadmapSteps].map((c, i) => (
-                        <td key={i} className="px-3 py-2 text-right tabular-nums">
-                          {c}
-                        </td>
+                        <TdNum key={i}>{shown(c)}</TdNum>
                       ))}
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </div>
+              </Table>
+            ) : (
+              <p className="text-meta text-fg-2">{t('analytics.noEngagement')}</p>
+            )}
           </section>
           {canExport && (
-            <section aria-labelledby="exports" className="grid gap-2 print:hidden">
+            <section aria-labelledby="exports" className="grid gap-3 print:hidden">
               <h3 id="exports" className="font-semibold">
                 {t('analytics.exports')}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {REPORTS.map((r) => (
-                  <Button key={r} size="sm" onClick={() => void exportCsv(r)}>
+                  <Button key={r} variant="outline" size="sm" onClick={() => void exportCsv(r)}>
                     <Download className="size-4" aria-hidden /> {t(`analytics.report.${r}`)}
                   </Button>
                 ))}
               </div>
-              <p className="text-xs text-fg-3">{t('analytics.exportHint')}</p>
+              <p className="text-caption text-fg-3">{t('analytics.exportHint')}</p>
             </section>
           )}
-        </>
+        </div>
       )}
     </div>
   );

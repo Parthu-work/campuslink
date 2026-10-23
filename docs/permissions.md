@@ -76,6 +76,9 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 |---|---|---|---|---|
 | `GET /api/v1/tenant` | public | any | — | Public branding for the college on this subdomain |
 | `PUT /api/v1/tenant/branding` | `tenant:branding` | college | adminWrite | Update college branding |
+| `GET /api/v1/tenant/logo` | public | college | — | The college logo (re-encoded WebP) |
+| `POST /api/v1/tenant/logo` | `tenant:branding` | college | upload | Upload the college logo (PNG or WebP up to 512 KB; re-encoded, scanned, audited) |
+| `DELETE /api/v1/tenant/logo` | `tenant:branding` | college | adminWrite | Remove the college logo (the monogram shows again; audited) |
 | `GET /api/v1/tenant/settings` | `tenant:settings` | college | — | Features, limits and permission overrides |
 | `PATCH /api/v1/tenant/settings` | `tenant:settings` | college | adminWrite | Update features, limits and permission overrides |
 | `POST /api/v1/auth/signup` | public | college | signup | Create an account (college verification follows) |
@@ -355,6 +358,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/study/decks` | `study:read` | college | — | My flashcard decks |
 | `GET /api/v1/study/decks/:id` | `study:read` | college | — | One of my flashcard decks |
 | `DELETE /api/v1/study/decks/:id` | `study:read` | college | — | Delete one of my flashcard decks |
+| `GET /api/v1/admin/overview` | any signed-in user | college | — | What is waiting for me: queue sizes I may act on, and member and activity counts (suppressed); 403 without admin access |
 | `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
 | `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |
 | `GET /api/v1/admin/moderation/history/:targetType/:targetId` | `moderation:act` | college | — | Moderation history of one item |

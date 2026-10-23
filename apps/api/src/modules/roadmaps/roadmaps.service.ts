@@ -611,6 +611,11 @@ export class RoadmapsService {
     return this.view(viewer, fresh, await this.openVersion(fresh));
   }
 
+  /** Versions waiting for review (Admin › Overview). */
+  async reviewCount(): Promise<number> {
+    return RoadmapVersionModel.countDocuments({ status: 'submitted' });
+  }
+
   async reviewQueue(viewer: AuthState): Promise<ReviewQueueItem[]> {
     const open = await RoadmapVersionModel.find({ status: 'submitted' })
       .select('-content')

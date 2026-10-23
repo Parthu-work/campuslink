@@ -16,6 +16,8 @@ const tenantSchema = new Schema(
       monogram: { type: String, required: true },
       city: { type: String },
     },
+    /** The uploaded logo (a `branding` file); null shows the monogram. */
+    logo: { fileId: { type: Schema.Types.ObjectId, default: null } },
     features: {
       studentPosting: { type: Boolean, default: false },
       stories: { type: Boolean, default: true },

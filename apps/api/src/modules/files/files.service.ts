@@ -6,7 +6,7 @@ import { assertSafeZip } from '../../lib/zip-guard.js';
 import { ScannerUnavailableError } from '../../lib/clamav.js';
 import { fileTypeFromBuffer } from 'file-type';
 import { Types } from 'mongoose';
-import { ErrorCode, type Permission } from '@campuslink/shared';
+import { ErrorCode, LOGO_TYPES, type Permission } from '@campuslink/shared';
 import { FileModel, type FilePurpose } from './file.model.js';
 import type { StorageProvider } from '../../lib/storage.js';
 import { AppError, notFound } from '../../lib/errors.js';
@@ -177,6 +177,35 @@ export class FilesService {
       'image/webp',
       pending ? new Date(Date.now() + UNATTACHED_TTL_MS) : null,
     );
+  }
+
+  /**
+   * The college logo: PNG or WebP only (sniffed, so SVG and everything else is refused), re-encoded
+   * to WebP at most 512 px with its transparency, and scanned like every upload. The college owns
+   * it, not the admin who uploaded it, so erasing their account leaves the logo in place.
+   */
+  async storeLogo(data: Buffer) {
+    const type = await fileTypeFromBuffer(data);
+    if (!type || !(LOGO_TYPES as readonly string[]).includes(type.mime))
+      throw unsupported('Upload a PNG or WebP logo');
+    let out: Buffer;
+    try {
+      out = await sharp(data, { limitInputPixels: 40_000_000, failOn: 'error' })
+        .resize({ width: 512, height: 512, fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 90, alphaQuality: 100 })
+        .toBuffer();
+    } catch {
+      throw unsupported('That image could not be read');
+    }
+    return this.store(null, 'branding', out, 'image/webp');
+  }
+
+  /** The college logo, for anyone on the college's site (the sign-in page shows it). */
+  async readLogo(fileId: string) {
+    const f = await FileModel.findOne({ _id: fileId, purpose: 'branding' }).lean();
+    const data = f && (await this.storage.get(f.storageKey));
+    if (!f || !data) throw notFound('Logo');
+    return { data, mime: f.mime };
   }
 
   /**
@@ -423,8 +452,9 @@ export class FilesService {
     }
   }
 
+  /** `ownerId` null: the college's own file (its logo). */
   private async store(
-    ownerId: string,
+    ownerId: string | null,
     purpose: FilePurpose,
     data: Buffer,
     mime: string,
@@ -445,7 +475,7 @@ export class FilesService {
     const storageKey = newKey();
     await this.storage.put(storageKey, data);
     const doc = await FileModel.create({
-      ownerId: new Types.ObjectId(ownerId),
+      ownerId: ownerId ? new Types.ObjectId(ownerId) : null,
       purpose,
       mime,
       size: data.length,

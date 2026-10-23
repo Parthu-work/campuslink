@@ -1,0 +1,36 @@
+import {
+  BadgeCheck,
+  BarChart3,
+  Brush,
+  FileUp,
+  Gift,
+  HeartHandshake,
+  ListChecks,
+  Newspaper,
+  Radar,
+  ScrollText,
+  ShieldAlert,
+  SlidersHorizontal,
+  Sparkles,
+  Users,
+  type LucideIcon,
+} from 'lucide-react';
+import type { AdminSectionId } from '@campuslink/shared';
+
+/** Icons for the admin sections (loaded with the admin area, not the app shell). */
+export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
+  users: Users,
+  verification: BadgeCheck,
+  imports: FileUp,
+  list: ListChecks,
+  moderation: ShieldAlert,
+  mentorship: HeartHandshake,
+  sources: Newspaper,
+  jobSources: Radar,
+  rewards: Gift,
+  analytics: BarChart3,
+  branding: Brush,
+  features: SlidersHorizontal,
+  ai: Sparkles,
+  audit: ScrollText,
+};

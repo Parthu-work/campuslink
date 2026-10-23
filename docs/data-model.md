@@ -782,3 +782,7 @@ erDiagram
 - **Vectors** are stored on the passages; Qdrant (or the in-memory store) is an index over them, filtered by college, readable subjects, model and visibility on every search.
 - **Conversations** are owner-only and expire with the college's retention (TTL on `expireAt` for sessions and messages).
 - **Insights** read only aggregates: answers grouped by the topics and units on them, uncovered questions grouped by topic (or by words at least 5 students used), and `materialViewStats`; every count goes through `suppress()`.
+
+### Revamp phase 10
+
+Tenants gain `logo.fileId` (null shows the monogram). Files gain the purpose `branding`, stored with no owner (the college's file, so erasing the uploading admin keeps it).

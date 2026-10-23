@@ -12,6 +12,7 @@ export const FILE_PURPOSES = [
   'study_material',
   'study_thumbnail',
   'study_transcript',
+  'branding',
 ] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 

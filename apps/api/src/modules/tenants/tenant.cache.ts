@@ -8,6 +8,7 @@ export interface TenantRecord {
   kind: 'college' | 'platform';
   status: 'active' | 'suspended';
   branding: Branding;
+  logo?: { fileId: Types.ObjectId | null };
   features: Record<Feature, boolean>;
   allowedEmailDomains: string[];
   limits: { mentorshipRequestsPerWeek: number; referralRequestsPerWeek: number };

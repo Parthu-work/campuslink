@@ -1,16 +1,17 @@
-import { useDeferredValue, useEffect, useState } from 'react';
-import { Outlet } from 'react-router';
-import { TabNav } from '../../components/ui/tab-nav';
+import { useDeferredValue, useEffect, useRef, useState } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { Search, UserX, ScrollText } from 'lucide-react';
+import { ImageUp, LayoutDashboard, Search, ScrollText, Trash2 } from 'lucide-react';
 import {
   contrast,
   ensureContrast,
   onColor,
   TENANT_ROLES,
   FEATURES,
+  LOGO_MAX_BYTES,
+  LOGO_TYPES,
   type Branding,
   type PublicTenant,
   type Role,
@@ -20,53 +21,81 @@ import { Button } from '../../components/ui/button';
 import { Field, Input, Select } from '../../components/ui/field';
 import { Avatar, Badge, Card, Chip, Crest, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
+import { ErrorState } from '../../components/ui/error-state';
+import { Illustration } from '../../components/ui/illustration';
 import { Switch } from '../../components/ui/switch';
 import { Dialog } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { api, apiRequest, ApiError } from '../../lib/api';
 import { useCan, useMe } from '../../lib/me';
 import { applyBranding, useTenant } from '../../lib/tenant-context';
+import { useNav, type AdminNavGroup } from '../../lib/nav';
+import { intentPreload } from '../../lib/preload';
+import { ADMIN_ICONS } from '../../lib/admin-icons';
+import { BackLink } from '../../components/ui/back-link';
 
+/** One admin section in the side menu: a 44px row with its icon, the current one marked. */
+function AdminMenu({ groups }: { groups: AdminNavGroup[] }) {
+  const { t } = useTranslation();
+  const row =
+    'relative flex min-h-11 items-center gap-3 rounded-[var(--radius-sm)] px-3 text-meta font-semibold text-fg-2 hover:bg-surface-2 hover:text-fg aria-[current=page]:bg-brand-surface aria-[current=page]:text-brand-ink';
+  return (
+    <div className="grid gap-4">
+      <NavLink to="/admin" end className={row} {...intentPreload('/admin')}>
+        <LayoutDashboard className="size-5" aria-hidden /> {t('admin.overview')}
+      </NavLink>
+      {groups.map((g) => (
+        <div key={g.group} className="grid gap-1">
+          <p className="eyebrow px-3 text-fg-3">{g.label}</p>
+          <ul className="grid gap-0.5">
+            {g.items.map((i) => {
+              const Icon = ADMIN_ICONS[i.id];
+              return (
+                <li key={i.id}>
+                  <NavLink to={i.to} className={row} {...intentPreload(i.to)}>
+                    <Icon className="size-5" aria-hidden /> {i.label}
+                  </NavLink>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The admin area (audit §7: thirteen tabs in one scrolling row, no overview): a grouped side menu on
+ * desktop; on phones the overview lists the sections and each section has a way back. Sections come
+ * from `buildNav()` through `useNav()`, so each member sees only what they may open.
+ */
 export function AdminLayout() {
   const { t } = useTranslation();
-  const canBrand = useCan('tenant:branding');
-  const canAudit = useCan('audit:read');
-  const canSettings = useCan('tenant:settings');
-  const canImport = useCan('imports:manage');
-  const canReview = useCan('verification:review');
-  const canOversee = useCan('mentorship:oversee');
-  const canUsers = useCan('users:read_admin');
-  const canModerate = useCan('moderation:act');
-  const canSources = useCan('sources:manage');
-  const canJobSources = useCan('jobs:sources');
-  const canAnalytics = useCan('analytics:cohort');
-  const canRewards = useCan('rewards:manage');
-  const canAi = useCan('ai:settings');
-  const tabs = [
-    ['/admin', t('admin.users'), canUsers],
-    ['/admin/imports', t('admin.imports'), canImport],
-    ['/admin/list', t('admin.list'), canImport],
-    ['/admin/verification', t('admin.verification'), canReview],
-    ['/admin/mentorship', t('admin.mentorshipTab'), canOversee],
-    ['/admin/moderation', t('admin.moderation'), canModerate],
-    ['/admin/sources', t('admin.sources'), canSources],
-    ['/admin/job-sources', t('admin.jobSources'), canJobSources],
-    ['/admin/analytics', t('admin.analytics'), canAnalytics],
-    ['/admin/rewards', t('admin.rewards'), canRewards],
-    ['/admin/branding', t('admin.branding'), canBrand],
-    ['/admin/features', t('admin.features'), canSettings],
-    ['/admin/ai', t('admin.ai'), canAi],
-    ['/admin/audit', t('admin.audit'), canAudit],
-  ] as const;
+  const { admin } = useNav();
+  const { pathname } = useLocation();
+  const atHome = pathname.replace(/\/+$/, '') === '/admin';
+  const current = admin
+    .flatMap((g) => g.items)
+    .find((i) => pathname === i.to || pathname.startsWith(`${i.to}/`));
   return (
-    <>
-      <PageHeader title={t('nav.admin')} />
-      <TabNav
-        label={t('nav.admin')}
-        tabs={tabs.filter(([, , ok]) => ok).map(([to, label]) => [to, label] as const)}
-      />
-      <Outlet />
-    </>
+    <div className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start lg:gap-8">
+      <nav aria-label={t('admin.sectionsNav')} className="hidden lg:sticky lg:top-5 lg:block">
+        <AdminMenu groups={admin} />
+      </nav>
+      <div className="grid min-w-0 gap-5">
+        {!atHome && (
+          <BackLink to="/admin" className="lg:hidden">
+            {t('admin.overview')}
+          </BackLink>
+        )}
+        <PageHeader
+          eyebrow={atHome ? undefined : t('nav.admin')}
+          title={atHome ? t('nav.admin') : (current?.label ?? t('nav.admin'))}
+        />
+        <Outlet />
+      </div>
+    </div>
   );
 }
 
@@ -156,8 +185,9 @@ export function UsersAdmin() {
         </label>
       </div>
       {users.isLoading && <Skeleton className="h-48" />}
+      {users.isError && <ErrorState error={users.error} onRetry={() => void users.refetch()} />}
       {users.isSuccess && rows.length === 0 && (
-        <EmptyState icon={<UserX className="size-6" />} title={t('admin.noUsers')} />
+        <EmptyState art={<Illustration kind="people" />} title={t('admin.noUsers')} />
       )}
       <ul className="grid gap-2">
         {rows.map((u) => (
@@ -165,8 +195,8 @@ export function UsersAdmin() {
             <Card className="flex flex-wrap items-center gap-3 p-3">
               <Avatar name={u.name} verified={u.verified} />
               <div className="min-w-0 flex-1">
-                <b className="block truncate text-sm">{u.name}</b>
-                <span className="block truncate text-xs text-fg-2">{u.email}</span>
+                <b className="block truncate text-meta">{u.name}</b>
+                <span className="block truncate text-caption text-fg-2">{u.email}</span>
                 <div className="mt-1.5 flex flex-wrap gap-1">
                   {u.roles.map((r) => (
                     <Badge key={r} tone="brand">
@@ -299,6 +329,74 @@ function RolesDialog({
   );
 }
 
+/** The college logo: upload (PNG or WebP, checked here first, then by the server), replace or remove. */
+function LogoField({ monogram, name }: { monogram: string; name: string }) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const { logoUrl } = useTenant();
+  const input = useRef<HTMLInputElement>(null);
+  const done = (msg: string) => (t2: PublicTenant) => {
+    qc.setQueryData(['tenant'], t2);
+    toast.success(msg);
+  };
+  const upload = useMutation({
+    mutationFn: (file: File) => {
+      const fd = new FormData();
+      fd.set('file', file);
+      return api.upload<PublicTenant>('/tenant/logo', fd);
+    },
+    onSuccess: done(t('admin.logo.saved')),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const remove = useMutation({
+    mutationFn: () => api.delete<PublicTenant>('/tenant/logo'),
+    onSuccess: done(t('admin.logo.removed')),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const pick = (file: File | undefined) => {
+    if (input.current) input.current.value = '';
+    if (!file) return;
+    if (!(LOGO_TYPES as readonly string[]).includes(file.type)) return void toast.error(t('admin.logo.type'));
+    if (file.size > LOGO_MAX_BYTES)
+      return void toast.error(t('admin.logo.tooBig', { kb: LOGO_MAX_BYTES / 1024 }));
+    upload.mutate(file);
+  };
+  return (
+    <div className="grid gap-2">
+      <span className="text-meta font-semibold">{t('admin.logo.label')}</span>
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="grid size-16 flex-none place-items-center rounded-[var(--radius-md)] border border-line bg-surface-2">
+          <Crest monogram={monogram || '?'} logoUrl={logoUrl} size={48} label={name} />
+        </span>
+        <input
+          ref={input}
+          aria-label={t('admin.logo.upload')}
+          type="file"
+          accept={LOGO_TYPES.join(',')}
+          className="sr-only"
+          tabIndex={-1}
+          onChange={(e) => pick(e.target.files?.[0])}
+        />
+        <Button onClick={() => input.current?.click()} loading={upload.isPending}>
+          <ImageUp className="size-4" aria-hidden />{' '}
+          {logoUrl ? t('admin.logo.replace') : t('admin.logo.upload')}
+        </Button>
+        {logoUrl && (
+          <Button
+            variant="ghost"
+            className="text-danger-ink"
+            loading={remove.isPending}
+            onClick={() => remove.mutate()}
+          >
+            <Trash2 className="size-4" aria-hidden /> {t('admin.logo.remove')}
+          </Button>
+        )}
+      </div>
+      <p className="text-caption text-fg-3">{t('admin.logo.hint', { kb: LOGO_MAX_BYTES / 1024 })}</p>
+    </div>
+  );
+}
+
 export function BrandingAdmin() {
   const { t } = useTranslation();
   const tenant = useTenant();
@@ -336,7 +434,8 @@ export function BrandingAdmin() {
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
       <Card className="grid gap-4 p-5">
-        <p className="text-sm text-fg-2">{t('admin.brandingIntro')}</p>
+        <p className="text-meta text-fg-2">{t('admin.brandingIntro')}</p>
+        <LogoField monogram={b.monogram} name={b.displayName} />
         <FormError message={error} />
         <Field label={t('admin.displayName')}>
           {({ id }) => <Input id={id} value={b.displayName} onChange={set('displayName')} maxLength={100} />}
@@ -379,7 +478,7 @@ export function BrandingAdmin() {
       <Card className="grid content-start gap-4 p-5">
         <span className="eyebrow">{t('admin.preview')}</span>
         <div className="flex items-center gap-3">
-          <Crest monogram={b.monogram || '?'} label={b.displayName} size={48} />
+          <Crest monogram={b.monogram || '?'} logoUrl={tenant.logoUrl} label={b.displayName} size={48} />
           <b className="font-display leading-tight">{b.displayName}</b>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -390,7 +489,7 @@ export function BrandingAdmin() {
             {t('landing.join')}
           </Button>
         </div>
-        <ul className="grid gap-1 font-mono text-xs text-fg-2">
+        <ul className="grid gap-1 font-mono text-caption text-fg-2">
           {colours.map(({ k, onDark, onLight }) => (
             <li key={k}>
               {k}: {onDark.toFixed(1)}:1 dark · {onLight.toFixed(1)}:1 light
@@ -430,7 +529,7 @@ export function FeaturesAdmin() {
   return (
     <div className="grid gap-5">
       <Card className="grid gap-3 p-5">
-        <p className="text-sm text-fg-2">{t('admin.featuresIntro')}</p>
+        <p className="text-meta text-fg-2">{t('admin.featuresIntro')}</p>
         <ul className="grid gap-2">
           {(Object.keys(FEATURES) as Feature[]).map((f) => (
             <li key={f} className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-1">
@@ -500,8 +599,8 @@ export function AuditAdmin() {
     return <EmptyState icon={<ScrollText className="size-6" />} title={t('admin.auditEmpty')} />;
   return (
     <Card className="overflow-x-auto" tabIndex={0} role="region" aria-label={t('admin.audit')}>
-      <table className="w-full min-w-[620px] text-left text-sm">
-        <thead className="border-b border-line text-xs text-fg-3">
+      <table className="w-full min-w-[620px] text-left text-meta">
+        <thead className="border-b border-line text-caption text-fg-3">
           <tr>
             <th className="px-4 py-3 font-medium">When</th>
             <th className="px-4 py-3 font-medium">Action</th>
@@ -512,7 +611,7 @@ export function AuditAdmin() {
         <tbody>
           {rows.map((r) => (
             <tr key={r._id} className="border-b border-line last:border-0">
-              <td className="px-4 py-2.5 font-mono text-xs whitespace-nowrap tabular">
+              <td className="px-4 py-2.5 font-mono text-caption whitespace-nowrap tabular">
                 {new Date(r.createdAt).toLocaleString(i18n.language)}
               </td>
               <td className="px-4 py-2.5">
@@ -526,10 +625,10 @@ export function AuditAdmin() {
                   {r.action}
                 </Badge>
               </td>
-              <td className="px-4 py-2.5 font-mono text-xs text-fg-2">
+              <td className="px-4 py-2.5 font-mono text-caption text-fg-2">
                 {r.targetType ? `${r.targetType}:${r.targetId?.slice(-6) ?? ''}` : '—'}
               </td>
-              <td className="px-4 py-2.5 font-mono text-xs text-fg-3">{r.ipPrefix ?? '—'}</td>
+              <td className="px-4 py-2.5 font-mono text-caption text-fg-3">{r.ipPrefix ?? '—'}</td>
             </tr>
           ))}
         </tbody>

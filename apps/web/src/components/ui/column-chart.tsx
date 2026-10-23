@@ -12,6 +12,8 @@ export interface ColumnPoint {
   value: number;
   /** Extra lines for the tooltip and the table (e.g. a breakdown). */
   detail?: ReactNode;
+  /** Shown instead of the value, with no column drawn: "<5" for a suppressed count. */
+  display?: string;
 }
 
 /**
@@ -77,7 +79,7 @@ export function ColumnChart({
             </g>
           ))}
           {points.map((p, i) => {
-            const h = p.value > 0 ? Math.max(2, (plotH * p.value) / top) : 0;
+            const h = p.display === undefined && p.value > 0 ? Math.max(2, (plotH * p.value) / top) : 0;
             const x = pad.l + i * slot + (slot - bw) / 2;
             const r = Math.min(4, h, bw / 2);
             const base = pad.t + plotH;
@@ -86,7 +88,7 @@ export function ColumnChart({
                 key={p.key}
                 tabIndex={0}
                 role="img"
-                aria-label={`${p.label}: ${format(p.value)}`}
+                aria-label={`${p.label}: ${p.display ?? format(p.value)}`}
                 onPointerEnter={() => setActive(i)}
                 onPointerLeave={() => setActive(null)}
                 onFocus={() => setActive(i)}
@@ -109,6 +111,16 @@ export function ColumnChart({
                     className="transition-opacity duration-[var(--dur-fast)]"
                     opacity={active === null || active === i ? 1 : 0.55}
                   />
+                )}
+                {p.display !== undefined && (
+                  <text
+                    x={pad.l + i * slot + slot / 2}
+                    y={base - 6}
+                    textAnchor="middle"
+                    className="fill-[var(--fg-3)] text-[11px]"
+                  >
+                    {p.display}
+                  </text>
                 )}
                 {showLabel(i) && (
                   <text
@@ -134,7 +146,7 @@ export function ColumnChart({
             }
             role="status"
           >
-            <span className="text-meta font-semibold tabular-nums">{format(cur.value)}</span>
+            <span className="text-meta font-semibold tabular-nums">{cur.display ?? format(cur.value)}</span>
             <span className="text-fg-2">{cur.label}</span>
             {cur.detail && <span className="text-fg-2">{cur.detail}</span>}
           </div>
@@ -156,7 +168,7 @@ export function ColumnChart({
                   {p.label}
                   {p.detail && <span className="block text-caption text-fg-3">{p.detail}</span>}
                 </Td>
-                <TdNum>{formatNumber(p.value)}</TdNum>
+                <TdNum>{p.display ?? formatNumber(p.value)}</TdNum>
               </tr>
             ))}
           </tbody>

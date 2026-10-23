@@ -184,7 +184,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           className="flex items-center justify-center gap-2.5 px-3.5 pt-5 pb-4 xl:justify-start"
           title={tenant.branding.displayName}
         >
-          <Crest monogram={tenant.branding.monogram} />
+          <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} />
           <b className="hidden font-display text-[15px] leading-tight font-semibold xl:block">
             {tenant.branding.displayName}
           </b>
@@ -238,7 +238,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         className="chrome-top gutter fixed inset-x-0 top-0 z-40 flex items-center gap-1 border-b pt-[calc(8px+env(safe-area-inset-top,0px))] pb-2 lg:hidden"
       >
         <Link to={platform ? '/platform' : '/home'} className="flex min-w-0 items-center gap-2.5 pr-2">
-          <Crest monogram={tenant.branding.monogram} size={32} />
+          <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} size={32} />
           <b className="truncate font-display text-base font-semibold">{tenant.branding.shortName}</b>
         </Link>
         <div className="ml-auto flex items-center">

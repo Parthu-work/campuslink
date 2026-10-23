@@ -90,11 +90,37 @@ test.describe('signed-in journeys', () => {
     // Enrols on first sign-in (or answers the TOTP prompt if another spec enrolled first).
     await adminSignIn(page, host, `admin@${host}.example`);
 
+    // Admin opens on what is waiting; the sections are a side menu (desktop) or a list (phones).
     await page.goto(`http://${host}.localhost:4173/admin`);
-    await expect(page.getByText('Srinivas Murthy')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What’s waiting' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Active members/ })).toBeVisible();
     await expectNoA11yViolations(page);
+    await page.getByRole('link', { name: 'Members', exact: true }).click();
+    await page.waitForURL(/\/admin\/users$/);
+    await expect(page.getByText('Srinivas Murthy')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Members', level: 1 })).toBeVisible();
+    await expectNoA11yViolations(page);
+    if (info.project.name === 'mobile') await page.getByRole('link', { name: 'Overview' }).click();
     await page.getByRole('link', { name: 'Audit log' }).click();
     await expect(page.getByText('auth.mfa_enabled')).toBeVisible();
+
+    // Branding: a logo replaces the monogram everywhere, and removing it brings the monogram back.
+    await page.goto(`http://${host}.localhost:4173/admin/branding`);
+    await page.getByLabel('Upload logo').setInputFiles({
+      name: 'logo.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+        'base64',
+      ),
+    });
+    await expect(page.getByText('Logo updated')).toBeVisible();
+    // The shell's crest (decorative, so no alt text) on the rail or the phone top bar.
+    await expect(page.locator('img[alt=""][src^="/api/v1/tenant/logo"]:visible').first()).toBeVisible();
+    await expectNoA11yViolations(page);
+    await page.getByRole('button', { name: 'Remove logo' }).click();
+    await expect(page.getByText(/Logo removed/)).toBeVisible();
+    await expect(page.locator('img[src^="/api/v1/tenant/logo"]')).toHaveCount(0);
   });
 
   test('settings: preferences and privacy are keyboard reachable and accessible', async ({ page }) => {
