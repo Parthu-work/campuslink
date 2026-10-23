@@ -39,16 +39,20 @@ describe('vertical access: every permission-guarded college route × every role'
     const mismatches: string[] = [];
     for (const { spec } of routes) {
       const perm = (spec.access as { permission: string }).permission;
-      for (const role of TENANT_ROLES) {
-        const r = await call(spec.method, spec.path, users[role].token);
-        const allowed = (ROLE_PERMISSIONS[role] as readonly string[]).includes(perm);
-        const denied = r.status === 403;
-        if (allowed === denied)
-          mismatches.push(`${role} ${spec.method.toUpperCase()} ${spec.path} → ${r.status}`);
-      }
+      // Every role at once per route (the same calls; the suite grows with each new route).
+      await Promise.all(
+        TENANT_ROLES.map(async (role) => {
+          const r = await call(spec.method, spec.path, users[role].token);
+          const allowed = (ROLE_PERMISSIONS[role] as readonly string[]).includes(perm);
+          const denied = r.status === 403;
+          if (allowed === denied)
+            mismatches.push(`${role} ${spec.method.toUpperCase()} ${spec.path} → ${r.status}`);
+        }),
+      );
     }
     expect(mismatches).toEqual([]);
-  });
+    // Exhaustive by design: it grows with every permission route (about 1,400 calls today).
+  }, 60_000);
 
   it('every non-public route rejects anonymous callers', async () => {
     for (const { spec } of registry().filter((r) => r.spec.access.kind !== 'public')) {
