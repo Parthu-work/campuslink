@@ -24,7 +24,7 @@ const INSTRUCTION_LIKE = [
   /\b(?:ignore|disregard|forget|override)\b[^.\n]{0,40}\b(?:instructions?|rules|prompts?|guidelines)\b/gi,
   /\b(?:you are now|from now on you|act as|pretend to be)\b[^.\n]{0,60}/gi,
   /\b(?:system prompt|developer message|jailbreak)\b/gi,
-  /<\/?\s*(?:system|assistant|user|source|question|instructions?)\b[^>]*>/gi,
+  /<\/?\s*(?:system|assistant|user|sources?|questions?|conversation|instructions?)\b[^>]*>/gi,
 ];
 export const NEUTRALISED = '[instruction-like text removed]';
 

@@ -49,10 +49,13 @@ import {
   RoadmapProgressModel,
   RoadmapVersionModel,
 } from '../modules/roadmaps/roadmap.model.js';
+import { studySeeder } from './seed-study.js';
 
 const env = loadEnv();
 if (env.NODE_ENV === 'production') throw new Error('Refusing to seed a production database');
 const password = process.env.SEED_PASSWORD ?? 'Demo-Campus-Link-2026';
+/** `false` seeds the FLAT subject and syllabus without files (staging: files belong in the bucket). */
+const studyMaterial = process.env.SEED_STUDY_MATERIAL !== 'false';
 const cipher = new FieldCipher(env.FIELD_ENCRYPTION_KEY, env.FIELD_ENCRYPTION_KEYS_PREVIOUS);
 
 const COLLEGES: { slug: string; branding: Branding; domain: string }[] = [
@@ -787,6 +790,7 @@ async function main() {
   await syncIndexes();
   const hash = await hashPassword(password);
   const rows: string[][] = [];
+  const seedStudy = studySeeder(env);
 
   const platform = await TenantModel.create({
     slug: 'admin',
@@ -884,6 +888,7 @@ async function main() {
       await seedJobs(ids);
       await seedRoadmaps(ids);
       await seedPhase7(ids);
+      await seedStudy(t._id, ids.get('faculty') as Types.ObjectId, { material: studyMaterial });
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
   }
@@ -911,6 +916,9 @@ async function main() {
   );
   console.warn(
     'Try roadmaps: ananya@dpit.example opens Roadmaps (Career Galaxy) and marks steps done; faculty@dpit.example reviews Rahul’s DEMO draft under Roadmaps → Review.',
+  );
+  console.warn(
+    'Try the study assistant: ananya@dpit.example opens Study → Formal Languages and Automata Theory (DEMO), presses Ask and asks "What does the pumping lemma show?", then tries /videos subset construction (the built-in demo assistant is on; admin@dpit.example can attach a real provider under Admin → AI assistant).',
   );
   console.warn(
     '\nOpen http://dpit.localhost:5173 or http://mrce.localhost:5173 (platform console: http://admin.localhost:5173)\n',

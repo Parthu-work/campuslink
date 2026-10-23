@@ -1,3 +1,4 @@
+import { createServer } from 'node:http';
 import mongoose from 'mongoose';
 import { Redis } from 'ioredis';
 import { createAdapter } from '@socket.io/redis-adapter';
@@ -74,7 +75,10 @@ async function main() {
           },
           env.MAIL_FROM,
         );
-  const jobs = env.JOBS_DRIVER === 'inline' ? new InlineJobQueue() : new BullJobQueue(bullConnection, logger);
+  // An `api` process only queues jobs; `worker` and `all` run them.
+  const runsJobs = env.PROCESS_ROLE !== 'api';
+  const jobs =
+    env.JOBS_DRIVER === 'inline' ? new InlineJobQueue() : new BullJobQueue(bullConnection, logger, runsJobs);
   const app = createApp({
     env,
     logger,
@@ -85,27 +89,39 @@ async function main() {
     storage: fileStore.storage,
     rateLimitScale: env.RATE_LIMIT_SCALE,
   });
-  const server = app.listen(env.API_PORT, () =>
-    logger.info({ port: env.API_PORT, jobs: env.JOBS_DRIVER }, 'api listening'),
-  );
-
   const services = app.locals.services as {
     files: FilesService;
     realtime: RealtimeGateway;
     privacy: PrivacyService;
   };
-  services.realtime.attach(server, createAdapter(ioPub, ioSub));
+  // A worker serves only its health and readiness (for the container check), never the API.
+  const server =
+    env.PROCESS_ROLE === 'worker'
+      ? createServer(
+          (req, res) =>
+            void healthOnly(req.url ?? '', readiness).then(([status, body]) => {
+              res.writeHead(status, { 'content-type': 'application/json' }).end(JSON.stringify(body));
+            }),
+        ).listen(env.API_PORT, () => logger.info({ port: env.API_PORT, role: 'worker' }, 'worker running'))
+      : app.listen(env.API_PORT, () =>
+          logger.info({ port: env.API_PORT, jobs: env.JOBS_DRIVER, role: env.PROCESS_ROLE }, 'api listening'),
+        );
+  if (env.PROCESS_ROLE === 'worker') services.realtime.emitThrough(createAdapter(ioPub, ioSub));
+  else services.realtime.attach(server, createAdapter(ioPub, ioSub));
   const files = services.files;
   const retention = () =>
     runRetention(files, logger, services.privacy).catch((err: unknown) =>
       logger.error({ err }, 'retention failed'),
     );
-  setTimeout(retention, 30_000).unref();
-  setInterval(retention, 6 * 3600_000).unref();
+  // Timers that queue background work run where jobs run (an `api` process leaves them to workers).
+  if (runsJobs) {
+    setTimeout(retention, 30_000).unref();
+    setInterval(retention, 6 * 3600_000).unref();
+  }
 
   // Ingestion: every minute, queue fetches for due news and job sources, and due job alerts
   // (job ids dedupe across instances).
-  if (env.INGESTION_ENABLED) {
+  if (env.INGESTION_ENABLED && runsJobs) {
     const tick = () =>
       Promise.all([
         ContentSourcesService.enqueueDue(jobs),
@@ -120,7 +136,7 @@ async function main() {
     RoadmapsService.enqueueDueNudges(jobs).catch((err: unknown) =>
       logger.error({ err }, 'nudge tick failed'),
     );
-  setInterval(nudgeTick, 5 * 60_000).unref();
+  if (runsJobs) setInterval(nudgeTick, 5 * 60_000).unref();
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, 'shutting down');
@@ -141,6 +157,21 @@ async function main() {
   };
   process.on('SIGTERM', () => shutdown('SIGTERM'));
   process.on('SIGINT', () => shutdown('SIGINT'));
+}
+
+/** The worker's only HTTP surface: liveness and readiness of its dependencies (no API). */
+async function healthOnly(
+  url: string,
+  readiness: Record<string, () => Promise<boolean>>,
+): Promise<[number, unknown]> {
+  if (url === '/api/v1/health') return [200, { ok: true, data: { status: 'ok', role: 'worker' } }];
+  if (url !== '/api/v1/ready')
+    return [404, { ok: false, error: { code: 'NOT_FOUND', message: 'Not found' } }];
+  const checks = await Promise.all(
+    Object.entries(readiness).map(async ([name, check]) => [name, await check().catch(() => false)] as const),
+  );
+  const ready = checks.every(([, ok]) => ok);
+  return [ready ? 200 : 503, { ok: ready, data: { checks: Object.fromEntries(checks) } }];
 }
 
 main().catch((err: unknown) => {

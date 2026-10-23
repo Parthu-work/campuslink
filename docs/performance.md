@@ -79,3 +79,22 @@ The load generator shares the machine, so treat these figures as a regression ba
    - Not done yet: a new post would take up to 15 seconds to reach For You, while Following shows it at once. Two API processes already give a margin of more than 4× over the estimate above.
 2. **Run the compiled build** (`node dist/server.js`) with one process per vCPU. These figures come from `tsx` in development mode with one process.
 3. **Add a scenario for Socket.io message delivery** (send through REST, receive on a socket) to the load test.
+
+## Study search and the assistant (Phase 9, 2026-10-23)
+
+`pnpm --filter @campuslink/api study:perf` (spec §12 targets): its own database (`campuslink_perf`, dropped afterwards), 50,000 synthetic DEMO passages in 50 subjects with demo vectors, the in-memory vector store, and a faculty viewer who reads every subject (the widest search). It exits non-zero when a target is missed. Same development sandbox as above (`tsx`, one process).
+
+| Check                                                  | Runs   | Result                      | Target             |
+| ------------------------------------------------------ | ------ | --------------------------- | ------------------ |
+| Passages generated                                     | 50,000 | about 39 s                  |                    |
+| First search (loads the college's vectors into memory) | 1      | about 2 s                   | once per process   |
+| Keyword search only                                    | 50     | p50 42 ms · p95 138 ms      |                    |
+| Vector search only (in memory)                         | 50     | p50 75 ms · p95 118 ms      |                    |
+| **Hybrid retrieval, all 50 subjects**                  | 200    | **p50 107 ms · p95 153 ms** | p95 < 300 ms: pass |
+| **Chat with the demo responder: first words**          | 10     | **p50 137 ms · max 258 ms** | < 1.5 s: pass      |
+
+- **The corpus is shaped like a real library:** each subject has its own topic words, every passage shares a long tail of common words (Zipf's law over 4,000 words), and a question names two topic words and one shared word.
+- **Worst case** (`STUDY_PERF_VOCAB=small`: every passage made of the same 70 words, so a question's words are in about 75% of passages and MongoDB's text search must score them all): keyword search alone is p95 467 ms. Hybrid retrieval still meets the target (p50 237 ms, p95 257 ms), because the two halves run at the same time and, when search by meaning is available, the keyword half has a 200 ms limit (`KEYWORD_BUDGET_MS`) after which the meaning results answer alone. With keyword search only (no embedding provider), such a query is not cut short.
+- **Changes made from the results:** keyword and vector search now run concurrently (they ran one after the other), and the keyword time limit above.
+- **Streaming at 60 fps:** the chat panel batches streamed text into one update per animation frame and only follows the bottom while the reader is at the bottom; this is not measured by the script.
+- **Next steps for much larger libraries:** Qdrant instead of the in-memory store (vector search then leaves the API process), and a dedicated text engine (MongoDB Atlas Search or Meilisearch behind the same retrieval service) if keyword search on very common words matters without embeddings.

@@ -1,5 +1,6 @@
 import type { AnswerMode, ChatDifficulty } from '@campuslink/shared';
 import type { ChatTurn } from '../ai/provider.js';
+import { neutraliseInstructions } from '../extract/chunker.js';
 
 /** A passage given to the model, numbered as it will be cited. */
 export interface PromptSource {
@@ -118,9 +119,10 @@ export function buildMessages(opts: {
   sources: PromptSource[];
   question: string;
 }): ChatTurn[] {
+  // Earlier answers may quote material, and they sit outside the source blocks: neutralised too.
   const history = opts.history.slice(-6).map((t) => ({
     role: t.role,
-    content: stripTags(t.content.replace(/\[\d+\]/g, '')).slice(0, 2000),
+    content: neutraliseInstructions(stripTags(t.content.replace(/\[\d+\]/g, ''))).slice(0, 2000),
   }));
   const content = `${sourcesBlock(opts.sources)}\n<question>${stripTags(redactPersonal(opts.question))}</question>`;
   return [...history, { role: 'user', content }];

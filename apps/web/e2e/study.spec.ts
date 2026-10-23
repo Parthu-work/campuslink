@@ -78,7 +78,9 @@ test.describe('study', () => {
     await page.getByLabel('Embedding provider').selectOption('mock');
     const chatbot = page.getByRole('switch', { name: 'Study chatbot' });
     if ((await chatbot.getAttribute('aria-checked')) !== 'true') await chatbot.click();
-    await page.getByRole('button', { name: 'Save settings' }).click();
+    // The seed already turns on the demo for the FLAT sample subject: then there is nothing to save.
+    const saveSettings = page.getByRole('button', { name: 'Save settings' });
+    if (await saveSettings.isEnabled()) await saveSettings.click();
     await expect(page.getByText('All changes saved')).toBeVisible();
     await expect(page.getByText('On (demo)')).toBeVisible();
     // The data notice explains what would leave the college, before any external provider is used.
@@ -261,6 +263,50 @@ test.describe('study', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       page.viewportSize()?.width ?? 0,
     );
+    await expectNoA11yViolations(page);
+  });
+
+  test('the seeded FLAT demo: ask, follow the citation to its page, and jump to a video moment', async ({
+    page,
+  }, info) => {
+    test.setTimeout(120_000);
+    const host = hostFor(info.project.name);
+    const base = `http://${host}.localhost:4173`;
+    await signIn(page, `ananya@${host}.example`, host);
+    await page.goto(`${base}/study`);
+    await page.getByPlaceholder('Search by name or code').fill('Formal Languages');
+    await page.getByRole('link', { name: /Formal Languages and Automata Theory \(DEMO\)/ }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Formal Languages and Automata Theory (DEMO)', level: 1 }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: 'Syllabus' }).getByText('Pumping lemma for regular languages'),
+    ).toBeVisible();
+
+    // upload → index → ask → cite: the seeded notes answer, and the citation opens the page.
+    await page.getByRole('button', { name: 'Ask', exact: true }).click();
+    const chat = page.getByRole('dialog', { name: 'Study assistant' });
+    const box = chat.getByRole('combobox', { name: 'Your question' });
+    await box.fill('What does the pumping lemma show?');
+    await box.press('Enter');
+    const source = chat.getByRole('link', { name: /DEMO notes 2/ }).first();
+    await expect(source).toBeVisible({ timeout: 20_000 });
+    await source.click();
+    await page.waitForURL(/\/m\/[a-f0-9]{24}\?page=2/);
+    await expect(page.getByRole('group', { name: 'Page 2 of 2' })).toBeVisible({ timeout: 20_000 });
+
+    // /videos: the demo lesson, with links to the moments that cover the topic.
+    await page.goto(`${base}/study/chat`);
+    const input = page.getByRole('combobox', { name: 'Your question' });
+    await input.fill('/videos subset construction');
+    await input.press('Enter');
+    const moments = page.getByRole('list', { name: 'Moments that cover it' }).first();
+    await expect(moments).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('link', { name: /DEMO video: NFA to DFA/ }).first()).toBeVisible();
+    await moments.getByRole('link').first().click();
+    await page.waitForURL(/\/m\/[a-f0-9]{24}\?t=\d+/);
+    await expect(page.getByRole('heading', { name: 'Transcript' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/The subset construction builds a DFA/).first()).toBeVisible();
     await expectNoA11yViolations(page);
   });
 });

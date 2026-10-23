@@ -1,10 +1,46 @@
 # AI study assistant
 
-The subject library and the study chatbot (spec: `docs/specs/ai-study-assistant.md`). This document grows with each delivery step; it currently covers **steps 1 to 5**: subjects and syllabus, who takes a subject, the settings page, encrypted key storage and the provider adapters; material upload, the processing pipeline and the viewers; embeddings, the vector index and hybrid search; the study assistant with its slash commands; and budgets, limits, degradation, faculty insights and the admin dashboard.
+The subject library and the study chatbot (spec: `docs/specs/ai-study-assistant.md`). This document grows with each delivery step; it covers all **six steps**: subjects and syllabus, who takes a subject, the settings page, encrypted key storage and the provider adapters; material upload, the processing pipeline and the viewers; embeddings, the vector index and hybrid search; the study assistant with its slash commands; budgets, limits, degradation, faculty insights and the admin dashboard; and the hardening, the separate worker, the seeded demo and the performance check.
 
 ## What it is, in one paragraph
 
 Faculty upload material per subject. The material is split into passages, and (when a provider is configured) each passage gets an embedding. When a student asks a question, the passages that best match it are retrieved and only those, with the question, are sent to the language model, which must answer from them and cite them. Nothing is trained or fine-tuned on a college's material. With no provider configured, everything except generated answers still works: the library, keyword search, and answers made of the matching passages.
+
+## Try it with no key (the seeded demo)
+
+`pnpm seed` creates, in each demo college, **Formal Languages and Automata Theory (DEMO)**: a five-unit syllabus, three short notes written for the demo, and a synthetic demo video (colour bars, no sound) whose transcript is a short self-written lesson, all labelled DEMO. The built-in demo assistant and demo embeddings are on, so everything works with no key and nothing leaves the machine:
+
+1. Sign in as `ananya@dpit.example` (password in the seed output) and open **Study › Formal Languages and Automata Theory (DEMO)**.
+2. Press **Ask** and ask "What does the pumping lemma show?": the answer cites _DEMO notes 2_; the citation opens the PDF at page 2 with the words highlighted.
+3. Open **Study assistant** and type `/videos subset construction`: the demo lesson appears with links to its moments; a link opens the video at that moment with the transcript following along.
+4. As `faculty@dpit.example`, open the subject's **Insights**; as `admin@dpit.example` (two-factor set-up on first sign-in), open **Admin › AI assistant** to attach a real provider.
+
+## The whole system
+
+```mermaid
+flowchart LR
+  subgraph web[apps/web]
+    L[Library and viewers] --- C[Assistant: chat, launcher, slash commands]
+    I[Insights] --- AD[Admin › AI assistant]
+  end
+  subgraph api[API process: PROCESS_ROLE=api]
+    RT[routes: study, materials, chat, ai-settings] --> SV[Subjects · Materials · Retrieval · Chat · Insights · AiSettings]
+  end
+  subgraph worker[Worker process: PROCESS_ROLE=worker, ffmpeg + Tesseract]
+    P[study.process: scan → extract → OCR → transcribe → clean → neutralise → chunk → tag] --> E[study.embed: back-fill in slices]
+  end
+  web -->|/api/v1, SSE for answers| RT
+  SV -->|queue jobs| Q[(Redis: BullMQ, limits, Socket.io)]
+  Q --> worker
+  SV & worker --> DB[(MongoDB: subjects, materials, pages, passages with vectors, transcripts, chats, usage)]
+  SV & worker --> FS[(Files: local disk or S3, ClamAV first)]
+  SV & E --> VS[(Vector index: in memory or Qdrant)]
+  SV & worker -->|safeFetch only| PR[Providers: Anthropic · OpenAI · Gemini · compatible · demo]
+  worker -->|live progress via Redis| web
+```
+
+- **Pipeline stages** (one `study.process` job per material version, resumable): `uploaded` → `scanning` (ClamAV, fails closed) → `extracting` (PDF text per page, DOCX, PPTX, notes) → `ocr` (scanned pages, Tesseract) → `transcribing` (uploaded captions, or Whisper or OpenAI when set up) → `chunking` (headers and footers removed, instruction-like text neutralised, passages within a page or between chapters, tagged to syllabus topics) → `embedding` → `indexed`, or `failed` with a reason the uploader sees and a **Process again** button.
+- **Where things run:** the API answers requests and queues jobs; workers run the pipeline, embeddings, notifications and ingestion (`docs/deployment.md`). Without `PROCESS_ROLE` one process does both.
 
 ## Attaching an API key (college admin)
 
@@ -154,6 +190,12 @@ For the subject's owners and the college's admins (`study:analytics`; other facu
 ### Admin dashboard (Admin › AI assistant › Usage and health)
 
 The month against the budget (with when it starts again), tokens per day (a column chart with a table view), usage by model with the estimate from the admin's prices (the demo is free; transcription is priced per minute, so it has no estimate), answers, failed answers and questions the material did not cover, the last provider problem, whether answers are paused, the processing queue (in progress, failed, the oldest waiting) and, per subject, how much material is ready and how much is searchable by meaning. College totals only: there is no per-member view of usage.
+
+## Hardening (step 6)
+
+- **Injection suite** (`test/study-injection.test.ts`): hostile PDFs (instructions, closing our tags, file names that try to break out of the title attribute), a hostile transcript, a hostile "Ask about this" selection, hostile syllabus titles for `/important`, and follow-ups after answers that quoted hostile text. The demo responder obeys any instruction that reaches it outside a `<source>` block; a positive control shows the trap works, and every case shows nothing reached it, no other subject's words appeared and the prompt was never revealed. Found and fixed on the way: `</sources>` (plural) was not neutralised at ingestion, and earlier answers and syllabus titles reached the model outside the sources without being neutralised.
+- **Isolation suite** (`test/isolation/study.test.ts`): across colleges for every collection and endpoint, and inside a college for a subject a student does not take: subject, syllabus, materials, files, signed links, search, chat scope, ask-about-this, `/videos`, `/notes` and insights. The vector store contract runs against the in-memory store and Qdrant.
+- **Performance** (`pnpm --filter @campuslink/api study:perf`, `docs/performance.md`): 50,000 passages, hybrid retrieval p95 153 ms (target 300), first streamed words under 260 ms with the demo responder (target 1.5 s). Keyword and vector search now run concurrently, and the keyword half has a 200 ms limit when search by meaning can answer instead.
 
 ## The study assistant (step 4)
 

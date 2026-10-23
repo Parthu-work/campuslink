@@ -13,7 +13,7 @@ Phase 9 is done when everything in the spec's §12 has a passing test, the only 
 | 3    | Chunking, embeddings, the vector store (Qdrant and in-memory), hybrid retrieval, back-fill and re-index                                                                                                                     | Done   |
 | 4    | The chatbot (streaming, citations, scopes, modes) and every slash command, with the video segment index                                                                                                                     | Done   |
 | 5    | Analytics, the admin AI dashboard, budgets and limits, degradation                                                                                                                                                          | Done   |
-| 6    | Hardening, injection and isolation suites, docs, seeded FLAT demo and the end-to-end demo                                                                                                                                   |        |
+| 6    | Hardening, injection and isolation suites, docs, seeded FLAT demo and the end-to-end demo                                                                                                                                   | Done   |
 
 ## Step 1 in detail
 
@@ -64,3 +64,30 @@ Phase 9 is done when everything in the spec's §12 has a passing test, the only 
 - **Admin dashboard:** `GET /admin/ai/usage?days=` (college admins): tokens per day and model, the month against the budget, a cost estimate from prices the admin enters (`aiSettings.prices`; never filled in by the app), answers and failures, whether answers are paused, the processing queue and coverage per subject.
 - **Web:** **Usage and health** on Admin › AI assistant (budget meter, figures, a new `ColumnChart` primitive with a table view, model and coverage tables, prices in _Limits_), the **Insights** screen (from a subject's header), "Upload material for this" opening the upload sheet with the topic chosen, and chat messages that say which limit was reached. The Turnstile loader now loads only when a human check is needed, and the permission descriptions stay out of the web bundle (initial JS 169.0 KB).
 - **Tests:** `test/study-insights.test.ts` (budget warnings and pause, resume on a raised budget, the daily limit, retries, fallback, key rejection with one alert, the breaker, insights suppression and access, the dashboard and the cost estimate), the isolation suite (`materialViewStats`, insights and the dashboard across colleges), `lib/chart.test.ts`, and an end-to-end test of both screens.
+
+## Step 6 in detail
+
+- **Injection suite** (`test/study-injection.test.ts`): hostile PDFs, file names, transcripts, selections, syllabus titles and follow-ups, against the demo responder's instruction-following trap (with a positive control). Fixes it found: `</sources>` (plural) and `<conversation>` are now neutralised at ingestion; earlier answers in the history and the syllabus titles `/important` uses are neutralised before they reach the model.
+- **Isolation suite:** a subject a student does not take is unreachable inside the college too (subject, syllabus, materials, files, signed links, search, chat scope, ask-about-this, `/videos`, `/notes`, insights), in addition to the cross-college cases for every collection and endpoint; the vector store contract covers memory and Qdrant.
+- **Separate worker:** `PROCESS_ROLE` (`all`, `api`, `worker`). Workers run every job and timer and serve only health and readiness; the API only queues. `deploy/worker.Dockerfile` carries ffmpeg, poppler and Tesseract (English, Telugu); the API image has none. Staging runs both, and its smoke test uploads material through the API and waits for the worker to finish it.
+- **Seeded FLAT demo:** `pnpm seed` adds the DEMO subject with a five-unit syllabus, three self-written notes, a synthetic demo video with a self-written transcript and chapters, and the demo assistant on (`apps/api/src/scripts/seed-study.ts`; staging seeds it without files).
+- **End-to-end demo:** a student opens the seeded subject, asks, follows the citation to page 2, and uses `/videos` to jump to a moment in the demo lesson.
+- **Performance:** `pnpm --filter @campuslink/api study:perf`: 50,000 passages, hybrid retrieval p95 153 ms (target 300 ms), first words under 260 ms with the demo responder (target 1.5 s); keyword and vector search now run concurrently, with a 200 ms limit on the keyword half when meaning can answer (`docs/performance.md`).
+
+## Phase 9 summary
+
+**Built:** the subject library (subjects, syllabus with paste import, who takes what), material upload with scanning, extraction, OCR, transcripts and viewers, passages with embeddings in a vector index and hybrid search, the study assistant (streaming, citations, scopes, answer styles, every slash command), budgets and limits that fall back to passages, provider retries and a circuit breaker, faculty insights and the admin AI dashboard, export and erasure for every collection, a separate worker, the seeded demo, and the injection, isolation and performance checks. A college's only remaining step is to paste an API key in **Admin › AI assistant** (`docs/ai-assistant.md`).
+
+**Decisions:** answers come only from retrieved passages in numbered source blocks (nothing is trained); keyword search, `/videos`, `/notes` and `/syllabus` never need a provider; vectors live on the passages and the vector store is only an index (rebuilt without provider cost); budgets and limits degrade to passages instead of erroring; analytics are suppressed aggregates with no question text; media tools run only on workers.
+
+**Assumptions:** a semester is descriptive (batches decide who takes a subject); UTC days and months for usage and budgets; prices for the cost estimate come only from the admin.
+
+**Gaps and things to verify:**
+
+- Real providers were tested against recorded-format fakes, not live keys: attach a key per provider and run a few questions, `/quiz` and a back-fill.
+- The worker image could not be built in this sandbox (its TLS-intercepting proxy blocks npm inside `docker build`); its build stage is the API image's. The process roles were checked from source: an `api` process left uploads queued, and a `worker` process processed them. Build it and run `deploy/staging/up.sh --build` and `smoke.sh` on a normal machine.
+- Whisper transcription and OpenAI transcription were tested with fakes; uploaded captions are the tested path.
+- **Faculty reading chats** (`facultySeeChats`) is stored but does nothing: whether faculty may ever read students' conversations is a privacy decision for the owner (with notice to students) before any such view is built.
+- The Atlas vector store is a documented starting point, not a tested adapter; Qdrant and the in-memory store are tested.
+
+**Next steps:** live-key checks per provider, the staging rehearsal with the worker image, then the remaining revamp phases (10 to 13).

@@ -261,3 +261,12 @@ Spec §13 step 5.
 - **Faculty insights** (`/study/:id/insights`, from the subject header): most asked topics, content gaps with **Upload material for this** (the upload sheet opens with the topic chosen), most used material, engagement by unit and feedback, all as suppressed counts with no question or student shown.
 - **Admin › AI assistant › Usage and health:** the month against the budget, tokens per day (a new `ColumnChart` primitive: thin brand-hue columns, keyboard and hover tooltip, table view; in the style guide), usage by model with an estimate from prices the admin enters, failures, the queue and coverage per subject.
 - **Budget:** initial JS 169.0 KB (down from 169.7): the Turnstile loader now loads only when a human check is needed, and the permission descriptions stay on the server.
+
+## Phase 9 · Study, step 6: hardening, the worker, the seeded demo
+
+Spec §13 step 6.
+
+- **Try it with no key:** `pnpm seed` adds **Formal Languages and Automata Theory (DEMO)** to each demo college: a five-unit syllabus, three short self-written notes, a synthetic demo video with a self-written lesson as its transcript, and the demo assistant on. Ask, follow a citation to its page, `/videos` to a moment: an end-to-end test walks exactly this.
+- **Hardened:** an injection suite over hostile PDFs, file names, transcripts, selections and syllabus titles (two real gaps fixed), and the isolation suite now also covers subjects a student does not take inside their own college.
+- **A separate worker** runs the media tools and every background job; the API image no longer contains ffmpeg or Tesseract.
+- **Fast enough:** 50,000 passages, retrieval p95 153 ms, first streamed words under 260 ms with the demo responder.

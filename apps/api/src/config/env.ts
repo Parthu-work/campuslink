@@ -93,6 +93,12 @@ export const envSchema = z.object({
   CLAMAV_ADDRESS: z.string().min(1).default('127.0.0.1:3310'),
   /** bullmq (Redis-backed, default) or inline (in-process; tests only). */
   JOBS_DRIVER: z.enum(['bullmq', 'inline']).default('bullmq'),
+  /**
+   * What this process does. `all` (default): the HTTP API and the background jobs. `api`: the HTTP
+   * API only (jobs are queued for workers). `worker`: background jobs only (study processing with
+   * ffmpeg and Tesseract, embeddings, notifications, ingestion), with a health endpoint and no API.
+   */
+  PROCESS_ROLE: z.enum(['all', 'api', 'worker']).default('all'),
   /** Multiplies every rate limit. Raised only for automated test runs; capped at 2 in production. */
   RATE_LIMIT_SCALE: z.coerce.number().positive().max(1000).default(1),
   /** Video adapter: Jitsi (default, free) or the 100ms / Daily stubs. */

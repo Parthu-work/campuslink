@@ -74,6 +74,17 @@ export class RealtimeGateway {
     return io;
   }
 
+  /**
+   * A background worker has no sockets of its own: it only emits, through the Redis adapter, to
+   * members connected to any API instance.
+   */
+  emitThrough(adapter: Parameters<RealtimeServer['adapter']>[0]): RealtimeServer {
+    const io: RealtimeServer = new Server({ serveClient: false });
+    io.adapter(adapter);
+    this.io = io;
+    return io;
+  }
+
   private async authenticate(socket: AppSocket) {
     // Host only (proxies in front must preserve it, as the HTTP API already requires).
     const slug = slugFromHost(socket.handshake.headers.host?.split(':')[0], this.deps.rootDomain);

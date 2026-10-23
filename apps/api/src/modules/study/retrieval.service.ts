@@ -19,8 +19,10 @@ import type { VectorHit, VectorIndex } from './vector/store.js';
 import { snippet } from './materials.service.js';
 import type { AuthState } from '../../types.js';
 
+/** The keyword half's time limit when search by meaning can answer instead (MongoDB maxTimeMS). */
+export const KEYWORD_BUDGET_MS = 200;
 /** Reciprocal rank fusion constant (the usual 60: rank matters, raw scores do not). */
-export const RRF_K = 60;
+const RRF_K = 60;
 /** Below this cosine similarity, and below the word coverage, retrieval is "not confident". */
 export const MIN_SIMILARITY = 0.3;
 /** Share of the question's content words found in the top passages that counts as covered. */
@@ -148,19 +150,28 @@ export class RetrievalService {
 
     const rt = await this.d.ai.runtime();
     const term = keywordTerm(input.query);
-    const keyword = term
-      ? (
-          await withTextSearch(ContentChunkModel.find(filter), term)
-            .select({ score: { $meta: 'textScore' } })
-            .sort({ score: { $meta: 'textScore' } })
-            .limit(pool)
-            .lean<{ _id: Types.ObjectId }[]>()
-        ).map((r) => String(r._id))
-      : [];
-
-    let semantic: VectorHit[] = [];
-    let mode: Retrieval['mode'] = 'keyword';
-    if (rt.embedding) {
+    // Words and meaning are searched at the same time; either may come back empty. With meaning
+    // available, the word half has a time limit: a question whose words are in nearly every passage
+    // (which MongoDB must then score one by one) falls back to the meaning results.
+    const keywordQuery = () => {
+      if (!term) return Promise.resolve<string[]>([]);
+      const q = withTextSearch(ContentChunkModel.find(filter), term)
+        .select({ score: { $meta: 'textScore' } })
+        .sort({ score: { $meta: 'textScore' } })
+        .limit(pool);
+      if (rt.embedding) q.maxTimeMS(KEYWORD_BUDGET_MS);
+      return q
+        .lean<{ _id: Types.ObjectId }[]>()
+        .then((rows) => rows.map((r) => String(r._id)))
+        .catch((e: unknown) => {
+          if ((e as { code?: number }).code !== 50 || !rt.embedding) throw e;
+          this.d.logger?.warn('study search: keyword half over its time limit, meaning results only');
+          return [];
+        });
+    };
+    const keywordSearch = keywordQuery();
+    const semanticSearch = async (): Promise<VectorHit[] | null> => {
+      if (!rt.embedding) return null;
       try {
         const res = await rt.embedding.provider.embed([input.query.slice(0, 2000)], rt.embedding.model);
         await this.d.usage.record({
@@ -170,21 +181,19 @@ export class RetrievalService {
           inputTokens: res.tokens,
         });
         const v = res.vectors[0];
-        if (v?.length) {
-          semantic = await this.d.vectors.search(
-            v,
-            {
-              subjectIds: scope,
-              model: rt.embedding.signature,
-              unitId: input.unitId,
-              topicId: input.topicId,
-              materialIds,
-              materialTypes: input.materialTypes,
-            },
-            pool,
-          );
-          mode = 'hybrid';
-        }
+        if (!v?.length) return null;
+        return await this.d.vectors.search(
+          v,
+          {
+            subjectIds: scope,
+            model: rt.embedding.signature,
+            unitId: input.unitId,
+            topicId: input.topicId,
+            materialIds,
+            materialTypes: input.materialTypes,
+          },
+          pool,
+        );
       } catch (e) {
         // Keyword-only for this question; a refused key is shown to the admin.
         if (e instanceof ProviderError && e.kind === 'auth')
@@ -193,8 +202,12 @@ export class RetrievalService {
           { err: e instanceof Error ? e.message : 'unknown' },
           'semantic search unavailable',
         );
+        return null;
       }
-    }
+    };
+    const [keyword, hits] = await Promise.all([keywordSearch, semanticSearch()]);
+    const semantic: VectorHit[] = hits ?? [];
+    const mode: Retrieval['mode'] = hits ? 'hybrid' : 'keyword';
 
     const fused = new Map<string, { score: number; similarity: number | null; vec: boolean; kw: boolean }>();
     const entry = (id: string) => {

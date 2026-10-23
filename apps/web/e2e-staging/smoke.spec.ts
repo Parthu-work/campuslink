@@ -58,3 +58,32 @@ test('staging: dependencies, headers, sign-in, upload through ClamAV and S3', as
   expect(scope).toBe('https://dpit.localhost:8443/');
   expect(violations).toEqual([]);
 });
+
+test('staging: study material is processed by the worker (the API only queues it)', async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto('/sign-in');
+  await page.getByLabel('Email', { exact: true }).fill('faculty@dpit.example');
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.waitForURL(/\/home$/);
+  await page.goto('/study');
+  await page.getByRole('button', { name: 'New subject' }).first().click();
+  const dialog = page.getByRole('dialog', { name: 'New subject' });
+  await dialog.getByLabel('Subject name').fill(`Staging demo ${Date.now() % 100000}`);
+  await dialog.getByLabel('Code').fill(`STG${Date.now() % 100000}`);
+  await dialog.getByRole('button', { name: 'Create subject' }).click();
+  await page.waitForURL(/\/study\/[a-f0-9]{24}$/);
+  await page.getByRole('button', { name: 'Add material' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Add material' });
+  await sheet.locator('input[type="file"][multiple]').setInputFiles({
+    name: 'staging-demo-notes.md',
+    mimeType: 'text/markdown',
+    buffer: Buffer.from(
+      '# Demo notes\n\nA finite automaton reads its input one symbol at a time (demo text).\n',
+    ),
+  });
+  await sheet.getByText('I have the right to share these files').click();
+  await sheet.getByRole('button', { name: 'Upload 1 file' }).click();
+  // Scanned by ClamAV and stored in S3 by the API, then extracted and chunked by the worker.
+  await expect(sheet.getByRole('status').filter({ hasText: 'Ready' })).toHaveCount(1, { timeout: 120_000 });
+});

@@ -33,6 +33,7 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 | ClamAV and S3 locally (adapter tests)        | `docker compose --profile clamav --profile s3 up -d --wait`             |
 | Staging rehearsal (production images)        | `deploy/staging/up.sh --build`, `smoke.sh`, `down.sh`                   |
 | Re-encrypt after a field key rotation        | `pnpm --filter @campuslink/api rotate-field-key [--dry-run \| --check]` |
+| Study search and assistant performance       | `pnpm --filter @campuslink/api study:perf`                              |
 
 ## Folder structure
 
@@ -67,7 +68,7 @@ scripts/backup/  encrypted backup, restore and drill
 - Swappable providers sit behind interfaces: `StorageProvider`, `VideoProvider`, `MailProvider`, `JobSourceAdapter`, `DataSourceAdapter`, `BotProtection`, `SmsProvider`.
 - Files go through `FilesService` only (sniff, re-encode, ClamAV scan that fails closed, purpose-based access, `deleteAfter` retention). Declare uploads with `upload` on the route spec so multer runs after authorize. Storage is local disk or S3 (`lib/storage-factory.ts`); never write files anywhere else.
 - Bot checks: mark abuse-prone writes `bot: true`; the web client runs the human check on `BOT_CHECK_FAILED` and retries once (`lib/bot-check.ts`, loaded on demand; its config is `lib/bot-check-config.ts`), so call sites need nothing extra.
-- Background work goes through `JobQueue` (`lib/jobs.ts`); handlers run inside `runInTenant`, so the tenancy rules hold in jobs too. Tests use `InlineJobQueue`.
+- Background work goes through `JobQueue` (`lib/jobs.ts`); handlers run inside `runInTenant`, so the tenancy rules hold in jobs too. Tests use `InlineJobQueue`. In production, `PROCESS_ROLE=api` processes only queue jobs and `PROCESS_ROLE=worker` processes (`deploy/worker.Dockerfile`, the only image with ffmpeg and Tesseract) run them and the timers; anything that needs media tools must run in a job.
 - The profile is a read model of the user: after changing a user's name, roles, status or verification, call `ProfilesService.sync()`. New import sources follow `docs/data-sources.md`.
 - Realtime: clients only send `typing`. Every other socket event is emitted by a service after an authorised REST write, to `userRoom(tenantId, userId)` (`http/realtime.ts`). New socket events need isolation tests in `test/realtime.test.ts`.
 - User text is stored as plain text (`lib/text.ts › plainText`) and rendered by the web app's markdown subset as React elements (ADR 0007). Never store or render HTML.

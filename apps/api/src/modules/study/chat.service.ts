@@ -35,6 +35,7 @@ import {
 import { MaterialPageModel, VideoSegmentModel } from './material.model.js';
 import { ProviderError, type ChatTurn, type GenerateResult } from './ai/provider.js';
 import { contentWords } from './ai/tokens.js';
+import { neutraliseInstructions } from './extract/chunker.js';
 import {
   buildMessages,
   citedNumbers,
@@ -398,7 +399,10 @@ export class ChatService {
       if (unit) {
         unitId = unit.id;
         query = [unit.title, ...unit.topics.map((x) => x.title)].join(' ');
-        ask = `Unit: ${unit.title}. Topics: ${unit.topics.map((x) => x.title).join(', ')}.`;
+        // Syllabus titles are faculty-typed text that lands in the question, outside the sources.
+        ask = neutraliseInstructions(
+          `Unit: ${unit.title}. Topics: ${unit.topics.map((x) => x.title).join(', ')}.`,
+        );
       }
     }
     if (t.command && t.rt.chat === null) return this.aiOff(t);

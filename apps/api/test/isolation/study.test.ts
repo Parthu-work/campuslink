@@ -298,6 +298,92 @@ describe('HTTP: nothing of college A is reachable from college B', () => {
     expect(usageA.month.used).toBeGreaterThan(own);
   });
 
+  it('inside a college, a subject a student does not take is unreachable everywhere', async () => {
+    // ECE only: A's student (CSE) does not take it.
+    const hidden = (
+      await makeSubject(ctx, A, facA, { name: 'Hidden Xylocrypt Theory', code: 'HID1', branches: ['ECE'] })
+    ).id;
+    const pdf = (
+      await a(facA)
+        .post('/study/materials')
+        .field('subjectId', hidden)
+        .field('rights', 'true')
+        .attach(
+          'file',
+          await textPdf([['Xylocrypt lecture', 'Xylocrypt automata are a hidden demo idea.']]),
+          'x.pdf',
+        )
+    ).body.data.id as string;
+    const video = (
+      await a(facA)
+        .post('/study/materials')
+        .field('subjectId', hidden)
+        .field('rights', 'true')
+        .attach('file', fakeMp4(20), 'xylocrypt.mp4')
+    ).body.data.id as string;
+    await a(facA)
+      .post(`/study/materials/${video}/transcript`)
+      .attach(
+        'file',
+        Buffer.from('WEBVTT\n\n00:00:00.000 --> 00:00:09.000\nXylocrypt automata, a hidden demo.\n'),
+        'x.vtt',
+      );
+    await ctx.queue.drain();
+    const fileId = String((await runInTenant(A._id, () => MaterialModel.findById(pdf).lean()))?.fileId);
+    for (const p of [
+      `/study/subjects/${hidden}`,
+      `/study/subjects/${hidden}/syllabus`,
+      `/study/subjects/${hidden}/materials`,
+      `/study/materials/${pdf}`,
+      `/study/materials/${pdf}/file`,
+      `/study/materials/${video}`,
+      `/files/${fileId}/signed`,
+      `/study/search?q=Xylocrypt&subjectId=${hidden}`,
+    ])
+      expect((await a(studentA).get(p)).status, p).toBe(404);
+    expect((await a(studentA).get(`/study/subjects/${hidden}/insights`)).status).toBe(403);
+    const hits = (await a(studentA).get('/study/search?q=Xylocrypt automata')).body.data as {
+      subjectId: string;
+    }[];
+    expect(hits.filter((h) => h.subjectId === hidden)).toEqual([]);
+    const chat = (body: Record<string, unknown>) =>
+      a(studentA)
+        .post('/study/chat')
+        .send(body)
+        .buffer(true)
+        .parse((res, cb) => {
+          let d = '';
+          res.setEncoding('utf8');
+          res.on('data', (c: string) => (d += c));
+          res.on('end', () => cb(null, d));
+        });
+    expect((await chat({ subjectId: hidden, question: 'What are Xylocrypt automata?' })).status).toBe(404);
+    expect(
+      (
+        await chat({
+          question: 'Explain this',
+          context: { materialId: pdf, page: 1, startSec: null, text: '' },
+        })
+      ).status,
+    ).toBe(404);
+    for (const body of [
+      { question: 'What are Xylocrypt automata? hidden demo idea' },
+      { command: 'videos', question: 'Xylocrypt automata' },
+      { command: 'notes', question: 'Xylocrypt automata' },
+    ]) {
+      const raw = String((await chat(body)).body);
+      expect(raw).not.toContain(pdf);
+      expect(raw).not.toContain(video);
+      expect(raw).not.toContain(hidden);
+      expect(raw).not.toMatch(/hidden demo idea\./);
+    }
+    // Faculty (who read every subject) do get it: the material really is there.
+    const staff = (await a(facA).get('/study/search?q=Xylocrypt automata')).body.data as {
+      materialId: string;
+    }[];
+    expect(staff.map((h) => h.materialId)).toEqual(expect.arrayContaining([pdf, video]));
+  });
+
   it('a token from A never works on B', async () => {
     const r = await api(ctx, B.host, studentA.token).get('/study/subjects');
     expect(r.status).toBe(401);

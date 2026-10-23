@@ -30,6 +30,7 @@ ALB (HTTPS 443, TLS 1.2+; HTTP 80 → 301)  ── AWS WAF (managed common rule 
     │
     ├── default: web tasks, nginx (deploy/web.Dockerfile): static build + security headers
     └── /api/*:  API tasks (deploy/api.Dockerfile, Express + Socket.io), ≥ 2 tasks across 2 AZs
+            │    worker tasks (deploy/worker.Dockerfile, BullMQ jobs; no traffic from the ALB), ≥ 2 tasks
             │
             ├── MongoDB 8 replica set: 3 members across 3 AZs (+1 hidden member in ap-south-2)
             ├── Redis (ElastiCache, TLS, noeviction): rate limits, BullMQ, Socket.io adapter
@@ -38,12 +39,13 @@ ALB (HTTPS 443, TLS 1.2+; HTTP 80 → 301)  ── AWS WAF (managed common rule 
 ```
 
 - **Compute:** ECS on Fargate (or EC2 with the same containers).
-  - Run two services: `web` (nginx serving the Vite build) and `api` (`node dist/server.js`).
+  - Run three services: `web` (nginx serving the Vite build), `api` (`node dist/server.js` with `PROCESS_ROLE=api`) and `worker` (the same code with `PROCESS_ROLE=worker`, from its own image).
   - The API is stateless:
     - sessions are JWTs plus refresh records in MongoDB;
     - rate limits and queues are in Redis;
     - Socket.io fans out through the Redis adapter and is websocket-only, so no sticky sessions are needed.
-  - Every API task also runs the BullMQ workers and the maintenance timers (retention, ingestion, nudges). Job ids dedupe across tasks.
+  - **Workers** run the BullMQ jobs (study processing, embeddings, email and push, ingestion, alerts) and the maintenance timers (retention, ingestion, nudges); API tasks only queue jobs. Job ids dedupe across tasks. A worker serves only `/api/v1/health` and `/api/v1/ready` (for its container check) and emits live updates to members through the Socket.io Redis adapter.
+  - The worker image carries `ffmpeg`, `poppler-utils` and Tesseract (English and Telugu); the API image has none of them. Without `PROCESS_ROLE` a process does both (`all`, the default for development and single-host installs).
 - **Load balancer:**
   - The ALB terminates TLS with an ACM wildcard certificate for `*.campuslink.example` and the apex.
   - Use the `ELBSecurityPolicy-TLS13-1-2-2021-06` policy and redirect HTTP to HTTPS on the listener.
@@ -92,7 +94,7 @@ Indexes are created on boot (`syncIndexes()`), and every compound index leads wi
   - Scanning fails closed: if `clamd` is down, uploads answer 503 and nothing is stored. `/api/v1/ready` includes the scanner, so the ALB stops routing to a task whose scanner is down.
   - The API refuses to start in production without a scanner.
   - Give the sidecar about 1.5 GB of memory for the signature database.
-- **Study material processing** (`docs/ai-assistant.md`): the API image includes `ffmpeg`, `poppler-utils` and Tesseract with English and Telugu (`--build-arg WITH_MEDIA_TOOLS=false` leaves them out; PDFs, documents and uploaded captions still work). Set `OCR_LANGUAGES=eng+tel` to read Telugu scans. For transcripts without a provider key, run a Whisper service (the `whisper` profile in `docker-compose.yml` shows one) and set `WHISPER_URL`.
+- **Study material processing** (`docs/ai-assistant.md`) runs on the workers: the worker image includes `ffmpeg`, `poppler-utils` and Tesseract with English and Telugu. Set `OCR_LANGUAGES=eng+tel` to read Telugu scans. For transcripts without a provider key, run a Whisper service (the `whisper` profile in `docker-compose.yml` shows one) and set `WHISPER_URL` on the workers; Whisper is its own service, never part of either image.
 - **Vector index:** with more than one API task, run Qdrant (`qdrant/qdrant:v1.19.2`, a managed Qdrant, or the `qdrant` profile locally) and set `QDRANT_URL` (and `QDRANT_API_KEY`); `VECTOR_STORE=qdrant` makes the API refuse to start without it. The default in-memory index suits one server only. Vectors are also stored in MongoDB, so a new or wiped Qdrant is filled again with **Rebuild the index** (Admin › AI assistant) at no provider cost.
 
 ## Configuration and secrets
@@ -178,7 +180,7 @@ From the load test ([`performance.md`](performance.md)): one API process on one 
 
 - a TLS edge in place of the ALB;
 - the web container (nginx with the security headers);
-- the API (`NODE_ENV=production`);
+- the API (`NODE_ENV=production`, `PROCESS_ROLE=api`) and a worker (`PROCESS_ROLE=worker`, the worker image);
 - MongoDB as a replica set, Redis, ClamAV `clamd`, an S3-compatible store (SeaweedFS, SSE-S3), and Mailpit for email.
 
 ```sh
@@ -194,7 +196,10 @@ The smoke test checks:
 - sign-in works under the production CSP;
 - a photo goes through sniffing, re-encoding, ClamAV and S3, then back out through the API;
 - the service worker registers over HTTPS;
-- the API log holds no request headers, client details or email addresses.
+- study material uploaded through the API is processed by the worker (the API only queues it) and reaches **Ready**;
+- the API and worker logs hold no request headers, client details or email addresses.
+
+The rehearsal seeds the FLAT demo subject without its files (`SEED_STUDY_MATERIAL=false`): files belong in the bucket, and the smoke test uploads its own.
 
 **Rehearsal on 2026-10-17:**
 
@@ -208,8 +213,9 @@ Not covered by the rehearsal: AWS itself. The ALB, ACM, KMS, IAM policies, SES, 
 ## Deploying
 
 1. CI must be green on `main`: lint, typecheck, unit and API tests, coverage, build, end-to-end, gitleaks and `pnpm audit`.
-2. Build two images from the repository root and push them to ECR in `ap-south-1`, tagged with the commit SHA:
+2. Build three images from the repository root and push them to ECR in `ap-south-1`, tagged with the commit SHA:
    - `docker build -f deploy/api.Dockerfile -t campuslink-api:<sha> .`: the API, run as the non-root `node` user, with a health check.
+   - `docker build -f deploy/worker.Dockerfile -t campuslink-worker:<sha> .`: the background worker with the media tools, non-root, with a readiness check.
    - `docker build -f deploy/web.Dockerfile -t campuslink-web:<sha> .`: the Vite build behind nginx on port 8080, with the security headers.
 3. Update the ECS services with a rolling deployment: minimum healthy 100%, maximum 200%, and the circuit breaker with rollback on.
 4. Smoke test:
