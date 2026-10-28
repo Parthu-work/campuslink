@@ -22,7 +22,7 @@ import { ProgressBar } from '../../components/ui/progress';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, ApiError } from '../../lib/api';
-import { useFileUrl } from '../../lib/files';
+import { useFileUrl, useStreamedFile } from '../../lib/files';
 import { formatDateTime, formatRelative } from '../../lib/format';
 import { patchPost, usePostActions } from '../../lib/feed';
 import { useCan } from '../../lib/me';
@@ -60,7 +60,10 @@ export function AuthorLine({
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           {author.name ? (
-            <Link to={`/people/${author.userId}`} className="truncate font-semibold hover:underline">
+            <Link
+              to={`/people/${author.userId}`}
+              className="inline-flex min-h-6 max-w-full items-center truncate font-semibold hover:underline"
+            >
               {author.name}
             </Link>
           ) : (
@@ -125,14 +128,14 @@ export function ReelVideo({
   autoPlay?: boolean;
   className?: string;
 }) {
-  const url = useFileUrl(fileId);
+  const stream = useStreamedFile(fileId);
   const descId = useId();
   return (
     <figure className={cn('grid gap-1.5', className)}>
       <div className="overflow-hidden rounded-[var(--radius-sm)] bg-black">
-        {url ? (
+        {stream.src ? (
           <video
-            src={url}
+            {...stream}
             controls
             playsInline
             muted={autoPlay}
@@ -146,7 +149,7 @@ export function ReelVideo({
           <div className="aspect-[9/16] max-h-[70vh] w-full animate-pulse bg-surface-2 motion-reduce:animate-none" />
         )}
       </div>
-      <figcaption id={descId} className="text-xs text-fg-3">
+      <figcaption id={descId} className="text-caption text-fg-3">
         {alt}
       </figcaption>
     </figure>

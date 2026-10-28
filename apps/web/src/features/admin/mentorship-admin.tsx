@@ -6,6 +6,7 @@ import { Badge, Card, Skeleton } from '../../components/ui/misc';
 import { StatCard, StatGrid } from '../../components/ui/stat-card';
 import { api } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
+import { SCREEN } from '../../lib/query-client';
 
 interface Overview {
   requests30d: Record<string, number>;
@@ -22,6 +23,7 @@ interface Overview {
 export function MentorshipAdmin() {
   const { t } = useTranslation();
   const ov = useQuery({
+    ...SCREEN,
     queryKey: ['admin-mentorship'],
     queryFn: () => api.get<Overview>('/admin/mentorship/overview'),
   });

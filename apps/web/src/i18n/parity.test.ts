@@ -33,3 +33,37 @@ describe('English and Telugu strings', () => {
     expect(Object.entries(t).filter(([, v]) => !v.trim())).toEqual([]);
   });
 });
+
+describe('keys the code asks for', () => {
+  const e = flat(en);
+  const sources = import.meta.glob<string>(['../**/*.{ts,tsx}', '!../**/*.test.{ts,tsx}'], {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  });
+  const code = Object.entries(sources);
+  // i18next plurals live under key_one / key_other.
+  const exists = (k: string) => k in e || `${k}_one` in e || `${k}_other` in e;
+
+  it('every literal key exists', () => {
+    const missing = code.flatMap(([file, src]) =>
+      [...src.matchAll(/\bt\(\s*'([a-zA-Z][\w.-]*)'/g)]
+        .map((m) => m[1] ?? '')
+        .filter((k) => k.includes('.') && !exists(k))
+        .map((k) => `${file}: ${k}`),
+    );
+    expect(missing).toEqual([]);
+  });
+
+  // A key built at run time (`progress.mentorLevels.${id}`) needs a group of strings under its
+  // prefix; once a string took a group's name and every mentor level showed its raw key.
+  it('every built key has a group of strings under its prefix', () => {
+    const missing = code.flatMap(([file, src]) =>
+      [...src.matchAll(/\bt\(\s*`([a-zA-Z][\w.-]*\.)\$\{/g)]
+        .map((m) => m[1] ?? '')
+        .filter((prefix) => !Object.keys(e).some((k) => k.startsWith(prefix)))
+        .map((prefix) => `${file}: ${prefix}…`),
+    );
+    expect(missing).toEqual([]);
+  });
+});

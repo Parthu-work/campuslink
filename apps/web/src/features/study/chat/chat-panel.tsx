@@ -640,7 +640,7 @@ export function ChatPanel({
               aria-activedescendant={
                 menuOpen ? `${menuId}-${matches[Math.min(active, matches.length - 1)] ?? ''}` : undefined
               }
-              className={cn('max-h-40 min-h-12 resize-none py-3 text-base')}
+              className={cn('max-h-40 min-h-12 resize-none py-3 text-body')}
             />
             {busy ? (
               <Button

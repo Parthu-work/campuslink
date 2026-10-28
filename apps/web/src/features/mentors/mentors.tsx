@@ -29,6 +29,7 @@ import { TagInput } from '../../components/ui/tag-input';
 import { api } from '../../lib/api';
 import { mentorMatch } from '../../lib/queries';
 import { coverOf } from '../../lib/accent';
+import { SCREEN } from '../../lib/query-client';
 
 /**
  * A mentor in a list (§8.4): a large face, what they do and where, their batch, a few topics and
@@ -273,7 +274,7 @@ function MatchView() {
   const navigate = useNavigate();
   const [passed, setPassed] = useState<string[]>([]);
   const [prefsOpen, setPrefsOpen] = useState(false);
-  const q = useQuery(mentorMatch());
+  const q = useQuery({ ...mentorMatch(), ...SCREEN });
   const deck = (q.data ?? []).filter((m) => !passed.includes(m.mentor.userId));
   const top = deck[0];
   const pass = () => top && setPassed((p) => [...p, top.mentor.userId]);
@@ -283,9 +284,9 @@ function MatchView() {
     if (e.key === 'ArrowRight') pick();
   };
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-fg-2">{t('match.intro')}</p>
+        <p className="text-meta text-fg-2">{t('match.intro')}</p>
         <Button size="sm" onClick={() => setPrefsOpen(true)}>
           <SlidersHorizontal className="size-4" aria-hidden /> {t('match.prefs')}
         </Button>
@@ -315,7 +316,7 @@ function MatchView() {
           role="region"
           aria-roledescription={t('match.deck')}
           aria-label={t('match.deckLabel', { name: top.mentor.name, left: deck.length })}
-          className="mx-auto grid w-full max-w-[460px] gap-4 rounded-[var(--radius-lg)]"
+          className="mx-auto grid w-full max-w-[460px] min-w-0 grid-cols-[minmax(0,1fr)] gap-4 rounded-[var(--radius-lg)]"
         >
           <LazyMotion features={motionFeatures} strict>
             <MatchCard key={top.mentor.userId} match={top} onPass={pass} onPick={pick} />
@@ -333,7 +334,7 @@ function MatchView() {
               <Heart className="size-5" aria-hidden /> {t('match.viewShort')}
             </Button>
           </div>
-          <p className="text-center text-xs text-fg-3">{t('match.keys')}</p>
+          <p className="text-center text-caption text-fg-3">{t('match.keys')}</p>
         </div>
       )}
     </div>
@@ -347,6 +348,7 @@ function BrowseView() {
   const dq = useDeferredValue(q.trim());
   const params = new URLSearchParams({ ...(dq ? { q: dq } : {}), ...(type ? { sessionType: type } : {}) });
   const list = useQuery({
+    ...SCREEN,
     queryKey: ['mentors', dq, type],
     queryFn: () => api.get<MentorCard[]>(`/mentors?${params}`),
     placeholderData: keepPreviousData,

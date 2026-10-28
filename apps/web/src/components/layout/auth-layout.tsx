@@ -25,7 +25,7 @@ export function AuthLayout({
         <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_50%_110%,var(--bg)_20%,transparent_70%)]" />
         <div className="absolute bottom-12 left-12 max-w-md">
           <p className="eyebrow">{t('landing.eyebrow')}</p>
-          <p className="mt-3 font-display text-4xl leading-tight font-bold">
+          <p className="mt-3 font-display text-display leading-tight font-bold">
             {t('landing.h1a')}
             <span className="bg-gradient-to-r from-brand-ink to-accent-ink bg-clip-text text-transparent">
               {t('landing.h1b')}
@@ -39,7 +39,7 @@ export function AuthLayout({
       >
         <Link to="/" className="flex items-center gap-3 self-start rounded-md">
           <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} />
-          <span className="font-display text-[15px] leading-tight font-semibold">
+          <span className="font-display text-body leading-tight font-semibold">
             {tenant.branding.displayName}
           </span>
         </Link>
@@ -50,7 +50,7 @@ export function AuthLayout({
           </header>
           {children}
         </div>
-        <p className="flex max-w-[440px] items-start gap-2 text-xs text-fg-3">
+        <p className="flex max-w-[440px] items-start gap-2 text-caption text-fg-3">
           <ShieldCheck className="mt-px size-4 flex-none" aria-hidden />
           {t('landing.foot', { college: tenant.branding.displayName })}
         </p>
@@ -64,7 +64,7 @@ export function FormError({ message }: { message?: string | undefined }) {
   return (
     <p
       role="alert"
-      className="rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--danger)_40%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-3.5 py-2.5 text-sm text-fg"
+      className="rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--danger)_40%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-3.5 py-2.5 text-meta text-fg"
     >
       {message}
     </p>

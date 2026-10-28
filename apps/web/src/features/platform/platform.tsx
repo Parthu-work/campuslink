@@ -16,6 +16,7 @@ import { Dialog } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { api } from '../../lib/api';
 import { applyApiError } from '../../lib/errors';
+import { SCREEN } from '../../lib/query-client';
 
 interface TenantRow {
   id: string;
@@ -33,6 +34,7 @@ export function PlatformTenants() {
   const [creating, setCreating] = useState(false);
   const [confirm, setConfirm] = useState<TenantRow | null>(null);
   const tenants = useQuery({
+    ...SCREEN,
     queryKey: ['platform-tenants'],
     queryFn: () => api.get<TenantRow[]>('/platform/tenants'),
   });
@@ -149,6 +151,7 @@ function CreateTenantDialog({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const form = useForm<CreateForm>({
+    mode: 'onTouched',
     resolver: zodResolver(createTenantBody),
     defaultValues: {
       slug: '',
@@ -235,7 +238,7 @@ function CreateTenantDialog({ onClose }: { onClose: () => void }) {
           </Field>
         </div>
         <fieldset className="grid gap-3 rounded-[var(--radius-md)] border border-line p-4">
-          <legend className="px-1 text-[13px] font-semibold">{t('platform.firstAdmin')}</legend>
+          <legend className="px-1 text-meta font-semibold">{t('platform.firstAdmin')}</legend>
           <Field label={t('platform.adminName')} error={e.firstAdmin?.name?.message}>
             {({ id, invalid }) => (
               <Input id={id} aria-invalid={invalid} {...form.register('firstAdmin.name')} />
@@ -272,6 +275,7 @@ interface Health {
 export function PlatformHealth() {
   const { t } = useTranslation();
   const h = useQuery({
+    ...SCREEN,
     queryKey: ['platform-health'],
     queryFn: () => api.get<Health>('/platform/health'),
     refetchInterval: 30_000,

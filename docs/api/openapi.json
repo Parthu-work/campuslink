@@ -112,6 +112,25 @@
         "x-permission": "tenant:branding"
       }
     },
+    "/api/v1/tenant/manifest.webmanifest": {
+      "get": {
+        "tags": [
+          "Tenant"
+        ],
+        "summary": "The installed app's manifest for this college (its name, colours and logo)",
+        "description": "Public. Host scope: any.",
+        "operationId": "tenants_get_tenant_manifest.webmanifest",
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
     "/api/v1/tenant/logo": {
       "get": {
         "tags": [

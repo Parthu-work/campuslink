@@ -133,7 +133,7 @@ export function FeedList({
       </div>
       {isFetchingNextPage && <PostSkeleton />}
       {!hasNextPage && rows.length > 5 && (
-        <p className="py-4 text-center text-sm text-fg-3">{t('feed.end')}</p>
+        <p className="py-4 text-center text-meta text-fg-3">{t('feed.end')}</p>
       )}
     </>
   );

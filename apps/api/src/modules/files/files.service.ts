@@ -181,8 +181,9 @@ export class FilesService {
 
   /**
    * The college logo: PNG or WebP only (sniffed, so SVG and everything else is refused), re-encoded
-   * to WebP at most 512 px with its transparency, and scanned like every upload. The college owns
-   * it, not the admin who uploaded it, so erasing their account leaves the logo in place.
+   * to WebP on a transparent 512 px square (so it can also be the installed app's icon), and scanned
+   * like every upload. The college owns it, not the admin who uploaded it, so erasing their account
+   * leaves the logo in place.
    */
   async storeLogo(data: Buffer) {
     const type = await fileTypeFromBuffer(data);
@@ -191,7 +192,7 @@ export class FilesService {
     let out: Buffer;
     try {
       out = await sharp(data, { limitInputPixels: 40_000_000, failOn: 'error' })
-        .resize({ width: 512, height: 512, fit: 'inside', withoutEnlargement: true })
+        .resize({ width: 512, height: 512, fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
         .webp({ quality: 90, alphaQuality: 100 })
         .toBuffer();
     } catch {

@@ -1,5 +1,6 @@
 import { useState, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from 'react';
 import { accentOf } from '../../lib/accent';
+import { initialsOf } from '../../lib/names';
 import { cn } from '../../lib/cn';
 
 /** A filter or toggle chip (`aria-pressed`), 44px tall. */
@@ -85,6 +86,8 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
+      // Marks loading placeholders for the re-audit's frame probe (e2e/audit/journeys.audit.ts).
+      data-skeleton=""
       className={cn(
         'relative overflow-hidden rounded-[var(--radius-sm)] bg-surface-2',
         'after:absolute after:inset-0 after:-translate-x-full after:bg-[linear-gradient(90deg,transparent,color-mix(in_oklch,var(--fg)_6%,transparent),transparent)] after:animate-[sheen_calc(1.4s*var(--motion-scale))_ease-in-out_infinite] motion-reduce:after:hidden',
@@ -136,12 +139,7 @@ export function Avatar({
   verified?: boolean;
 }) {
   const n = accentOf(name);
-  const initials = name
-    .split(/\s+/)
-    .map((p) => p[0] ?? '')
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
+  const initials = initialsOf(name);
   return (
     <span
       aria-hidden

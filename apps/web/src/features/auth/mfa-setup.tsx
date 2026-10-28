@@ -34,12 +34,13 @@ export function MfaSetup({ onDone }: { onDone: () => void }) {
       .catch((e: unknown) => setError(e instanceof ApiError ? e.message : t('errors.generic')));
   }, [t]);
 
-  const enable = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Sent on the sixth digit (FO-6), or with the button.
+  const enable = async (otp = code) => {
+    if (busy || !setup) return;
     setBusy(true);
     setError(undefined);
     try {
-      const r = await api.post<{ recoveryCodes: string[] }>('/auth/mfa/enable', { code });
+      const r = await api.post<{ recoveryCodes: string[] }>('/auth/mfa/enable', { code: otp });
       setCodes(r.recoveryCodes);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('errors.generic'));
@@ -51,9 +52,9 @@ export function MfaSetup({ onDone }: { onDone: () => void }) {
   if (codes) {
     return (
       <div className="grid gap-4">
-        <h2 className="text-xl font-semibold">{t('mfa.codesTitle')}</h2>
+        <h2 className="text-title font-semibold">{t('mfa.codesTitle')}</h2>
         <p className="text-fg-2">{t('mfa.codesBody')}</p>
-        <ul className="grid grid-cols-2 gap-2 rounded-[var(--radius-md)] bg-surface-2 p-4 font-mono text-[15px] tabular sm:grid-cols-2">
+        <ul className="grid grid-cols-2 gap-2 rounded-[var(--radius-md)] bg-surface-2 p-4 font-mono text-body tabular sm:grid-cols-2">
           {codes.map((c) => (
             <li key={c}>{c}</li>
           ))}
@@ -79,7 +80,13 @@ export function MfaSetup({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <form onSubmit={enable} className="grid gap-5">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        void enable();
+      }}
+      className="grid gap-5"
+    >
       <FormError message={error} />
       <ol className="grid gap-5">
         <li className="grid gap-3">
@@ -96,8 +103,8 @@ export function MfaSetup({ onDone }: { onDone: () => void }) {
                 height={184}
                 className="rounded-[var(--radius-sm)] bg-white p-2"
               />
-              <p className="text-xs text-fg-2">{t('mfa.manual')}</p>
-              <code className="flex items-center gap-2 font-mono text-sm break-all">
+              <p className="text-caption text-fg-2">{t('mfa.manual')}</p>
+              <code className="flex items-center gap-2 font-mono text-meta break-all">
                 <KeyRound className="size-4 flex-none text-fg-3" aria-hidden />
                 {setup.secret.match(/.{1,4}/g)?.join(' ')}
               </code>
@@ -114,7 +121,12 @@ export function MfaSetup({ onDone }: { onDone: () => void }) {
             <span className="eyebrow mr-2">2</span>
             {t('mfa.step2')}
           </p>
-          <OtpInput value={code} onChange={setCode} label={t('auth.mfaTitle')} />
+          <OtpInput
+            value={code}
+            onChange={setCode}
+            onComplete={(c) => void enable(c)}
+            label={t('auth.mfaTitle')}
+          />
         </li>
       </ol>
       <Button

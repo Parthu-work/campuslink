@@ -58,7 +58,7 @@ function ImpactCard() {
         </span>
         <div>
           <p className="eyebrow">{t('mentor.impact')}</p>
-          <h2 className="font-display text-2xl leading-tight font-bold">
+          <h2 className="font-display text-headline leading-tight font-bold">
             {t('mentor.helped', { count: i.helpedThisMonth })}
           </h2>
         </div>
@@ -71,7 +71,7 @@ function ImpactCard() {
       {i.pendingRequests > 0 && (
         <Link
           to="/mentorship?box=received"
-          className="relative justify-self-start text-sm font-semibold text-brand-ink hover:underline"
+          className="relative justify-self-start text-meta font-semibold text-brand-ink hover:underline"
         >
           {t('mentor.pending', { count: i.pendingRequests })}
         </Link>
@@ -185,7 +185,7 @@ function SettingsForm({ initial }: { initial: MentorSettingsView }) {
         </Field>
       </div>
       <fieldset className="grid gap-2">
-        <legend className="mb-2 text-[13px] font-semibold">{t('mentor.sessionTypes')}</legend>
+        <legend className="mb-2 text-meta font-semibold">{t('mentor.sessionTypes')}</legend>
         {s.sessionTypes.map((st, i) => (
           <div
             key={st.type}
@@ -207,7 +207,7 @@ function SettingsForm({ initial }: { initial: MentorSettingsView }) {
               <span className="font-semibold">{t(`session.type.${st.type}`)}</span>
             </label>
             {st.type !== 'quick_chat' && (
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex items-center gap-2 text-meta">
                 <span className="sr-only">
                   {t('mentor.duration', { type: t(`session.type.${st.type}`) })}
                 </span>
@@ -329,8 +329,8 @@ function AvailabilityEditor({ initial }: { initial: AvailabilityBody }) {
   return (
     <Card className="grid gap-5 p-5">
       <div>
-        <h2 className="text-lg font-semibold">{t('mentor.availability')}</h2>
-        <p className="text-sm text-fg-2">{t('mentor.availabilityBody')}</p>
+        <h2 className="text-title font-semibold">{t('mentor.availability')}</h2>
+        <p className="text-meta text-fg-2">{t('mentor.availabilityBody')}</p>
       </div>
       <Field label={t('mentor.timezone')}>
         {({ id }) => (
@@ -350,7 +350,7 @@ function AvailabilityEditor({ initial }: { initial: AvailabilityBody }) {
               key={d}
               className="grid grid-cols-[minmax(0,1fr)] gap-2 rounded-[var(--radius-md)] border border-line p-3 sm:grid-cols-[140px_minmax(0,1fr)]"
             >
-              <label className="flex min-h-10 cursor-pointer items-center gap-2 font-semibold">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 font-semibold">
                 <input
                   type="checkbox"
                   checked={!!r}
@@ -389,7 +389,7 @@ function AvailabilityEditor({ initial }: { initial: AvailabilityBody }) {
                     <Plus className="size-4" aria-hidden /> {t('mentor.addRange')}
                   </Button>
                 )}
-                {!r && <p className="self-center text-sm text-fg-3">{t('mentor.unavailable')}</p>}
+                {!r && <p className="self-center text-meta text-fg-3">{t('mentor.unavailable')}</p>}
               </div>
             </li>
           );
@@ -397,7 +397,7 @@ function AvailabilityEditor({ initial }: { initial: AvailabilityBody }) {
       </ul>
       <section className="grid gap-2">
         <h3 className="font-semibold">{t('mentor.exceptions')}</h3>
-        <p className="text-sm text-fg-2">{t('mentor.exceptionsBody')}</p>
+        <p className="text-meta text-fg-2">{t('mentor.exceptionsBody')}</p>
         {a.exceptions.map((e, i) => (
           <div key={i} className="flex flex-wrap items-center gap-2">
             <Input
@@ -435,7 +435,7 @@ function AvailabilityEditor({ initial }: { initial: AvailabilityBody }) {
         </Button>
       </section>
       {invalid && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="text-meta text-danger">
           {t('mentor.rangeInvalid')}
         </p>
       )}
@@ -461,12 +461,12 @@ function FeedbackList() {
   return (
     <section className="grid gap-3" aria-labelledby="feedback-h">
       <div>
-        <h2 id="feedback-h" className="text-lg font-semibold">
+        <h2 id="feedback-h" className="text-title font-semibold">
           {t('mentor.feedback')}
         </h2>
-        <p className="text-sm text-fg-2">{t('mentor.feedbackPrivate')}</p>
+        <p className="text-meta text-fg-2">{t('mentor.feedbackPrivate')}</p>
       </div>
-      {q.isSuccess && !q.data.length && <p className="text-sm text-fg-3">{t('mentor.noFeedback')}</p>}
+      {q.isSuccess && !q.data.length && <p className="text-meta text-fg-3">{t('mentor.noFeedback')}</p>}
       <ul className="grid gap-2">
         {q.data?.map((f) => (
           <li key={f.id}>
@@ -492,8 +492,8 @@ function FeedbackList() {
                   ))}
                 </div>
               )}
-              {f.comment && <p className="text-sm">{f.comment}</p>}
-              <p className="text-xs text-fg-3">{formatRelative(f.createdAt)}</p>
+              {f.comment && <p className="text-meta">{f.comment}</p>}
+              <p className="text-caption text-fg-3">{formatRelative(f.createdAt)}</p>
             </Card>
           </li>
         ))}

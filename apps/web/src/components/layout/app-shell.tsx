@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type MouseEvent } from 'react';
+import { useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
@@ -18,7 +18,6 @@ import { formatDay } from '../../lib/format';
 import { paletteShortcut, useNav, type NavEntry } from '../../lib/nav';
 import { usePalette, usePaletteShortcut } from '../../lib/palette';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
-import { useRealtimeBridge } from '../../lib/use-realtime-bridge';
 import { prefersReducedMotion } from '../../lib/preferences';
 import { NavProgress } from './skeletons';
 import { useIdle } from '../../lib/use-idle';
@@ -31,20 +30,17 @@ const CommandPalette = lazyPart(() => import('./command-palette').then((m) => m.
 const AccountMenu = lazyPart(() => import('./account-menu').then((m) => m.AccountMenu));
 const AccountSheet = lazyPart(() => import('./account-menu').then((m) => m.AccountSheet));
 const CreateSheet = lazyPart(() => import('./create-sheet').then((m) => m.CreateSheet));
+// The socket connection and pull to refresh start after the first screen has painted.
+const IdleParts = lazyPart(() => import('./idle-parts').then((m) => m.IdleParts));
 
 /** Same size as the account button, while the menu's code loads (no layout shift). */
 function AccountButtonPlaceholder({ name }: { name: string }) {
   return (
     <div aria-hidden className="flex min-h-12 items-center gap-3 px-2">
       <PersonAvatar name={name || '?'} fileId={null} size={36} />
-      <span className="hidden truncate text-sm font-bold xl:block">{name}</span>
+      <span className="hidden truncate text-meta font-bold xl:block">{name}</span>
     </div>
   );
-}
-
-function RealtimeBridge() {
-  useRealtimeBridge();
-  return null;
 }
 
 function Count({ n, className }: { n: number; className?: string }) {
@@ -53,7 +49,7 @@ function Count({ n, className }: { n: number; className?: string }) {
   return (
     <span
       className={cn(
-        'grid min-w-5 place-items-center rounded-full bg-brand px-1.5 text-xs leading-5 font-semibold text-on-brand tabular-nums',
+        'grid min-w-5 place-items-center rounded-full bg-brand px-1.5 text-caption leading-5 font-semibold text-on-brand tabular-nums',
         className,
       )}
     >
@@ -96,6 +92,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
   const idle = useIdle();
   const paletteOpen = usePalette((s) => s.open);
   const reselect = useReselect();
+  const [touch] = useState(() => window.matchMedia('(pointer: coarse)').matches);
   useRouteFocus(tenant.branding.shortName);
   const tabRoots = useMemo(() => new Set(nav.tabs.map((i) => i.to)), [nav.tabs]);
   useScrollMemory(tabRoots);
@@ -115,7 +112,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       title={i.label}
       onClick={reselect(i.to)}
       {...intentPreload(i.to)}
-      className="group relative grid min-h-11 grid-cols-[24px] place-content-center items-center gap-3 rounded-[var(--radius-sm)] px-3 text-sm font-semibold text-fg-3 hover:bg-surface-2 hover:text-fg aria-[current=page]:bg-surface-2 aria-[current=page]:text-fg xl:grid-cols-[24px_1fr] xl:place-content-stretch"
+      className="group relative grid min-h-11 grid-cols-[24px] place-content-center items-center gap-3 rounded-[var(--radius-sm)] px-3 text-meta font-semibold text-fg-3 hover:bg-surface-2 hover:text-fg aria-[current=page]:bg-surface-2 aria-[current=page]:text-fg xl:grid-cols-[24px_1fr] xl:place-content-stretch"
     >
       <span className="relative">
         <i.icon className="size-5" aria-hidden />
@@ -147,7 +144,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         aria-current={lit ? 'page' : undefined}
         onClick={reselect(to)}
         {...intentPreload(to)}
-        className="group relative grid min-h-[52px] justify-items-center gap-0.5 rounded-[var(--radius-sm)] px-0.5 py-1.5 text-xs font-semibold text-fg-3 hover:text-fg aria-[current=page]:text-fg"
+        className="group relative grid min-h-[52px] justify-items-center gap-0.5 rounded-[var(--radius-sm)] px-0.5 py-1.5 text-caption font-semibold text-fg-3 hover:text-fg aria-[current=page]:text-fg"
       >
         <span
           aria-hidden
@@ -157,7 +154,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         <span className="max-w-full truncate">{i.label}</span>
         {i.badge > 0 && (
           <span className="absolute top-0.5 left-[calc(50%+4px)]">
-            <Count n={i.badge} className="min-w-4 px-1 text-[10px] leading-4" />
+            <Count n={i.badge} className="min-w-4 px-1 text-caption leading-4" />
           </span>
         )}
       </Link>
@@ -185,7 +182,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           title={tenant.branding.displayName}
         >
           <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} />
-          <b className="hidden font-display text-[15px] leading-tight font-semibold xl:block">
+          <b className="hidden font-display text-body leading-tight font-semibold xl:block">
             {tenant.branding.displayName}
           </b>
           <span className="sr-only xl:hidden">{tenant.branding.displayName}</span>
@@ -196,7 +193,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
               type="button"
               onClick={() => sheet.open('create')}
               title={t('nav.create')}
-              className="mb-2 flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-on-brand hover:brightness-110 xl:justify-start"
+              className="mb-2 flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-4 text-meta font-semibold text-on-brand hover:brightness-110 xl:justify-start"
             >
               <Plus className="size-5" aria-hidden />
               <span className="sr-only xl:not-sr-only">{t('nav.create')}</span>
@@ -208,18 +205,18 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
               type="button"
               onClick={() => openPalette(true)}
               title={t('palette.open')}
-              className="my-2 flex min-h-11 items-center justify-center gap-2.5 rounded-[var(--radius-md)] border border-line bg-surface-1 px-3 text-sm text-fg-2 hover:text-fg xl:justify-start"
+              className="my-2 flex min-h-11 items-center justify-center gap-2.5 rounded-[var(--radius-md)] border border-line bg-surface-1 px-3 text-meta text-fg-2 hover:text-fg xl:justify-start"
             >
               <Search className="size-4" aria-hidden />
               <span className="sr-only xl:not-sr-only">{t('palette.open')}</span>
-              <kbd className="ml-auto hidden rounded-md border border-line-strong bg-surface-2 px-1.5 py-0.5 font-mono text-xs text-fg-2 xl:inline">
+              <kbd className="ml-auto hidden rounded-md border border-line-strong bg-surface-2 px-1.5 py-0.5 font-mono text-caption text-fg-2 xl:inline">
                 {paletteShortcut()}
               </kbd>
             </button>
           )}
           {nav.menu.map((g) => (
             <section key={g.group} aria-label={g.label} className="grid gap-1 pt-2">
-              <h2 className="hidden px-3 pb-0.5 text-xs font-semibold tracking-wide text-fg-3 uppercase xl:block">
+              <h2 className="hidden px-3 pb-0.5 text-caption font-semibold tracking-wide text-fg-3 uppercase xl:block">
                 {g.label}
               </h2>
               <div aria-hidden className="mx-3 mb-1 h-px bg-line xl:hidden" />
@@ -237,9 +234,12 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         data-chrome-bar
         className="chrome-top gutter fixed inset-x-0 top-0 z-40 flex items-center gap-1 border-b pt-[calc(8px+env(safe-area-inset-top,0px))] pb-2 lg:hidden"
       >
-        <Link to={platform ? '/platform' : '/home'} className="flex min-w-0 items-center gap-2.5 pr-2">
+        <Link
+          to={platform ? '/platform' : '/home'}
+          className="flex min-h-11 min-w-0 items-center gap-2.5 pr-2"
+        >
           <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} size={32} />
-          <b className="truncate font-display text-base font-semibold">{tenant.branding.shortName}</b>
+          <b className="truncate font-display text-body font-semibold">{tenant.branding.shortName}</b>
         </Link>
         <div className="ml-auto flex items-center">
           {!platform && (
@@ -265,7 +265,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
               <MessagesSquare className="size-5" aria-hidden />
               {nav.unreadMessages > 0 && (
                 <span aria-hidden className="absolute top-1 right-0.5">
-                  <Count n={nav.unreadMessages} className="min-w-4 px-1 text-[10px] leading-4" />
+                  <Count n={nav.unreadMessages} className="min-w-4 px-1 text-caption leading-4" />
                 </span>
               )}
             </Link>
@@ -283,7 +283,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
               <Bell className="size-5" aria-hidden />
               {nav.unreadNotifications > 0 && (
                 <span aria-hidden className="absolute top-1 right-0.5">
-                  <Count n={nav.unreadNotifications} className="min-w-4 px-1 text-[10px] leading-4" />
+                  <Count n={nav.unreadNotifications} className="min-w-4 px-1 text-caption leading-4" />
                 </span>
               )}
             </Link>
@@ -322,7 +322,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           {me?.deletionPurgeAt && (
             <div
               role="alert"
-              className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-danger bg-surface-1 p-3 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-danger bg-surface-1 p-3 text-meta"
             >
               <span>{t('settings.data.banner', { date: formatDay(me.deletionPurgeAt) })}</span>
               <Link to="/settings/data" className="font-semibold text-brand-ink underline">
@@ -334,10 +334,10 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
         </div>
       </main>
 
-      {!platform && <RealtimeBridge />}
       {!platform && (idle || paletteOpen) && <CommandPalette />}
       {!platform && (idle || sheet.value === 'account') && <AccountSheet />}
       {canCreate && (idle || sheet.value === 'create') && <CreateSheet />}
+      {idle && <IdleParts realtime={!platform} pull={touch} />}
 
       {/* Phone bottom tabs: role-aware, Create in the middle. */}
       <nav

@@ -5,6 +5,12 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import prettier from 'eslint-config-prettier';
 
+/** Tailwind's default sizes sit off the type scale (audit DS-2, TY-3): use text-caption … text-hero. */
+const OFF_SCALE_TEXT = {
+  selector: 'Literal[value=/(^|[\\s:])text-(xs|sm|base|lg|[2-9]?xl)(\\s|$)/]',
+  message: 'Use a type-scale token (text-caption, text-meta, text-body, text-lead, text-title, …).',
+};
+
 export default tseslint.config(
   {
     ignores: [
@@ -71,8 +77,19 @@ export default tseslint.config(
           selector: "JSXAttribute[name.name='className'] Literal[value=/text-\\[clamp\\(/]",
           message: 'Use a type-scale token (text-headline, text-display…) or <PageHeader>.',
         },
+        OFF_SCALE_TEXT,
       ],
     },
+  },
+  {
+    // The same scale everywhere else in the app (the landing hero and story canvases included).
+    files: [
+      'apps/web/src/components/**/*.tsx',
+      'apps/web/src/app/**/*.tsx',
+      'apps/web/src/features/landing/**/*.tsx',
+      'apps/web/src/features/feed/story-viewer.tsx',
+    ],
+    rules: { 'no-restricted-syntax': ['error', OFF_SCALE_TEXT] },
   },
   {
     // Service-worker scripts run in the worker global scope.

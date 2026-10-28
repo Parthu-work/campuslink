@@ -44,8 +44,8 @@ export async function adminSignIn(page: Page, host: string, email: string) {
     const secret = (await page.locator('code').innerText()).replace(/\s/g, '');
     save(email, secret);
     await page.getByLabel('Enter your 6-digit code 1').click();
+    // The code sends itself on the sixth digit (audit FO-6).
     await page.keyboard.type(await generate({ secret }));
-    await page.getByRole('button', { name: 'Turn on 2FA' }).click();
     await expect(page.getByRole('heading', { name: 'Save your recovery codes' })).toBeVisible();
     await page.getByRole('button', { name: 'I’ve saved these codes' }).click();
   } else {
@@ -53,7 +53,6 @@ export async function adminSignIn(page: Page, host: string, email: string) {
     if (!saved) throw new Error(`No stored TOTP secret for ${email}; reseed the database`);
     await page.getByLabel('Enter your 6-digit code 1').click();
     await page.keyboard.type(await freshCode(email, saved.secret));
-    await page.getByRole('button', { name: 'Verify' }).click();
   }
   await page.waitForURL(/\/(home|platform)$/);
 }

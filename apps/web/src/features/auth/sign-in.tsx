@@ -28,7 +28,11 @@ export function SignInPage() {
   const [ticket, setTicket] = useState<string | null>(null);
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
-  const form = useForm<Form>({ resolver: zodResolver(schema), defaultValues: { email: '', password: '' } });
+  const form = useForm<Form>({
+    mode: 'onTouched',
+    resolver: zodResolver(schema),
+    defaultValues: { email: '', password: '' },
+  });
   const { errors, isSubmitting } = form.formState;
 
   const finish = async (accessToken: string) => {
@@ -64,7 +68,7 @@ export function SignInPage() {
       <form onSubmit={onSubmit} noValidate className="grid gap-4">
         <FormError message={errors.root?.message} />
         {unverifiedEmail && (
-          <div className="flex flex-wrap items-center gap-3 text-sm">
+          <div className="flex flex-wrap items-center gap-3 text-meta">
             {resent ? (
               <span className="text-fg-2" role="status">
                 {t('auth.resent')}
@@ -109,14 +113,14 @@ export function SignInPage() {
           )}
         </Field>
         <div className="flex justify-end">
-          <Link to="/forgot-password" className="text-sm font-semibold text-brand-ink hover:underline">
+          <Link to="/forgot-password" className="text-meta font-semibold text-brand-ink hover:underline">
             {t('auth.forgot')}
           </Link>
         </div>
         <Button type="submit" variant="primary" size="lg" loading={isSubmitting}>
           {t('auth.signInCta')}
         </Button>
-        <p className="text-center text-sm text-fg-2">
+        <p className="text-center text-meta text-fg-2">
           {t('auth.noAccount')}{' '}
           <Link to="/sign-up" className="font-semibold text-brand-ink hover:underline">
             {t('auth.createAccount')}
@@ -142,13 +146,14 @@ function MfaStep({
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Sent on the sixth digit (FO-6), or with the button (and always for a recovery code).
+  const submit = async (otp = code) => {
+    if (busy) return;
     setBusy(true);
     setError(undefined);
     try {
       const body =
-        recovery !== null ? { ticket, recoveryCode: recovery.trim().toLowerCase() } : { ticket, code };
+        recovery !== null ? { ticket, recoveryCode: recovery.trim().toLowerCase() } : { ticket, code: otp };
       const r = await api.post<{ session: { accessToken: string } }>('/auth/login/mfa', body);
       await onDone(r.session.accessToken);
     } catch (err) {
@@ -161,10 +166,22 @@ function MfaStep({
 
   return (
     <AuthLayout title={t('auth.mfaTitle')} subtitle={t('auth.mfaSub')}>
-      <form onSubmit={submit} className="grid gap-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void submit();
+        }}
+        className="grid gap-4"
+      >
         <FormError message={error} />
         {recovery === null ? (
-          <OtpInput value={code} onChange={setCode} label={t('auth.mfaTitle')} autoFocus />
+          <OtpInput
+            value={code}
+            onChange={setCode}
+            onComplete={(c) => void submit(c)}
+            label={t('auth.mfaTitle')}
+            autoFocus
+          />
         ) : (
           <Field label={t('auth.recoveryCode')}>
             {({ id }) => (

@@ -79,7 +79,7 @@ function AskForm({ onDone }: { onDone: () => void }) {
       </Field>
       <TopicPicker value={topics} onChange={setTopics} />
       {error && (
-        <p role="alert" className="text-sm font-medium text-danger">
+        <p role="alert" className="text-meta font-medium text-danger">
           {error}
         </p>
       )}
@@ -98,12 +98,12 @@ function QuestionRow({ q }: { q: QuestionView }) {
   return (
     <li>
       <Card variant="interactive" className="grid gap-2 p-4">
-        <h2 className="text-base leading-snug font-semibold">
+        <h2 className="text-body leading-snug font-semibold">
           <Link to={`/questions/${q.id}`} className="hover:underline">
             {q.title}
           </Link>
         </h2>
-        <p className="flex flex-wrap items-center gap-1.5 text-xs text-fg-3">
+        <p className="flex flex-wrap items-center gap-1.5 text-caption text-fg-3">
           {q.isMine && q.status !== 'published' && (
             <Badge tone={STATUS_TONE[q.status]}>{t(`qa.status.${q.status}`)}</Badge>
           )}
@@ -356,7 +356,7 @@ export function QuestionPage() {
             </AuthorLine>
             <h1 className="text-headline leading-tight font-bold">{question.title}</h1>
             {question.isMine && question.status === 'pending' && (
-              <p role="status" className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-sm text-fg-2">
+              <p role="status" className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-meta text-fg-2">
                 {t('qa.pendingNote')}
               </p>
             )}
@@ -378,7 +378,7 @@ export function QuestionPage() {
             )}
           </Card>
           <section aria-labelledby="answers" className="grid gap-3">
-            <h2 id="answers" className="text-lg font-semibold">
+            <h2 id="answers" className="text-title font-semibold">
               {t('qa.answers', { count: q.data.answers.length })}
             </h2>
             {!q.data.answers.length && <p className="text-fg-2">{t('qa.noAnswers')}</p>}

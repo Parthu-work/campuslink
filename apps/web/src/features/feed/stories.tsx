@@ -11,6 +11,7 @@ import { useTenant } from '../../lib/tenant-context';
 import { groupStories, seenStories, type StoryGroup } from '../../lib/stories';
 import { cn } from '../../lib/cn';
 import { lazyPart } from '../../lib/lazy-part';
+import { firstName } from '../../lib/names';
 
 const StoryViewer = lazyPart(() => import('./story-viewer').then((m) => m.StoryViewer));
 const StoryComposer = lazyPart(() => import('./story-composer').then((m) => m.StoryComposer));
@@ -40,7 +41,8 @@ export function StoriesRow() {
               <span className="grid size-[68px] place-items-center rounded-full border-2 border-dashed border-line-strong text-brand-ink">
                 <Plus className="size-6" aria-hidden />
               </span>
-              {t('stories.add')}
+              {/* "Your story" is the member's own ring once they have one; then this one adds another. */}
+              {groups.some((g) => g.mine) ? t('stories.addAnother') : t('stories.add')}
             </button>
           </li>
         )}
@@ -73,7 +75,7 @@ export function StoriesRow() {
                 </span>
               </span>
               <span className={cn('w-full truncate text-center', gr.seen ? 'text-fg-3' : 'text-fg')}>
-                {gr.mine ? t('stories.yours') : gr.author.name.split(' ')[0]}
+                {gr.mine ? t('stories.yours') : firstName(gr.author.name)}
               </span>
             </button>
           </li>

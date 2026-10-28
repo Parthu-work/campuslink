@@ -17,6 +17,7 @@ import { PageHeader } from '../../components/ui/page-header';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative, newIdempotencyKey } from '../../lib/format';
+import { SCREEN } from '../../lib/query-client';
 
 const tone = (s: RedemptionView['status']) =>
   s === 'fulfilled' ? 'success' : s === 'pending' ? 'brand' : 'neutral';
@@ -25,7 +26,11 @@ export function RewardsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const me = useQuery({ queryKey: ['progress'], queryFn: () => api.get<MyProgressView>('/me/progress') });
-  const rewards = useQuery({ queryKey: ['rewards'], queryFn: () => api.get<RewardView[]>('/rewards') });
+  const rewards = useQuery({
+    ...SCREEN,
+    queryKey: ['rewards'],
+    queryFn: () => api.get<RewardView[]>('/rewards'),
+  });
   const mine = useQuery({
     queryKey: ['redemptions'],
     queryFn: () => api.get<RedemptionView[]>('/me/redemptions'),
@@ -54,7 +59,7 @@ export function RewardsPage() {
   return (
     <div className="grid gap-5">
       <PageHeader icon={<Gift />} title={t('rewards.title')} intro={t('rewards.intro')} />
-      <p className="text-sm" role="status">
+      <p className="text-meta" role="status">
         {t('rewards.balance', { xp: balance.xp, impact: balance.impact })}
       </p>
       {rewards.isLoading ? (
@@ -73,8 +78,8 @@ export function RewardsPage() {
                     <h2 className="font-semibold">{r.title}</h2>
                     <Badge tone="accent">{t(`rewards.kind.${r.kind}`)}</Badge>
                   </div>
-                  {r.description && <p className="text-sm text-fg-2">{r.description}</p>}
-                  <p className="text-sm">
+                  {r.description && <p className="text-meta text-fg-2">{r.description}</p>}
+                  <p className="text-meta">
                     {t('rewards.cost', { cost: r.cost, track: t(`progress.track.${r.track}`) })}
                     {r.stock !== null && (
                       <span className="text-fg-3"> · {t('rewards.stock', { count: r.stock })}</span>
@@ -97,13 +102,13 @@ export function RewardsPage() {
         </ul>
       )}
       <section aria-labelledby="my-requests" className="grid gap-2">
-        <h2 id="my-requests" className="font-display text-lg font-semibold">
+        <h2 id="my-requests" className="font-display text-title font-semibold">
           {t('rewards.mine')}
         </h2>
         {mine.isLoading ? (
           <Skeleton className="h-16" />
         ) : !mine.data?.length ? (
-          <p className="text-sm text-fg-2">{t('rewards.noneYet')}</p>
+          <p className="text-meta text-fg-2">{t('rewards.noneYet')}</p>
         ) : (
           <ul className="grid gap-2">
             {mine.data.map((r) => (
@@ -111,8 +116,8 @@ export function RewardsPage() {
                 <Card className="flex flex-wrap items-center justify-between gap-2 p-3">
                   <span>
                     <span className="font-semibold">{r.reward.title}</span>
-                    <span className="text-sm text-fg-3"> · {formatRelative(r.createdAt)}</span>
-                    {r.note && <span className="block text-sm text-fg-2">{r.note}</span>}
+                    <span className="text-meta text-fg-3"> · {formatRelative(r.createdAt)}</span>
+                    {r.note && <span className="block text-meta text-fg-2">{r.note}</span>}
                   </span>
                   <span className="flex items-center gap-2">
                     <Badge tone={tone(r.status)}>{t(`rewards.status.${r.status}`)}</Badge>
@@ -148,6 +153,7 @@ export function RewardsAdmin() {
   const [form, setForm] = useState(blank);
   const [status, setStatus] = useState<'pending' | 'fulfilled' | 'rejected'>('pending');
   const rewards = useQuery({
+    ...SCREEN,
     queryKey: ['admin-rewards'],
     queryFn: () => api.get<RewardView[]>('/admin/rewards'),
   });
@@ -183,7 +189,7 @@ export function RewardsAdmin() {
   return (
     <div className="grid gap-6">
       <section aria-labelledby="requests" className="grid gap-2">
-        <h2 id="requests" className="font-display text-lg font-semibold">
+        <h2 id="requests" className="font-display text-title font-semibold">
           {t('rewards.admin.requests')}
         </h2>
         <Segmented
@@ -200,7 +206,7 @@ export function RewardsAdmin() {
         {reds.isLoading ? (
           <Skeleton className="h-16" />
         ) : !reds.data?.length ? (
-          <p className="text-sm text-fg-2">{t('rewards.admin.noRequests')}</p>
+          <p className="text-meta text-fg-2">{t('rewards.admin.noRequests')}</p>
         ) : (
           <ul className="grid gap-2">
             {reds.data.map((r) => (
@@ -208,7 +214,7 @@ export function RewardsAdmin() {
                 <Card className="flex flex-wrap items-center justify-between gap-2 p-3">
                   <span>
                     <span className="font-semibold">{r.person.name}</span> · {r.reward.title}
-                    <span className="block text-xs text-fg-3">
+                    <span className="block text-caption text-fg-3">
                       {t('rewards.cost', { cost: r.cost, track: t(`progress.track.${r.track}`) })} ·{' '}
                       {formatRelative(r.createdAt)}
                     </span>
@@ -237,7 +243,7 @@ export function RewardsAdmin() {
       </section>
 
       <section aria-labelledby="catalogue" className="grid gap-2">
-        <h2 id="catalogue" className="font-display text-lg font-semibold">
+        <h2 id="catalogue" className="font-display text-title font-semibold">
           {t('rewards.admin.catalogue')}
         </h2>
         <ul className="grid gap-2">
@@ -246,7 +252,7 @@ export function RewardsAdmin() {
               <Card className="flex flex-wrap items-center justify-between gap-2 p-3">
                 <span>
                   <span className="font-semibold">{r.title}</span>
-                  <span className="block text-xs text-fg-3">
+                  <span className="block text-caption text-fg-3">
                     {t(`rewards.kind.${r.kind}`)} ·{' '}
                     {t('rewards.cost', { cost: r.cost, track: t(`progress.track.${r.track}`) })}
                     {r.stock !== null && ` · ${t('rewards.stock', { count: r.stock })}`}

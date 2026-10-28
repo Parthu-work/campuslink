@@ -15,6 +15,8 @@ import { FormError } from '../../components/layout/auth-layout';
 import { api, ApiError } from '../../lib/api';
 import { useMe } from '../../lib/me';
 import { useTenant } from '../../lib/tenant-context';
+import { SCREEN } from '../../lib/query-client';
+import { FormFooter } from '../../components/ui/form-footer';
 
 interface Mine {
   profile: PublicProfile;
@@ -55,7 +57,11 @@ function toForm(m: Mine): FormState {
 }
 
 export function ProfileEdit() {
-  const mine = useQuery({ queryKey: ['my-profile'], queryFn: () => api.get<Mine>('/me/profile') });
+  const mine = useQuery({
+    ...SCREEN,
+    queryKey: ['my-profile'],
+    queryFn: () => api.get<Mine>('/me/profile'),
+  });
   if (!mine.data) return <Skeleton className="h-96" />;
   return <ProfileForm initial={mine.data} />;
 }
@@ -66,6 +72,7 @@ function ProfileForm({ initial }: { initial: Mine }) {
   const qc = useQueryClient();
   const { data: me } = useMe();
   const mine = useQuery({
+    ...SCREEN,
     queryKey: ['my-profile'],
     queryFn: () => api.get<Mine>('/me/profile'),
     initialData: initial,
@@ -109,7 +116,7 @@ function ProfileForm({ initial }: { initial: Mine }) {
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm({ ...form, [k]: v });
   const audience = (field: ProfileField) => (
-    <label className="flex items-center gap-2 text-xs text-fg-2">
+    <label className="flex items-center gap-2 text-caption text-fg-2">
       <span className="flex-none">{t('profile.visibility')}</span>
       <Select
         value={vis[field]}
@@ -133,9 +140,9 @@ function ProfileForm({ initial }: { initial: Mine }) {
         <PersonAvatar name={p.name} fileId={p.avatarFileId} size={72} verified={p.verified} />
         {/* A real basis, so on phones the button wraps below instead of crushing the name (TY-1). */}
         <div className="min-w-0 flex-1 basis-48">
-          <b className="block text-lg">{p.name}</b>
+          <b className="block text-title">{p.name}</b>
           {(p.fields.branch || p.fields.gradYear) && (
-            <p className="text-sm text-fg-2">
+            <p className="text-meta text-fg-2">
               {[p.fields.branch, p.fields.gradYear].filter(Boolean).join(' · ')}{' '}
               <span className="text-fg-3">({t('profile.fromList')})</span>
             </p>
@@ -246,7 +253,7 @@ function ProfileForm({ initial }: { initial: Mine }) {
             </div>
           ))}
           <fieldset className="grid gap-2">
-            <legend className="mb-1.5 text-[13px] font-semibold">{t('profile.links')}</legend>
+            <legend className="mb-1.5 text-meta font-semibold">{t('profile.links')}</legend>
             {form.links.map((l, i) => (
               <div key={i} className="flex gap-2">
                 <label className="sr-only" htmlFor={`link-${i}`}>
@@ -314,9 +321,11 @@ function ProfileForm({ initial }: { initial: Mine }) {
               {audience('phone')}
             </div>
           </div>
-          <Button type="submit" variant="primary" className="justify-self-start" loading={save.isPending}>
-            {t('common.save')}
-          </Button>
+          <FormFooter>
+            <Button type="submit" variant="primary" loading={save.isPending}>
+              {t('common.save')}
+            </Button>
+          </FormFooter>
         </form>
       </Card>
       {me?.roles.includes('ALUMNI') && me.verified && <CompanyBadge current={p.companyVerified} />}
@@ -346,10 +355,10 @@ function CompanyBadge({ current }: { current: PublicProfile['companyVerified'] }
   };
   return (
     <Card className="grid gap-3 p-5">
-      <h2 className="text-lg font-semibold">{t('profile.companyTitle')}</h2>
-      <p className="text-sm text-fg-2">{t('profile.companyBody')}</p>
+      <h2 className="text-title font-semibold">{t('profile.companyTitle')}</h2>
+      <p className="text-meta text-fg-2">{t('profile.companyBody')}</p>
       {current && (
-        <p className="text-sm font-semibold text-success">
+        <p className="text-meta font-semibold text-success">
           {t('profile.companyDone', { company: current.company })}
         </p>
       )}
@@ -401,7 +410,7 @@ function CompanyBadge({ current }: { current: PublicProfile['companyVerified'] }
             });
           }}
         >
-          <p className="text-sm" role="status">
+          <p className="text-meta" role="status">
             {t('verify.codeSent', { destination: challenge.destination })}
           </p>
           <OtpInput value={code} onChange={setCode} label={t('verify.codeTitle')} />

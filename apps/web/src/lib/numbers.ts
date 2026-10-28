@@ -7,8 +7,11 @@ const utcDay = perLocale(
   (l) => new Intl.DateTimeFormat(l, { day: 'numeric', month: 'short', timeZone: 'UTC' }),
 );
 
-/** 1,284 → "1.3K" (axis ticks and dense figures). */
-export const formatCompact = (n: number) => compact().format(n);
+/**
+ * Dense figures and axis ticks: exact below 1,00,000 (Indian English shortens thousands to "T",
+ * which reads as trillions beside token counts), then the locale's short form (1.2L, 3.4Cr).
+ */
+export const formatCompact = (n: number) => (Math.abs(n) < 100_000 ? whole() : compact()).format(n);
 export const formatNumber = (n: number) => whole().format(n);
 /** A UTC calendar day (`YYYY-MM-DD`, as usage is counted), e.g. "23 Oct". */
 export const formatUtcDay = (d: string) => utcDay().format(new Date(`${d}T00:00:00Z`));

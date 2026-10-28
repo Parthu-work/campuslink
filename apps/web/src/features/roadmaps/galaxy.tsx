@@ -15,6 +15,7 @@ import { followedRoadmaps, roadmapDrafts, roadmapsList } from '../../lib/queries
 import { useCan } from '../../lib/me';
 import { cn } from '../../lib/cn';
 import { defaultRoadmapView, rememberRoadmapView } from '../../lib/roadmaps';
+import { SCREEN } from '../../lib/query-client';
 
 export function RoadmapCard({ r }: { r: RoadmapSummaryView }) {
   const { t } = useTranslation();
@@ -33,7 +34,7 @@ export function RoadmapCard({ r }: { r: RoadmapSummaryView }) {
           </Badge>
         )}
       </div>
-      <p className="line-clamp-2 text-sm text-fg-2">{r.summary}</p>
+      <p className="line-clamp-2 text-meta text-fg-2">{r.summary}</p>
       <div className="flex flex-wrap gap-1.5">
         <Badge>{t(`roadmaps.cat.${r.category}`)}</Badge>
         <Badge>{t('roadmaps.steps', { count: r.nodeCount })}</Badge>
@@ -82,7 +83,7 @@ export function RoadmapsPage() {
       ),
     ).toString(),
   );
-  const list = useQuery({ ...roadmapsList(qs), placeholderData: keepPreviousData });
+  const list = useQuery({ ...SCREEN, ...roadmapsList(qs), placeholderData: keepPreviousData });
   // The route loader fetches these with the list, so the filters never jump when they arrive.
   const mine = useQuery({ ...followedRoadmaps(), enabled: canProgress });
   const drafts = useQuery({ ...roadmapDrafts(), enabled: canWrite });
@@ -115,7 +116,7 @@ export function RoadmapsPage() {
 
       {!!mine.data?.length && (
         <section aria-labelledby="my-roadmaps" className="grid gap-2">
-          <h2 id="my-roadmaps" className="font-display text-lg font-semibold">
+          <h2 id="my-roadmaps" className="font-display text-title font-semibold">
             {t('roadmaps.mine')}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -130,7 +131,7 @@ export function RoadmapsPage() {
 
       {!!drafts.data?.length && (
         <section aria-labelledby="my-drafts" className="grid gap-2">
-          <h2 id="my-drafts" className="font-display text-lg font-semibold">
+          <h2 id="my-drafts" className="font-display text-title font-semibold">
             {t('roadmaps.drafts')}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -215,7 +216,7 @@ export function RoadmapsPage() {
         <div className="grid gap-6">
           {byCategory.map(([c, rs]) => (
             <section key={c} aria-labelledby={`cat-${c}`} className="grid gap-2">
-              <h2 id={`cat-${c}`} className={cn('font-display text-lg font-semibold')}>
+              <h2 id={`cat-${c}`} className={cn('font-display text-title font-semibold')}>
                 {t(`roadmaps.cat.${c}`)}
               </h2>
               <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -229,7 +230,7 @@ export function RoadmapsPage() {
           ))}
         </div>
       )}
-      <p className="text-xs text-fg-3">{t('roadmaps.disclaimer')}</p>
+      <p className="text-caption text-fg-3">{t('roadmaps.disclaimer')}</p>
     </div>
   );
 }

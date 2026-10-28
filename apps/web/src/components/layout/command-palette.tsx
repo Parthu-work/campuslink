@@ -31,9 +31,9 @@ import { PersonAvatar } from '../ui/person-avatar';
 import { useNav } from '../../lib/nav';
 
 const item =
-  'flex min-h-11 cursor-pointer items-center gap-3 rounded-[var(--radius-sm)] px-3 text-sm data-[selected=true]:bg-surface-2';
+  'flex min-h-11 cursor-pointer items-center gap-3 rounded-[var(--radius-sm)] px-3 text-meta data-[selected=true]:bg-surface-2';
 const group =
-  '[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-2.5 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-fg-3 [&_[cmdk-group-heading]]:uppercase';
+  '[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-2.5 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-caption [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-fg-3 [&_[cmdk-group-heading]]:uppercase';
 
 export function CommandPalette() {
   const { t, i18n } = useTranslation();
@@ -94,7 +94,7 @@ export function CommandPalette() {
               value={q}
               onValueChange={setQ}
               placeholder={t('palette.placeholder')}
-              className="min-h-14 w-full border-b border-line bg-transparent px-4 text-base outline-none"
+              className="min-h-14 w-full border-b border-line bg-transparent px-4 text-body outline-none"
             />
             <Command.List className="max-h-[55vh] overflow-y-auto p-2">
               {dq.length >= 2 && canSearch && (
@@ -108,13 +108,13 @@ export function CommandPalette() {
                     >
                       <PersonAvatar name={p.name} fileId={p.avatarFileId} size={28} />
                       <span className="min-w-0 flex-1 truncate">{p.name}</span>
-                      <span className="truncate text-xs text-fg-3">
+                      <span className="truncate text-caption text-fg-3">
                         {p.fields.company ?? p.fields.headline ?? ''}
                       </span>
                     </Command.Item>
                   ))}
                   {people.isSuccess && !people.data.people.length && (
-                    <p className="px-3 py-2 text-sm text-fg-2">{t('palette.noResults')}</p>
+                    <p className="px-3 py-2 text-meta text-fg-2">{t('palette.noResults')}</p>
                   )}
                 </Command.Group>
               )}
@@ -129,7 +129,9 @@ export function CommandPalette() {
                     >
                       <Orbit className="size-4 flex-none text-fg-2" aria-hidden />
                       <span className="min-w-0 flex-1 truncate">{r.title}</span>
-                      <span className="truncate text-xs text-fg-3">{t(`roadmaps.cat.${r.category}`)}</span>
+                      <span className="truncate text-caption text-fg-3">
+                        {t(`roadmaps.cat.${r.category}`)}
+                      </span>
                     </Command.Item>
                   ))}
                 </Command.Group>
@@ -145,7 +147,7 @@ export function CommandPalette() {
                     >
                       <CalendarDays className="size-4 flex-none text-fg-2" aria-hidden />
                       <span className="min-w-0 flex-1 truncate">{e.title}</span>
-                      <span className="truncate text-xs text-fg-3">{t(`events.kind.${e.kind}`)}</span>
+                      <span className="truncate text-caption text-fg-3">{t(`events.kind.${e.kind}`)}</span>
                     </Command.Item>
                   ))}
                 </Command.Group>
@@ -161,7 +163,7 @@ export function CommandPalette() {
                     >
                       <BriefcaseBusiness className="size-4 flex-none text-fg-2" aria-hidden />
                       <span className="min-w-0 flex-1 truncate">{j.title}</span>
-                      <span className="truncate text-xs text-fg-3">{j.company}</span>
+                      <span className="truncate text-caption text-fg-3">{j.company}</span>
                     </Command.Item>
                   ))}
                 </Command.Group>

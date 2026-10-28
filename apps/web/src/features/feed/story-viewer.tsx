@@ -25,7 +25,7 @@ function StoryFace({ story }: { story: StoryView }) {
           <Skeleton className="size-full" />
         )}
         {story.text && (
-          <p className="absolute inset-x-4 bottom-20 rounded-[var(--radius-sm)] bg-[var(--scrim)] p-3 text-center text-lg font-semibold text-white">
+          <p className="absolute inset-x-4 bottom-20 rounded-[var(--radius-sm)] bg-[var(--scrim)] p-3 text-center text-title font-semibold text-white">
             {story.text}
           </p>
         )}
@@ -137,7 +137,7 @@ export function StoryViewer({
             </p>
             <div className="flex items-center gap-2">
               <PersonAvatar name={group.author.name || '?'} fileId={group.author.avatarFileId} size={34} />
-              <p className="min-w-0 flex-1 truncate text-sm">
+              <p className="min-w-0 flex-1 truncate text-meta">
                 <b>{group.author.name}</b>{' '}
                 <span className="text-white/80">{formatRelative(story.createdAt)}</span>
               </p>
@@ -190,7 +190,7 @@ export function StoryViewer({
                 href={story.link}
                 target="_blank"
                 rel="noopener noreferrer nofollow ugc"
-                className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-black"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-white px-4 text-meta font-semibold text-black"
               >
                 {story.linkLabel ?? t('stories.openLink')} <ExternalLink className="size-4" aria-hidden />
               </a>

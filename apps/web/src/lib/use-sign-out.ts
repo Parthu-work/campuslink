@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { announceSignOut, api } from './api';
+import { clearDrafts } from './drafts';
 import { useSession } from './session';
 
 export function useSignOut() {
@@ -12,6 +13,7 @@ export function useSignOut() {
     announceSignOut();
     signedOut(true);
     qc.clear();
+    clearDrafts();
     navigate('/sign-in', { replace: true });
   };
 }

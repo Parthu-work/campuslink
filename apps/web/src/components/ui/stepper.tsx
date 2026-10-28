@@ -40,7 +40,15 @@ export function Stepper({
             >
               {done ? <Check className="size-4" strokeWidth={3} aria-hidden /> : i + 1}
             </span>
-            <span className={cn('truncate text-meta font-semibold', done || now ? 'text-fg' : 'text-fg-3')}>
+            {/* Phones show only the current step's name (three names did not fit); the others stay
+                available to screen readers. */}
+            <span
+              className={cn(
+                'truncate text-meta font-semibold',
+                done || now ? 'text-fg' : 'text-fg-3',
+                !now && 'max-sm:sr-only',
+              )}
+            >
               {s}
               {done && <span className="sr-only"> ({t('common.stepDone')})</span>}
             </span>

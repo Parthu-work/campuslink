@@ -23,6 +23,9 @@ import { PageHeader } from '../../components/ui/page-header';
 import { BackLink } from '../../components/ui/back-link';
 import { api, ApiError } from '../../lib/api';
 import { newIdempotencyKey } from '../../lib/format';
+import { SCREEN } from '../../lib/query-client';
+import { FormFooter } from '../../components/ui/form-footer';
+import { roadmapIssueText } from '../../lib/roadmap-issues';
 
 const blankNode = (i: number): RoadmapNode => ({
   id: `step-${i}`,
@@ -62,7 +65,7 @@ function RefList({
   const { t } = useTranslation();
   return (
     <fieldset className="grid gap-2">
-      <legend className="text-sm font-semibold">{label}</legend>
+      <legend className="text-meta font-semibold">{label}</legend>
       {items.map((s, i) => (
         <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1.4fr_auto]">
           <Input
@@ -251,7 +254,7 @@ function NodeEditor({
       </div>
       {index > 0 && (
         <fieldset className="grid gap-1.5">
-          <legend className="text-sm font-semibold">{t('roadmaps.editor.after')}</legend>
+          <legend className="text-meta font-semibold">{t('roadmaps.editor.after')}</legend>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             {all
               .filter((o) => o.id !== node.id)
@@ -310,6 +313,7 @@ function NodeEditor({
 export function RoadmapEditorPage() {
   const { slug } = useParams();
   const existing = useQuery({
+    ...SCREEN,
     queryKey: ['roadmap', slug],
     queryFn: () => api.get<RoadmapView>(`/roadmaps/${slug ?? ''}`),
     enabled: !!slug,
@@ -318,6 +322,7 @@ export function RoadmapEditorPage() {
   // Editors continue the open draft; otherwise start from the published content.
   const draftVersion = r?.draft?.version ?? null;
   const draft = useQuery({
+    ...SCREEN,
     queryKey: ['roadmap', r?.id, 'version', draftVersion],
     queryFn: () =>
       api.get<VersionView & { content: RoadmapContent }>(
@@ -345,13 +350,7 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
   const parsed = useMemo(() => roadmapContent.safeParse(content), [content]);
   const problems = parsed.success ? publishProblems(parsed.data) : [];
   const errors = !parsed.success
-    ? [
-        ...new Set(
-          parsed.error.issues.map(
-            (i) => `${i.path.join(' › ') || t('roadmaps.editor.roadmap')}: ${i.message}`,
-          ),
-        ),
-      ].slice(0, 8)
+    ? [...new Set(parsed.error.issues.map((i) => roadmapIssueText(t, i)))].slice(0, 8)
     : [];
 
   const set = <K extends keyof RoadmapContent>(k: K, v: RoadmapContent[K]) =>
@@ -455,7 +454,7 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
               )}
             </Field>
             <fieldset className="grid gap-1.5">
-              <legend className="text-sm font-semibold">{t('roadmaps.editor.branches')}</legend>
+              <legend className="text-meta font-semibold">{t('roadmaps.editor.branches')}</legend>
               <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {BRANCHES.map((b) => (
                   <Checkbox
@@ -499,7 +498,7 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
             />
           </Card>
 
-          <h2 className="font-display text-lg font-semibold">{t('roadmaps.editor.steps')}</h2>
+          <h2 className="font-display text-title font-semibold">{t('roadmaps.editor.steps')}</h2>
           {content.nodes.map((n, i) => (
             <NodeEditor
               key={i}
@@ -546,23 +545,23 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
 
         <aside className="grid content-start gap-3 lg:sticky lg:top-4 lg:self-start">
           <Card className="grid gap-3 p-4">
-            <h2 className="font-display text-lg font-semibold">{t('roadmaps.checklist')}</h2>
+            <h2 className="font-display text-title font-semibold">{t('roadmaps.checklist')}</h2>
             {errors.length ? (
-              <ul className="list-disc pl-5 text-sm text-danger" aria-live="polite">
+              <ul className="list-disc pl-5 text-meta text-danger" aria-live="polite">
                 {errors.map((e) => (
                   <li key={e}>{e}</li>
                 ))}
               </ul>
             ) : problems.length ? (
-              <ul className="list-disc pl-5 text-sm text-warning" aria-live="polite">
+              <ul className="list-disc pl-5 text-meta text-warning" aria-live="polite">
                 {problems.map((p) => (
                   <li key={p}>{p}</li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-success">{t('roadmaps.checklistOk')}</p>
+              <p className="text-meta text-success">{t('roadmaps.checklistOk')}</p>
             )}
-            <p className="text-xs text-fg-3">{t('roadmaps.editor.rules')}</p>
+            <p className="text-caption text-fg-3">{t('roadmaps.editor.rules')}</p>
             {r && (
               <Field label={t('roadmaps.editor.changeNote')}>
                 {(f) => (
@@ -576,23 +575,25 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
                 )}
               </Field>
             )}
-            <Button type="submit" loading={busy}>
-              {t('roadmaps.editor.saveDraft')}
-            </Button>
-            <Button
-              type="button"
-              variant="primary"
-              loading={busy}
-              disabled={!!errors.length || !!problems.length}
-              onClick={() => void save(true)}
-            >
-              <Send className="size-4" aria-hidden /> {t('roadmaps.editor.saveSubmit')}
-            </Button>
-            {(r?.draft || !r) && (
-              <Button type="button" variant="ghost" onClick={() => void discard()}>
-                {t('roadmaps.editor.discard')}
+            <FormFooter desktop="inline">
+              {(r?.draft || !r) && (
+                <Button type="button" variant="ghost" onClick={() => void discard()}>
+                  {t('roadmaps.editor.discard')}
+                </Button>
+              )}
+              <Button type="submit" loading={busy}>
+                {t('roadmaps.editor.saveDraft')}
               </Button>
-            )}
+              <Button
+                type="button"
+                variant="primary"
+                loading={busy}
+                disabled={!!errors.length || !!problems.length}
+                onClick={() => void save(true)}
+              >
+                <Send className="size-4" aria-hidden /> {t('roadmaps.editor.saveSubmit')}
+              </Button>
+            </FormFooter>
           </Card>
         </aside>
       </div>

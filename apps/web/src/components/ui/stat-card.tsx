@@ -76,7 +76,7 @@ export function StatCard({
       </dt>
       <dd
         className={cn(
-          'font-display leading-tight font-bold tabular-nums',
+          'font-display leading-tight font-bold tabular-nums [overflow-wrap:anywhere]',
           size === 'md' ? 'text-headline' : 'text-title',
           tones[tone],
         )}

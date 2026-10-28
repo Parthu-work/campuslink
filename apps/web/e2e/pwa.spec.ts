@@ -7,9 +7,11 @@ test('installable, registers its worker and reports offline', async ({ page, con
   const manifest = await page.evaluate(async () => {
     const href = document.querySelector<HTMLLinkElement>('link[rel="manifest"]')?.href;
     return href
-      ? ((await (await fetch(href)).json()) as { icons: { sizes: string; purpose: string }[] })
+      ? ((await (await fetch(href)).json()) as { name: string; icons: { sizes: string; purpose: string }[] })
       : null;
   });
+  // Each college installs under its own name (audit PW-3).
+  expect(manifest?.name).toBe('Deccan Plateau Institute of Technology');
   expect(manifest?.icons).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ sizes: '192x192', purpose: 'any' }),

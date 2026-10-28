@@ -14,6 +14,7 @@ import { PageHeader } from '../../components/ui/page-header';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
 import { useTrack } from '../../lib/jobs';
+import { SCREEN } from '../../lib/query-client';
 
 /** One application on the board; the status select moves it between columns (keyboard friendly). */
 function TrackedRow({ row }: { row: TrackedJobView }) {
@@ -82,14 +83,14 @@ function Alerts() {
       <h2 className="flex items-center gap-2 font-semibold">
         <BellRing className="size-5 text-accent-ink" aria-hidden /> {t('jobs.alerts')}
       </h2>
-      <p className="text-sm text-fg-2">{t('jobs.alertsIntro')}</p>
-      {q.data && !q.data.length && <p className="text-sm text-fg-3">{t('jobs.noAlerts')}</p>}
+      <p className="text-meta text-fg-2">{t('jobs.alertsIntro')}</p>
+      {q.data && !q.data.length && <p className="text-meta text-fg-3">{t('jobs.noAlerts')}</p>}
       <ul className="grid gap-2">
         {q.data?.map((a) => (
           <li key={a.id} className="flex items-center gap-2">
             <Link
               to={`/jobs?alert=${a.id}`}
-              className="min-w-0 flex-1 truncate text-sm font-semibold hover:underline"
+              className="min-w-0 flex-1 truncate text-meta font-semibold hover:underline"
             >
               {a.name}
             </Link>
@@ -111,6 +112,7 @@ function Alerts() {
 export function TrackerPage() {
   const { t } = useTranslation();
   const q = useQuery({
+    ...SCREEN,
     queryKey: ['job-tracker'],
     queryFn: () => api.get<TrackedJobView[]>('/me/job-tracker'),
   });

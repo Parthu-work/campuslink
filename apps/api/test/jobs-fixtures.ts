@@ -3,14 +3,20 @@ import { api, type TestTenant, type TestUser, type testApp } from './helpers.js'
 
 type Ctx = ReturnType<typeof testApp>;
 
+/**
+ * Listing dates relative to now: sources keep only recent openings (Adzuna asks for the last 21
+ * days), so fixed dates made these tests fail once the calendar moved past them.
+ */
+const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000);
+
 /** Response shapes of the public job-board APIs (fields we read; values are fictional). */
 export const greenhouseBoard = (jobs: { id: number; title: string; location: string; content?: string }[]) =>
   JSON.stringify({
     jobs: jobs.map((j) => ({
       id: j.id,
       title: j.title,
-      updated_at: '2026-10-10T10:00:00-04:00',
-      first_published: '2026-10-09T10:00:00-04:00',
+      updated_at: daysAgo(1).toISOString(),
+      first_published: daysAgo(2).toISOString(),
       location: { name: j.location },
       absolute_url: `https://boards.greenhouse.io/acmedemo/jobs/${j.id}`,
       content: j.content ?? '&lt;p&gt;Build &lt;b&gt;APIs&lt;/b&gt; in Java and AWS. 0-1 years.&lt;/p&gt;',
@@ -31,7 +37,7 @@ export const leverBoard = JSON.stringify([
     },
     hostedUrl: 'https://jobs.lever.co/betademo/lv-1',
     applyUrl: 'https://jobs.lever.co/betademo/lv-1/apply',
-    createdAt: Date.parse('2026-10-08T00:00:00Z'),
+    createdAt: daysAgo(3).getTime(),
     descriptionPlain: 'Work with React and Node.js. Freshers welcome.',
     workplaceType: 'hybrid',
     salaryRange: { min: 30000, max: 40000, currency: 'inr', interval: 'per-month-salary' },
@@ -41,7 +47,7 @@ export const leverBoard = JSON.stringify([
     text: 'Senior Data Engineer',
     categories: { location: 'Berlin', commitment: 'Full-time' },
     hostedUrl: 'https://jobs.lever.co/betademo/lv-2',
-    createdAt: Date.parse('2026-10-08T00:00:00Z'),
+    createdAt: daysAgo(3).getTime(),
     descriptionPlain: 'Spark and Airflow.',
     workplaceType: 'onsite',
   },
@@ -58,7 +64,7 @@ export const ashbyBoard = JSON.stringify({
       isRemote: false,
       workplaceType: 'Hybrid',
       employmentType: 'FullTime',
-      publishedAt: '2026-10-07T00:00:00.000Z',
+      publishedAt: daysAgo(4).toISOString(),
       jobUrl: 'https://jobs.ashbyhq.com/gammademo/ab-1',
       applyUrl: 'https://jobs.ashbyhq.com/gammademo/ab-1/application',
       descriptionPlain: 'Go and PostgreSQL. 2+ years of experience.',
@@ -82,7 +88,7 @@ export const smartRecruitersBoard = JSON.stringify({
     {
       id: '744000000001',
       name: 'Graduate Engineer Trainee - Mechanical',
-      releasedDate: '2026-10-06T08:00:00.000Z',
+      releasedDate: daysAgo(5).toISOString(),
       location: { city: 'Chennai', region: 'TN', country: 'in', remote: false },
       experienceLevel: { id: 'entry_level', label: 'Entry Level' },
       typeOfEmployment: { label: 'Full-time' },
@@ -102,7 +108,7 @@ export const adzunaResults = JSON.stringify({
       company: { display_name: 'Epsilon Demo' },
       location: { display_name: 'Hyderabad, Telangana' },
       redirect_url: 'https://www.adzuna.in/land/ad/4400001',
-      created: '2026-10-05T06:00:00Z',
+      created: daysAgo(6).toISOString(),
       description: 'Manual Testing and Selenium. Freshers can apply.',
       salary_min: 300000,
       salary_max: 450000,

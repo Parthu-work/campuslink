@@ -9,6 +9,7 @@ import { Checkbox, Field, Input, Select } from '../../components/ui/field';
 import { Card, Skeleton } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
 import { currentSubscription, disablePush, enablePush, pushSupported } from '../../lib/push';
+import { SCREEN } from '../../lib/query-client';
 
 function PushCard() {
   const { t } = useTranslation();
@@ -71,53 +72,53 @@ function PrefsForm({ initial }: { initial: NotificationPrefs }) {
   });
   return (
     <Card className="grid gap-5 p-5">
-      <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={t('notifications.channels')}>
-        <table className="w-full min-w-[420px] text-meta">
-          <caption className="mb-2 text-left font-semibold">{t('notifications.channels')}</caption>
-          <thead>
-            <tr className="text-left text-fg-3">
-              <th scope="col" className="py-2 font-medium">
-                {t('notifications.category')}
-              </th>
-              {CHANNELS.map((c) => (
-                <th key={c} scope="col" className="py-2 text-center font-medium">
-                  {t(`notifications.channel.${c}`)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {NOTIFICATION_CATEGORIES.map((cat) => (
-              <tr key={cat} className="border-t border-line">
-                <th scope="row" className="py-3 pr-3 text-left font-semibold">
+      {/* One row per kind of notification, its three channels as labelled 44 px toggles beneath it
+          (a sideways-scrolling table hid the toggles on phones). */}
+      <div className="grid gap-1">
+        <h2 className="font-semibold">{t('notifications.channels')}</h2>
+        <ul className="grid">
+          {NOTIFICATION_CATEGORIES.map((cat) => (
+            <li key={cat} className="border-t border-line py-3 first:border-t-0">
+              <div
+                role="group"
+                aria-labelledby={`nc-${cat}`}
+                className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4"
+              >
+                <p id={`nc-${cat}`} className="text-meta font-semibold">
                   {t(`notifications.cat.${cat}`)}
                   <span className="block text-caption font-normal text-fg-3">
                     {t(`notifications.catHint.${cat}`)}
                   </span>
-                </th>
-                {CHANNELS.map((c) => (
-                  <td key={c} className="text-center">
-                    <input
-                      type="checkbox"
-                      aria-label={t('notifications.toggle', {
-                        channel: t(`notifications.channel.${c}`),
-                        category: t(`notifications.cat.${cat}`),
-                      })}
-                      checked={p.channels[cat][c]}
-                      onChange={(e) =>
-                        setP({
-                          ...p,
-                          channels: { ...p.channels, [cat]: { ...p.channels[cat], [c]: e.target.checked } },
-                        })
-                      }
-                      className="size-5 accent-[var(--brand)]"
-                    />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {CHANNELS.map((c) => (
+                    <label
+                      key={c}
+                      className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-line px-3 text-meta font-medium has-[:checked]:border-brand has-[:checked]:bg-brand-surface"
+                    >
+                      <input
+                        type="checkbox"
+                        aria-label={t('notifications.toggle', {
+                          channel: t(`notifications.channel.${c}`),
+                          category: t(`notifications.cat.${cat}`),
+                        })}
+                        checked={p.channels[cat][c]}
+                        onChange={(e) =>
+                          setP({
+                            ...p,
+                            channels: { ...p.channels, [cat]: { ...p.channels[cat], [c]: e.target.checked } },
+                          })
+                        }
+                        className="size-5 accent-[var(--brand)]"
+                      />
+                      <span aria-hidden>{t(`notifications.channel.${c}`)}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
       <fieldset className="grid gap-3">
         <legend className="mb-2 font-semibold">{t('notifications.quiet')}</legend>
@@ -181,6 +182,7 @@ function PrefsForm({ initial }: { initial: NotificationPrefs }) {
 
 export function NotificationSettings() {
   const q = useQuery({
+    ...SCREEN,
     queryKey: ['notification-prefs'],
     queryFn: () => api.get<NotificationPrefs>('/me/notification-preferences'),
   });

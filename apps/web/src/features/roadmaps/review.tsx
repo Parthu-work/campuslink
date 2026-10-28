@@ -10,6 +10,7 @@ import { PageHeader } from '../../components/ui/page-header';
 import { BackLink } from '../../components/ui/back-link';
 import { api, ApiError } from '../../lib/api';
 import { formatDay, formatRelative } from '../../lib/format';
+import { SCREEN } from '../../lib/query-client';
 
 interface LibraryItem {
   key: string;
@@ -41,10 +42,10 @@ function LibraryPanel() {
   });
   return (
     <section aria-labelledby="library" className="grid gap-2">
-      <h2 id="library" className="flex items-center gap-2 font-display text-lg font-semibold">
+      <h2 id="library" className="flex items-center gap-2 font-display text-title font-semibold">
         <Library className="size-5 text-brand-ink" aria-hidden /> {t('roadmaps.library.title')}
       </h2>
-      <p className="text-sm text-fg-2">{t('roadmaps.library.intro')}</p>
+      <p className="text-meta text-fg-2">{t('roadmaps.library.intro')}</p>
       {q.isLoading ? (
         <Skeleton className="h-40" />
       ) : (
@@ -60,7 +61,7 @@ function LibraryPanel() {
                   ) : (
                     <span className="font-semibold">{l.title}</span>
                   )}
-                  <p className="text-xs text-fg-3">
+                  <p className="text-caption text-fg-3">
                     {t(`roadmaps.cat.${l.category}`)} · {t('roadmaps.steps', { count: l.nodeCount })} ·{' '}
                     {t('roadmaps.lastReviewed', { date: formatDay(l.lastReviewedAt) })}
                   </p>
@@ -96,6 +97,7 @@ function LibraryPanel() {
 export function RoadmapReviewPage() {
   const { t } = useTranslation();
   const q = useQuery({
+    ...SCREEN,
     queryKey: ['roadmaps', 'review-queue'],
     queryFn: () => api.get<ReviewQueueItem[]>('/roadmaps/review-queue'),
   });
@@ -110,7 +112,7 @@ export function RoadmapReviewPage() {
         />
       </div>
       <section aria-labelledby="queue" className="grid gap-2">
-        <h2 id="queue" className="font-display text-lg font-semibold">
+        <h2 id="queue" className="font-display text-title font-semibold">
           {t('roadmaps.review.waiting')}
         </h2>
         {q.isLoading ? (
@@ -126,8 +128,8 @@ export function RoadmapReviewPage() {
                     <Link to={`/roadmaps/${i.slug}/history`} className="font-semibold hover:underline">
                       {i.title} · v{i.version}
                     </Link>
-                    <p className="text-sm text-fg-2">{i.changeNote}</p>
-                    <p className="text-xs text-fg-3">
+                    <p className="text-meta text-fg-2">{i.changeNote}</p>
+                    <p className="text-caption text-fg-3">
                       {i.author ? i.author.name : t('roadmaps.libraryAuthor')} ·{' '}
                       {formatRelative(i.submittedAt)}
                     </p>
@@ -135,7 +137,10 @@ export function RoadmapReviewPage() {
                   {i.isMine ? (
                     <Badge>{t('roadmaps.review.yours')}</Badge>
                   ) : (
-                    <Link to={`/roadmaps/${i.slug}/history`} className="text-sm font-semibold text-brand-ink">
+                    <Link
+                      to={`/roadmaps/${i.slug}/history`}
+                      className="text-meta font-semibold text-brand-ink"
+                    >
                       {t('roadmaps.review.open')}
                     </Link>
                   )}

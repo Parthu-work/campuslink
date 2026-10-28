@@ -29,7 +29,7 @@ export function Composer() {
         <button
           type="button"
           onClick={() => setOpen('text')}
-          className="min-h-11 min-w-0 flex-1 rounded-full border border-line-strong px-4 text-left text-sm text-fg-3 hover:border-brand"
+          className="min-h-11 min-w-0 flex-1 rounded-full border border-line-strong px-4 text-left text-meta text-fg-3 hover:border-brand"
         >
           {t('feed.composerPrompt')}
         </button>

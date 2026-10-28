@@ -13,7 +13,7 @@ import { useCan } from '../../lib/me';
 import { formatRelative } from '../../lib/format';
 
 const menuItem =
-  'flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm outline-none data-[highlighted]:bg-surface-2';
+  'flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-sm)] px-3 text-meta outline-none data-[highlighted]:bg-surface-2';
 
 /** Report, block, delete and (staff) feature: one menu for posts, comments, questions, answers, stories. */
 export function ContentMenu({
@@ -229,7 +229,7 @@ export function RemovalNotice({
   return (
     <div
       role="note"
-      className="grid gap-1.5 rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--warning)_45%,var(--line))] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] p-3 text-sm"
+      className="grid gap-1.5 rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--warning)_45%,var(--line))] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] p-3 text-meta"
     >
       <b>{t('mod.removedTitle', { reason: t(`mod.reasons.${removal.reason}`) })}</b>
       <p className="text-fg-2">

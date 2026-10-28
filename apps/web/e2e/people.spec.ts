@@ -75,7 +75,7 @@ test.describe('people', () => {
     await expectNoA11yViolations(page);
 
     await page.keyboard.press('Control+k');
-    await page.getByPlaceholder('Search people, or type a command…').fill('Rahul');
+    await page.getByPlaceholder('Search people, posts, jobs and more, or type a command…').fill('Rahul');
     await page.getByRole('option', { name: /Rahul Varma/ }).click();
     await expect(page.getByRole('heading', { name: 'Rahul Varma', level: 1 })).toBeVisible();
   });

@@ -43,7 +43,7 @@ function TenantGate() {
                 {demo.map((d) => (
                   <li key={d}>
                     <a
-                      className="font-mono text-sm text-brand-ink underline"
+                      className="font-mono text-meta text-brand-ink underline"
                       href={`${location.protocol}//${d}.${location.host}`}
                     >
                       {d}.{location.host}

@@ -37,6 +37,7 @@ export function SubjectForm({
   const [branches, setBranches] = useState<Branch[]>(subject?.branches ?? []);
   const [key] = useState(newIdempotencyKey);
   const form = useForm<Form>({
+    mode: 'onTouched',
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: subject?.name ?? '',

@@ -15,6 +15,7 @@ import { useFollow } from '../../lib/follows';
 import { prefersReducedMotion } from '../../lib/preferences';
 import { AuthorLine, ReelVideo } from './post-card';
 import { FeedList } from './feed-list';
+import { SCREEN } from '../../lib/query-client';
 
 export function SavedPage() {
   const { t } = useTranslation();
@@ -70,13 +71,13 @@ function Reel({ post }: { post: PostView }) {
             aria-label={t('feed.commentsLabel', { count: post.counts.comments })}
           >
             <MessageCircle className="size-4" aria-hidden />
-            <span aria-hidden className="font-mono text-xs">
+            <span aria-hidden className="font-mono text-caption">
               {post.counts.comments || ''}
             </span>
           </Link>
         </AuthorLine>
         {video && <ReelVideo fileId={video.fileId} alt={video.alt} />}
-        {post.body && <RichText text={post.body} className="text-[15px]" />}
+        {post.body && <RichText text={post.body} className="text-body" />}
       </article>
     </Card>
   );
@@ -85,6 +86,7 @@ function Reel({ post }: { post: PostView }) {
 export function ReelsPage() {
   const { t } = useTranslation();
   const q = useInfiniteQuery({
+    ...SCREEN,
     queryKey: ['posts', 'reels'],
     initialPageParam: '',
     queryFn: ({ pageParam }) =>
@@ -154,8 +156,8 @@ export function FollowingPage() {
       </Card>
       <Card className="grid gap-3 p-4">
         <h2 className="font-semibold">{t('feed.sourcesTitle')}</h2>
-        <p className="text-sm text-fg-2">{t('feed.sourcesIntro')}</p>
-        {sources.data && !sources.data.length && <p className="text-sm text-fg-3">{t('feed.noSources')}</p>}
+        <p className="text-meta text-fg-2">{t('feed.sourcesIntro')}</p>
+        {sources.data && !sources.data.length && <p className="text-meta text-fg-3">{t('feed.noSources')}</p>}
         <ul className="grid gap-2">
           {sources.data?.map((s) => {
             const on = !!f?.sources.includes(s.id);
@@ -168,8 +170,8 @@ export function FollowingPage() {
                   <Rss className="size-4" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <b className="block truncate text-sm">{s.name}</b>
-                  <span className="block truncate text-xs text-fg-3">
+                  <b className="block truncate text-meta">{s.name}</b>
+                  <span className="block truncate text-caption text-fg-3">
                     {s.host}
                     {s.topics.length > 0 && ` · ${s.topics.map((x) => t(`topics.${x}`)).join(', ')}`}
                   </span>
@@ -191,7 +193,7 @@ export function FollowingPage() {
       <Card className="grid gap-3 p-4">
         <h2 className="font-semibold">{t('feed.peopleTitle')}</h2>
         {f && !f.users.length && (
-          <p className="text-sm text-fg-2">
+          <p className="text-meta text-fg-2">
             {t('feed.noPeople')}{' '}
             <Link to="/people" className="font-semibold text-brand-ink hover:underline">
               {t('nav.people')}
@@ -207,7 +209,7 @@ export function FollowingPage() {
                 <PersonAvatar name={d?.name ?? '?'} fileId={d?.avatarFileId ?? null} size={36} />
                 <Link
                   to={`/people/${id}`}
-                  className="min-w-0 flex-1 truncate text-sm font-semibold hover:underline"
+                  className="min-w-0 flex-1 truncate text-meta font-semibold hover:underline"
                 >
                   {d?.name ?? t('feed.memberHidden')}
                 </Link>

@@ -65,14 +65,14 @@ export function SafetyMenu({
           >
             <DropdownMenu.Item
               onSelect={() => setDialog('report')}
-              className="flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm outline-none data-[highlighted]:bg-surface-2"
+              className="flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-sm)] px-3 text-meta outline-none data-[highlighted]:bg-surface-2"
             >
               <Flag className="size-4" aria-hidden />{' '}
               {target ? t(`safety.report_${target.type}`) : t('safety.reportPerson')}
             </DropdownMenu.Item>
             <DropdownMenu.Item
               onSelect={() => setDialog('block')}
-              className="flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-sm)] px-3 text-sm text-danger outline-none data-[highlighted]:bg-surface-2"
+              className="flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-sm)] px-3 text-meta text-danger outline-none data-[highlighted]:bg-surface-2"
             >
               <Ban className="size-4" aria-hidden /> {t('safety.block', { name })}
             </DropdownMenu.Item>

@@ -1,3 +1,4 @@
+import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   api,
@@ -202,6 +203,12 @@ describe('posts', () => {
     expect(reel.body.data.media[0]).toMatchObject({ kind: 'video', durationSec: 42 });
     const reels = (await as(student).get('/posts?kind=reel')).body.data;
     expect(reels.map((p: { id: string }) => p.id)).toContain(reel.body.data.id);
+    // The app streams it through a five-minute signed link with range requests (audit PW-6).
+    const link = (await as(student).get(`/files/${fileId}/signed`)).body.data as { url: string };
+    const part = await request(ctx.app).get(link.url).set('Host', T.host).set('Range', 'bytes=0-7');
+    expect(part.status).toBe(206);
+    expect(part.headers['content-type']).toMatch(/^video\//);
+    expect(part.headers['content-range']).toMatch(/^bytes 0-7\/\d+$/);
   });
 
   it('link posts show a text-only preview through the SSRF-safe fetcher', async () => {

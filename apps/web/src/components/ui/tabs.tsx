@@ -1,8 +1,8 @@
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 import { useEdgeFade } from '../../lib/use-edge-fade';
-import { prefersReducedMotion } from '../../lib/preferences';
 import { useSlidingIndicator } from '../../lib/use-sliding-indicator';
+import { revealInRow } from '../../lib/reveal-in-row';
 
 export interface TabItem<T extends string> {
   id: T;
@@ -36,11 +36,9 @@ export function Tabs<T extends string>({
   const indicator = useSlidingIndicator(ref, '[aria-selected="true"]', value);
 
   useEffect(() => {
-    ref.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({
-      inline: 'nearest',
-      block: 'nearest',
-      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-    });
+    const row = ref.current;
+    const active = row?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (row && active) revealInRow(row, active);
   }, [value, ref]);
 
   const onKey = (e: KeyboardEvent, i: number) => {

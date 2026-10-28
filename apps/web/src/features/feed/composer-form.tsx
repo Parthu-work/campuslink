@@ -17,6 +17,7 @@ import { ChoiceGroup } from '../../components/ui/choice-group';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Chip } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
+import { useDraft } from '../../lib/drafts';
 import { useCan } from '../../lib/me';
 import { newIdempotencyKey } from '../../lib/format';
 
@@ -41,7 +42,7 @@ export function TopicPicker({
   const { t } = useTranslation();
   return (
     <fieldset className="grid gap-1.5">
-      <legend className="mb-1.5 text-[13px] font-semibold">{t('feed.topicsPick', { max })}</legend>
+      <legend className="mb-1.5 text-meta font-semibold">{t('feed.topicsPick', { max })}</legend>
       <div className="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
         {TOPICS.map((tp) => {
           const on = value.includes(tp);
@@ -66,7 +67,7 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
   const qc = useQueryClient();
   const canAnnounce = useCan('announcements:post');
   const [kind, setKind] = useState<PostKind>(initialKind);
-  const [body, setBody] = useState('');
+  const [body, setBody] = useDraft('composer');
   const [topics, setTopics] = useState<Topic[]>([]);
   const [announcement, setAnnouncement] = useState(false);
   const [media, setMedia] = useState<Media[]>([]);
@@ -181,7 +182,11 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
               placeholder={t(`feed.placeholder.${kind}`)}
               className="min-h-[120px]"
             />
-            <p id={counterId} className="justify-self-end font-mono text-[11px] text-fg-3" aria-live="polite">
+            <p
+              id={counterId}
+              className="justify-self-end font-mono text-caption text-fg-3"
+              aria-live="polite"
+            >
               {body.length}/{kind === 'poll' ? 300 : kind === 'reel' ? 600 : POST_MAX}
             </p>
           </>
@@ -279,7 +284,7 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
                 {t('feed.addOption')}
               </Button>
             )}
-            <label className="ml-auto grid gap-1.5 text-[13px] font-semibold">
+            <label className="ml-auto grid gap-1.5 text-meta font-semibold">
               {t('feed.pollLength')}
               <Select value={days} onChange={(e) => setDays(Number(e.target.value))}>
                 {[1, 3, 7, 14].map((d) => (
@@ -316,7 +321,7 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
         </Checkbox>
       )}
       {error && (
-        <p role="alert" className="text-sm font-medium text-danger">
+        <p role="alert" className="text-meta font-medium text-danger">
           {error}
         </p>
       )}

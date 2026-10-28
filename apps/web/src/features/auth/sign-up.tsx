@@ -38,6 +38,7 @@ export function SignUpPage() {
   const tenant = useTenant();
   const [sentTo, setSentTo] = useState<string | null>(null);
   const form = useForm<Form>({
+    mode: 'onTouched',
     resolver: zodResolver(schema),
     defaultValues: {
       name: '',
@@ -84,7 +85,7 @@ export function SignUpPage() {
       <form onSubmit={onSubmit} noValidate className="grid gap-4">
         <FormError message={errors.root?.message} />
         <fieldset className="grid gap-2">
-          <legend className="mb-1.5 text-[13px] font-semibold">{t('auth.iAm')}</legend>
+          <legend className="mb-1.5 text-meta font-semibold">{t('auth.iAm')}</legend>
           <Controller
             control={form.control}
             name="intent"
@@ -136,7 +137,7 @@ export function SignUpPage() {
         </Field>
 
         <fieldset className="grid gap-3 rounded-[var(--radius-md)] border border-line p-4">
-          <legend className="px-1 text-[13px] font-semibold">{t('auth.consentTitle')}</legend>
+          <legend className="px-1 text-meta font-semibold">{t('auth.consentTitle')}</legend>
           <Controller
             control={form.control}
             name="consents"
@@ -161,11 +162,11 @@ export function SignUpPage() {
             )}
           />
           {errors.consents && (
-            <p role="alert" className="text-xs font-medium text-danger">
+            <p role="alert" className="text-caption font-medium text-danger">
               {errors.consents.message}
             </p>
           )}
-          <p className="text-xs text-fg-3">{t('auth.privacyNote')}</p>
+          <p className="text-caption text-fg-3">{t('auth.privacyNote')}</p>
         </fieldset>
 
         <Controller
@@ -183,7 +184,7 @@ export function SignUpPage() {
           )}
         />
         {errors.isAdult && (
-          <p id="adult-err" role="alert" className="-mt-2 text-xs font-medium text-danger">
+          <p id="adult-err" role="alert" className="-mt-2 text-caption font-medium text-danger">
             {errors.isAdult.message}
           </p>
         )}
@@ -191,7 +192,7 @@ export function SignUpPage() {
         <Button type="submit" variant="primary" size="lg" loading={isSubmitting}>
           {t('auth.signUpCta')}
         </Button>
-        <p className="text-center text-sm text-fg-2">
+        <p className="text-center text-meta text-fg-2">
           {t('auth.haveAccount')}{' '}
           <Link to="/sign-in" className="font-semibold text-brand-ink hover:underline">
             {t('auth.signInCta')}

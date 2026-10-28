@@ -51,12 +51,13 @@ import {
   useRoadmapProgress,
 } from '../../lib/roadmaps';
 import { ContentMenu } from '../feed/content-menu';
+import { SCREEN } from '../../lib/query-client';
 
 function Links({ items, label }: { items: SourceRef[]; label: string }) {
   if (!items.length) return null;
   return (
     <div className="grid gap-1">
-      <h4 className="text-xs font-semibold tracking-wide text-fg-3 uppercase">{label}</h4>
+      <h4 className="text-caption font-semibold tracking-wide text-fg-3 uppercase">{label}</h4>
       <ul className="grid gap-1">
         {items.map((s) => (
           <li key={s.url}>
@@ -64,7 +65,7 @@ function Links({ items, label }: { items: SourceRef[]; label: string }) {
               href={s.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-start gap-1.5 text-sm text-brand-ink underline-offset-2 hover:underline"
+              className="inline-flex items-start gap-1.5 text-meta text-brand-ink underline-offset-2 hover:underline"
             >
               <ExternalLink className="mt-0.5 size-3.5 flex-none" aria-hidden />
               <span>{s.title}</span>
@@ -120,12 +121,12 @@ function Comments({ roadmap, nodeId }: { roadmap: RoadmapView; nodeId: string })
   const rows = (q.data ?? []).filter((c) => c.nodeId === nodeId);
   return (
     <section aria-label={t('roadmaps.comments')} className="grid gap-2 border-t border-line pt-3">
-      <h4 className="text-sm font-semibold">{t('roadmaps.comments')}</h4>
-      <p className="text-xs text-fg-3">{t('roadmaps.commentsHint')}</p>
+      <h4 className="text-meta font-semibold">{t('roadmaps.comments')}</h4>
+      <p className="text-caption text-fg-3">{t('roadmaps.commentsHint')}</p>
       <ul className="grid gap-2">
         {rows.map((c) => (
-          <li key={c.id} className="rounded-[var(--radius-sm)] bg-surface-2 p-2.5 text-sm">
-            <div className="flex items-center justify-between gap-2 text-xs text-fg-3">
+          <li key={c.id} className="rounded-[var(--radius-sm)] bg-surface-2 p-2.5 text-meta">
+            <div className="flex items-center justify-between gap-2 text-caption text-fg-3">
               <span>
                 <span className="font-semibold text-fg-2">{c.author.name}</span> · v{c.version} ·{' '}
                 {formatRelative(c.createdAt)}
@@ -208,19 +209,19 @@ function NodePanel({
           )}
         </div>
         {node.needsReview && (
-          <p className="flex gap-2 rounded-[var(--radius-sm)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)] p-2.5 text-sm text-fg-2">
+          <p className="flex gap-2 rounded-[var(--radius-sm)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)] p-2.5 text-meta text-fg-2">
             <AlertTriangle className="mt-0.5 size-4 flex-none text-warning" aria-hidden />
             {t('roadmaps.needsReviewNote')}
           </p>
         )}
         <p className="text-fg-2">{node.summary}</p>
         {!!prereqs.length && (
-          <p className="text-sm text-fg-3">
+          <p className="text-meta text-fg-3">
             {t('roadmaps.after')}: {prereqs.map((p) => p.title).join(', ')}
           </p>
         )}
         {node.proof && (
-          <div className="rounded-[var(--radius-sm)] border border-line p-2.5 text-sm">
+          <div className="rounded-[var(--radius-sm)] border border-line p-2.5 text-meta">
             <span className="font-semibold">{t('roadmaps.proof')}:</span> {node.proof}
           </div>
         )}
@@ -410,7 +411,7 @@ function Graph({ roadmap, onOpen }: { roadmap: RoadmapView; onOpen: (n: RoadmapN
           })}
         </svg>
       </div>
-      <p className="border-t border-line px-3 py-2 text-xs text-fg-3">{t('roadmaps.graphLegend')}</p>
+      <p className="border-t border-line px-3 py-2 text-caption text-fg-3">{t('roadmaps.graphLegend')}</p>
     </Card>
   );
 }
@@ -433,7 +434,7 @@ function StepList({ roadmap, onOpen }: { roadmap: RoadmapView; onOpen: (n: Roadm
           >
             <span
               className={cn(
-                'grid size-8 place-items-center rounded-full font-mono text-sm',
+                'grid size-8 place-items-center rounded-full font-mono text-meta',
                 done.has(n.id) ? 'bg-success text-[var(--surface-1)]' : 'bg-surface-2 text-fg-2',
               )}
               aria-hidden
@@ -445,7 +446,7 @@ function StepList({ roadmap, onOpen }: { roadmap: RoadmapView; onOpen: (n: Roadm
                 {n.title}
                 {done.has(n.id) && <span className="sr-only">, {t('roadmaps.done')}</span>}
               </span>
-              <span className="line-clamp-2 text-sm text-fg-2">{n.summary}</span>
+              <span className="line-clamp-2 text-meta text-fg-2">{n.summary}</span>
               <span className="flex flex-wrap gap-1.5">
                 <KindBadge kind={n.kind} />
                 <Badge>
@@ -472,10 +473,10 @@ function ProgressCard({ roadmap }: { roadmap: RoadmapView }) {
   return (
     <Card className="grid gap-3 p-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
+        <h2 className="flex items-center gap-2 font-display text-title font-semibold">
           <Target className="size-5 text-brand-ink" aria-hidden /> {t('roadmaps.yourProgress')}
         </h2>
-        <span className="font-mono text-sm text-fg-2">{pct}%</span>
+        <span className="font-mono text-meta text-fg-2">{pct}%</span>
       </div>
       <ProgressBar
         value={pct}
@@ -484,8 +485,8 @@ function ProgressCard({ roadmap }: { roadmap: RoadmapView }) {
         valueText={`${pct}%`}
         tone="success"
       />
-      <p className="text-sm text-fg-2">{t('roadmaps.doneOf', { done: doneCount, total })}</p>
-      <label className="grid gap-1 text-sm">
+      <p className="text-meta text-fg-2">{t('roadmaps.doneOf', { done: doneCount, total })}</p>
+      <label className="grid gap-1 text-meta">
         <span className="font-semibold">{t('roadmaps.weeklyGoal')}</span>
         <Select
           value={String(p?.nodesPerWeek ?? 0)}
@@ -498,10 +499,10 @@ function ProgressCard({ roadmap }: { roadmap: RoadmapView }) {
             </option>
           ))}
         </Select>
-        <span className="text-xs text-fg-3">{t('roadmaps.goalHint')}</span>
+        <span className="text-caption text-fg-3">{t('roadmaps.goalHint')}</span>
       </label>
       {!!p && p.nodesPerWeek > 0 && (
-        <p className="text-sm" role="status">
+        <p className="text-meta" role="status">
           {p.doneThisWeek >= p.nodesPerWeek
             ? t('roadmaps.onTrack')
             : t('roadmaps.thisWeek', { done: p.doneThisWeek, goal: p.nodesPerWeek })}
@@ -509,8 +510,10 @@ function ProgressCard({ roadmap }: { roadmap: RoadmapView }) {
       )}
       {!!next.length && doneCount < total && (
         <div className="grid gap-1">
-          <h3 className="text-xs font-semibold tracking-wide text-fg-3 uppercase">{t('roadmaps.next')}</h3>
-          <ul className="list-disc pl-5 text-sm">
+          <h3 className="text-caption font-semibold tracking-wide text-fg-3 uppercase">
+            {t('roadmaps.next')}
+          </h3>
+          <ul className="list-disc pl-5 text-meta">
             {next.map((n) => (
               <li key={n.id}>{n.title}</li>
             ))}
@@ -535,7 +538,7 @@ export function RoadmapPage() {
   // The open step lives in the URL (?step=), so Back closes it and a step can be linked (audit J5).
   const stepOverlay = useUrlOverlay('step');
   const setOpen = (n: RoadmapNode | null) => (n ? stepOverlay.open(n.id) : stepOverlay.close());
-  const q = useQuery(roadmap(slug));
+  const q = useQuery({ ...roadmap(slug), ...SCREEN });
   if (q.isLoading)
     return (
       <div className="grid gap-3" aria-hidden>
@@ -561,7 +564,10 @@ export function RoadmapPage() {
     : null;
   return (
     <div className="grid gap-5">
-      <nav aria-label={t('common.breadcrumb', { defaultValue: 'Breadcrumb' })} className="text-sm text-fg-3">
+      <nav
+        aria-label={t('common.breadcrumb', { defaultValue: 'Breadcrumb' })}
+        className="text-meta text-fg-3"
+      >
         <Link to="/roadmaps" className="hover:text-fg">
           {t('roadmaps.title')}
         </Link>{' '}
@@ -609,7 +615,7 @@ export function RoadmapPage() {
           ))}
           {r.status !== 'published' && <Badge tone="brand">{t(`roadmaps.status.${r.status}`)}</Badge>}
         </div>
-        <p className="text-xs text-fg-3">
+        <p className="text-caption text-fg-3">
           {r.fromLibrary
             ? t('roadmaps.byLibrary')
             : r.author
@@ -619,7 +625,7 @@ export function RoadmapPage() {
           v{r.version}
         </p>
         {!!r.content.outcomes.length && (
-          <p className="text-sm">
+          <p className="text-meta">
             <span className="font-semibold">{t('roadmaps.outcomes')}:</span> {r.content.outcomes.join(' · ')}
           </p>
         )}
@@ -627,7 +633,7 @@ export function RoadmapPage() {
 
       {r.draft && (
         <Card className="flex flex-wrap items-center justify-between gap-2 border-[color-mix(in_srgb,var(--brand)_40%,transparent)] p-3">
-          <p className="text-sm">
+          <p className="text-meta">
             <Flag className="mr-1 inline size-4 text-brand-ink" aria-hidden />
             {t(`roadmaps.draftBanner.${r.draft.status}`, { version: r.draft.version })}
             {r.draft.reviewNote && (
@@ -664,7 +670,7 @@ export function RoadmapPage() {
           {canProgress && live && <ProgressCard roadmap={r} />}
           <Card className="grid gap-2 p-4">
             <Links items={r.content.sources} label={t('roadmaps.roadmapSources')} />
-            <p className="text-xs text-fg-3">{t('roadmaps.disclaimer')}</p>
+            <p className="text-caption text-fg-3">{t('roadmaps.disclaimer')}</p>
           </Card>
         </aside>
       </div>

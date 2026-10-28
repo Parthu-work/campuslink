@@ -215,16 +215,21 @@ function NotFound() {
   );
 }
 
+/** Forms and editors: no pull to refresh, so nothing refetches under someone typing. */
+const still = (route: RouteObject): RouteObject => ({ ...route, handle: { ...route.handle, pull: false } });
+
 const at = (path: string) => ({ path });
 const index = { index: true } as const;
 
-const settingsRoutes = layout(load.settings, 'SettingsLayout', undefined, 'settings', [
-  screen(load.settings, 'SecuritySettings', undefined, index),
-  screen(load.dataSettings, 'DataSettings', undefined, at('data')),
-  screen(load.settings, 'PrivacySettings', undefined, at('privacy')),
-  screen(load.settings, 'PreferenceSettings', undefined, at('preferences')),
-  screen(load.notificationSettings, 'NotificationSettings', undefined, at('notifications')),
-]);
+const settingsRoutes = still(
+  layout(load.settings, 'SettingsLayout', undefined, 'settings', [
+    screen(load.settings, 'SecuritySettings', undefined, index),
+    screen(load.dataSettings, 'DataSettings', undefined, at('data')),
+    screen(load.settings, 'PrivacySettings', undefined, at('privacy')),
+    screen(load.settings, 'PreferenceSettings', undefined, at('preferences')),
+    screen(load.notificationSettings, 'NotificationSettings', undefined, at('notifications')),
+  ]),
+);
 
 const auth = (home: string): RouteObject[] => [
   publicScreen(load.signIn, 'SignInPage', '/sign-in', home),
@@ -274,7 +279,7 @@ function collegeRoutes(): RouteObject[] {
             qc.ensureQueryData(q.oneUsefulThing()),
             qc.ensureQueryData(q.stories()),
           ]),
-          screen(load.verify, 'VerifyPage', undefined, at('/verify')),
+          still(screen(load.verify, 'VerifyPage', undefined, at('/verify'))),
           screen(load.study, 'StudyPage', 'study:read', at('/study'), () => [
             qc
               .ensureQueryData(q.me())
@@ -295,14 +300,19 @@ function collegeRoutes(): RouteObject[] {
           screen(load.insights, 'InsightsPage', 'study:analytics', at('/study/:id/insights'), ({ id }) =>
             isId(id) ? [qc.ensureQueryData(q.subject(id)), qc.ensureQueryData(q.studyInsights(id, 30))] : [],
           ),
-          screen(load.chat, 'ChatPage', 'study:read', at('/study/chat'), () => [
-            qc.ensureQueryData(q.chatSessions()),
-            qc.ensureQueryData(q.aiStatus()),
-          ]),
-          screen(load.chat, 'ChatPage', 'study:read', at('/study/chat/:sessionId'), ({ sessionId }) => [
-            qc.ensureQueryData(q.chatSessions()),
-            ...(isId(sessionId) ? [qc.ensureQueryData(q.chatSession(sessionId))] : []),
-          ]),
+          // Conversations with a composer (and a streaming answer) never refetch under a pull.
+          still(
+            screen(load.chat, 'ChatPage', 'study:read', at('/study/chat'), () => [
+              qc.ensureQueryData(q.chatSessions()),
+              qc.ensureQueryData(q.aiStatus()),
+            ]),
+          ),
+          still(
+            screen(load.chat, 'ChatPage', 'study:read', at('/study/chat/:sessionId'), ({ sessionId }) => [
+              qc.ensureQueryData(q.chatSessions()),
+              ...(isId(sessionId) ? [qc.ensureQueryData(q.chatSession(sessionId))] : []),
+            ]),
+          ),
           screen(
             load.material,
             'MaterialPage',
@@ -313,7 +323,7 @@ function collegeRoutes(): RouteObject[] {
                 ? [qc.ensureQueryData(q.material(materialId)), qc.ensureQueryData(q.subject(id))]
                 : [],
           ),
-          screen(load.profileEdit, 'ProfileEdit', undefined, at('/profile')),
+          still(screen(load.profileEdit, 'ProfileEdit', undefined, at('/profile'))),
           screen(load.directory, 'DirectoryPage', 'directory:read', at('/people')),
           screen(load.profileView, 'ProfileView', 'directory:read', at('/people/:userId')),
           screen(load.postPage, 'PostPage', 'feed:read', at('/posts/:postId'), ({ postId }) =>
@@ -337,12 +347,14 @@ function collegeRoutes(): RouteObject[] {
               ),
           ]),
           screen(load.roadmapReview, 'RoadmapReviewPage', 'roadmaps:review', at('/roadmaps/review')),
-          screen(load.roadmapEditor, 'RoadmapEditorPage', 'roadmaps:write', at('/roadmaps/new')),
+          still(screen(load.roadmapEditor, 'RoadmapEditorPage', 'roadmaps:write', at('/roadmaps/new'))),
           screen(load.roadmap, 'RoadmapPage', 'roadmaps:read', at('/roadmaps/:slug'), ({ slug }) =>
             slug ? [qc.ensureQueryData(q.roadmap(slug))] : [],
           ),
           screen(load.roadmapHistory, 'RoadmapHistoryPage', 'roadmaps:read', at('/roadmaps/:slug/history')),
-          screen(load.roadmapEditor, 'RoadmapEditorPage', 'roadmaps:write', at('/roadmaps/:slug/edit')),
+          still(
+            screen(load.roadmapEditor, 'RoadmapEditorPage', 'roadmaps:write', at('/roadmaps/:slug/edit')),
+          ),
           screen(load.progress, 'ProgressPage', undefined, at('/progress'), () => [
             qc.ensureQueryData(q.progress()),
           ]),
@@ -352,17 +364,17 @@ function collegeRoutes(): RouteObject[] {
           screen(load.events, 'EventsPage', 'events:rsvp', at('/events'), () => [
             qc.ensureQueryData(q.events('upcoming', '')),
           ]),
-          screen(load.events, 'EventFormPage', ['events:create', 'ama:host'], at('/events/new')),
+          still(screen(load.events, 'EventFormPage', ['events:create', 'ama:host'], at('/events/new'))),
           screen(load.eventPage, 'EventPage', 'events:rsvp', at('/events/:id'), ({ id }) =>
             isId(id) ? [qc.ensureQueryData(q.event(id))] : [],
           ),
-          screen(load.events, 'EventFormPage', ['events:create', 'ama:host'], at('/events/:id/edit')),
+          still(screen(load.events, 'EventFormPage', ['events:create', 'ama:host'], at('/events/:id/edit'))),
           screen(load.jobs, 'JobsPage', 'jobs:read', at('/jobs'), (_, url) => [
             qc.ensureQueryData(q.jobsRadar()),
             qc.ensureInfiniteQueryData(q.jobsList(q.jobFilterQuery(url.searchParams))),
           ]),
           screen(load.tracker, 'TrackerPage', 'jobs:save', at('/jobs/tracker')),
-          screen(load.postJob, 'PostJobPage', 'jobs:post', at('/jobs/new')),
+          still(screen(load.postJob, 'PostJobPage', 'jobs:post', at('/jobs/new'))),
           screen(load.jobPage, 'JobPage', 'jobs:read', at('/jobs/:jobId'), ({ jobId }) =>
             isId(jobId) ? [qc.ensureQueryData(q.job(jobId))] : [],
           ),
@@ -380,13 +392,15 @@ function collegeRoutes(): RouteObject[] {
           screen(load.messages, 'MessagesPage', 'messages:send', at('/messages'), () => [
             qc.ensureQueryData(q.conversations()),
           ]),
-          screen(
-            load.messages,
-            'ConversationPage',
-            'messages:send',
-            at('/messages/:conversationId'),
-            ({ conversationId }) =>
-              isId(conversationId) ? [qc.ensureQueryData(q.conversation(conversationId))] : [],
+          still(
+            screen(
+              load.messages,
+              'ConversationPage',
+              'messages:send',
+              at('/messages/:conversationId'),
+              ({ conversationId }) =>
+                isId(conversationId) ? [qc.ensureQueryData(q.conversation(conversationId))] : [],
+            ),
           ),
           screen(load.mentorDashboard, 'MentorDashboard', 'mentorship:mentor', at('/mentor')),
           screen(load.notifications, 'NotificationsPage', undefined, at('/notifications'), () => [
@@ -409,9 +423,9 @@ function collegeRoutes(): RouteObject[] {
             screen(load.imports, 'ImportsAdmin', 'imports:manage', at('imports')),
             screen(load.listAdmin, 'ListAdmin', 'imports:manage', at('list')),
             screen(load.listAdmin, 'VerificationAdmin', 'verification:review', at('verification')),
-            screen(load.admin, 'BrandingAdmin', 'tenant:branding', at('branding')),
-            screen(load.admin, 'FeaturesAdmin', 'tenant:settings', at('features')),
-            screen(load.aiAdmin, 'AiAdmin', 'ai:settings', at('ai')),
+            still(screen(load.admin, 'BrandingAdmin', 'tenant:branding', at('branding'))),
+            still(screen(load.admin, 'FeaturesAdmin', 'tenant:settings', at('features'))),
+            still(screen(load.aiAdmin, 'AiAdmin', 'ai:settings', at('ai'))),
             screen(load.admin, 'AuditAdmin', 'audit:read', at('audit')),
           ]),
         ]),

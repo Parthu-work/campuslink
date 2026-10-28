@@ -29,6 +29,7 @@ import { api } from '../../lib/api';
 import { focusOnMount } from '../../lib/focus';
 import { applyApiError } from '../../lib/errors';
 import { formatDateTime, newIdempotencyKey } from '../../lib/format';
+import { firstName } from '../../lib/names';
 
 type Message = z.infer<typeof requestMessage>;
 const PROMPTS = ['goal', 'background', 'need'] as const;
@@ -52,6 +53,7 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
     enabled: bookable,
   });
   const form = useForm<Message>({
+    mode: 'onTouched',
     resolver: zodResolver(requestMessage),
     defaultValues: { message: '' },
   });
@@ -74,7 +76,7 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
       void slots.refetch();
     },
   });
-  const first = mentor.name.split(' ')[0];
+  const first = firstName(mentor.name);
 
   if (send.isSuccess)
     return (

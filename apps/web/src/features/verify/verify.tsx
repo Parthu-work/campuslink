@@ -19,6 +19,7 @@ import { useTenant } from '../../lib/tenant-context';
 import { useMe } from '../../lib/me';
 import { celebrate } from '../../lib/celebrate';
 import { useFollow } from '../../lib/follows';
+import { SCREEN } from '../../lib/query-client';
 
 type Status = {
   verified: boolean;
@@ -41,7 +42,11 @@ export function VerifyPage() {
   const tenant = useTenant();
   const qc = useQueryClient();
   const { data: me } = useMe();
-  const status = useQuery({ queryKey: ['verification'], queryFn: () => api.get<Status>('/verification') });
+  const status = useQuery({
+    ...SCREEN,
+    queryKey: ['verification'],
+    queryFn: () => api.get<Status>('/verification'),
+  });
   const [step, setStep] = useState<Step>({ kind: 'roll' });
   const [roll, setRoll] = useState('');
   const [gradYear, setGradYear] = useState('');

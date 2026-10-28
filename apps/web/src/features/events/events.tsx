@@ -27,6 +27,8 @@ import { useCan } from '../../lib/me';
 import { formatDateTime, formatMonth, formatWeekday, newIdempotencyKey } from '../../lib/format';
 import { coverOf } from '../../lib/accent';
 import { fromLocalInput, toLocalInput } from '../../lib/events';
+import { SCREEN } from '../../lib/query-client';
+import { FormFooter } from '../../components/ui/form-footer';
 
 /**
  * An event as a small poster (§8.9): a cover in the event's own accent with a date block, then
@@ -93,7 +95,7 @@ export function EventsPage() {
   const canHost = useCan('ama:host');
   const [when, setWhen] = useState<'upcoming' | 'mine' | 'past'>('upcoming');
   const [kind, setKind] = useState<EventKind | ''>('');
-  const q = useQuery({ ...events(when, kind), placeholderData: keepPreviousData });
+  const q = useQuery({ ...SCREEN, ...events(when, kind), placeholderData: keepPreviousData });
   return (
     <div className="grid gap-5">
       <PageHeader
@@ -169,6 +171,7 @@ type Form = {
 export function EventFormPage() {
   const { id } = useParams();
   const existing = useQuery({
+    ...SCREEN,
     queryKey: ['event', id],
     queryFn: () => api.get<EventView>(`/events/${id ?? ''}`),
     enabled: !!id,
@@ -380,7 +383,7 @@ function EventForm({ existing }: { existing: EventView | null }) {
         </Field>
       </div>
       <fieldset className="grid gap-1.5">
-        <legend className="text-sm font-semibold">{t('events.form.branches')}</legend>
+        <legend className="text-meta font-semibold">{t('events.form.branches')}</legend>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {BRANCHES.map((b) => (
             <Checkbox
@@ -400,21 +403,17 @@ function EventForm({ existing }: { existing: EventView | null }) {
         </Checkbox>
       )}
       {!!issues.length && (f.title || f.startsAt) && (
-        <ul className="list-disc pl-5 text-sm text-danger" aria-live="polite">
+        <ul className="list-disc pl-5 text-meta text-danger" aria-live="polite">
           {issues.map((i) => (
             <li key={i}>{i}</li>
           ))}
         </ul>
       )}
-      <Button
-        type="submit"
-        variant="primary"
-        className="justify-self-start"
-        loading={busy}
-        disabled={!parsed.success}
-      >
-        {existing ? t('events.saveChanges') : t('events.create')}
-      </Button>
+      <FormFooter>
+        <Button type="submit" variant="primary" loading={busy} disabled={!parsed.success}>
+          {existing ? t('events.saveChanges') : t('events.create')}
+        </Button>
+      </FormFooter>
     </form>
   );
 }

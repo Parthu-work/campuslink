@@ -27,7 +27,9 @@
     "stepDone": "done",
     "change": "Change",
     "optional": "Optional",
-    "showTable": "Show as a table"
+    "showTable": "Show as a table",
+    "removeTag": "Remove {{tag}}",
+    "refreshing": "Refreshing…"
   },
   "nav": {
     "home": "Home",
@@ -421,12 +423,16 @@
       "upload": "Upload logo",
       "replace": "Replace logo",
       "remove": "Remove logo",
-      "hint": "PNG or WebP, up to {{kb}} KB. A square logo with a transparent background looks best. Without a logo, the monogram is shown.",
+      "hint": "PNG or WebP, up to {{kb}} KB. A square logo with a transparent background looks best; check it reads on both light and dark backgrounds. Without a logo, the monogram is shown.",
       "type": "Choose a PNG or WebP image (SVG files are not accepted).",
       "tooBig": "That image is larger than {{kb}} KB.",
       "saved": "Logo updated",
       "removed": "Logo removed; the monogram is shown again"
-    }
+    },
+    "suspendTitle": "Suspend {{name}}?",
+    "suspendBody": "They are signed out everywhere and cannot sign in until you reactivate them. Their posts and messages stay.",
+    "unverifyTitle": "Revoke verification for {{name}}?",
+    "unverifyBody": "Their account becomes read-only until they verify again. This is recorded in the audit log."
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -622,7 +628,7 @@
     "companyDone": "Badge added: {{company}}"
   },
   "palette": {
-    "placeholder": "Search people, or type a command…",
+    "placeholder": "Search people, posts, jobs and more, or type a command…",
     "people": "People",
     "goTo": "Go to",
     "prefs": "Preferences",
@@ -1114,7 +1120,6 @@
     "pushDenied": "Notifications are blocked in your browser settings.",
     "pushUnavailable": "Push needs the installed app (service worker).",
     "channels": "What you hear about, and how",
-    "category": "Type",
     "channel": {
       "inApp": "In app",
       "email": "Email",
@@ -1151,7 +1156,9 @@
     "quietBody": "Hold email and push during these hours",
     "quietFrom": "From",
     "quietTo": "Until",
-    "quietNote": "Session reminders still arrive on time."
+    "quietNote": "Session reminders still arrive on time.",
+    "emptyBody": "Requests, replies, sessions and badges will appear here as they happen.",
+    "emptyAction": "See what's new at home"
   },
   "safety": {
     "menu": "Safety options for {{name}}",
@@ -1389,7 +1396,8 @@
     "share": "Share story",
     "posted": "Story shared for 24 hours",
     "openSeen_one": "View {{name}}’s story again",
-    "openSeen_other": "View {{name}}’s {{count}} stories again"
+    "openSeen_other": "View {{name}}’s {{count}} stories again",
+    "addAnother": "Add story"
   },
   "qa": {
     "title": "Q&A",
@@ -1687,7 +1695,10 @@
     },
     "publish": "Post opening",
     "postedToast": "Opening posted",
-    "columnEmpty": "Nothing here yet"
+    "columnEmpty": "Nothing here yet",
+    "filters": "Filters",
+    "filtersCount": "Filters ({{count}})",
+    "showOpenings": "Show openings"
   },
   "referrals": {
     "title": "Referrals",
@@ -1965,7 +1976,19 @@
       "saveDraft": "Save draft",
       "saveSubmit": "Save and submit",
       "discard": "Discard draft",
-      "fixErrors": "Fix the highlighted problems first"
+      "fixErrors": "Fix the highlighted problems first",
+      "issue": {
+        "short_one": "needs at least {{count}} character",
+        "short_other": "needs at least {{count}} characters",
+        "long_one": "can be at most {{count}} character",
+        "long_other": "can be at most {{count}} characters",
+        "few_one": "add at least {{count}}",
+        "few_other": "add at least {{count}}",
+        "many_one": "at most {{count}}",
+        "many_other": "at most {{count}}",
+        "choose": "choose one of the options",
+        "missing": "fill this in"
+      }
     },
     "review": {
       "title": "Review roadmaps",
@@ -2124,7 +2147,13 @@
     },
     "badgeCount": "{{n}} of {{total}}",
     "weekLabel": "Active on {{n}} of the last 7 days",
-    "podium": "Top three"
+    "podium": "Top three",
+    "mentorLevels": {
+      "bronze": "Bronze mentor",
+      "silver": "Silver mentor",
+      "gold": "Gold mentor",
+      "platinum": "Platinum mentor"
+    }
   },
   "rewards": {
     "title": "Rewards",
@@ -2723,7 +2752,7 @@
       "intro": "Answers come only from your college’s material, with the page or moment they come from. Type / for commands such as /videos and /quiz.",
       "introSubject": "Answers come only from the material of {{name}}, with the page or moment they come from. Type / for commands.",
       "explainTopic": "Explain {{topic}}",
-      "placeholder": "Ask a question, or type / for commands",
+      "placeholder": "Ask, or type / for commands",
       "ask": "Your question",
       "send": "Send",
       "stop": "Stop answering",

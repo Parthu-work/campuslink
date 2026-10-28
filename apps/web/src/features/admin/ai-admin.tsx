@@ -42,6 +42,7 @@ import { formatDateTime } from '../../lib/format';
 import { toast } from '../../lib/toast';
 import { cn } from '../../lib/cn';
 import { AiUsagePanel } from './ai-usage';
+import { SCREEN } from '../../lib/query-client';
 
 type Draft = AiSettingsInput;
 const NONE = '';
@@ -395,7 +396,7 @@ function PriceField({
 export function AiAdmin() {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const q = useQuery(aiSettings());
+  const q = useQuery({ ...aiSettings(), ...SCREEN });
   const index = useQuery(aiIndex());
   const [draft, setDraft] = useState<Draft | null>(null);
   const [error, setError] = useState<string>();

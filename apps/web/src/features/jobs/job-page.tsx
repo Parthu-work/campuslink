@@ -169,9 +169,9 @@ function Referrers({ job }: { job: JobView }) {
         <Users className="size-5 text-brand-ink" aria-hidden /> {t('jobs.alumniAt', { company: job.company })}
       </h2>
       {job.alumniCount === 0 ? (
-        <p className="text-sm text-fg-2">{t('jobs.noAlumni')}</p>
+        <p className="text-meta text-fg-2">{t('jobs.noAlumni')}</p>
       ) : (
-        <p className="text-sm text-fg-2">
+        <p className="text-meta text-fg-2">
           {t('jobs.alumniCount', { count: job.alumniCount })}{' '}
           {job.referrers > 0 ? t('jobs.referrersCount', { count: job.referrers }) : t('jobs.noReferrers')}
         </p>
@@ -181,7 +181,8 @@ function Referrers({ job }: { job: JobView }) {
         {q.data?.map((r) => (
           <li key={r.userId} className="flex flex-wrap items-center gap-3">
             <PersonAvatar name={r.name} fileId={r.avatarFileId} size={40} />
-            <div className="min-w-0 flex-1">
+            {/* At least 10rem for who they are; in a narrow column the button wraps below. */}
+            <div className="min-w-0 flex-[1_1_10rem]">
               <Link
                 to={`/people/${r.userId}`}
                 className="flex items-center gap-1 font-semibold hover:underline"
@@ -191,12 +192,12 @@ function Referrers({ job }: { job: JobView }) {
                   <BadgeCheck className="size-4 text-brand-ink" aria-label={t('jobs.companyVerified')} />
                 )}
               </Link>
-              <p className="truncate text-xs text-fg-3">
+              <p className="truncate text-caption text-fg-3">
                 {[r.jobTitle, r.branch, r.gradYear && t('jobs.batch', { year: r.gradYear })]
                   .filter(Boolean)
                   .join(' · ')}
               </p>
-              {r.note && <p className="text-xs text-fg-2">“{r.note}”</p>}
+              {r.note && <p className="text-caption text-fg-2">“{r.note}”</p>}
             </div>
             <Button size="sm" variant="primary" disabled={!r.available} onClick={() => setAsking(r)}>
               <HandHelping className="size-4" aria-hidden />
@@ -218,7 +219,7 @@ function TrackControl({ job }: { job: JobView }) {
   return (
     <Card className="grid gap-3 p-4">
       <h2 className="font-semibold">{t('jobs.myProgress')}</h2>
-      <label className="grid gap-1.5 text-[13px] font-semibold">
+      <label className="grid gap-1.5 text-meta font-semibold">
         {t('jobs.status')}
         <Select
           value={job.track?.status ?? ''}
@@ -241,7 +242,7 @@ function TrackControl({ job }: { job: JobView }) {
             toast.success(t('jobs.noteSaved'));
           }}
         >
-          <label className="grid gap-1.5 text-[13px] font-semibold">
+          <label className="grid gap-1.5 text-meta font-semibold">
             {t('jobs.privateNote')}
             <Textarea
               value={note}
@@ -297,24 +298,15 @@ export function JobPage() {
         <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="grid min-w-0 content-start gap-4">
             <Card className="grid grid-cols-[minmax(0,1fr)] gap-3 p-5">
-              <div className="flex items-start gap-3">
-                <div className="min-w-0 flex-1">
-                  <h1
-                    className="text-headline leading-tight font-bold"
-                    style={{ viewTransitionName: `job-${j.id}` }}
-                  >
-                    {j.title}
-                  </h1>
-                  <p className="text-lead text-fg-2">{j.company}</p>
-                </div>
-                <SaveJobButton job={j} />
-                <ContentMenu
-                  targetType="job"
-                  targetId={j.id}
-                  authorId={j.postedBy?.userId ?? ''}
-                  authorName={j.postedBy?.name ?? j.company}
-                  isMine={j.isMine}
-                />
+              {/* The title gets the full width (audit TY-4); save and the menu sit with Apply. */}
+              <div className="min-w-0">
+                <h1
+                  className="text-headline leading-tight font-bold"
+                  style={{ viewTransitionName: `job-${j.id}` }}
+                >
+                  {j.title}
+                </h1>
+                <p className="text-lead text-fg-2">{j.company}</p>
               </div>
               <JobFacts job={j} />
               <p className="flex flex-wrap gap-1.5">
@@ -335,7 +327,7 @@ export function JobPage() {
                     target="_blank"
                     rel="noopener noreferrer nofollow"
                     onClick={() => canSave && (!j.track || j.track.status === 'saved') && setAskApplied(true)}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-on-brand"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 text-meta font-semibold text-on-brand"
                   >
                     {t('jobs.apply')} <ExternalLink className="size-4" aria-hidden />
                     <span className="sr-only">({t('jobs.opensEmployer')})</span>
@@ -346,11 +338,21 @@ export function JobPage() {
                     {t('jobs.close')}
                   </Button>
                 )}
+                <span className="ml-auto flex items-center">
+                  <SaveJobButton job={j} />
+                  <ContentMenu
+                    targetType="job"
+                    targetId={j.id}
+                    authorId={j.postedBy?.userId ?? ''}
+                    authorName={j.postedBy?.name ?? j.company}
+                    isMine={j.isMine}
+                  />
+                </span>
               </div>
               {askApplied && (
                 <div
                   role="status"
-                  className="flex flex-wrap items-center gap-2 rounded-[var(--radius-sm)] bg-surface-2 p-3 text-sm"
+                  className="flex flex-wrap items-center gap-2 rounded-[var(--radius-sm)] bg-surface-2 p-3 text-meta"
                 >
                   {t('jobs.didYouApply')}
                   <Button
@@ -379,7 +381,7 @@ export function JobPage() {
                   ))}
                 </p>
               )}
-              <p className="text-xs text-fg-3">
+              <p className="text-caption text-fg-3">
                 {j.postedBy ? (
                   <span className="block">
                     <AuthorLine author={j.postedBy} at={j.postedAt} />

@@ -5,6 +5,7 @@ import { cn } from '../../lib/cn';
 import { useEdgeFade } from '../../lib/use-edge-fade';
 import { prefersReducedMotion } from '../../lib/preferences';
 import { useSlidingIndicator } from '../../lib/use-sliding-indicator';
+import { revealInRow } from '../../lib/reveal-in-row';
 
 /**
  * Route tabs (pill bar). The row scrolls with momentum and snap, fades at an edge with more tabs
@@ -20,12 +21,9 @@ export function TabNav({ label, tabs }: { label: string; tabs: readonly (readonl
       behavior: prefersReducedMotion() ? 'auto' : 'smooth',
     });
   useEffect(() => {
-    const active = ref.current?.querySelector<HTMLElement>('[aria-current="page"]');
-    active?.scrollIntoView({
-      inline: 'center',
-      block: 'nearest',
-      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-    });
+    const row = ref.current;
+    const active = row?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (row && active) revealInRow(row, active, 'center');
   }, [pathname, ref]);
   return (
     <nav aria-label={label} className="group/row relative rounded-full border border-line bg-surface-1 p-1">

@@ -24,6 +24,7 @@ import { TabPanel, Tabs } from '../../components/ui/tabs';
 import { Tooltip } from '../../components/ui/tooltip';
 import { Segmented } from '../../components/ui/tab-nav';
 import { cn } from '../../lib/cn';
+import { FormFooter } from '../../components/ui/form-footer';
 
 /**
  * The living style guide (master prompt §12, phase 6): every token and primitive, side by side in
@@ -201,7 +202,7 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
           {RAMP.map((s) => (
             <div key={s} className="grid gap-1">
               <div className="h-8 rounded-[var(--radius-xs)]" style={{ background: `var(--brand-${s})` }} />
-              <code className="text-center font-mono text-[10px] text-fg-3">{s}</code>
+              <code className="text-center font-mono text-caption text-fg-3">{s}</code>
             </div>
           ))}
         </div>
@@ -602,6 +603,11 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
           title={t('design.errorDemo')}
           compact
         />
+        {/* The specimen sits in place; in a real form it is fixed above the tab bar on phones. */}
+        <FormFooter desktop="inline" className="!static rounded-[var(--radius-lg)] border">
+          <Button variant="ghost">{t('common.cancel')}</Button>
+          <Button variant="primary">{t('common.save')}</Button>
+        </FormFooter>
         <Stepper
           label={t('design.stepper')}
           steps={[t('design.stepA'), t('design.stepB'), t('design.stepC')]}

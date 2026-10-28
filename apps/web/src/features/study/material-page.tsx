@@ -22,6 +22,7 @@ import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { LinkPlayer, MediaPlayer } from './media-player';
 import { ChatLauncher } from './chat/chat-launcher';
 import type { AskContext } from '../../lib/chat';
+import { SCREEN } from '../../lib/query-client';
 
 // pdf.js and its worker load only when a PDF is opened; the editor only when it is opened.
 const PdfViewer = lazy(() => import('./pdf-viewer').then((m) => ({ default: m.PdfViewer })));
@@ -156,6 +157,7 @@ export function MaterialPage() {
   const highlight = params.get('q') ?? '';
   const subj = useQuery(subjectQuery(id));
   const q = useQuery({
+    ...SCREEN,
     ...materialQuery(materialId),
     // The library row draws the header at once.
     placeholderData: () => {

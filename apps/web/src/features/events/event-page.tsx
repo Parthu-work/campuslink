@@ -33,6 +33,7 @@ import { formatDateTime, formatTime } from '../../lib/format';
 import { cn } from '../../lib/cn';
 import { hasEnded } from '../../lib/events';
 import { ContentMenu } from '../feed/content-menu';
+import { SCREEN } from '../../lib/query-client';
 
 function QaQueue({ e }: { e: EventView }) {
   const { t } = useTranslation();
@@ -69,7 +70,7 @@ function QaQueue({ e }: { e: EventView }) {
   const open = e.status === 'scheduled' && !hasEnded(e.endsAt);
   return (
     <section aria-labelledby="qa" className="grid gap-3">
-      <h2 id="qa" className="font-display text-lg font-semibold">
+      <h2 id="qa" className="font-display text-title font-semibold">
         {t('events.qa.title')}
       </h2>
       {open && (
@@ -105,7 +106,7 @@ function QaQueue({ e }: { e: EventView }) {
       {q.isLoading ? (
         <Skeleton className="h-16" />
       ) : !q.data?.length ? (
-        <p className="text-sm text-fg-2">{t('events.qa.empty')}</p>
+        <p className="text-meta text-fg-2">{t('events.qa.empty')}</p>
       ) : (
         <ol className="grid gap-2" aria-live="polite">
           {q.data.map((x) => (
@@ -193,13 +194,13 @@ function Attendees({ e }: { e: EventView }) {
   });
   return (
     <section aria-labelledby="attendees" className="grid gap-2">
-      <h2 id="attendees" className="font-display text-lg font-semibold">
+      <h2 id="attendees" className="font-display text-title font-semibold">
         {t('events.attendees')}
       </h2>
       {q.isLoading ? (
         <Skeleton className="h-16" />
       ) : !q.data?.length ? (
-        <p className="text-sm text-fg-2">{t('events.noAttendees')}</p>
+        <p className="text-meta text-fg-2">{t('events.noAttendees')}</p>
       ) : (
         <ul className="grid gap-1.5">
           {q.data.map((a) => (
@@ -208,11 +209,11 @@ function Attendees({ e }: { e: EventView }) {
               className="flex items-center gap-3 rounded-[var(--radius-sm)] bg-surface-1 px-3 py-2"
             >
               <PersonAvatar name={a.person.name} fileId={a.person.avatarFileId} size={28} />
-              <span className="min-w-0 flex-1 truncate text-sm">{a.person.name}</span>
+              <span className="min-w-0 flex-1 truncate text-meta">{a.person.name}</span>
               {a.status === 'waitlist' ? (
                 <Badge>{t('events.rsvp.waitlist')}</Badge>
               ) : (
-                <label className="flex items-center gap-2 text-sm">
+                <label className="flex min-h-11 cursor-pointer items-center gap-2 text-meta">
                   <input
                     type="checkbox"
                     className="size-5 accent-[var(--brand)]"
@@ -238,6 +239,7 @@ export function EventPage() {
   const qc = useQueryClient();
   const [confirmCancel, setConfirmCancel] = useState(false);
   const q = useQuery({
+    ...SCREEN,
     ...event(id),
     // The card the member tapped draws the header at once.
     placeholderData: () => findCached(qc, [['events']], hasId<EventView>('id', id, ['title', 'startsAt'])),
@@ -314,27 +316,28 @@ export function EventPage() {
           <Badge tone="brand">{t(`events.kind.${e.kind}`)}</Badge>
           {e.status === 'cancelled' && <Badge tone="danger">{t('events.cancelled')}</Badge>}
           {past && e.status === 'scheduled' && <Badge>{t('events.ended')}</Badge>}
+          {/* The menu sits with the badges (top right), not alone under the title on phones. */}
+          {!e.isHost && e.status !== 'removed' && (
+            <span className="ml-auto">
+              <ContentMenu
+                targetType="event"
+                targetId={e.id}
+                authorId={e.host.userId}
+                authorName={e.host.name}
+                isMine={false}
+              />
+            </span>
+          )}
         </div>
         <PageHeader
           as="div"
           title={e.title}
           actions={
-            <>
-              {e.canManage && live && (
-                <Link to={`/events/${e.id}/edit`} className={buttonVariants({ size: 'sm' })}>
-                  <Pencil className="size-4" aria-hidden /> {t('events.edit')}
-                </Link>
-              )}
-              {!e.isHost && e.status !== 'removed' && (
-                <ContentMenu
-                  targetType="event"
-                  targetId={e.id}
-                  authorId={e.host.userId}
-                  authorName={e.host.name}
-                  isMine={false}
-                />
-              )}
-            </>
+            e.canManage && live ? (
+              <Link to={`/events/${e.id}/edit`} className={buttonVariants({ size: 'sm' })}>
+                <Pencil className="size-4" aria-hidden /> {t('events.edit')}
+              </Link>
+            ) : undefined
           }
         />
         <p className="flex items-center gap-2 text-fg-2">
@@ -353,7 +356,7 @@ export function EventPage() {
               ? `${e.location} · ${t('events.mode.hybrid')}`
               : e.location}
         </p>
-        <p className="flex items-center gap-2 text-sm text-fg-3">
+        <p className="flex items-center gap-2 text-meta text-fg-3">
           <Users className="size-4" aria-hidden />
           {e.capacity
             ? t('events.goingOf', { going: e.going, capacity: e.capacity })
@@ -405,7 +408,8 @@ export function EventPage() {
                 <Video className="size-4" aria-hidden /> {t('events.join')}
               </a>
             ) : (
-              e.mode !== 'in_person' && live && <p className="text-xs text-fg-3">{t('events.linkLater')}</p>
+              e.mode !== 'in_person' &&
+              live && <p className="text-caption text-fg-3">{t('events.linkLater')}</p>
             )}
             <Button onClick={() => void ics()}>
               <CalendarPlus className="size-4" aria-hidden /> {t('events.addToCalendar')}

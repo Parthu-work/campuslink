@@ -55,21 +55,9 @@ export default defineConfig({
       // src/lib/pwa.ts registers the worker and shows the update prompt.
       injectRegister: false,
       includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png'],
-      manifest: {
-        name: APP_NAME,
-        short_name: APP_NAME,
-        description: 'Guidance from your own college.',
-        theme_color: '#0c0d12',
-        background_color: '#0c0d12',
-        display: 'standalone',
-        start_url: '/',
-        icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-          { src: '/icons/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-        ],
-      },
+      // Each college has its own manifest (name, colours, logo), served by the API and linked from
+      // index.html (audit PW-3, decision 7), so the plugin generates none.
+      manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
         // Fonts load by unicode-range on demand; only precache the subsets our locales use.

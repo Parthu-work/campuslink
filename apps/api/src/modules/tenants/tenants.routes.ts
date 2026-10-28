@@ -5,7 +5,7 @@ import { authOf, tenantOf } from '../../http/request-context.js';
 import { badRequest, notFound } from '../../lib/errors.js';
 import { requestMeta } from '../../lib/request-meta.js';
 import type { FilesService } from '../files/files.service.js';
-import { tenantsService, toPublicTenant } from './tenants.service.js';
+import { tenantsService, toPublicTenant, webManifest } from './tenants.service.js';
 
 /** `?v=` is only a cache key (the current logo's id); the logo served is always the current one. */
 const logoQuery = z.strictObject({
@@ -38,6 +38,26 @@ export function tenantRoutes(files: FilesService, botCheck: PublicBotCheck | nul
       body: brandingSchema,
       handler: async ({ req, body }) => ({
         data: await tenantsService.updateBranding(tenantOf(req), authOf(req).userId, body, requestMeta(req)),
+      }),
+    },
+    {
+      // Public like `/tenant`: browsers fetch it without credentials when offering to install.
+      method: 'get',
+      path: '/tenant/manifest.webmanifest',
+      tag: 'Tenant',
+      summary: "The installed app's manifest for this college (its name, colours and logo)",
+      access: { kind: 'public' },
+      scope: 'any',
+      handler: async ({ req }) => ({
+        data: null,
+        raw: {
+          body: JSON.stringify(webManifest(tenantOf(req))),
+          headers: {
+            'Content-Type': 'application/manifest+json; charset=utf-8',
+            'X-Content-Type-Options': 'nosniff',
+            'Cache-Control': 'no-cache',
+          },
+        },
       }),
     },
     {

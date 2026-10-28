@@ -231,3 +231,65 @@ test('Back closes an open sheet instead of leaving the screen', async ({ page, i
   await page.goBack();
   await expect(page).toHaveURL(/\/home$/);
 });
+
+test('a screen with a tab row below the fold opens at the top', async ({ page }) => {
+  await signIn(page, 'ananya@dpit.example');
+  await page.goto(`${BASE}/study`);
+  await page
+    .getByRole('link', { name: /Formal Languages and Automata Theory/ })
+    .first()
+    .click();
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByRole('tablist').first()).toBeAttached();
+  await page.waitForTimeout(1200);
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThan(5);
+});
+
+test.describe('pull to refresh (phones)', () => {
+  test.skip(({ isMobile }) => !isMobile, 'A touch gesture');
+
+  /** A one-finger drag down the screen through DevTools touch events; `held` runs before release. */
+  const pull = async (page: Page, to: number, held: () => Promise<void> = async () => undefined) => {
+    const cdp = await page.context().newCDPSession(page);
+    const at = (y: number) => [{ x: 180, y }];
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at(220) });
+    for (let y = 230; y <= to; y += 15) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: at(y) });
+    }
+    await held();
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await cdp.detach();
+  };
+
+  test('pulling down at the top refreshes the screen; a short pull and a form do not', async ({ page }) => {
+    await signIn(page, 'ananya@dpit.example');
+    await expect(page.getByRole('feed', { name: 'For you' }).getByRole('article').first()).toBeVisible();
+    const indicator = page.locator('.pull-indicator');
+    await expect(indicator).toBeAttached({ timeout: 10_000 }); // it loads after the first idle period
+    let reads = 0;
+    page.on('request', (r) => {
+      if (/\/api\/v1\/feed\?tab=/.test(r.url())) reads += 1;
+    });
+
+    // A short pull springs back without refreshing.
+    await pull(page, 280, () => expect(indicator).toHaveAttribute('data-phase', 'pulling'));
+    await expect(indicator).toHaveAttribute('data-phase', 'idle');
+    await page.waitForTimeout(300);
+    expect(reads).toBe(0);
+
+    // A long one refreshes the feed in place, then the ring goes away.
+    await pull(page, 560);
+    await expect(page.getByRole('status').filter({ hasText: 'Refreshing…' })).toBeAttached();
+    await expect.poll(() => reads).toBeGreaterThan(0);
+    await expect(indicator).toHaveAttribute('data-phase', 'idle');
+    expect(page.url()).toMatch(/\/home$/);
+    await expect(page.getByRole('feed', { name: 'For you' }).getByRole('article').first()).toBeVisible();
+
+    // A form opts out: nothing moves, nothing refetches under someone typing.
+    await page.goto(`${BASE}/profile`);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(indicator).toBeAttached({ timeout: 10_000 });
+    await pull(page, 560, () => expect(indicator).toHaveAttribute('data-phase', 'idle'));
+    await expect(page.getByRole('status').filter({ hasText: 'Refreshing…' })).toHaveCount(0);
+  });
+});

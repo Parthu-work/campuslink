@@ -136,6 +136,7 @@ function ChangePassword() {
   const { t } = useTranslation();
   const setToken = useSession((s) => s.setToken);
   const form = useForm<z.infer<typeof pwSchema>>({
+    mode: 'onTouched',
     resolver: zodResolver(pwSchema),
     defaultValues: { currentPassword: '', newPassword: '' },
   });

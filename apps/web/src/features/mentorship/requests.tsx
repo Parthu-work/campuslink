@@ -25,6 +25,9 @@ import { api, ApiError } from '../../lib/api';
 import { celebrate, firstSighting } from '../../lib/celebrate';
 import { useCan } from '../../lib/me';
 import { formatDateTime, formatRelative, newIdempotencyKey } from '../../lib/format';
+import { SCREEN } from '../../lib/query-client';
+import { cn } from '../../lib/cn';
+import { firstName } from '../../lib/names';
 
 const STATUS_TONE = {
   pending: 'warning',
@@ -55,8 +58,8 @@ function useRespond(id: string) {
       if (r.status === 'accepted') celebrate();
       toast.success(
         r.status === 'declined'
-          ? t('request.declinedToast', { name: r.mentee.name.split(' ')[0] })
-          : t('request.acceptedToast', { name: r.mentee.name.split(' ')[0] }),
+          ? t('request.declinedToast', { name: firstName(r.mentee.name) })
+          : t('request.acceptedToast', { name: firstName(r.mentee.name) }),
       );
       void qc.invalidateQueries({ queryKey: ['requests'] });
       void qc.invalidateQueries({ queryKey: ['bookings'] });
@@ -142,7 +145,7 @@ function DeclineDialog({
       description={t('request.declineBody')}
     >
       <fieldset className="grid gap-2">
-        <legend className="mb-2 text-[13px] font-semibold">{t('request.reply')}</legend>
+        <legend className="mb-2 text-meta font-semibold">{t('request.reply')}</legend>
         {DECLINE_TEMPLATES.map((tpl) => (
           <label
             key={tpl}
@@ -155,8 +158,8 @@ function DeclineDialog({
               onChange={() => setTemplate(tpl)}
               className="mt-1 size-4 accent-[var(--brand)]"
             />
-            <span className="text-sm">
-              {t(`request.decline.${tpl}`, { name: r.mentee.name.split(' ')[0] })}
+            <span className="text-meta">
+              {t(`request.decline.${tpl}`, { name: firstName(r.mentee.name) })}
             </span>
           </label>
         ))}
@@ -229,12 +232,12 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
         </dl>
       )}
       {r.status === 'declined' && r.declineTemplate && (
-        <p className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-sm">
-          {t(`request.decline.${r.declineTemplate}`, { name: r.mentee.name.split(' ')[0] })}
+        <p className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-meta">
+          {t(`request.decline.${r.declineTemplate}`, { name: firstName(r.mentee.name) })}
           {r.declineNote && <span className="mt-1 block text-fg-2">“{r.declineNote}”</span>}
         </p>
       )}
-      <p className="text-xs text-fg-3">
+      <p className="text-caption text-fg-3">
         {t('request.sentAgo', { when: formatRelative(r.createdAt) })}
         {pending && ` · ${t('request.expires', { when: formatRelative(r.expiresAt) })}`}
       </p>
@@ -291,6 +294,7 @@ export function RequestsPage() {
   const [params, setParams] = useSearchParams();
   const box = isMentor && params.get('box') !== 'sent' ? 'received' : 'sent';
   const list = useQuery({
+    ...SCREEN,
     queryKey: ['requests', box],
     queryFn: () => api.get<RequestView[]>(`/mentorship/requests?box=${box}`),
   });
@@ -300,6 +304,14 @@ export function RequestsPage() {
     const fresh = list.data.filter(justAccepted).map((r) => r.id);
     if (fresh.length && firstSighting('accepted-requests', fresh)) celebrate();
   }, [box, list.data]);
+  // Opened from a notification: bring that request into view and focus it (audit IA-5).
+  const focusId = params.get('request');
+  useEffect(() => {
+    if (!focusId || !list.data?.some((r) => r.id === focusId)) return;
+    const el = document.getElementById(`request-${focusId}`);
+    el?.scrollIntoView({ block: 'center' });
+    el?.focus({ preventScroll: true });
+  }, [focusId, list.data]);
   return (
     <>
       <PageHeader title={t('nav.requests')} />
@@ -330,7 +342,15 @@ export function RequestsPage() {
       )}
       <ul className="grid gap-3">
         {list.data?.map((r) => (
-          <li key={r.id}>
+          <li
+            key={r.id}
+            id={`request-${r.id}`}
+            tabIndex={-1}
+            className={cn(
+              'rounded-[var(--radius-lg)] outline-none',
+              r.id === focusId && 'ring-2 ring-brand ring-offset-2 ring-offset-bg',
+            )}
+          >
             <RequestCard r={r} box={box} />
           </li>
         ))}

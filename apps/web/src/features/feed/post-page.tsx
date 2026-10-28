@@ -11,6 +11,7 @@ import { Textarea } from '../../components/ui/field';
 import { Card, EmptyState } from '../../components/ui/misc';
 import { RichText } from '../../components/ui/rich-text';
 import { api, ApiError } from '../../lib/api';
+import { useDraft } from '../../lib/drafts';
 import { comments as commentsQuery, post as postQuery } from '../../lib/queries';
 import { findCached, hasId } from '../../lib/query-seed';
 import { useCan } from '../../lib/me';
@@ -32,7 +33,7 @@ function CommentForm({
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [body, setBody] = useState('');
+  const [body, setBody] = useDraft(`comment:${postId}:${parentId ?? ''}`);
   const send = useMutation({
     mutationFn: () =>
       api.post<CommentView>(`/posts/${postId}/comments`, {
@@ -119,7 +120,7 @@ function CommentItem({
       {x.removal && (
         <RemovalNotice targetType="comment" targetId={x.id} removal={x.removal} canAppeal={x.isMine} />
       )}
-      <RichText text={x.body} className="pl-[52px] text-[15px]" />
+      <RichText text={x.body} className="pl-[52px] text-body" />
     </div>
   );
   return (
@@ -185,7 +186,7 @@ export function PostPage() {
           <Card className="grid gap-4 p-4">
             <h2 className="font-semibold">{t('feed.commentsTitle', { count: post.data.counts.comments })}</h2>
             {canInteract && post.data.status === 'published' && <CommentForm postId={postId} />}
-            {comments.data && !top.length && <p className="text-sm text-fg-2">{t('feed.noComments')}</p>}
+            {comments.data && !top.length && <p className="text-meta text-fg-2">{t('feed.noComments')}</p>}
             <ul className="grid gap-5">
               {top.map((c) => (
                 <CommentItem

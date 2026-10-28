@@ -20,6 +20,7 @@ import { formatRelative, formatWeekday, localDateKey } from '../../lib/format';
 import { celebrate, firstSighting } from '../../lib/celebrate';
 import { drawImpactCard } from '../../lib/impact-card';
 import { cn } from '../../lib/cn';
+import { SCREEN } from '../../lib/query-client';
 
 function ImpactCardButton({ p }: { p: MyProgressView }) {
   const { t } = useTranslation();
@@ -34,7 +35,7 @@ function ImpactCardButton({ p }: { p: MyProgressView }) {
         college: tenant?.branding.displayName ?? '',
         headline: t('progress.card.headline', { count: p.menteesHelped }),
         detail: t('progress.card.detail', { count: p.sessionsMentored }),
-        level: p.mentorLevel ? t(`progress.level.${p.mentorLevel}`) : null,
+        level: p.mentorLevel ? t(`progress.mentorLevels.${p.mentorLevel}`) : null,
       });
       saveBlob(blob, 'impact-card.png');
     } catch {
@@ -87,7 +88,7 @@ export function ProgressPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const canMentor = useCan('mentorship:mentor');
-  const q = useQuery(progress());
+  const q = useQuery({ ...progress(), ...SCREEN });
   // A badge earned in the last few days is celebrated the first time this device sees it (§6).
   useEffect(() => {
     const fresh = (q.data?.badges ?? [])
@@ -204,7 +205,7 @@ export function ProgressPage() {
             <StatCard
               icon={<Medal className="size-4" aria-hidden />}
               label={t('progress.mentorLevel')}
-              value={p.mentorLevel ? t(`progress.level.${p.mentorLevel}`) : '—'}
+              value={p.mentorLevel ? t(`progress.mentorLevels.${p.mentorLevel}`) : '—'}
               hint={t('progress.mentorLevelHint')}
             />
             <StatCard
@@ -290,13 +291,13 @@ export function ProgressPage() {
                       {e.points > 0 ? '+' : ''}
                       {e.points} {t(`progress.track.${e.track}`)}
                     </Badge>
-                    <span className="text-xs text-fg-3">{formatRelative(e.createdAt)}</span>
+                    <span className="text-caption text-fg-3">{formatRelative(e.createdAt)}</span>
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-fg-2">{t('progress.nothingYet')}</p>
+            <p className="text-meta text-fg-2">{t('progress.nothingYet')}</p>
           )}
         </section>
         <section aria-labelledby="privacy" className="grid content-start gap-2">
@@ -320,10 +321,10 @@ export function ProgressPage() {
                 {t('progress.optWall')}
               </Checkbox>
             )}
-            <p className="text-xs text-fg-3">{t('progress.privacyHint')}</p>
+            <p className="text-caption text-fg-3">{t('progress.privacyHint')}</p>
           </Card>
-          <h3 className="mt-2 text-sm font-semibold">{t('progress.howTitle')}</h3>
-          <p className="text-sm text-fg-2">{t('progress.how')}</p>
+          <h3 className="mt-2 text-meta font-semibold">{t('progress.howTitle')}</h3>
+          <p className="text-meta text-fg-2">{t('progress.how')}</p>
         </section>
       </div>
     </div>

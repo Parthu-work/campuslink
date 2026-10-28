@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { CloudOff, Compass, RefreshCw, TriangleAlert } from 'lucide-react';
 import { ApiError } from '../../lib/api';
 import { forceReload, isChunkLoadError } from '../../lib/chunk-reload';
+import { queryClient } from '../../lib/query-client';
 import { useTenant } from '../../lib/tenant-context';
 import { useOnline } from '../../lib/pwa';
 import { buttonVariants } from '../ui/button-variants';
@@ -27,8 +28,20 @@ export function RouteError({ fullPage = false, error: given }: { fullPage?: bool
   useEffect(() => {
     if (import.meta.env.DEV) console.error(error);
   }, [error]);
+  // Leaving the error screen forgets reads that failed with nothing to show, so the next visit
+  // asks again instead of rethrowing the old error (a screen's main read does not retry on mount).
+  useEffect(
+    () => () =>
+      queryClient.removeQueries({
+        predicate: (q) => q.state.status === 'error' && q.state.data === undefined && !q.getObserversCount(),
+      }),
+    [],
+  );
 
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
+  // A missing route, or a screen whose main read is gone (a deleted post, job or event).
+  const notFound =
+    (isRouteErrorResponse(error) && error.status === 404) ||
+    (error instanceof ApiError && error.status === 404);
   const chunk = isChunkLoadError(error);
   const requestId = error instanceof ApiError ? error.requestId : undefined;
 
@@ -69,13 +82,15 @@ export function RouteError({ fullPage = false, error: given }: { fullPage?: bool
           <div className="flex flex-wrap justify-center gap-2">
             <Button
               variant="primary"
-              onClick={() =>
-                // A fresh navigation to the same place clears the error and renders the screen again.
+              onClick={() => {
+                // Failed reads start over (a screen's main read rethrows until it is reset), then a
+                // fresh navigation to the same place clears the error and renders the screen again.
+                void queryClient.resetQueries({ predicate: (q) => q.state.status === 'error' });
                 navigate(
                   { pathname: location.pathname, search: location.search, hash: location.hash },
                   { replace: true, state: location.state },
-                )
-              }
+                );
+              }}
             >
               {t('common.retry')}
             </Button>
@@ -85,7 +100,7 @@ export function RouteError({ fullPage = false, error: given }: { fullPage?: bool
       >
         <p>{online ? t('errors.screenBody') : t('errors.offlineBody')}</p>
         {requestId && (
-          <p className="mt-2 font-mono text-xs text-fg-3">{t('errors.reference', { id: requestId })}</p>
+          <p className="mt-2 font-mono text-caption text-fg-3">{t('errors.reference', { id: requestId })}</p>
         )}
       </EmptyState>
     );

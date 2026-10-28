@@ -23,14 +23,15 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
   };
   const href = (() => {
     switch (n.type) {
+      // Requests open on the request itself, not just the inbox (audit IA-5).
       case 'request_received':
-        return '/mentorship?box=received';
+        return `/mentorship?box=received${d.requestId ? `&request=${d.requestId}` : ''}`;
       case 'request_declined':
       case 'request_expired':
-        return '/mentorship?box=sent';
+        return `/mentorship?box=sent${d.requestId ? `&request=${d.requestId}` : ''}`;
       case 'request_accepted':
         return d.bookingId
-          ? '/sessions'
+          ? `/sessions?booking=${d.bookingId}`
           : d.conversationId
             ? `/messages/${d.conversationId}`
             : '/mentorship?box=sent';

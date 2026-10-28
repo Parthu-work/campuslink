@@ -76,6 +76,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 |---|---|---|---|---|
 | `GET /api/v1/tenant` | public | any | — | Public branding for the college on this subdomain |
 | `PUT /api/v1/tenant/branding` | `tenant:branding` | college | adminWrite | Update college branding |
+| `GET /api/v1/tenant/manifest.webmanifest` | public | any | — | The installed app's manifest for this college (its name, colours and logo) |
 | `GET /api/v1/tenant/logo` | public | college | — | The college logo (re-encoded WebP) |
 | `POST /api/v1/tenant/logo` | `tenant:branding` | college | upload | Upload the college logo (PNG or WebP up to 512 KB; re-encoded, scanned, audited) |
 | `DELETE /api/v1/tenant/logo` | `tenant:branding` | college | adminWrite | Remove the college logo (the monogram shows again; audited) |

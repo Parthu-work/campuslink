@@ -44,6 +44,11 @@ test.describe('feed and moderation', () => {
     await card.getByRole('link', { name: /comment/ }).click();
     await expect(student.page.getByRole('heading', { name: /comment/ })).toBeVisible();
     await student.page.getByLabel('Write a comment').fill('E2E: thanks, trying this today');
+    // An unsent comment survives leaving the post and coming back (audit FO-5).
+    await student.page.goBack();
+    await expect(card).toBeVisible();
+    await student.page.goForward();
+    await expect(student.page.getByLabel('Write a comment')).toHaveValue('E2E: thanks, trying this today');
     await student.page.getByRole('button', { name: 'Comment', exact: true }).click();
     await expect(student.page.getByText('E2E: thanks, trying this today')).toBeVisible();
     await expectNoA11yViolations(student.page);

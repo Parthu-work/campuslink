@@ -28,6 +28,7 @@ import { ItemCard, PostCard } from '../feed/post-card';
 import { Composer } from '../feed/composer';
 import { StoriesRow } from '../feed/stories';
 import { FeedList } from '../feed/feed-list';
+import { firstName } from '../../lib/names';
 
 function NextSession() {
   const { t } = useTranslation();
@@ -281,7 +282,7 @@ export function HomePage() {
             isLoading || !me ? (
               <Skeleton className="h-9 w-56" />
             ) : (
-              t('home.greeting', { name: me.name.split(' ')[0] })
+              t('home.greeting', { name: firstName(me.name) })
             )
           }
         />

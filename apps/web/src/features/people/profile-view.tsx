@@ -16,6 +16,7 @@ import { TabPanel, Tabs } from '../../components/ui/tabs';
 import { api } from '../../lib/api';
 import { coverOf } from '../../lib/accent';
 import { cn } from '../../lib/cn';
+import { SCREEN } from '../../lib/query-client';
 
 type Tab = 'about' | 'skills' | 'contact';
 
@@ -33,6 +34,7 @@ export function ProfileView() {
   const tabsId = useId();
   const [tab, setTab] = useState<Tab>('about');
   const q = useQuery({
+    ...SCREEN,
     queryKey: ['profile', userId],
     queryFn: () => api.get<PublicProfile>(`/profiles/${userId}`),
     enabled: /^[a-f0-9]{24}$/.test(userId),

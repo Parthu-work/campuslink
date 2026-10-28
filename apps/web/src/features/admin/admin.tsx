@@ -33,6 +33,7 @@ import { useNav, type AdminNavGroup } from '../../lib/nav';
 import { intentPreload } from '../../lib/preload';
 import { ADMIN_ICONS } from '../../lib/admin-icons';
 import { BackLink } from '../../components/ui/back-link';
+import { cn } from '../../lib/cn';
 
 /** One admin section in the side menu: a 44px row with its icon, the current one marked. */
 function AdminMenu({ groups }: { groups: AdminNavGroup[] }) {
@@ -83,7 +84,8 @@ export function AdminLayout() {
       <nav aria-label={t('admin.sectionsNav')} className="hidden lg:sticky lg:top-5 lg:block">
         <AdminMenu groups={admin} />
       </nav>
-      <div className="grid min-w-0 gap-5">
+      {/* One shrinkable column: a wide table scrolls inside its section instead of widening the page. */}
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
         {!atHome && (
           <BackLink to="/admin" className="lg:hidden">
             {t('admin.overview')}
@@ -122,6 +124,9 @@ export function UsersAdmin() {
   const [role, setRole] = useState('');
   const dq = useDeferredValue(q);
   const [editing, setEditing] = useState<AdminUser | null>(null);
+  const [confirming, setConfirming] = useState<{ kind: 'suspend' | 'unverify'; user: AdminUser } | null>(
+    null,
+  );
   const params = new URLSearchParams({
     limit: '20',
     ...(dq.trim() ? { q: dq.trim() } : {}),
@@ -234,7 +239,12 @@ export function UsersAdmin() {
                 {canReview &&
                   u.verified &&
                   !u.roles.some((r) => ['COLLEGE_ADMIN', 'TPO', 'FACULTY'].includes(r)) && (
-                    <Button size="sm" variant="ghost" onClick={() => unverify.mutate(u.id)}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-danger-ink"
+                      onClick={() => setConfirming({ kind: 'unverify', user: u })}
+                    >
                       {t('admin.unverify')}
                     </Button>
                   )}
@@ -242,12 +252,11 @@ export function UsersAdmin() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    className={cn(u.status === 'active' && 'text-danger-ink')}
                     onClick={() =>
-                      mutate.mutate({
-                        id: u.id,
-                        path: 'status',
-                        body: { status: u.status === 'active' ? 'suspended' : 'active' },
-                      })
+                      u.status === 'active'
+                        ? setConfirming({ kind: 'suspend', user: u })
+                        : mutate.mutate({ id: u.id, path: 'status', body: { status: 'active' } })
                     }
                   >
                     {u.status === 'active' ? t('admin.suspend') : t('admin.reactivate')}
@@ -258,6 +267,41 @@ export function UsersAdmin() {
           </li>
         ))}
       </ul>
+      {/* Taking something away from a member is confirmed, with what it does (audit DS-7). */}
+      <Dialog
+        open={!!confirming}
+        onOpenChange={(o) => !o && setConfirming(null)}
+        title={
+          confirming
+            ? t(confirming.kind === 'suspend' ? 'admin.suspendTitle' : 'admin.unverifyTitle', {
+                name: confirming.user.name,
+              })
+            : ''
+        }
+        description={
+          confirming ? t(confirming.kind === 'suspend' ? 'admin.suspendBody' : 'admin.unverifyBody') : ''
+        }
+      >
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={() => setConfirming(null)}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            variant="danger"
+            loading={mutate.isPending || unverify.isPending}
+            onClick={() => {
+              if (!confirming) return;
+              const { kind, user } = confirming;
+              if (kind === 'suspend')
+                mutate.mutate({ id: user.id, path: 'status', body: { status: 'suspended' } });
+              else unverify.mutate(user.id);
+              setConfirming(null);
+            }}
+          >
+            {confirming?.kind === 'suspend' ? t('admin.suspend') : t('admin.unverify')}
+          </Button>
+        </div>
+      </Dialog>
       {users.hasNextPage && (
         <Button
           className="justify-self-center"

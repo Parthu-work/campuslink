@@ -12,6 +12,7 @@ import { PersonAvatar } from '../../components/ui/person-avatar';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/cn';
+import { SCREEN } from '../../lib/query-client';
 
 function OptInHint({ field }: { field: 'showOnLeaderboard' | 'showOnWall' }) {
   const { t } = useTranslation();
@@ -71,6 +72,7 @@ export function LeaderboardPage() {
   const { t } = useTranslation();
   const [scope, setScope] = useState<'college' | 'branch'>('college');
   const q = useQuery({
+    ...SCREEN,
     queryKey: ['leaderboard', scope],
     queryFn: () => api.get<LeaderboardRow[]>(`/leaderboard?scope=${scope}`),
   });
@@ -127,7 +129,11 @@ export function LeaderboardPage() {
 
 export function WallOfMentorsPage() {
   const { t } = useTranslation();
-  const q = useQuery({ queryKey: ['wall'], queryFn: () => api.get<WallOfMentorsView>('/wall-of-mentors') });
+  const q = useQuery({
+    ...SCREEN,
+    queryKey: ['wall'],
+    queryFn: () => api.get<WallOfMentorsView>('/wall-of-mentors'),
+  });
   const motm = q.data?.mentorOfTheMonth;
   return (
     <div className="grid gap-5">
@@ -168,7 +174,7 @@ export function WallOfMentorsPage() {
                 >
                   <PersonAvatar name={m.person.name} fileId={m.person.avatarFileId} size={80} />
                   <b className="max-w-full truncate text-body">{m.person.name}</b>
-                  <Badge tone="brand">{t(`progress.level.${m.level}`)}</Badge>
+                  <Badge tone="brand">{t(`progress.mentorLevels.${m.level}`)}</Badge>
                   <span className="text-caption text-fg-3">
                     {t('progress.menteesN', { count: m.menteesHelped })}
                   </span>

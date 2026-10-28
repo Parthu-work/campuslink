@@ -16,6 +16,7 @@ import { useCan, useMe } from '../../lib/me';
 import { aiStatus, subjects, type SubjectScope } from '../../lib/queries';
 import { subjectAccent } from '../../lib/study';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
+import { SCREEN } from '../../lib/query-client';
 
 // The form library loads with the dialog, not with the library (bundle budget).
 const SubjectForm = lazy(() => import('./subject-form').then((m) => ({ default: m.SubjectForm })));
@@ -113,6 +114,7 @@ export function StudyPage() {
   const form = useUrlOverlay('new');
   const navigate = useNavigate();
   const list = useQuery({
+    ...SCREEN,
     ...subjects(student ? 'all' : scope, q.length >= 2 ? q : ''),
     placeholderData: keepPreviousData,
   });

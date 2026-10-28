@@ -16,6 +16,7 @@ import { TagInput } from '../../components/ui/tag-input';
 import { api } from '../../lib/api';
 import { applyApiError } from '../../lib/errors';
 import { newIdempotencyKey } from '../../lib/format';
+import { FormFooter } from '../../components/ui/form-footer';
 
 type Form = z.input<typeof jobBody>;
 
@@ -157,7 +158,7 @@ export function PostJobPage() {
             max={12}
           />
           <fieldset className="grid gap-1.5">
-            <legend className="mb-1.5 text-[13px] font-semibold">{t('jobs.fields.branches')}</legend>
+            <legend className="mb-1.5 text-meta font-semibold">{t('jobs.fields.branches')}</legend>
             <div className="flex flex-wrap gap-1.5">
               {BRANCHES.map((b) => (
                 <Chip
@@ -238,13 +239,15 @@ export function PostJobPage() {
             )}
           </Field>
           {e.root && (
-            <p role="alert" className="text-sm font-medium text-danger">
+            <p role="alert" className="text-meta font-medium text-danger">
               {e.root.message}
             </p>
           )}
-          <Button type="submit" variant="primary" loading={post.isPending} className="justify-self-end">
-            {t('jobs.publish')}
-          </Button>
+          <FormFooter>
+            <Button type="submit" variant="primary" loading={post.isPending}>
+              {t('jobs.publish')}
+            </Button>
+          </FormFooter>
         </form>
       </Card>
     </div>

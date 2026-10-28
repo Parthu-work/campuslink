@@ -71,6 +71,7 @@ export function ForgotPasswordPage() {
   const { t } = useTranslation();
   const [sent, setSent] = useState(false);
   const form = useForm<z.infer<typeof forgotSchema>>({
+    mode: 'onTouched',
     resolver: zodResolver(forgotSchema),
     defaultValues: { email: '' },
   });
@@ -108,7 +109,7 @@ export function ForgotPasswordPage() {
           </Button>
         </form>
       )}
-      <Link to="/sign-in" className="text-center text-sm font-semibold text-brand-ink hover:underline">
+      <Link to="/sign-in" className="text-center text-meta font-semibold text-brand-ink hover:underline">
         {t('common.back')}
       </Link>
     </AuthLayout>
@@ -122,6 +123,7 @@ export function ResetPasswordPage() {
   const navigate = useNavigate();
   const [done, setDone] = useState(false);
   const form = useForm<z.infer<typeof resetSchema>>({
+    mode: 'onTouched',
     resolver: zodResolver(resetSchema),
     defaultValues: { password: '' },
   });

@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -9,7 +9,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { BellPlus, BriefcaseBusiness, ListChecks, Plus, Search } from 'lucide-react';
+import { BellPlus, BriefcaseBusiness, ListChecks, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import {
   BRANCHES,
   JOB_LEVELS,
@@ -21,6 +21,7 @@ import {
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Input, Select } from '../../components/ui/field';
+import { Sheet } from '../../components/ui/dialog';
 import { Chip, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { RadarSweep } from '../../components/ui/radar-sweep';
@@ -28,6 +29,7 @@ import { api, ApiError } from '../../lib/api';
 import { jobsList, jobsRadar } from '../../lib/queries';
 import { useCan } from '../../lib/me';
 import { JobCard } from './job-card';
+import { SCREEN } from '../../lib/query-client';
 
 const FILTER_KEYS = [
   'q',
@@ -40,12 +42,14 @@ const FILTER_KEYS = [
   'fresher',
   'alumni',
 ] as const;
+/** The refinements behind the Filters button on phones (the search and quick chips stay out). */
+const REFINE_KEYS = ['level', 'type', 'branch', 'location'] as const;
 
 function Section({ title, jobs, empty }: { title: string; jobs: JobView[]; empty?: string }) {
   if (!jobs.length && !empty) return null;
   return (
     <section aria-label={title} className="grid gap-2">
-      <h2 className="font-display text-lg font-semibold">{title}</h2>
+      <h2 className="font-display text-title font-semibold">{title}</h2>
       {jobs.length ? (
         <ul className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2">
           {jobs.map((j) => (
@@ -55,7 +59,7 @@ function Section({ title, jobs, empty }: { title: string; jobs: JobView[]; empty
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-fg-3">{empty}</p>
+        <p className="text-meta text-fg-3">{empty}</p>
       )}
     </section>
   );
@@ -78,7 +82,7 @@ function RadarSections() {
   if (!r) return null;
   return (
     <>
-      <p className="text-sm text-fg-2" role="status">
+      <p className="text-meta text-fg-2" role="status">
         {t('jobs.newThisWeek', { count: r.newThisWeek })}
       </p>
       <Section title={t('jobs.sections.forYou')} jobs={r.forYou} />
@@ -159,7 +163,7 @@ export function JobsPage() {
       FILTER_KEYS.flatMap((k) => (params.get(k)?.trim() ? [[k, (params.get(k) as string).trim()]] : [])),
     ).toString(),
   );
-  const list = useInfiniteQuery({ ...jobsList(qs), placeholderData: keepPreviousData });
+  const list = useInfiniteQuery({ ...SCREEN, ...jobsList(qs), placeholderData: keepPreviousData });
   const rows = list.data?.pages.flatMap((p) => p.data) ?? [];
   const filters: AlertFilters = {
     ...(params.get('q') ? { q: params.get('q') as string } : {}),
@@ -171,6 +175,56 @@ export function JobsPage() {
     ...(params.get('location') ? { location: params.get('location') as string } : {}),
     ...(params.get('fresher') ? { fresher: true } : {}),
   };
+
+  const [sheet, setSheet] = useState(false);
+  const refining = REFINE_KEYS.filter((k) => params.get(k)?.trim()).length;
+  // Level, type, branch and place: inline from 640 px, in a sheet on phones so results show first (IA-11).
+  const fields = (visible: boolean) => (
+    <>
+      <label className="grid gap-1.5">
+        <span className={visible ? 'text-meta font-semibold' : 'sr-only'}>{t('jobs.levelLabel')}</span>
+        <Select value={params.get('level') ?? ''} onChange={(e) => set('level', e.target.value)} size="sm">
+          <option value="">{t('jobs.anyLevel')}</option>
+          {JOB_LEVELS.map((l) => (
+            <option key={l} value={l}>
+              {t(`jobs.level.${l}`)}
+            </option>
+          ))}
+        </Select>
+      </label>
+      <label className="grid gap-1.5">
+        <span className={visible ? 'text-meta font-semibold' : 'sr-only'}>{t('jobs.typeLabel')}</span>
+        <Select value={params.get('type') ?? ''} onChange={(e) => set('type', e.target.value)} size="sm">
+          <option value="">{t('jobs.anyType')}</option>
+          {JOB_TYPES.map((l) => (
+            <option key={l} value={l}>
+              {t(`jobs.type.${l}`)}
+            </option>
+          ))}
+        </Select>
+      </label>
+      <label className="grid gap-1.5">
+        <span className={visible ? 'text-meta font-semibold' : 'sr-only'}>{t('people.branch')}</span>
+        <Select value={params.get('branch') ?? ''} onChange={(e) => set('branch', e.target.value)} size="sm">
+          <option value="">{t('people.anyBranch')}</option>
+          {BRANCHES.map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </Select>
+      </label>
+      <label className="grid gap-1.5">
+        <span className={visible ? 'text-meta font-semibold' : 'sr-only'}>{t('jobs.location')}</span>
+        <Input
+          value={params.get('location') ?? ''}
+          onChange={(e) => set('location', e.target.value)}
+          placeholder={t('jobs.location')}
+          className="min-h-11 text-meta"
+        />
+      </label>
+    </>
+  );
 
   return (
     <div className="grid gap-5">
@@ -195,21 +249,27 @@ export function JobsPage() {
       />
 
       <div className="grid gap-3">
-        <label className="relative">
-          <span className="sr-only">{t('jobs.search')}</span>
-          <Search
-            className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-fg-3"
-            aria-hidden
-          />
-          <Input
-            type="search"
-            enterKeyHint="search"
-            value={params.get('q') ?? ''}
-            onChange={(e) => set('q', e.target.value)}
-            placeholder={t('jobs.search')}
-            className="pl-11"
-          />
-        </label>
+        <div className="flex gap-2">
+          <label className="relative min-w-0 flex-1">
+            <span className="sr-only">{t('jobs.search')}</span>
+            <Search
+              className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-fg-3"
+              aria-hidden
+            />
+            <Input
+              type="search"
+              enterKeyHint="search"
+              value={params.get('q') ?? ''}
+              onChange={(e) => set('q', e.target.value)}
+              placeholder={t('jobs.search')}
+              className="pl-11"
+            />
+          </label>
+          <Button className="flex-none sm:hidden" aria-haspopup="dialog" onClick={() => setSheet(true)}>
+            <SlidersHorizontal className="size-4" aria-hidden />
+            {refining ? t('jobs.filtersCount', { count: refining }) : t('jobs.filters')}
+          </Button>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <div role="group" aria-label={t('jobs.quickFilters')} className="flex flex-wrap gap-2">
             <Chip
@@ -232,58 +292,19 @@ export function JobsPage() {
             </Chip>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <label>
-            <span className="sr-only">{t('jobs.levelLabel')}</span>
-            <Select
-              value={params.get('level') ?? ''}
-              onChange={(e) => set('level', e.target.value)}
-              size="sm"
-            >
-              <option value="">{t('jobs.anyLevel')}</option>
-              {JOB_LEVELS.map((l) => (
-                <option key={l} value={l}>
-                  {t(`jobs.level.${l}`)}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <label>
-            <span className="sr-only">{t('jobs.typeLabel')}</span>
-            <Select value={params.get('type') ?? ''} onChange={(e) => set('type', e.target.value)} size="sm">
-              <option value="">{t('jobs.anyType')}</option>
-              {JOB_TYPES.map((l) => (
-                <option key={l} value={l}>
-                  {t(`jobs.type.${l}`)}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <label>
-            <span className="sr-only">{t('people.branch')}</span>
-            <Select
-              value={params.get('branch') ?? ''}
-              onChange={(e) => set('branch', e.target.value)}
-              size="sm"
-            >
-              <option value="">{t('people.anyBranch')}</option>
-              {BRANCHES.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <label>
-            <span className="sr-only">{t('jobs.location')}</span>
-            <Input
-              value={params.get('location') ?? ''}
-              onChange={(e) => set('location', e.target.value)}
-              placeholder={t('jobs.location')}
-              className="min-h-11 text-meta"
-            />
-          </label>
-        </div>
+        <div className="hidden gap-2 sm:grid sm:grid-cols-4">{fields(false)}</div>
+        <Sheet
+          open={sheet}
+          onOpenChange={setSheet}
+          title={t('jobs.filters')}
+          footer={
+            <Button variant="primary" className="w-full" onClick={() => setSheet(false)}>
+              {t('jobs.showOpenings')}
+            </Button>
+          }
+        >
+          <div className="grid gap-4">{fields(true)}</div>
+        </Sheet>
         {filtering && canSave && (
           <div>
             <AlertButton filters={filters} />
@@ -294,7 +315,7 @@ export function JobsPage() {
       {!filtering && <RadarSections />}
 
       <section aria-labelledby="all-jobs" className="grid gap-3">
-        <h2 id="all-jobs" className="font-display text-lg font-semibold">
+        <h2 id="all-jobs" className="font-display text-title font-semibold">
           {filtering ? t('jobs.results') : t('jobs.allOpenings')}
         </h2>
         {list.isLoading && (

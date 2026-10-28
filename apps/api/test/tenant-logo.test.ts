@@ -1,5 +1,6 @@
 import sharp from 'sharp';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { APP_NAME } from '@campuslink/shared';
 import {
   api,
   jpegWithExif,
@@ -57,7 +58,8 @@ describe('college logo', () => {
     expect(img.headers['cache-control']).toContain('immutable');
     const meta = await sharp(img.body as Buffer).metadata();
     expect(meta.format).toBe('webp');
-    expect(Math.max(meta.width ?? 0, meta.height ?? 0)).toBeLessThanOrEqual(512);
+    // A transparent 512 px square, so it can also be the installed app's icon.
+    expect([meta.width, meta.height]).toEqual([512, 512]);
     expect(meta.hasAlpha).toBe(true);
     expect(
       await runInTenant(A._id, () =>
@@ -137,5 +139,44 @@ describe('college logo', () => {
         AuditModel.countDocuments({ action: 'tenant.logo_removed', actorId: admin.id }),
       ),
     ).toBe(1);
+  });
+});
+
+describe("the installed app's manifest (PW-3)", () => {
+  type Manifest = {
+    name: string;
+    short_name: string;
+    theme_color: string;
+    icons: { src: string; sizes: string; purpose: string }[];
+  };
+  const manifest = async (host: string) => {
+    const r = await api(ctx, host).get('/tenant/manifest.webmanifest');
+    expect(r.status).toBe(200);
+    expect(r.headers['content-type']).toContain('application/manifest+json');
+    return JSON.parse(r.text) as Manifest;
+  };
+
+  it("carries each college's own name and canvas colour", async () => {
+    const a = await manifest(A.host);
+    const b = await manifest(B.host);
+    expect([a.name, a.short_name]).toEqual(['LOGOA College of Engineering', 'LOGOA']);
+    expect([b.name, b.short_name]).toEqual(['LOGOB College of Engineering', 'LOGOB']);
+    expect(a.theme_color).toMatch(/^#[0-9a-f]{6}$/);
+  });
+
+  it('uses the logo as the icon once a college has one, and the app icons otherwise', async () => {
+    expect((await manifest(A.host)).icons.map((i) => i.purpose)).toContain('maskable');
+    const up = await upload(admin, A, await png(), 'crest.png');
+    expect(up.status).toBe(200);
+    const icons = (await manifest(A.host)).icons;
+    expect(icons[0]).toMatchObject({ src: up.body.data.logoUrl, sizes: '512x512', purpose: 'any' });
+    expect(icons.map((i) => i.purpose)).not.toContain('maskable');
+    // Another college is unaffected.
+    expect((await manifest(B.host)).icons[0]?.src).not.toBe(up.body.data.logoUrl);
+  });
+
+  it('the platform console keeps the product name', async () => {
+    const P = await makeTenant('logoplat', 'platform');
+    expect((await manifest(P.host)).name).toBe(APP_NAME);
   });
 });

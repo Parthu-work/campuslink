@@ -139,10 +139,23 @@
 }
 
 @layer base {
+  /* A grid with no explicit columns gets one shrinkable column, so content that cannot wrap (a
+     truncated name, a row of buttons) truncates or scrolls inside it instead of widening the page.
+     Column utilities (grid-cols-*) live in a later layer and still apply. */
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
   html,
   body,
   #root {
     height: 100%;
+  }
+  /* Pressed states come from the design system, not the browser's grey flash (audit PW-4). The
+     page neither rubber-bands under the fixed bars nor reloads on a pull: pull to refresh is the
+     app's own (components/layout/pull-to-refresh.tsx). */
+  html {
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
   }
   body {
     background: var(--bg);
@@ -459,6 +472,52 @@
   :root[data-chrome='hidden'] {
     --chrome-top: 0px;
   }
+}
+
+/* A long form's actions (components/ui/form-footer.tsx): just above the phone tab bar, following
+   it off screen when the bars hide. Desktop: sticky at the bottom of the content column. */
+.form-footer {
+  bottom: calc(65px + env(safe-area-inset-bottom, 0px));
+  transition: transform calc(240ms * var(--motion-scale)) var(--ease-out);
+}
+:root[data-chrome='hidden'] .form-footer {
+  transform: translateY(65px);
+}
+@media (min-width: 64rem) {
+  .form-footer,
+  :root[data-chrome='hidden'] .form-footer {
+    bottom: 1rem;
+    transform: none;
+  }
+}
+
+/* Pull to refresh (components/layout/pull-to-refresh.tsx): the ring follows the finger down from
+   under the top bar, its arrow turns to point up once letting go would refresh, and the aurora
+   spins while the screen's reads refetch (still under reduced motion). Transform and opacity only;
+   --pull and --pull-p are set on the element during the gesture. */
+.pull-indicator {
+  --pull: 0px;
+  --pull-p: 0;
+}
+.pull-ring {
+  opacity: var(--pull-p);
+  transform: translateY(calc(var(--pull) - 48px)) scale(calc(0.6 + 0.4 * var(--pull-p)));
+}
+.pull-indicator:not([data-phase='pulling']) .pull-ring {
+  transition:
+    transform calc(260ms * var(--motion-scale)) var(--ease-out),
+    opacity calc(160ms * var(--motion-scale)) linear;
+}
+.pull-arrow {
+  transform: rotate(calc(var(--pull-p) * 180deg));
+}
+@keyframes pull-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.pull-indicator[data-phase='refreshing'] .pull-spin {
+  animation: pull-spin calc(900ms * var(--motion-scale)) linear infinite;
 }
 
 /* The highlight that slides to the active tab or option (lib/use-sliding-indicator.ts). Only the

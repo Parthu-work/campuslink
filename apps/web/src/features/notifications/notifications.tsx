@@ -1,9 +1,11 @@
 import { Link } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bell, CheckCheck } from 'lucide-react';
+import { CheckCheck } from 'lucide-react';
 import { IntentLink } from '../../components/ui/intent-link';
 import { Button } from '../../components/ui/button';
+import { buttonVariants } from '../../components/ui/button-variants';
+import { Illustration } from '../../components/ui/illustration';
 import { Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { api } from '../../lib/api';
@@ -11,11 +13,12 @@ import { notifications } from '../../lib/queries';
 import { formatRelative } from '../../lib/format';
 import { notificationText } from '../../lib/notification-text';
 import { cn } from '../../lib/cn';
+import { SCREEN } from '../../lib/query-client';
 
 export function NotificationsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const list = useQuery(notifications());
+  const list = useQuery({ ...notifications(), ...SCREEN });
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: ['notifications'] });
     void qc.invalidateQueries({ queryKey: ['notifications-unread'] });
@@ -37,7 +40,7 @@ export function NotificationsPage() {
           <>
             <Link
               to="/settings/notifications"
-              className="rounded-full px-3 py-2 text-sm font-semibold text-brand-ink hover:bg-surface-2"
+              className="rounded-full px-3 py-2 text-meta font-semibold text-brand-ink hover:bg-surface-2"
             >
               {t('notifications.settings')}
             </Link>
@@ -51,7 +54,17 @@ export function NotificationsPage() {
       />
       {list.isLoading && <Skeleton className="h-40" />}
       {list.isSuccess && !list.data.length && (
-        <EmptyState icon={<Bell className="size-6" />} title={t('notifications.empty')} />
+        <EmptyState
+          art={<Illustration kind="done" />}
+          title={t('notifications.empty')}
+          action={
+            <Link to="/home" className={buttonVariants({ variant: 'outline' })}>
+              {t('notifications.emptyAction')}
+            </Link>
+          }
+        >
+          {t('notifications.emptyBody')}
+        </EmptyState>
       )}
       <ul className="grid gap-2">
         {list.data?.map((n) => {
@@ -78,8 +91,8 @@ export function NotificationsPage() {
                   />
                   <div className="min-w-0 flex-1">
                     <b className="block">{text.title}</b>
-                    <p className="text-sm text-fg-2">{text.body}</p>
-                    <p className="text-xs text-fg-3">
+                    <p className="text-meta text-fg-2">{text.body}</p>
+                    <p className="text-caption text-fg-3">
                       {formatRelative(n.createdAt)}
                       {!n.readAt && <span className="sr-only"> · {t('notifications.unread')}</span>}
                     </p>

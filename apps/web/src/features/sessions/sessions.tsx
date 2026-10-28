@@ -25,8 +25,10 @@ import { SlotPicker } from '../../components/ui/slot-picker';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
 import { bookings } from '../../lib/queries';
+import { cn } from '../../lib/cn';
 import { formatDay, formatTime, formatWeekday, localDateKey, newIdempotencyKey } from '../../lib/format';
 import { useRovingRadio } from '../../lib/use-roving-radio';
+import { SCREEN } from '../../lib/query-client';
 
 const HOUR = 3600_000;
 const STARS = [1, 2, 3, 4, 5] as const;
@@ -86,7 +88,7 @@ function JoinDialog({
     >
       {join.isLoading && <Skeleton className="h-12" />}
       {join.error && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="text-meta text-danger">
           {join.error instanceof ApiError ? join.error.message : t('errors.generic')}
         </p>
       )}
@@ -101,7 +103,7 @@ function JoinDialog({
             <Video className="size-5" aria-hidden /> {t('sessions.openCall')}{' '}
             <ExternalLink className="size-4" aria-hidden />
           </a>
-          <p className="text-xs text-fg-3">
+          <p className="text-caption text-fg-3">
             {t('sessions.linkExpires', { time: formatTime(join.data.expiresAt) })}
           </p>
         </div>
@@ -490,8 +492,16 @@ export function SessionsPage() {
   const [params, setParams] = useSearchParams();
   const when = params.get('when') === 'past' ? 'past' : 'upcoming';
   const [day, setDay] = useState<string | null>(null);
-  const list = useQuery({ ...bookings(when), placeholderData: keepPreviousData });
+  const list = useQuery({ ...SCREEN, ...bookings(when), placeholderData: keepPreviousData });
   const items = (list.data ?? []).filter((b) => when === 'past' || !day || localDateKey(b.start) === day);
+  // Opened from a notification: bring that session into view and focus it (audit IA-5).
+  const focusId = params.get('booking');
+  useEffect(() => {
+    if (!focusId || !list.data?.some((b) => b.id === focusId)) return;
+    const el = document.getElementById(`booking-${focusId}`);
+    el?.scrollIntoView({ block: 'center' });
+    el?.focus({ preventScroll: true });
+  }, [focusId, list.data]);
   return (
     <>
       <PageHeader title={t('nav.sessions')} />
@@ -521,7 +531,15 @@ export function SessionsPage() {
       )}
       <ul className="grid gap-3">
         {items.map((b) => (
-          <li key={b.id}>
+          <li
+            key={b.id}
+            id={`booking-${b.id}`}
+            tabIndex={-1}
+            className={cn(
+              'rounded-[var(--radius-lg)] outline-none',
+              b.id === focusId && 'ring-2 ring-brand ring-offset-2 ring-offset-bg',
+            )}
+          >
             <BookingCard b={b} now={now} />
           </li>
         ))}

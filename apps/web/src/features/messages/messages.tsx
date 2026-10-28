@@ -39,6 +39,7 @@ import { emitTyping, useTyping } from '../../lib/realtime';
 import { appendMessage } from '../../lib/use-realtime-bridge';
 import { formatDay, formatRelative, formatTime, localDateKey, newIdempotencyKey } from '../../lib/format';
 import { cn } from '../../lib/cn';
+import { firstName } from '../../lib/names';
 
 /** The list of conversations: the Messages screen on phones, the left pane on desktop (IA-12). */
 function ConversationList({ activeId }: { activeId?: string }) {
@@ -145,7 +146,7 @@ function Attachment({ m, mine }: { m: MessageView; mine: boolean }) {
       type="button"
       onClick={async () => saveBlob(await apiBlob(`/files/${a.fileId}`), a.name)}
       className={cn(
-        'flex min-h-11 items-center gap-2 rounded-[var(--radius-sm)] border px-3 text-left text-sm',
+        'flex min-h-11 items-center gap-2 rounded-[var(--radius-sm)] border px-3 text-left text-meta',
         mine ? 'border-[color-mix(in_srgb,var(--on-brand)_35%,transparent)]' : 'border-line-strong',
       )}
     >
@@ -329,7 +330,7 @@ export function ConversationPage() {
             {msgs.isLoading && <Skeleton className="h-24" />}
             {msgs.isSuccess && !items.length && (
               <p className="mx-auto max-w-[40ch] py-8 text-center text-meta text-fg-3">
-                {t('messages.start', { name: c.other.name.split(' ')[0] })}
+                {t('messages.start', { name: firstName(c.other.name) })}
               </p>
             )}
             {items.map((m, i) => {
@@ -418,7 +419,7 @@ export function ConversationPage() {
             )}
           </div>
           <p aria-live="polite" className="min-h-5 px-3.5 text-caption text-fg-3">
-            {typing ? t('messages.typing', { name: c.other.name.split(' ')[0] }) : ''}
+            {typing ? t('messages.typing', { name: firstName(c.other.name) }) : ''}
           </p>
           {closed ? (
             <p className="flex items-center gap-2 border-t border-line p-3.5 text-meta text-fg-2">
@@ -467,7 +468,7 @@ export function ConversationPage() {
                   rows={1}
                   maxLength={MESSAGE_MAX}
                   placeholder={t('messages.write')}
-                  className="max-h-36 min-h-11 w-full resize-none rounded-[22px] border border-line-strong bg-surface-2 px-4 py-2.5 text-base transition-[border-color,background-color] focus:border-brand focus:bg-surface-1 focus:outline-none"
+                  className="max-h-36 min-h-11 w-full resize-none rounded-[22px] border border-line-strong bg-surface-2 px-4 py-2.5 text-body transition-[border-color,background-color] focus:border-brand focus:bg-surface-1 focus:outline-none"
                 />
               </label>
               <Button

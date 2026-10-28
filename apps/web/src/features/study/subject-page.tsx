@@ -21,6 +21,7 @@ import { cn } from '../../lib/cn';
 import { AiNotice } from './study';
 import { SubjectLibrary } from './library';
 import { ChatLauncher } from './chat/chat-launcher';
+import { SCREEN } from '../../lib/query-client';
 
 // Editors load when opened: the form library, Zod and the editors themselves (bundle budget).
 const SubjectForm = lazy(() => import('./subject-form').then((m) => ({ default: m.SubjectForm })));
@@ -96,6 +97,7 @@ export function SubjectPage() {
   const qc = useQueryClient();
   const sheet = useUrlOverlay('edit');
   const q = useQuery({
+    ...SCREEN,
     ...subjectQuery(id),
     // The card the member tapped draws the header at once.
     placeholderData: () => findCached(qc, [['subjects']], hasId<SubjectView>('id', id, ['code', 'name'])),

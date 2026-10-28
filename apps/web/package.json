@@ -11,7 +11,11 @@
     "test": "vitest run --passWithNoTests",
     "test:e2e": "playwright test",
     "budget": "node scripts/bundle-budget.mjs",
-    "palette": "node scripts/generate-palette.mjs"
+    "palette": "node scripts/generate-palette.mjs",
+    "audit:capture": "playwright test -c e2e/audit/playwright.config.ts capture",
+    "audit:journeys": "playwright test -c e2e/audit/playwright.config.ts journeys",
+    "audit:extras": "playwright test -c e2e/audit/playwright.config.ts extras",
+    "audit:lighthouse": "playwright test -c e2e/audit/playwright.config.ts lighthouse"
   },
   "dependencies": {
     "@campuslink/shared": "workspace:*",

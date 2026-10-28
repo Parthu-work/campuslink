@@ -15,6 +15,8 @@ import { api } from '../../lib/api';
 import { coverOf } from '../../lib/accent';
 import { findCached, hasId } from '../../lib/query-seed';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
+import { SCREEN } from '../../lib/query-client';
+import { firstName } from '../../lib/names';
 
 // The form library and Zod load with the sheet, not before the mentor's header (bundle budget).
 const RequestForm = lazy(() => import('./request-form').then((m) => ({ default: m.RequestForm })));
@@ -30,6 +32,7 @@ export function MentorPage() {
   const qc = useQueryClient();
   const sheet = useUrlOverlay('ask');
   const q = useQuery({
+    ...SCREEN,
     queryKey: ['mentor', userId],
     queryFn: () => api.get<MentorCard & { timezone: string }>(`/mentors/${userId}`),
     enabled: /^[a-f0-9]{24}$/.test(userId),
@@ -161,7 +164,7 @@ export function MentorPage() {
       <Sheet
         open={sheet.value === 'request'}
         onOpenChange={(o) => !o && sheet.close()}
-        title={t('request.title', { name: m.name.split(' ')[0] })}
+        title={t('request.title', { name: firstName(m.name) })}
         history={false}
       >
         <Suspense fallback={<Skeleton className="h-96" />}>

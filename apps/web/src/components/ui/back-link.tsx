@@ -34,7 +34,7 @@ export function BackLink({
       to={to}
       onClick={onClick}
       className={cn(
-        'inline-flex min-h-11 items-center gap-1.5 justify-self-start rounded-full pr-3 text-sm font-semibold text-brand-ink hover:underline',
+        'inline-flex min-h-11 items-center gap-1.5 justify-self-start rounded-full pr-3 text-meta font-semibold text-brand-ink hover:underline',
         className,
       )}
     >

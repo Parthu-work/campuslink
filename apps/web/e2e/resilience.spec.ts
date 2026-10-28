@@ -57,6 +57,35 @@ test('a blocked screen chunk shows a friendly state inside the shell and reloads
   await expect(page.getByRole('heading', { name: 'Events', level: 1 })).toBeVisible();
 });
 
+test("a screen whose data can't load says so inside the shell, and Retry recovers (ST-2)", async ({
+  page,
+  isMobile,
+}) => {
+  await ready(page);
+  let fail = true;
+  await page.route(/\/api\/v1\/events(\?|$)/, (r: Route) =>
+    fail
+      ? r.fulfill({ status: 503, body: '{"ok":false,"error":{"code":"INTERNAL","message":"down"}}' })
+      : r.fallback(),
+  );
+  await openEvents(page, isMobile);
+  await expect(page.getByRole('alert').getByText('Couldn’t open this screen')).toBeVisible({
+    timeout: 15_000,
+  });
+  await shellIsAlive(page);
+  fail = false;
+  await page.getByRole('alert').getByRole('button', { name: 'Try again' }).click();
+  await expect(page.getByRole('heading', { name: 'Events', level: 1 })).toBeVisible();
+  await expect(page.getByRole('alert')).toHaveCount(0);
+});
+
+test('a link to something deleted says it is not found, inside the shell', async ({ page }) => {
+  await ready(page);
+  await page.goto('http://dpit.localhost:4173/events/0123456789abcdef01234567');
+  await expect(page.getByText('We couldn’t find that page.')).toBeVisible();
+  await shellIsAlive(page);
+});
+
 test('offline, an unvisited screen shows the offline state and the shell keeps working', async ({
   page,
   context,

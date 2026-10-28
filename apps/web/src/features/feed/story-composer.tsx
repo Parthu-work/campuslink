@@ -149,7 +149,7 @@ export function StoryComposer({ onDone }: { onDone: () => void }) {
         )}
       </Field>
       {error && (
-        <p role="alert" className="text-sm font-medium text-danger">
+        <p role="alert" className="text-meta font-medium text-danger">
           {error}
         </p>
       )}
