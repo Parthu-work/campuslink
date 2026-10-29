@@ -1,0 +1,15 @@
+{
+ "swControlled": true,
+ "events-allow": {
+  "url": "/events",
+  "h1": "Events",
+  "text": "EventsAlumni meetups, talks, placement drives, AMAs and office hours. RSVP, add them to your calendar and ask questions.UpcomingMinePastAll typesMeetupTalkPlacement driveWorkshopAMAOffice hoursNo events here yet.",
+  "shell": true
+ },
+ "events-block": {
+  "url": "/events",
+  "h1": null,
+  "text": "You’re offlineThis screen isn’t saved on your phone yet. Reconnect and it will open.Try againGo home",
+  "shell": true
+ }
+}

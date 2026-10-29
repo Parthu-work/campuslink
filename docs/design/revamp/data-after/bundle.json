@@ -1,0 +1,178 @@
+{
+ "initialJsGzipKB": 169,
+ "initialJsRawKB": 519,
+ "budgetKB": 170,
+ "initial": [
+  {
+   "file": "index-nIzXhbw2.js",
+   "raw": 336674,
+   "gzip": 106158,
+   "initial": true
+  },
+  {
+   "file": "hooks-CtMQkaSl.js",
+   "raw": 71831,
+   "gzip": 23520,
+   "initial": true
+  },
+  {
+   "file": "i18next-BVoNhSew.js",
+   "raw": 43266,
+   "gzip": 13618,
+   "initial": true
+  },
+  {
+   "file": "cn-u_-U8onL.js",
+   "raw": 36026,
+   "gzip": 11643,
+   "initial": true
+  },
+  {
+   "file": "createLucideIcon-DsQxES6L.js",
+   "raw": 13469,
+   "gzip": 5829,
+   "initial": true
+  },
+  {
+   "file": "useQuery-O4h9_n7j.js",
+   "raw": 15832,
+   "gzip": 5337,
+   "initial": true
+  },
+  {
+   "file": "react-DlmbjZJV.js",
+   "raw": 7919,
+   "gzip": 3048,
+   "initial": true
+  },
+  {
+   "file": "preferences-BvsOAzdk.js",
+   "raw": 2133,
+   "gzip": 1123,
+   "initial": true
+  },
+  {
+   "file": "react-m9ZWnT6r.js",
+   "raw": 1426,
+   "gzip": 853,
+   "initial": true
+  },
+  {
+   "file": "preload-helper-BLdHbfdN.js",
+   "raw": 1519,
+   "gzip": 797,
+   "initial": true
+  },
+  {
+   "file": "rolldown-runtime-XKyaHtl9.js",
+   "raw": 726,
+   "gzip": 429,
+   "initial": true
+  },
+  {
+   "file": "jsx-runtime-LKYXHABd.js",
+   "raw": 484,
+   "gzip": 344,
+   "initial": true
+  },
+  {
+   "file": "storage-BNQupCKC.js",
+   "raw": 194,
+   "gzip": 158,
+   "initial": true
+  },
+  {
+   "file": "bot-check-config-BD8U1lbX.js",
+   "raw": 160,
+   "gzip": 157,
+   "initial": true
+  }
+ ],
+ "css": [
+  {
+   "file": "index-Dkxvisee.css",
+   "raw": 127212,
+   "gzip": 24070
+  }
+ ],
+ "allChunks": 207,
+ "totalJsGzipKB": 869.1,
+ "largest": [
+  {
+   "file": "pdf-viewer-CdsurKhv.js",
+   "raw": 435479,
+   "gzip": 129666
+  },
+  {
+   "file": "index-nIzXhbw2.js",
+   "raw": 336674,
+   "gzip": 106158
+  },
+  {
+   "file": "katex-TVd0YmVs.js",
+   "raw": 259113,
+   "gzip": 76670
+  },
+  {
+   "file": "te-BlfXZjV6.js",
+   "raw": 224672,
+   "gzip": 47171
+  },
+  {
+   "file": "en-UMc-MOFC.js",
+   "raw": 101528,
+   "gzip": 35819
+  },
+  {
+   "file": "mentors-DxqKc87N.js",
+   "raw": 83018,
+   "gzip": 29325
+  },
+  {
+   "file": "schemas-BZgBJDeN.js",
+   "raw": 87305,
+   "gzip": 24689
+  },
+  {
+   "file": "hooks-CtMQkaSl.js",
+   "raw": 71831,
+   "gzip": 23520
+  },
+  {
+   "file": "motion-features-BEBzE0gR.js",
+   "raw": 63923,
+   "gzip": 20109
+  },
+  {
+   "file": "dist-4J-zaF2A.js",
+   "raw": 50499,
+   "gzip": 17528
+  },
+  {
+   "file": "errors-eqtL94AT.js",
+   "raw": 40112,
+   "gzip": 13795
+  },
+  {
+   "file": "i18next-BVoNhSew.js",
+   "raw": 43266,
+   "gzip": 13618
+  },
+  {
+   "file": "use-dialog-history-BT1x21RV.js",
+   "raw": 39853,
+   "gzip": 13439
+  },
+  {
+   "file": "esm-oPlmisic.js",
+   "raw": 41252,
+   "gzip": 12766
+  },
+  {
+   "file": "cn-u_-U8onL.js",
+   "raw": 36026,
+   "gzip": 11643
+  }
+ ],
+ "note": "gzip level 9 of each file, as the audit measured; `pnpm --filter @campuslink/web budget` (level 6 over the closure) is the CI gate."
+}

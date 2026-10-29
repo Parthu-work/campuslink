@@ -1,0 +1,2113 @@
+{
+ "public:/": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 3,
+  "under44": 0,
+  "under24": 0,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "12px": 4,
+   "13px": 5,
+   "36px": 2,
+   "16px": 3,
+   "15px": 3
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "public:/sign-in": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 7,
+  "under44": 1,
+  "under24": 0,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "DPDeccan Plateau Institute of Technology",
+    "w": 328,
+    "h": 40,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "12px": 2,
+   "15px": 2,
+   "28px": 1,
+   "13px": 5,
+   "16px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "public:/sign-up": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 14,
+  "under44": 2,
+  "under24": 1,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "DPDeccan Plateau Institute of Technology",
+    "w": 328,
+    "h": 40,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "12px": 4,
+   "15px": 2,
+   "28px": 1,
+   "13px": 17,
+   "16px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "public:/forgot-password": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 4,
+  "under44": 1,
+  "under24": 0,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "DPDeccan Plateau Institute of Technology",
+    "w": 328,
+    "h": 40,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "12px": 2,
+   "15px": 2,
+   "28px": 1,
+   "13px": 2,
+   "16px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/home": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 70,
+  "under44": 5,
+  "under24": 1,
+  "under44NotExempt": 4,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 31,
+   "12px": 42,
+   "11.52px": 1,
+   "24px": 1,
+   "20.88px": 1,
+   "15.84px": 1,
+   "13px": 30,
+   "19.04px": 2,
+   "14.4px": 4,
+   "17.28px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/mentors": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 18,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 2,
+   "12px": 14,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 11,
+   "25.92px": 1,
+   "19.04px": 1,
+   "16px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/mentors/6ae2d3c813488ca992d0aeec": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 15,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 15,
+   "11.52px": 1,
+   "13px": 10,
+   "34.56px": 1,
+   "24px": 1,
+   "16px": 4
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/mentorship": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 14,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 3,
+   "12px": 12,
+   "11.52px": 1,
+   "24px": 1,
+   "15.84px": 1,
+   "13px": 7
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/sessions": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 33,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 23,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 15,
+   "16px": 14,
+   "19.04px": 1,
+   "10px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/messages": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 12,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 10,
+   "11.52px": 1,
+   "24px": 1,
+   "15.84px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/messages/6ae2d3c813488ca992d0af0f": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 19,
+  "under44": 2,
+  "under24": 2,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 6,
+   "12px": 9,
+   "11.52px": 1,
+   "13px": 1,
+   "15.84px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/jobs": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 41,
+  "under44": 7,
+  "under24": 1,
+  "under44NotExempt": 6,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "DEMO: Data Analyst Intern",
+    "w": 100,
+    "h": 39,
+    "exempt": false
+   },
+   {
+    "label": "DEMO: Data Analyst Intern",
+    "w": 100,
+    "h": 39,
+    "exempt": false
+   },
+   {
+    "label": "DEMO: Data Analyst Intern",
+    "w": 100,
+    "h": 39,
+    "exempt": false
+   },
+   {
+    "label": "DEMO: Data Analyst Intern",
+    "w": 100,
+    "h": 39,
+    "exempt": false
+   },
+   {
+    "label": "DEMO: Data Analyst Intern",
+    "w": 100,
+    "h": 39,
+    "exempt": false
+   },
+   {
+    "label": "DEMO: Backend Developer (freshers)",
+    "w": 144,
+    "h": 39,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 29,
+   "12px": 137,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 17,
+   "19.04px": 5
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/jobs/6ae2d3c913488ca992d0af26": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 19,
+  "under44": 3,
+  "under24": 1,
+  "under44NotExempt": 2,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Rahul Varma",
+    "w": 73,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Rahul Varma",
+    "w": 242,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 7,
+   "12px": 29,
+   "11.52px": 1,
+   "13px": 10,
+   "24px": 1,
+   "16px": 1,
+   "14.4px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/jobs/tracker": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 12,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 5,
+   "12px": 5,
+   "11.52px": 1,
+   "13px": 3,
+   "24px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/referrals": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 11,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 5,
+   "11.52px": 1,
+   "24px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/events": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 3,
+   "12px": 18,
+   "11.52px": 1,
+   "24px": 3,
+   "13px": 7,
+   "19.04px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/events/6ae2d3c913488ca992d0af7e": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 9,
+   "12px": 7,
+   "11.52px": 1,
+   "13px": 6,
+   "24px": 1,
+   "16px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/roadmaps": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 43,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 85,
+   "11.52px": 1,
+   "24px": 1,
+   "19.04px": 34,
+   "13px": 29
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/roadmaps/sde-dsa": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 32,
+  "under44": 6,
+  "under24": 2,
+  "under44NotExempt": 4,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Data Structures & Algorithms Roadmap – r",
+    "w": 294,
+    "h": 38,
+    "exempt": false
+   },
+   {
+    "label": "6.006 Introduction to Algorithms (Spring",
+    "w": 294,
+    "h": 38,
+    "exempt": false
+   },
+   {
+    "label": "Programming, Data Structures and Algorit",
+    "w": 294,
+    "h": 38,
+    "exempt": false
+   },
+   {
+    "label": "Preparing to Interview and Interviewing ",
+    "w": 294,
+    "h": 38,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 17,
+   "12px": 42,
+   "11.52px": 1,
+   "13px": 39,
+   "24px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/progress": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 14,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 14,
+   "12px": 42,
+   "11.52px": 1,
+   "24px": 4,
+   "13px": 26,
+   "30.02px": 1,
+   "19.04px": 4,
+   "16px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/rewards": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 13,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 5,
+   "12px": 7,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 10,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/leaderboard": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 13,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 7,
+   "12px": 9,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 2,
+   "16px": 4,
+   "14.4px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/people": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 27,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 13,
+   "12px": 19,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 13,
+   "15.84px": 9
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/people/6ae2d3c813488ca992d0aefa": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 2,
+  "under24": 2,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 2,
+   "12px": 7,
+   "11.52px": 1,
+   "13px": 5,
+   "34.56px": 1,
+   "24px": 1,
+   "16px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/profile": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 38,
+  "under44": 7,
+  "under24": 2,
+  "under44NotExempt": 5,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Remove Java",
+    "w": 32,
+    "h": 32,
+    "exempt": false
+   },
+   {
+    "label": "Remove Git",
+    "w": 32,
+    "h": 32,
+    "exempt": false
+   },
+   {
+    "label": "",
+    "w": 107,
+    "h": 35,
+    "exempt": false
+   },
+   {
+    "label": "",
+    "w": 268,
+    "h": 35,
+    "exempt": false
+   },
+   {
+    "label": "",
+    "w": 268,
+    "h": 35,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 20,
+   "11.52px": 1,
+   "24px": 1,
+   "25.92px": 1,
+   "19.04px": 1,
+   "13px": 18
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/posts/6ae2d3c813488ca992d0af19": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 25,
+  "under44": 3,
+  "under24": 1,
+  "under44NotExempt": 2,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Ananya K",
+    "w": 67,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 18,
+   "12px": 17,
+   "11.52px": 1,
+   "13px": 3,
+   "14.4px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/questions": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 2,
+  "under24": 1,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "DEMO: How many projects should a CSE res",
+    "w": 262,
+    "h": 39,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 6,
+   "12px": 10,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 3
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/questions/6ae2d3c913488ca992d0af22": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 16,
+  "under44": 3,
+  "under24": 1,
+  "under44NotExempt": 2,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Ananya K",
+    "w": 67,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 6,
+   "12px": 15,
+   "11.52px": 1,
+   "13px": 2,
+   "14.4px": 2,
+   "24px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/reels": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 11,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 5,
+   "11.52px": 1,
+   "24px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/saved": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 11,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 5,
+   "11.52px": 1,
+   "24px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/notifications": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 13,
+  "under44": 2,
+  "under24": 1,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Notification settings",
+    "w": 150,
+    "h": 35,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 5,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/settings": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 23,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 8,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 9,
+   "19.04px": 3
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/settings/privacy": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 19,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 6,
+   "12px": 11,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 6,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/settings/preferences": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 25,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 3,
+   "12px": 5,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 17
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/settings/notifications": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 51,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 6,
+   "12px": 17,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 51
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/settings/data": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 18,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 7,
+   "12px": 9,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 10,
+   "19.04px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/study": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 13,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 5,
+   "12px": 8,
+   "11.52px": 1,
+   "30.02px": 1,
+   "13px": 4
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/study/6ae2d3c913488ca992d0af80": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 30,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 12,
+   "12px": 24,
+   "11.52px": 1,
+   "13px": 29,
+   "24px": 1,
+   "10.08px": 1,
+   "19.04px": 2,
+   "16px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/study/6ae2d3c913488ca992d0af80/m/6ae2d3c913488ca992d0af9c": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 23,
+  "under44": 2,
+  "under24": 1,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Text of this page",
+    "w": 302,
+    "h": 43,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 7,
+   "11.52px": 1,
+   "13px": 8,
+   "24px": 1,
+   "16px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "/study/chat": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 22,
+  "under44": 2,
+  "under24": 1,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Send",
+    "w": 38,
+    "h": 44,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 3,
+   "12px": 6,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 8,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "alumni:/home": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 74,
+  "under44": 5,
+  "under24": 1,
+  "under44NotExempt": 4,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 31,
+   "12px": 47,
+   "11.52px": 1,
+   "24px": 1,
+   "20.88px": 1,
+   "15.84px": 1,
+   "13px": 32,
+   "19.04px": 2,
+   "14.4px": 4,
+   "12.96px": 1,
+   "17.28px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "alumni:/mentor": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 63,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 24,
+   "12px": 12,
+   "11.52px": 1,
+   "24px": 2,
+   "13px": 27,
+   "19.04px": 7
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "alumni:/mentorship": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 17,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 13,
+   "15.84px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "alumni:/jobs/new": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 35,
+  "under44": 2,
+  "under24": 1,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "",
+    "w": 268,
+    "h": 35,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 10,
+   "11.52px": 1,
+   "13px": 24,
+   "24px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "alumni:/events/new": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 31,
+  "under44": 2,
+  "under24": 1,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "",
+    "w": 42,
+    "h": 44,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 3,
+   "12px": 9,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 20
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "alumni:/roadmaps/new": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 44,
+  "under44": 2,
+  "under24": 1,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "",
+    "w": 42,
+    "h": 44,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 8,
+   "12px": 10,
+   "11.52px": 1,
+   "13px": 34,
+   "24px": 1,
+   "19.04px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "alumni:/progress": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 14,
+   "12px": 65,
+   "11.52px": 1,
+   "24px": 8,
+   "13px": 38,
+   "30.02px": 1,
+   "19.04px": 5,
+   "16px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "alumni:/referrals": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 5,
+   "12px": 9,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 7,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "alumni:/wall-of-mentors": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 12,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 9,
+   "11.52px": 1,
+   "24px": 1,
+   "28.8px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "contributor:/home": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 49,
+  "under44": 5,
+  "under24": 1,
+  "under44NotExempt": 4,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 27,
+   "12px": 38,
+   "11.52px": 1,
+   "24px": 1,
+   "20.88px": 1,
+   "19.04px": 1,
+   "14.4px": 4,
+   "13px": 5
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "contributor:/events": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 3,
+   "12px": 17,
+   "11.52px": 1,
+   "24px": 3,
+   "13px": 7,
+   "19.04px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "faculty:/home": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 52,
+  "under44": 5,
+  "under24": 1,
+  "under44NotExempt": 4,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 27,
+   "12px": 41,
+   "11.52px": 1,
+   "24px": 1,
+   "20.88px": 1,
+   "19.04px": 1,
+   "14.4px": 4,
+   "12.96px": 1,
+   "13px": 6
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "faculty:/admin": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 16,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 7,
+   "12px": 11,
+   "11.52px": 1,
+   "24px": 1,
+   "19.04px": 5,
+   "13px": 3
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "faculty:/admin/moderation": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 3,
+   "12px": 9,
+   "11.52px": 1,
+   "13px": 5,
+   "24px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "faculty:/admin/mentorship": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 13,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 8,
+   "11.52px": 1,
+   "13px": 1,
+   "24px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "faculty:/roadmaps/review": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 40,
+  "under44": 19,
+  "under24": 1,
+  "under44NotExempt": 18,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "DEMO: Campus Placement Sprint · v1",
+    "w": 265,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Backend Developer",
+    "w": 140,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Blockchain Developer",
+    "w": 157,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Chemical Engineer (Core)",
+    "w": 181,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Civil Engineer (Core)",
+    "w": 145,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Cybersecurity Analyst",
+    "w": 159,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Data Analyst",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Data Engineer",
+    "w": 101,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 32,
+   "12px": 166,
+   "11.52px": 1,
+   "13px": 4,
+   "24px": 1,
+   "19.04px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "faculty:/study": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 16,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 6,
+   "12px": 10,
+   "11.52px": 1,
+   "30.02px": 1,
+   "13px": 6
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "faculty:/study/6ae2d3c913488ca992d0af80/insights": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 18,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 3,
+   "12px": 18,
+   "11.52px": 1,
+   "13px": 40,
+   "24px": 5,
+   "19.04px": 4
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "tpo:/home": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 52,
+  "under44": 5,
+  "under24": 1,
+  "under44NotExempt": 4,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 27,
+   "12px": 39,
+   "11.52px": 1,
+   "24px": 1,
+   "20.88px": 1,
+   "19.04px": 1,
+   "14.4px": 4,
+   "12.96px": 1,
+   "13px": 6
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "tpo:/admin/analytics": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 38,
+  "under44": 15,
+  "under24": 1,
+  "under44NotExempt": 2,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Show as a table",
+    "w": 286,
+    "h": 43,
+    "exempt": false
+   },
+   {
+    "label": "Show as a table",
+    "w": 286,
+    "h": 43,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 7,
+   "12px": 48,
+   "11.52px": 1,
+   "13px": 107,
+   "24px": 9
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "tpo:/admin/job-sources": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 21,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 5,
+   "12px": 38,
+   "11.52px": 1,
+   "13px": 26,
+   "24px": 1,
+   "19.04px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/home": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 52,
+  "under44": 5,
+  "under24": 1,
+  "under44NotExempt": 4,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 27,
+   "12px": 39,
+   "11.52px": 1,
+   "24px": 1,
+   "20.88px": 1,
+   "19.04px": 1,
+   "14.4px": 4,
+   "12.96px": 1,
+   "13px": 6
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 33,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 24,
+   "12px": 11,
+   "11.52px": 1,
+   "24px": 1,
+   "19.04px": 10,
+   "13px": 8
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/users": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 42,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 28,
+   "11.52px": 1,
+   "13px": 39,
+   "24px": 1,
+   "15.84px": 10
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/verification": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 15,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 2,
+   "12px": 6,
+   "11.52px": 1,
+   "13px": 4,
+   "24px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/imports": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 2,
+  "under24": 2,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 6,
+   "11.52px": 1,
+   "13px": 4,
+   "24px": 1,
+   "19.04px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/list": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 22,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 5,
+   "12px": 57,
+   "11.52px": 1,
+   "13px": 13,
+   "24px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/moderation": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 17,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 3,
+   "12px": 7,
+   "11.52px": 1,
+   "13px": 5,
+   "24px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/rewards": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 25,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 6,
+   "12px": 14,
+   "11.52px": 1,
+   "13px": 14,
+   "24px": 1,
+   "19.04px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/sources": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 22,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 5,
+   "12px": 42,
+   "11.52px": 1,
+   "13px": 29,
+   "24px": 1,
+   "19.04px": 2
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/analytics": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 38,
+  "under44": 15,
+  "under24": 1,
+  "under44NotExempt": 2,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Show as a table",
+    "w": 286,
+    "h": 43,
+    "exempt": false
+   },
+   {
+    "label": "Show as a table",
+    "w": 286,
+    "h": 43,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 7,
+   "12px": 48,
+   "11.52px": 1,
+   "13px": 107,
+   "24px": 9
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/branding": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 27,
+  "under44": 2,
+  "under24": 2,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 6,
+   "12px": 28,
+   "11.52px": 1,
+   "13px": 11,
+   "24px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/features": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 19,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 8,
+   "12px": 7,
+   "11.52px": 1,
+   "13px": 3,
+   "24px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/ai": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 76,
+  "under44": 31,
+  "under24": 26,
+  "under44NotExempt": 1,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Show as a table",
+    "w": 286,
+    "h": 43,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 21,
+   "12px": 73,
+   "11.52px": 1,
+   "13px": 130,
+   "24px": 5,
+   "19.04px": 7
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "admin:/admin/audit": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 13,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 2,
+   "12px": 86,
+   "11.52px": 1,
+   "13px": 1,
+   "24px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "unverified:/home": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 48,
+  "under44": 5,
+  "under24": 1,
+  "under44NotExempt": 4,
+  "under24NotExempt": 0,
+  "under44Examples": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 28,
+   "12px": 38,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 7,
+   "20.88px": 1,
+   "19.04px": 1,
+   "14.4px": 4
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "unverified:/mentors": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 10,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 4,
+   "12px": 5,
+   "11.52px": 1,
+   "19.04px": 1
+  },
+  "imagesWithoutDimensions": 0
+ },
+ "unverified:/verify": {
+  "docScrollWidth": 360,
+  "viewportWidth": 360,
+  "overflow": [],
+  "targets": 12,
+  "under44": 1,
+  "under24": 1,
+  "under44NotExempt": 0,
+  "under24NotExempt": 0,
+  "under44Examples": [],
+  "under24Examples": [],
+  "fontSizes": {
+   "15px": 3,
+   "12px": 9,
+   "11.52px": 1,
+   "24px": 1,
+   "13px": 4,
+   "16px": 2
+  },
+  "imagesWithoutDimensions": 0
+ }
+}

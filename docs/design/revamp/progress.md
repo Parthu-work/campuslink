@@ -18,8 +18,8 @@ Branch: the session branch rule applies (`claude/sleepy-euler-bi65m3`, started f
 |     9 | Study feature (spec §13 steps 1–6, each a stop-for-review point)            | Done                              |
 |    10 | Remaining screens                                                           | Done                              |
 |    11 | Polish                                                                      | Done                              |
-|    12 | Re-audit (`after/`, `summary.md`, scorecard)                                | Not started                       |
-|    13 | Final report                                                                | Not started                       |
+|    12 | Re-audit (`after/`, `summary.md`, scorecard)                                | Done                              |
+|    13 | Final report                                                                | Done (`final-report.md`)          |
 
 ## Phase 0 · Setup
 
@@ -312,3 +312,22 @@ A review of every screen against the world-class bar (master prompt §3): the re
 - **Test fixtures:** job-board fixtures used fixed October dates and began failing as the calendar passed the 21-day window; they are now relative to the run.
 
 **Budget:** initial JS 169.1 KB (of 170): the realtime bridge, pull to refresh and the service worker's registration and update prompt now load after the first screen has painted. Every screen is under 70 KB except the recorded PDF viewer and KaTeX exceptions.
+
+## Phase 12 · Re-audit
+
+The audit's method, re-run on the revamped app with the scripts in `apps/web/e2e/audit/` (`pnpm --filter @campuslink/web audit:capture`, `audit:extras`, `audit:journeys`, `audit:lighthouse`; files end in `.audit.ts`, so the normal e2e run never picks them up). Results are in `after/` (screenshots, named as in `before/`) and `data-after/` (raw measurements); the before/after comparison and the status of every finding are in [`summary.md`](summary.md).
+
+Fixed on the way, because the re-audit found them:
+
+- **The College list still widened a phone's layout to 613 px** for admins. The cause was not the table but the visually hidden labels in its Remove column: `sr-only` is absolutely positioned, and the scrolling card around the table was not positioned, so it did not clip them. Every table scroller (the `Table` primitive, the College list, the audit log, imports) is now positioned and contains its inline size; the reflow test now covers the admin tables on a phone.
+- **Small text:** the `eyebrow` style (dates and section labels such as "NEXT SESSION") was 11 px; it is 12 px, the smallest step of the type scale. Avatar initials have a 10 px floor. The only text under 12 px left is the monogram inside the college crest (a logo) and the initials in the smallest avatars.
+- **Small targets:** "Forgot password?", "Create an account", Back on the password pages, the review queue's Open and title links, the referrer's name on a job and the PDF viewer's "Text of this page" toggle grew to 24–44 px. The probe now measures a link stretched over its card by the card, and no longer counts focusable panels (tab panels, scrollable text regions) as touch targets.
+- **The bars hid on Back.** Restoring a scrolled position on Back or a tab tap read as the member scrolling down, so the bars slid away and the tab bar was gone until you scrolled up. Only the member's own scrolling (touch, wheel or keys, and the momentum after them) hides them now, with an e2e test.
+- **View transitions cost 300–500 ms per tap on a struggling device** (measured at 4× CPU: Back to Events 750 against 432 ms without them). `lib/transitions.ts` skips them on low-end devices and once the main thread has shown three tasks of 200 ms; other devices keep the motion.
+- **Route matching ran for every card link** that scrolled into view (all 66 routes flattened, ranked and compiled each time); matches are cached per path. A cold Home load at 4× CPU does about a quarter less main-thread work.
+- **The re-audit scripts:** journey times run from the tap (pointer down, or Back and Forward), each journey pass runs on fresh demo data, J2 sends the request J6 accepts again, steps that lose their element fail after 15 s instead of hanging, Lighthouse finds Chromium through `CHROME_PATH`, retries a failed trace and primes warm runs until the service worker controls the page, and the offline probe opens the menu before going offline.
+- **Dependencies (CI):** advisories published since the last run (undici, multer, body-parser, nodemailer, fast-uri, serialize-javascript) are patched; `pnpm audit` reports one low, build-time advisory (deepmerge in workbox-build) that has no fixed release yet.
+
+Results (details in `summary.md`): 330 of 330 axe scans clean; no screen wider than 360 px; no spinner frames in any journey and no empty content area in all but one step; most taps as quick or quicker on a throttled phone; initial JS 169 KB; the installed app at 81–93 in Lighthouse and the public pages at 86–87. Scorecard: every area at 4 or 5 except **performance as experienced, 3**: a first visit on a cold cache still has an LCP of 4–5 s at simulated 4× CPU. The ways to close it (a cached first screen, which keeps members' data on the device; lighter first renders of Home and Jobs; server rendering) are in `summary.md` §3.
+
+**Budget:** initial JS 169.5 KB (of 170); every screen under 70 KB except the recorded PDF viewer and KaTeX exceptions.

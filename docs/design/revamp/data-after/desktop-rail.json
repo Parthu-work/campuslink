@@ -1,0 +1,20 @@
+{
+ "1440x900": {
+  "railHeight": 900,
+  "railScrollHeight": 900,
+  "overflowY": "visible",
+  "innerScroller": true,
+  "viewport": 900,
+  "items": 25,
+  "unreachable": []
+ },
+ "1280x720": {
+  "railHeight": 720,
+  "railScrollHeight": 720,
+  "overflowY": "visible",
+  "innerScroller": true,
+  "viewport": 720,
+  "items": 25,
+  "unreachable": []
+ }
+}

@@ -1,0 +1,1652 @@
+[
+ {
+  "screen": "public-landing-360-light-dpit",
+  "url": "http://dpit.localhost:4173/",
+  "violations": []
+ },
+ {
+  "screen": "public-sign-in-360-light-dpit",
+  "url": "http://dpit.localhost:4173/sign-in",
+  "violations": []
+ },
+ {
+  "screen": "public-sign-up-360-light-dpit",
+  "url": "http://dpit.localhost:4173/sign-up",
+  "violations": []
+ },
+ {
+  "screen": "public-forgot-password-360-light-dpit",
+  "url": "http://dpit.localhost:4173/forgot-password",
+  "violations": []
+ },
+ {
+  "screen": "public-landing-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/",
+  "violations": []
+ },
+ {
+  "screen": "public-sign-in-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/sign-in",
+  "violations": []
+ },
+ {
+  "screen": "public-sign-up-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/sign-up",
+  "violations": []
+ },
+ {
+  "screen": "public-forgot-password-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/forgot-password",
+  "violations": []
+ },
+ {
+  "screen": "student-home-360-light-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "student-mentors-360-light-dpit",
+  "url": "http://dpit.localhost:4173/mentors",
+  "violations": []
+ },
+ {
+  "screen": "student-mentor-profile-360-light-dpit",
+  "url": "http://dpit.localhost:4173/mentors/6ae2d3c813488ca992d0aeec",
+  "violations": []
+ },
+ {
+  "screen": "student-mentorship-requests-360-light-dpit",
+  "url": "http://dpit.localhost:4173/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "student-sessions-360-light-dpit",
+  "url": "http://dpit.localhost:4173/sessions",
+  "violations": []
+ },
+ {
+  "screen": "student-messages-360-light-dpit",
+  "url": "http://dpit.localhost:4173/messages",
+  "violations": []
+ },
+ {
+  "screen": "student-conversation-360-light-dpit",
+  "url": "http://dpit.localhost:4173/messages/6ae2d3c813488ca992d0af0f",
+  "violations": []
+ },
+ {
+  "screen": "student-jobs-360-light-dpit",
+  "url": "http://dpit.localhost:4173/jobs",
+  "violations": []
+ },
+ {
+  "screen": "student-job-360-light-dpit",
+  "url": "http://dpit.localhost:4173/jobs/6ae2d3c913488ca992d0af26",
+  "violations": []
+ },
+ {
+  "screen": "student-tracker-360-light-dpit",
+  "url": "http://dpit.localhost:4173/jobs/tracker",
+  "violations": []
+ },
+ {
+  "screen": "student-referrals-360-light-dpit",
+  "url": "http://dpit.localhost:4173/referrals",
+  "violations": []
+ },
+ {
+  "screen": "student-events-360-light-dpit",
+  "url": "http://dpit.localhost:4173/events",
+  "violations": []
+ },
+ {
+  "screen": "student-event-360-light-dpit",
+  "url": "http://dpit.localhost:4173/events/6ae2d3c913488ca992d0af7e",
+  "violations": []
+ },
+ {
+  "screen": "student-roadmaps-360-light-dpit",
+  "url": "http://dpit.localhost:4173/roadmaps",
+  "violations": []
+ },
+ {
+  "screen": "student-roadmap-360-light-dpit",
+  "url": "http://dpit.localhost:4173/roadmaps/sde-dsa",
+  "violations": []
+ },
+ {
+  "screen": "student-progress-360-light-dpit",
+  "url": "http://dpit.localhost:4173/progress",
+  "violations": []
+ },
+ {
+  "screen": "student-rewards-360-light-dpit",
+  "url": "http://dpit.localhost:4173/rewards",
+  "violations": []
+ },
+ {
+  "screen": "student-leaderboard-360-light-dpit",
+  "url": "http://dpit.localhost:4173/leaderboard",
+  "violations": []
+ },
+ {
+  "screen": "student-people-360-light-dpit",
+  "url": "http://dpit.localhost:4173/people",
+  "violations": []
+ },
+ {
+  "screen": "student-profile-view-360-light-dpit",
+  "url": "http://dpit.localhost:4173/people/6ae2d3c813488ca992d0aefa",
+  "violations": []
+ },
+ {
+  "screen": "student-profile-edit-360-light-dpit",
+  "url": "http://dpit.localhost:4173/profile",
+  "violations": []
+ },
+ {
+  "screen": "student-post-360-light-dpit",
+  "url": "http://dpit.localhost:4173/posts/6ae2d3c813488ca992d0af19",
+  "violations": []
+ },
+ {
+  "screen": "student-questions-360-light-dpit",
+  "url": "http://dpit.localhost:4173/questions",
+  "violations": []
+ },
+ {
+  "screen": "student-question-360-light-dpit",
+  "url": "http://dpit.localhost:4173/questions/6ae2d3c913488ca992d0af22",
+  "violations": []
+ },
+ {
+  "screen": "student-reels-360-light-dpit",
+  "url": "http://dpit.localhost:4173/reels",
+  "violations": []
+ },
+ {
+  "screen": "student-saved-360-light-dpit",
+  "url": "http://dpit.localhost:4173/saved",
+  "violations": []
+ },
+ {
+  "screen": "student-notifications-360-light-dpit",
+  "url": "http://dpit.localhost:4173/notifications",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-360-light-dpit",
+  "url": "http://dpit.localhost:4173/settings",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-privacy-360-light-dpit",
+  "url": "http://dpit.localhost:4173/settings/privacy",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-preferences-360-light-dpit",
+  "url": "http://dpit.localhost:4173/settings/preferences",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-notifications-360-light-dpit",
+  "url": "http://dpit.localhost:4173/settings/notifications",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-data-360-light-dpit",
+  "url": "http://dpit.localhost:4173/settings/data",
+  "violations": []
+ },
+ {
+  "screen": "student-palette-360-light-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "student-more-sheet-360-light-dpit",
+  "url": "http://dpit.localhost:4173/home?sheet=account",
+  "violations": []
+ },
+ {
+  "screen": "student-study-360-light-dpit",
+  "url": "http://dpit.localhost:4173/study",
+  "violations": []
+ },
+ {
+  "screen": "student-study-subject-360-light-dpit",
+  "url": "http://dpit.localhost:4173/study/6ae2d3c913488ca992d0af80",
+  "violations": []
+ },
+ {
+  "screen": "student-study-material-360-light-dpit",
+  "url": "http://dpit.localhost:4173/study/6ae2d3c913488ca992d0af80/m/6ae2d3c913488ca992d0af9c",
+  "violations": []
+ },
+ {
+  "screen": "student-study-chat-360-light-dpit",
+  "url": "http://dpit.localhost:4173/study/chat",
+  "violations": []
+ },
+ {
+  "screen": "student-home-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "student-mentors-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/mentors",
+  "violations": []
+ },
+ {
+  "screen": "student-mentor-profile-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/mentors/6ae2d3c813488ca992d0aeec",
+  "violations": []
+ },
+ {
+  "screen": "student-mentorship-requests-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "student-sessions-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/sessions",
+  "violations": []
+ },
+ {
+  "screen": "student-messages-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/messages",
+  "violations": []
+ },
+ {
+  "screen": "student-conversation-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/messages/6ae2d3c813488ca992d0af0f",
+  "violations": []
+ },
+ {
+  "screen": "student-jobs-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/jobs",
+  "violations": []
+ },
+ {
+  "screen": "student-job-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/jobs/6ae2d3c913488ca992d0af26",
+  "violations": []
+ },
+ {
+  "screen": "student-tracker-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/jobs/tracker",
+  "violations": []
+ },
+ {
+  "screen": "student-referrals-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/referrals",
+  "violations": []
+ },
+ {
+  "screen": "student-events-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/events",
+  "violations": []
+ },
+ {
+  "screen": "student-event-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/events/6ae2d3c913488ca992d0af7e",
+  "violations": []
+ },
+ {
+  "screen": "student-roadmaps-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/roadmaps",
+  "violations": []
+ },
+ {
+  "screen": "student-roadmap-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/roadmaps/sde-dsa",
+  "violations": []
+ },
+ {
+  "screen": "student-progress-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/progress",
+  "violations": []
+ },
+ {
+  "screen": "student-rewards-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/rewards",
+  "violations": []
+ },
+ {
+  "screen": "student-leaderboard-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/leaderboard",
+  "violations": []
+ },
+ {
+  "screen": "student-people-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/people",
+  "violations": []
+ },
+ {
+  "screen": "student-profile-view-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/people/6ae2d3c813488ca992d0aefa",
+  "violations": []
+ },
+ {
+  "screen": "student-profile-edit-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/profile",
+  "violations": []
+ },
+ {
+  "screen": "student-post-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/posts/6ae2d3c813488ca992d0af19",
+  "violations": []
+ },
+ {
+  "screen": "student-questions-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/questions",
+  "violations": []
+ },
+ {
+  "screen": "student-question-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/questions/6ae2d3c913488ca992d0af22",
+  "violations": []
+ },
+ {
+  "screen": "student-reels-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/reels",
+  "violations": []
+ },
+ {
+  "screen": "student-saved-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/saved",
+  "violations": []
+ },
+ {
+  "screen": "student-notifications-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/notifications",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/settings",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-privacy-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/settings/privacy",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-preferences-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/settings/preferences",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-notifications-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/settings/notifications",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-data-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/settings/data",
+  "violations": []
+ },
+ {
+  "screen": "student-palette-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "student-more-sheet-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/home?sheet=account",
+  "violations": []
+ },
+ {
+  "screen": "student-study-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/study",
+  "violations": []
+ },
+ {
+  "screen": "student-study-subject-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/study/6ae2d3c913488ca992d0af80",
+  "violations": []
+ },
+ {
+  "screen": "student-study-material-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/study/6ae2d3c913488ca992d0af80/m/6ae2d3c913488ca992d0af9c",
+  "violations": []
+ },
+ {
+  "screen": "student-study-chat-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/study/chat",
+  "violations": []
+ },
+ {
+  "screen": "alumni-home-360-light-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "alumni-mentor-dashboard-360-light-dpit",
+  "url": "http://dpit.localhost:4173/mentor",
+  "violations": []
+ },
+ {
+  "screen": "alumni-mentorship-requests-360-light-dpit",
+  "url": "http://dpit.localhost:4173/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "alumni-post-job-360-light-dpit",
+  "url": "http://dpit.localhost:4173/jobs/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-event-form-360-light-dpit",
+  "url": "http://dpit.localhost:4173/events/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-roadmap-editor-360-light-dpit",
+  "url": "http://dpit.localhost:4173/roadmaps/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-progress-360-light-dpit",
+  "url": "http://dpit.localhost:4173/progress",
+  "violations": []
+ },
+ {
+  "screen": "alumni-referrals-360-light-dpit",
+  "url": "http://dpit.localhost:4173/referrals",
+  "violations": []
+ },
+ {
+  "screen": "alumni-wall-of-mentors-360-light-dpit",
+  "url": "http://dpit.localhost:4173/wall-of-mentors",
+  "violations": []
+ },
+ {
+  "screen": "alumni-more-sheet-360-light-dpit",
+  "url": "http://dpit.localhost:4173/home?sheet=account",
+  "violations": []
+ },
+ {
+  "screen": "alumni-home-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "alumni-mentor-dashboard-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/mentor",
+  "violations": []
+ },
+ {
+  "screen": "alumni-mentorship-requests-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "alumni-post-job-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/jobs/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-event-form-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/events/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-roadmap-editor-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/roadmaps/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-progress-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/progress",
+  "violations": []
+ },
+ {
+  "screen": "alumni-referrals-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/referrals",
+  "violations": []
+ },
+ {
+  "screen": "alumni-wall-of-mentors-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/wall-of-mentors",
+  "violations": []
+ },
+ {
+  "screen": "alumni-more-sheet-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/home?sheet=account",
+  "violations": []
+ },
+ {
+  "screen": "contributor-home-360-light-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "contributor-events-360-light-dpit",
+  "url": "http://dpit.localhost:4173/events",
+  "violations": []
+ },
+ {
+  "screen": "contributor-home-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "contributor-events-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/events",
+  "violations": []
+ },
+ {
+  "screen": "faculty-home-360-light-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-overview-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-moderation-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/moderation",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-mentorship-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "faculty-roadmap-review-360-light-dpit",
+  "url": "http://dpit.localhost:4173/roadmaps/review",
+  "violations": []
+ },
+ {
+  "screen": "faculty-study-subjects-360-light-dpit",
+  "url": "http://dpit.localhost:4173/study",
+  "violations": []
+ },
+ {
+  "screen": "faculty-study-insights-360-light-dpit",
+  "url": "http://dpit.localhost:4173/study/6ae2d3c913488ca992d0af80/insights",
+  "violations": []
+ },
+ {
+  "screen": "faculty-home-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-overview-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-moderation-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/moderation",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-mentorship-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "faculty-roadmap-review-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/roadmaps/review",
+  "violations": []
+ },
+ {
+  "screen": "faculty-study-subjects-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/study",
+  "violations": []
+ },
+ {
+  "screen": "faculty-study-insights-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/study/6ae2d3c913488ca992d0af80/insights",
+  "violations": []
+ },
+ {
+  "screen": "tpo-home-360-light-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "tpo-admin-analytics-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/analytics",
+  "violations": []
+ },
+ {
+  "screen": "tpo-admin-job-sources-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/job-sources",
+  "violations": []
+ },
+ {
+  "screen": "tpo-home-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "tpo-admin-analytics-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/analytics",
+  "violations": []
+ },
+ {
+  "screen": "tpo-admin-job-sources-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/job-sources",
+  "violations": []
+ },
+ {
+  "screen": "admin-home-360-light-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-overview-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-users-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/users",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-verification-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/verification",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-imports-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/imports",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-list-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/list",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-moderation-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/moderation",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-rewards-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/rewards",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-sources-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/sources",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-analytics-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/analytics",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-branding-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/branding",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-features-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/features",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-ai-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/ai",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-audit-360-light-dpit",
+  "url": "http://dpit.localhost:4173/admin/audit",
+  "violations": []
+ },
+ {
+  "screen": "admin-home-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-overview-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-users-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/users",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-verification-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/verification",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-imports-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/imports",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-list-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/list",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-moderation-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/moderation",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-rewards-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/rewards",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-sources-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/sources",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-analytics-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/analytics",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-branding-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/branding",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-features-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/features",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-ai-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/ai",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-audit-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/admin/audit",
+  "violations": []
+ },
+ {
+  "screen": "unverified-home-360-light-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "unverified-mentors-360-light-dpit",
+  "url": "http://dpit.localhost:4173/mentors",
+  "violations": []
+ },
+ {
+  "screen": "unverified-verify-360-light-dpit",
+  "url": "http://dpit.localhost:4173/verify",
+  "violations": []
+ },
+ {
+  "screen": "unverified-home-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "unverified-mentors-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/mentors",
+  "violations": []
+ },
+ {
+  "screen": "unverified-verify-360-dark-dpit",
+  "url": "http://dpit.localhost:4173/verify",
+  "violations": []
+ },
+ {
+  "screen": "public-landing-360-light-mrce",
+  "url": "http://mrce.localhost:4173/",
+  "violations": []
+ },
+ {
+  "screen": "public-sign-in-360-light-mrce",
+  "url": "http://mrce.localhost:4173/sign-in",
+  "violations": []
+ },
+ {
+  "screen": "public-sign-up-360-light-mrce",
+  "url": "http://mrce.localhost:4173/sign-up",
+  "violations": []
+ },
+ {
+  "screen": "public-forgot-password-360-light-mrce",
+  "url": "http://mrce.localhost:4173/forgot-password",
+  "violations": []
+ },
+ {
+  "screen": "public-landing-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/",
+  "violations": []
+ },
+ {
+  "screen": "public-sign-in-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/sign-in",
+  "violations": []
+ },
+ {
+  "screen": "public-sign-up-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/sign-up",
+  "violations": []
+ },
+ {
+  "screen": "public-forgot-password-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/forgot-password",
+  "violations": []
+ },
+ {
+  "screen": "student-home-360-light-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "student-mentors-360-light-mrce",
+  "url": "http://mrce.localhost:4173/mentors",
+  "violations": []
+ },
+ {
+  "screen": "student-mentor-profile-360-light-mrce",
+  "url": "http://mrce.localhost:4173/mentors/6ae2d3cb13488ca992d0aff2",
+  "violations": []
+ },
+ {
+  "screen": "student-mentorship-requests-360-light-mrce",
+  "url": "http://mrce.localhost:4173/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "student-sessions-360-light-mrce",
+  "url": "http://mrce.localhost:4173/sessions",
+  "violations": []
+ },
+ {
+  "screen": "student-messages-360-light-mrce",
+  "url": "http://mrce.localhost:4173/messages",
+  "violations": []
+ },
+ {
+  "screen": "student-conversation-360-light-mrce",
+  "url": "http://mrce.localhost:4173/messages/6ae2d3cb13488ca992d0b015",
+  "violations": []
+ },
+ {
+  "screen": "student-jobs-360-light-mrce",
+  "url": "http://mrce.localhost:4173/jobs",
+  "violations": []
+ },
+ {
+  "screen": "student-job-360-light-mrce",
+  "url": "http://mrce.localhost:4173/jobs/6ae2d3cb13488ca992d0b02c",
+  "violations": []
+ },
+ {
+  "screen": "student-tracker-360-light-mrce",
+  "url": "http://mrce.localhost:4173/jobs/tracker",
+  "violations": []
+ },
+ {
+  "screen": "student-referrals-360-light-mrce",
+  "url": "http://mrce.localhost:4173/referrals",
+  "violations": []
+ },
+ {
+  "screen": "student-events-360-light-mrce",
+  "url": "http://mrce.localhost:4173/events",
+  "violations": []
+ },
+ {
+  "screen": "student-event-360-light-mrce",
+  "url": "http://mrce.localhost:4173/events/6ae2d3cc13488ca992d0b084",
+  "violations": []
+ },
+ {
+  "screen": "student-roadmaps-360-light-mrce",
+  "url": "http://mrce.localhost:4173/roadmaps",
+  "violations": []
+ },
+ {
+  "screen": "student-roadmap-360-light-mrce",
+  "url": "http://mrce.localhost:4173/roadmaps/sde-dsa",
+  "violations": []
+ },
+ {
+  "screen": "student-progress-360-light-mrce",
+  "url": "http://mrce.localhost:4173/progress",
+  "violations": []
+ },
+ {
+  "screen": "student-rewards-360-light-mrce",
+  "url": "http://mrce.localhost:4173/rewards",
+  "violations": []
+ },
+ {
+  "screen": "student-leaderboard-360-light-mrce",
+  "url": "http://mrce.localhost:4173/leaderboard",
+  "violations": []
+ },
+ {
+  "screen": "student-people-360-light-mrce",
+  "url": "http://mrce.localhost:4173/people",
+  "violations": []
+ },
+ {
+  "screen": "student-profile-view-360-light-mrce",
+  "url": "http://mrce.localhost:4173/people/6ae2d3cb13488ca992d0b000",
+  "violations": []
+ },
+ {
+  "screen": "student-profile-edit-360-light-mrce",
+  "url": "http://mrce.localhost:4173/profile",
+  "violations": []
+ },
+ {
+  "screen": "student-post-360-light-mrce",
+  "url": "http://mrce.localhost:4173/posts/6ae2d3cb13488ca992d0b01f",
+  "violations": []
+ },
+ {
+  "screen": "student-questions-360-light-mrce",
+  "url": "http://mrce.localhost:4173/questions",
+  "violations": []
+ },
+ {
+  "screen": "student-question-360-light-mrce",
+  "url": "http://mrce.localhost:4173/questions/6ae2d3cb13488ca992d0b028",
+  "violations": []
+ },
+ {
+  "screen": "student-reels-360-light-mrce",
+  "url": "http://mrce.localhost:4173/reels",
+  "violations": []
+ },
+ {
+  "screen": "student-saved-360-light-mrce",
+  "url": "http://mrce.localhost:4173/saved",
+  "violations": []
+ },
+ {
+  "screen": "student-notifications-360-light-mrce",
+  "url": "http://mrce.localhost:4173/notifications",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-360-light-mrce",
+  "url": "http://mrce.localhost:4173/settings",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-privacy-360-light-mrce",
+  "url": "http://mrce.localhost:4173/settings/privacy",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-preferences-360-light-mrce",
+  "url": "http://mrce.localhost:4173/settings/preferences",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-notifications-360-light-mrce",
+  "url": "http://mrce.localhost:4173/settings/notifications",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-data-360-light-mrce",
+  "url": "http://mrce.localhost:4173/settings/data",
+  "violations": []
+ },
+ {
+  "screen": "student-palette-360-light-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "student-more-sheet-360-light-mrce",
+  "url": "http://mrce.localhost:4173/home?sheet=account",
+  "violations": []
+ },
+ {
+  "screen": "student-study-360-light-mrce",
+  "url": "http://mrce.localhost:4173/study",
+  "violations": []
+ },
+ {
+  "screen": "student-study-subject-360-light-mrce",
+  "url": "http://mrce.localhost:4173/study/6ae2d3cc13488ca992d0b086",
+  "violations": []
+ },
+ {
+  "screen": "student-study-material-360-light-mrce",
+  "url": "http://mrce.localhost:4173/study/6ae2d3cc13488ca992d0b086/m/6ae2d3cc13488ca992d0b0a2",
+  "violations": []
+ },
+ {
+  "screen": "student-study-chat-360-light-mrce",
+  "url": "http://mrce.localhost:4173/study/chat",
+  "violations": []
+ },
+ {
+  "screen": "student-home-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "student-mentors-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/mentors",
+  "violations": []
+ },
+ {
+  "screen": "student-mentor-profile-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/mentors/6ae2d3cb13488ca992d0aff2",
+  "violations": []
+ },
+ {
+  "screen": "student-mentorship-requests-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "student-sessions-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/sessions",
+  "violations": []
+ },
+ {
+  "screen": "student-messages-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/messages",
+  "violations": []
+ },
+ {
+  "screen": "student-conversation-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/messages/6ae2d3cb13488ca992d0b015",
+  "violations": []
+ },
+ {
+  "screen": "student-jobs-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/jobs",
+  "violations": []
+ },
+ {
+  "screen": "student-job-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/jobs/6ae2d3cb13488ca992d0b02c",
+  "violations": []
+ },
+ {
+  "screen": "student-tracker-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/jobs/tracker",
+  "violations": []
+ },
+ {
+  "screen": "student-referrals-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/referrals",
+  "violations": []
+ },
+ {
+  "screen": "student-events-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/events",
+  "violations": []
+ },
+ {
+  "screen": "student-event-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/events/6ae2d3cc13488ca992d0b084",
+  "violations": []
+ },
+ {
+  "screen": "student-roadmaps-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/roadmaps",
+  "violations": []
+ },
+ {
+  "screen": "student-roadmap-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/roadmaps/sde-dsa",
+  "violations": []
+ },
+ {
+  "screen": "student-progress-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/progress",
+  "violations": []
+ },
+ {
+  "screen": "student-rewards-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/rewards",
+  "violations": []
+ },
+ {
+  "screen": "student-leaderboard-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/leaderboard",
+  "violations": []
+ },
+ {
+  "screen": "student-people-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/people",
+  "violations": []
+ },
+ {
+  "screen": "student-profile-view-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/people/6ae2d3cb13488ca992d0b000",
+  "violations": []
+ },
+ {
+  "screen": "student-profile-edit-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/profile",
+  "violations": []
+ },
+ {
+  "screen": "student-post-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/posts/6ae2d3cb13488ca992d0b01f",
+  "violations": []
+ },
+ {
+  "screen": "student-questions-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/questions",
+  "violations": []
+ },
+ {
+  "screen": "student-question-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/questions/6ae2d3cb13488ca992d0b028",
+  "violations": []
+ },
+ {
+  "screen": "student-reels-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/reels",
+  "violations": []
+ },
+ {
+  "screen": "student-saved-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/saved",
+  "violations": []
+ },
+ {
+  "screen": "student-notifications-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/notifications",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/settings",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-privacy-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/settings/privacy",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-preferences-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/settings/preferences",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-notifications-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/settings/notifications",
+  "violations": []
+ },
+ {
+  "screen": "student-settings-data-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/settings/data",
+  "violations": []
+ },
+ {
+  "screen": "student-palette-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "student-more-sheet-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/home?sheet=account",
+  "violations": []
+ },
+ {
+  "screen": "student-study-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/study",
+  "violations": []
+ },
+ {
+  "screen": "student-study-subject-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/study/6ae2d3cc13488ca992d0b086",
+  "violations": []
+ },
+ {
+  "screen": "student-study-material-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/study/6ae2d3cc13488ca992d0b086/m/6ae2d3cc13488ca992d0b0a2",
+  "violations": []
+ },
+ {
+  "screen": "student-study-chat-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/study/chat",
+  "violations": []
+ },
+ {
+  "screen": "alumni-home-360-light-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "alumni-mentor-dashboard-360-light-mrce",
+  "url": "http://mrce.localhost:4173/mentor",
+  "violations": []
+ },
+ {
+  "screen": "alumni-mentorship-requests-360-light-mrce",
+  "url": "http://mrce.localhost:4173/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "alumni-post-job-360-light-mrce",
+  "url": "http://mrce.localhost:4173/jobs/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-event-form-360-light-mrce",
+  "url": "http://mrce.localhost:4173/events/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-roadmap-editor-360-light-mrce",
+  "url": "http://mrce.localhost:4173/roadmaps/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-progress-360-light-mrce",
+  "url": "http://mrce.localhost:4173/progress",
+  "violations": []
+ },
+ {
+  "screen": "alumni-referrals-360-light-mrce",
+  "url": "http://mrce.localhost:4173/referrals",
+  "violations": []
+ },
+ {
+  "screen": "alumni-wall-of-mentors-360-light-mrce",
+  "url": "http://mrce.localhost:4173/wall-of-mentors",
+  "violations": []
+ },
+ {
+  "screen": "alumni-more-sheet-360-light-mrce",
+  "url": "http://mrce.localhost:4173/home?sheet=account",
+  "violations": []
+ },
+ {
+  "screen": "alumni-home-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "alumni-mentor-dashboard-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/mentor",
+  "violations": []
+ },
+ {
+  "screen": "alumni-mentorship-requests-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "alumni-post-job-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/jobs/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-event-form-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/events/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-roadmap-editor-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/roadmaps/new",
+  "violations": []
+ },
+ {
+  "screen": "alumni-progress-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/progress",
+  "violations": []
+ },
+ {
+  "screen": "alumni-referrals-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/referrals",
+  "violations": []
+ },
+ {
+  "screen": "alumni-wall-of-mentors-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/wall-of-mentors",
+  "violations": []
+ },
+ {
+  "screen": "alumni-more-sheet-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/home?sheet=account",
+  "violations": []
+ },
+ {
+  "screen": "contributor-home-360-light-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "contributor-events-360-light-mrce",
+  "url": "http://mrce.localhost:4173/events",
+  "violations": []
+ },
+ {
+  "screen": "contributor-home-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "contributor-events-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/events",
+  "violations": []
+ },
+ {
+  "screen": "faculty-home-360-light-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-overview-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-moderation-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/moderation",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-mentorship-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "faculty-roadmap-review-360-light-mrce",
+  "url": "http://mrce.localhost:4173/roadmaps/review",
+  "violations": []
+ },
+ {
+  "screen": "faculty-study-subjects-360-light-mrce",
+  "url": "http://mrce.localhost:4173/study",
+  "violations": []
+ },
+ {
+  "screen": "faculty-study-insights-360-light-mrce",
+  "url": "http://mrce.localhost:4173/study/6ae2d3cc13488ca992d0b086/insights",
+  "violations": []
+ },
+ {
+  "screen": "faculty-home-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-overview-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-moderation-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/moderation",
+  "violations": []
+ },
+ {
+  "screen": "faculty-admin-mentorship-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/mentorship",
+  "violations": []
+ },
+ {
+  "screen": "faculty-roadmap-review-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/roadmaps/review",
+  "violations": []
+ },
+ {
+  "screen": "faculty-study-subjects-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/study",
+  "violations": []
+ },
+ {
+  "screen": "faculty-study-insights-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/study/6ae2d3cc13488ca992d0b086/insights",
+  "violations": []
+ },
+ {
+  "screen": "tpo-home-360-light-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "tpo-admin-analytics-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/analytics",
+  "violations": []
+ },
+ {
+  "screen": "tpo-admin-job-sources-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/job-sources",
+  "violations": []
+ },
+ {
+  "screen": "tpo-home-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "tpo-admin-analytics-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/analytics",
+  "violations": []
+ },
+ {
+  "screen": "tpo-admin-job-sources-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/job-sources",
+  "violations": []
+ },
+ {
+  "screen": "admin-home-360-light-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-overview-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-users-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/users",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-verification-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/verification",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-imports-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/imports",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-list-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/list",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-moderation-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/moderation",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-rewards-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/rewards",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-sources-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/sources",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-analytics-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/analytics",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-branding-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/branding",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-features-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/features",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-ai-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/ai",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-audit-360-light-mrce",
+  "url": "http://mrce.localhost:4173/admin/audit",
+  "violations": []
+ },
+ {
+  "screen": "admin-home-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-overview-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-users-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/users",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-verification-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/verification",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-imports-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/imports",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-list-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/list",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-moderation-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/moderation",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-rewards-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/rewards",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-sources-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/sources",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-analytics-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/analytics",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-branding-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/branding",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-features-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/features",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-ai-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/ai",
+  "violations": []
+ },
+ {
+  "screen": "admin-admin-audit-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/admin/audit",
+  "violations": []
+ },
+ {
+  "screen": "unverified-home-360-light-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "unverified-mentors-360-light-mrce",
+  "url": "http://mrce.localhost:4173/mentors",
+  "violations": []
+ },
+ {
+  "screen": "unverified-verify-360-light-mrce",
+  "url": "http://mrce.localhost:4173/verify",
+  "violations": []
+ },
+ {
+  "screen": "unverified-home-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/home",
+  "violations": []
+ },
+ {
+  "screen": "unverified-mentors-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/mentors",
+  "violations": []
+ },
+ {
+  "screen": "unverified-verify-360-dark-mrce",
+  "url": "http://mrce.localhost:4173/verify",
+  "violations": []
+ },
+ {
+  "screen": "platform-tenants-360-light-platform",
+  "url": "http://admin.localhost:4173/platform",
+  "violations": []
+ },
+ {
+  "screen": "platform-health-360-light-platform",
+  "url": "http://admin.localhost:4173/platform/health",
+  "violations": []
+ },
+ {
+  "screen": "platform-settings-360-light-platform",
+  "url": "http://admin.localhost:4173/settings",
+  "violations": []
+ },
+ {
+  "screen": "platform-tenants-360-dark-platform",
+  "url": "http://admin.localhost:4173/platform",
+  "violations": []
+ },
+ {
+  "screen": "platform-health-360-dark-platform",
+  "url": "http://admin.localhost:4173/platform/health",
+  "violations": []
+ },
+ {
+  "screen": "platform-settings-360-dark-platform",
+  "url": "http://admin.localhost:4173/settings",
+  "violations": []
+ }
+]

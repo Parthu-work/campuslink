@@ -1,0 +1,516 @@
+{
+  "initial": {
+    "bytes": 173316,
+    "files": [
+      "assets/index-nIzXhbw2.js",
+      "assets/rolldown-runtime-XKyaHtl9.js",
+      "assets/react-DlmbjZJV.js",
+      "assets/i18next-BVoNhSew.js",
+      "assets/createLucideIcon-DsQxES6L.js",
+      "assets/react-m9ZWnT6r.js",
+      "assets/preload-helper-BLdHbfdN.js",
+      "assets/jsx-runtime-LKYXHABd.js",
+      "assets/bot-check-config-BD8U1lbX.js",
+      "assets/preferences-BvsOAzdk.js",
+      "assets/storage-BNQupCKC.js",
+      "assets/cn-u_-U8onL.js",
+      "assets/useQuery-O4h9_n7j.js",
+      "assets/hooks-CtMQkaSl.js"
+    ]
+  },
+  "budget": 174080,
+  "screens": [
+    {
+      "name": "src/features/study/pdf-viewer.tsx",
+      "bytes": 132028,
+      "budget": 143360,
+      "files": 2
+    },
+    {
+      "name": "src/lib/katex.ts",
+      "bytes": 77052,
+      "budget": 87040,
+      "files": 1
+    },
+    {
+      "name": "src/features/settings/settings.tsx",
+      "bytes": 70031,
+      "budget": 71680,
+      "files": 22
+    },
+    {
+      "name": "src/features/home/home.tsx",
+      "bytes": 69442,
+      "budget": 71680,
+      "files": 31
+    },
+    {
+      "name": "src/features/feed/collections.tsx",
+      "bytes": 65292,
+      "budget": 71680,
+      "files": 26
+    },
+    {
+      "name": "src/features/platform/platform.tsx",
+      "bytes": 64852,
+      "budget": 71680,
+      "files": 17
+    },
+    {
+      "name": "src/features/feed/post-page.tsx",
+      "bytes": 63692,
+      "budget": 71680,
+      "files": 26
+    },
+    {
+      "name": "src/features/qa/questions.tsx",
+      "bytes": 59980,
+      "budget": 71680,
+      "files": 32
+    },
+    {
+      "name": "src/features/admin/admin.tsx",
+      "bytes": 58882,
+      "budget": 71680,
+      "files": 26
+    },
+    {
+      "name": "src/features/jobs/job-page.tsx",
+      "bytes": 57534,
+      "budget": 71680,
+      "files": 29
+    },
+    {
+      "name": "src/features/mentors/mentors.tsx",
+      "bytes": 53821,
+      "budget": 71680,
+      "files": 16
+    },
+    {
+      "name": "src/features/roadmaps/roadmap-page.tsx",
+      "bytes": 52873,
+      "budget": 71680,
+      "files": 24
+    },
+    {
+      "name": "src/features/messages/messages.tsx",
+      "bytes": 49443,
+      "budget": 71680,
+      "files": 23
+    },
+    {
+      "name": "src/features/mentorship/requests.tsx",
+      "bytes": 47538,
+      "budget": 71680,
+      "files": 21
+    },
+    {
+      "name": "src/i18n/te.json",
+      "bytes": 47472,
+      "budget": 71680,
+      "files": 1
+    },
+    {
+      "name": "src/features/events/event-page.tsx",
+      "bytes": 47393,
+      "budget": 71680,
+      "files": 23
+    },
+    {
+      "name": "src/features/jobs/post-job.tsx",
+      "bytes": 47165,
+      "budget": 71680,
+      "files": 13
+    },
+    {
+      "name": "src/features/mentors/request-form.tsx",
+      "bytes": 46233,
+      "budget": 71680,
+      "files": 10
+    },
+    {
+      "name": "src/features/auth/sign-in.tsx",
+      "bytes": 45754,
+      "budget": 71680,
+      "files": 9
+    },
+    {
+      "name": "src/features/auth/sign-up.tsx",
+      "bytes": 45096,
+      "budget": 71680,
+      "files": 9
+    },
+    {
+      "name": "src/features/auth/email-links.tsx",
+      "bytes": 45088,
+      "budget": 71680,
+      "files": 10
+    },
+    {
+      "name": "src/features/people/profile-view.tsx",
+      "bytes": 44974,
+      "budget": 71680,
+      "files": 18
+    },
+    {
+      "name": "src/features/study/subject-form.tsx",
+      "bytes": 44175,
+      "budget": 71680,
+      "files": 9
+    },
+    {
+      "name": "src/features/mentors/mentor-page.tsx",
+      "bytes": 43193,
+      "budget": 71680,
+      "files": 16
+    },
+    {
+      "name": "src/features/study/chat/chat-page.tsx",
+      "bytes": 41550,
+      "budget": 71680,
+      "files": 26
+    },
+    {
+      "name": "src/features/study/subject-page.tsx",
+      "bytes": 38578,
+      "budget": 71680,
+      "files": 27
+    },
+    {
+      "name": "src/i18n/en.json",
+      "bytes": 35827,
+      "budget": 71680,
+      "files": 1
+    },
+    {
+      "name": "src/features/events/events.tsx",
+      "bytes": 35461,
+      "budget": 71680,
+      "files": 15
+    },
+    {
+      "name": "src/features/roadmaps/editor.tsx",
+      "bytes": 34946,
+      "budget": 71680,
+      "files": 14
+    },
+    {
+      "name": "src/components/layout/account-menu.tsx",
+      "bytes": 34402,
+      "budget": 71680,
+      "files": 5
+    },
+    {
+      "name": "src/features/study/material-page.tsx",
+      "bytes": 31134,
+      "budget": 71680,
+      "files": 21
+    },
+    {
+      "name": "src/features/admin/imports.tsx",
+      "bytes": 29979,
+      "budget": 71680,
+      "files": 19
+    },
+    {
+      "name": "src/features/admin/sources-admin.tsx",
+      "bytes": 29518,
+      "budget": 71680,
+      "files": 19
+    },
+    {
+      "name": "src/features/sessions/sessions.tsx",
+      "bytes": 29268,
+      "budget": 71680,
+      "files": 18
+    },
+    {
+      "name": "src/features/jobs/radar.tsx",
+      "bytes": 28182,
+      "budget": 71680,
+      "files": 18
+    },
+    {
+      "name": "src/features/admin/list-admin.tsx",
+      "bytes": 27054,
+      "budget": 71680,
+      "files": 14
+    },
+    {
+      "name": "src/features/admin/moderation-admin.tsx",
+      "bytes": 26912,
+      "budget": 71680,
+      "files": 16
+    },
+    {
+      "name": "src/features/study/study.tsx",
+      "bytes": 25884,
+      "budget": 71680,
+      "files": 14
+    },
+    {
+      "name": "src/features/referrals/referrals.tsx",
+      "bytes": 25282,
+      "budget": 71680,
+      "files": 14
+    },
+    {
+      "name": "src/features/admin/job-sources-admin.tsx",
+      "bytes": 24137,
+      "budget": 71680,
+      "files": 13
+    },
+    {
+      "name": "src/features/study/chat/chat-panel.tsx",
+      "bytes": 23259,
+      "budget": 71680,
+      "files": 19
+    },
+    {
+      "name": "src/features/admin/ai-admin.tsx",
+      "bytes": 22974,
+      "budget": 71680,
+      "files": 22
+    },
+    {
+      "name": "src/features/settings/data-settings.tsx",
+      "bytes": 20864,
+      "budget": 71680,
+      "files": 9
+    },
+    {
+      "name": "src/components/layout/command-palette.tsx",
+      "bytes": 20551,
+      "budget": 71680,
+      "files": 4
+    },
+    {
+      "name": "src/lib/motion-features.ts",
+      "bytes": 20193,
+      "budget": 71680,
+      "files": 1
+    },
+    {
+      "name": "src/components/layout/create-sheet.tsx",
+      "bytes": 16646,
+      "budget": 71680,
+      "files": 6
+    },
+    {
+      "name": "src/features/verify/verify.tsx",
+      "bytes": 13883,
+      "budget": 71680,
+      "files": 15
+    },
+    {
+      "name": "src/features/roadmaps/galaxy.tsx",
+      "bytes": 12944,
+      "budget": 71680,
+      "files": 13
+    },
+    {
+      "name": "../../node_modules/.pnpm/socket.io-client@4.8.4/node_modules/socket.io-client/build/esm/index.js",
+      "bytes": 12818,
+      "budget": 71680,
+      "files": 1
+    },
+    {
+      "name": "src/features/jobs/tracker.tsx",
+      "bytes": 12352,
+      "budget": 71680,
+      "files": 15
+    },
+    {
+      "name": "src/features/study/insights-page.tsx",
+      "bytes": 12134,
+      "budget": 71680,
+      "files": 18
+    },
+    {
+      "name": "src/features/profile/profile-edit.tsx",
+      "bytes": 11949,
+      "budget": 71680,
+      "files": 14
+    },
+    {
+      "name": "src/features/admin/analytics-admin.tsx",
+      "bytes": 11600,
+      "budget": 71680,
+      "files": 11
+    },
+    {
+      "name": "src/features/progress/progress-page.tsx",
+      "bytes": 10787,
+      "budget": 71680,
+      "files": 10
+    },
+    {
+      "name": "src/features/mentor/mentor-dashboard.tsx",
+      "bytes": 9736,
+      "budget": 71680,
+      "files": 9
+    },
+    {
+      "name": "../../node_modules/.pnpm/sonner@2.0.8_@types+react@19.3.0_react-dom@19.3.1_react@19.3.1__react@19.3.1/node_modules/sonner/dist/index.mjs",
+      "bytes": 9448,
+      "budget": 71680,
+      "files": 1
+    },
+    {
+      "name": "src/features/roadmaps/history.tsx",
+      "bytes": 8994,
+      "budget": 71680,
+      "files": 7
+    },
+    {
+      "name": "src/features/study/material-editor.tsx",
+      "bytes": 8542,
+      "budget": 71680,
+      "files": 9
+    },
+    {
+      "name": "src/features/progress/rewards.tsx",
+      "bytes": 8539,
+      "budget": 71680,
+      "files": 8
+    },
+    {
+      "name": "src/features/study/upload-sheet.tsx",
+      "bytes": 8454,
+      "budget": 71680,
+      "files": 10
+    },
+    {
+      "name": "src/features/admin/admin-overview.tsx",
+      "bytes": 6709,
+      "budget": 71680,
+      "files": 11
+    },
+    {
+      "name": "src/features/progress/leaderboard.tsx",
+      "bytes": 6644,
+      "budget": 71680,
+      "files": 7
+    },
+    {
+      "name": "src/features/settings/notification-settings.tsx",
+      "bytes": 5736,
+      "budget": 71680,
+      "files": 5
+    },
+    {
+      "name": "src/features/notifications/notifications.tsx",
+      "bytes": 5595,
+      "budget": 71680,
+      "files": 7
+    },
+    {
+      "name": "src/features/auth/mfa-gate.tsx",
+      "bytes": 5337,
+      "budget": 71680,
+      "files": 8
+    },
+    {
+      "name": "src/features/study/syllabus-editor.tsx",
+      "bytes": 5095,
+      "budget": 71680,
+      "files": 7
+    },
+    {
+      "name": "src/features/people/directory.tsx",
+      "bytes": 4978,
+      "budget": 71680,
+      "files": 5
+    },
+    {
+      "name": "src/features/feed/composer-form.tsx",
+      "bytes": 4968,
+      "budget": 71680,
+      "files": 5
+    },
+    {
+      "name": "src/features/roadmaps/review.tsx",
+      "bytes": 3841,
+      "budget": 71680,
+      "files": 5
+    },
+    {
+      "name": "src/components/layout/idle-parts.tsx",
+      "bytes": 3577,
+      "budget": 71680,
+      "files": 4
+    },
+    {
+      "name": "src/features/roadmaps/galaxy-canvas.tsx",
+      "bytes": 3375,
+      "budget": 71680,
+      "files": 2
+    },
+    {
+      "name": "src/features/feed/story-composer.tsx",
+      "bytes": 3029,
+      "budget": 71680,
+      "files": 2
+    },
+    {
+      "name": "src/features/feed/story-viewer.tsx",
+      "bytes": 2716,
+      "budget": 71680,
+      "files": 3
+    },
+    {
+      "name": "src/features/landing/landing.tsx",
+      "bytes": 2649,
+      "budget": 71680,
+      "files": 3
+    },
+    {
+      "name": "src/features/study/subject-people.tsx",
+      "bytes": 2515,
+      "budget": 71680,
+      "files": 3
+    },
+    {
+      "name": "src/features/admin/mentorship-admin.tsx",
+      "bytes": 2213,
+      "budget": 71680,
+      "files": 3
+    },
+    {
+      "name": "src/components/layout/celebration-host.tsx",
+      "bytes": 1024,
+      "budget": 71680,
+      "files": 2
+    },
+    {
+      "name": "src/lib/notification-text.ts",
+      "bytes": 975,
+      "budget": 71680,
+      "files": 1
+    },
+    {
+      "name": "src/lib/bot-check.ts",
+      "bytes": 704,
+      "budget": 71680,
+      "files": 1
+    },
+    {
+      "name": "src/components/ui/burst.tsx",
+      "bytes": 661,
+      "budget": 71680,
+      "files": 1
+    },
+    {
+      "name": "src/features/study/chat/math-tex.tsx",
+      "bytes": 576,
+      "budget": 71680,
+      "files": 1
+    },
+    {
+      "name": "src/lib/service-worker.ts",
+      "bytes": 556,
+      "budget": 71680,
+      "files": 1
+    }
+  ]
+}

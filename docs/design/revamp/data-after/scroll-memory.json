@@ -1,0 +1,33 @@
+{
+ "homeBefore": 600,
+ "jobsOnArrival": 0,
+ "homeAfterTabRoundTrip": 450,
+ "afterTappingActiveTab": 0,
+ "jobsTabRemembersDetail": true,
+ "jobsTabUrl": "/jobs/6ae2fc526f35c21b770e711d",
+ "barsAtTop": {
+  "headerTop": 0,
+  "headerHeight": 61,
+  "navTop": 715,
+  "navHeight": 65,
+  "vh": 780,
+  "chrome": "shown"
+ },
+ "barsAfterScrollDown": {
+  "headerTop": -62,
+  "headerHeight": 61,
+  "navTop": 781,
+  "navHeight": 65,
+  "vh": 780,
+  "chrome": "hidden"
+ },
+ "barsAfterScrollUp": {
+  "headerTop": 0,
+  "headerHeight": 61,
+  "navTop": 715,
+  "navHeight": 65,
+  "vh": 780,
+  "chrome": "shown"
+ },
+ "overflowRows": []
+}
