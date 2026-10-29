@@ -2,7 +2,11 @@ import { expect, test, type Page } from '@playwright/test';
 import { expectNoA11yViolations } from './helpers';
 
 /** Build B2: a student joins with only a phone; a minor waits for their guardian. */
-const BASE = 'http://dpit.localhost:4173';
+/** Each project signs up on its own college, so one college's audit log is not flooded. */
+let BASE = 'http://dpit.localhost:4173';
+test.beforeEach(async ({ page: _page }, info) => {
+  BASE = `http://${info.project.name === 'mobile' ? 'mrce' : 'dpit'}.localhost:4173`;
+});
 let seq = 0;
 const newNumber = () => `9${String(Date.now()).slice(-8)}${++seq % 10}`;
 

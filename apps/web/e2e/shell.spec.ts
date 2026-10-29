@@ -55,6 +55,7 @@ test.describe('landing route after sign-in', () => {
   test('a deep link survives sign-in (IA-8)', async ({ page }) => {
     await page.goto(`${BASE}/jobs?type=internship`);
     await page.waitForURL(/\/sign-in$/);
+    await chooseEmailSignIn(page);
     await page.getByLabel('Email', { exact: true }).fill('ananya@dpit.example');
     await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
