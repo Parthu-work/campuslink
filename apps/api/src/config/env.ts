@@ -87,11 +87,43 @@ export const envSchema = z.object({
   S3_ACCESS_KEY_ID: z.string().min(1).optional(),
   S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
   /** SMS for code fallback (D4). `console` keeps messages in memory (development and tests only). */
-  SMS_PROVIDER: z.enum(['disabled', 'console']).default('disabled'),
+  SMS_PROVIDER: z.enum(['disabled', 'console', 'msg91']).default('disabled'),
+  /** MSG91 (SMS_PROVIDER=msg91): the auth key, the DLT-approved header and the principal entity id. */
+  SMS_API_KEY: z.string().min(1).optional(),
+  SMS_SENDER_ID: z
+    .string()
+    .regex(/^[A-Z]{6}$/, 'six capital letters')
+    .optional(),
+  SMS_DLT_ENTITY_ID: z
+    .string()
+    .regex(/^\d{10,25}$/)
+    .optional(),
   /** Registered DLT template ids, `otp=1107…,reminder=1107…` (docs/sms-templates.md). */
   SMS_DLT_TEMPLATE_IDS: z.string().optional(),
   /** WhatsApp channel (D3). `console` keeps messages in memory (development and tests only). */
-  WHATSAPP_PROVIDER: z.enum(['disabled', 'console']).default('disabled'),
+  WHATSAPP_PROVIDER: z.enum(['disabled', 'console', 'cloud']).default('disabled'),
+  /** Meta WhatsApp Cloud API (WHATSAPP_PROVIDER=cloud). */
+  WHATSAPP_TOKEN: z.string().min(1).optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z
+    .string()
+    .regex(/^\d{5,30}$/)
+    .optional(),
+  /** Meta signs webhook deliveries with it (X-Hub-Signature-256). */
+  WHATSAPP_APP_SECRET: z.string().min(1).optional(),
+  /** The token Meta echoes when it verifies the webhook URL. */
+  WHATSAPP_VERIFY_TOKEN: z.string().min(16).optional(),
+  /** Graph API version, as Meta names it (for example v21.0). */
+  WHATSAPP_GRAPH_VERSION: z
+    .string()
+    .regex(/^v\d+\.\d+$/)
+    .optional(),
+  /** The approved authentication template (copy-code button). */
+  WHATSAPP_AUTH_TEMPLATE: z
+    .string()
+    .regex(/^[a-z0-9_]{1,512}$/)
+    .default('auth_code'),
+  /** Signs quick-reply button payloads; derived from JWT_TICKET_SECRET when unset (development). */
+  WHATSAPP_ACTION_SECRET: z.string().min(32).optional(),
   /** Malware scanning of every stored file (ClamAV clamd). Required in production; fails closed. */
   MALWARE_SCANNER: z.enum(['none', 'clamav']).default('none'),
   /** clamd address: `host:port` or an absolute Unix socket path. */
@@ -209,6 +241,21 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error('Set both S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY, or neither');
   if (!!env.VAPID_PUBLIC_KEY !== !!env.VAPID_PRIVATE_KEY)
     throw new Error('Set both VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY, or neither');
+  if (
+    env.WHATSAPP_PROVIDER === 'cloud' &&
+    !(
+      env.WHATSAPP_TOKEN &&
+      env.WHATSAPP_PHONE_NUMBER_ID &&
+      env.WHATSAPP_APP_SECRET &&
+      env.WHATSAPP_VERIFY_TOKEN &&
+      env.WHATSAPP_GRAPH_VERSION
+    )
+  )
+    throw new Error(
+      'WHATSAPP_PROVIDER=cloud needs WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_APP_SECRET, WHATSAPP_VERIFY_TOKEN and WHATSAPP_GRAPH_VERSION',
+    );
+  if (env.SMS_PROVIDER === 'msg91' && !(env.SMS_API_KEY && env.SMS_SENDER_ID && env.SMS_DLT_ENTITY_ID))
+    throw new Error('SMS_PROVIDER=msg91 needs SMS_API_KEY, SMS_SENDER_ID and SMS_DLT_ENTITY_ID');
   if (env.AI_DEFAULT_PROVIDER && !env.AI_DEFAULT_CHAT_MODEL)
     throw new Error('AI_DEFAULT_PROVIDER needs AI_DEFAULT_CHAT_MODEL');
   if (env.AI_DEFAULT_EMBEDDING_PROVIDER && !env.AI_DEFAULT_EMBEDDING_MODEL)
@@ -221,6 +268,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
       throw new Error(`Refusing to start in production with placeholder secrets: ${weak.join(', ')}`);
     if (env.RATE_LIMIT_SCALE > 2) throw new Error('RATE_LIMIT_SCALE above 2 is not allowed in production');
     if (env.MAIL_DRIVER === 'disabled') throw new Error('MAIL_DRIVER=disabled is not allowed in production');
+    if (env.WHATSAPP_PROVIDER === 'cloud' && !env.WHATSAPP_ACTION_SECRET)
+      throw new Error('WHATSAPP_ACTION_SECRET is required in production with WHATSAPP_PROVIDER=cloud');
     if (env.SMS_PROVIDER === 'console' || env.WHATSAPP_PROVIDER === 'console')
       throw new Error('The console SMS and WhatsApp providers are not allowed in production');
     if (env.STORAGE_DRIVER === 's3' && env.S3_SSE === 'none')

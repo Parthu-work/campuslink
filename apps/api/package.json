@@ -20,7 +20,8 @@
     "roadmaps:verify": "tsx src/scripts/roadmaps-verify.ts",
     "loadtest": "tsx --env-file-if-exists=../../.env src/scripts/loadtest.ts",
     "study:perf": "tsx --env-file-if-exists=../../.env src/scripts/study-perf.ts",
-    "rotate-field-key": "tsx --env-file-if-exists=../../.env src/scripts/rotate-field-key.ts"
+    "rotate-field-key": "tsx --env-file-if-exists=../../.env src/scripts/rotate-field-key.ts",
+    "docs:whatsapp": "tsx src/scripts/gen-whatsapp-doc.ts && prettier --write ../../docs/whatsapp-templates.md"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1152.0",

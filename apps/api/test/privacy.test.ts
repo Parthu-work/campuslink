@@ -23,6 +23,7 @@ import {
   UnansweredQuestionModel,
 } from '../src/modules/study/chat.model.js';
 import { FileModel } from '../src/modules/files/file.model.js';
+import { ChannelMessageModel } from '../src/modules/notifications/channels/channel.model.js';
 
 const ctx = testApp();
 const services = ctx.app.locals.services as {
@@ -108,6 +109,15 @@ beforeAll(async () => {
       { day, userId: null, kind: 'embedding', model: 'mock:m', requests: 1, inputTokens: 100 },
     ]);
     await services.gamification.award(alum.id, 'event_attended', 'privacy-event', { from: staff.id });
+    // A WhatsApp message record (B3): template and status only.
+    await ChannelMessageModel.create({
+      userId: new Types.ObjectId(alum.id),
+      channel: 'whatsapp',
+      template: 'cl_request_accepted',
+      category: 'requests',
+      providerMessageId: 'wamid.privacy-demo',
+      expiresAt: new Date(Date.now() + 86_400_000),
+    });
     const conv = await ConversationModel.create({
       participants: [new Types.ObjectId(alum.id), new Types.ObjectId(other.id)],
       pairKey: [alum.id, other.id].sort().join('|'),
@@ -214,6 +224,7 @@ describe('deletion', () => {
       expect(await SubjectModel.countDocuments({ contributorIds: alum.id })).toBe(0);
       expect(await SubjectModel.countDocuments({ code: 'PRV101' })).toBe(1);
       expect(await SubjectEnrollmentModel.countDocuments({ userId: alum.id })).toBe(0);
+      expect(await ChannelMessageModel.countDocuments({ userId: alum.id })).toBe(0);
       for (const m of [ChatSessionModel, ChatMessageModel, FlashcardDeckModel, UnansweredQuestionModel])
         expect(await (m as typeof ChatSessionModel).countDocuments({ userId: alum.id })).toBe(0);
       // Usage counters fold into the college's anonymous ones, so the month's budget stays true.
@@ -260,6 +271,8 @@ describe('deletion', () => {
         'materials',
         'aiUsage',
         'studyChats',
+        'channelMessages',
+        'guardianConsent',
       ]),
     );
   });

@@ -44,6 +44,9 @@ export class OtpService {
     private readonly sender: OtpSender,
   ) {}
 
+  /** Set by the app: meters each code sent (WhatsApp and SMS cost money). */
+  onSent: ((userId: string | null, channel: OtpChannel, messageId: string) => Promise<void>) | null = null;
+
   get phoneAvailable(): boolean {
     return this.sender.available;
   }
@@ -142,8 +145,15 @@ export class OtpService {
     lang: string,
     preferred?: OtpChannel,
   ): Promise<OtpChannel> {
-    const channel = await this.sender.send(phone, code, lang, preferred, await featureEnabled('whatsapp'));
-    await OtpChallengeModel.updateOne({ _id: challengeId }, { $set: { channel } });
+    const { channel, messageId } = await this.sender.send(
+      phone,
+      code,
+      lang,
+      preferred,
+      await featureEnabled('whatsapp'),
+    );
+    const ch = await OtpChallengeModel.findOneAndUpdate({ _id: challengeId }, { $set: { channel } }).lean();
+    await this.onSent?.(ch?.userId ? String(ch.userId) : null, channel, messageId);
     return channel;
   }
 }

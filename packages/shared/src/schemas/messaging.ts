@@ -102,6 +102,8 @@ export const NOTIFICATION_TYPES = [
   'adult_now',
   'guardian_number_approved',
   'guardian_number_rejected',
+  'channel_budget_warning',
+  'channel_budget_reached',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -162,32 +164,50 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   adult_now: 'reminders',
   guardian_number_approved: 'reminders',
   guardian_number_rejected: 'reminders',
+  channel_budget_warning: 'reminders',
+  channel_budget_reached: 'reminders',
 };
-export const CHANNELS = ['inApp', 'email', 'push'] as const;
+/** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
+export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;
+/** GET /me/whatsapp: the settings screen's WhatsApp card. */
+export interface WhatsAppStatus {
+  /** The deployment has WhatsApp and the college has it on. */
+  available: boolean;
+  /** The member opted in (`whatsapp_updates`). */
+  consented: boolean;
+  /** Where messages go, masked; null without a verified number. */
+  phone: string | null;
+}
 export type Channel = (typeof CHANNELS)[number];
 export type ChannelPrefs = Record<Channel, boolean>;
 export const DEFAULT_CHANNELS: Record<NotificationCategory, ChannelPrefs> = {
-  requests: { inApp: true, email: true, push: true },
-  sessions: { inApp: true, email: true, push: true },
-  reminders: { inApp: true, email: true, push: true },
+  requests: { inApp: true, email: true, push: true, whatsapp: true },
+  sessions: { inApp: true, email: true, push: true, whatsapp: true },
+  reminders: { inApp: true, email: true, push: true, whatsapp: true },
   // One email per conversation at most every 30 minutes, and only while you are offline.
-  messages: { inApp: true, email: false, push: true },
-  community: { inApp: true, email: false, push: true },
+  messages: { inApp: true, email: false, push: true, whatsapp: false },
+  community: { inApp: true, email: false, push: true, whatsapp: false },
   // Decisions about your content always reach you by email too (moderation transparency).
-  moderation: { inApp: true, email: true, push: false },
-  // Referral replies and daily job-alert matches.
-  jobs: { inApp: true, email: true, push: true },
+  moderation: { inApp: true, email: true, push: false, whatsapp: false },
+  // Referral replies and daily job-alert matches (only job alerts have a WhatsApp template).
+  jobs: { inApp: true, email: true, push: true, whatsapp: true },
   // Weekly goal nudges and review decisions: gentle, never by email unless you turn it on.
-  roadmaps: { inApp: true, email: false, push: true },
+  roadmaps: { inApp: true, email: false, push: true, whatsapp: false },
   // Badges and reward decisions: in the app only, unless you turn more on.
-  achievements: { inApp: true, email: false, push: false },
+  achievements: { inApp: true, email: false, push: false, whatsapp: false },
   // Reminders, changes and waitlist places for events you RSVP'd to.
-  events: { inApp: true, email: true, push: true },
+  events: { inApp: true, email: true, push: true, whatsapp: false },
   // Your uploads finished processing (or failed), and review decisions about them.
-  study: { inApp: true, email: false, push: true },
+  study: { inApp: true, email: false, push: true, whatsapp: false },
 };
 
-const channelPrefs = z.strictObject({ inApp: z.boolean(), email: z.boolean(), push: z.boolean() });
+const channelPrefs = z.strictObject({
+  inApp: z.boolean(),
+  email: z.boolean(),
+  push: z.boolean(),
+  // Optional so clients from before B3 keep saving; missing means off.
+  whatsapp: z.boolean().default(false),
+});
 export const notificationPrefsBody = z.strictObject({
   channels: z.strictObject({
     requests: channelPrefs,

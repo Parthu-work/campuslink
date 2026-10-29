@@ -2,8 +2,14 @@ import { useState } from 'react';
 import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { BellRing } from 'lucide-react';
-import { CHANNELS, NOTIFICATION_CATEGORIES, type NotificationPrefs } from '@campuslink/shared';
+import { BellRing, MessageCircle } from 'lucide-react';
+import { Link } from 'react-router';
+import {
+  CHANNELS,
+  NOTIFICATION_CATEGORIES,
+  type NotificationPrefs,
+  type WhatsAppStatus,
+} from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select } from '../../components/ui/field';
 import { Card, Skeleton } from '../../components/ui/misc';
@@ -58,7 +64,48 @@ function PushCard() {
   );
 }
 
-function PrefsForm({ initial }: { initial: NotificationPrefs }) {
+/** WhatsApp (B3): opt in with the consent Meta requires, and see the number messages go to. */
+function WhatsAppCard({ status }: { status: WhatsAppStatus }) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const toggle = useMutation({
+    mutationFn: () => api.post('/me/consents', { purpose: 'whatsapp_updates', granted: !status.consented }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['whatsapp-status'] });
+      void qc.invalidateQueries({ queryKey: ['consents'] });
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
+  });
+  return (
+    <Card className="flex flex-wrap items-center gap-3 p-4">
+      <MessageCircle className="size-6 flex-none text-accent-ink" aria-hidden />
+      <div className="min-w-0 flex-1">
+        <h2 className="font-semibold">{t('notifications.whatsapp')}</h2>
+        <p className="text-meta text-fg-2">
+          {!status.phone
+            ? t('notifications.whatsappNoPhone')
+            : status.consented
+              ? t('notifications.whatsappOn', { phone: status.phone })
+              : t('notifications.whatsappBody', { phone: status.phone })}
+        </p>
+      </div>
+      {status.phone ? (
+        <Button loading={toggle.isPending} onClick={() => toggle.mutate()}>
+          {status.consented ? t('notifications.whatsappDisable') : t('notifications.whatsappEnable')}
+        </Button>
+      ) : (
+        <Link
+          to="/settings"
+          className="inline-flex min-h-11 items-center font-semibold text-brand-ink hover:underline"
+        >
+          {t('phone.add')}
+        </Link>
+      )}
+    </Card>
+  );
+}
+
+function PrefsForm({ initial, whatsapp }: { initial: NotificationPrefs; whatsapp: boolean }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [p, setP] = useState(initial);
@@ -91,7 +138,7 @@ function PrefsForm({ initial }: { initial: NotificationPrefs }) {
                   </span>
                 </p>
                 <div className="flex flex-wrap gap-1">
-                  {CHANNELS.map((c) => (
+                  {CHANNELS.filter((c) => c !== 'whatsapp' || whatsapp).map((c) => (
                     <label
                       key={c}
                       className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-line px-3 text-meta font-medium has-[:checked]:border-brand has-[:checked]:bg-brand-surface"
@@ -186,10 +233,19 @@ export function NotificationSettings() {
     queryKey: ['notification-prefs'],
     queryFn: () => api.get<NotificationPrefs>('/me/notification-preferences'),
   });
+  const wa = useQuery({
+    queryKey: ['whatsapp-status'],
+    queryFn: () => api.get<WhatsAppStatus>('/me/whatsapp'),
+  });
   return (
     <>
       <PushCard />
-      {q.data ? <PrefsForm initial={q.data} /> : <Skeleton className="h-72" />}
+      {wa.data?.available && <WhatsAppCard status={wa.data} />}
+      {q.data ? (
+        <PrefsForm initial={q.data} whatsapp={!!wa.data?.available && wa.data.consented} />
+      ) : (
+        <Skeleton className="h-72" />
+      )}
     </>
   );
 }

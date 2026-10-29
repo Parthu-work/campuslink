@@ -22,7 +22,7 @@ export type NotificationDoc = InferSchemaType<typeof notificationSchema> & {
 };
 export const NotificationModel = defineTenantModel('Notification', notificationSchema);
 
-const channel = { inApp: Boolean, email: Boolean, push: Boolean };
+const channel = { inApp: Boolean, email: Boolean, push: Boolean, whatsapp: Boolean };
 const prefsSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, required: true },

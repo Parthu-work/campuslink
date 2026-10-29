@@ -32,6 +32,12 @@
 - Sign-in answers the same whether or not a number has an account, and a code to a number with no account is never sent.
 - One-time code challenges keep the number encrypted for at most 24 hours (sign-up needs it after the code) and are then deleted.
 
+## WhatsApp messages (build B3)
+
+- Sent only to members who opted in (`whatsapp_updates`, optional, versioned) and have a verified number, for the kinds of notification they leave switched on. Meta (WhatsApp) receives the number and the template's variables: names, times, session types, company names and counts, never message or request text.
+- What was sent is kept per member as the template name and delivery status for 90 days (`channel_messages`), exported with their data and erased with their account; daily counts per college carry no member ids.
+- Replies are not stored. A tap on a button runs that one action as the member; free text gets a fixed answer pointing to the app.
+
 ## Data minimisation (implemented)
 
 - IP addresses are reduced to /24 (IPv4) or /48 (IPv6) prefixes in sessions and audit.

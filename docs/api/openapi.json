@@ -522,7 +522,8 @@
                         "account",
                         "mentorship_matching",
                         "email_digests",
-                        "analytics_aggregate"
+                        "analytics_aggregate",
+                        "whatsapp_updates"
                       ]
                     }
                   },
@@ -1253,7 +1254,8 @@
                             "account",
                             "mentorship_matching",
                             "email_digests",
-                            "analytics_aggregate"
+                            "analytics_aggregate",
+                            "whatsapp_updates"
                           ]
                         }
                       },
@@ -1723,7 +1725,8 @@
                       "account",
                       "mentorship_matching",
                       "email_digests",
-                      "analytics_aggregate"
+                      "analytics_aggregate",
+                      "whatsapp_updates"
                     ]
                   },
                   "granted": {
@@ -5845,6 +5848,10 @@
                           },
                           "push": {
                             "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
+                            "type": "boolean"
                           }
                         },
                         "required": [
@@ -5864,6 +5871,10 @@
                             "type": "boolean"
                           },
                           "push": {
+                            "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
                             "type": "boolean"
                           }
                         },
@@ -5885,6 +5896,10 @@
                           },
                           "push": {
                             "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
+                            "type": "boolean"
                           }
                         },
                         "required": [
@@ -5904,6 +5919,10 @@
                             "type": "boolean"
                           },
                           "push": {
+                            "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
                             "type": "boolean"
                           }
                         },
@@ -5925,6 +5944,10 @@
                           },
                           "push": {
                             "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
+                            "type": "boolean"
                           }
                         },
                         "required": [
@@ -5944,6 +5967,10 @@
                             "type": "boolean"
                           },
                           "push": {
+                            "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
                             "type": "boolean"
                           }
                         },
@@ -5965,6 +5992,10 @@
                           },
                           "push": {
                             "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
+                            "type": "boolean"
                           }
                         },
                         "required": [
@@ -5984,6 +6015,10 @@
                             "type": "boolean"
                           },
                           "push": {
+                            "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
                             "type": "boolean"
                           }
                         },
@@ -6005,6 +6040,10 @@
                           },
                           "push": {
                             "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
+                            "type": "boolean"
                           }
                         },
                         "required": [
@@ -6025,6 +6064,10 @@
                           },
                           "push": {
                             "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
+                            "type": "boolean"
                           }
                         },
                         "required": [
@@ -6044,6 +6087,10 @@
                             "type": "boolean"
                           },
                           "push": {
+                            "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
                             "type": "boolean"
                           }
                         },
@@ -6256,6 +6303,90 @@
           }
         },
         "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/webhooks/whatsapp": {
+      "get": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Meta webhook verification (echoes hub.challenge for the right token)",
+        "description": "Public. Host scope: any. Rate limit: webhook.",
+        "operationId": "channels_get_webhooks_whatsapp",
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      },
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Meta webhook deliveries (signed with X-Hub-Signature-256)",
+        "description": "Public. Host scope: any. Rate limit: webhook.",
+        "operationId": "channels_post_webhooks_whatsapp",
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/me/whatsapp": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Whether WhatsApp can reach me (available, my opt-in, my number masked)",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "channels_get_me_whatsapp",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/admin/channels/usage": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "This month's WhatsApp messages against the college's allowance",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college.",
+        "operationId": "channels_get_admin_channels_usage",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
       }
     },
     "/api/v1/me/blocks": {

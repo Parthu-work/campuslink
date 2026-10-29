@@ -97,6 +97,10 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return '/verify';
       case 'guardian_number_rejected':
         return '/verify';
+      case 'channel_budget_warning':
+        return '/admin';
+      case 'channel_budget_reached':
+        return '/admin';
       default:
         return '/sessions';
     }

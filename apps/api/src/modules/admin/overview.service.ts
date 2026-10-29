@@ -14,6 +14,7 @@ import type { AnalyticsService } from '../analytics/analytics.service.js';
 import type { AiSettingsService } from '../study/ai-settings.service.js';
 import type { AiUsageService } from '../study/ai-usage.service.js';
 import { featureEnabled } from '../tenants/features.js';
+import type { ChannelService } from '../notifications/channels/channel.service.js';
 
 export interface OverviewDeps {
   users: UsersService;
@@ -27,6 +28,7 @@ export interface OverviewDeps {
   imports: ImportsService;
   analytics: AnalyticsService;
   ai: AiSettingsService;
+  channels?: ChannelService;
   usage: AiUsageService;
 }
 
@@ -76,6 +78,20 @@ export class AdminOverviewService {
           };
         }),
       ]);
-    return { members, activity, verification, moderation, roadmapReviews, materialReviews, imports, ai };
+    const whatsapp =
+      this.d.channels && can('tenant:settings') && (await featureEnabled('whatsapp'))
+        ? await this.d.channels.usage().then((u) => ({ sent: u.sent, allowance: u.allowance }))
+        : null;
+    return {
+      members,
+      activity,
+      verification,
+      moderation,
+      roadmapReviews,
+      materialReviews,
+      imports,
+      ai,
+      whatsapp,
+    };
   }
 }

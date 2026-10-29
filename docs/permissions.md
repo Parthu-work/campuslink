@@ -193,6 +193,10 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/notifications/push/config` | any signed-in user | college | — | Whether web push is available, and the VAPID public key |
 | `POST /api/v1/notifications/push/subscriptions` | any signed-in user | college | push | Register this browser for push (known push services only) |
 | `POST /api/v1/notifications/push/unsubscribe` | any signed-in user | college | push | Remove this browser’s push subscription |
+| `GET /api/v1/webhooks/whatsapp` | public | any | webhook | Meta webhook verification (echoes hub.challenge for the right token) |
+| `POST /api/v1/webhooks/whatsapp` | public | any | webhook | Meta webhook deliveries (signed with X-Hub-Signature-256) |
+| `GET /api/v1/me/whatsapp` | any signed-in user | college | — | Whether WhatsApp can reach me (available, my opt-in, my number masked) |
+| `GET /api/v1/admin/channels/usage` | `tenant:settings` | college | — | This month's WhatsApp messages against the college's allowance |
 | `GET /api/v1/me/blocks` | any signed-in user | college | — | People I blocked |
 | `POST /api/v1/me/blocks` | any signed-in user | college | reports | Block someone (closes chat, withdraws requests, cancels future sessions) |
 | `DELETE /api/v1/me/blocks/:userId` | any signed-in user | college | — | Unblock someone |

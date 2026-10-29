@@ -138,7 +138,8 @@
       "account": "Run my account: sign-in, security and showing my profile to verified members of my college. Required.",
       "mentorship_matching": "Use my branch, interests and goals to suggest mentors and mentees.",
       "email_digests": "Send me a weekly email with openings and guidance from my college.",
-      "analytics_aggregate": "Count my activity in anonymous, college-level statistics."
+      "analytics_aggregate": "Count my activity in anonymous, college-level statistics.",
+      "whatsapp_updates": "Send me requests, session reminders and job alerts on WhatsApp (at most two a week, plus reminders)."
     },
     "privacyNote": "You can change these any time in Settings → Privacy. We never sell or share your data.",
     "signUpCta": "Create account",
@@ -416,7 +417,9 @@
       "activityHint": "{{last30}} in the last 30 days",
       "ai": "AI study assistant",
       "aiBudget": "{{percent}}% of this month’s token budget used",
-      "aiNoBudget": "No monthly budget set"
+      "aiNoBudget": "No monthly budget set",
+      "whatsapp": "WhatsApp this month",
+      "whatsappHint": "messages of {{allowance}} included"
     },
     "logo": {
       "label": "Logo",
@@ -1124,6 +1127,14 @@
     "guardian_number_rejected": {
       "title": "Your college couldn’t use that number",
       "body": "Your college couldn’t confirm the guardian number you entered. Check it with your college office, or enter another."
+    },
+    "channel_budget_warning": {
+      "title": "WhatsApp messages 80% used",
+      "body": "This month’s WhatsApp allowance is {{percent}}% used. Members get push or email instead once it runs out."
+    },
+    "channel_budget_reached": {
+      "title": "WhatsApp allowance used up",
+      "body": "This month’s WhatsApp allowance is used. Until the 1st, members get push or email instead (codes and session reminders still go out)."
     }
   },
   "notifications": {
@@ -1143,7 +1154,8 @@
     "channel": {
       "inApp": "In app",
       "email": "Email",
-      "push": "Push"
+      "push": "Push",
+      "whatsapp": "WhatsApp"
     },
     "cat": {
       "requests": "Requests",
@@ -1178,7 +1190,13 @@
     "quietTo": "Until",
     "quietNote": "Session reminders still arrive on time.",
     "emptyBody": "Requests, replies, sessions and badges will appear here as they happen.",
-    "emptyAction": "See what's new at home"
+    "emptyAction": "See what's new at home",
+    "whatsapp": "WhatsApp",
+    "whatsappNoPhone": "Add a mobile number to get requests, session reminders and job alerts on WhatsApp.",
+    "whatsappBody": "Get requests, session reminders and job alerts on WhatsApp at {{phone}}. At most two a week, plus reminders.",
+    "whatsappOn": "On. Messages go to {{phone}}. Choose below which ones.",
+    "whatsappEnable": "Turn on",
+    "whatsappDisable": "Turn off"
   },
   "safety": {
     "menu": "Safety options for {{name}}",

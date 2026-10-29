@@ -5,7 +5,7 @@ import { tenantPlugin, TENANT_PLUGIN_MARK } from './tenant-plugin.js';
  * All models are created through these two helpers (lint bans mongoose.model elsewhere).
  * Tenant-owned is the default; platform models are an explicit, short allowlist.
  */
-export const PLATFORM_MODELS = new Set(['Tenant', 'Migration']);
+export const PLATFORM_MODELS = new Set(['Tenant', 'Migration', 'WebhookReceipt']);
 
 export function defineTenantModel<T>(name: string, schema: Schema<T>): Model<T> {
   schema.plugin(tenantPlugin);

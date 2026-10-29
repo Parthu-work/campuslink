@@ -119,3 +119,46 @@ describe('phone identity isolation', () => {
     expect((await api(ctx, B.host, tpoB.token).get('/admin/verification')).body.data).toEqual([]);
   });
 });
+
+describe('WhatsApp channel isolation (B3)', () => {
+  it("one college's message records and usage are invisible and untouchable from another", async () => {
+    const { ChannelMessageModel, ChannelUsageModel } =
+      await import('../../src/modules/notifications/channels/channel.model.js');
+    const uA = (
+      await api(ctx, A.host).post('/auth/phone/start').send({ phone: '+919700077777', purpose: 'signup' })
+    ).body.data;
+    expect(uA.challengeId).toBeTruthy();
+    const day = new Date().toISOString().slice(0, 10);
+    const msg = await runInTenant(A._id, async () => {
+      await ChannelUsageModel.updateOne(
+        { day, channel: 'whatsapp', category: 'requests' },
+        { $inc: { count: 7 } },
+        { upsert: true },
+      );
+      return ChannelMessageModel.create({
+        userId: tpoB.id,
+        channel: 'whatsapp',
+        template: 'cl_job_alert',
+        category: 'jobs',
+        providerMessageId: 'wamid.iso-a',
+        expiresAt: new Date(Date.now() + 86_400_000),
+      });
+    });
+    await runInTenant(B._id, async () => {
+      expect(await ChannelMessageModel.findById(msg._id).lean()).toBeNull();
+      expect(await ChannelMessageModel.countDocuments({ providerMessageId: 'wamid.iso-a' })).toBe(0);
+      expect(
+        (await ChannelMessageModel.updateOne({ _id: msg._id }, { $set: { status: 'read' } })).matchedCount,
+      ).toBe(0);
+      expect((await ChannelMessageModel.deleteOne({ _id: msg._id })).deletedCount).toBe(0);
+      expect(
+        await ChannelUsageModel.countDocuments({ channel: 'whatsapp', category: 'requests', count: 7 }),
+      ).toBe(0);
+    });
+    // B's admin overview and usage count none of A's messages.
+    const adminB = await makeUser(ctx, B, { roles: ['COLLEGE_ADMIN'], mfa: true });
+    const usage = (await api(ctx, B.host, adminB.token).get('/admin/channels/usage')).body.data;
+    // (B's own phone codes count; A's seven do not.)
+    expect(usage.sent).toBeLessThan(7);
+  });
+});

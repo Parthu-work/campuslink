@@ -30,6 +30,7 @@ import type { Logger } from '../../lib/logger.js';
 import type { RealtimeGateway } from '../../http/realtime.js';
 import { zonedParts } from '../../lib/timezone.js';
 import type { AuthState } from '../../types.js';
+import type { ChannelService } from './channels/channel.service.js';
 import { APP_NAME } from '@campuslink/shared';
 
 export const DELIVER_JOB = 'notifications.deliver';
@@ -45,6 +46,8 @@ export interface NotificationsDeps {
   realtime: RealtimeGateway;
   jobs: JobQueue;
   tenantUrl: (tenant: TenantRecord, path: string) => string;
+  /** WhatsApp (B3); absent in deployments and tests that do not wire it. */
+  channels?: ChannelService;
 }
 
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
@@ -100,7 +103,13 @@ export class NotificationsService {
     for (const k of Object.keys(channels) as (keyof typeof channels)[]) {
       const c = p?.channels?.[k];
       if (c && typeof c.inApp === 'boolean')
-        channels[k] = { inApp: !!c.inApp, email: !!c.email, push: !!c.push };
+        channels[k] = {
+          inApp: !!c.inApp,
+          email: !!c.email,
+          push: !!c.push,
+          // Saved before WhatsApp existed (B3): the category's default.
+          whatsapp: typeof c.whatsapp === 'boolean' ? c.whatsapp : DEFAULT_CHANNELS[k].whatsapp,
+        };
     }
     return {
       channels,
@@ -163,13 +172,14 @@ export class NotificationsService {
     }
     const email = ch.email && !opts.noEmail;
     const push = ch.push && this.d.push.enabled;
-    if (!email && !push) return { emailQueued: false };
+    const whatsapp = ch.whatsapp && !!this.d.channels && (await this.d.channels.usable(type));
+    if (!email && !push && !whatsapp) return { emailQueued: false };
     if (type === 'new_message' && (await this.d.realtime.isOnline(tenantId, uid)))
       return { emailQueued: false };
     const delayMs = IGNORES_QUIET_HOURS.includes(type) ? 0 : quietDelayMs(prefs.quietHours);
     await this.d.jobs.enqueue(
       DELIVER_JOB,
-      { tenantId: String(tenantId), userId: uid, type, data, email, push },
+      { tenantId: String(tenantId), userId: uid, type, data, email, push, whatsapp },
       delayMs ? { delayMs } : {},
     );
     return { emailQueued: email };
@@ -186,8 +196,18 @@ export class NotificationsService {
     const prefs = await this.prefs(String(job.userId));
     const text = renderNotification(type, data, locale, prefs.quietHours.timezone);
     const path = pathFor(type, data);
+    let email = !!job.email;
+    let push = !!job.push;
+    if (job.whatsapp && this.d.channels) {
+      const outcome = await this.d.channels.send(String(job.userId), type, data, prefs.quietHours.timezone);
+      // Capped, failed or not reachable on WhatsApp: fall back to push, else email (B3).
+      if (outcome !== 'sent' && !email && !push) {
+        if (this.d.push.enabled && (await PushSubscriptionModel.exists({ userId: job.userId }))) push = true;
+        else email = true;
+      }
+    }
     // Members who joined by phone may have no email address (B2).
-    if (job.email && user.email) {
+    if (email && user.email) {
       const content = renderEmail({
         college: tenant.branding.displayName,
         heading: text.title,
@@ -199,7 +219,7 @@ export class NotificationsService {
         .send({ to: user.email, subject: `${text.title} · ${tenant.branding.shortName}`, ...content })
         .catch((err: unknown) => this.d.logger.error({ err, type }, 'notification email failed'));
     }
-    if (job.push)
+    if (push)
       await this.sendPush(String(job.userId), { title: text.title, body: text.body, url: path, tag: type });
   }
 

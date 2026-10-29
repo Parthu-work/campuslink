@@ -26,6 +26,7 @@ import { UsersService } from './modules/users/users.service.js';
 import { meRoutes, adminUserRoutes } from './modules/users/users.routes.js';
 import { tenantRoutes } from './modules/tenants/tenants.routes.js';
 import { auditRoutes } from './modules/audit/audit.routes.js';
+import { audit } from './modules/audit/audit.service.js';
 import { PlatformService } from './modules/platform/platform.service.js';
 import { platformRoutes } from './modules/platform/platform.routes.js';
 import { uploader } from './http/upload.js';
@@ -34,8 +35,15 @@ import { requireTenantId } from './lib/context.js';
 import type { StorageProvider } from './lib/storage.js';
 import { storageFromEnv } from './lib/storage-factory.js';
 import { InlineJobQueue, type JobQueue } from './lib/jobs.js';
-import { ConsoleSmsProvider, DisabledSmsProvider, type SmsProvider } from './lib/sms.js';
-import { ConsoleWhatsAppProvider, DisabledWhatsAppProvider, type WhatsAppProvider } from './lib/whatsapp.js';
+import { ConsoleSmsProvider, DisabledSmsProvider, Msg91SmsProvider, type SmsProvider } from './lib/sms.js';
+import {
+  CloudWhatsAppProvider,
+  ConsoleWhatsAppProvider,
+  DisabledWhatsAppProvider,
+  type WhatsAppProvider,
+} from './lib/whatsapp.js';
+import { ChannelService } from './modules/notifications/channels/channel.service.js';
+import { channelRoutes } from './modules/notifications/channels/channel.routes.js';
 import { OtpSender } from './modules/notifications/channels/otp-sender.js';
 import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
 import { OtpService } from './modules/verification/otp.service.js';
@@ -148,6 +156,35 @@ export interface AppDeps {
   whatsapp?: WhatsAppProvider;
 }
 
+function smsFromEnv(env: Env, fetcher: typeof safeFetch): SmsProvider {
+  if (env.SMS_PROVIDER === 'console') return new ConsoleSmsProvider();
+  if (env.SMS_PROVIDER === 'msg91')
+    return new Msg91SmsProvider(
+      {
+        authKey: env.SMS_API_KEY ?? '',
+        senderId: env.SMS_SENDER_ID ?? '',
+        dltEntityId: env.SMS_DLT_ENTITY_ID ?? '',
+      },
+      fetcher,
+    );
+  return new DisabledSmsProvider();
+}
+
+function whatsappFromEnv(env: Env, fetcher: typeof safeFetch): WhatsAppProvider {
+  if (env.WHATSAPP_PROVIDER === 'console') return new ConsoleWhatsAppProvider();
+  if (env.WHATSAPP_PROVIDER === 'cloud')
+    return new CloudWhatsAppProvider(
+      {
+        token: env.WHATSAPP_TOKEN ?? '',
+        phoneNumberId: env.WHATSAPP_PHONE_NUMBER_ID ?? '',
+        graphVersion: env.WHATSAPP_GRAPH_VERSION ?? '',
+        authTemplate: env.WHATSAPP_AUTH_TEMPLATE,
+      },
+      fetcher,
+    );
+  return new DisabledWhatsAppProvider();
+}
+
 export function createApp({
   env,
   logger,
@@ -167,10 +204,8 @@ export function createApp({
   ocr,
   whisper,
   vectorStore,
-  sms = env.SMS_PROVIDER === 'console' ? new ConsoleSmsProvider() : new DisabledSmsProvider(),
-  whatsapp = env.WHATSAPP_PROVIDER === 'console'
-    ? new ConsoleWhatsAppProvider()
-    : new DisabledWhatsAppProvider(),
+  sms = smsFromEnv(env, fetcher),
+  whatsapp = whatsappFromEnv(env, fetcher),
 }: AppDeps) {
   const app = express();
   app.disable('x-powered-by');
@@ -272,6 +307,18 @@ export function createApp({
 
   // ── Mentorship (Phase 3) ─────────────────────────────
   const tenantUrl = authService.tenantUrl.bind(authService);
+  const channelService = new ChannelService({
+    whatsapp,
+    cipher,
+    logger,
+    // Quick-reply payloads: their own secret in production, derived from a server secret in dev.
+    actionSecret:
+      env.WHATSAPP_ACTION_SECRET ??
+      createHmac('sha256', env.JWT_TICKET_SECRET).update('whatsapp-actions-v1').digest('hex'),
+    appSecret: env.WHATSAPP_APP_SECRET ?? '',
+  });
+  otpService.onSent = (userId, channel, messageId) =>
+    channelService.record(userId, channel, 'auth_code', 'authentication', true, messageId);
   const notificationsService = new NotificationsService({
     mailer,
     logger,
@@ -280,7 +327,12 @@ export function createApp({
     realtime,
     jobs: queue,
     tenantUrl,
+    channels: channelService,
   });
+  channelService.onAlert = async (type, data) => {
+    for (const id of await usersService.activeIdsWithRole(Role.COLLEGE_ADMIN))
+      await notificationsService.notify(id, type, data);
+  };
   const safetyService = new SafetyService(profilesService);
   const messagingService = new MessagingService({
     cipher,
@@ -333,6 +385,22 @@ export function createApp({
   queue.register(REMINDER_JOB, (data) => sessionsService.onReminder(data));
   queue.register(COMPLETE_JOB, (data) => sessionsService.onComplete(data));
   queue.register(EXPIRE_JOB, (data) => requestsService.onExpire(data));
+  // WhatsApp quick replies (B3) act through the owning services, as the member, with current rights.
+  channelService.registerAction('request_accept', (viewer, id) =>
+    requestsService.respond(viewer, id, { action: 'accept' }),
+  );
+  channelService.registerAction('request_decline', (viewer, id) =>
+    requestsService.respond(viewer, id, { action: 'decline', template: 'try_later' }),
+  );
+  channelService.registerAction('booking_ack', async (viewer, id) => {
+    await sessionsService.get(viewer, id);
+    await audit.record({
+      action: 'session.attendance_confirmed',
+      actorId: viewer.userId,
+      targetType: 'booking',
+      targetId: id,
+    });
+  });
 
   // ── Feed and content (Phase 4) ─────────────────────────────
   const moderationService = new ModerationService({
@@ -628,6 +696,7 @@ export function createApp({
     analytics: analyticsService,
     ai: aiSettingsService,
     usage: aiUsageService,
+    channels: channelService,
   });
 
   // ── Privacy rights (Phase 8) ─────────────────────────────
@@ -656,6 +725,7 @@ export function createApp({
   privacyService.register('points', hook(gamificationService));
   privacyService.register('events', hook(eventsService));
   privacyService.register('notifications', hook(notificationsService));
+  privacyService.register('channelMessages', hook(channelService));
   privacyService.register('subjects', hook(subjectsService));
   privacyService.register('materials', hook(materialsService));
   privacyService.register('aiUsage', hook(aiUsageService));
@@ -695,7 +765,16 @@ export function createApp({
     }),
   );
   app.use(corsMiddleware(env.CORS_ALLOWED_ORIGINS));
-  app.use(express.json({ limit: '100kb', strict: true }));
+  app.use(
+    express.json({
+      limit: '100kb',
+      strict: true,
+      // Provider webhooks are signed over the exact bytes: keep them for those paths only.
+      verify: (req, _res, buf) => {
+        if (req.url?.startsWith(`${API_PREFIX}/webhooks/`)) (req as { rawBody?: Buffer }).rawBody = buf;
+      },
+    }),
+  );
   app.use(rejectOperatorKeys);
   app.use(cookieParser());
   app.use((_req, res, next) => {
@@ -750,6 +829,10 @@ export function createApp({
   app.use(API_PREFIX, defineModule('sessions', sessionRoutes(sessionsService), pipeline));
   app.use(API_PREFIX, defineModule('messaging', messagingRoutes(messagingService), pipeline));
   app.use(API_PREFIX, defineModule('notifications', notificationRoutes(notificationsService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('channels', channelRoutes(channelService, env.WHATSAPP_VERIFY_TOKEN), pipeline),
+  );
   app.use(API_PREFIX, defineModule('moderation', moderationRoutes(safetyService), pipeline));
   app.use(
     API_PREFIX,
@@ -854,6 +937,7 @@ export function createApp({
     queue,
     realtime,
     notifications: notificationsService,
+    channels: channelService,
     messaging: messagingService,
     sessions: sessionsService,
     mentors: mentorsService,

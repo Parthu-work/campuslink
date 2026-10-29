@@ -9,6 +9,7 @@ import {
   Orbit,
   ShieldAlert,
   Sparkles,
+  MessageCircle,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -202,6 +203,17 @@ export function AdminOverview() {
                 {v.ai.budgetPercent === null
                   ? t('admin.ov.aiNoBudget')
                   : t('admin.ov.aiBudget', { percent: v.ai.budgetPercent })}
+              </QueueCard>
+            )}
+            {v.whatsapp && (
+              <QueueCard
+                to="/admin/features"
+                icon={MessageCircle}
+                title={t('admin.ov.whatsapp')}
+                value={String(v.whatsapp.sent)}
+                waiting={v.whatsapp.allowance > 0 && v.whatsapp.sent >= v.whatsapp.allowance * 0.8}
+              >
+                {t('admin.ov.whatsappHint', { allowance: v.whatsapp.allowance })}
               </QueueCard>
             )}
           </div>

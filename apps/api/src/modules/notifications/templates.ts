@@ -111,6 +111,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'Your college couldn’t use that number',
       body: 'Your college couldn’t confirm the guardian number you entered. Check it with your college office, or enter another.',
     },
+    channel_budget_warning: {
+      title: 'WhatsApp messages 80% used',
+      body: 'This month’s WhatsApp allowance is {percent}% used. Members get push or email instead once it runs out.',
+    },
+    channel_budget_reached: {
+      title: 'WhatsApp allowance used up',
+      body: 'This month’s WhatsApp allowance is used. Until the 1st, members get push or email instead (codes and session reminders still go out).',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -224,6 +232,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     guardian_number_rejected: {
       title: 'ఆ నంబర్‌ను మీ కాలేజీ వాడలేకపోయింది',
       body: 'మీరు ఇచ్చిన సంరక్షకుల నంబర్‌ను మీ కాలేజీ నిర్ధారించలేకపోయింది. మీ కాలేజీ ఆఫీసులో అడగండి, లేదా వేరే నంబర్ ఇవ్వండి.',
+    },
+    channel_budget_warning: {
+      title: 'వాట్సాప్ సందేశాలు 80% వాడారు',
+      body: 'ఈ నెల వాట్సాప్ పరిమితిలో {percent}% వాడారు. అది ముగిశాక సభ్యులకు బదులుగా పుష్ లేదా ఈమెయిల్ వస్తుంది.',
+    },
+    channel_budget_reached: {
+      title: 'వాట్సాప్ పరిమితి పూర్తయింది',
+      body: 'ఈ నెల వాట్సాప్ పరిమితి పూర్తయింది. 1వ తేదీ వరకు సభ్యులకు బదులుగా పుష్ లేదా ఈమెయిల్ వస్తుంది (కోడ్‌లు, సెషన్ రిమైండర్‌లు ఇంకా వెళ్తాయి).',
     },
   },
 };
@@ -368,6 +384,10 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/verify';
     case 'guardian_number_rejected':
       return '/verify';
+    case 'channel_budget_warning':
+      return '/admin';
+    case 'channel_budget_reached':
+      return '/admin';
     default:
       return '/sessions';
   }
@@ -399,6 +419,8 @@ export function renderNotification(
       .replace('{reward}', data.reward ?? '')
       .replace('{event}', data.event ?? '')
       .replace('{title}', data.title ?? '')
-      .replace('{decision}', DECISION[locale][data.decision ?? ''] ?? '');
+      .replace('{decision}', DECISION[locale][data.decision ?? ''] ?? '')
+      // Any other placeholder ({percent}, {count}, …) is a plain value from the data.
+      .replace(/\{(\w+)\}/g, (_m, k: string) => data[k] ?? '');
   return { title: fill(t.title), body: fill(t.body), footer: FOOTER[locale], open: OPEN[locale] };
 }

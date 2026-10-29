@@ -39,19 +39,19 @@ export class OtpSender {
     lang: string,
     preferred: OtpChannel | undefined,
     whatsappAllowed: boolean,
-  ): Promise<OtpChannel> {
+  ): Promise<{ channel: OtpChannel; messageId: string }> {
     const channel = this.channelFor(preferred, whatsappAllowed);
     if (!channel) throw new Error('No channel can deliver codes');
     if (channel === 'whatsapp') {
       try {
-        await this.d.whatsapp.sendAuthCode(phone, code, lang);
-        return 'whatsapp';
+        const r = await this.d.whatsapp.sendAuthCode(phone, code, lang);
+        return { channel: 'whatsapp', messageId: r.messageId };
       } catch (err) {
         if (!this.d.sms.available) throw err;
         this.d.logger.warn({ err }, 'whatsapp code failed; falling back to sms');
       }
     }
-    await this.d.sms.sendTemplate(phone, this.d.smsTemplateId('otp'), [code]);
-    return 'sms';
+    const r = await this.d.sms.sendTemplate(phone, this.d.smsTemplateId('otp'), [code]);
+    return { channel: 'sms', messageId: r.messageId };
   }
 }

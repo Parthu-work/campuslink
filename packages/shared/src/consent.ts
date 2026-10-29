@@ -7,6 +7,8 @@ export const CONSENT_PURPOSES = {
   mentorship_matching: { version: 1, required: false },
   email_digests: { version: 1, required: false },
   analytics_aggregate: { version: 1, required: false },
+  /** Messages on WhatsApp (B3): Meta requires an explicit opt-in. */
+  whatsapp_updates: { version: 1, required: false },
 } as const;
 export type ConsentPurpose = keyof typeof CONSENT_PURPOSES;
 export const CONSENT_PURPOSE_KEYS = Object.keys(CONSENT_PURPOSES) as ConsentPurpose[];
