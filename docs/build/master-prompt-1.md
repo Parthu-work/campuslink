@@ -2,7 +2,7 @@
 
 You are the principal engineer on the CampusLink monorepo. Your mission in this prompt is to turn the current build into a product a Tier-3 Indian college can run its students, alumni and placement office on, and pay for. Deployment and infrastructure are **out of scope** (a separate effort). Prompt 2 (`master-prompt-2-habit-growth-moat.md`) continues from where this one ends.
 
-**The product thesis you are building toward:** CampusLink becomes the college's _system of record_ for placements, alumni and student readiness. A college cannot afford to lose it because its placement history, accreditation evidence, alumni graph and study library live there, and because it works where Tier-3 students already are: on a cheap Android phone, on WhatsApp, in Telugu or Hindi.
+**The product thesis you are building toward:** CampusLink becomes the college's *system of record* for placements, alumni and student readiness. A college cannot afford to lose it because its placement history, accreditation evidence, alumni graph and study library live there, and because it works where Tier-3 students already are: on a cheap Android phone, on WhatsApp, in Telugu or Hindi.
 
 Every fact about the codebase below was **verified against commit `cc965b1`** (branch `claude/sleepy-euler-bi65m3`, 29 Oct 2026). Do not re-audit the codebase. Trust §2, open only the files each phase lists under **Touches**, and if a fact turns out wrong, correct it in `docs/build/facts.md` and carry on.
 
@@ -185,23 +185,23 @@ Bundle budget: initial JS ≤ 170 KB gzipped (currently **169.3 KB**, with almos
 
 ## 4. Phase map
 
-| Phase | Name                                                           | Why it matters                                                |
-| ----- | -------------------------------------------------------------- | ------------------------------------------------------------- |
-| B1    | Feature switches and the cut list                              | Focus the product per college without deleting anything       |
-| B2    | Phone-first identity, age and guardian consent                 | Tier-3 students live on phones; DPDP compliance for under-18s |
-| B3    | WhatsApp and SMS channels                                      | The channel students and alumni actually read                 |
-| B4    | One-tap invites and class onboarding                           | Activation from roster to active member in two minutes        |
-| B5    | Mentorship loop that never dead-ends                           | Reply time, nudges, auto-rematch, mentor stats and reviews    |
-| B6    | TPO console                                                    | Bulk approval, onboarding progress, targeted announcements    |
-| B7    | Placement drives                                               | The workflow a college pays for                               |
-| B8    | Placement outcomes and accreditation reports                   | The system of record; NBA, NAAC and NIRF evidence             |
-| B9    | Product analytics                                              | Activation, weekly use and retention: the traction story      |
-| B10   | Plans, entitlements and billing                                | Revenue inside the product                                    |
-| B11   | AI cost control                                                | Platform key by default, model tiers, metering                |
-| B12   | Hindi and the language framework                               | Second-language growth beyond Telangana                       |
-| B13   | Offline and low-data mode                                      | Works on 3G and in hostels with bad Wi-Fi                     |
-| B14   | In-app help, feedback, legal pages and app-level observability | Support without email chains; trustworthy legal surface       |
-| B15   | Hardening, demo data and final report                          | Prove it all works together                                   |
+| Phase | Name | Why it matters |
+| --- | --- | --- |
+| B1 | Feature switches and the cut list | Focus the product per college without deleting anything |
+| B2 | Phone-first identity, age and guardian consent | Tier-3 students live on phones; DPDP compliance for under-18s |
+| B3 | WhatsApp and SMS channels | The channel students and alumni actually read |
+| B4 | One-tap invites and class onboarding | Activation from roster to active member in two minutes |
+| B5 | Mentorship loop that never dead-ends | Reply time, nudges, auto-rematch, mentor stats and reviews |
+| B6 | TPO console | Bulk approval, onboarding progress, targeted announcements |
+| B7 | Placement drives | The workflow a college pays for |
+| B8 | Placement outcomes and accreditation reports | The system of record; NBA, NAAC and NIRF evidence |
+| B9 | Product analytics | Activation, weekly use and retention: the traction story |
+| B10 | Plans, entitlements and billing | Revenue inside the product |
+| B11 | AI cost control | Platform key by default, model tiers, metering |
+| B12 | Hindi and the language framework | Second-language growth beyond Telangana |
+| B13 | Offline and low-data mode | Works on 3G and in hostels with bad Wi-Fi |
+| B14 | In-app help, feedback, legal pages and app-level observability | Support without email chains; trustworthy legal surface |
+| B15 | Hardening, demo data and final report | Prove it all works together |
 
 ---
 
