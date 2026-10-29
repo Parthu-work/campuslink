@@ -20,3 +20,12 @@ description = "Marked demo API keys in tests"
 condition = "AND"
 paths = ['''^apps/api/test/''', '''^apps/web/e2e/''']
 regexes = ['''(?i)demo''']
+
+[[allowlists]]
+# Built chunk file names (name-<8-character content hash>.js) in the audit's bundle measurements,
+# which the generic key rule reads as keys after words like "key-round" or "auth". Scoped to the
+# audit data folders AND that exact shape, so a real key pasted there still fails the scan.
+description = "Vite chunk file names in UI audit data"
+condition = "AND"
+paths = ['''^docs/design/revamp/data(-after)?/''']
+regexes = ['''^[a-z0-9]+(-[a-z0-9]+)*-[A-Za-z0-9_-]{8}\.js$''']
