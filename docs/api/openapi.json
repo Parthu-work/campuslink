@@ -5079,6 +5079,107 @@
         "x-permission": "mentorship:request"
       }
     },
+    "/api/v1/mentors/{userId}/reviews": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Published reviews of a mentor (first names only)",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college.",
+        "operationId": "mentorship_get_mentors_userId_reviews",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/bookings/{id}/review": {
+      "post": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Publish a short review of a session I gave feedback on (mentee; moderated)",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college. Rate limit: posting.",
+        "operationId": "mentorship_post_bookings_id_review",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 280
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
     "/api/v1/mentors/{userId}/slots": {
       "get": {
         "tags": [
@@ -5536,6 +5637,97 @@
             }
           }
         ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/mentorship/requests/{id}/alternatives": {
+      "get": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Three mentors likely to reply, for a request waiting two days (mentee)",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college. Rate limit: search.",
+        "operationId": "mentorship_get_mentorship_requests_id_alternatives",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "mentorship:request"
+      }
+    },
+    "/api/v1/mentorship/requests/{id}/rematch": {
+      "post": {
+        "tags": [
+          "Mentorship"
+        ],
+        "summary": "Withdraw a waiting request and send the same message to another mentor",
+        "description": "Requires permission `mentorship:request` (Send structured mentorship requests). Host scope: college. Rate limit: requests.",
+        "operationId": "mentorship_post_mentorship_requests_id_rematch",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "mentorId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "mentorId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
         "responses": {
           "2XX": {
             "description": "Success envelope { ok: true, data }"
@@ -7205,7 +7397,8 @@
                       "roadmap",
                       "roadmap_comment",
                       "event",
-                      "event_question"
+                      "event_question",
+                      "review"
                     ]
                   },
                   "targetId": {
@@ -17807,7 +18000,8 @@
                       "roadmap",
                       "roadmap_comment",
                       "event",
-                      "event_question"
+                      "event_question",
+                      "review"
                     ]
                   },
                   "targetId": {
@@ -17896,7 +18090,8 @@
                 "roadmap",
                 "roadmap_comment",
                 "event",
-                "event_question"
+                "event_question",
+                "review"
               ]
             }
           },
@@ -18273,7 +18468,8 @@
                       "roadmap",
                       "roadmap_comment",
                       "event",
-                      "event_question"
+                      "event_question",
+                      "review"
                     ]
                   },
                   "targetId": {

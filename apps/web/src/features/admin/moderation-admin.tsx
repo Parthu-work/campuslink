@@ -60,7 +60,7 @@ interface AppealRow {
   createdAt: string;
 }
 
-const CONTENT = new Set(['post', 'comment', 'question', 'answer', 'story']);
+const CONTENT = new Set(['post', 'comment', 'question', 'answer', 'story', 'review']);
 const linkFor = (type: string, id: string, ctx: Record<string, string> = {}) =>
   type === 'post'
     ? `/posts/${id}`
@@ -70,7 +70,9 @@ const linkFor = (type: string, id: string, ctx: Record<string, string> = {}) =>
         ? `/posts/${ctx.postId}`
         : ctx.questionId
           ? `/questions/${ctx.questionId}`
-          : null;
+          : ctx.mentorId
+            ? `/mentors/${ctx.mentorId}`
+            : null;
 
 function useInvalidate() {
   const qc = useQueryClient();

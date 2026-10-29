@@ -8,6 +8,8 @@ import {
   FEEDBACK_TAGS,
   MENTEE_AUDIENCES,
   REQUEST_STATUSES,
+  REVIEW_MAX_LENGTH,
+  type ReplyBand,
   type RequestStatus,
   SESSION_DURATIONS,
   SESSION_TYPES,
@@ -184,6 +186,9 @@ export const feedbackBody = z.strictObject({
     .refine((t) => new Set(t).size === t.length, 'Duplicate tags'),
   comment: z.string().trim().max(1000).optional(),
 });
+/** B5: a short public review after private feedback (plain text). */
+export const mentorReviewBody = z.strictObject({ text: z.string().trim().min(10).max(REVIEW_MAX_LENGTH) });
+export const rematchBody = z.strictObject({ mentorId: objectId });
 
 // ── Views (API responses) ─────────────────────────────
 export interface PersonRef {
@@ -204,6 +209,29 @@ export interface MentorCard extends PersonRef {
   /** False when paused or the weekly cap is reached. */
   open: boolean;
   companyVerified: boolean;
+  /** B5: reply time, sessions, next free slot and rating (each null until there is enough data). */
+  stats?: MentorStats;
+}
+export interface MentorStats {
+  /** Median hours to reply over 90 days; null under 3 answered requests. */
+  medianReplyHours: number | null;
+  /** Share of requests answered before they expired; null under 3 requests. */
+  replyBand: ReplyBand | null;
+  sessionsCompleted: number;
+  /** The next free start for the viewer (ISO), in the next 14 days. */
+  nextFreeSlot: string | null;
+  /** Average of published reviews' ratings; null under 3 reviews. */
+  rating: number | null;
+  reviewCount: number;
+}
+export interface MentorReviewView {
+  id: string;
+  rating: number;
+  text: string;
+  sessionType: SessionType;
+  createdAt: string;
+  /** Reviews show the reviewer's first name only ("Former member" after erasure). */
+  author: string;
 }
 export type MatchReason =
   | { kind: 'branch'; value: string }
@@ -211,7 +239,8 @@ export type MatchReason =
   | { kind: 'goals'; values: string[] }
   | { kind: 'skills'; values: string[] }
   | { kind: 'languages'; values: string[] }
-  | { kind: 'available' };
+  | { kind: 'available' }
+  | { kind: 'fast_reply' };
 export interface MentorMatch {
   mentor: MentorCard;
   score: number;
@@ -244,6 +273,8 @@ export interface RequestView {
   createdAt: string;
   respondedAt: string | null;
   expiresAt: string;
+  /** B5: other mentors were suggested (48 hours without a reply); the mentee may rematch in one tap. */
+  rematchOffered: boolean;
 }
 export interface BookingView {
   id: string;
@@ -261,6 +292,8 @@ export interface BookingView {
   lateCancel: boolean;
   noShowBy: 'mentor' | 'mentee' | null;
   feedbackGiven: boolean;
+  /** B5: the mentee published a public review of this session. */
+  reviewGiven: boolean;
   conversationId: string | null;
 }
 export interface ImpactView {

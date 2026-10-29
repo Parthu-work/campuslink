@@ -17,6 +17,8 @@ import { findCached, hasId } from '../../lib/query-seed';
 import { useUrlOverlay } from '../../lib/use-url-overlay';
 import { SCREEN } from '../../lib/query-client';
 import { firstName } from '../../lib/names';
+import { MentorStatsLine } from './mentor-stats';
+import { MentorReviews } from './mentor-reviews';
 
 // The form library and Zod load with the sheet, not before the mentor's header (bundle budget).
 const RequestForm = lazy(() => import('./request-form').then((m) => ({ default: m.RequestForm })));
@@ -106,6 +108,7 @@ export function MentorPage() {
             )}
           </div>
           {m.headline && <p className="max-w-[62ch] text-body">{m.headline}</p>}
+          {m.stats && <MentorStatsLine stats={m.stats} layout="list" />}
           {(m.topics.length > 0 || m.skills.length > 0 || m.languages.length > 0) && (
             <ul className="flex flex-wrap gap-1.5" aria-label={t('mentors.topics')}>
               {[...m.topics, ...m.skills].map((x) => (
@@ -161,6 +164,7 @@ export function MentorPage() {
           </div>
         </div>
       </Card>
+      <MentorReviews mentorId={m.userId} />
       <Sheet
         open={sheet.value === 'request'}
         onOpenChange={(o) => !o && sheet.close()}

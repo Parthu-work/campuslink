@@ -28,6 +28,7 @@ import { formatDateTime, formatRelative, newIdempotencyKey } from '../../lib/for
 import { SCREEN } from '../../lib/query-client';
 import { cn } from '../../lib/cn';
 import { firstName } from '../../lib/names';
+import { RematchSheet } from './rematch-sheet';
 
 const STATUS_TONE = {
   pending: 'warning',
@@ -195,7 +196,7 @@ const justAccepted = (r: RequestView) =>
 function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [dialog, setDialog] = useState<'other' | 'decline' | null>(null);
+  const [dialog, setDialog] = useState<'other' | 'decline' | 'rematch' | null>(null);
   const other = box === 'received' ? r.mentee : r.mentor;
   const respond = useRespond(r.id);
   const withdraw = useMutation({
@@ -237,6 +238,11 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
           {r.declineNote && <span className="mt-1 block text-fg-2">“{r.declineNote}”</span>}
         </p>
       )}
+      {box === 'sent' && r.rematchOffered && (
+        <p className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-meta" role="status">
+          {t('rematch.offer', { name: firstName(r.mentor.name) })}
+        </p>
+      )}
       <p className="text-caption text-fg-3">
         {t('request.sentAgo', { when: formatRelative(r.createdAt) })}
         {pending && ` · ${t('request.expires', { when: formatRelative(r.expiresAt) })}`}
@@ -258,6 +264,11 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
               {t('request.declineAction')}
             </Button>
           </>
+        )}
+        {box === 'sent' && pending && r.rematchOffered && (
+          <Button variant="primary" onClick={() => setDialog('rematch')}>
+            {t('rematch.cta')}
+          </Button>
         )}
         {box === 'sent' && pending && (
           <Button variant="ghost" loading={withdraw.isPending} onClick={() => withdraw.mutate()}>
@@ -283,6 +294,9 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
       )}
       {dialog === 'decline' && (
         <DeclineDialog r={r} open onOpenChange={(o) => setDialog(o ? 'decline' : null)} />
+      )}
+      {dialog === 'rematch' && (
+        <RematchSheet r={r} open onOpenChange={(o) => setDialog(o ? 'rematch' : null)} />
       )}
     </Card>
   );

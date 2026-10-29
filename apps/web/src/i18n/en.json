@@ -708,7 +708,8 @@
       "goals": "Guides on your goals: {{values}}",
       "skills": "Shares your skills: {{values}}",
       "languages": "Speaks {{values}}",
-      "available": "Has free time in the next two weeks"
+      "available": "Has free time in the next two weeks",
+      "fast_reply": "Replies within a day"
     },
     "score": "Match score {{score}} out of 100",
     "deck": "mentor suggestions",
@@ -869,7 +870,15 @@
     "noShowConfirm": "Report no-show",
     "openNow": "The room is open",
     "startsInHM": "Starts in {{h}} h {{m}} min",
-    "startsInM": "Starts in {{m}} min"
+    "startsInM": "Starts in {{m}} min",
+    "writeReview": "Write a public review",
+    "reviewTitle": "Review your session with {{name}}",
+    "reviewPublic": "Members of your college see it on the mentor’s page with your first name and your rating. Your private feedback stays private.",
+    "reviewLabel": "Your review",
+    "reviewHint_one": "{{count}} character left",
+    "reviewHint_other": "{{count}} characters left",
+    "reviewPublish": "Publish review",
+    "reviewThanks": "Thanks. Your review helps other students choose."
   },
   "messages": {
     "intro": "Chats open when a mentor accepts a request.",
@@ -1136,6 +1145,14 @@
     "channel_budget_reached": {
       "title": "WhatsApp allowance used up",
       "body": "This month’s WhatsApp allowance is used. Until the 1st, members get push or email instead (codes and session reminders still go out)."
+    },
+    "request_nudge": {
+      "title": "{{name}} is waiting for your reply",
+      "body": "{{name}} asked you for a session a day ago. Accept or decline so they can plan."
+    },
+    "request_rematch": {
+      "title": "Mentors likely to reply soon",
+      "body": "{{name}} hasn’t replied yet. We found mentors who usually reply quickly; send them the same message in one tap."
     }
   },
   "notifications": {
@@ -1273,7 +1290,8 @@
     "roadmap": "roadmap",
     "roadmap_comment": "roadmap comment",
     "event": "event",
-    "event_question": "event question"
+    "event_question": "event question",
+    "review": "review"
   },
   "feed": {
     "tabs": "Feed view",
@@ -3257,5 +3275,35 @@
     "posterScan": "Scan with your phone camera, or open the link and enter the code.",
     "qrAlt": "QR code of the join link",
     "posterValid": "Works until {{date}}. Your roll number finds your college record."
+  },
+  "mentorStats": {
+    "label": "Track record",
+    "replyHours_one": "Usually replies in {{count}} hour",
+    "replyHours_other": "Usually replies in {{count}} hours",
+    "replyDays_one": "Usually replies in {{count}} day",
+    "replyDays_other": "Usually replies in {{count}} days",
+    "band": {
+      "high": "Replies to almost every request",
+      "medium": "Replies to most requests",
+      "low": "Replies to some requests"
+    },
+    "sessions_one": "{{count}} session done",
+    "sessions_other": "{{count}} sessions done",
+    "rating_one": "{{rating}} out of 5 · {{count}} review",
+    "rating_other": "{{rating}} out of 5 · {{count}} reviews",
+    "nextSlot": "Next free: {{when}}",
+    "reviews": "What mentees say",
+    "stars_one": "{{count}} star out of 5",
+    "stars_other": "{{count}} stars out of 5"
+  },
+  "rematch": {
+    "offer": "{{name}} hasn’t replied in two days. Some mentors usually reply quickly; you can send them the same message.",
+    "cta": "See mentors likely to reply",
+    "title": "Mentors likely to reply",
+    "intro": "Sending to one of them withdraws your request to {{name}}. It doesn’t count against your weekly requests.",
+    "send": "Send my message to {{name}}",
+    "sent": "Sent to {{name}}.",
+    "none": "No other mentors are free right now",
+    "noneBody": "Your request stays with your mentor until it expires. You can also browse mentors yourself."
   }
 }

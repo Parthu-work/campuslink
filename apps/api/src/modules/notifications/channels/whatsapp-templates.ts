@@ -82,6 +82,29 @@ export const WHATSAPP_TEMPLATES: Partial<Record<NotificationType, WaTemplate>> =
       hi: '{{1}} ने आपके कॉलेज के मेंटरिंग ऐप पर आपसे {{2}} के लिए अनुरोध किया है। नीचे जवाब दें, या अनुरोध पढ़ने के लिए ऐप खोलें।',
     },
   },
+  request_nudge: {
+    name: 'cl_request_waiting',
+    category: 'utility',
+    critical: false,
+    params: (d, c) => [d.name ?? '', session(d, c.lang)],
+    buttons: [
+      {
+        action: 'request_accept',
+        ref: 'requestId',
+        label: { en: 'Accept', te: 'అంగీకరించండి', hi: 'स्वीकार करें' },
+      },
+      {
+        action: 'request_decline',
+        ref: 'requestId',
+        label: { en: 'Decline', te: 'తిరస్కరించండి', hi: 'मना करें' },
+      },
+    ],
+    text: {
+      en: '{{1}} is still waiting for your reply to their {{2}} request. Reply below so they can plan.',
+      te: '{{1}} తమ {{2}} అభ్యర్థనకు మీ జవాబు కోసం ఇంకా ఎదురుచూస్తున్నారు. వారు ప్లాన్ చేసుకునేలా కింద జవాబివ్వండి.',
+      hi: '{{1}} अब भी अपने {{2}} अनुरोध पर आपके जवाब का इंतज़ार कर रहे हैं। नीचे जवाब दें ताकि वे योजना बना सकें।',
+    },
+  },
   request_accepted: {
     name: 'cl_request_accepted',
     category: 'utility',

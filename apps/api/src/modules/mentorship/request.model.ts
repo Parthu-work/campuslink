@@ -20,6 +20,12 @@ const requestSchema = new Schema(
     expiresAt: { type: Date, required: true },
     bookingId: { type: Schema.Types.ObjectId, default: null },
     conversationId: { type: Schema.Types.ObjectId, default: null },
+    /** Bumped on every change of status; the nudge and rematch jobs carry it and no-op on a mismatch. */
+    version: { type: Number, default: 0 },
+    nudgedAt: { type: Date, default: null },
+    rematchOfferedAt: { type: Date, default: null },
+    /** Sent from a rematch offer: does not count against the college's weekly request limit. */
+    rematchOf: { type: Schema.Types.ObjectId, default: null },
   },
   baseSchemaOptions,
 );

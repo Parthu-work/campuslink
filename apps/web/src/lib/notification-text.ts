@@ -101,6 +101,10 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return '/admin';
       case 'channel_budget_reached':
         return '/admin';
+      case 'request_nudge':
+        return `/mentorship?box=received${d.requestId ? `&request=${d.requestId}` : ''}`;
+      case 'request_rematch':
+        return `/mentorship?box=sent${d.requestId ? `&request=${d.requestId}` : ''}`;
       default:
         return '/sessions';
     }

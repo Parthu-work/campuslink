@@ -119,6 +119,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'WhatsApp allowance used up',
       body: 'This month’s WhatsApp allowance is used. Until the 1st, members get push or email instead (codes and session reminders still go out).',
     },
+    request_nudge: {
+      title: '{name} is waiting for your reply',
+      body: '{name} asked you for a session a day ago. Accept or decline so they can plan.',
+    },
+    request_rematch: {
+      title: 'Mentors likely to reply soon',
+      body: '{name} hasn’t replied yet. We found mentors who usually reply quickly; send them the same message in one tap.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -240,6 +248,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     channel_budget_reached: {
       title: 'వాట్సాప్ పరిమితి పూర్తయింది',
       body: 'ఈ నెల వాట్సాప్ పరిమితి పూర్తయింది. 1వ తేదీ వరకు సభ్యులకు బదులుగా పుష్ లేదా ఈమెయిల్ వస్తుంది (కోడ్‌లు, సెషన్ రిమైండర్‌లు ఇంకా వెళ్తాయి).',
+    },
+    request_nudge: {
+      title: '{name} మీ జవాబు కోసం ఎదురుచూస్తున్నారు',
+      body: '{name} ఒక రోజు క్రితం మిమ్మల్ని సెషన్ అడిగారు. వారు ప్లాన్ చేసుకునేలా అంగీకరించండి లేదా తిరస్కరించండి.',
+    },
+    request_rematch: {
+      title: 'త్వరగా జవాబిచ్చే మెంటర్లు',
+      body: '{name} ఇంకా జవాబివ్వలేదు. సాధారణంగా త్వరగా జవాబిచ్చే మెంటర్లను కనుగొన్నాం; ఒక్క ట్యాప్‌తో అదే సందేశం వారికి పంపండి.',
     },
   },
 };
@@ -388,6 +404,10 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/admin';
     case 'channel_budget_reached':
       return '/admin';
+    case 'request_nudge':
+      return `/mentorship?box=received${data.requestId ? `&request=${data.requestId}` : ''}`;
+    case 'request_rematch':
+      return `/mentorship?box=sent${data.requestId ? `&request=${data.requestId}` : ''}`;
     default:
       return '/sessions';
   }

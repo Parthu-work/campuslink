@@ -173,6 +173,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/mentors` | `mentorship:request` | college | search | Browse mentors who are taking requests |
 | `GET /api/v1/mentors/match` | `mentorship:request` · feature `alumniMatch` | college | search | Alumni Match: mentors ranked for me, with the reasons |
 | `GET /api/v1/mentors/:userId` | `mentorship:request` | college | — | A mentor’s card and session types |
+| `GET /api/v1/mentors/:userId/reviews` | `mentorship:request` | college | — | Published reviews of a mentor (first names only) |
+| `POST /api/v1/bookings/:id/review` | `sessions:book` | college | posting | Publish a short review of a session I gave feedback on (mentee; moderated) |
 | `GET /api/v1/mentors/:userId/slots` | `mentorship:request` | college | — | Free slots for a session type (UTC; both calendars considered) |
 | `POST /api/v1/mentorship/requests` | `mentorship:request` | college | requests | Send a structured mentorship request (rate-limited, idempotent) |
 | `GET /api/v1/mentorship/requests` | `mentorship:request` | college | — | Requests I received or sent |
@@ -180,6 +182,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/mentorship/requests/:id/slots` | `mentorship:mentor` | college | — | Times the mentor can offer instead (both calendars considered) |
 | `POST /api/v1/mentorship/requests/:id/respond` | `mentorship:mentor` | college | — | Accept, accept at another time, or decline with a kind reply |
 | `POST /api/v1/mentorship/requests/:id/withdraw` | `mentorship:request` | college | — | Withdraw a pending request I sent |
+| `GET /api/v1/mentorship/requests/:id/alternatives` | `mentorship:request` | college | search | Three mentors likely to reply, for a request waiting two days (mentee) |
+| `POST /api/v1/mentorship/requests/:id/rematch` | `mentorship:request` | college | requests | Withdraw a waiting request and send the same message to another mentor |
 | `GET /api/v1/admin/mentorship/overview` | `mentorship:oversee` | college | — | Mentorship activity for the college (last 30 days) |
 | `GET /api/v1/admin/mentorship/feedback` | `mentorship:oversee` | college | — | All session feedback (private to mentors and admins) |
 | `GET /api/v1/bookings` | `sessions:book` | college | — | My upcoming or past sessions (as mentor or mentee) |

@@ -11,6 +11,7 @@ import {
   LATE_CANCEL_HOURS,
   MAX_RESCHEDULES,
   NO_SHOW_WINDOW_HOURS,
+  REVIEW_MAX_LENGTH,
   type BookingView,
   type SlotsView,
 } from '@campuslink/shared';
@@ -214,6 +215,66 @@ function CancelDialog({
   );
 }
 
+/** B5: a short public review after the private feedback (first name, session type, rating). */
+function ReviewDialog({
+  b,
+  open,
+  onOpenChange,
+}: {
+  b: BookingView;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) {
+  const { t } = useTranslation();
+  const [text, setText] = useState('');
+  const [key] = useState(newIdempotencyKey);
+  const opts = useBookingAction(b.id);
+  const send = useMutation({
+    mutationFn: () => api.postOnce(`/bookings/${b.id}/review`, { text: text.trim() }, key),
+    onSuccess: () => {
+      opts.onSuccess();
+      onOpenChange(false);
+      toast.success(t('sessions.reviewThanks'));
+    },
+    onError: opts.onError,
+  });
+  const length = text.trim().length;
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('sessions.reviewTitle', { name: b.mentor.name })}
+      description={t('sessions.reviewPublic')}
+      footer={
+        <Button
+          variant="primary"
+          loading={send.isPending}
+          disabled={length < 10 || length > REVIEW_MAX_LENGTH}
+          onClick={() => send.mutate()}
+        >
+          {t('sessions.reviewPublish')}
+        </Button>
+      }
+    >
+      <Field
+        label={t('sessions.reviewLabel')}
+        hint={t('sessions.reviewHint', { count: REVIEW_MAX_LENGTH - length })}
+      >
+        {({ id, describedBy }) => (
+          <Textarea
+            id={id}
+            aria-describedby={describedBy}
+            maxLength={REVIEW_MAX_LENGTH}
+            rows={4}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+        )}
+      </Field>
+    </Dialog>
+  );
+}
+
 function FeedbackDialog({
   b,
   open,
@@ -302,7 +363,9 @@ function FeedbackDialog({
 
 function BookingCard({ b, now }: { b: BookingView; now: number }) {
   const { t } = useTranslation();
-  const [dialog, setDialog] = useState<'join' | 'move' | 'cancel' | 'feedback' | 'noshow' | null>(null);
+  const [dialog, setDialog] = useState<'join' | 'move' | 'cancel' | 'feedback' | 'review' | 'noshow' | null>(
+    null,
+  );
   const opts = useBookingAction(b.id);
   const noShow = useMutation({
     mutationFn: () => api.post(`/bookings/${b.id}/no-show`, {}),
@@ -411,6 +474,11 @@ function BookingCard({ b, now }: { b: BookingView; now: number }) {
               <Star className="size-4" aria-hidden /> {t('sessions.rate')}
             </Button>
           )}
+        {b.status === 'completed' && b.role === 'mentee' && b.feedbackGiven && !b.reviewGiven && (
+          <Button size="sm" variant="ghost" onClick={() => setDialog('review')}>
+            {t('sessions.writeReview')}
+          </Button>
+        )}
         {b.status === 'completed' && !b.noShowBy && now < end + NO_SHOW_WINDOW_HOURS * HOUR && (
           <Button size="sm" variant="ghost" onClick={() => setDialog('noshow')}>
             {t('sessions.reportNoShow')}
@@ -421,6 +489,7 @@ function BookingCard({ b, now }: { b: BookingView; now: number }) {
       {dialog === 'move' && <RescheduleDialog b={b} open onOpenChange={open('move')} />}
       {dialog === 'cancel' && <CancelDialog b={b} now={now} open onOpenChange={open('cancel')} />}
       {dialog === 'feedback' && <FeedbackDialog b={b} open onOpenChange={open('feedback')} />}
+      {dialog === 'review' && <ReviewDialog b={b} open onOpenChange={open('review')} />}
       {dialog === 'noshow' && (
         <Dialog
           open

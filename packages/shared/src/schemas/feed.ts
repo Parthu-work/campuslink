@@ -181,6 +181,7 @@ export const CONTENT_TARGETS = [
   'roadmap_comment',
   'event',
   'event_question',
+  'review',
 ] as const;
 export type ContentTarget = (typeof CONTENT_TARGETS)[number];
 export const REMOVAL_REASONS = [

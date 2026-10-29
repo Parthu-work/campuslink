@@ -2,7 +2,10 @@ import { Types } from 'mongoose';
 import type { z } from 'zod';
 import {
   MAX_PENDING_REQUESTS,
+  NUDGE_AFTER_HOURS,
+  REMATCH_AFTER_HOURS,
   REQUEST_TTL_DAYS,
+  type MentorMatch,
   isBookable,
   type DeclineTemplate,
   type MentorshipRequestBody,
@@ -23,9 +26,15 @@ import type { SessionsService } from '../sessions/sessions.service.js';
 import type { ReportTarget } from '../moderation/safety.service.js';
 import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthState } from '../../types.js';
+import { backgroundAuth } from '../users/users.service.js';
+import { findTenantById } from '../tenants/tenant.cache.js';
 
 export const EXPIRE_JOB = 'mentorship.expire';
-const DAY = 24 * 3600_000;
+/** B5: a day without a reply nudges the mentor; two offer the mentee mentors likely to reply. */
+export const REQUEST_NUDGE_JOB = 'mentorship.nudge';
+export const REMATCH_JOB = 'mentorship.rematch';
+const HOUR = 3600_000;
+const DAY = 24 * HOUR;
 const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11000;
 
 export interface RequestsDeps {
@@ -74,6 +83,7 @@ export class RequestsService {
       createdAt: r.createdAt.toISOString(),
       respondedAt: r.respondedAt ? r.respondedAt.toISOString() : null,
       expiresAt: r.expiresAt.toISOString(),
+      rematchOffered: r.status === 'pending' && !!r.rematchOfferedAt,
     }));
   }
 
@@ -81,13 +91,20 @@ export class RequestsService {
     return (await this.views([r]))[0] as RequestView;
   }
 
-  async create(viewer: AuthState, tenant: TenantRecord, body: MentorshipRequestBody): Promise<RequestView> {
+  async create(
+    viewer: AuthState,
+    tenant: TenantRecord,
+    body: MentorshipRequestBody,
+    rematchOf: Types.ObjectId | null = null,
+  ): Promise<RequestView> {
     await this.d.mentors.assertRequestable(viewer, body.mentorId, body.sessionType);
     const me = new Types.ObjectId(viewer.userId);
     const [pending, thisWeek] = await Promise.all([
       MentorshipRequestModel.countDocuments({ menteeId: me, status: 'pending' }),
+      // A rematch replaces a request already counted, so it is not counted again.
       MentorshipRequestModel.countDocuments({
         menteeId: me,
+        rematchOf: null,
         createdAt: { $gte: new Date(Date.now() - 7 * DAY) },
       }),
     ]);
@@ -96,7 +113,7 @@ export class RequestsService {
         `You can have ${MAX_PENDING_REQUESTS} open requests at a time. Withdraw one or wait for replies.`,
       );
     const weekly = tenant.limits?.mentorshipRequestsPerWeek ?? 5;
-    if (thisWeek >= weekly)
+    if (!rematchOf && thisWeek >= weekly)
       throw conflict(`Your college allows ${weekly} mentorship requests a week. Try again later.`);
     const slotStart = body.slotStart ? new Date(body.slotStart) : null;
     if (slotStart)
@@ -117,16 +134,28 @@ export class RequestsService {
           : { goal: body.goal, background: body.background, need: body.need }),
         slotStart,
         expiresAt: new Date(Date.now() + REQUEST_TTL_DAYS * DAY),
+        rematchOf,
       });
     } catch (e) {
       if (isDuplicate(e)) throw conflict('You already have an open request with this mentor');
       throw e;
     }
     const id = String(doc._id);
+    const tenantId = String(requireTenantId());
     await this.d.jobs.enqueue(
       EXPIRE_JOB,
-      { tenantId: String(requireTenantId()), requestId: id },
+      { tenantId, requestId: id },
       { jobId: `reqexp-${id}`, delayMs: REQUEST_TTL_DAYS * DAY },
+    );
+    await this.d.jobs.enqueue(
+      REQUEST_NUDGE_JOB,
+      { tenantId, requestId: id, version: 0 },
+      { jobId: `reqnudge-${id}`, delayMs: NUDGE_AFTER_HOURS * HOUR },
+    );
+    await this.d.jobs.enqueue(
+      REMATCH_JOB,
+      { tenantId, requestId: id, version: 0 },
+      { jobId: `reqrematch-${id}`, delayMs: REMATCH_AFTER_HOURS * HOUR },
     );
     const refs = await this.d.profiles.refsFor([viewer.userId]);
     await this.d.notifications.notify(body.mentorId, 'request_received', {
@@ -153,8 +182,15 @@ export class RequestsService {
   private async expireDue(scope: Record<string, unknown>) {
     await MentorshipRequestModel.updateMany(
       { ...scope, status: 'pending', expiresAt: { $lte: new Date() } },
-      { $set: { status: 'expired' } },
+      { $set: { status: 'expired' }, $inc: { version: 1 } },
     );
+  }
+
+  /** The request left `pending`: its delayed jobs have nothing left to do. */
+  private async settled(id: string) {
+    await this.d.jobs.cancel(EXPIRE_JOB, `reqexp-${id}`);
+    await this.d.jobs.cancel(REQUEST_NUDGE_JOB, `reqnudge-${id}`);
+    await this.d.jobs.cancel(REMATCH_JOB, `reqrematch-${id}`);
   }
 
   private async mine(viewer: AuthState, id: string): Promise<RequestDoc> {
@@ -189,11 +225,12 @@ export class RequestsService {
             declineNote: body.note ?? null,
             respondedAt: new Date(),
           },
+          $inc: { version: 1 },
         },
         { returnDocument: 'after' },
       ).lean<RequestDoc>();
       if (!done) throw conflict('This request just changed. Refresh and try again.');
-      await this.d.jobs.cancel(EXPIRE_JOB, `reqexp-${id}`);
+      await this.settled(id);
       await this.d.notifications.notify(menteeId, 'request_declined', { name: mentorName, requestId: id });
       return this.view(done);
     }
@@ -206,7 +243,7 @@ export class RequestsService {
     // Claim the request first so two accepts cannot both book.
     const claimed = await MentorshipRequestModel.findOneAndUpdate(
       { _id: r._id, status: 'pending' },
-      { $set: { status: 'accepted', respondedAt: new Date() } },
+      { $set: { status: 'accepted', respondedAt: new Date() }, $inc: { version: 1 } },
       { returnDocument: 'after' },
     ).lean<RequestDoc>();
     if (!claimed) throw conflict('This request just changed. Refresh and try again.');
@@ -226,7 +263,7 @@ export class RequestsService {
     } catch (e) {
       await MentorshipRequestModel.updateOne(
         { _id: r._id, status: 'accepted' },
-        { $set: { status: 'pending', respondedAt: null } },
+        { $set: { status: 'pending', respondedAt: null }, $inc: { version: 1 } },
       );
       throw e;
     }
@@ -242,7 +279,7 @@ export class RequestsService {
       },
       { returnDocument: 'after' },
     ).lean<RequestDoc>();
-    await this.d.jobs.cancel(EXPIRE_JOB, `reqexp-${id}`);
+    await this.settled(id);
     await this.d.notifications.notify(menteeId, 'request_accepted', {
       name: mentorName,
       sessionType: r.sessionType,
@@ -267,12 +304,114 @@ export class RequestsService {
     if (String(r.menteeId) !== viewer.userId) throw notFound('Request');
     const done = await MentorshipRequestModel.findOneAndUpdate(
       { _id: r._id, status: 'pending' },
-      { $set: { status: 'withdrawn' } },
+      { $set: { status: 'withdrawn' }, $inc: { version: 1 } },
       { returnDocument: 'after' },
     ).lean<RequestDoc>();
     if (!done) throw conflict(`This request is already ${r.status}`);
-    await this.d.jobs.cancel(EXPIRE_JOB, `reqexp-${id}`);
+    await this.settled(id);
     return this.view(done);
+  }
+
+  // ── Rematch (B5) ─────────────────────────────
+  /** Two days pending (or offered by the job): the mentee may ask someone else. */
+  private rematchOpen(r: RequestDoc) {
+    return (
+      r.status === 'pending' &&
+      (!!r.rematchOfferedAt || r.createdAt.getTime() <= Date.now() - REMATCH_AFTER_HOURS * HOUR)
+    );
+  }
+
+  /** Three mentors likely to reply, for a request still waiting after two days. */
+  async alternatives(viewer: AuthState, id: string): Promise<MentorMatch[]> {
+    const r = await this.mine(viewer, id);
+    if (String(r.menteeId) !== viewer.userId) throw notFound('Request');
+    if (!this.rematchOpen(r)) throw conflict('Give this mentor two days to reply first');
+    return this.d.mentors.alternatives(viewer, String(r.mentorId));
+  }
+
+  /**
+   * One tap: withdraws the waiting request and sends the same message to another mentor. The new
+   * request does not count against the weekly limit (the old one already did).
+   */
+  async rematch(viewer: AuthState, tenant: TenantRecord, id: string, mentorId: string): Promise<RequestView> {
+    const r = await this.mine(viewer, id);
+    if (String(r.menteeId) !== viewer.userId) throw notFound('Request');
+    if (!this.rematchOpen(r)) throw conflict('Give this mentor two days to reply first');
+    if (mentorId === String(r.mentorId)) throw badRequest('Choose a different mentor');
+    const type = r.sessionType as SessionType;
+    // Checked before the old request is withdrawn, so a refusal leaves it waiting.
+    await this.d.mentors.assertRequestable(viewer, mentorId, type);
+    const old = await MentorshipRequestModel.findOneAndUpdate(
+      { _id: r._id, status: 'pending' },
+      { $set: { status: 'withdrawn' }, $inc: { version: 1 } },
+      { returnDocument: 'after' },
+    ).lean<RequestDoc>();
+    if (!old) throw conflict('This request just changed. Refresh and try again.');
+    await this.settled(id);
+    const body = (
+      r.message
+        ? { mentorId, sessionType: type, message: r.message }
+        : {
+            mentorId,
+            sessionType: type,
+            goal: r.goal ?? '',
+            background: r.background ?? '',
+            need: r.need ?? '',
+          }
+    ) as MentorshipRequestBody;
+    try {
+      return await this.create(viewer, tenant, body, r._id);
+    } catch (e) {
+      // Put the old request back as it was (its jobs are gone; lazy expiry still applies).
+      await MentorshipRequestModel.updateOne(
+        { _id: r._id, status: 'withdrawn' },
+        { $set: { status: 'pending' }, $inc: { version: 1 } },
+      );
+      throw e;
+    }
+  }
+
+  /** 24 hours without a reply: one reminder to the mentor (WhatsApp with Accept/Decline, or push). */
+  async onNudge(job: TenantJob) {
+    const r = await MentorshipRequestModel.findOneAndUpdate(
+      { _id: job.requestId, status: 'pending', version: job.version, nudgedAt: null },
+      { $set: { nudgedAt: new Date() } },
+      { returnDocument: 'after' },
+    ).lean<RequestDoc>();
+    if (!r) return;
+    const refs = await this.d.profiles.refsFor([r.menteeId]);
+    await this.d.notifications.notify(String(r.mentorId), 'request_nudge', {
+      name: refs.get(String(r.menteeId))?.name ?? '',
+      sessionType: r.sessionType,
+      requestId: String(r._id),
+    });
+  }
+
+  /** 48 hours without a reply: tell the mentee about mentors likely to reply (when there are any). */
+  async onRematch(job: TenantJob) {
+    const r = await MentorshipRequestModel.findOne({
+      _id: job.requestId,
+      status: 'pending',
+      version: job.version,
+      rematchOfferedAt: null,
+    }).lean<RequestDoc>();
+    if (!r) return;
+    const tenant = await findTenantById(job.tenantId);
+    const viewer = tenant ? await backgroundAuth(String(r.menteeId), tenant) : null;
+    if (!viewer) return;
+    const options = await this.d.mentors.alternatives(viewer, String(r.mentorId));
+    if (!options.length) return;
+    const marked = await MentorshipRequestModel.updateOne(
+      { _id: r._id, status: 'pending', version: job.version, rematchOfferedAt: null },
+      { $set: { rematchOfferedAt: new Date() } },
+    );
+    if (!marked.modifiedCount) return;
+    const refs = await this.d.profiles.refsFor([r.mentorId]);
+    await this.d.notifications.notify(String(r.menteeId), 'request_rematch', {
+      name: refs.get(String(r.mentorId))?.name ?? '',
+      requestId: String(r._id),
+      count: String(options.length),
+    });
   }
 
   async pendingFor(mentorId: string) {
@@ -295,7 +434,7 @@ export class RequestsService {
   async onExpire(job: TenantJob) {
     const r = await MentorshipRequestModel.findOneAndUpdate(
       { _id: job.requestId, status: 'pending', expiresAt: { $lte: new Date(Date.now() + 60_000) } },
-      { $set: { status: 'expired' } },
+      { $set: { status: 'expired' }, $inc: { version: 1 } },
       { returnDocument: 'after' },
     ).lean<RequestDoc>();
     if (!r) return;
@@ -311,7 +450,7 @@ export class RequestsService {
     const ids = [new Types.ObjectId(a), new Types.ObjectId(b)];
     await MentorshipRequestModel.updateMany(
       { status: 'pending', mentorId: { $in: ids }, menteeId: { $in: ids } },
-      { $set: { status: 'withdrawn' } },
+      { $set: { status: 'withdrawn' }, $inc: { version: 1 } },
     );
   }
 

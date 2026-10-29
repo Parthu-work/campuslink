@@ -104,6 +104,8 @@ export const NOTIFICATION_TYPES = [
   'guardian_number_rejected',
   'channel_budget_warning',
   'channel_budget_reached',
+  'request_nudge',
+  'request_rematch',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -166,6 +168,8 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   guardian_number_rejected: 'reminders',
   channel_budget_warning: 'reminders',
   channel_budget_reached: 'reminders',
+  request_nudge: 'requests',
+  request_rematch: 'requests',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;
@@ -288,6 +292,7 @@ export const REPORT_TARGETS = [
   'roadmap_comment',
   'event',
   'event_question',
+  'review',
 ] as const;
 export const REPORT_REASONS = ['spam', 'harassment', 'inappropriate', 'impersonation', 'other'] as const;
 export const reportBody = z.strictObject({

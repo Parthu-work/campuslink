@@ -79,7 +79,13 @@ import { messagingRoutes } from './modules/messaging/messaging.routes.js';
 import { COMPLETE_JOB, REMINDER_JOB, SessionsService } from './modules/sessions/sessions.service.js';
 import { sessionRoutes } from './modules/sessions/sessions.routes.js';
 import { MentorsService } from './modules/mentorship/mentors.service.js';
-import { EXPIRE_JOB, RequestsService } from './modules/mentorship/requests.service.js';
+import {
+  EXPIRE_JOB,
+  REMATCH_JOB,
+  REQUEST_NUDGE_JOB,
+  RequestsService,
+} from './modules/mentorship/requests.service.js';
+import { ReviewsService } from './modules/mentorship/reviews.service.js';
 import { mentorshipRoutes } from './modules/mentorship/mentorship.routes.js';
 import { ModerationService } from './modules/moderation/moderation.service.js';
 import { queueRoutes } from './modules/moderation/queue.routes.js';
@@ -394,6 +400,14 @@ export function createApp({
   queue.register(REMINDER_JOB, (data) => sessionsService.onReminder(data));
   queue.register(COMPLETE_JOB, (data) => sessionsService.onComplete(data));
   queue.register(EXPIRE_JOB, (data) => requestsService.onExpire(data));
+  queue.register(REQUEST_NUDGE_JOB, (data) => requestsService.onNudge(data));
+  queue.register(REMATCH_JOB, (data) => requestsService.onRematch(data));
+  const reviewsService = new ReviewsService({
+    sessions: sessionsService,
+    mentors: mentorsService,
+    profiles: profilesService,
+  });
+  sessionsService.reviewedOf = (ids) => reviewsService.reviewedOf(ids);
   // WhatsApp quick replies (B3) act through the owning services, as the member, with current rights.
   channelService.registerAction('request_accept', (viewer, id) =>
     requestsService.respond(viewer, id, { action: 'accept' }),
@@ -467,6 +481,10 @@ export function createApp({
   moderationService.register('question', qaService.questionHandler);
   moderationService.register('answer', qaService.answerHandler);
   moderationService.register('item', sourcesService.itemHandler);
+  moderationService.register('review', reviewsService.handler);
+  safetyService.registerTarget('review', (viewer, id) =>
+    moderationService.reportTarget('review', viewer, id),
+  );
   for (const type of ['post', 'comment', 'story', 'question', 'answer'] as const)
     safetyService.registerTarget(type, (viewer, id) => moderationService.reportTarget(type, viewer, id));
   filesService.registerAccess('post_media', (fileId, viewer) => postsService.mediaAccess(fileId, viewer));
@@ -728,6 +746,7 @@ export function createApp({
   privacyService.register('messages', hook(messagingService));
   privacyService.register('mentorship', hook(mentorsService));
   privacyService.register('mentorshipRequests', hook(requestsService));
+  privacyService.register('mentorReviews', hook(reviewsService));
   privacyService.register('sessions', hook(sessionsService));
   privacyService.register('jobs', hook(jobsService));
   privacyService.register('referrals', hook(referralsService));
@@ -835,7 +854,11 @@ export function createApp({
   app.use(API_PREFIX, defineModule('profiles', profileRoutes(profilesService, extraSearch), pipeline));
   app.use(
     API_PREFIX,
-    defineModule('mentorship', mentorshipRoutes(mentorsService, requestsService, sessionsService), pipeline),
+    defineModule(
+      'mentorship',
+      mentorshipRoutes(mentorsService, requestsService, sessionsService, reviewsService),
+      pipeline,
+    ),
   );
   app.use(API_PREFIX, defineModule('sessions', sessionRoutes(sessionsService), pipeline));
   app.use(API_PREFIX, defineModule('messaging', messagingRoutes(messagingService), pipeline));

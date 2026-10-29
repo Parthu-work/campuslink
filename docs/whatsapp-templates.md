@@ -19,6 +19,17 @@ Sent for: `request_received`. Category: **utility**.
 - Hindi (hi): `{{1}} ने आपके कॉलेज के मेंटरिंग ऐप पर आपसे {{2}} के लिए अनुरोध किया है। नीचे जवाब दें, या अनुरोध पढ़ने के लिए ऐप खोलें।`
   - Quick replies: `स्वीकार करें`, `मना करें`
 
+## `cl_request_waiting`
+
+Sent for: `request_nudge`. Category: **utility**.
+
+- English (en): `{{1}} is still waiting for your reply to their {{2}} request. Reply below so they can plan.`
+  - Quick replies: `Accept`, `Decline`
+- Telugu (te): `{{1}} తమ {{2}} అభ్యర్థనకు మీ జవాబు కోసం ఇంకా ఎదురుచూస్తున్నారు. వారు ప్లాన్ చేసుకునేలా కింద జవాబివ్వండి.`
+  - Quick replies: `అంగీకరించండి`, `తిరస్కరించండి`
+- Hindi (hi): `{{1}} अब भी अपने {{2}} अनुरोध पर आपके जवाब का इंतज़ार कर रहे हैं। नीचे जवाब दें ताकि वे योजना बना सकें।`
+  - Quick replies: `स्वीकार करें`, `मना करें`
+
 ## `cl_request_accepted`
 
 Sent for: `request_accepted`. Category: **utility**.

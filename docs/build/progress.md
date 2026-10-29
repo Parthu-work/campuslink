@@ -8,7 +8,7 @@ A new session reads this file first and resumes from the first phase that is not
 | B2    | Phone-first identity, age and guardian consent                 | Done        |
 | B3    | WhatsApp and SMS channels                                      | Done        |
 | B4    | One-tap invites and class onboarding                           | Done        |
-| B5    | Mentorship loop that never dead-ends                           | Not started |
+| B5    | Mentorship loop that never dead-ends                           | Done        |
 | B6    | TPO console                                                    | Not started |
 | B7    | Placement drives                                               | Not started |
 | B8    | Placement outcomes and accreditation reports                   | Not started |
@@ -121,3 +121,27 @@ A new session reads this file first and resumes from the first phase that is not
 **Earlier phases.** B3's CI run (`60883d8`) is green including e2e; the full local e2e suite passed (144 passed, 12 skipped). B2's last run (`8f485b9`) failed only in e2e, and its logs were unreadable (see the CI change above); B3's green run supersedes it.
 
 **Next:** B5 (mentorship loop that never dead-ends).
+
+## B5 · Mentorship loop that never dead-ends (Done)
+
+**Shipped**
+
+- Requests carry `version`, `nudgedAt`, `rematchOfferedAt` and `rematchOf`. Two delayed jobs per request: `mentorship.nudge` at 24 hours (WhatsApp with Accept/Decline through the new `cl_request_waiting` template, or push and email) and `mentorship.rematch` at 48 hours (the mentee hears about mentors likely to reply). Both carry the version and no-op when it changed; every change of status cancels them.
+- `GET /mentorship/requests/:id/alternatives` (three mentors: not the one waited on, not at their cap, median reply not over 72 hours) and `POST /mentorship/requests/:id/rematch` (withdraws and resends the same message; outside the weekly limit).
+- Mentor stats on cards, the mentor page and the rematch sheet: median reply time and reply band (from 3 requests), sessions completed, the viewer's next free slot, rating (from 3 reviews) and review count; cached an hour.
+- Public reviews (`MentorReview`): after private feedback, 10 to 280 characters, first name and rating, moderated (`review` content and report target), exported and erased.
+- `scoreMatch()`: reply-speed boost (+0 to 10, reason "Replies within a day") and load penalty (−0 to 15).
+- New notification types `request_nudge` and `request_rematch` (en, te, hi on the server; en, te in the app).
+- Web: stats line on mentor tiles (kept apart from the review list so Browse stays within the 70 KB screen budget), a track record and "What mentees say" on the mentor page, the rematch offer and sheet on sent requests, "Write a public review" after feedback, reviews removable from the moderation queue.
+- Seed: a demo review of Rahul. Tests: `test/mentorship-loop.test.ts` (10), `test/isolation/mentorship-loop.test.ts` (3), privacy case, e2e `e2e/mentorship-loop.spec.ts`. Spec: `docs/specs/mentorship-loop.md`.
+
+**Decisions**
+
+- **Target company is not added twice.** `scoreMatch()` already gives +30 for a mentor at a company the mentee is targeting (Phase 3, normalised company names); the prompt's +10 term would count the same thing again.
+- **Rating comes from public reviews**, not from private feedback, so the number on the page is explained by the reviews under it.
+- **Unknown reply time does not exclude a mentor from a rematch** (new mentors would never get a chance); only a known median over 72 hours does.
+- **No rematch message without suggestions.** If nobody qualifies, the mentee is not told to look elsewhere for nothing.
+- **A rematch keeps the session type and drops the time**, since the slot was the first mentor's.
+- **Reviews live in the mentorship module**; the sessions module learns which bookings have one through a hook (`SessionsService.reviewedOf`), keeping modules to services.
+
+**Next:** B6 (TPO console).

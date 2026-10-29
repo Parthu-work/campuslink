@@ -22,6 +22,7 @@ import { ConsentModel } from '../modules/consent/consent.model.js';
 import { AuditModel } from '../modules/audit/audit.model.js';
 import { ProfileModel } from '../modules/profiles/profile.model.js';
 import { WhitelistModel } from '../modules/imports/whitelist.model.js';
+import { MentorReviewModel } from '../modules/mentorship/review.model.js';
 import { FieldCipher } from '../lib/crypto.js';
 import { MentorProfileModel } from '../modules/mentorship/mentor.model.js';
 import { MentorshipRequestModel } from '../modules/mentorship/request.model.js';
@@ -358,6 +359,15 @@ async function seedMentorship(ids: Map<string, Types.ObjectId>) {
     rating: 5,
     tags: ['clear_advice', 'actionable'],
     comment: 'DEMO: very practical resume feedback.',
+  });
+  // DEMO (B5): the public review that goes with it (first name and rating on Rahul's page).
+  await MentorReviewModel.create({
+    bookingId: pastBooking._id,
+    mentorId: id('rahul'),
+    menteeId: id('vikram'),
+    sessionType: 'resume_review',
+    rating: 5,
+    text: 'DEMO: Specific, practical resume feedback in thirty minutes.',
   });
   await ConversationModel.create({
     participants: [id('rahul'), id('vikram')],

@@ -62,6 +62,9 @@ export type SlotList = (
 ) => Promise<{ timezone: string; durationMin: number; slots: string[] }>;
 
 export class SessionsService {
+  /** Set by the app (B5 reviews live in the mentorship module): which bookings have a review. */
+  reviewedOf: ((bookingIds: Types.ObjectId[]) => Promise<Set<string>>) | null = null;
+
   // ── Privacy ─────────────────────────────
   async exportFor(userId: string) {
     const u = new Types.ObjectId(userId);
@@ -198,6 +201,7 @@ export class SessionsService {
           .lean()
       ).map((f) => String(f.bookingId)),
     );
+    const reviewed = (await this.reviewedOf?.(rows.map((b) => b._id))) ?? new Set<string>();
     return rows.map((b) => ({
       id: String(b._id),
       status: b.status as BookingView['status'],
@@ -214,6 +218,7 @@ export class SessionsService {
       lateCancel: b.lateCancel,
       noShowBy: (b.noShowBy ?? null) as BookingView['noShowBy'],
       feedbackGiven: given.has(String(b._id)),
+      reviewGiven: reviewed.has(String(b._id)),
       conversationId: b.conversationId ? String(b.conversationId) : null,
     }));
   }
@@ -552,6 +557,23 @@ export class SessionsService {
   }
 
   /** Analytics: completed sessions since a date (who and when only) and the average rating. */
+  /** B5 mentor stats: completed sessions per mentor. */
+  async completedCounts(mentorIds: Types.ObjectId[]): Promise<Map<string, number>> {
+    const rows = await BookingModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+      { $match: { mentorId: { $in: mentorIds }, status: 'completed' } },
+      { $group: { _id: '$mentorId', n: { $sum: 1 } } },
+    ]);
+    return new Map(rows.map((r) => [String(r._id), r.n]));
+  }
+
+  /** B5 reviews: the mentee's own feedback on a completed session (the review carries its rating). */
+  async feedbackOf(viewer: AuthState, bookingId: string) {
+    const b = await this.mine(viewer, bookingId);
+    if (String(b.menteeId) !== viewer.userId) throw notFound('Session');
+    const f = await FeedbackModel.findOne({ bookingId: b._id }).select('rating').lean();
+    return f ? { rating: f.rating, mentorId: b.mentorId, sessionType: b.sessionType as SessionType } : null;
+  }
+
   async completedSince(since: Date) {
     const [rows, rating] = await Promise.all([
       BookingModel.find({ status: 'completed', completedAt: { $gte: since } })

@@ -40,6 +40,8 @@ import type {
   JoinCodeInfo,
   JoinCodeView,
   OnboardingRecordView,
+  MentorReviewView,
+  MentorMatch as MentorMatchView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -443,4 +445,24 @@ export const joinCodePoster = (id: string) =>
   queryOptions({
     queryKey: ['join-code-poster', id],
     queryFn: ({ signal }) => api.get<JoinCodePoster>(`/admin/join-codes/${id}/poster`, signal),
+  });
+
+// ── Mentorship loop (B5) ─────────────────────────────
+export const mentorReviews = (mentorId: string) =>
+  infiniteQueryOptions({
+    queryKey: ['mentor-reviews', mentorId],
+    initialPageParam: '',
+    queryFn: ({ pageParam }) =>
+      apiRequest<MentorReviewView[]>(
+        `/mentors/${mentorId}/reviews${pageParam ? `?cursor=${pageParam}` : ''}`,
+      ),
+    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+/** Three mentors likely to reply, for a request waiting two days. */
+export const requestAlternatives = (requestId: string) =>
+  queryOptions({
+    queryKey: ['request-alternatives', requestId],
+    queryFn: ({ signal }) =>
+      api.get<MentorMatchView[]>(`/mentorship/requests/${requestId}/alternatives`, signal),
   });

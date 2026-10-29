@@ -25,6 +25,7 @@ import {
 import { FileModel } from '../src/modules/files/file.model.js';
 import { ChannelMessageModel } from '../src/modules/notifications/channels/channel.model.js';
 import { InviteLinkModel } from '../src/modules/verification/onboarding.model.js';
+import { MentorReviewModel } from '../src/modules/mentorship/review.model.js';
 
 const ctx = testApp();
 const services = ctx.app.locals.services as {
@@ -119,6 +120,25 @@ beforeAll(async () => {
       providerMessageId: 'wamid.privacy-demo',
       expiresAt: new Date(Date.now() + 86_400_000),
     });
+    // Public mentor reviews (B5): one they wrote and one about them.
+    await MentorReviewModel.create([
+      {
+        bookingId: new Types.ObjectId(),
+        mentorId: new Types.ObjectId(other.id),
+        menteeId: new Types.ObjectId(alum.id),
+        sessionType: 'quick_chat',
+        rating: 5,
+        text: 'A review the member wrote.',
+      },
+      {
+        bookingId: new Types.ObjectId(),
+        mentorId: new Types.ObjectId(alum.id),
+        menteeId: new Types.ObjectId(other.id),
+        sessionType: 'quick_chat',
+        rating: 4,
+        text: 'A review about the member.',
+      },
+    ]);
     // The invite link they joined with (B4): only the record id and who used it.
     await InviteLinkModel.create({
       whitelistId: new Types.ObjectId(),
@@ -173,6 +193,9 @@ describe('export', () => {
     ]);
     expect(d.subjects.enrollmentOverrides).toEqual([expect.objectContaining({ kind: 'include' })]);
     expect(d.aiSettings).toEqual([]);
+    expect(d.mentorReviews).toEqual([
+      expect.objectContaining({ text: 'A review the member wrote.', rating: 5 }),
+    ]);
     expect(d.studyChats.conversations[0]).toMatchObject({ title: 'Demo pumping lemma question' });
     expect(d.studyChats.conversations[0].messages[0].text).toBe('Demo: what is the pumping lemma?');
     expect(d.studyChats.decks).toEqual([{ title: 'Demo deck', cards: [] }]);
@@ -237,6 +260,9 @@ describe('deletion', () => {
       expect(await SubjectEnrollmentModel.countDocuments({ userId: alum.id })).toBe(0);
       expect(await ChannelMessageModel.countDocuments({ userId: alum.id })).toBe(0);
       expect(await InviteLinkModel.countDocuments({ usedBy: alum.id })).toBe(0);
+      expect(
+        await MentorReviewModel.countDocuments({ $or: [{ menteeId: alum.id }, { mentorId: alum.id }] }),
+      ).toBe(0);
       expect(await InviteLinkModel.countDocuments({ tokenHash: 'privacy-demo-hash' })).toBe(1);
       for (const m of [ChatSessionModel, ChatMessageModel, FlashcardDeckModel, UnansweredQuestionModel])
         expect(await (m as typeof ChatSessionModel).countDocuments({ userId: alum.id })).toBe(0);
@@ -287,6 +313,7 @@ describe('deletion', () => {
         'channelMessages',
         'guardianConsent',
         'onboarding',
+        'mentorReviews',
       ]),
     );
   });
