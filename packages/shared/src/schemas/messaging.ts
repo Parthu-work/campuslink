@@ -106,6 +106,7 @@ export const NOTIFICATION_TYPES = [
   'channel_budget_reached',
   'request_nudge',
   'request_rematch',
+  'announcement',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -170,6 +171,7 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   channel_budget_reached: 'reminders',
   request_nudge: 'requests',
   request_rematch: 'requests',
+  announcement: 'community',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;

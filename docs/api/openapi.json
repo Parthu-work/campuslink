@@ -3296,6 +3296,69 @@
         "x-permission": "verification:review"
       }
     },
+    "/api/v1/admin/verification/bulk-decision": {
+      "post": {
+        "tags": [
+          "Verification"
+        ],
+        "summary": "Approve or reject up to 100 requests; each is decided and audited on its own",
+        "description": "Requires permission `verification:review` (Review verification requests). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "verification_post_admin_verification_bulk_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  },
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "ids",
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "verification:review"
+      }
+    },
     "/api/v1/admin/verification/{id}/decision": {
       "post": {
         "tags": [
@@ -3778,6 +3841,129 @@
           }
         },
         "x-permission": "public"
+      }
+    },
+    "/api/v1/admin/onboarding": {
+      "get": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Onboarding progress per branch and batch (on the list, invited, joined, verified, active)",
+        "description": "Requires permission `onboarding:manage` (Send invite links, run class join codes and follow onboarding). Host scope: college.",
+        "operationId": "onboarding_get_admin_onboarding",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "onboarding:manage"
+      }
+    },
+    "/api/v1/admin/onboarding/nudge": {
+      "post": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Invite everyone not yet joined in one branch and batch on WhatsApp (B4 limits apply)",
+        "description": "Requires permission `onboarding:manage` (Send invite links, run class join codes and follow onboarding). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "onboarding_post_admin_onboarding_nudge",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "branch": {
+                    "type": "string",
+                    "enum": [
+                      "CSE",
+                      "IT",
+                      "ECE",
+                      "EEE",
+                      "MECH",
+                      "CIVIL",
+                      "CHEM",
+                      "AIML",
+                      "DS",
+                      "OTHER"
+                    ]
+                  },
+                  "gradYear": {
+                    "type": "integer",
+                    "minimum": 1950,
+                    "maximum": 2032
+                  },
+                  "attestOptIn": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                },
+                "required": [
+                  "branch",
+                  "gradYear",
+                  "attestOptIn"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "onboarding:manage"
       }
     },
     "/api/v1/admin/onboarding/records": {
@@ -7881,6 +8067,69 @@
                       "announcement": {
                         "default": false,
                         "type": "boolean"
+                      },
+                      "audience": {
+                        "type": "object",
+                        "properties": {
+                          "branches": {
+                            "default": [],
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "CSE",
+                                "IT",
+                                "ECE",
+                                "EEE",
+                                "MECH",
+                                "CIVIL",
+                                "CHEM",
+                                "AIML",
+                                "DS",
+                                "OTHER"
+                              ]
+                            }
+                          },
+                          "gradYears": {
+                            "default": [],
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1950,
+                              "maximum": 2100
+                            }
+                          },
+                          "roles": {
+                            "default": [],
+                            "maxItems": 4,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "STUDENT",
+                                "ALUMNI",
+                                "FACULTY",
+                                "TPO"
+                              ]
+                            }
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "pinDays": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 30
+                      },
+                      "sendWhatsApp": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "urgent": {
+                        "default": false,
+                        "type": "boolean"
                       }
                     },
                     "required": [
@@ -7961,6 +8210,69 @@
                         }
                       },
                       "announcement": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "audience": {
+                        "type": "object",
+                        "properties": {
+                          "branches": {
+                            "default": [],
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "CSE",
+                                "IT",
+                                "ECE",
+                                "EEE",
+                                "MECH",
+                                "CIVIL",
+                                "CHEM",
+                                "AIML",
+                                "DS",
+                                "OTHER"
+                              ]
+                            }
+                          },
+                          "gradYears": {
+                            "default": [],
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1950,
+                              "maximum": 2100
+                            }
+                          },
+                          "roles": {
+                            "default": [],
+                            "maxItems": 4,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "STUDENT",
+                                "ALUMNI",
+                                "FACULTY",
+                                "TPO"
+                              ]
+                            }
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "pinDays": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 30
+                      },
+                      "sendWhatsApp": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "urgent": {
                         "default": false,
                         "type": "boolean"
                       }
@@ -8045,6 +8357,69 @@
                       "announcement": {
                         "default": false,
                         "type": "boolean"
+                      },
+                      "audience": {
+                        "type": "object",
+                        "properties": {
+                          "branches": {
+                            "default": [],
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "CSE",
+                                "IT",
+                                "ECE",
+                                "EEE",
+                                "MECH",
+                                "CIVIL",
+                                "CHEM",
+                                "AIML",
+                                "DS",
+                                "OTHER"
+                              ]
+                            }
+                          },
+                          "gradYears": {
+                            "default": [],
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1950,
+                              "maximum": 2100
+                            }
+                          },
+                          "roles": {
+                            "default": [],
+                            "maxItems": 4,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "STUDENT",
+                                "ALUMNI",
+                                "FACULTY",
+                                "TPO"
+                              ]
+                            }
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "pinDays": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 30
+                      },
+                      "sendWhatsApp": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "urgent": {
+                        "default": false,
+                        "type": "boolean"
                       }
                     },
                     "required": [
@@ -8127,6 +8502,69 @@
                       "announcement": {
                         "default": false,
                         "type": "boolean"
+                      },
+                      "audience": {
+                        "type": "object",
+                        "properties": {
+                          "branches": {
+                            "default": [],
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "CSE",
+                                "IT",
+                                "ECE",
+                                "EEE",
+                                "MECH",
+                                "CIVIL",
+                                "CHEM",
+                                "AIML",
+                                "DS",
+                                "OTHER"
+                              ]
+                            }
+                          },
+                          "gradYears": {
+                            "default": [],
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1950,
+                              "maximum": 2100
+                            }
+                          },
+                          "roles": {
+                            "default": [],
+                            "maxItems": 4,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "STUDENT",
+                                "ALUMNI",
+                                "FACULTY",
+                                "TPO"
+                              ]
+                            }
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "pinDays": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 30
+                      },
+                      "sendWhatsApp": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "urgent": {
+                        "default": false,
+                        "type": "boolean"
                       }
                     },
                     "required": [
@@ -8189,6 +8627,69 @@
                         }
                       },
                       "announcement": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "audience": {
+                        "type": "object",
+                        "properties": {
+                          "branches": {
+                            "default": [],
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "CSE",
+                                "IT",
+                                "ECE",
+                                "EEE",
+                                "MECH",
+                                "CIVIL",
+                                "CHEM",
+                                "AIML",
+                                "DS",
+                                "OTHER"
+                              ]
+                            }
+                          },
+                          "gradYears": {
+                            "default": [],
+                            "maxItems": 10,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1950,
+                              "maximum": 2100
+                            }
+                          },
+                          "roles": {
+                            "default": [],
+                            "maxItems": 4,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "STUDENT",
+                                "ALUMNI",
+                                "FACULTY",
+                                "TPO"
+                              ]
+                            }
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "pinDays": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 30
+                      },
+                      "sendWhatsApp": {
+                        "default": false,
+                        "type": "boolean"
+                      },
+                      "urgent": {
                         "default": false,
                         "type": "boolean"
                       }

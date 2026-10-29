@@ -10,6 +10,7 @@ import {
   HandHeart,
   Lightbulb,
   Megaphone,
+  Pin,
   MessageCircle,
   PartyPopper,
   Rss,
@@ -29,6 +30,7 @@ import { useCan } from '../../lib/me';
 import { pop } from '../../lib/celebrate';
 import { cn } from '../../lib/cn';
 import { ContentMenu, RemovalNotice } from './content-menu';
+import { audienceLabel } from '../../lib/announcements';
 
 const STAFF = ['TPO', 'FACULTY', 'COLLEGE_ADMIN'];
 const REACTION_ICON: Record<Reaction, typeof Lightbulb> = {
@@ -358,11 +360,19 @@ export function PostCard({
           />
         </AuthorLine>
         {(post.announcement || post.kind === 'reel') && (
-          <p className="flex gap-2">
+          <p className="flex flex-wrap gap-2">
             {post.announcement && (
               <Badge tone="brand">
                 <Megaphone className="size-3" aria-hidden /> {t('feed.announcement')}
               </Badge>
+            )}
+            {post.pinnedUntil && (
+              <Badge>
+                <Pin className="size-3" aria-hidden /> {t('announce.pinned')}
+              </Badge>
+            )}
+            {post.audience && (
+              <Badge>{t('announce.for', { who: audienceLabel(post.audience, (r) => t(`role.${r}`)) })}</Badge>
             )}
             {post.kind === 'reel' && <Badge tone="accent">{t('feed.tipsReel')}</Badge>}
           </p>

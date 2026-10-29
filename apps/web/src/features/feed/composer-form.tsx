@@ -21,6 +21,8 @@ import { useDraft } from '../../lib/drafts';
 import { useCan } from '../../lib/me';
 import { useFeature } from '../../lib/tenant-context';
 import { newIdempotencyKey } from '../../lib/format';
+import { AnnouncementOptions } from './announcement-options';
+import { NO_ANNOUNCEMENT_OPTIONS, announcementFields } from '../../lib/announcements';
 
 type Media = { fileId: string; alt: string; preview: string; durationSec?: number };
 const KINDS: readonly [PostKind, typeof PenLine][] = [
@@ -72,6 +74,7 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
   const [body, setBody] = useDraft('composer');
   const [topics, setTopics] = useState<Topic[]>([]);
   const [announcement, setAnnouncement] = useState(false);
+  const [announceOpts, setAnnounceOpts] = useState(NO_ANNOUNCEMENT_OPTIONS);
   const [media, setMedia] = useState<Media[]>([]);
   const [options, setOptions] = useState(['', '']);
   const [days, setDays] = useState(3);
@@ -114,7 +117,7 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
   };
 
   const payload = () => {
-    const common = { topics, announcement };
+    const common = { topics, announcement, ...(announcement ? announcementFields(announceOpts) : {}) };
     switch (kind) {
       case 'text':
         return { kind, body, ...common };
@@ -322,6 +325,7 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
           {t('feed.markAnnouncement')}
         </Checkbox>
       )}
+      {canAnnounce && announcement && <AnnouncementOptions value={announceOpts} onChange={setAnnounceOpts} />}
       {error && (
         <p role="alert" className="text-meta font-medium text-danger">
           {error}

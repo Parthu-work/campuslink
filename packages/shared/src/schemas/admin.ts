@@ -18,4 +18,6 @@ export interface AdminOverviewView {
   ai: { status: AiStatusView; budgetPercent: number | null } | null;
   /** This month's WhatsApp messages against the allowance (B3); null when off or not permitted. */
   whatsapp?: { sent: number; allowance: number } | null;
+  /** B6: students on the list who have not joined yet (onboarding:manage). */
+  onboarding?: { notJoined: number } | null;
 }

@@ -790,6 +790,15 @@ export class AuthService {
     );
   }
 
+  /** B6 onboarding progress: which of these members used a session since a date. */
+  async activeAmong(userIds: Types.ObjectId[], since: Date): Promise<Set<string>> {
+    const ids = await SessionModel.distinct('userId', {
+      userId: { $in: userIds },
+      lastUsedAt: { $gte: since },
+    });
+    return new Set(ids.map(String));
+  }
+
   /** Analytics: members with a session used since a date (no other activity is tracked). */
   async activeSince(since: Date) {
     return (await SessionModel.distinct('userId', { lastUsedAt: { $gte: since } })).length;

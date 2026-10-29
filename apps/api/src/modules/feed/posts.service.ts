@@ -2,6 +2,8 @@ import { Types } from 'mongoose';
 import type { z } from 'zod';
 import {
   REEL_MAX_SECONDS,
+  URGENT_ANNOUNCEMENTS_PER_MONTH,
+  type AnnouncementAudience,
   type CommentView,
   type CreatePostBody,
   type PostView,
@@ -35,6 +37,26 @@ import { featureEnabled, requireFeature } from '../tenants/features.js';
 
 const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11000;
 
+/** B6: a targeted announcement goes out to its audience by WhatsApp, push or email in a job. */
+export const ANNOUNCE_JOB = 'feed.announce';
+type Audience = { branches: string[]; gradYears: number[]; roles: string[] };
+const hasTarget = (a: Audience | null | undefined): a is Audience =>
+  !!a && (a.branches.length > 0 || a.gradYears.length > 0 || a.roles.length > 0);
+/** Adds a condition to a filter without clobbering the filter's own `$and`. */
+export const withCondition = (filter: Record<string, unknown>, cond: Record<string, unknown>) =>
+  Object.keys(cond).length
+    ? { ...filter, $and: [...((filter.$and as Record<string, unknown>[] | undefined) ?? []), cond] }
+    : filter;
+/** The first line of an announcement, short enough for a notification title. */
+const titleOf = (body: string) => {
+  const line =
+    body
+      .split('\n')
+      .find((l) => l.trim())
+      ?.trim() ?? '';
+  return line.length > 60 ? `${line.slice(0, 59)}…` : line;
+};
+
 export interface PostsDeps {
   files: FilesService;
   profiles: ProfilesService;
@@ -44,10 +66,18 @@ export interface PostsDeps {
   fetcher: typeof safeFetch;
 }
 
-const RANK_FIELDS = 'authorId createdAt topics authorBranch authorAlumni announcement counts';
+const RANK_FIELDS = 'authorId createdAt topics authorBranch authorAlumni announcement counts audience';
 export type PostRankFields = Pick<
   PostDoc,
-  '_id' | 'authorId' | 'createdAt' | 'topics' | 'authorBranch' | 'authorAlumni' | 'announcement' | 'counts'
+  | '_id'
+  | 'authorId'
+  | 'createdAt'
+  | 'topics'
+  | 'authorBranch'
+  | 'authorAlumni'
+  | 'announcement'
+  | 'counts'
+  | 'audience'
 >;
 
 export class PostsService {
@@ -75,11 +105,95 @@ export class PostsService {
   award: Award = noAward;
   constructor(private readonly d: PostsDeps) {}
 
+  /** Set by the app: queues the WhatsApp, push or email fan-out of an announcement (B6). */
+  onAnnounce: ((postId: string) => Promise<void>) | null = null;
+
+  // ── Audience (B6) ─────────────────────────────
+  /**
+   * Which announcements the viewer may see: untargeted ones, their own, and those whose audience
+   * covers their branch, batch and role. Staff who post announcements see every one.
+   */
+  async audienceCondition(viewer: AuthState): Promise<Record<string, unknown>> {
+    if (viewer.permissions.has('announcements:post')) return {};
+    const own = await this.d.profiles.own(viewer.userId);
+    const any = (field: string) => ({ [`audience.${field}.0`]: { $exists: false } });
+    return {
+      $or: [
+        { audience: null },
+        { authorId: new Types.ObjectId(viewer.userId) },
+        {
+          $and: [
+            { $or: [any('branches'), ...(own.branch ? [{ 'audience.branches': own.branch }] : [])] },
+            { $or: [any('gradYears'), ...(own.gradYear ? [{ 'audience.gradYears': own.gradYear }] : [])] },
+            { $or: [any('roles'), { 'audience.roles': { $in: viewer.roles } }] },
+          ],
+        },
+      ],
+    };
+  }
+
+  /** The same rule for posts already loaded. */
+  async audienceAllows(viewer: AuthState, posts: Pick<PostDoc, 'authorId' | 'audience'>[]) {
+    if (viewer.permissions.has('announcements:post')) return posts.map(() => true);
+    const own = await this.d.profiles.own(viewer.userId);
+    return posts.map((p) => {
+      const a = p.audience as Audience | null | undefined;
+      if (!hasTarget(a) || String(p.authorId) === viewer.userId) return true;
+      return (
+        (!a.branches.length || (!!own.branch && a.branches.includes(own.branch))) &&
+        (!a.gradYears.length || (!!own.gradYear && a.gradYears.includes(own.gradYear))) &&
+        (!a.roles.length || a.roles.some((r) => viewer.roles.includes(r as never)))
+      );
+    });
+  }
+
+  /** Pinned announcements for the viewer, newest first (the top of For you). */
+  async pinnedFor(viewer: AuthState, filter: Record<string, unknown> = {}) {
+    return PostModel.find(
+      withCondition(
+        { ...filter, announcement: true, status: 'published', pinnedUntil: { $gt: new Date() } },
+        await this.audienceCondition(viewer),
+      ),
+    )
+      .sort({ _id: -1 })
+      .limit(3)
+      .lean<PostDoc[]>();
+  }
+
+  /** Job: tell the announcement's audience (WhatsApp first for members who opted in). */
+  async announce(postId: string) {
+    const p = await PostModel.findById(postId).lean<PostDoc>();
+    if (!p || !p.announcement || p.status !== 'published') return;
+    const a = (p.audience as Audience | null) ?? { branches: [], gradYears: [], roles: [] };
+    const title = titleOf(p.body);
+    for (const id of await this.d.profiles.idsForAudience(a)) {
+      if (id === String(p.authorId)) continue;
+      await this.d.notifications.notify(id, 'announcement', {
+        title,
+        postId: String(p._id),
+        urgent: p.urgent ? '1' : '0',
+      });
+    }
+  }
+
   // ── Create ─────────────────────────────
   async create(viewer: AuthState, body: CreatePostBody): Promise<PostView> {
     if (body.kind === 'reel') await requireFeature('reels');
     if (body.announcement && !viewer.permissions.has('announcements:post'))
       throw new AppError(403, ErrorCode.FORBIDDEN, 'Only staff can post official announcements');
+    if (!body.announcement && (body.audience || body.pinDays || body.sendWhatsApp || body.urgent))
+      throw badRequest('Only official announcements have an audience, a pin or a WhatsApp send');
+    if (body.urgent && !body.sendWhatsApp) throw badRequest('An urgent announcement goes out on WhatsApp');
+    if (body.urgent) {
+      const now = new Date();
+      const month = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      const used = await PostModel.countDocuments({ urgent: true, createdAt: { $gte: month } });
+      if (used >= URGENT_ANNOUNCEMENTS_PER_MONTH)
+        throw conflict(
+          `Your college has sent ${URGENT_ANNOUNCEMENTS_PER_MONTH} urgent announcements this month. Send this one as a normal announcement.`,
+        );
+    }
+    const audience: AnnouncementAudience | null = hasTarget(body.audience) ? body.audience : null;
     const text = plainText(body.body);
     if (body.kind === 'text' && !text) throw badRequest('Write something');
     const media: {
@@ -128,10 +242,14 @@ export class PostsService {
           : null,
       link: body.kind === 'link' ? await linkPreview(body.url, this.d.fetcher) : null,
       announcement: body.announcement,
+      audience,
+      pinnedUntil: body.pinDays ? new Date(Date.now() + body.pinDays * 86_400_000) : null,
+      urgent: body.urgent,
       authorAlumni: facts?.alumni ?? false,
       authorBranch: facts?.branch ?? null,
     });
     if (!body.announcement) await this.award(viewer.userId, 'post_published', String(doc._id));
+    if (body.sendWhatsApp) await this.onAnnounce?.(String(doc._id));
     return (await this.views(viewer, [doc.toObject() as PostDoc]))[0] as PostView;
   }
 
@@ -219,6 +337,10 @@ export class PostsService {
             }
           : null,
         announcement: p.announcement,
+        audience: hasTarget(p.audience as Audience | null)
+          ? (p.audience as unknown as PostView['audience'])
+          : null,
+        pinnedUntil: p.pinnedUntil && p.pinnedUntil > new Date() ? p.pinnedUntil.toISOString() : null,
         counts: {
           reactions: {
             helpful: p.counts?.helpful ?? 0,
@@ -246,6 +368,7 @@ export class PostsService {
     const mine = String(p.authorId) === viewer.userId;
     if (p.status !== 'published' && !mine && !isModerator(viewer)) throw notFound('Post');
     if (!mine && (await this.d.safety.isBlockedEither(viewer.userId, p.authorId))) throw notFound('Post');
+    if (!isModerator(viewer) && !(await this.audienceAllows(viewer, [p]))[0]) throw notFound('Post');
     return p;
   }
 
@@ -273,11 +396,12 @@ export class PostsService {
         .sort({ _id: -1 })
         .limit(21)
         .lean();
-      const posts = await PostModel.find({
-        _id: { $in: saves.map((s) => s.postId) },
-        status: 'published',
-        ...filter,
-      }).lean<PostDoc[]>();
+      const posts = await PostModel.find(
+        withCondition(
+          { _id: { $in: saves.map((s) => s.postId) }, status: 'published', ...filter },
+          await this.audienceCondition(viewer),
+        ),
+      ).lean<PostDoc[]>();
       const byId = new Map(posts.map((p) => [String(p._id), p]));
       const ordered = saves.slice(0, 20).flatMap((s) => byId.get(String(s.postId)) ?? []);
       return {
@@ -295,7 +419,10 @@ export class PostsService {
     if (hidden.size)
       filter.authorId = q.author ? filter.authorId : { $nin: [...hidden].map((h) => new Types.ObjectId(h)) };
     if (q.author && hidden.has(q.author)) return { items: [], nextCursor: null };
-    const rows = await PostModel.find(filter).sort({ _id: -1 }).limit(21).lean<PostDoc[]>();
+    const rows = await PostModel.find(withCondition(filter, await this.audienceCondition(viewer)))
+      .sort({ _id: -1 })
+      .limit(21)
+      .lean<PostDoc[]>();
     const page = rows.slice(0, 20);
     return {
       items: await this.views(viewer, page),
@@ -522,7 +649,10 @@ export class PostsService {
     if (text.length < 3) return [];
     const hidden = await this.d.safety.hiddenFor(viewer.userId);
     const rows = (
-      await withTextSearch(PostModel.find({ status: 'published' }), text)
+      await withTextSearch(
+        PostModel.find(withCondition({ status: 'published' }, await this.audienceCondition(viewer))),
+        text,
+      )
         .limit(10)
         .lean<PostDoc[]>()
     ).filter((p) => !hidden.has(String(p.authorId)));

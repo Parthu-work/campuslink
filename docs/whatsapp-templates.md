@@ -65,6 +65,14 @@ Sent for: `booking_cancelled`. Category: **utility**.
 - Telugu (te): `{{3}}న {{2}}తో మీ {{1}} రద్దయింది. యాప్‌లో మరో సమయం బుక్ చేసుకోవచ్చు.`
 - Hindi (hi): `{{3}} को {{2}} के साथ आपका {{1}} रद्द हो गया है। आप ऐप में दूसरा समय बुक कर सकते हैं।`
 
+## `college_announcement`
+
+Sent for: `announcement`. Category: **utility**. Critical only when the sender marks it urgent.
+
+- English (en): `New from your college: {{1}}. Open the app to read it.`
+- Telugu (te): `మీ కాలేజీ నుండి కొత్తది: {{1}}. చదవడానికి యాప్ తెరవండి.`
+- Hindi (hi): `आपके कॉलेज से नया: {{1}}। पढ़ने के लिए ऐप खोलें।`
+
 ## `cl_job_alert`
 
 Sent for: `job_alert`. Category: **utility**.

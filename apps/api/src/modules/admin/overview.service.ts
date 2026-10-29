@@ -15,6 +15,7 @@ import type { AiSettingsService } from '../study/ai-settings.service.js';
 import type { AiUsageService } from '../study/ai-usage.service.js';
 import { featureEnabled } from '../tenants/features.js';
 import type { ChannelService } from '../notifications/channels/channel.service.js';
+import type { OnboardingService } from '../verification/onboarding.service.js';
 
 export interface OverviewDeps {
   users: UsersService;
@@ -29,6 +30,7 @@ export interface OverviewDeps {
   analytics: AnalyticsService;
   ai: AiSettingsService;
   channels?: ChannelService;
+  onboarding?: OnboardingService;
   usage: AiUsageService;
 }
 
@@ -82,7 +84,12 @@ export class AdminOverviewService {
       this.d.channels && can('tenant:settings') && (await featureEnabled('whatsapp'))
         ? await this.d.channels.usage().then((u) => ({ sent: u.sent, allowance: u.allowance }))
         : null;
+    const onboarding =
+      this.d.onboarding && can('onboarding:manage')
+        ? { notJoined: await this.d.onboarding.notJoined() }
+        : null;
     return {
+      onboarding,
       members,
       activity,
       verification,

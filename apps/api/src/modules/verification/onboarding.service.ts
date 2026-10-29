@@ -16,9 +16,11 @@ import {
   type InviteView,
   type JoinCodeInfo,
   type JoinCodeView,
+  type OnboardingProgressRow,
   type OnboardingRecordView,
   type OtpChannel,
   type Role,
+  suppress,
 } from '@campuslink/shared';
 import { InviteLinkModel, JoinCodeModel } from './onboarding.model.js';
 import { OtpChallengeModel } from './verification.model.js';
@@ -232,6 +234,71 @@ export class OnboardingService {
       meta,
     );
     return { ...result, links };
+  }
+
+  // ── Progress (B6) ─────────────────────────────
+  /**
+   * Per branch and batch: on the list, invited, joined (claimed), verified and active in the last
+   * 7 days. The active count goes through suppress(); the others are the college's own list.
+   */
+  async progress(q: { branch?: string | undefined; gradYear?: number | undefined }) {
+    const recs = await WhitelistModel.find({
+      ...(q.branch ? { branch: q.branch } : {}),
+      ...(q.gradYear ? { gradYear: q.gradYear } : {}),
+    })
+      .select('branch gradYear status claimedBy')
+      .limit(200_000)
+      .lean();
+    const invited = new Set(
+      (
+        await InviteLinkModel.find({ whitelistId: { $in: recs.map((r) => r._id) } })
+          .select('whitelistId')
+          .lean()
+      ).map((l) => String(l.whitelistId)),
+    );
+    const claimedBy = recs.flatMap((r) => (r.claimedBy ? [r.claimedBy] : []));
+    const [users, active] = await Promise.all([
+      UserModel.find({ _id: { $in: claimedBy } })
+        .select('verified')
+        .lean(),
+      this.d.auth.activeAmong(claimedBy, new Date(Date.now() - 7 * DAY_MS)),
+    ]);
+    const verified = new Set(users.filter((u) => u.verified).map((u) => String(u._id)));
+    const rows = new Map<string, OnboardingProgressRow & { active: number }>();
+    for (const r of recs) {
+      const key = `${r.branch ?? ''}|${r.gradYear ?? ''}`;
+      const row =
+        rows.get(key) ??
+        ({
+          branch: r.branch ?? null,
+          gradYear: r.gradYear ?? null,
+          roster: 0,
+          invited: 0,
+          claimed: 0,
+          verified: 0,
+          active7d: 0,
+          active: 0,
+        } as OnboardingProgressRow & { active: number });
+      row.roster++;
+      if (invited.has(String(r._id))) row.invited++;
+      if (r.status === 'claimed') row.claimed++;
+      const u = r.claimedBy ? String(r.claimedBy) : '';
+      if (u && verified.has(u)) row.verified++;
+      if (u && active.has(u)) row.active++;
+      rows.set(key, row);
+    }
+    return [...rows.values()]
+      .sort(
+        (a, b) =>
+          (b.gradYear ?? 0) - (a.gradYear ?? 0) ||
+          String(a.branch ?? '').localeCompare(String(b.branch ?? '')),
+      )
+      .map(({ active, ...row }) => ({ ...row, active7d: suppress(active) }));
+  }
+
+  /** Admin overview: students on the list who have not joined yet. */
+  async notJoined(): Promise<number> {
+    return WhitelistModel.countDocuments({ status: 'unclaimed', kind: 'student' });
   }
 
   // ── Invite links ─────────────────────────────

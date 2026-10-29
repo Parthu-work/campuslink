@@ -105,6 +105,8 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return `/mentorship?box=received${d.requestId ? `&request=${d.requestId}` : ''}`;
       case 'request_rematch':
         return `/mentorship?box=sent${d.requestId ? `&request=${d.requestId}` : ''}`;
+      case 'announcement':
+        return `/posts/${d.postId}`;
       default:
         return '/sessions';
     }

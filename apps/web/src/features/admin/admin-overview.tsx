@@ -10,6 +10,7 @@ import {
   ShieldAlert,
   Sparkles,
   MessageCircle,
+  UserPlus,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -90,6 +91,17 @@ export function AdminOverview() {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {v.onboarding && (
+              <QueueCard
+                to="/admin/onboarding"
+                icon={UserPlus}
+                title={t('admin.ov.onboarding')}
+                value={shown(v.onboarding.notJoined)}
+                waiting={v.onboarding.notJoined > 0}
+              >
+                {t('admin.ov.onboardingHint', { count: v.onboarding.notJoined })}
+              </QueueCard>
+            )}
             {v.verification && (
               <QueueCard
                 to="/admin/verification"

@@ -13,6 +13,8 @@ export interface WaTemplate {
   category: 'utility' | 'authentication';
   /** Exempt from the member's weekly cap (codes, session reminders, drive deadlines). */
   critical: boolean;
+  /** Critical only when the notification data says `urgent: '1'` (urgent announcements, B6). */
+  urgentable?: boolean;
   /**
    * Body parameters in {{1}}, {{2}} … order: names, times, session types, company names and counts
    * only, never message or request text (CLAUDE.md).
@@ -154,6 +156,19 @@ export const WHATSAPP_TEMPLATES: Partial<Record<NotificationType, WaTemplate>> =
       en: 'Your {{1}} with {{2}} on {{3}} was cancelled. You can book another time in the app.',
       te: '{{3}}న {{2}}తో మీ {{1}} రద్దయింది. యాప్‌లో మరో సమయం బుక్ చేసుకోవచ్చు.',
       hi: '{{3}} को {{2}} के साथ आपका {{1}} रद्द हो गया है। आप ऐप में दूसरा समय बुक कर सकते हैं।',
+    },
+  },
+  announcement: {
+    name: 'college_announcement',
+    category: 'utility',
+    critical: false,
+    urgentable: true,
+    // The announcement's title only (first line, at most 60 characters), never its body.
+    params: (d) => [d.title ?? ''],
+    text: {
+      en: 'New from your college: {{1}}. Open the app to read it.',
+      te: 'మీ కాలేజీ నుండి కొత్తది: {{1}}. చదవడానికి యాప్ తెరవండి.',
+      hi: 'आपके कॉलेज से नया: {{1}}। पढ़ने के लिए ऐप खोलें।',
     },
   },
   job_alert: {

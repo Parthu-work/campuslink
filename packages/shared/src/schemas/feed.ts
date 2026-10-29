@@ -51,7 +51,26 @@ export const IMAGE_MAX_BYTES = 8 * 1024 * 1024;
 
 const text = (min: number, max: number) => z.string().trim().min(min).max(max);
 const mediaRef = (altMax: number) => z.strictObject({ fileId: objectId, alt: text(1, altMax) });
-const common = { topics, announcement: z.boolean().default(false) };
+/** B6: who an official announcement is for. Empty lists mean everyone. */
+export const AUDIENCE_ROLES = ['STUDENT', 'ALUMNI', 'FACULTY', 'TPO'] as const;
+export const announcementAudience = z.strictObject({
+  branches: z.array(z.enum(BRANCHES)).max(BRANCHES.length).default([]),
+  gradYears: z.array(z.number().int().min(1950).max(2100)).max(10).default([]),
+  roles: z.array(z.enum(AUDIENCE_ROLES)).max(AUDIENCE_ROLES.length).default([]),
+});
+export type AnnouncementAudience = z.infer<typeof announcementAudience>;
+/** Urgent announcements skip members' WhatsApp caps, so a college gets this many a month. */
+export const URGENT_ANNOUNCEMENTS_PER_MONTH = 4;
+export const MAX_PIN_DAYS = 30;
+const common = {
+  topics,
+  announcement: z.boolean().default(false),
+  // Announcements only (B6): the rest are refused on ordinary posts.
+  audience: announcementAudience.optional(),
+  pinDays: z.number().int().min(1).max(MAX_PIN_DAYS).optional(),
+  sendWhatsApp: z.boolean().default(false),
+  urgent: z.boolean().default(false),
+};
 
 export const createPostBody = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('text'), body: text(1, POST_MAX), ...common }),
@@ -252,6 +271,9 @@ export interface PostView {
   } | null;
   link: { url: string; host: string; title: string; description: string; siteName: string } | null;
   announcement: boolean;
+  /** B6: an announcement's audience (null for everyone) and pin. */
+  audience: { branches: Branch[]; gradYears: number[]; roles: (typeof AUDIENCE_ROLES)[number][] } | null;
+  pinnedUntil: string | null;
   counts: { reactions: Record<Reaction, number>; comments: number; saves: number; shares: number };
   myReaction: Reaction | null;
   saved: boolean;

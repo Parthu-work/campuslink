@@ -6,6 +6,8 @@ import {
   inviteTokenParams,
   joinCodeParams,
   joinStartBody,
+  onboardingNudgeBody,
+  onboardingProgressQuery,
   onboardingRecordsQuery,
   sendInvitesBody,
 } from '@campuslink/shared';
@@ -116,6 +118,34 @@ export function onboardingRoutes(
       }),
     },
     // ── Admin › Onboarding ─────────────────────────────
+    {
+      method: 'get',
+      path: '/admin/onboarding',
+      tag,
+      summary: 'Onboarding progress per branch and batch (on the list, invited, joined, verified, active)',
+      access: MANAGE,
+      query: onboardingProgressQuery,
+      handler: async ({ query }) => ({ data: await svc.progress(query) }),
+    },
+    {
+      method: 'post',
+      path: '/admin/onboarding/nudge',
+      tag,
+      summary: 'Invite everyone not yet joined in one branch and batch on WhatsApp (B4 limits apply)',
+      access: MANAGE,
+      limiter: 'adminWrite',
+      idempotent: true,
+      body: onboardingNudgeBody,
+      handler: async ({ req, body }) => ({
+        status: 201,
+        data: await svc.sendInvites(
+          tenantOf(req),
+          authOf(req).userId,
+          { branch: body.branch, gradYear: body.gradYear, channel: 'whatsapp', attestOptIn: true },
+          meta(req),
+        ),
+      }),
+    },
     {
       method: 'get',
       path: '/admin/onboarding/records',

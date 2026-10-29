@@ -145,7 +145,8 @@ export class ChannelService {
     if (!tpl || !(await this.usable(type))) return 'unavailable';
     const to = await this.target(userId);
     if (!to) return 'unavailable';
-    if (!tpl.critical) {
+    const critical = tpl.critical || (!!tpl.urgentable && data.urgent === '1');
+    if (!critical) {
       const week = await ChannelMessageModel.countDocuments({
         userId: new Types.ObjectId(userId),
         channel: 'whatsapp',
@@ -179,7 +180,7 @@ export class ChannelService {
       this.d.logger.warn({ err, type }, 'whatsapp send failed');
       return 'failed';
     }
-    await this.record(userId, 'whatsapp', tpl.name, CATEGORY_OF[type], tpl.critical, messageId);
+    await this.record(userId, 'whatsapp', tpl.name, CATEGORY_OF[type], critical, messageId);
     return 'sent';
   }
 

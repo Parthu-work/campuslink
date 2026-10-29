@@ -27,7 +27,7 @@ const entries = [
 ];
 for (const [what, t] of entries) {
   if (!t) continue;
-  out += `## \`${t.name}\`\n\nSent for: ${what}. Category: **${t.category}**.${t.critical ? ' Critical (exempt from the weekly cap).' : ''}\n\n`;
+  out += `## \`${t.name}\`\n\nSent for: ${what}. Category: **${t.category}**.${t.critical ? ' Critical (exempt from the weekly cap).' : t.urgentable ? ' Critical only when the sender marks it urgent.' : ''}\n\n`;
   for (const l of WA_LANGS) {
     out += `- ${LANG[l]}: \`${t.text[l]}\`\n`;
     if (t.buttons?.length)

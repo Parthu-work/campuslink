@@ -9,7 +9,7 @@ A new session reads this file first and resumes from the first phase that is not
 | B3    | WhatsApp and SMS channels                                      | Done        |
 | B4    | One-tap invites and class onboarding                           | Done        |
 | B5    | Mentorship loop that never dead-ends                           | Done        |
-| B6    | TPO console                                                    | Not started |
+| B6    | TPO console                                                    | Done        |
 | B7    | Placement drives                                               | Not started |
 | B8    | Placement outcomes and accreditation reports                   | Not started |
 | B9    | Product analytics                                              | Not started |
@@ -145,3 +145,23 @@ A new session reads this file first and resumes from the first phase that is not
 - **Reviews live in the mentorship module**; the sessions module learns which bookings have one through a hook (`SessionsService.reviewedOf`), keeping modules to services.
 
 **Next:** B6 (TPO console).
+
+## B6 · TPO console (Done)
+
+**Shipped**
+
+- `POST /admin/verification/bulk-decision` (up to 100; each through `decide()`, audited on its own, per-id results), with selection, "Approve selected" and "Reject selected" in Admin › Verification.
+- `GET /admin/onboarding` (per branch and batch: on the list, invited, joined, verified, active this week through `suppress()`) and `POST /admin/onboarding/nudge` (B4 invites for one class), shown as "Progress by class" with a Nudge button in Admin › Onboarding; "Not joined yet" card on the admin overview.
+- Targeted announcements: `audience`, `pinnedUntil`, `urgent` on posts; the audience applies to every read path; pinned announcements lead For you; "also send on WhatsApp" fans out the `announcement` notification (title only, template `college_announcement`, critical when urgent; 4 urgent a month per college). Composer options and "Pinned" / "For …" badges on cards.
+- Tests: `test/tpo-console.test.ts` (8), `test/isolation/tpo-console.test.ts` (3), e2e `e2e/tpo-console.spec.ts`. Spec: `docs/specs/tpo-console.md`.
+
+**Decisions**
+
+- **`onboarding:manage` guards the progress and nudge routes** instead of "imports:manage or verification:review" (a route declares one permission; TPO and admins hold it).
+- **The admin section already existed** (B4), so B6 extends it rather than adding a second one.
+- **Only the activity count is suppressed** in the progress table; the other counts describe the college's own list.
+- **Announcements notify only when "also send on WhatsApp" is chosen**; otherwise they are feed posts as before. The title is the one text field a notification carries (documented exception).
+- **Pins apply to For you only**; Following stays strictly chronological.
+- **Urgent needs WhatsApp**: urgency only changes the WhatsApp cap, so on its own it means nothing.
+
+**Next:** B7 (placement drives).

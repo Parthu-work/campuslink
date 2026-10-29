@@ -72,6 +72,8 @@ const post = (over: Partial<PostView> = {}): PostView => ({
   poll: null,
   link: null,
   announcement: false,
+  audience: null,
+  pinnedUntil: null,
   counts: { reactions: { helpful: 2, insightful: 0, celebrate: 0 }, comments: 0, saves: 0, shares: 0 },
   myReaction: 'helpful',
   saved: false,

@@ -471,6 +471,7 @@ function collegeRoutes(): RouteObject[] {
             screen(load.rewards, 'RewardsAdmin', 'rewards:manage', at('rewards')),
             screen(load.imports, 'ImportsAdmin', 'imports:manage', at('imports')),
             screen(load.onboardingAdmin, 'OnboardingAdmin', 'onboarding:manage', at('onboarding'), () => [
+              qc.ensureQueryData(q.onboardingProgress()),
               qc.ensureInfiniteQueryData(q.onboardingRecords('')),
               qc.ensureQueryData(q.joinCodes()),
             ]),

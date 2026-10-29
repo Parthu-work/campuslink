@@ -111,3 +111,23 @@ export interface OnboardingRecordView {
   hasEmail: boolean;
   lastInvitedAt: string | null;
 }
+
+/** B6: onboarding progress per branch and batch. Counts under 5 come back as '<5' (suppress()). */
+export const onboardingProgressQuery = z.strictObject({
+  branch: z.enum(BRANCHES).optional(),
+  gradYear: z.coerce.number().int().optional(),
+});
+export const onboardingNudgeBody = z.strictObject({
+  branch: z.enum(BRANCHES),
+  gradYear,
+  attestOptIn: z.literal(true),
+});
+export interface OnboardingProgressRow {
+  branch: string | null;
+  gradYear: number | null;
+  roster: number;
+  invited: number;
+  claimed: number;
+  verified: number;
+  active7d: number | '<5';
+}

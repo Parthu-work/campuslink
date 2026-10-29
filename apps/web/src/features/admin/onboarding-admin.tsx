@@ -64,6 +64,7 @@ export function OnboardingAdmin() {
 
   return (
     <div className="grid gap-6">
+      <Progress />
       <section className="grid gap-4" aria-labelledby="onb-records">
         <div className="grid gap-1">
           <h2 id="onb-records" className="text-title font-semibold">
@@ -173,6 +174,112 @@ export function OnboardingAdmin() {
         onSent={() => void qc.invalidateQueries({ queryKey: ['onboarding-records'] })}
       />
     </div>
+  );
+}
+
+/** B6: each branch and batch from the list to active members, with a one-tap WhatsApp nudge. */
+function Progress() {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const whatsapp = useFeature('whatsapp');
+  const rows = useQuery(q.onboardingProgress());
+  const [nudging, setNudging] = useState<{ branch: string; gradYear: number } | null>(null);
+  const [attest, setAttest] = useState(false);
+  const nudge = useMutation({
+    mutationFn: (c: { branch: string; gradYear: number }) =>
+      api.post<Links>('/admin/onboarding/nudge', { ...c, attestOptIn: true }),
+    onSuccess: (r) => {
+      toast.success(t('onboarding.sentDone', { count: r.sent, skipped: r.skipped, failed: r.failed }));
+      setNudging(null);
+      setAttest(false);
+      void qc.invalidateQueries({ queryKey: ['onboarding-progress'] });
+      void qc.invalidateQueries({ queryKey: ['onboarding-records'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const pct = (n: number, of: number) => (of ? `${Math.round((n / of) * 100)}%` : '—');
+  return (
+    <section className="grid gap-4" aria-labelledby="onb-progress">
+      <div className="grid gap-1">
+        <h2 id="onb-progress" className="text-title font-semibold">
+          {t('onboarding.progressTitle')}
+        </h2>
+        <p className="text-fg-2">{t('onboarding.progressIntro')}</p>
+      </div>
+      {rows.isLoading && <Skeleton className="h-32" />}
+      {rows.isError && <ErrorState error={rows.error} onRetry={() => void rows.refetch()} compact />}
+      {rows.isSuccess && rows.data.length > 0 && (
+        <Table label={t('onboarding.progressTitle')}>
+          <THead>
+            <tr>
+              <Th>{t('onboarding.class')}</Th>
+              <Th>{t('onboarding.onList')}</Th>
+              <Th>{t('onboarding.invited')}</Th>
+              <Th>{t('onboarding.joined')}</Th>
+              <Th>{t('onboarding.verified')}</Th>
+              <Th>{t('onboarding.active7d')}</Th>
+              {whatsapp && (
+                <Th>
+                  <span className="sr-only">{t('onboarding.actions')}</span>
+                </Th>
+              )}
+            </tr>
+          </THead>
+          <tbody>
+            {rows.data.map((r) => (
+              <tr key={`${r.branch}-${r.gradYear}`}>
+                <Td>{[r.branch, r.gradYear].filter(Boolean).join(' · ') || '—'}</Td>
+                <Td>{r.roster}</Td>
+                <Td>{r.invited}</Td>
+                <Td>
+                  {r.claimed} <span className="text-fg-3">({pct(r.claimed, r.roster)})</span>
+                </Td>
+                <Td>{r.verified}</Td>
+                <Td>{r.active7d}</Td>
+                {whatsapp && (
+                  <Td>
+                    {r.branch && r.gradYear && r.claimed < r.roster && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setNudging({ branch: r.branch ?? '', gradYear: r.gradYear ?? 0 })}
+                      >
+                        <MessageCircle className="size-4" aria-hidden /> {t('onboarding.nudge')}
+                      </Button>
+                    )}
+                  </Td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
+      <Dialog
+        open={!!nudging}
+        onOpenChange={(o) => !o && setNudging(null)}
+        title={t('onboarding.nudgeTitle', {
+          class: nudging ? `${nudging.branch} · ${nudging.gradYear}` : '',
+        })}
+        description={t('onboarding.sendIntro')}
+        footer={
+          <Button
+            variant="primary"
+            disabled={!attest}
+            loading={nudge.isPending}
+            onClick={() => nudging && nudge.mutate(nudging)}
+          >
+            {t('onboarding.sendNow')}
+          </Button>
+        }
+      >
+        <div className="grid gap-4">
+          <Checkbox id="attest-nudge" checked={attest} onChange={setAttest}>
+            {t('onboarding.attest')}
+          </Checkbox>
+          <p className="text-caption text-fg-3">{t('onboarding.resendRule')}</p>
+        </div>
+      </Dialog>
+    </section>
   );
 }
 

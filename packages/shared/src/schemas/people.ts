@@ -96,6 +96,23 @@ export const verificationDecisionBody = z.strictObject({
   decision: z.enum(['approve', 'reject']),
   reason: z.string().trim().min(3).max(300).optional(),
 });
+/** B6: up to 100 decisions at once; each runs through the single decision and is audited. */
+export const bulkDecisionBody = z.strictObject({
+  ids: z
+    .array(objectId)
+    .min(1)
+    .max(100)
+    .refine((ids) => new Set(ids).size === ids.length, 'Each request once'),
+  decision: z.enum(['approve', 'reject']),
+  reason: z.string().trim().min(3).max(300).optional(),
+});
+export interface BulkDecisionResult {
+  id: string;
+  ok: boolean;
+  /** Error code when it failed (already decided, not found, ...). */
+  error: string | null;
+  message: string | null;
+}
 export const companyEmailStartBody = z.strictObject({ email, company: z.string().trim().min(2).max(80) });
 export const companyEmailConfirmBody = z.strictObject({ challengeId: objectId, code: totpCode });
 

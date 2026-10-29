@@ -40,6 +40,7 @@ import type {
   JoinCodeInfo,
   JoinCodeView,
   OnboardingRecordView,
+  OnboardingProgressRow,
   MentorReviewView,
   MentorMatch as MentorMatchView,
 } from '@campuslink/shared';
@@ -432,6 +433,12 @@ export const onboardingRecords = (qs: string) =>
         `/admin/onboarding/records?${qs}${pageParam ? `${qs ? '&' : ''}cursor=${pageParam}` : ''}`,
       ),
     getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+export const onboardingProgress = () =>
+  queryOptions({
+    queryKey: ['onboarding-progress'],
+    queryFn: ({ signal }) => api.get<OnboardingProgressRow[]>('/admin/onboarding', signal),
   });
 
 export const joinCodes = () =>

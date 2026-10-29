@@ -142,6 +142,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/verification/company` | `mentorship:mentor` | college | verify | Alumni: send a code to my work email for a “currently at” badge |
 | `POST /api/v1/verification/company/confirm` | `mentorship:mentor` | college | verify | Confirm the work-email code |
 | `GET /api/v1/admin/verification` | `verification:review` | college | — | Verification requests waiting for review (or decided) |
+| `POST /api/v1/admin/verification/bulk-decision` | `verification:review` | college | adminWrite | Approve or reject up to 100 requests; each is decided and audited on its own |
 | `POST /api/v1/admin/verification/:id/decision` | `verification:review` | college | adminWrite | Approve or reject an ID verification request |
 | `POST /api/v1/admin/users/:id/unverify` | `verification:review` | college | adminWrite | Revoke a member’s verification and free their list record |
 | `POST /api/v1/admin/invites` | `users:invite` | college | adminWrite | Invite people by email (invitees are verified when they sign up with that email) |
@@ -151,6 +152,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/join/:code` | public | college | invite | Which class a join code is for |
 | `POST /api/v1/join/:code/start` | public | college | otp | Find my roll number in the code's class and send a code to the contact on record |
 | `POST /api/v1/join/:code/confirm` | public | college | login | Confirm the code: creates the verified member from the record and signs them in |
+| `GET /api/v1/admin/onboarding` | `onboarding:manage` | college | — | Onboarding progress per branch and batch (on the list, invited, joined, verified, active) |
+| `POST /api/v1/admin/onboarding/nudge` | `onboarding:manage` | college | adminWrite | Invite everyone not yet joined in one branch and batch on WhatsApp (B4 limits apply) |
 | `GET /api/v1/admin/onboarding/records` | `onboarding:manage` | college | — | The college's list with invite status, filtered by branch, year and kind |
 | `POST /api/v1/admin/onboarding/invites` | `onboarding:manage` | college | adminWrite | Create personal invite links and send them by WhatsApp, or download them as CSV |
 | `GET /api/v1/admin/join-codes` | `onboarding:manage` | college | — | Recent class join codes |

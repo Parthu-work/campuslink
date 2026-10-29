@@ -127,6 +127,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'Mentors likely to reply soon',
       body: '{name} hasn’t replied yet. We found mentors who usually reply quickly; send them the same message in one tap.',
     },
+    announcement: {
+      title: 'From your college: {title}',
+      body: 'Your college posted an announcement for you. Open it to read the details.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -256,6 +260,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     request_rematch: {
       title: 'త్వరగా జవాబిచ్చే మెంటర్లు',
       body: '{name} ఇంకా జవాబివ్వలేదు. సాధారణంగా త్వరగా జవాబిచ్చే మెంటర్లను కనుగొన్నాం; ఒక్క ట్యాప్‌తో అదే సందేశం వారికి పంపండి.',
+    },
+    announcement: {
+      title: 'మీ కాలేజీ నుండి: {title}',
+      body: 'మీ కాలేజీ మీ కోసం ఒక ప్రకటన చేసింది. వివరాలు చదవడానికి తెరవండి.',
     },
   },
 };
@@ -408,6 +416,8 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return `/mentorship?box=received${data.requestId ? `&request=${data.requestId}` : ''}`;
     case 'request_rematch':
       return `/mentorship?box=sent${data.requestId ? `&request=${data.requestId}` : ''}`;
+    case 'announcement':
+      return `/posts/${data.postId}`;
     default:
       return '/sessions';
   }

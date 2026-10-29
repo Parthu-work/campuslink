@@ -420,7 +420,10 @@
       "aiBudget": "{{percent}}% of this month’s token budget used",
       "aiNoBudget": "No monthly budget set",
       "whatsapp": "WhatsApp this month",
-      "whatsappHint": "messages of {{allowance}} included"
+      "whatsappHint": "messages of {{allowance}} included",
+      "onboarding": "Not joined yet",
+      "onboardingHint_one": "{{count}} student on your list hasn’t joined. Invite them in one tap.",
+      "onboardingHint_other": "{{count}} students on your list haven’t joined. Invite them in one tap."
     },
     "logo": {
       "label": "Logo",
@@ -436,7 +439,19 @@
     "suspendTitle": "Suspend {{name}}?",
     "suspendBody": "They are signed out everywhere and cannot sign in until you reactivate them. Their posts and messages stay.",
     "unverifyTitle": "Revoke verification for {{name}}?",
-    "unverifyBody": "Their account becomes read-only until they verify again. This is recorded in the audit log."
+    "unverifyBody": "Their account becomes read-only until they verify again. This is recorded in the audit log.",
+    "selectAll": "Select all",
+    "selectRequest": "Select {{name}}",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected",
+    "approveSelected": "Approve selected",
+    "rejectSelected": "Reject selected",
+    "rejectSelectedTitle_one": "Reject {{count}} request",
+    "rejectSelectedTitle_other": "Reject {{count}} requests",
+    "rejectSelectedBody": "Each person sees this reason, so they know what to fix.",
+    "bulkDone_one": "{{count}} request decided.",
+    "bulkDone_other": "{{count}} requests decided.",
+    "bulkPartial": "{{ok}} decided; {{failed}} could not be (already decided or changed). Refresh to see them."
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -1153,6 +1168,10 @@
     "request_rematch": {
       "title": "Mentors likely to reply soon",
       "body": "{{name}} hasn’t replied yet. We found mentors who usually reply quickly; send them the same message in one tap."
+    },
+    "announcement": {
+      "title": "From your college: {{title}}",
+      "body": "Your college posted an announcement for you. Open it to read the details."
     }
   },
   "notifications": {
@@ -3274,7 +3293,16 @@
     "posterTitle": "Join {{college}} on your phone",
     "posterScan": "Scan with your phone camera, or open the link and enter the code.",
     "qrAlt": "QR code of the join link",
-    "posterValid": "Works until {{date}}. Your roll number finds your college record."
+    "posterValid": "Works until {{date}}. Your roll number finds your college record.",
+    "progressTitle": "Progress by class",
+    "progressIntro": "From your list to active members, per branch and batch. Small active counts show as “<5”.",
+    "onList": "On the list",
+    "invited": "Invited",
+    "joined": "Joined",
+    "verified": "Verified",
+    "active7d": "Active this week",
+    "nudge": "Nudge",
+    "nudgeTitle": "Invite everyone not yet joined in {{class}}"
   },
   "mentorStats": {
     "label": "Track record",
@@ -3305,5 +3333,23 @@
     "sent": "Sent to {{name}}.",
     "none": "No other mentors are free right now",
     "noneBody": "Your request stays with your mentor until it expires. You can also browse mentors yourself."
+  },
+  "announce": {
+    "title": "Who it’s for and how it goes out",
+    "branches": "Branches",
+    "years": "Batches (graduation years)",
+    "yearsHint": "For example 2026, 2027.",
+    "roles": "People",
+    "everyoneHint": "Pick nothing to reach everyone. Picking narrows it: only members who match every choice see it.",
+    "pin": "Pin to the top of For you",
+    "noPin": "Don’t pin",
+    "pinDays_one": "For {{count}} day",
+    "pinDays_other": "For {{count}} days",
+    "whatsapp": "Also send on WhatsApp",
+    "whatsappHint": "Members who chose WhatsApp updates get the title; others get a push or email. It counts against the college’s WhatsApp allowance.",
+    "urgent": "Urgent",
+    "urgentHint": "Reaches members even past their weekly WhatsApp limit. {{count}} a month per college.",
+    "pinned": "Pinned",
+    "for": "For {{who}}"
   }
 }

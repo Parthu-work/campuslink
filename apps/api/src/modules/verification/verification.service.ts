@@ -1,5 +1,11 @@
 import { Types } from 'mongoose';
-import { ErrorCode, FREE_MAIL_DOMAINS, APP_NAME, type Role } from '@campuslink/shared';
+import {
+  ErrorCode,
+  FREE_MAIL_DOMAINS,
+  APP_NAME,
+  type BulkDecisionResult,
+  type Role,
+} from '@campuslink/shared';
 import { OtpChallengeModel, VerificationRequestModel } from './verification.model.js';
 import { WhitelistModel } from '../imports/whitelist.model.js';
 import { maskEmail, maskPhone } from '../imports/whitelist.service.js';
@@ -302,6 +308,31 @@ export class VerificationService {
       }),
       nextCursor: rows.length > 20 ? String(page.at(-1)?._id) : null,
     };
+  }
+
+  /**
+   * B6: up to 100 decisions in one go. Each runs through `decide()` (its own checks, audit entry
+   * and notification); one failing does not stop the rest, and the answer says which failed.
+   */
+  async bulkDecide(
+    tenant: TenantRecord,
+    reviewerId: string,
+    ids: string[],
+    decision: 'approve' | 'reject',
+    reason: string | undefined,
+    meta: RequestMetaLite,
+  ): Promise<BulkDecisionResult[]> {
+    const out: BulkDecisionResult[] = [];
+    for (const id of ids) {
+      try {
+        await this.decide(tenant, reviewerId, id, decision, reason, meta);
+        out.push({ id, ok: true, error: null, message: null });
+      } catch (err) {
+        if (!(err instanceof AppError)) throw err;
+        out.push({ id, ok: false, error: err.code, message: err.message });
+      }
+    }
+    return out;
   }
 
   async decide(

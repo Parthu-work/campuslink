@@ -89,7 +89,7 @@ import { ReviewsService } from './modules/mentorship/reviews.service.js';
 import { mentorshipRoutes } from './modules/mentorship/mentorship.routes.js';
 import { ModerationService } from './modules/moderation/moderation.service.js';
 import { queueRoutes } from './modules/moderation/queue.routes.js';
-import { PostsService } from './modules/feed/posts.service.js';
+import { ANNOUNCE_JOB, PostsService } from './modules/feed/posts.service.js';
 import { FeedService } from './modules/feed/feed.service.js';
 import { FollowsService, OneUsefulThingService, StoriesService } from './modules/feed/social.service.js';
 import { feedRoutes } from './modules/feed/feed.routes.js';
@@ -452,6 +452,9 @@ export function createApp({
     moderation: moderationService,
     fetcher,
   });
+  postsService.onAnnounce = (postId) =>
+    queue.enqueue(ANNOUNCE_JOB, { tenantId: String(requireTenantId()), postId });
+  queue.register(ANNOUNCE_JOB, (data) => postsService.announce(String(data.postId)));
   const storiesService = new StoriesService({
     files: filesService,
     profiles: profilesService,
@@ -724,6 +727,7 @@ export function createApp({
     ai: aiSettingsService,
     usage: aiUsageService,
     channels: channelService,
+    onboarding: onboardingService,
   });
 
   // ── Privacy rights (Phase 8) ─────────────────────────────

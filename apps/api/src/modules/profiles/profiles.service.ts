@@ -369,6 +369,20 @@ export class ProfilesService {
     return { company: p.company ?? '', companyKey: p.companyKey ?? '' };
   }
 
+  /** B6 announcements: verified members an audience covers (empty lists mean everyone). */
+  async idsForAudience(a: { branches: string[]; gradYears: number[]; roles: string[] }): Promise<string[]> {
+    const rows = await ProfileModel.find({
+      verified: true,
+      ...(a.branches.length ? { branch: { $in: a.branches } } : {}),
+      ...(a.gradYears.length ? { gradYear: { $in: a.gradYears } } : {}),
+      ...(a.roles.length ? { roles: { $in: a.roles } } : {}),
+    })
+      .select('userId')
+      .limit(50_000)
+      .lean<{ userId: Types.ObjectId }[]>();
+    return rows.map((r) => String(r.userId));
+  }
+
   async isActiveMember(userId: string): Promise<boolean> {
     return !!(await ProfileModel.exists({ userId, verified: true }));
   }

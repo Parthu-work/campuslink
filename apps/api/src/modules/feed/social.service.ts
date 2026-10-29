@@ -322,7 +322,8 @@ export class OneUsefulThingService {
   ) {
     if (type === 'post') {
       const [p] = await this.d.posts.byIds([id]);
-      return p
+      // A targeted announcement is today's pick only for the people it is meant for (B6).
+      return p && (await this.d.posts.audienceAllows(viewer, [p]))[0]
         ? {
             date,
             kind: 'post' as const,
