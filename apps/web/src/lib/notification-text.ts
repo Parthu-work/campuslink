@@ -91,6 +91,12 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       case 'ai_budget_warning':
       case 'ai_budget_reached':
         return '/admin/ai';
+      case 'adult_now':
+        return '/settings/privacy';
+      case 'guardian_number_approved':
+        return '/verify';
+      case 'guardian_number_rejected':
+        return '/verify';
       default:
         return '/sessions';
     }

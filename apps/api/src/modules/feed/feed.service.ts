@@ -129,6 +129,8 @@ export class FeedService {
       this.d.profiles.own(viewer.userId),
       this.d.safety.hiddenFor(viewer.userId),
     ]);
+    // Members under 18 get a chronological For you: no personalised ranking (B2).
+    const rank: typeof rankScore = viewer.minor ? () => 0 : rankScore;
     const followedUsers = new Set(follows.users);
     const followedSources = new Set(follows.sources);
     const interests = new Set<string>([...follows.topics]);
@@ -156,7 +158,7 @@ export class FeedService {
             kind: 'post',
             doc: p,
             at: p.createdAt,
-            score: rankScore(
+            score: rank(
               {
                 createdAt: p.createdAt,
                 followedAuthor: followedUsers.has(String(p.authorId)),
@@ -180,7 +182,7 @@ export class FeedService {
         kind: 'item',
         doc: i,
         at: i.publishedAt,
-        score: rankScore(
+        score: rank(
           {
             createdAt: i.publishedAt,
             followedAuthor: false,

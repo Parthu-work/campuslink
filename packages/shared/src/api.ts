@@ -21,6 +21,10 @@ export const ErrorCode = {
   BOT_CHECK_FAILED: 'BOT_CHECK_FAILED',
   /** The college has switched this feature off (Admin › Features). */
   FEATURE_DISABLED: 'FEATURE_DISABLED',
+  /** Administrators sign in with a password and two-factor code, never a phone code. */
+  USE_PASSWORD_AND_2FA: 'USE_PASSWORD_AND_2FA',
+  /** No channel (WhatsApp or SMS) can deliver codes at this deployment. */
+  CHANNEL_UNAVAILABLE: 'CHANNEL_UNAVAILABLE',
   INTERNAL: 'INTERNAL',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

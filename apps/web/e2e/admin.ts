@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { expect, type Page } from '@playwright/test';
 import { generate } from 'otplib';
-import { PASSWORD } from './helpers';
+import { chooseEmailSignIn, PASSWORD } from './helpers';
 
 /**
  * Admins must use TOTP. Tests in different projects share one seeded database, so the first sign-in
@@ -34,6 +34,7 @@ async function freshCode(email: string, secret: string): Promise<string> {
 
 export async function adminSignIn(page: Page, host: string, email: string) {
   await page.goto(`http://${host}.localhost:4173/sign-in`);
+  await chooseEmailSignIn(page);
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

@@ -98,7 +98,7 @@ async function seed(): Promise<{ members: Member[] }> {
         roles,
         verified: true,
         emailVerifiedAt: new Date(),
-        ageDeclaredAt: new Date(),
+        ageCheckedAt: new Date(),
       };
     });
     await UserModel.insertMany(users);

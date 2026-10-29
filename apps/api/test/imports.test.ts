@@ -108,6 +108,7 @@ describe('mapping helpers', () => {
         kind: 'alumni',
         email: null,
         phone: '+919848022338',
+        guardianPhone: null,
       },
     });
     const s = mapRow(

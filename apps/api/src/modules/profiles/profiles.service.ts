@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import {
   PROFILE_FIELDS,
+  isMinor,
   type Audience,
   type ProfileBody,
   type ProfileField,
@@ -57,12 +58,13 @@ export class ProfilesService {
     userId: string | Types.ObjectId,
     seed: { branch?: string | null; gradYear?: number | null } = {},
   ): Promise<void> {
-    const u = await UserModel.findById(userId).select('name roles verified status').lean();
+    const u = await UserModel.findById(userId).select('name roles verified status adultOn').lean();
     if (!u) return;
     const set: Record<string, unknown> = {
       name: u.name,
       roles: u.roles,
       verified: !!u.verified && u.status === 'active',
+      minorUntil: isMinor(u.adultOn) ? u.adultOn : null,
     };
     if (seed.branch !== undefined) set.branch = seed.branch;
     if (seed.gradYear !== undefined) set.gradYear = seed.gradYear;
@@ -98,8 +100,11 @@ export class ProfilesService {
       gradYear: p.gradYear ?? undefined,
     };
     const fields: PublicProfile['fields'] = {};
+    // A member under 18 never shows contact details to anyone else (B2), whatever they chose.
+    const minor = isMinor(p.minorUntil);
     for (const f of PROFILE_FIELDS) {
       if (values[f] === undefined) continue;
+      if (minor && !isSelf && (f === 'email' || f === 'phone')) continue;
       if (canSee(vis[f] ?? 'members', viewer.roles, isSelf))
         (fields as Record<string, unknown>)[f] = values[f];
     }
@@ -275,6 +280,15 @@ export class ProfilesService {
       .select('userId')
       .lean<ProfileDoc[]>();
     return rows.map((r) => String(r.userId));
+  }
+
+  /** Members under 18 among `userIds` (kept off leaderboards and similar public rankings). */
+  async minorsAmong(userIds: (string | Types.ObjectId)[]): Promise<Set<string>> {
+    if (!userIds.length) return new Set();
+    const rows = await ProfileModel.find({ userId: { $in: userIds }, minorUntil: { $gt: new Date() } })
+      .select('userId')
+      .lean();
+    return new Set(rows.map((r) => String(r.userId)));
   }
 
   /** What `viewer` may see of each verified, active member in `userIds` (visibility applied). */

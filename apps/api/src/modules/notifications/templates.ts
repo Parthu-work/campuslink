@@ -99,6 +99,18 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'AI budget used up',
       body: 'This month’s token budget is used. Students see passages from the material instead of answers until the 1st, or until you raise the budget.',
     },
+    adult_now: {
+      title: 'You’re 18 now',
+      body: 'Your account works like every adult member’s. You can now choose who sees your contact details.',
+    },
+    guardian_number_approved: {
+      title: 'Your college checked the number',
+      body: 'Your guardian’s number is on your college record now. Send them the code to finish.',
+    },
+    guardian_number_rejected: {
+      title: 'Your college couldn’t use that number',
+      body: 'Your college couldn’t confirm the guardian number you entered. Check it with your college office, or enter another.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -200,6 +212,18 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     ai_budget_reached: {
       title: 'AI బడ్జెట్ పూర్తయింది',
       body: 'ఈ నెల టోకెన్ బడ్జెట్ పూర్తయింది. 1వ తేదీ వరకు, లేదా మీరు బడ్జెట్ పెంచే వరకు, విద్యార్థులకు సమాధానాలకు బదులుగా సామగ్రిలోని భాగాలు కనిపిస్తాయి.',
+    },
+    adult_now: {
+      title: 'మీకు ఇప్పుడు 18 ఏళ్లు',
+      body: 'మీ ఖాతా ఇప్పుడు ఇతర పెద్దల సభ్యుల ఖాతాల లాగే పనిచేస్తుంది. మీ సంప్రదింపు వివరాలు ఎవరు చూడాలో మీరే ఎంచుకోవచ్చు.',
+    },
+    guardian_number_approved: {
+      title: 'మీ కాలేజీ నంబర్‌ను తనిఖీ చేసింది',
+      body: 'మీ సంరక్షకుల నంబర్ ఇప్పుడు మీ కాలేజీ రికార్డులో ఉంది. పూర్తి చేయడానికి వారికి కోడ్ పంపండి.',
+    },
+    guardian_number_rejected: {
+      title: 'ఆ నంబర్‌ను మీ కాలేజీ వాడలేకపోయింది',
+      body: 'మీరు ఇచ్చిన సంరక్షకుల నంబర్‌ను మీ కాలేజీ నిర్ధారించలేకపోయింది. మీ కాలేజీ ఆఫీసులో అడగండి, లేదా వేరే నంబర్ ఇవ్వండి.',
     },
   },
 };
@@ -338,6 +362,12 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
     case 'ai_budget_warning':
     case 'ai_budget_reached':
       return '/admin/ai';
+    case 'adult_now':
+      return '/settings/privacy';
+    case 'guardian_number_approved':
+      return '/verify';
+    case 'guardian_number_rejected':
+      return '/verify';
     default:
       return '/sessions';
   }

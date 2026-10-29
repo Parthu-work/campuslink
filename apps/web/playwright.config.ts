@@ -8,7 +8,7 @@ import { defineConfig, devices } from '@playwright/test';
 const chromium = process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {};
 const launchOptions = { ...chromium, args: ['--host-resolver-rules=MAP *.localhost 127.0.0.1'] };
 const mongo = process.env.MONGODB_URI ?? 'mongodb://127.0.0.1:27017/campuslink_e2e?directConnection=true';
-const apiEnv = `NODE_ENV=test LOG_LEVEL=warn MAIL_DRIVER=smtp INGESTION_ENABLED=false RATE_LIMIT_SCALE=50 HIBP_ENABLED=false MONGODB_URI='${mongo}' WEB_ORIGIN=http://localhost:4173 CORS_ALLOWED_ORIGINS='http://*.localhost:4173'`;
+const apiEnv = `NODE_ENV=test LOG_LEVEL=warn MAIL_DRIVER=smtp INGESTION_ENABLED=false RATE_LIMIT_SCALE=50 HIBP_ENABLED=false SMS_PROVIDER=console WHATSAPP_PROVIDER=console MONGODB_URI='${mongo}' WEB_ORIGIN=http://localhost:4173 CORS_ALLOWED_ORIGINS='http://*.localhost:4173'`;
 
 export default defineConfig({
   testDir: './e2e',

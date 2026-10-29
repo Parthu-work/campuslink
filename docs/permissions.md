@@ -63,7 +63,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `roles:assign` Change user roles | · | ✅ | · | · | · | · |
 | `capabilities:grant` Grant contributor capabilities | · | ✅ | · | · | · | · |
 | `imports:manage` Run data imports | · | ✅ | · | · | · | · |
-| `verification:review` Review verification requests | · | ✅ | · | · | · | · |
+| `verification:review` Review verification requests | · | ✅ | ✅ | · | · | · |
 | `tenant:branding` Change college branding | · | ✅ | · | · | · | · |
 | `tenant:settings` Change features, limits and permission overrides | · | ✅ | · | · | · | · |
 | `audit:read` Read the audit log | ✅ | ✅ | · | · | · | · |
@@ -99,6 +99,15 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/auth/mfa/setup` | any signed-in user | any | mfa | Start TOTP enrolment (returns QR code) |
 | `POST /api/v1/auth/mfa/enable` | any signed-in user | any | mfa | Confirm TOTP enrolment; returns one-time recovery codes |
 | `POST /api/v1/auth/mfa/disable` | any signed-in user | any | mfa | Turn off TOTP (not allowed for admins) |
+| `POST /api/v1/auth/phone/start` | public | college | otp | Send a sign-up or sign-in code to a mobile number (same answer either way) |
+| `POST /api/v1/auth/phone/verify` | public | college | login | Confirm a phone code: sign in, or create the account from the sign-up fields |
+| `POST /api/v1/me/phone/change` | any signed-in user | college | otp | Change my number: a code to the old number (or the password), then to the new one |
+| `POST /api/v1/me/phone/change/confirm` | any signed-in user | college | login | Confirm a phone-change code (old number first, then the new one) |
+| `GET /api/v1/me/guardian` | any signed-in user | college | — | What the guardian-consent step needs (members under 18) |
+| `POST /api/v1/me/guardian/start` | any signed-in user | college | otp | Send a code to the guardian's number on the college's record |
+| `POST /api/v1/me/guardian/confirm` | any signed-in user | college | login | Record the guardian’s consent with the code they received |
+| `POST /api/v1/me/guardian/manual` | any signed-in user | college | verify | Ask the college to check a guardian number (no number on its record) |
+| `GET /api/v1/dev/outbox` | public | any | — | Messages the console SMS and WhatsApp providers kept (never in production) |
 | `GET /api/v1/me` | any signed-in user | any | — | My account, roles and effective permissions |
 | `PATCH /api/v1/me` | any signed-in user | any | — | Update my name or language |
 | `GET /api/v1/me/consents` | any signed-in user | college | — | My current consent choices |

@@ -16,7 +16,12 @@ const logoQuery = z.strictObject({
 });
 
 /** `botCheck`: the public half of the bot-protection config (site key), the same for every college. */
-export function tenantRoutes(files: FilesService, botCheck: PublicBotCheck | null = null): AnyRouteSpec[] {
+/** `phoneSignIn`: a WhatsApp or SMS channel can deliver codes (phone sign-up is offered). */
+export function tenantRoutes(
+  files: FilesService,
+  botCheck: PublicBotCheck | null = null,
+  phoneSignIn = false,
+): AnyRouteSpec[] {
   return [
     {
       // Public on purpose: the sign-in page needs the college's name and colours. Contains no personal data.
@@ -26,7 +31,7 @@ export function tenantRoutes(files: FilesService, botCheck: PublicBotCheck | nul
       summary: 'Public branding for the college on this subdomain',
       access: { kind: 'public' },
       scope: 'any',
-      handler: async ({ req }) => ({ data: toPublicTenant(tenantOf(req), botCheck) }),
+      handler: async ({ req }) => ({ data: toPublicTenant(tenantOf(req), botCheck, phoneSignIn) }),
     },
     {
       method: 'put',

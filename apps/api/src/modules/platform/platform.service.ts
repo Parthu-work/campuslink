@@ -71,7 +71,7 @@ export class PlatformService {
         passwordHash: await hashPassword(randomToken(32)),
         roles: [Role.COLLEGE_ADMIN],
         verified: true,
-        ageDeclaredAt: new Date(),
+        ageCheckedAt: new Date(),
       });
       await audit.record(
         {

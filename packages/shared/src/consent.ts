@@ -11,3 +11,10 @@ export const CONSENT_PURPOSES = {
 export type ConsentPurpose = keyof typeof CONSENT_PURPOSES;
 export const CONSENT_PURPOSE_KEYS = Object.keys(CONSENT_PURPOSES) as ConsentPurpose[];
 export const PRIVACY_NOTICE_VERSION = '2026-10-draft';
+
+/**
+ * A guardian's verifiable consent for a member under 18 (DPDP Rules 2025, Rule 10). Not a choice
+ * the member makes in settings: the guardian confirms the declaration with a code to their phone.
+ * Bump the version when the declaration's wording changes.
+ */
+export const GUARDIAN_CONSENT = { purpose: 'guardian_consent', version: 1 } as const;

@@ -15,6 +15,10 @@ import { useOnline } from '../lib/pwa';
 
 // Only admins ever see it, once: not part of the first load.
 const MfaGate = lazy(() => import('../features/auth/mfa-gate').then((m) => ({ default: m.MfaGate })));
+// Only members under 18 waiting for a guardian see it.
+const GuardianGate = lazy(() =>
+  import('../features/guardian/guardian-gate').then((m) => ({ default: m.GuardianGate })),
+);
 
 /**
  * Boot only (college lookup, session): the launch mark index.html painted, so the hand-over is
@@ -85,6 +89,14 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     return (
       <Suspense fallback={<Splash />}>
         <MfaGate />
+      </Suspense>
+    );
+  }
+  // Under 18 and waiting for a guardian: only verification (in the app) and the guardian step.
+  if (me.guardianPending && location.pathname !== '/verify') {
+    return (
+      <Suspense fallback={<Splash />}>
+        <GuardianGate />
       </Suspense>
     );
   }

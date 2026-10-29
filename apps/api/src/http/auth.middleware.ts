@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express';
 import {
   ErrorCode,
   effectiveOverrides,
+  isMinor,
   requiresMfa,
   resolvePermissions,
   Role,
@@ -33,7 +34,7 @@ export async function authFromToken(
   // Tenant plugin scopes both lookups to the current tenant context automatically.
   const [user, session] = await Promise.all([
     UserModel.findById(claims.sub)
-      .select('roles capabilities status verified tokenVersion mfa.enabled')
+      .select('roles capabilities status verified tokenVersion mfa.enabled adultOn')
       .lean(),
     SessionModel.findOne({
       _id: claims.sid,
@@ -48,6 +49,8 @@ export async function authFromToken(
     throw unauthenticated();
   // A pending deletion keeps only signed-in basics (see /me, export, cancel): no permissions at all.
   const deleting = user.status === 'deleting';
+  // So does a member under 18 until a guardian consents: verification and the guardian step only.
+  const guardianPending = user.status === 'guardian_pending';
 
   // Defence in depth: SUPER_ADMIN only on the platform host, never inside a college.
   const roles = (user.roles as Role[]).filter(
@@ -62,12 +65,15 @@ export async function authFromToken(
     verified: !!user.verified,
     mfaEnabled,
     mfaPending: requiresMfa(roles) && !mfaEnabled,
-    permissions: deleting
-      ? new Set()
-      : resolvePermissions(
-          { roles, capabilities: user.capabilities as Capability[], verified: !!user.verified, mfaEnabled },
-          effectiveOverrides(tenant.features, tenant.permissionOverrides),
-        ),
+    guardianPending,
+    minor: isMinor(user.adultOn),
+    permissions:
+      deleting || guardianPending
+        ? new Set()
+        : resolvePermissions(
+            { roles, capabilities: user.capabilities as Capability[], verified: !!user.verified, mfaEnabled },
+            effectiveOverrides(tenant.features, tenant.permissionOverrides),
+          ),
     expiresAt: claims.exp * 1000,
   };
 }

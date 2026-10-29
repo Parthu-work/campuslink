@@ -34,7 +34,15 @@ import { requireTenantId } from './lib/context.js';
 import type { StorageProvider } from './lib/storage.js';
 import { storageFromEnv } from './lib/storage-factory.js';
 import { InlineJobQueue, type JobQueue } from './lib/jobs.js';
-import { DisabledSmsProvider } from './lib/sms.js';
+import { ConsoleSmsProvider, DisabledSmsProvider, type SmsProvider } from './lib/sms.js';
+import { ConsoleWhatsAppProvider, DisabledWhatsAppProvider, type WhatsAppProvider } from './lib/whatsapp.js';
+import { OtpSender } from './modules/notifications/channels/otp-sender.js';
+import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
+import { OtpService } from './modules/verification/otp.service.js';
+import { ADULT_JOB, GuardianService } from './modules/verification/guardian.service.js';
+import { PhoneAuthService } from './modules/auth/phone.service.js';
+import { phoneRoutes } from './modules/auth/phone.routes.js';
+import { devRoutes } from './modules/notifications/channels/dev.routes.js';
 import { FilesService, noopScanner, type MalwareScanner } from './modules/files/files.service.js';
 import { ClamdScanner } from './lib/clamav.js';
 import { fileRoutes } from './modules/files/files.routes.js';
@@ -135,6 +143,9 @@ export interface AppDeps {
   whisper?: TranscriptionProvider | null;
   /** The passage vector store (tests inject one); otherwise from VECTOR_STORE and QDRANT_URL. */
   vectorStore?: VectorStore;
+  /** Phone channels (tests inject console providers); otherwise from SMS_PROVIDER and WHATSAPP_PROVIDER. */
+  sms?: SmsProvider;
+  whatsapp?: WhatsAppProvider;
 }
 
 export function createApp({
@@ -156,6 +167,10 @@ export function createApp({
   ocr,
   whisper,
   vectorStore,
+  sms = env.SMS_PROVIDER === 'console' ? new ConsoleSmsProvider() : new DisabledSmsProvider(),
+  whatsapp = env.WHATSAPP_PROVIDER === 'console'
+    ? new ConsoleWhatsAppProvider()
+    : new DisabledWhatsAppProvider(),
 }: AppDeps) {
   const app = express();
   app.disable('x-powered-by');
@@ -203,6 +218,15 @@ export function createApp({
       fetcher,
     );
 
+  // One-time codes to phones: WhatsApp first, SMS fallback (B2, B3).
+  const dltIds = parseDltTemplateIds(env.SMS_DLT_TEMPLATE_IDS);
+  const otpSender = new OtpSender({
+    whatsapp,
+    sms,
+    smsTemplateId: (key) => dltIds[key] ?? key,
+    logger,
+  });
+  const otpService = new OtpService(cipher, otpSender);
   const authService = new AuthService({
     tokens,
     mailer,
@@ -223,13 +247,14 @@ export function createApp({
     createHmac('sha256', env.JWT_TICKET_SECRET).update('signed-files-v1').digest(),
   );
   const profilesService = new ProfilesService(cipher, filesService);
-  const usersService = new UsersService(authService, profilesService);
+  const usersService = new UsersService(authService, profilesService, cipher);
+  const phoneAuthService = new PhoneAuthService({ auth: authService, otp: otpService, cipher, tokens });
   const platformService = new PlatformService(authService);
   const invitesService = new InvitesService(cipher, mailer, authService);
   const verificationService = new VerificationService({
     cipher,
     mailer,
-    sms: new DisabledSmsProvider(),
+    otp: otpService,
     profiles: profilesService,
     files: filesService,
     invites: invitesService,
@@ -238,6 +263,10 @@ export function createApp({
   const whitelistService = new WhitelistService(cipher);
   authService.onEmailVerified = (userId, email, meta) =>
     verificationService.onEmailVerified(userId, email, meta);
+  phoneAuthService.onPhoneVerified = (userId, phone, meta) =>
+    verificationService.onPhoneVerified(userId, phone, meta);
+  const guardianService = new GuardianService({ cipher, otp: otpService, profiles: profilesService });
+  verificationService.guardian = guardianService;
   authService.onUserCreated = (userId) => profilesService.sync(userId);
   queue.register(IMPORT_JOB, (data, progress) => importsService.run(String(data.jobId), progress));
 
@@ -297,6 +326,10 @@ export function createApp({
   realtime.hooks.typingTarget = (auth, conversationId) => messagingService.typingTarget(auth, conversationId);
   usersService.onSuspended = (userId) => realtime.disconnectUser(requireTenantId(), userId);
   queue.register(DELIVER_JOB, (data) => notificationsService.deliver(data));
+  guardianService.notify = async (userId, type, data) => {
+    await notificationsService.notify(userId, type, data);
+  };
+  queue.register(ADULT_JOB, () => guardianService.runAdulthood().then(() => undefined));
   queue.register(REMINDER_JOB, (data) => sessionsService.onReminder(data));
   queue.register(COMPLETE_JOB, (data) => sessionsService.onComplete(data));
   queue.register(EXPIRE_JOB, (data) => requestsService.onExpire(data));
@@ -607,6 +640,7 @@ export function createApp({
   privacyService.register('account', hook(authService));
   privacyService.register('profile', hook(profilesService));
   privacyService.register('consents', { exportFor: (u) => consentService.current(u) });
+  privacyService.register('guardianConsent', { exportFor: (u) => consentService.guardianFor(u) });
   privacyService.register('verification', hook(verificationService));
   privacyService.register('posts', hook(postsService));
   privacyService.register('stories', hook(storiesService));
@@ -680,11 +714,19 @@ export function createApp({
         env.BOT_PROTECTION === 'turnstile' && env.TURNSTILE_SITE_KEY
           ? { provider: 'turnstile', siteKey: env.TURNSTILE_SITE_KEY }
           : null,
+        otpSender.available,
       ),
       pipeline,
     ),
   );
   app.use(API_PREFIX, defineModule('auth', authRoutes(authService, cookie), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('phone', phoneRoutes(phoneAuthService, guardianService, cookie), pipeline),
+  );
+  // The console providers' outbox (codes and messages), for development and the e2e suite only.
+  if (env.NODE_ENV !== 'production')
+    app.use(API_PREFIX, defineModule('dev', devRoutes(sms, whatsapp), pipeline));
   app.use(
     API_PREFIX,
     defineModule('users', [...meRoutes(usersService), ...adminUserRoutes(usersService)], pipeline),

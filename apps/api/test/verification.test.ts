@@ -6,6 +6,7 @@ import {
   jpegWithExif,
   makeTenant,
   makeUser,
+  phoneCodeFrom,
   testApp,
   type TestTenant,
   type TestUser,
@@ -15,6 +16,8 @@ import { WhitelistModel } from '../src/modules/imports/whitelist.model.js';
 import { OtpChallengeModel } from '../src/modules/verification/verification.model.js';
 import { UserModel } from '../src/modules/auth/user.model.js';
 import { AuditModel } from '../src/modules/audit/audit.model.js';
+import { DisabledSmsProvider } from '../src/lib/sms.js';
+import { DisabledWhatsAppProvider } from '../src/lib/whatsapp.js';
 
 const ctx = testApp();
 let T: TestTenant;
@@ -171,11 +174,25 @@ describe('roll number + emailed code', () => {
     expect(r.body.data.status).toBe('verified');
   });
 
-  it('reports no contact when the record has only a phone and SMS is not configured', async () => {
+  it('sends the code to the mobile on record (WhatsApp first), and claims with it', async () => {
     await addRecord('22VR1A0505', { phone: '+919848022338' });
     const u = await unverified();
+    const s = await api(ctx, T.host, u.token).post('/verification/roll').send({ rollNumber: '22VR1A0505' });
+    expect(s.body.data).toMatchObject({ status: 'code_sent', destination: '+91 ••••• ••338' });
+    const sent = phoneCodeFrom(ctx, '+919848022338');
+    expect(sent.channel).toBe('whatsapp');
+    const c = await api(ctx, T.host, u.token)
+      .post('/verification/roll/confirm')
+      .send({ challengeId: s.body.data.challengeId, code: sent.code });
+    expect(c.body.data).toEqual({ verified: true });
+  });
+
+  it('reports no contact when the record has only a phone and no phone channel is set up', async () => {
+    const bare = testApp({ sms: new DisabledSmsProvider(), whatsapp: new DisabledWhatsAppProvider() });
+    await addRecord('22VR1A0506', { phone: '+919848022339' });
+    const u = await unverified();
     expect(
-      (await api(ctx, T.host, u.token).post('/verification/roll').send({ rollNumber: '22VR1A0505' })).body
+      (await api(bare, T.host, u.token).post('/verification/roll').send({ rollNumber: '22VR1A0506' })).body
         .data.status,
     ).toBe('no_contact');
   });
@@ -203,7 +220,7 @@ describe('verification on email confirmation', () => {
         email: 'listed.signup@college.ac.in',
         password: 'quiet-river-lantern-91',
         intent: 'STUDENT',
-        isAdult: true,
+        birthMonth: '2000-01',
         consents: ['account'],
       });
     const token = /token=([A-Za-z0-9_-]+)/.exec(ctx.mailer.lastTo('listed.signup@college.ac.in')!.text)![1];
@@ -227,7 +244,7 @@ describe('verification on email confirmation', () => {
         email: 'invited@example.org',
         password: 'quiet-river-lantern-91',
         intent: 'ALUMNI',
-        isAdult: true,
+        birthMonth: '2000-01',
         consents: ['account'],
       });
     const token = /token=([A-Za-z0-9_-]+)/.exec(ctx.mailer.lastTo('invited@example.org')!.text)![1];

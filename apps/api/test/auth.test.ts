@@ -17,7 +17,7 @@ const signup = (email: string, extra: Record<string, unknown> = {}) =>
       email,
       password: 'quiet-river-lantern-91',
       intent: 'STUDENT',
-      isAdult: true,
+      birthMonth: '2000-01',
       consents: ['account', 'email_digests'],
       ...extra,
     });
@@ -48,8 +48,10 @@ describe('sign-up and email verification', () => {
     expect(ctx.mailer.lastTo('ananya@auth.example')?.subject).toBe('You already have an account');
   });
 
-  it('blocks under-18 sign-ups and missing required consent', async () => {
-    expect((await signup('kid@auth.example', { isAdult: false })).status).toBe(400);
+  it('refuses implausible birth months and missing required consent', async () => {
+    expect((await signup('kid@auth.example', { birthMonth: '2024-01' })).status).toBe(400);
+    expect((await signup('old@auth.example', { birthMonth: '1890-01' })).status).toBe(400);
+    expect((await signup('bad@auth.example', { birthMonth: '2005-13' })).status).toBe(400);
     expect((await signup('noc@auth.example', { consents: ['email_digests'] })).status).toBe(400);
   });
 
@@ -411,7 +413,7 @@ describe('signed-in account changes', () => {
         email: 'someone@gmail.com',
         password: 'quiet-river-lantern-91',
         intent: 'STUDENT',
-        isAdult: true,
+        birthMonth: '2000-01',
         consents: ['account'],
       });
     expect(r.status).toBe(400);
@@ -422,7 +424,7 @@ describe('signed-in account changes', () => {
         email: 'someone@gmail.com',
         password: 'quiet-river-lantern-91',
         intent: 'ALUMNI',
-        isAdult: true,
+        birthMonth: '2000-01',
         consents: ['account'],
       });
     expect(alum.status).toBe(202);

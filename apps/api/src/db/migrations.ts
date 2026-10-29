@@ -3,6 +3,7 @@ import { withPlatformScope } from '../lib/context.js';
 import type { Logger } from '../lib/logger.js';
 import { MigrationModel } from '../modules/platform/migration.model.js';
 import { TenantModel } from '../modules/tenants/tenant.model.js';
+import { UserModel } from '../modules/auth/user.model.js';
 
 /**
  * One-off data migrations, run once per database at boot (after index sync), in order. Each must
@@ -29,6 +30,18 @@ export const MIGRATIONS: readonly Migration[] = [
         changed += r.modifiedCount;
       }
       return changed;
+    },
+  },
+  {
+    // B2: the age check is a birth month now; older members keep their declaration's date.
+    // Raw collection: the old field is not in the schema, and strict queries would drop it.
+    name: 'b2-age-checked-at',
+    async run() {
+      const r = await UserModel.collection.updateMany(
+        { ageDeclaredAt: { $exists: true } },
+        { $rename: { ageDeclaredAt: 'ageCheckedAt' } },
+      );
+      return r.modifiedCount;
     },
   },
 ];

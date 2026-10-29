@@ -186,7 +186,8 @@ export class NotificationsService {
     const prefs = await this.prefs(String(job.userId));
     const text = renderNotification(type, data, locale, prefs.quietHours.timezone);
     const path = pathFor(type, data);
-    if (job.email) {
+    // Members who joined by phone may have no email address (B2).
+    if (job.email && user.email) {
       const content = renderEmail({
         college: tenant.branding.displayName,
         heading: text.title,

@@ -4,7 +4,17 @@
  */
 export const BRANCHES = ['CSE', 'IT', 'ECE', 'EEE', 'MECH', 'CIVIL', 'CHEM', 'AIML', 'DS', 'OTHER'] as const;
 export type Branch = (typeof BRANCHES)[number];
-export const IMPORT_FIELDS = ['rollNumber', 'name', 'branch', 'gradYear', 'email', 'phone', 'kind'] as const;
+export const IMPORT_FIELDS = [
+  'rollNumber',
+  'name',
+  'branch',
+  'gradYear',
+  'email',
+  'phone',
+  'kind',
+  /** The parent or guardian's mobile from the admission record (guardian consent for minors). */
+  'guardianPhone',
+] as const;
 export type ImportField = (typeof IMPORT_FIELDS)[number];
 export const REQUIRED_IMPORT_FIELDS: readonly ImportField[] = ['rollNumber', 'name'];
 export const AUDIENCES = ['members', 'alumni_staff', 'only_me'] as const;

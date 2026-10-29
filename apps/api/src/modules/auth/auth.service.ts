@@ -7,6 +7,8 @@ import {
   requiresMfa,
   CONSENT_PURPOSES,
   CONSENT_PURPOSE_KEYS,
+  adultOnFromBirthMonth,
+  isMinor,
   type SignupBody,
   type ConsentPurpose,
   type Role,
@@ -50,6 +52,14 @@ const LOCK_BASE_MS = 15 * 60_000;
 const EMAIL_VERIFY_TTL_MS = 24 * 60 * 60_000;
 const RESET_TTL_MS = 30 * 60_000;
 const INVITE_TTL_MS = 72 * 60 * 60_000;
+
+/** Age fields for a new account: under 18 starts waiting for a guardian's consent (B2). */
+export const ageFields = (adultOn: Date) => ({
+  ageCheckedAt: new Date(),
+  // Adults keep null: only a minor's date matters, and it is cleared from view once it passes.
+  adultOn: isMinor(adultOn) ? adultOn : null,
+  ...(isMinor(adultOn) ? { status: 'guardian_pending' as const } : {}),
+});
 
 const genericLoginError = () =>
   new AppError(401, ErrorCode.UNAUTHENTICATED, 'Email or password is incorrect');
@@ -221,13 +231,14 @@ export class AuthService {
     }
     let user: UserDoc;
     try {
+      const adultOn = adultOnFromBirthMonth(body.birthMonth);
       user = await UserModel.create({
         email: body.email,
         name: body.name,
         passwordHash: await hashPassword(body.password),
         roles: [body.intent],
         verified: false,
-        ageDeclaredAt: new Date(),
+        ...ageFields(adultOn),
         locale: body.locale,
       });
     } catch (err) {
@@ -239,7 +250,7 @@ export class AuthService {
     const token = await this.issueToken(user._id, 'email_verify', EMAIL_VERIFY_TTL_MS);
     await this.sendMail(
       tenant,
-      user.email,
+      body.email,
       'Confirm your email',
       `Welcome, ${user.name.split(' ')[0]}`,
       'Confirm your email to finish creating your account. The link works for 24 hours.',
@@ -294,7 +305,8 @@ export class AuthService {
   }
 
   // ── login ─────────────────────────
-  private async registerFailure(
+  /** Counts a failed sign-in (password, TOTP or phone code) and locks the account after MAX_FAILED. */
+  async registerFailure(
     user: { _id: Types.ObjectId; failedLogins: number },
     meta: ClientMeta,
   ): Promise<void> {

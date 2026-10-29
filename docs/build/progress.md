@@ -5,7 +5,7 @@ A new session reads this file first and resumes from the first phase that is not
 | Phase | Name                                                           | Status      |
 | ----- | -------------------------------------------------------------- | ----------- |
 | B1    | Feature switches and the cut list                              | Done        |
-| B2    | Phone-first identity, age and guardian consent                 | Not started |
+| B2    | Phone-first identity, age and guardian consent                 | Done        |
 | B3    | WhatsApp and SMS channels                                      | Not started |
 | B4    | One-tap invites and class onboarding                           | Not started |
 | B5    | Mentorship loop that never dead-ends                           | Not started |
@@ -47,3 +47,29 @@ A new session reads this file first and resumes from the first phase that is not
 **Deviations:** none from the phase. The test helper `makeTenant` creates colleges with `LEGACY_FEATURES` (what every test assumed); three suites that use the leaderboard now switch it on explicitly, as a real college would.
 
 **Next:** B2 (phone-first identity, age and guardian consent).
+
+## B2 · Phone-first identity, age and guardian consent (Done)
+
+**Shipped**
+
+- Phone sign-up and sign-in (`POST /auth/phone/start`, `/auth/phone/verify`), changing the number (`/me/phone/change`, `/confirm`), and the guardian step (`/me/guardian`, `/start`, `/confirm`, `/manual`). One `OtpService` for every one-time code (hashing, 10-minute expiry, 5 attempts, single use, 5 a day per member and per number, the `otp` IP limiter); `OtpSender` sends WhatsApp first and SMS as fallback. `disabled` and `console` providers for both channels (B3 adds Meta Cloud API and MSG91), refused in production; `GET /dev/outbox` shows the console messages outside production.
+- `User`: optional email and password, encrypted phone with a partial unique index, `adultOn` (minors only), `guardianConsentAt`, status `guardian_pending`, `ageCheckedAt` (migration `b2-age-checked-at`). Email sign-up asks for a birth month too.
+- Roster: `guardianPhone` import field (encrypted, blind-indexed); a re-import may add a guardian number to an already claimed record. A proved phone claims the one unclaimed roster record with that number (`list_phone_match`), and roll verification matches a verified phone (`roll_phone_match`) or sends the code to the phone on record.
+- Minors: no permissions while `guardian_pending`; with consent, a chronological For you, contact details never shown to others, never on leaderboards. Hourly tick and job `auth.adulthood` clear `adultOn`, open pending accounts and send `adult_now`. Guardian numbers the student enters go to the verification queue (`guardian_manual`).
+- Web: phone-first sign-up and sign-in (email one tap away), birth-month picker, code step (WhatsApp/SMS switch, resend countdown, sends itself on the sixth digit), the guardian screen (declaration in English or Telugu), Settings › Security › Mobile number (lazily loaded), guardian requests in the verification queue.
+- Docs: `docs/specs/phone-identity.md`, `docs/privacy.md` (marked needs legal review), `docs/sms-templates.md` (a test keeps it identical to the code), ADR 0010, `.env.example`. Seed: a fictional minor on both demo rosters with a guardian number.
+- Tests: `phone-auth.test.ts` (15), `minors.test.ts` (7, including every permission route refused while pending), `isolation/phone.test.ts`, the migration, `channel-templates.test.ts`, `e2e/phone-signup.spec.ts` (adult, minor waiting, phone sign-in, minor with guardian consent).
+
+**Decisions**
+
+- **Sign-in codes go only to numbers with an account**; the answer is identical either way. A sign-up code for an existing number signs into that account after the code is proved.
+- **A phone code never bypasses TOTP** a member turned on; MFA-required roles are refused by phone (`USE_PASSWORD_AND_2FA`).
+- **`adultOn` assumes the latest possible birthday** (first day of the month after the 18th birthday month), and adults store no age data at all (data minimisation). Birth months under 13 or over 100 years ago are refused.
+- **TPOs get `verification:review`** (they run onboarding: guardian numbers now, bulk verification in B6). Reviewers see a guardian number in full to compare it with admission papers; it is deleted from the request once decided.
+- **Guardian consent is recorded in the consent log** (purpose `guardian_consent` v1, source `guardian`) with the roster record, language and channel as evidence, never the guardian's number. The declaration text is a versioned legal text shipped in both languages together (`features/guardian/declaration.ts`), not interface copy, because the guardian chooses its language.
+- **Direct messages for minors:** no route opens a conversation outside an accepted mentorship, so the rule holds by construction (pinned by a test).
+- **Lean-read features:** the old `isAdult` tick is gone everywhere; `MeResponse.email` is nullable; notification email is skipped for members without an address.
+
+**Deviations:** none. **Needs the owner:** a lawyer's review of the minors flow and the declaration (docs/privacy.md).
+
+**Next:** B3 (WhatsApp and SMS channels).

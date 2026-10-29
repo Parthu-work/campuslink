@@ -40,24 +40,27 @@ test.describe('landing', () => {
 });
 
 test.describe('sign-up', () => {
-  test('creates an account and asks to confirm the email', async ({ page }) => {
+  test('creates an account by email and asks to confirm it', async ({ page }) => {
     await page.goto('/sign-up');
+    await page.getByRole('button', { name: 'Email', exact: true }).click();
     await expectNoA11yViolations(page);
     await page.getByLabel('Full name').fill('E2E Student');
     await page.getByLabel('Email', { exact: true }).fill(`e2e-${Date.now()}@dpit.example`);
     await page.getByLabel('Password', { exact: true }).fill('saffron-orbit-meadow-77');
-    await page.getByText('I am 18 or older.').click();
+    await page.getByLabel('Month').selectOption({ label: 'April' });
+    await page.getByLabel('Year').selectOption('2000');
     await page.getByRole('button', { name: 'Create account' }).click();
     await expect(page.getByRole('heading', { name: 'Check your email' }).first()).toBeVisible();
   });
 
-  test('blocks under-18 sign-ups on the client too', async ({ page }) => {
+  test('asks for the birth month on the client too', async ({ page }) => {
     await page.goto('/sign-up');
+    await page.getByRole('button', { name: 'Email', exact: true }).click();
     await page.getByLabel('Full name').fill('Young Person');
     await page.getByLabel('Email', { exact: true }).fill('young@dpit.example');
     await page.getByLabel('Password', { exact: true }).fill('saffron-orbit-meadow-77');
     await page.getByRole('button', { name: 'Create account' }).click();
-    await expect(page.getByText('You must be 18 or older to join')).toBeVisible();
+    await expect(page.getByText('Choose the month and year you were born')).toBeVisible();
   });
 });
 

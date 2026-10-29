@@ -13,6 +13,13 @@ export function maskEmail(email: string): string {
   return `${local.slice(0, 1)}${'•'.repeat(Math.max(3, Math.min(local.length - 1, 6)))}@${domain}`;
 }
 
+/** +919848022338 → +91 ••••• ••338 (enough to recognise your own number, not to read it). */
+export function maskPhone(phone: string): string {
+  const tail = phone.slice(-3);
+  const cc = phone.startsWith('+91') ? '+91' : phone.slice(0, 3);
+  return `${cc} ••••• ••${tail}`;
+}
+
 export class WhitelistService {
   constructor(private readonly cipher: FieldCipher) {}
 

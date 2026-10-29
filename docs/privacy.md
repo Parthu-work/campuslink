@@ -14,9 +14,23 @@
 - Every grant or withdrawal is a new **append-only** record with the purpose version and privacy-notice version (`consents` collection). Current state is the latest record per purpose.
 - Users can change optional consents in Settings → Privacy, effective immediately. Withdrawing `account` means account deletion (self-service in the privacy release).
 
-## Age
+## Age and members under 18 (build B2) — needs legal review
 
-Sign-up requires an 18+ declaration. Under-18 users are blocked on the client and the server. **We do not collect minors' data:** a 17-year-old first-year is told to contact their college, and the admin invites them once they turn 18. Imported list records hold only what verification needs (roll number, name, branch, graduation year, email or phone); they do not create accounts. Rationale: DPDP's verifiable-parental-consent requirements for children are out of scope for now.
+> **Needs legal review** before a college enrols members under 18. The flow follows DPDP Act 2023 §9 and DPDP Rules 2025 Rule 10 as we read them; it is not legal advice.
+
+- **Age check.** Sign-up asks for the birth month (`YYYY-MM`). The birth month itself is never stored: an adult keeps no age data at all, and a member under 18 has only `adultOn`, the first day of the month after their eighteenth birthday month (the latest possible birthday, so nobody counts as an adult early). Members who declared they were 18 before B2 keep their declaration date (`ageCheckedAt`).
+- **Verifiable guardian consent.** A member under 18 starts in `guardian_pending` with no permissions: only verification and the guardian step work (plus their privacy rights: export and deletion). The college's admission record is the "reliable details" source: the code goes to the guardian's number on the roster (`guardianPhone`, imported with the student list, encrypted and blind-indexed). The guardian reads a short, versioned declaration (`guardian_consent` v1) in English or Telugu on the student's screen and confirms it with the code. The consent record keeps the roster record id, the language and the channel, not the guardian's number. Without a number on the roster, the student enters one and a TPO or admin checks it against the admission papers before any code is sent (`guardian_manual` in the verification queue; the number is deleted from the request once decided).
+- **While a member is under 18** (with consent): the For you feed is chronological (no personalised ranking); contact details are never shown to anyone else, whatever the visibility setting; they never appear on leaderboards; they are excluded from product analytics events (B9). Direct messages exist only inside accepted mentorships (no route opens any other conversation).
+- **Turning 18.** A daily job clears `adultOn`, opens a still-pending account, lifts the rules above and tells the member. The rules are computed from `adultOn` on every request, so they lift on the day itself.
+- **Not relied on:** the DPDP Fourth Schedule exemption for educational institutions covers only tracking and behavioural monitoring for educational activities or safety. We do not rely on it for any of the above.
+- Imported list records hold only what verification and guardian consent need (roll number, name, branch, graduation year, email or phone, guardian's phone); they do not create accounts.
+
+## Phone numbers (build B2)
+
+- Members may sign up and sign in with a mobile number and a one-time code; email becomes optional for students and alumni. Numbers are encrypted (`phoneEnc`) with a blind index for lookups, like every other contact detail.
+- Codes are sent by WhatsApp (Meta Cloud API) or SMS (MSG91) through `OtpSender` (B3 adds the real adapters). Only the number and the code leave the platform; no message text, names or other personal data are sent with a code.
+- Sign-in answers the same whether or not a number has an account, and a code to a number with no account is never sent.
+- One-time code challenges keep the number encrypted for at most 24 hours (sign-up needs it after the code) and are then deleted.
 
 ## Data minimisation (implemented)
 

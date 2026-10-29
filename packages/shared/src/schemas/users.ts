@@ -36,7 +36,16 @@ export interface MeResponse {
   /** Set while the member's account deletion is pending (they keep no permissions). */
   deletionPurgeAt?: string | null;
   name: string;
-  email: string;
+  /** Optional since phone sign-up (B2). */
+  email: string | null;
+  /** The member's own number (E.164), when they have one. */
+  phone: string | null;
+  /** False for members who signed up by phone (they sign in with codes). */
+  hasPassword: boolean;
+  /** Under 18 and waiting for a guardian's consent: only verification and the guardian step work. */
+  guardianPending: boolean;
+  /** Under 18 (with consent): some features work differently (docs/specs/phone-identity.md). */
+  minor: boolean;
   roles: Role[];
   capabilities: Capability[];
   verified: boolean;

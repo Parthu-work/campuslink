@@ -18,7 +18,11 @@ import { ProfileModel } from '../modules/profiles/profile.model.js';
 import { WhitelistModel } from '../modules/imports/whitelist.model.js';
 import { PushSubscriptionModel } from '../modules/notifications/notification.model.js';
 import { MessageModel } from '../modules/messaging/conversation.model.js';
-import { InviteModel } from '../modules/verification/verification.model.js';
+import {
+  InviteModel,
+  OtpChallengeModel,
+  VerificationRequestModel,
+} from '../modules/verification/verification.model.js';
 import { AiSettingsModel } from '../modules/study/ai-settings.model.js';
 
 type AnyModel = Model<Record<string, unknown>>;
@@ -47,8 +51,8 @@ export const ENCRYPTED_COLLECTIONS: EncryptedCollection[] = [
   {
     name: 'whitelist',
     model: WhitelistModel as unknown as AnyModel,
-    fields: ['emailEnc', 'phoneEnc'],
-    indexes: { emailIndex: 'emailEnc', phoneIndex: 'phoneEnc' },
+    fields: ['emailEnc', 'phoneEnc', 'guardianPhoneEnc'],
+    indexes: { emailIndex: 'emailEnc', phoneIndex: 'phoneEnc', guardianPhoneIndex: 'guardianPhoneEnc' },
   },
   {
     name: 'push subscriptions',
@@ -57,6 +61,17 @@ export const ENCRYPTED_COLLECTIONS: EncryptedCollection[] = [
     indexes: { endpointIndex: 'endpointEnc' },
   },
   { name: 'messages', model: MessageModel as unknown as AnyModel, fields: ['bodyEnc'] },
+  {
+    name: 'one-time codes',
+    model: OtpChallengeModel as unknown as AnyModel,
+    fields: ['phoneEnc', 'nextPhoneEnc'],
+    indexes: { phoneIndex: 'phoneEnc' },
+  },
+  {
+    name: 'verification requests',
+    model: VerificationRequestModel as unknown as AnyModel,
+    fields: ['guardianPhoneEnc'],
+  },
   {
     name: 'AI settings',
     model: AiSettingsModel as unknown as AnyModel,

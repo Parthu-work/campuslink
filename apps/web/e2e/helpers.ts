@@ -21,8 +21,18 @@ export async function expectNoA11yViolations(page: Page) {
   ).toEqual([]);
 }
 
+/** Colleges offer the mobile number first (B2); these tests sign in with email and password. */
+export async function chooseEmailSignIn(page: Page) {
+  const email = page.getByRole('button', { name: 'Email', exact: true });
+  const field = page.getByLabel('Email', { exact: true });
+  // The platform console has email sign-in only.
+  await email.or(field).first().waitFor();
+  if (await email.isVisible()) await email.click();
+}
+
 export async function signIn(page: Page, email: string, host = 'dpit') {
   await page.goto(`http://${host}.localhost:4173/sign-in`);
+  await chooseEmailSignIn(page);
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

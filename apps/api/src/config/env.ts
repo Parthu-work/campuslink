@@ -86,7 +86,12 @@ export const envSchema = z.object({
   S3_KMS_KEY_ID: z.string().min(1).optional(),
   S3_ACCESS_KEY_ID: z.string().min(1).optional(),
   S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
-  SMS_PROVIDER: z.enum(['disabled']).default('disabled'),
+  /** SMS for code fallback (D4). `console` keeps messages in memory (development and tests only). */
+  SMS_PROVIDER: z.enum(['disabled', 'console']).default('disabled'),
+  /** Registered DLT template ids, `otp=1107…,reminder=1107…` (docs/sms-templates.md). */
+  SMS_DLT_TEMPLATE_IDS: z.string().optional(),
+  /** WhatsApp channel (D3). `console` keeps messages in memory (development and tests only). */
+  WHATSAPP_PROVIDER: z.enum(['disabled', 'console']).default('disabled'),
   /** Malware scanning of every stored file (ClamAV clamd). Required in production; fails closed. */
   MALWARE_SCANNER: z.enum(['none', 'clamav']).default('none'),
   /** clamd address: `host:port` or an absolute Unix socket path. */
@@ -216,6 +221,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
       throw new Error(`Refusing to start in production with placeholder secrets: ${weak.join(', ')}`);
     if (env.RATE_LIMIT_SCALE > 2) throw new Error('RATE_LIMIT_SCALE above 2 is not allowed in production');
     if (env.MAIL_DRIVER === 'disabled') throw new Error('MAIL_DRIVER=disabled is not allowed in production');
+    if (env.SMS_PROVIDER === 'console' || env.WHATSAPP_PROVIDER === 'console')
+      throw new Error('The console SMS and WhatsApp providers are not allowed in production');
     if (env.STORAGE_DRIVER === 's3' && env.S3_SSE === 'none')
       throw new Error('S3_SSE=none is not allowed in production (files must be encrypted at rest)');
     if (env.MALWARE_SCANNER === 'none')

@@ -20,6 +20,7 @@ import { ContentSourcesService } from './modules/content-sources/sources.service
 import { JobSourcesService } from './modules/job-sources/job-sources.service.js';
 import { JobsService } from './modules/jobs/jobs.service.js';
 import { RoadmapsService } from './modules/roadmaps/roadmaps.service.js';
+import { GuardianService } from './modules/verification/guardian.service.js';
 
 const env = loadEnv();
 const logger = createLogger(env.LOG_LEVEL);
@@ -139,6 +140,13 @@ async function main() {
       logger.error({ err }, 'nudge tick failed'),
     );
   if (runsJobs) setInterval(nudgeTick, 5 * 60_000).unref();
+  // Members who turned 18 (B2): hourly, one run per college that has any (job ids dedupe per day).
+  const adultTick = () =>
+    GuardianService.enqueueDue(jobs).catch((err: unknown) => logger.error({ err }, 'adulthood tick failed'));
+  if (runsJobs) {
+    setTimeout(adultTick, 60_000).unref();
+    setInterval(adultTick, 3600_000).unref();
+  }
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, 'shutting down');

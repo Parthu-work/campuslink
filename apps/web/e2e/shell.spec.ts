@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { PASSWORD, signIn } from './helpers';
+import { PASSWORD, signIn, chooseEmailSignIn } from './helpers';
 import { adminSignIn } from './admin';
 
 /**
@@ -10,6 +10,7 @@ const BASE = 'http://dpit.localhost:4173';
 
 async function signInAs(page: Page, email: string) {
   await page.goto(`${BASE}/sign-in`);
+  await chooseEmailSignIn(page);
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

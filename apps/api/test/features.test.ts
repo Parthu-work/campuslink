@@ -15,6 +15,7 @@ import { TenantModel } from '../src/modules/tenants/tenant.model.js';
 import { invalidateTenant } from '../src/modules/tenants/tenant.cache.js';
 import { gatedJob } from '../src/modules/tenants/features.js';
 import { JobModel } from '../src/modules/jobs/job.model.js';
+import { UserModel } from '../src/modules/auth/user.model.js';
 import { MigrationModel } from '../src/modules/platform/migration.model.js';
 import { MIGRATIONS, runMigrations } from '../src/db/migrations.js';
 import type { RouteRegistry } from '../src/http/registry.js';
@@ -266,5 +267,36 @@ describe('admin overview', () => {
     expect(v).toMatchObject({ ai: null, materialReviews: null });
     await setFeatures({ study: true });
     expect((await as(admin).get('/admin/overview')).body.data.ai).not.toBeNull();
+  });
+});
+
+describe('migration: age checked at', () => {
+  it('renames the old declaration date; the old document loads and saves', async () => {
+    const T2 = await makeTenant('agemigration');
+    const id = new Types.ObjectId();
+    const declared = new Date('2026-01-02T03:04:05Z');
+    await mongoose.connection.collection('users').insertOne({
+      _id: id,
+      tenantId: T2._id,
+      email: 'old@agemigration.example',
+      name: 'Old Member',
+      passwordHash: 'x',
+      roles: ['STUDENT'],
+      status: 'active',
+      ageDeclaredAt: declared,
+    });
+    await withPlatformScope('platform:test-reset', () =>
+      MigrationModel.deleteMany({ name: 'b2-age-checked-at' }),
+    );
+    await runMigrations(createLogger('silent'));
+    const raw = await mongoose.connection.collection('users').findOne({ _id: id });
+    expect(raw?.ageCheckedAt).toEqual(declared);
+    expect(raw).not.toHaveProperty('ageDeclaredAt');
+    await runInTenant(T2._id, async () => {
+      const doc = await UserModel.findById(id);
+      expect(doc?.adultOn).toBeNull();
+      doc!.name = 'Renamed';
+      await doc!.save();
+    });
   });
 });

@@ -63,6 +63,16 @@ const SYNONYMS: Record<ImportField, string[]> = {
   ],
   email: ['email', 'e-mail', 'email id', 'mail', 'email address'],
   phone: ['phone', 'mobile', 'mobile no', 'mobile number', 'contact', 'contact no', 'phone number'],
+  guardianPhone: [
+    'guardian phone',
+    'guardian mobile',
+    'parent phone',
+    'parent mobile',
+    'father mobile',
+    'mother mobile',
+    'parent contact',
+    'guardian contact',
+  ],
   kind: ['type', 'kind', 'category', 'student type', 'status'],
 };
 const BRANCH_SYNONYMS: [RegExp, Branch][] = [
@@ -100,6 +110,7 @@ interface RowOk {
   kind: 'student' | 'alumni';
   email: string | null;
   phone: string | null;
+  guardianPhone: string | null;
 }
 type RowResult = { ok: true; value: RowOk } | { ok: false; errors: { field: string; message: string }[] };
 
@@ -136,6 +147,12 @@ export function mapRow(row: Record<string, string>, mapping: ImportMapping, now 
     if (p.success) phoneVal = p.data;
     else errors.push({ field: 'phone', message: 'Invalid mobile number' });
   }
+  let guardianPhoneVal: string | null = null;
+  if (get('guardianPhone')) {
+    const p = phoneSchema.safeParse(get('guardianPhone'));
+    if (p.success) guardianPhoneVal = p.data;
+    else errors.push({ field: 'guardianPhone', message: 'Invalid guardian mobile number' });
+  }
   let kind: 'student' | 'alumni' | null = null;
   const kindRaw = get('kind').toLowerCase();
   if (/alum|pass(ed)? ?out|graduate/.test(kindRaw)) kind = 'alumni';
@@ -158,6 +175,7 @@ export function mapRow(row: Record<string, string>, mapping: ImportMapping, now 
       kind,
       email: emailVal,
       phone: phoneVal,
+      guardianPhone: guardianPhoneVal,
     },
   };
 }
@@ -345,6 +363,7 @@ export class ImportsService {
           kind: v.kind,
           emailIndex: v.email ? this.d.cipher.blindIndex(v.email) : null,
           phoneIndex: v.phone ? this.d.cipher.blindIndex(v.phone) : null,
+          guardianPhoneIndex: v.guardianPhone ? this.d.cipher.blindIndex(v.guardianPhone) : null,
         };
         const existing = await WhitelistModel.findOne({ rollNumber: v.rollNumber }).lean();
         if (!existing) {
@@ -357,6 +376,7 @@ export class ImportsService {
               lastImportJobId: job._id,
               emailEnc: v.email ? this.d.cipher.encrypt(v.email) : null,
               phoneEnc: v.phone ? this.d.cipher.encrypt(v.phone) : null,
+              guardianPhoneEnc: v.guardianPhone ? this.d.cipher.encrypt(v.guardianPhone) : null,
             });
             changes.push({ recordId: created._id, op: 'create', before: null });
           }
@@ -367,6 +387,35 @@ export class ImportsService {
         );
         if (!differs) {
           counts.unchanged++;
+          continue;
+        }
+        // A claimed record keeps everything the member proved, but the college may still add or
+        // correct the guardian's number (guardian consent for a member under 18).
+        const guardianOnly = (Object.keys(next) as (keyof typeof next)[]).every(
+          (k) => k === 'guardianPhoneIndex' || (existing[k] ?? null) === next[k],
+        );
+        if (existing.status === 'claimed' && guardianOnly && v.guardianPhone) {
+          counts.updated++;
+          if (!job.dryRun) {
+            await WhitelistModel.updateOne(
+              { _id: existing._id },
+              {
+                $set: {
+                  guardianPhoneEnc: this.d.cipher.encrypt(v.guardianPhone),
+                  guardianPhoneIndex: next.guardianPhoneIndex,
+                  lastImportJobId: job._id,
+                },
+              },
+            );
+            changes.push({
+              recordId: existing._id,
+              op: 'update',
+              before: {
+                guardianPhoneEnc: existing.guardianPhoneEnc ?? null,
+                guardianPhoneIndex: existing.guardianPhoneIndex ?? null,
+              },
+            });
+          }
           continue;
         }
         if (existing.status === 'claimed') {
@@ -385,6 +434,8 @@ export class ImportsService {
             emailIndex: existing.emailIndex,
             phoneEnc: existing.phoneEnc,
             phoneIndex: existing.phoneIndex,
+            guardianPhoneEnc: existing.guardianPhoneEnc ?? null,
+            guardianPhoneIndex: existing.guardianPhoneIndex ?? null,
           };
           await WhitelistModel.updateOne(
             { _id: existing._id, status: 'unclaimed' },
@@ -393,6 +444,7 @@ export class ImportsService {
                 ...next,
                 emailEnc: v.email ? this.d.cipher.encrypt(v.email) : null,
                 phoneEnc: v.phone ? this.d.cipher.encrypt(v.phone) : null,
+                guardianPhoneEnc: v.guardianPhone ? this.d.cipher.encrypt(v.guardianPhone) : null,
                 lastImportJobId: job._id,
               },
             },

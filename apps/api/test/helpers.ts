@@ -14,6 +14,8 @@ import type { AuthService } from '../src/modules/auth/auth.service.js';
 import type { FieldCipher } from '../src/lib/crypto.js';
 import { MemoryStorage } from '../src/lib/storage.js';
 import { InlineJobQueue } from '../src/lib/jobs.js';
+import { ConsoleSmsProvider } from '../src/lib/sms.js';
+import { ConsoleWhatsAppProvider } from '../src/lib/whatsapp.js';
 import type { ImportsService } from '../src/modules/imports/imports.service.js';
 import { generateSecret } from 'otplib';
 
@@ -30,6 +32,9 @@ export function testApp(overrides: Partial<AppDeps> = {}) {
   const mailer = new MemoryMailProvider();
   const storage = new MemoryStorage();
   const queue = new InlineJobQueue();
+  // Phone codes go to in-memory outboxes (read them with phoneCodeFrom).
+  const sms = new ConsoleSmsProvider();
+  const whatsapp = new ConsoleWhatsAppProvider();
   const app = createApp({
     env,
     logger: createLogger('silent'),
@@ -38,10 +43,14 @@ export function testApp(overrides: Partial<AppDeps> = {}) {
     storage,
     jobs: queue,
     rateLimitScale: 1000,
+    sms,
+    whatsapp,
     ...overrides,
   });
   return {
     app,
+    sms: (overrides.sms as ConsoleSmsProvider | undefined) ?? sms,
+    whatsapp: (overrides.whatsapp as ConsoleWhatsAppProvider | undefined) ?? whatsapp,
     mailer: (overrides.mailer as MemoryMailProvider | undefined) ?? mailer,
     storage,
     queue,
@@ -107,7 +116,7 @@ export async function makeUser(
       capabilities: opts.capabilities ?? [],
       verified: opts.verified ?? true,
       emailVerifiedAt: opts.emailVerified === false ? null : new Date(),
-      ageDeclaredAt: new Date(),
+      ageCheckedAt: new Date(),
       ...(mfaSecret ? { mfa: { enabled: true, secretEnc: ctx.services.cipher.encrypt(mfaSecret) } } : {}),
     });
     await ctx.services.auth.onUserCreated?.(String(user._id));
@@ -146,6 +155,16 @@ export function cookiesFrom(res: request.Response): { cookie: string; csrf: stri
 /** Last 6-digit code emailed to `to`. */
 export const codeFrom = (ctx: ReturnType<typeof testApp>, to: string) =>
   /\b(\d{6})\b/.exec(ctx.mailer.lastTo(to)?.subject ?? '')?.[1] ?? '';
+
+/** Last code sent to a phone (E.164) by WhatsApp or SMS, and how. */
+export function phoneCodeFrom(ctx: ReturnType<typeof testApp>, phone: string) {
+  const last = [ctx.sms.outbox.lastTo(phone), ctx.whatsapp.outbox.lastTo(phone)]
+    .filter((e) => !!e)
+    .sort((a, b) => b.at.getTime() - a.at.getTime() || b.id.localeCompare(a.id))[0];
+  return { code: last?.params[0] ?? '', channel: last?.channel ?? null, count: countTo(ctx, phone) };
+}
+const countTo = (ctx: ReturnType<typeof testApp>, phone: string) =>
+  [...ctx.sms.outbox.entries, ...ctx.whatsapp.outbox.entries].filter((e) => e.to === phone).length;
 
 /** Tiny real images for upload tests. */
 export async function jpegWithExif(): Promise<Buffer> {

@@ -17,6 +17,9 @@ const whitelistSchema = new Schema(
     emailIndex: { type: String, default: null },
     phoneEnc: { type: String, default: null },
     phoneIndex: { type: String, default: null },
+    /** The parent or guardian's mobile (admission record): guardian consent for minors (B2). */
+    guardianPhoneEnc: { type: String, default: null },
+    guardianPhoneIndex: { type: String, default: null },
     status: { type: String, enum: ['unclaimed', 'claimed'], default: 'unclaimed' },
     claimedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     claimedAt: { type: Date, default: null },

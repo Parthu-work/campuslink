@@ -99,6 +99,9 @@ export const NOTIFICATION_TYPES = [
   'ai_key_invalid',
   'ai_budget_warning',
   'ai_budget_reached',
+  'adult_now',
+  'guardian_number_approved',
+  'guardian_number_rejected',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -156,6 +159,9 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   ai_budget_reached: 'study',
   material_review: 'study',
   material_reviewed: 'study',
+  adult_now: 'reminders',
+  guardian_number_approved: 'reminders',
+  guardian_number_rejected: 'reminders',
 };
 export const CHANNELS = ['inApp', 'email', 'push'] as const;
 export type Channel = (typeof CHANNELS)[number];

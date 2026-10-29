@@ -220,6 +220,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'reports:export',
     'mentorship:oversee',
     'jobs:sources',
+    // The TPO runs onboarding: verification and guardian-number reviews (build B2, B6).
+    'verification:review',
   ],
   FACULTY: STAFF,
   ALUMNI,

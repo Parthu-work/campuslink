@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import {
   CONSENT_PURPOSES,
   CONSENT_PURPOSE_KEYS,
+  GUARDIAN_CONSENT,
   PRIVACY_NOTICE_VERSION,
   type ConsentPurpose,
 } from '@campuslink/shared';
@@ -34,6 +35,29 @@ export const consentService = {
         source,
       })),
     );
+  },
+
+  /** A guardian confirmed the declaration for a member under 18 (append-only, kept on erasure). */
+  async recordGuardian(
+    userId: Types.ObjectId | string,
+    evidence: { whitelistId: Types.ObjectId; language: string; channel: string },
+  ): Promise<void> {
+    await ConsentModel.create({
+      userId: new Types.ObjectId(String(userId)),
+      purpose: GUARDIAN_CONSENT.purpose,
+      version: GUARDIAN_CONSENT.version,
+      noticeVersion: PRIVACY_NOTICE_VERSION,
+      granted: true,
+      source: 'guardian',
+      evidence,
+    });
+  },
+
+  /** Guardian consent records for a member (data export). */
+  async guardianFor(userId: string) {
+    return ConsentModel.find({ userId: new Types.ObjectId(userId), purpose: GUARDIAN_CONSENT.purpose })
+      .select('version noticeVersion createdAt evidence.language evidence.channel')
+      .lean();
   },
 
   async current(userId: string): Promise<ConsentState[]> {

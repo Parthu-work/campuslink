@@ -5,6 +5,7 @@ import {
   requiresMfa,
   resolvePermissions,
   effectiveOverrides,
+  isMinor,
   type Capability,
   type MeResponse,
 } from '@campuslink/shared';
@@ -16,6 +17,7 @@ import type { AuthState } from '../../types.js';
 import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthService } from '../auth/auth.service.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
+import type { FieldCipher } from '../../lib/crypto.js';
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const ADMIN_FIELDS =
@@ -89,16 +91,23 @@ export class UsersService {
   constructor(
     private readonly auth: AuthService,
     private readonly profiles: ProfilesService,
+    private readonly cipher: FieldCipher,
   ) {}
 
   async me(auth: AuthState): Promise<MeResponse> {
-    const u = await UserModel.findById(auth.userId).select('name email locale deletionPurgeAt').lean();
+    const u = await UserModel.findById(auth.userId)
+      .select('name email locale deletionPurgeAt +phoneEnc +passwordHash status adultOn')
+      .lean();
     if (!u) throw notFound('User');
     return {
       id: auth.userId,
       deletionPurgeAt: u.deletionPurgeAt ? u.deletionPurgeAt.toISOString() : null,
       name: u.name,
-      email: u.email,
+      email: u.email ?? null,
+      phone: u.phoneEnc ? this.cipher.decrypt(u.phoneEnc) : null,
+      hasPassword: !!u.passwordHash,
+      guardianPending: u.status === 'guardian_pending',
+      minor: isMinor(u.adultOn),
       roles: auth.roles,
       capabilities: auth.capabilities,
       verified: auth.verified,

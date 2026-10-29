@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from '../../i18n/react';
 import { useQueryClient } from '@tanstack/react-query';
-import { email as emailSchema, safeReturnPath, type LoginResult } from '@campuslink/shared';
+import {
+  email as emailSchema,
+  phone as phoneSchema,
+  safeReturnPath,
+  type CodeSent,
+  type LoginResult,
+  type OtpChannel,
+} from '@campuslink/shared';
 import { AuthLayout, FormError } from '../../components/layout/auth-layout';
 import { Button } from '../../components/ui/button';
 import { Field, Input, PasswordInput } from '../../components/ui/field';
@@ -14,6 +21,9 @@ import { api, ApiError } from '../../lib/api';
 import { useSession } from '../../lib/session';
 import { useTenant } from '../../lib/tenant-context';
 import { applyApiError } from '../../lib/errors';
+import { Segmented } from '../../components/ui/tab-nav';
+import { toE164 } from '../../lib/phone';
+import { PhoneCodeStep, PhoneField } from './phone-parts';
 
 const schema = z.object({ email: emailSchema, password: z.string().min(1, 'Enter your password') });
 type Form = z.infer<typeof schema>;
@@ -28,6 +38,11 @@ export function SignInPage() {
   const [ticket, setTicket] = useState<string | null>(null);
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
+  // Phone first when the college can send codes (B2); administrators always use email.
+  const [method, setMethod] = useState<'phone' | 'email'>(
+    tenant.phoneSignIn && tenant.kind === 'college' ? 'phone' : 'email',
+  );
+  const [adminNote, setAdminNote] = useState<string | null>(null);
   const form = useForm<Form>({
     mode: 'onTouched',
     resolver: zodResolver(schema),
@@ -60,13 +75,39 @@ export function SignInPage() {
 
   if (ticket) return <MfaStep ticket={ticket} onDone={finish} onRestart={() => setTicket(null)} />;
 
+  const switcher = tenant.phoneSignIn && tenant.kind === 'college' && (
+    <Segmented
+      label={t('phone.method')}
+      value={method}
+      options={[
+        ['phone', t('phone.withPhone')],
+        ['email', t('phone.withEmail')],
+      ]}
+      onChange={setMethod}
+    />
+  );
+
+  if (method === 'phone')
+    return (
+      <PhoneSignIn
+        switcher={switcher}
+        onSession={finish}
+        onTicket={setTicket}
+        onAdmin={(message) => {
+          setAdminNote(message);
+          setMethod('email');
+        }}
+      />
+    );
+
   return (
     <AuthLayout
       title={t('auth.signInTitle')}
       subtitle={t('auth.signInSub', { college: tenant.branding.displayName })}
     >
       <form onSubmit={onSubmit} noValidate className="grid gap-4">
-        <FormError message={errors.root?.message} />
+        {switcher}
+        <FormError message={adminNote ?? errors.root?.message} />
         {unverifiedEmail && (
           <div className="flex flex-wrap items-center gap-3 text-meta">
             {resent ? (
@@ -137,7 +178,108 @@ export function SignInPage() {
   );
 }
 
-function MfaStep({
+function PhoneSignIn({
+  switcher,
+  onSession,
+  onTicket,
+  onAdmin,
+}: {
+  switcher: ReactNode;
+  onSession: (token: string) => Promise<void>;
+  onTicket: (ticket: string) => void;
+  onAdmin: (message: string) => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const tenant = useTenant();
+  const [number, setNumber] = useState('');
+  const [error, setError] = useState<string>();
+  const [busy, setBusy] = useState(false);
+  const [code, setCode] = useState<{ phone: string; sent: CodeSent } | null>(null);
+  const send = (phone: string, channel?: OtpChannel) =>
+    api.post<CodeSent>('/auth/phone/start', {
+      phone,
+      purpose: 'login',
+      locale: i18n.language === 'te' ? 'te' : 'en',
+      ...(channel ? { channel } : {}),
+    });
+
+  if (code)
+    return (
+      <AuthLayout title={t('phone.codeTitle')} subtitle={t('phone.signInCodeSub')}>
+        <PhoneCodeStep
+          phone={code.phone}
+          sent={code.sent}
+          onResend={(channel) => send(code.phone, channel)}
+          onBack={() => setCode(null)}
+          onCode={async (otp, challengeId) => {
+            try {
+              const r = await api.post<
+                | { mfaRequired: true; ticket: string }
+                | { mfaRequired: false; session: { accessToken: string } }
+              >('/auth/phone/verify', { challengeId, code: otp });
+              if (r.mfaRequired) onTicket(r.ticket);
+              else await onSession(r.session.accessToken);
+            } catch (err) {
+              if (err instanceof ApiError && err.code === 'USE_PASSWORD_AND_2FA') return onAdmin(err.message);
+              throw err;
+            }
+          }}
+        />
+        <p className="text-center text-meta text-fg-2">
+          {t('phone.noAccountYet')}{' '}
+          <Link
+            to="/sign-up"
+            className="inline-flex min-h-11 items-center font-semibold text-brand-ink hover:underline"
+          >
+            {t('auth.createAccount')}
+          </Link>
+        </p>
+      </AuthLayout>
+    );
+
+  return (
+    <AuthLayout
+      title={t('auth.signInTitle')}
+      subtitle={t('auth.signInSub', { college: tenant.branding.displayName })}
+    >
+      <form
+        noValidate
+        className="grid gap-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          const phone = toE164(number);
+          if (!phoneSchema.safeParse(phone).success) return setError(t('phone.invalid'));
+          setBusy(true);
+          setError(undefined);
+          try {
+            setCode({ phone, sent: await send(phone) });
+          } catch (err) {
+            setError(err instanceof ApiError ? err.message : t('errors.generic'));
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {switcher}
+        <PhoneField label={t('phone.number')} value={number} onChange={setNumber} error={error} />
+        <Button type="submit" variant="primary" size="lg" loading={busy}>
+          {t('phone.sendCode')}
+        </Button>
+        <p className="text-center text-meta text-fg-2">
+          {t('auth.noAccount')}{' '}
+          <Link
+            to="/sign-up"
+            className="inline-flex min-h-11 items-center font-semibold text-brand-ink hover:underline"
+          >
+            {t('auth.createAccount')}
+          </Link>
+        </p>
+      </form>
+    </AuthLayout>
+  );
+}
+
+export function MfaStep({
   ticket,
   onDone,
   onRestart,

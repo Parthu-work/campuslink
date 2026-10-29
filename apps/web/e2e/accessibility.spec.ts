@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { PASSWORD, signIn } from './helpers';
+import { PASSWORD, signIn, chooseEmailSignIn } from './helpers';
 import { adminSignIn } from './admin';
 
 /**
@@ -11,6 +11,7 @@ const BASE = 'http://dpit.localhost:4173';
 test('keyboard only: sign in, skip to content, open a page from the navigation', async ({ page }, info) => {
   test.skip(info.project.name === 'mobile', 'Keyboard journey runs on desktop');
   await page.goto(`${BASE}/sign-in`);
+  await chooseEmailSignIn(page);
   await page.getByLabel('Email', { exact: true }).focus();
   await page.keyboard.type('ananya@dpit.example');
   await page.keyboard.press('Tab');

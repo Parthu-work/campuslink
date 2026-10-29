@@ -1112,6 +1112,18 @@
     "ai_budget_reached": {
       "title": "AI budget used up",
       "body": "This month’s token budget is used. Students see passages from the material instead of answers until the 1st, or until you raise the budget."
+    },
+    "adult_now": {
+      "title": "You’re 18 now",
+      "body": "Your account works like every adult member’s. You can now choose who sees your contact details."
+    },
+    "guardian_number_approved": {
+      "title": "Your college checked the number",
+      "body": "Your guardian’s number is on your college record now. Send them the code to finish."
+    },
+    "guardian_number_rejected": {
+      "title": "Your college couldn’t use that number",
+      "body": "Your college couldn’t confirm the guardian number you entered. Check it with your college office, or enter another."
     }
   },
   "notifications": {
@@ -3097,5 +3109,57 @@
     "placements": "Placement drives, registrations, round results and offers.",
     "whatsapp": "Codes and important updates on WhatsApp, for members who agree to it.",
     "peerMentors": "Seniors guiding juniors. Coming soon."
+  },
+  "phone": {
+    "numberHint": "Your 10-digit mobile number.",
+    "birthMonth": "When were you born?",
+    "month": "Month",
+    "year": "Year",
+    "birthMonthHint": "Only whether you are 18 yet is kept, never this month. Under 18? A parent or guardian confirms with a code.",
+    "sentWhatsApp": "We sent a 6-digit code on WhatsApp to {{phone}}.",
+    "sentSms": "We sent a 6-digit code by SMS to {{phone}}.",
+    "code": "6-digit code",
+    "confirm": "Confirm",
+    "changeNumber": "Change number",
+    "smsInstead": "Send by SMS instead",
+    "resendIn": "Send again in {{seconds}} s",
+    "resend": "Send again",
+    "codeTitle": "Enter the code",
+    "codeSub": "It works for 10 minutes. Your account is created when it’s confirmed.",
+    "signInCodeSub": "If this number has an account, the code is on its way. It works for 10 minutes.",
+    "signUpSub": "Takes a minute with your mobile number. College verification comes next.",
+    "method": "How you sign in",
+    "withPhone": "Mobile number",
+    "withEmail": "Email",
+    "number": "Mobile number",
+    "sendCode": "Send code",
+    "noAccountYet": "No code? The number may not have an account yet.",
+    "invalid": "Enter a 10-digit mobile number.",
+    "settingsTitle": "Mobile number",
+    "none": "No number yet. Add one to sign in with a code.",
+    "change": "Change number",
+    "add": "Add a number",
+    "changed": "Number changed. Other devices were signed out.",
+    "changeHint": "We’ll send a code to your current number first, then one to the new number.",
+    "addHint": "Enter your password, then the code we send to the number.",
+    "newNumber": "New mobile number"
+  },
+  "guardian": {
+    "title": "Your guardian’s consent",
+    "intro": "You’re under 18, so a parent or guardian agrees before you start.",
+    "why": "The law asks for it (DPDP Act 2023). The code goes to the number your college has for your guardian.",
+    "verifyFirstTitle": "First, confirm your college record",
+    "verifyFirstBody": "Your guardian’s number comes from your admission record, so we need to find it with your roll number.",
+    "checkingTitle": "Your college is checking the number",
+    "checkingBody": "We’ll tell you when it’s done. Then your guardian gets the code.",
+    "noNumberBody": "Your college has no guardian number for you yet. Enter one; the college checks it against your admission papers first.",
+    "number": "Parent or guardian’s mobile number",
+    "askCollege": "Send to my college to check",
+    "declarationTitle": "For your parent or guardian to read",
+    "language": "Language of the declaration",
+    "version": "Declaration version {{version}}",
+    "sendCode": "Send the code to {{phone}}",
+    "adminLabel": "Guardian number to check",
+    "adminHint": "Approve only if it matches the admission record."
   }
 }

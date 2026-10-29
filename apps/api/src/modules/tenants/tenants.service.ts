@@ -16,7 +16,11 @@ import { notFound } from '../../lib/errors.js';
 import type { z } from 'zod';
 import type { tenantSettingsBody } from '@campuslink/shared';
 
-export const toPublicTenant = (t: TenantRecord, botCheck: PublicBotCheck | null = null): PublicTenant => ({
+export const toPublicTenant = (
+  t: TenantRecord,
+  botCheck: PublicBotCheck | null = null,
+  phoneSignIn = false,
+): PublicTenant => ({
   slug: t.slug,
   kind: t.kind,
   status: t.status,
@@ -25,6 +29,7 @@ export const toPublicTenant = (t: TenantRecord, botCheck: PublicBotCheck | null 
   logoUrl: t.logo?.fileId ? `/api/v1/tenant/logo?v=${String(t.logo.fileId)}` : null,
   features: resolveFeatures(t.features),
   botCheck,
+  phoneSignIn,
 });
 
 /** The app's own icons (apps/web/public/icons), used when a college has no logo and alongside it. */

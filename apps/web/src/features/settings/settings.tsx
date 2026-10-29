@@ -24,6 +24,10 @@ import { useNav } from '../../lib/nav';
 import { useSession } from '../../lib/session';
 import { usePreferences, type MotionPref, type ThemePref } from '../../lib/preferences';
 import { applyApiError } from '../../lib/errors';
+import { lazyPart } from '../../lib/lazy-part';
+import { useTenant } from '../../lib/tenant-context';
+// Its code (the phone and code fields) loads only on the Security tab, after it renders.
+const PhoneSettings = lazyPart(() => import('./phone-settings').then((m) => m.PhoneSettings));
 
 export function SettingsLayout() {
   const { t } = useTranslation();
@@ -50,6 +54,7 @@ export function SecuritySettings() {
   const qc = useQueryClient();
   const { data: me } = useMe();
   const [mfaOpen, setMfaOpen] = useState(false);
+  const tenant = useTenant();
   const sessions = useQuery({
     queryKey: ['sessions'],
     queryFn: () =>
@@ -86,6 +91,8 @@ export function SecuritySettings() {
           {mfaOpen && <MfaSetup onDone={() => setMfaOpen(false)} />}
         </Dialog>
       </Card>
+
+      {tenant.phoneSignIn && tenant.kind === 'college' && <PhoneSettings fallback={null} />}
 
       <Card className="grid gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">

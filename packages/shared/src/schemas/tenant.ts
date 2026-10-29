@@ -98,4 +98,6 @@ export interface PublicTenant {
   logoUrl: string | null;
   features: Record<Feature, boolean>;
   botCheck: PublicBotCheck | null;
+  /** Phone sign-up and sign-in work (a WhatsApp or SMS channel can deliver codes). */
+  phoneSignIn: boolean;
 }

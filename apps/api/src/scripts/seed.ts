@@ -194,6 +194,10 @@ const PEOPLE: SeedUser[] = [
   { local: 'newbie', name: 'Sai Teja', roles: ['STUDENT'], verified: false },
 ];
 
+/** Fictional numbers for the demo minor and their guardian (development console providers only). */
+const DEMO_MINOR_PHONE = '+919000000016';
+const DEMO_GUARDIAN_PHONE = '+919000000061';
+
 /** Unclaimed list records: `newbie` can verify with the first one (code goes to Mailpit). */
 const UNCLAIMED: { no: string; name: string; gradYear: number; branch: Branch; localEmail: string }[] = [
   { no: '24XX1A0577', name: 'Sai Teja', gradYear: 2028, branch: 'CSE', localEmail: 'sai.teja.records' },
@@ -216,7 +220,7 @@ async function addUser(
     capabilities: extra.capabilities ?? [],
     verified: extra.verified ?? true,
     emailVerifiedAt: new Date(),
-    ageDeclaredAt: new Date(),
+    ageCheckedAt: new Date(),
   });
   await ConsentModel.insertMany(
     CONSENT_PURPOSE_KEYS.map((purpose) => ({
@@ -886,6 +890,20 @@ async function main() {
           emailIndex: cipher.blindIndex(recEmail),
         });
       }
+      // DEMO: a first-year under 18 whose admission record has a guardian's number (B2). They join
+      // by phone (+91 90000 00016); the guardian's code goes to +91 90000 00061 (console outbox).
+      await WhitelistModel.create({
+        rollNumber: `25${c.slug.slice(0, 2).toUpperCase()}1A0516`,
+        name: 'Demo Minor Student',
+        branch: 'CSE',
+        gradYear: new Date().getFullYear() + 4,
+        kind: 'student',
+        source: 'manual',
+        phoneEnc: cipher.encrypt(DEMO_MINOR_PHONE),
+        phoneIndex: cipher.blindIndex(DEMO_MINOR_PHONE),
+        guardianPhoneEnc: cipher.encrypt(DEMO_GUARDIAN_PHONE),
+        guardianPhoneIndex: cipher.blindIndex(DEMO_GUARDIAN_PHONE),
+      });
       await seedMentorship(ids);
       await seedFeed(ids);
       await seedJobs(ids);
@@ -902,6 +920,7 @@ async function main() {
   console.warn(['Host', 'Email', 'Role', 'Notes'].join(' | '));
   for (const r of rows) console.warn(r.join(' | '));
   console.warn(
+    '\nTry phone sign-up (SMS_PROVIDER or WHATSAPP_PROVIDER=console): join with +91 90000 00016 and a birth month under 18; the guardian step sends a code to +91 90000 00061. Codes: GET /api/v1/dev/outbox?to=%2B919000000016',
     '\nTry verification: sign in as newbie@dpit.example, open Verify, enter roll number 24DP1A0577; the code arrives in Mailpit (http://localhost:8025).',
   );
   console.warn('Try an import: Admin → Imports → upload docs/samples/sample-students.csv');
