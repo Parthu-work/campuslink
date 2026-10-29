@@ -23,6 +23,7 @@ import type { ContentSourcesService } from '../content-sources/sources.service.j
 import type { PostsService } from './posts.service.js';
 import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthState } from '../../types.js';
+import { requireFeature } from '../tenants/features.js';
 
 const STORY_TTL_MS = 24 * 3600_000;
 const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11000;
@@ -66,8 +67,10 @@ export class FollowsService {
       )
         throw notFound('Member');
     }
-    if (body.targetType === 'source' && !(await this.d.sources().exists(body.targetId)))
-      throw notFound('Source');
+    if (body.targetType === 'source') {
+      await requireFeature('contentSources');
+      if (!(await this.d.sources().exists(body.targetId))) throw notFound('Source');
+    }
     if (body.targetType === 'topic' && !(TOPICS as readonly string[]).includes(body.targetId))
       throw notFound('Topic');
     try {

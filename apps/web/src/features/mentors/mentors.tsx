@@ -1,6 +1,6 @@
 import { useDeferredValue, useState, type KeyboardEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   LazyMotion,
@@ -28,6 +28,7 @@ import { Segmented } from '../../components/ui/tab-nav';
 import { TagInput } from '../../components/ui/tag-input';
 import { api } from '../../lib/api';
 import { mentorMatch } from '../../lib/queries';
+import { useFeature } from '../../lib/tenant-context';
 import { coverOf } from '../../lib/accent';
 import { SCREEN } from '../../lib/query-client';
 
@@ -410,7 +411,9 @@ function BrowseView() {
 export function MentorsPage() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
-  const view = params.get('view') === 'browse' ? 'browse' : 'match';
+  // Without Alumni Match (Admin › Features) the page is the mentor list alone.
+  const matching = useFeature('alumniMatch');
+  const view = !matching || params.get('view') === 'browse' ? 'browse' : 'match';
   return (
     <>
       <PageHeader
@@ -423,15 +426,17 @@ export function MentorsPage() {
           </>
         }
       />
-      <Segmented
-        label={t('mentors.title')}
-        value={view}
-        options={[
-          ['match', t('mentors.match')],
-          ['browse', t('mentors.browse')],
-        ]}
-        onChange={(v) => setParams(v === 'browse' ? { view: 'browse' } : {}, { replace: true })}
-      />
+      {matching && (
+        <Segmented
+          label={t('mentors.title')}
+          value={view}
+          options={[
+            ['match', t('mentors.match')],
+            ['browse', t('mentors.browse')],
+          ]}
+          onChange={(v) => setParams(v === 'browse' ? { view: 'browse' } : {}, { replace: true })}
+        />
+      )}
       {view === 'match' ? <MatchView /> : <BrowseView />}
     </>
   );

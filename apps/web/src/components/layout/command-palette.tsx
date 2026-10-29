@@ -1,6 +1,6 @@
 import { useDeferredValue, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { Command } from 'cmdk';
 import { Dialog as D } from 'radix-ui';

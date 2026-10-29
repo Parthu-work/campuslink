@@ -27,7 +27,7 @@
   - Charts are SVG with `role="img"` and text labels, and every number is also shown as text.
   - Swipe gestures have buttons.
   - Every image a member uploads asks for alt text.
-- **Language:** every string goes through i18next (`en.json`, `te.json`), and `lang` switches with the language, so screen readers use Telugu voices.
+- **Language:** every string goes through the translation runtime (`src/i18n`, `en.json`, `te.json`), and `lang` switches with the language, so screen readers use Telugu voices.
 - **Live regions:** toasts (sonner), the offline banner and the update prompt use polite live regions; errors use `role="alert"`.
 
 ## What Phase 8 verified

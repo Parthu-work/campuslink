@@ -3,6 +3,7 @@ export * from './api.js';
 export * from './locales.js';
 export * from './roles.js';
 export * from './consent.js';
+export * from './features.js';
 export * from './color.js';
 export * from './oklch.js';
 export * from './palette.js';

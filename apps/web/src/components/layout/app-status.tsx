@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { WifiOff } from 'lucide-react';
 import { useOnline, useServiceWorker } from '../../lib/pwa';
 

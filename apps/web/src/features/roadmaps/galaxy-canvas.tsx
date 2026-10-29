@@ -1,6 +1,6 @@
 import { useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { Maximize2, Minus, Plus } from 'lucide-react';
 import { ROADMAP_CATEGORIES, type RoadmapCategory, type RoadmapSummaryView } from '@campuslink/shared';
 import { cn } from '../../lib/cn';

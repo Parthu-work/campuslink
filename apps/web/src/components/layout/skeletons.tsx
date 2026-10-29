@@ -1,5 +1,5 @@
 import { useNavigation } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { Skeleton } from '../ui/misc';
 
 /**

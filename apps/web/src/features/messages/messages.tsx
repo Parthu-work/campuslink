@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
+import { useTranslation } from '../../i18n/react';
+import type { TFunction } from '../../i18n/core';
 import {
   useInfiniteQuery,
   useMutation,

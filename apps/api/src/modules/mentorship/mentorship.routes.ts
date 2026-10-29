@@ -88,6 +88,7 @@ export function mentorshipRoutes(
     {
       method: 'get',
       path: '/me/match-preferences',
+      feature: 'alumniMatch',
       tag,
       summary: 'My private Alumni Match inputs (goals, target companies)',
       access: REQUEST,
@@ -96,6 +97,7 @@ export function mentorshipRoutes(
     {
       method: 'put',
       path: '/me/match-preferences',
+      feature: 'alumniMatch',
       tag,
       summary: 'Update my Alumni Match inputs',
       access: REQUEST,
@@ -119,6 +121,7 @@ export function mentorshipRoutes(
     {
       method: 'get',
       path: '/mentors/match',
+      feature: 'alumniMatch',
       tag,
       summary: 'Alumni Match: mentors ranked for me, with the reasons',
       access: REQUEST,

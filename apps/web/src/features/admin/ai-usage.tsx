@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { Activity, CircleAlert, PauseCircle } from 'lucide-react';
 import { STUDY_PERIODS, type AiUsageView, type Count, type StudyPeriod } from '@campuslink/shared';

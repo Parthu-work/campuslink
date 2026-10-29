@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { BOT_CHECK_HOST_ID } from '../../lib/bot-check-config';
 
 /**

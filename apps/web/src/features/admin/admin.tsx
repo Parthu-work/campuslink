@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { ImageUp, LayoutDashboard, Search, ScrollText, Trash2 } from 'lucide-react';
@@ -579,6 +579,7 @@ export function FeaturesAdmin() {
             <li key={f} className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-1">
               <Switch
                 label={t(`feature.${f}`)}
+                description={t(`featureHint.${f}`)}
                 checked={settings.data.features[f]}
                 onChange={(on) => save.mutate({ features: { [f]: on } })}
               />

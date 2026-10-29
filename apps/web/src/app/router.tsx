@@ -10,9 +10,9 @@ import {
   type RouteObject,
 } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../i18n/react';
 import { Compass } from 'lucide-react';
-import { ADMIN_PERMISSIONS, type Permission } from '@campuslink/shared';
+import { ADMIN_PERMISSIONS, type Feature, type Permission, type PublicTenant } from '@campuslink/shared';
 import { useTenant } from '../lib/tenant-context';
 import { importWithRetry, setPendingTargetResolver } from '../lib/chunk-reload';
 import { registerPreloadRoutes, registerRouteTables } from '../lib/preload';
@@ -88,7 +88,9 @@ const load = {
   platform: () => import('../features/platform/platform'),
 };
 
-type Gate = Permission | readonly Permission[];
+type Gate = Permission | readonly Permission[] | { permission: Permission; feature: Feature };
+/** A screen of a feature the college can switch off (Admin › Features). */
+const inFeature = (feature: Feature, permission: Permission): Gate => ({ permission, feature });
 type Place = { path: string } | { index: true };
 
 /** A screen's first data, started by the route loader in parallel with its code (audit TR-2). */
@@ -123,9 +125,14 @@ function lazyScreen<M>(importer: () => Promise<M>, name: keyof M & string, gate?
       return { element: <RouteError error={error} /> };
     }
     const Screen = mod[name] as unknown as ComponentType;
+    const feature = gate && typeof gate === 'object' && 'feature' in gate ? gate.feature : undefined;
+    const permission = feature ? (gate as { permission: Permission }).permission : (gate as Permission);
     return {
       element: gate ? (
-        <RequirePermission permission={typeof gate === 'string' ? gate : [...gate]}>
+        <RequirePermission
+          permission={typeof permission === 'string' ? permission : [...(permission as Permission[])]}
+          feature={feature}
+        >
           <Screen />
         </RequirePermission>
       ) : (
@@ -278,10 +285,13 @@ function collegeRoutes(): RouteObject[] {
               q.homeFeed(url.searchParams.get('tab') === 'following' ? 'following' : 'for_you'),
             ),
             qc.ensureQueryData(q.oneUsefulThing()),
-            qc.ensureQueryData(q.stories()),
+            // Stories only when the college has them on (Admin › Features).
+            ...(qc.getQueryData<PublicTenant>(q.tenant().queryKey)?.features.stories === false
+              ? []
+              : [qc.ensureQueryData(q.stories())]),
           ]),
           still(screen(load.verify, 'VerifyPage', undefined, at('/verify'))),
-          screen(load.study, 'StudyPage', 'study:read', at('/study'), () => [
+          screen(load.study, 'StudyPage', inFeature('study', 'study:read'), at('/study'), () => [
             qc
               .ensureQueryData(q.me())
               .then((me) =>
@@ -289,7 +299,7 @@ function collegeRoutes(): RouteObject[] {
               ),
             qc.ensureQueryData(q.aiStatus()),
           ]),
-          screen(load.subject, 'SubjectPage', 'study:read', at('/study/:id'), ({ id }) =>
+          screen(load.subject, 'SubjectPage', inFeature('study', 'study:read'), at('/study/:id'), ({ id }) =>
             isId(id)
               ? [
                   qc.ensureQueryData(q.subject(id)),
@@ -298,26 +308,39 @@ function collegeRoutes(): RouteObject[] {
                 ]
               : [],
           ),
-          screen(load.insights, 'InsightsPage', 'study:analytics', at('/study/:id/insights'), ({ id }) =>
-            isId(id) ? [qc.ensureQueryData(q.subject(id)), qc.ensureQueryData(q.studyInsights(id, 30))] : [],
+          screen(
+            load.insights,
+            'InsightsPage',
+            inFeature('study', 'study:analytics'),
+            at('/study/:id/insights'),
+            ({ id }) =>
+              isId(id)
+                ? [qc.ensureQueryData(q.subject(id)), qc.ensureQueryData(q.studyInsights(id, 30))]
+                : [],
           ),
           // Conversations with a composer (and a streaming answer) never refetch under a pull.
           still(
-            screen(load.chat, 'ChatPage', 'study:read', at('/study/chat'), () => [
+            screen(load.chat, 'ChatPage', inFeature('study', 'study:read'), at('/study/chat'), () => [
               qc.ensureQueryData(q.chatSessions()),
               qc.ensureQueryData(q.aiStatus()),
             ]),
           ),
           still(
-            screen(load.chat, 'ChatPage', 'study:read', at('/study/chat/:sessionId'), ({ sessionId }) => [
-              qc.ensureQueryData(q.chatSessions()),
-              ...(isId(sessionId) ? [qc.ensureQueryData(q.chatSession(sessionId))] : []),
-            ]),
+            screen(
+              load.chat,
+              'ChatPage',
+              inFeature('study', 'study:read'),
+              at('/study/chat/:sessionId'),
+              ({ sessionId }) => [
+                qc.ensureQueryData(q.chatSessions()),
+                ...(isId(sessionId) ? [qc.ensureQueryData(q.chatSession(sessionId))] : []),
+              ],
+            ),
           ),
           screen(
             load.material,
             'MaterialPage',
-            'study:read',
+            inFeature('study', 'study:read'),
             at('/study/:id/m/:materialId'),
             ({ id, materialId }) =>
               isId(id) && isId(materialId)
@@ -331,8 +354,13 @@ function collegeRoutes(): RouteObject[] {
             isId(postId) ? [qc.ensureQueryData(q.post(postId)), qc.ensureQueryData(q.comments(postId))] : [],
           ),
           screen(load.collections, 'SavedPage', 'feed:interact', at('/saved')),
-          screen(load.collections, 'ReelsPage', 'feed:read', at('/reels')),
-          screen(load.collections, 'FollowingPage', 'sources:follow', at('/following')),
+          screen(load.collections, 'ReelsPage', inFeature('reels', 'feed:read'), at('/reels')),
+          screen(
+            load.collections,
+            'FollowingPage',
+            inFeature('contentSources', 'sources:follow'),
+            at('/following'),
+          ),
           screen(load.questions, 'QuestionsPage', 'feed:read', at('/questions')),
           screen(load.questions, 'QuestionPage', 'feed:read', at('/questions/:questionId')),
           screen(load.galaxy, 'RoadmapsPage', 'roadmaps:read', at('/roadmaps'), (_, url) => [
@@ -359,7 +387,12 @@ function collegeRoutes(): RouteObject[] {
           screen(load.progress, 'ProgressPage', undefined, at('/progress'), () => [
             qc.ensureQueryData(q.progress()),
           ]),
-          screen(load.leaderboard, 'LeaderboardPage', 'directory:read', at('/leaderboard')),
+          screen(
+            load.leaderboard,
+            'LeaderboardPage',
+            inFeature('leaderboards', 'directory:read'),
+            at('/leaderboard'),
+          ),
           screen(load.leaderboard, 'WallOfMentorsPage', 'directory:read', at('/wall-of-mentors')),
           screen(load.rewards, 'RewardsPage', 'rewards:redeem', at('/rewards')),
           screen(load.events, 'EventsPage', 'events:rsvp', at('/events'), () => [
@@ -415,8 +448,18 @@ function collegeRoutes(): RouteObject[] {
             screen(load.admin, 'UsersAdmin', 'users:read_admin', at('users')),
             screen(load.mentorshipAdmin, 'MentorshipAdmin', 'mentorship:oversee', at('mentorship')),
             screen(load.moderationAdmin, 'ModerationAdmin', 'moderation:act', at('moderation')),
-            screen(load.sourcesAdmin, 'SourcesAdmin', 'sources:manage', at('sources')),
-            screen(load.jobSourcesAdmin, 'JobSourcesAdmin', 'jobs:sources', at('job-sources')),
+            screen(
+              load.sourcesAdmin,
+              'SourcesAdmin',
+              inFeature('contentSources', 'sources:manage'),
+              at('sources'),
+            ),
+            screen(
+              load.jobSourcesAdmin,
+              'JobSourcesAdmin',
+              inFeature('jobsAggregation', 'jobs:sources'),
+              at('job-sources'),
+            ),
             screen(load.analyticsAdmin, 'AnalyticsAdmin', 'analytics:cohort', at('analytics'), () => [
               qc.ensureQueryData(q.analytics(q.ANALYTICS_DEFAULTS)),
             ]),
@@ -426,7 +469,7 @@ function collegeRoutes(): RouteObject[] {
             screen(load.listAdmin, 'VerificationAdmin', 'verification:review', at('verification')),
             still(screen(load.admin, 'BrandingAdmin', 'tenant:branding', at('branding'))),
             still(screen(load.admin, 'FeaturesAdmin', 'tenant:settings', at('features'))),
-            still(screen(load.aiAdmin, 'AiAdmin', 'ai:settings', at('ai'))),
+            still(screen(load.aiAdmin, 'AiAdmin', inFeature('study', 'ai:settings'), at('ai'))),
             screen(load.admin, 'AuditAdmin', 'audit:read', at('audit')),
           ]),
         ]),

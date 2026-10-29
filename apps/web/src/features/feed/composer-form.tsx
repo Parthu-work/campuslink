@@ -1,6 +1,6 @@
 /* The post form, loaded when the composer opens (Home's first paint only needs the prompt bar). */
 import { useEffect, useId, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { Film, ImagePlus, Link2, ListChecks, PenLine, X } from 'lucide-react';
@@ -19,6 +19,7 @@ import { Chip } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
 import { useDraft } from '../../lib/drafts';
 import { useCan } from '../../lib/me';
+import { useFeature } from '../../lib/tenant-context';
 import { newIdempotencyKey } from '../../lib/format';
 
 type Media = { fileId: string; alt: string; preview: string; durationSec?: number };
@@ -66,7 +67,8 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
   const { t } = useTranslation();
   const qc = useQueryClient();
   const canAnnounce = useCan('announcements:post');
-  const [kind, setKind] = useState<PostKind>(initialKind);
+  const reels = useFeature('reels');
+  const [kind, setKind] = useState<PostKind>(initialKind === 'reel' && !reels ? 'text' : initialKind);
   const [body, setBody] = useDraft('composer');
   const [topics, setTopics] = useState<Topic[]>([]);
   const [announcement, setAnnouncement] = useState(false);
@@ -159,7 +161,7 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
         label={t('feed.kind')}
         variant="chip"
         value={kind}
-        options={KINDS.map(([k, Icon]) => ({
+        options={KINDS.filter(([k]) => reels || k !== 'reel').map(([k, Icon]) => ({
           value: k,
           label: t(`feed.kinds.${k}`),
           icon: <Icon aria-hidden />,

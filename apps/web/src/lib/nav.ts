@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../i18n/react';
 import {
   Activity,
   BadgeCheck,
@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import {
   buildNav,
+  featureShipped,
   type AdminGroup,
   type AdminSectionId,
   type SettingsSectionId,
@@ -157,8 +158,9 @@ export function useNav() {
         roles: (me?.roles ?? []) as Role[],
         permissions: permissions as never[],
         verified: platform || !!me?.verified,
+        features: tenant.features,
       },
-      platform ? PLATFORM_SHIPPED : COLLEGE_SHIPPED,
+      platform ? PLATFORM_SHIPPED : featureShipped(COLLEGE_SHIPPED, tenant.features),
     );
     const badges: Partial<Record<NavId, number>> = {
       messages: unreadMessages,
@@ -192,7 +194,7 @@ export function useNav() {
       unreadNotifications,
       canMessage: permissions.includes('messages:send'),
     };
-  }, [me, platform, t, unreadMessages, unreadNotifications]);
+  }, [me, platform, tenant.features, t, unreadMessages, unreadNotifications]);
 }
 
 /** Platform-aware shortcut hint for the command palette (⌘K on Apple devices). */

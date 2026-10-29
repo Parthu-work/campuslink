@@ -1,4 +1,5 @@
 import { Schema, type InferSchemaType, type HydratedDocument } from 'mongoose';
+import { FEATURE_KEYS, NEW_TENANT_FEATURES } from '@campuslink/shared';
 import { definePlatformModel, baseSchemaOptions } from '../../db/models.js';
 
 /** The tenant registry is the only platform-level collection besides nothing else in Phase 1. */
@@ -18,13 +19,10 @@ const tenantSchema = new Schema(
     },
     /** The uploaded logo (a `branding` file); null shows the monogram. */
     logo: { fileId: { type: Schema.Types.ObjectId, default: null } },
-    features: {
-      studentPosting: { type: Boolean, default: false },
-      stories: { type: Boolean, default: true },
-      leaderboards: { type: Boolean, default: false },
-      alumniMatch: { type: Boolean, default: true },
-      jobsAggregation: { type: Boolean, default: true },
-    },
+    /** Feature switches (B1). A new college starts focused; see NEW_TENANT_FEATURES. */
+    features: Object.fromEntries(
+      FEATURE_KEYS.map((k) => [k, { type: Boolean, default: NEW_TENANT_FEATURES[k] }]),
+    ) as Record<(typeof FEATURE_KEYS)[number], { type: BooleanConstructor; default: boolean }>,
     allowedEmailDomains: { type: [String], default: [] },
     limits: {
       mentorshipRequestsPerWeek: { type: Number, default: 5 },

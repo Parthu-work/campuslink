@@ -1,5 +1,5 @@
 import type { Types } from 'mongoose';
-import type { PermissionOverrides, Branding, Feature } from '@campuslink/shared';
+import { resolveFeatures, type PermissionOverrides, type Branding, type Feature } from '@campuslink/shared';
 import { TenantModel } from './tenant.model.js';
 
 export interface TenantRecord {
@@ -17,13 +17,17 @@ export interface TenantRecord {
 }
 
 const TTL_MS = 30_000;
+
+/** Lean reads skip schema defaults: every switch gets a value (stored, else what it was before B1). */
+const normalise = (doc: TenantRecord | null): TenantRecord | null =>
+  doc ? { ...doc, features: resolveFeatures(doc.features) } : null;
 const cache = new Map<string, { at: number; value: TenantRecord | null }>();
 
 /** Small read-through cache; host → tenant lookups happen on every request. */
 export async function findTenantBySlug(slug: string): Promise<TenantRecord | null> {
   const hit = cache.get(slug);
   if (hit && Date.now() - hit.at < TTL_MS) return hit.value;
-  const doc = await TenantModel.findOne({ slug }).lean<TenantRecord>();
+  const doc = normalise(await TenantModel.findOne({ slug }).lean<TenantRecord>());
   cache.set(slug, { at: Date.now(), value: doc });
   return doc;
 }
@@ -32,7 +36,7 @@ export async function findTenantBySlug(slug: string): Promise<TenantRecord | nul
 export async function findTenantById(id: Types.ObjectId | string): Promise<TenantRecord | null> {
   for (const v of cache.values())
     if (v.value && String(v.value._id) === String(id) && Date.now() - v.at < TTL_MS) return v.value;
-  const doc = await TenantModel.findById(id).lean<TenantRecord>();
+  const doc = normalise(await TenantModel.findById(id).lean<TenantRecord>());
   if (doc) cache.set(doc.slug, { at: Date.now(), value: doc });
   return doc;
 }

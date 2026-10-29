@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DropdownMenu } from 'radix-ui';
 import { toast } from '../../lib/toast';

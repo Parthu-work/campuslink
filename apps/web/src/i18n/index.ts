@@ -1,5 +1,4 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import i18n from './core';
 import { APP_NAME, DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from '@campuslink/shared';
 import { prefs } from '../lib/storage';
 
@@ -19,20 +18,17 @@ const initial: Locale = SUPPORTED_LOCALES.includes(saved as Locale) ? (saved as 
 export async function loadLanguage(lng: Locale) {
   if (i18n.hasResourceBundle(lng, 'translation')) return;
   const { default: strings } = await bundles[lng]();
-  i18n.addResourceBundle(lng, 'translation', strings, true, true);
+  i18n.addResourceBundle(lng, 'translation', strings);
 }
 
 /** Resolves once the first language is ready; the app renders after it (main.tsx). */
 export const i18nReady = bundles[initial]().then(({ default: strings }) =>
-  i18n.use(initReactI18next).init({
+  i18n.init({
     resources: { [initial]: { translation: strings } },
     lng: initial,
-    // Telugu and English are at parity (a unit test checks it), so no fallback bundle is fetched.
-    fallbackLng: false,
-    partialBundledLanguages: true,
+    // Every language is at parity (a unit test checks it), so there is no fallback bundle.
     // {{app}} in any string is the product name (single source: packages/shared/src/brand.ts).
-    interpolation: { escapeValue: false, defaultVariables: { app: APP_NAME } },
-    returnNull: false,
+    defaultVariables: { app: APP_NAME },
   }),
 );
 document.documentElement.setAttribute('lang', initial);

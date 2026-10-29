@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowUp, Copy, RefreshCw, Sparkles, Square, ThumbsDown, ThumbsUp, X } from 'lucide-react';
 import {

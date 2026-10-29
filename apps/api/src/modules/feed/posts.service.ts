@@ -31,6 +31,7 @@ import type { SafetyService } from '../moderation/safety.service.js';
 import { isModerator, type ModerationService, type Removal } from '../moderation/moderation.service.js';
 import type { AuthState } from '../../types.js';
 import { noAward, type Award } from '../../lib/awards.js';
+import { featureEnabled, requireFeature } from '../tenants/features.js';
 
 const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11000;
 
@@ -76,6 +77,7 @@ export class PostsService {
 
   // ── Create ─────────────────────────────
   async create(viewer: AuthState, body: CreatePostBody): Promise<PostView> {
+    if (body.kind === 'reel') await requireFeature('reels');
     if (body.announcement && !viewer.permissions.has('announcements:post'))
       throw new AppError(403, ErrorCode.FORBIDDEN, 'Only staff can post official announcements');
     const text = plainText(body.body);
@@ -254,11 +256,15 @@ export class PostsService {
   }
 
   async get(viewer: AuthState, id: string) {
-    return (await this.views(viewer, [await this.visible(viewer, id)]))[0] as PostView;
+    const post = await this.visible(viewer, id);
+    if (post.kind === 'reel') await requireFeature('reels');
+    return (await this.views(viewer, [post]))[0] as PostView;
   }
 
   async list(viewer: AuthState, q: z.output<typeof postsQuery>) {
-    const filter: Record<string, unknown> = {};
+    if (q.kind === 'reel') await requireFeature('reels');
+    // Reels stay out of every list while the college has them off (B1).
+    const filter: Record<string, unknown> = (await featureEnabled('reels')) ? {} : { kind: { $ne: 'reel' } };
     if (q.saved) {
       const saves = await SaveModel.find({
         userId: new Types.ObjectId(viewer.userId),
@@ -270,6 +276,7 @@ export class PostsService {
       const posts = await PostModel.find({
         _id: { $in: saves.map((s) => s.postId) },
         status: 'published',
+        ...filter,
       }).lean<PostDoc[]>();
       const byId = new Map(posts.map((p) => [String(p._id), p]));
       const ordered = saves.slice(0, 20).flatMap((s) => byId.get(String(s.postId)) ?? []);
@@ -531,8 +538,8 @@ export class PostsService {
   }
 
   /** Ranking inputs only (no bodies or media), so For You can score hundreds of posts cheaply. */
-  async rankingCandidates(since: Date, until: Date, limit: number) {
-    return PostModel.find({ status: 'published', createdAt: { $gte: since, $lte: until } })
+  async rankingCandidates(since: Date, until: Date, limit: number, filter: Record<string, unknown> = {}) {
+    return PostModel.find({ status: 'published', createdAt: { $gte: since, $lte: until }, ...filter })
       .select(RANK_FIELDS)
       .sort({ createdAt: -1 })
       .limit(limit)

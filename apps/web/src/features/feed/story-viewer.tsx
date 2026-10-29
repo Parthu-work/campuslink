@@ -1,6 +1,6 @@
 /* The full-screen story viewer, loaded when a ring is opened (Home's first paint needs only the rings). */
 import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog as D } from 'radix-ui';
 import { toast } from '../../lib/toast';

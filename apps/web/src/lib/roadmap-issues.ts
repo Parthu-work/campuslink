@@ -1,4 +1,4 @@
-import type { TFunction } from 'i18next';
+import type { TFunction } from '../i18n/core';
 
 /** The editor's names for the roadmap's fields (i18n keys under roadmaps.editor). */
 const FIELD: Record<string, string> = {

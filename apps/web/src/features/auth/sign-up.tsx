@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { MailCheck } from 'lucide-react';
 import {
   CONSENT_PURPOSES,

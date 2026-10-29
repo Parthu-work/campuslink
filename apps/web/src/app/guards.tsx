@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { Link, Navigate, useLocation } from 'react-router';
-import { useTranslation } from 'react-i18next';
-import { BadgeCheck, CloudOff, Loader2, ShieldAlert } from 'lucide-react';
-import { ROLE_PERMISSIONS, safeReturnPath, type Permission } from '@campuslink/shared';
+import { useTranslation } from '../i18n/react';
+import { BadgeCheck, CloudOff, Loader2, ShieldAlert, ToggleLeft } from 'lucide-react';
+import { ROLE_PERMISSIONS, safeReturnPath, type Feature, type Permission } from '@campuslink/shared';
 import { useSession } from '../lib/session';
 import { refreshSession } from '../lib/api';
 import { useMe } from '../lib/me';
@@ -100,18 +100,37 @@ export function PublicOnly({ children, home }: { children: ReactNode; home: stri
   return <Navigate to={from ?? home} replace />;
 }
 
-/** UX mirror of the API's authorization: any one of the permissions opens the page. */
+/**
+ * UX mirror of the API's authorization: any one of the permissions opens the page, and a page of a
+ * feature the college has switched off (Admin › Features) says so, even from a saved link.
+ */
 export function RequirePermission({
   permission,
+  feature,
   children,
 }: {
   permission: Permission | Permission[];
+  feature?: Feature | undefined;
   children: ReactNode;
 }) {
   const { data: me } = useMe();
   const { t } = useTranslation();
   const tenant = useTenant();
   const wanted = Array.isArray(permission) ? permission : [permission];
+  const home = (
+    <Link
+      to={tenant.kind === 'platform' ? '/platform' : '/home'}
+      className={buttonVariants({ variant: 'ghost' })}
+    >
+      {t('errors.goHome')}
+    </Link>
+  );
+  if (feature && tenant.features?.[feature] === false)
+    return (
+      <EmptyState icon={<ToggleLeft className="size-6" />} title={t('errors.featureOffTitle')} action={home}>
+        {t('errors.featureOffBody')}
+      </EmptyState>
+    );
   if (wanted.some((p) => me?.permissions.includes(p))) return <>{children}</>;
   // Unverified members get the reason and the way forward, not a dead end (audit IA-7).
   // Only when verifying would actually open it (an unverified student is never sent to verify for
@@ -131,18 +150,7 @@ export function RequirePermission({
       {t('errors.verifyFirstBody')}
     </EmptyState>
   ) : (
-    <EmptyState
-      icon={<ShieldAlert className="size-6" />}
-      title={t('errors.forbidden')}
-      action={
-        <Link
-          to={tenant.kind === 'platform' ? '/platform' : '/home'}
-          className={buttonVariants({ variant: 'ghost' })}
-        >
-          {t('errors.goHome')}
-        </Link>
-      }
-    >
+    <EmptyState icon={<ShieldAlert className="size-6" />} title={t('errors.forbidden')} action={home}>
       {t('errors.forbiddenBody')}
     </EmptyState>
   );

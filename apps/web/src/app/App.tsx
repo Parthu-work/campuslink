@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../lib/query-client';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../i18n/react';
 import { Building2, PauseCircle } from 'lucide-react';
 import { ApiError } from '../lib/api';
 import { TenantProvider } from '../lib/tenant';

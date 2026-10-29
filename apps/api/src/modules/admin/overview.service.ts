@@ -13,6 +13,7 @@ import type { ImportsService } from '../imports/imports.service.js';
 import type { AnalyticsService } from '../analytics/analytics.service.js';
 import type { AiSettingsService } from '../study/ai-settings.service.js';
 import type { AiUsageService } from '../study/ai-usage.service.js';
+import { featureEnabled } from '../tenants/features.js';
 
 export interface OverviewDeps {
   users: UsersService;
@@ -40,6 +41,8 @@ export class AdminOverviewService {
     const can = (p: Permission) => viewer.permissions.has(p);
     if (!ADMIN_PERMISSIONS.some(can)) throw forbidden();
     const when = <T>(ok: boolean, fn: () => Promise<T>) => (ok ? fn() : Promise.resolve(null));
+    // Study queues stay out of the overview while the college has Study off (B1).
+    const study = await featureEnabled('study');
     const [members, activity, verification, moderation, roadmapReviews, materialReviews, imports, ai] =
       await Promise.all([
         when(can('users:read_admin'), async () => {
@@ -59,9 +62,11 @@ export class AdminOverviewService {
           heldItems: await this.d.sources.heldCount(),
         })),
         when(can('roadmaps:review'), async () => ({ pending: await this.d.roadmaps.reviewCount() })),
-        when(can('study:manage'), async () => ({ pending: await this.d.materials.reviewCount(viewer) })),
+        when(study && can('study:manage'), async () => ({
+          pending: await this.d.materials.reviewCount(viewer),
+        })),
         when(can('imports:manage'), () => this.d.imports.activityCounts()),
-        when(can('ai:settings'), async () => {
+        when(study && can('ai:settings'), async () => {
           const rt = await this.d.ai.runtime();
           const limit = rt.settings.monthlyTokenBudget;
           const used = limit > 0 ? await this.d.usage.monthTokens() : 0;

@@ -15,6 +15,7 @@ import { tenantResolver } from './http/tenant.middleware.js';
 import { createLimiters } from './http/rate-limit.js';
 import { authenticate, csrfProtection } from './http/auth.middleware.js';
 import { defineModule, type RouteRegistry, type PipelineDeps } from './http/registry.js';
+import { gatedJob, withFeature } from './modules/tenants/features.js';
 import { buildOpenApi } from './http/openapi.js';
 import { TokenService } from './lib/jwt.js';
 import { FieldCipher } from './lib/crypto.js';
@@ -361,7 +362,10 @@ export function createApp({
   filesService.registerAccess('post_media', (fileId, viewer) => postsService.mediaAccess(fileId, viewer));
   filesService.registerAccess('story_media', (fileId, viewer) => storiesService.mediaAccess(fileId, viewer));
   safetyService.onBlock((a, b) => followsService.onBlock(a, b));
-  queue.register(FETCH_JOB, (data) => sourcesService.runFetch(data));
+  queue.register(
+    FETCH_JOB,
+    gatedJob('contentSources', (data) => sourcesService.runFetch(data)),
+  );
 
   // ── Jobs and referrals (Phase 5) ─────────────────────────────
   const jobsService = new JobsService({
@@ -397,7 +401,10 @@ export function createApp({
     referralsService.resumeAccess(fileId, viewer),
   );
   safetyService.onBlock((a, b) => referralsService.onBlock(a, b));
-  queue.register(JOB_FETCH_JOB, (data) => jobSourcesService.runFetch(data));
+  queue.register(
+    JOB_FETCH_JOB,
+    gatedJob('jobsAggregation', (data) => jobSourcesService.runFetch(data)),
+  );
   queue.register(ALERT_JOB, (data) => jobsService.runAlert(data));
   queue.register(REFERRAL_EXPIRE_JOB, (data) => referralsService.onExpire(data));
 
@@ -523,7 +530,10 @@ export function createApp({
     materialsService.detachTopics(subjectId, topicIds);
   for (const purpose of ['study_material', 'study_thumbnail'] as const)
     filesService.registerAccess(purpose, (fileId, viewer) => materialsService.fileAccess(fileId, viewer));
-  queue.register(PROCESS_JOB, (data) => materialPipeline.run(data));
+  queue.register(
+    PROCESS_JOB,
+    gatedJob('study', (data) => materialPipeline.run(data)),
+  );
 
   // Embeddings, the vector index and hybrid retrieval (spec step 3).
   const vectorIndex = new VectorIndex(vectorStore ?? createVectorStore(env, fetcher));
@@ -547,7 +557,10 @@ export function createApp({
   materialsService.onVisibility = (id, visibility) => indexingService.materialVisibility(id, visibility);
   materialsService.onRemoved = (id) => indexingService.materialRemoved(id);
   aiSettingsService.onEmbeddingReady = () => indexingService.scheduleBackfill();
-  queue.register(EMBED_JOB, (data) => indexingService.runBackfill(data));
+  queue.register(
+    EMBED_JOB,
+    gatedJob('study', (data) => indexingService.runBackfill(data)),
+  );
   // The study assistant (spec step 4).
   const chatService = new ChatService({
     subjects: subjectsService,
@@ -713,12 +726,18 @@ export function createApp({
     ),
   );
   app.use(API_PREFIX, defineModule('qa', qaRoutes(qaService), pipeline));
-  app.use(API_PREFIX, defineModule('content-sources', sourceRoutes(sourcesService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('content-sources', withFeature('contentSources', sourceRoutes(sourcesService)), pipeline),
+  );
   app.use(
     API_PREFIX,
     defineModule('jobs', jobRoutes({ jobs: jobsService, referrals: referralsService }), pipeline),
   );
-  app.use(API_PREFIX, defineModule('job-sources', jobSourceRoutes(jobSourcesService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('job-sources', withFeature('jobsAggregation', jobSourceRoutes(jobSourcesService)), pipeline),
+  );
   app.use(
     API_PREFIX,
     defineModule('referrals', referralRoutes({ referrals: referralsService, files: filesService }), pipeline),
@@ -732,7 +751,10 @@ export function createApp({
     API_PREFIX,
     defineModule(
       'study',
-      studyRoutes({ subjects: subjectsService, ai: aiSettingsService, insights: insightsService }),
+      withFeature(
+        'study',
+        studyRoutes({ subjects: subjectsService, ai: aiSettingsService, insights: insightsService }),
+      ),
       pipeline,
     ),
   );
@@ -740,15 +762,22 @@ export function createApp({
     API_PREFIX,
     defineModule(
       'ai-settings',
-      aiSettingsRoutes(aiSettingsService, indexingService, insightsService),
+      withFeature('study', aiSettingsRoutes(aiSettingsService, indexingService, insightsService)),
       pipeline,
     ),
   );
   app.use(
     API_PREFIX,
-    defineModule('study-materials', materialRoutes(materialsService, retrievalService), pipeline),
+    defineModule(
+      'study-materials',
+      withFeature('study', materialRoutes(materialsService, retrievalService)),
+      pipeline,
+    ),
   );
-  app.use(API_PREFIX, defineModule('study-chat', chatRoutes(chatService, logger), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('study-chat', withFeature('study', chatRoutes(chatService, logger)), pipeline),
+  );
   app.use(API_PREFIX, defineModule('admin-overview', adminOverviewRoutes(overviewService), pipeline));
   app.use(
     API_PREFIX,

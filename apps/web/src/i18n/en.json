@@ -444,10 +444,16 @@
   },
   "feature": {
     "studentPosting": "Students can publish feed posts",
-    "stories": "Stories and Tips reels",
-    "leaderboards": "Opt-in leaderboards",
-    "alumniMatch": "Swipe-style Alumni Match",
-    "jobsAggregation": "Automated job sources"
+    "stories": "Stories",
+    "leaderboards": "Leaderboards",
+    "alumniMatch": "Alumni Match",
+    "jobsAggregation": "Automatic job sources",
+    "reels": "Reels",
+    "contentSources": "News and articles",
+    "study": "Study",
+    "placements": "Placements",
+    "whatsapp": "WhatsApp",
+    "peerMentors": "Peer mentors"
   },
   "platform": {
     "title": "Colleges",
@@ -508,7 +514,9 @@
     "verifyFirstBody": "Your college confirms students and alumni by roll number. It takes about a minute, and then mentors, messages and posting open up.",
     "loadFailed": "This didn’t load. It’s usually a moment’s hiccup; try again.",
     "loadFailedTitle": "Couldn’t load this",
-    "offlineShort": "You’re offline. This will load when you reconnect."
+    "offlineShort": "You’re offline. This will load when you reconnect.",
+    "featureOffTitle": "Your college has switched this off",
+    "featureOffBody": "This part of the app isn’t in use at your college right now. Everything you can use is in your menu."
   },
   "verify": {
     "title": "Verify you’re from {{college}}",
@@ -3076,5 +3084,18 @@
       "chatOutput": "Answers: output, per 1M tokens",
       "embedding": "Embeddings, per 1M tokens"
     }
+  },
+  "featureHint": {
+    "studentPosting": "Students can post in the feed, not only comment. Posts are moderated like everyone else’s.",
+    "stories": "Photos and short notes at the top of Home that disappear after a day.",
+    "reels": "Short videos of up to a minute in the feed and on the Reels page.",
+    "leaderboards": "Members who opt in can appear in a ranking by points.",
+    "alumniMatch": "Students swipe through suggested alumni mentors, with the reasons for each match.",
+    "jobsAggregation": "Openings fetched automatically from public job boards you add. Openings members post stay either way.",
+    "contentSources": "Headlines from RSS and Atom feeds in the feed, with a link to the original.",
+    "study": "Subjects, notes and videos, and the study assistant.",
+    "placements": "Placement drives, registrations, round results and offers.",
+    "whatsapp": "Codes and important updates on WhatsApp, for members who agree to it.",
+    "peerMentors": "Seniors guiding juniors. Coming soon."
   }
 }

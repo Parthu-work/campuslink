@@ -25,7 +25,8 @@ const call = (method: string, path: string, token: string) => {
 };
 
 beforeAll(async () => {
-  T = await makeTenant('perm');
+  // Every module on, so each route is reached (feature switches have their own suite).
+  T = await makeTenant('perm', 'college', { leaderboards: true });
   for (const role of TENANT_ROLES)
     users[role] = await makeUser(ctx, T, { roles: [role], mfa: role === 'COLLEGE_ADMIN' });
 });

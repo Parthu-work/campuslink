@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { Award, Download, Flame, Gift, Lock, Medal, Sparkles, Trophy, Users } from 'lucide-react';
@@ -15,7 +15,7 @@ import { ProgressRing } from '../../components/ui/progress';
 import { api, ApiError, saveBlob } from '../../lib/api';
 import { progress } from '../../lib/queries';
 import { useCan, useMe } from '../../lib/me';
-import { useTenant } from '../../lib/tenant-context';
+import { useFeature, useTenant } from '../../lib/tenant-context';
 import { formatRelative, formatWeekday, localDateKey } from '../../lib/format';
 import { celebrate, firstSighting } from '../../lib/celebrate';
 import { drawImpactCard } from '../../lib/impact-card';
@@ -88,6 +88,7 @@ export function ProgressPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const canMentor = useCan('mentorship:mentor');
+  const leaderboards = useFeature('leaderboards');
   const q = useQuery({ ...progress(), ...SCREEN });
   // A badge earned in the last few days is celebrated the first time this device sees it (§6).
   useEffect(() => {
@@ -124,9 +125,11 @@ export function ProgressPage() {
         intro={t('progress.intro')}
         actions={
           <>
-            <Link to="/leaderboard" className={buttonVariants({ size: 'sm' })}>
-              <Medal className="size-4" aria-hidden /> {t('progress.leaderboard')}
-            </Link>
+            {leaderboards && (
+              <Link to="/leaderboard" className={buttonVariants({ size: 'sm' })}>
+                <Medal className="size-4" aria-hidden /> {t('progress.leaderboard')}
+              </Link>
+            )}
             <Link to="/rewards" className={buttonVariants({ size: 'sm', variant: 'primary' })}>
               <Gift className="size-4" aria-hidden /> {t('progress.rewards')}
             </Link>
@@ -305,13 +308,15 @@ export function ProgressPage() {
             {t('progress.privacy')}
           </h2>
           <Card className="grid gap-3 p-4">
-            <Checkbox
-              id="opt-leaderboard"
-              checked={p.prefs.showOnLeaderboard}
-              onChange={(v) => prefs.mutate({ ...p.prefs, showOnLeaderboard: v })}
-            >
-              {t('progress.optLeaderboard')}
-            </Checkbox>
+            {leaderboards && (
+              <Checkbox
+                id="opt-leaderboard"
+                checked={p.prefs.showOnLeaderboard}
+                onChange={(v) => prefs.mutate({ ...p.prefs, showOnLeaderboard: v })}
+              >
+                {t('progress.optLeaderboard')}
+              </Checkbox>
+            )}
             {(canMentor || p.impact > 0) && (
               <Checkbox
                 id="opt-wall"

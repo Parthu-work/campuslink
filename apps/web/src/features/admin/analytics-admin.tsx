@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { Download, Printer } from 'lucide-react';
 import { BRANCHES, REPORTS, type Count, type MonthPoint, type ReportId } from '@campuslink/shared';

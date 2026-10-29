@@ -33,8 +33,8 @@ const inB = (u: TestUser) => api(ctx, B.host, u.token);
 const HOUR = 3_600_000;
 
 beforeAll(async () => {
-  A = await makeTenant('isogamea');
-  B = await makeTenant('isogameb');
+  A = await makeTenant('isogamea', 'college', { leaderboards: true });
+  B = await makeTenant('isogameb', 'college', { leaderboards: true });
   [adminA, staffA, s1A, s2A, alumA] = [
     await makeUser(ctx, A, { roles: ['COLLEGE_ADMIN'], mfa: true }),
     await makeUser(ctx, A, { roles: ['FACULTY'] }),

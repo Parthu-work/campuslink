@@ -19,6 +19,8 @@ export const ErrorCode = {
   CSRF_FAILED: 'CSRF_FAILED',
   WEAK_PASSWORD: 'WEAK_PASSWORD',
   BOT_CHECK_FAILED: 'BOT_CHECK_FAILED',
+  /** The college has switched this feature off (Admin › Features). */
+  FEATURE_DISABLED: 'FEATURE_DISABLED',
   INTERNAL: 'INTERNAL',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { Star } from 'lucide-react';
 import type { FeedbackView } from '@campuslink/shared';

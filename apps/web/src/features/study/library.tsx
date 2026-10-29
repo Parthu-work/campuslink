@@ -1,5 +1,5 @@
 import { lazy, Suspense, useDeferredValue, useId, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CircleAlert, FileText, Loader, Plus, Search } from 'lucide-react';
 import {

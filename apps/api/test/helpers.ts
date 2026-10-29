@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { Types } from 'mongoose';
 import { generate } from 'otplib';
-import type { Role, Capability } from '@campuslink/shared';
+import { LEGACY_FEATURES, type Role, type Capability, type Feature } from '@campuslink/shared';
 import { loadEnv } from '../src/config/env.js';
 import { createLogger } from '../src/lib/logger.js';
 import { createApp, type AppDeps } from '../src/app.js';
@@ -54,10 +54,14 @@ export type TestTenant = { _id: Types.ObjectId; slug: string; host: string };
 export async function makeTenant(
   slug: string,
   kind: 'college' | 'platform' = 'college',
+  features: Partial<Record<Feature, boolean>> = {},
 ): Promise<TestTenant> {
   const t = await TenantModel.create({
     slug,
     kind,
+    // Tests start with every module on, as colleges had before the switches (B1); feature tests
+    // switch them off explicitly.
+    features: { ...LEGACY_FEATURES, ...features },
     branding: {
       displayName: `${slug.toUpperCase()} College of Engineering`,
       shortName: slug.toUpperCase(),

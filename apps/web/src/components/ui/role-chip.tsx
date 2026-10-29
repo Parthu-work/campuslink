@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { cn } from '../../lib/cn';
 
 /** Which of the four role colours (palette.ts ROLE_HUES) a role wears. */

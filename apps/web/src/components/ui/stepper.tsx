@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { cn } from '../../lib/cn';
 
 /**

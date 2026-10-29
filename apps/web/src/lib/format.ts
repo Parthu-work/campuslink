@@ -1,4 +1,4 @@
-import i18n from 'i18next';
+import i18n from '../i18n/core';
 
 /** Dates and times in the viewer's own timezone and language. */
 export const locale = () => (i18n.language === 'te' ? 'te-IN' : 'en-IN');

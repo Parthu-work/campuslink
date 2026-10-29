@@ -11,6 +11,7 @@ import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
 import { createApp } from './app.js';
 import { syncIndexes } from './db/connect.js';
+import { runMigrations } from './db/migrations.js';
 import { ClamdScanner } from './lib/clamav.js';
 import { storageFromEnv } from './lib/storage-factory.js';
 import type { FilesService } from './modules/files/files.service.js';
@@ -40,6 +41,7 @@ async function main() {
     ioSub.connect(),
   ]);
   await syncIndexes();
+  await runMigrations(logger);
   logger.info('connected to MongoDB and Redis');
 
   connectTenantCacheBus({

@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { X } from 'lucide-react';
 
 /** Chips editor: Enter or comma adds, Backspace on empty removes the last, each chip has a remove button. */

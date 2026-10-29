@@ -1,4 +1,5 @@
 import { Role, type Permission } from './roles.js';
+import type { Feature } from './features.js';
 
 /**
  * One navigation model for every surface (bottom tabs, desktop rail, avatar menu, Create sheet,
@@ -170,6 +171,37 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   health: d('health', '/platform/health', 'platform', ['platform:health']),
 };
 
+/** Destinations that belong to a feature switch: hidden while the college has it off. */
+export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
+  study: 'study',
+  assistant: 'study',
+  subjects: 'study',
+  reels: 'reels',
+  following: 'contentSources',
+  leaderboard: 'leaderboards',
+};
+
+/** Admin sections that belong to a feature switch. */
+export const ADMIN_SECTION_FEATURE: Partial<Record<AdminSectionId, Feature>> = {
+  sources: 'contentSources',
+  jobSources: 'jobsAggregation',
+  ai: 'study',
+};
+
+/** The shipped destinations minus those whose feature the college has switched off. */
+export function featureShipped(
+  shipped: ReadonlySet<NavId>,
+  features: Partial<Record<Feature, boolean>> | undefined,
+): ReadonlySet<NavId> {
+  if (!features) return shipped;
+  return new Set(
+    [...shipped].filter((id) => {
+      const f = NAV_FEATURE[id];
+      return !f || features[f] !== false;
+    }),
+  );
+}
+
 /** Which bottom-tab set a member gets. Picked by their most senior role. */
 export type NavPersona = 'student' | 'alumni' | 'staff' | 'admin' | 'platform';
 
@@ -236,6 +268,8 @@ export interface NavSubject {
   permissions: readonly Permission[];
   /** Verified members never see the "Verify" entry. */
   verified: boolean;
+  /** The college's feature switches: admin sections of a switched-off feature are hidden. */
+  features?: Partial<Record<Feature, boolean>>;
 }
 
 export interface NavModel {
@@ -285,7 +319,14 @@ export function buildNav(subject: NavSubject, shipped: ReadonlySet<NavId>): NavM
     .filter((g) => g.items.length > 0);
   const admin = ADMIN_GROUPS.map((group) => ({
     group,
-    items: ADMIN_SECTIONS.filter((x) => x.group === group && subject.permissions.includes(x.permission)),
+    items: ADMIN_SECTIONS.filter(
+      (x) =>
+        x.group === group &&
+        subject.permissions.includes(x.permission) &&
+        !(
+          ADMIN_SECTION_FEATURE[x.id] && subject.features?.[ADMIN_SECTION_FEATURE[x.id] as Feature] === false
+        ),
+    ),
   })).filter((g) => g.items.length > 0);
   return { persona, tabs, menu, create, admin, settings: SETTINGS_SECTIONS };
 }

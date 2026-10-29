@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BadgeCheck, Clock, PauseCircle, Send } from 'lucide-react';
 import type { MentorCard } from '@campuslink/shared';

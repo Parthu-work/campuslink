@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../../i18n/react';
 import { Sparkles } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Sheet } from '../../../components/ui/dialog';

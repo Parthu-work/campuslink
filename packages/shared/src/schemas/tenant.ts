@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { HEX_COLOR } from '../color.js';
 import { tenantSlug, email, personName } from './common.js';
 import { ALL_PERMISSIONS, PLATFORM_PERMISSIONS, TENANT_ROLES } from '../roles.js';
+import { FEATURE_KEYS, type Feature } from '../features.js';
 
 const hex = z
   .string()
@@ -29,15 +30,7 @@ export type Branding = z.infer<typeof brandingSchema>;
 export const LOGO_MAX_BYTES = 512 * 1024;
 export const LOGO_TYPES = ['image/png', 'image/webp'] as const;
 
-export const FEATURES = {
-  studentPosting: 'Students can publish feed posts',
-  stories: 'Stories and Tips reels',
-  leaderboards: 'Opt-in leaderboards',
-  alumniMatch: 'Swipe-style Alumni Match',
-  jobsAggregation: 'Automated job sources',
-} as const;
-export type Feature = keyof typeof FEATURES;
-const featureKeys = Object.keys(FEATURES) as [Feature, ...Feature[]];
+const featureKeys = FEATURE_KEYS;
 
 const grantablePermission = z
   .enum(ALL_PERMISSIONS)

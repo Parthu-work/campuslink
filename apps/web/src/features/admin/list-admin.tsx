@@ -1,5 +1,5 @@
 import { useDeferredValue, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { Check, MailPlus, Plus, Search, Trash2, X } from 'lucide-react';

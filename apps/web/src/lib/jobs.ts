@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from './toast';
-import { useTranslation } from 'react-i18next';
-import i18n from 'i18next';
+import { useTranslation } from '../i18n/react';
+import i18n from '../i18n/core';
 import type { JobView, Salary, TrackStatus } from '@campuslink/shared';
 import { api, ApiError } from './api';
 

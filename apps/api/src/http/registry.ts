@@ -1,9 +1,10 @@
 import { Router, type Request, type Response, type RequestHandler } from 'express';
 import type { z } from 'zod';
 import { type ZodType } from 'zod';
-import { APP_NAME, ErrorCode, type Permission, type ApiSuccess } from '@campuslink/shared';
+import { APP_NAME, ErrorCode, type Feature, type Permission, type ApiSuccess } from '@campuslink/shared';
 import { AppError } from '../lib/errors.js';
 import type { LimiterName } from './rate-limit.js';
+import { featureGate } from '../modules/tenants/features.js';
 import type { IdempotencyService } from '../modules/idempotency/idempotency.service.js';
 
 export type Access =
@@ -39,6 +40,8 @@ export interface RouteSpec<
   access: Access;
   /** Which kind of tenant host serves this route. Default: college. */
   scope?: 'college' | 'platform' | 'any';
+  /** The feature switch this route belongs to: 403 FEATURE_DISABLED while the college has it off. */
+  feature?: Feature;
   body?: B;
   query?: Q;
   params?: P;
@@ -83,7 +86,7 @@ const parse = <T extends ZodType>(schema: T | undefined, value: unknown): unknow
 
 /**
  * Builds a module router. Order per route:
- * rate limit → tenant scope → CSRF → authenticate → authorize → validate → handler.
+ * rate limit → tenant scope → feature switch → CSRF → authenticate → authorize → validate → handler.
  * (Authorization runs before validation so unauthorised callers learn nothing about payload shape;
  * see ADR 0006.)
  */
@@ -94,6 +97,7 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
     const chain: RequestHandler[] = [];
     if (spec.limiter) chain.push(deps.limiters[spec.limiter]);
     chain.push(requireScope(spec.scope ?? 'college'));
+    if (spec.feature) chain.push(featureGate(spec.feature));
     if (spec.csrf) chain.push(deps.csrf);
     if (spec.access.kind !== 'public') chain.push(deps.authenticate);
     if (spec.access.kind === 'permission') chain.push(authorize(spec.access.permission));

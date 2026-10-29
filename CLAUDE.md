@@ -7,7 +7,7 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 ## Stack
 
 - **Monorepo:** pnpm workspaces and Turborepo. Node 22 or later, TypeScript ~6.0 (see `docs/adr/0003`).
-- **apps/web:** React 19, Vite 8, Tailwind 4 (tokens as CSS variables), PWA (vite-plugin-pwa), React Router, TanStack Query, Zustand, motion, i18next (en, te), React Hook Form with Zod.
+- **apps/web:** React 19, Vite 8, Tailwind 4 (tokens as CSS variables), PWA (vite-plugin-pwa), React Router, TanStack Query, Zustand, motion, i18n (`src/i18n/core.ts`: i18next-style keys, `{{vars}}` and plurals in 1 KB; en, te), React Hook Form with Zod.
 - **apps/api:** Express 5, Mongoose 9 (MongoDB 8 replica set), Redis (ioredis), BullMQ, Socket.io, Zod, Pino, Helmet, argon2id, JWT.
 - **packages/shared:** Zod schemas, types, constants and permission definitions shared by web and api.
 - **Dev infrastructure:** `docker-compose.yml` runs MongoDB, Redis and Mailpit.
@@ -61,7 +61,9 @@ scripts/backup/  encrypted backup, restore and drill
 ## Architecture rules
 
 - Use a modular monolith. Each module owns its routes, controller, service, repository, schemas and tests. Modules talk to each other through services, never through another module's repository.
-- Request flow: `rate limit → tenant scope → CSRF (cookie routes) → authenticate → authorize → validate (Zod) → handler → service`. Authorization runs before validation (ADR 0006).
+- Request flow: `rate limit → tenant scope → feature switch → CSRF (cookie routes) → authenticate → authorize → validate (Zod) → handler → service`. Authorization runs before validation (ADR 0006).
+- Feature switches (`packages/shared/src/features.ts`): a route of a switchable feature declares `feature` on its spec (or its module is wrapped in `withFeature`); content inside shared routes is checked with `featureEnabled`/`requireFeature`; its jobs are registered through `gatedJob`; its screens use `inFeature` in the router and its destinations `NAV_FEATURE`. Never delete data when a feature is off.
+- Data migrations live in `db/migrations.ts`: idempotent, run once per database at boot (the `Migration` record is the lock). Never fix stored data by hand.
 - Routes are declared as specs in `modules/<name>/<name>.routes.ts` via `defineModule()` (`http/registry.ts`). The registry generates OpenAPI and `docs/permissions.md` and drives the permission test. Handlers are the thin controllers and call services. Use `authOf(req)` and `tenantOf(req)`, never `req.auth!`.
 - Only services touch models, and models are created only through `defineTenantModel` or `definePlatformModel` (`db/models.ts`).
 - Responses use the envelope `{ ok: true, data, meta? }` or `{ ok: false, error: { code, message, requestId } }`. Error codes come from `@campuslink/shared`.
@@ -130,7 +132,7 @@ Everything runs on localhost with free, open-source tools. Any paid or external 
 
 - Strict TypeScript, with no `any` and no non-null `!` unless justified in a comment. Use `import type` for types.
 - Name files in kebab-case. Name React components in PascalCase. Prefer named exports.
-- Write no hard-coded UI strings; every string goes through i18next in both `en.json` and `te.json`.
+- Write no hard-coded UI strings; every string goes through `t()` (`src/i18n`) in both `en.json` and `te.json`.
 - Styling uses design tokens only (`bg-surface-1`, `text-fg-2`, `text-brand-ink`, `text-title`, `shadow-elev-2`, `bg-aurora`), never raw colour values in components. Every colour is generated from the college's hue by `packages/shared/src/palette.ts` (ADR 0008): `styles/palette.css` is its output (regenerate with `pnpm --filter @campuslink/web palette`, never edit by hand) and `applyBranding()` swaps in each college's palette at runtime. Use `*-ink` tokens for coloured text; they are contrast-checked to 5.5:1 by `palette.test.ts`. Aurora is for the moments ADR 0008 lists, never for plain text or buttons.
 - Web files that export components export only components (fast refresh): put hooks and helpers in `lib/`. Unsent writing goes through `useDraft()` (`lib/drafts.ts`, memory only); names in greetings and avatars through `firstName()`/`initialsOf()` (`lib/names.ts`). A horizontal row scrolls itself with `revealInRow()`, never `scrollIntoView()` (which also scrolls the page).
 - New tokens and primitives appear in the living style guide (`/design`, development builds only, `features/design/style-guide.tsx`) in both themes.

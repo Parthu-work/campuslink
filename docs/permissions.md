@@ -11,6 +11,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 - **Capabilities:** `CERTIFIED_CONTRIBUTOR` adds `roadmaps:write`, `study:contribute` (students only).
 - **Tenant overrides:** a college admin may grant or revoke permissions per role; `platform:*` permissions can never be granted to a college role.
 - **Escalation guards:** only a college admin can act on another college admin; SUPER_ADMIN cannot be assigned through the college API; the last active college admin cannot be demoted.
+- **Feature switches:** an endpoint marked "feature `x`" answers 403 `FEATURE_DISABLED` while the college has that feature off (Admin › Features), before authentication.
 - **Super admin** works only on the platform host and sees aggregate counts — never message content.
 
 ## Role defaults
@@ -145,10 +146,10 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `PUT /api/v1/me/mentor/availability` | `mentorship:mentor` | college | — | Set weekly availability and date exceptions (in my timezone) |
 | `GET /api/v1/me/mentor/impact` | `mentorship:mentor` | college | — | My impact card (people helped this month, sessions, rating) |
 | `GET /api/v1/me/mentor/feedback` | `mentorship:mentor` | college | — | Private feedback on my sessions |
-| `GET /api/v1/me/match-preferences` | `mentorship:request` | college | — | My private Alumni Match inputs (goals, target companies) |
-| `PUT /api/v1/me/match-preferences` | `mentorship:request` | college | — | Update my Alumni Match inputs |
+| `GET /api/v1/me/match-preferences` | `mentorship:request` · feature `alumniMatch` | college | — | My private Alumni Match inputs (goals, target companies) |
+| `PUT /api/v1/me/match-preferences` | `mentorship:request` · feature `alumniMatch` | college | — | Update my Alumni Match inputs |
 | `GET /api/v1/mentors` | `mentorship:request` | college | search | Browse mentors who are taking requests |
-| `GET /api/v1/mentors/match` | `mentorship:request` | college | search | Alumni Match: mentors ranked for me, with the reasons |
+| `GET /api/v1/mentors/match` | `mentorship:request` · feature `alumniMatch` | college | search | Alumni Match: mentors ranked for me, with the reasons |
 | `GET /api/v1/mentors/:userId` | `mentorship:request` | college | — | A mentor’s card and session types |
 | `GET /api/v1/mentors/:userId/slots` | `mentorship:request` | college | — | Free slots for a session type (UTC; both calendars considered) |
 | `POST /api/v1/mentorship/requests` | `mentorship:request` | college | requests | Send a structured mentorship request (rate-limited, idempotent) |
@@ -206,14 +207,14 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/posts/:id/comments` | `feed:interact` | college | interact | Comment, or reply to a comment |
 | `DELETE /api/v1/comments/:id` | `feed:read` | college | — | Delete my comment |
 | `POST /api/v1/media/images` | `feed:post` | college | upload | Upload a photo for a post or story (re-encoded, metadata removed) |
-| `POST /api/v1/media/videos` | `feed:post` | college | upload | Upload a Tips reel video (MP4/MOV, up to 60 s, metadata removed) |
-| `GET /api/v1/stories` | `feed:read` | college | — | Live stories (24 hours) |
-| `POST /api/v1/stories` | `feed:post` | college | posting | Post a 24-hour story |
-| `DELETE /api/v1/stories/:id` | `feed:read` | college | — | Delete my story |
+| `POST /api/v1/media/videos` | `feed:post` · feature `reels` | college | upload | Upload a Tips reel video (MP4/MOV, up to 60 s, metadata removed) |
+| `GET /api/v1/stories` | `feed:read` · feature `stories` | college | — | Live stories (24 hours) |
+| `POST /api/v1/stories` | `feed:post` · feature `stories` | college | posting | Post a 24-hour story |
+| `DELETE /api/v1/stories/:id` | `feed:read` · feature `stories` | college | — | Delete my story |
 | `GET /api/v1/me/follows` | `sources:follow` | college | — | People, topics and sources I follow |
 | `POST /api/v1/follows` | `sources:follow` | college | interact | Follow a person, topic or source |
 | `DELETE /api/v1/follows/:targetType/:targetId` | `sources:follow` | college | — | Unfollow |
-| `GET /api/v1/sources` | `sources:follow` | college | — | Content sources you can follow |
+| `GET /api/v1/sources` | `sources:follow` · feature `contentSources` | college | — | Content sources you can follow |
 | `GET /api/v1/questions` | `feed:read` | college | — | Published questions (or mine, including pending) |
 | `POST /api/v1/questions` | `qa:ask` | college | qa | Ask a question (published after moderation) |
 | `GET /api/v1/questions/:id` | `feed:read` | college | — | A question with its answers |
@@ -223,14 +224,14 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/answers/:id/helpful` | `feed:interact` | college | interact | Vote an answer helpful |
 | `DELETE /api/v1/answers/:id/helpful` | `feed:interact` | college | interact | Remove my helpful vote |
 | `DELETE /api/v1/answers/:id` | `feed:read` | college | — | Delete my answer |
-| `GET /api/v1/admin/sources` | `sources:manage` | college | — | Sources with health (last fetch, failures, items in 7 days) |
-| `POST /api/v1/admin/sources/test` | `sources:manage` | college | adminWrite | Test a feed URL (robots.txt, reachability, parsing) before adding |
-| `POST /api/v1/admin/sources` | `sources:manage` | college | adminWrite | Add an RSS/Atom source (tested first) |
-| `GET /api/v1/admin/sources/starter` | `sources:manage` | college | — | Curated starter feeds and their verification status |
-| `POST /api/v1/admin/sources/starter/:key` | `sources:manage` | college | adminWrite | Add a verified starter feed |
-| `PATCH /api/v1/admin/sources/:id` | `sources:manage` | college | adminWrite | Rename, retag, change interval, pause or resume |
-| `DELETE /api/v1/admin/sources/:id` | `sources:manage` | college | adminWrite | Remove a source and its items |
-| `POST /api/v1/admin/sources/:id/fetch` | `sources:manage` | college | adminWrite | Fetch now |
+| `GET /api/v1/admin/sources` | `sources:manage` · feature `contentSources` | college | — | Sources with health (last fetch, failures, items in 7 days) |
+| `POST /api/v1/admin/sources/test` | `sources:manage` · feature `contentSources` | college | adminWrite | Test a feed URL (robots.txt, reachability, parsing) before adding |
+| `POST /api/v1/admin/sources` | `sources:manage` · feature `contentSources` | college | adminWrite | Add an RSS/Atom source (tested first) |
+| `GET /api/v1/admin/sources/starter` | `sources:manage` · feature `contentSources` | college | — | Curated starter feeds and their verification status |
+| `POST /api/v1/admin/sources/starter/:key` | `sources:manage` · feature `contentSources` | college | adminWrite | Add a verified starter feed |
+| `PATCH /api/v1/admin/sources/:id` | `sources:manage` · feature `contentSources` | college | adminWrite | Rename, retag, change interval, pause or resume |
+| `DELETE /api/v1/admin/sources/:id` | `sources:manage` · feature `contentSources` | college | adminWrite | Remove a source and its items |
+| `POST /api/v1/admin/sources/:id/fetch` | `sources:manage` · feature `contentSources` | college | adminWrite | Fetch now |
 | `GET /api/v1/jobs` | `jobs:read` | college | — | Open jobs with filters (skills, branch, level, mode, type, location, fresher, alumni here) or mine |
 | `GET /api/v1/jobs/radar` | `jobs:read` | college | — | Job Radar sections: for you, alumni can refer, fresher friendly, closing soon |
 | `POST /api/v1/jobs` | `jobs:post` | college | posting | Post an opening (alumni and staff) |
@@ -243,14 +244,14 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/me/job-alerts` | `jobs:save` | college | — | My job alerts |
 | `POST /api/v1/me/job-alerts` | `jobs:save` | college | interact | Create a daily job alert from filters (up to 5) |
 | `DELETE /api/v1/me/job-alerts/:id` | `jobs:save` | college | — | Delete a job alert |
-| `GET /api/v1/admin/job-sources` | `jobs:sources` | college | — | Job sources with health (last fetch, failures, open jobs) |
-| `POST /api/v1/admin/job-sources/test` | `jobs:sources` | college | adminWrite | Test an ATS board, Adzuna search or RSS feed before adding |
-| `POST /api/v1/admin/job-sources` | `jobs:sources` | college | adminWrite | Add a job source (tested first) |
-| `GET /api/v1/admin/job-sources/starter` | `jobs:sources` | college | — | Curated public job boards and their verification status |
-| `POST /api/v1/admin/job-sources/starter/:key` | `jobs:sources` | college | adminWrite | Add a verified starter board |
-| `PATCH /api/v1/admin/job-sources/:id` | `jobs:sources` | college | adminWrite | Rename, pause, resume or change interval |
-| `DELETE /api/v1/admin/job-sources/:id` | `jobs:sources` | college | adminWrite | Remove a source (its open jobs close) |
-| `POST /api/v1/admin/job-sources/:id/fetch` | `jobs:sources` | college | adminWrite | Fetch now |
+| `GET /api/v1/admin/job-sources` | `jobs:sources` · feature `jobsAggregation` | college | — | Job sources with health (last fetch, failures, open jobs) |
+| `POST /api/v1/admin/job-sources/test` | `jobs:sources` · feature `jobsAggregation` | college | adminWrite | Test an ATS board, Adzuna search or RSS feed before adding |
+| `POST /api/v1/admin/job-sources` | `jobs:sources` · feature `jobsAggregation` | college | adminWrite | Add a job source (tested first) |
+| `GET /api/v1/admin/job-sources/starter` | `jobs:sources` · feature `jobsAggregation` | college | — | Curated public job boards and their verification status |
+| `POST /api/v1/admin/job-sources/starter/:key` | `jobs:sources` · feature `jobsAggregation` | college | adminWrite | Add a verified starter board |
+| `PATCH /api/v1/admin/job-sources/:id` | `jobs:sources` · feature `jobsAggregation` | college | adminWrite | Rename, pause, resume or change interval |
+| `DELETE /api/v1/admin/job-sources/:id` | `jobs:sources` · feature `jobsAggregation` | college | adminWrite | Remove a source (its open jobs close) |
+| `POST /api/v1/admin/job-sources/:id/fetch` | `jobs:sources` · feature `jobsAggregation` | college | adminWrite | Fetch now |
 | `GET /api/v1/me/referral-settings` | `referrals:offer` | college | — | My referral settings (off until I opt in) and this week’s count |
 | `PUT /api/v1/me/referral-settings` | `referrals:offer` | college | — | Opt in or out of referral requests and set a weekly cap |
 | `POST /api/v1/referrals/resume` | `referrals:request` | college | upload | Upload a résumé PDF for a referral request (rebuilt, metadata removed) |
@@ -280,7 +281,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `DELETE /api/v1/roadmap-comments/:id` | `roadmaps:write` | college | — | Delete my comment (reviewers can delete any) |
 | `GET /api/v1/me/progress` | any signed-in user | college | — | My XP, level, streak, badges, impact and point balance |
 | `PUT /api/v1/me/progress/settings` | any signed-in user | college | — | Opt in or out of leaderboards and the Wall of Mentors |
-| `GET /api/v1/leaderboard` | `directory:read` | college | — | This month’s XP among members who opted in |
+| `GET /api/v1/leaderboard` | `directory:read` · feature `leaderboards` | college | — | This month’s XP among members who opted in |
 | `GET /api/v1/wall-of-mentors` | `directory:read` | college | — | Opted-in mentors by level, and last month’s Mentor of the Month |
 | `GET /api/v1/rewards` | `rewards:redeem` | college | — | Rewards I can redeem points for |
 | `POST /api/v1/rewards/redeem` | `rewards:redeem` | college | interact | Redeem points for a reward (pending until the college hands it over) |
@@ -312,53 +313,53 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/me/deletion` | any signed-in user | college | — | Whether my account is scheduled for deletion, and when |
 | `POST /api/v1/me/deletion` | any signed-in user | college | privacy | Delete my account after the college’s grace period (password required; signs out everywhere) |
 | `DELETE /api/v1/me/deletion` | any signed-in user | college | — | Cancel my account deletion during the grace period |
-| `GET /api/v1/study/subjects` | `study:read` | college | — | Subjects I take (students) or all subjects (staff, alumni); `scope=mine` for my own |
-| `POST /api/v1/study/subjects` | `study:manage` | college | adminWrite | Create a subject (faculty become its owner) |
-| `GET /api/v1/study/subjects/:id` | `study:read` | college | — | One subject I may read |
-| `PATCH /api/v1/study/subjects/:id` | `study:manage` | college | adminWrite | Edit or archive a subject (owners and admins) |
-| `GET /api/v1/study/subjects/:id/syllabus` | `study:read` | college | — | The syllabus tree (units and topics) |
-| `PUT /api/v1/study/subjects/:id/syllabus` | `study:manage` | college | adminWrite | Replace the syllabus tree (owners and admins); kept ids keep their material tags |
-| `POST /api/v1/study/syllabus/parse` | `study:manage` | college | interact | Suggest a syllabus tree from pasted text (reviewed before saving; nothing is stored) |
-| `GET /api/v1/study/subjects/:id/enrollments` | `study:manage` | college | — | Students added to or excluded from a subject by hand |
-| `PUT /api/v1/study/subjects/:id/enrollments` | `study:manage` | college | adminWrite | Include or exclude one student (overrides the branch and batch rule) |
-| `DELETE /api/v1/study/subjects/:id/enrollments/:userId` | `study:manage` | college | adminWrite | Remove a by-hand override |
-| `GET /api/v1/study/subjects/:id/contributors` | `study:manage` | college | — | Alumni and certified contributors granted to a subject |
-| `PUT /api/v1/study/subjects/:id/contributors` | `capabilities:grant` | college | adminWrite | Grant or revoke a contributor for a subject (admins) |
-| `GET /api/v1/study/ai-status` | `study:read` | college | — | Whether AI answers and semantic search are on for my college (no settings detail) |
-| `GET /api/v1/study/subjects/:id/insights` | `study:analytics` | college | — | Aggregate insights for a subject I own (admins: any): topics asked, content gaps, material used, units (counts under 5 suppressed) |
-| `GET /api/v1/admin/ai` | `ai:settings` | college | — | AI assistant settings (keys appear only as their last four characters) |
-| `PUT /api/v1/admin/ai` | `ai:settings` | college | adminWrite | Save provider, models, limits and toggles (changing a provider removes its key) |
-| `PUT /api/v1/admin/ai/keys` | `ai:settings` | college | aiTest | Store an API key (encrypted at rest; never returned) and test it |
-| `DELETE /api/v1/admin/ai/keys/:target` | `ai:settings` | college | adminWrite | Remove a stored API key |
-| `POST /api/v1/admin/ai/test` | `ai:settings` | college | aiTest | Test connection: one tiny request with the stored key; lists the models it can use |
-| `POST /api/v1/admin/ai/consent` | `ai:settings` | college | adminWrite | Accept the data-processing notice (versioned and audit-logged) |
-| `GET /api/v1/admin/ai/index` | `ai:settings` | college | — | Semantic index: passages with vectors, waiting and refused, and whether a back-fill is running |
-| `POST /api/v1/admin/ai/reindex` | `ai:settings` | college | adminWrite | Rebuild the semantic index from stored vectors, then embed whatever is missing (audit-logged) |
-| `GET /api/v1/admin/ai/usage` | `ai:settings` | college | — | College AI usage: tokens per day and model, the month against the budget, cost estimate from entered prices, failures, queue and coverage |
-| `GET /api/v1/study/subjects/:id/materials` | `study:read` | college | — | Material of a subject (published; your own uploads; managers can list review and drafts) |
-| `POST /api/v1/study/materials` | `study:read` | college | studyUpload | Upload a file (sniffed, scanned and sanitised; rights attestation required); processing starts |
-| `POST /api/v1/study/materials/link` | `study:read` | college | studyUpload | Add a YouTube or Vimeo link (official oEmbed metadata; never downloaded) |
-| `GET /api/v1/study/materials/:id` | `study:read` | college | — | One material with its chapters, transcript and page text |
-| `GET /api/v1/study/materials/:id/file` | `study:read` | college | — | A five-minute signed link to the file (for the viewer and player) |
-| `PATCH /api/v1/study/materials/:id` | `study:read` | college | — | Edit title, description, tags, language or chapters (uploader or managers) |
-| `DELETE /api/v1/study/materials/:id` | `study:read` | college | — | Delete a material everywhere: file, pages, chunks, vectors and transcript |
-| `POST /api/v1/study/materials/:id/versions` | `study:read` | college | studyUpload | Upload a new version (same kind of file); the material is re-indexed |
-| `POST /api/v1/study/materials/:id/transcript` | `study:read` | college | studyUpload | Add captions (WebVTT or SRT) to a video or audio; they become its transcript |
-| `POST /api/v1/study/materials/:id/reprocess` | `study:read` | college | studyUpload | Run processing again (after a failure, or a new OCR or transcription set-up) |
-| `POST /api/v1/study/materials/:id/review` | `study:manage` | college | — | Publish or send back a contribution (subject owners and admins) |
-| `POST /api/v1/study/materials/:id/takedown` | `study:manage` | college | — | Take material down (copyright or policy); hidden from everyone and audit-logged |
-| `GET /api/v1/study/search` | `study:read` | college | search | Search the material of the subjects I take, by meaning and by words (keyword-only without an embedding provider) |
-| `POST /api/v1/study/chat` | `study:read` | college | aiChat | Ask the study assistant or run a slash command; answers stream as server-sent events with citations |
-| `GET /api/v1/study/chat/sessions` | `study:read` | college | — | My conversations with the study assistant, newest first |
-| `GET /api/v1/study/chat/sessions/:id` | `study:read` | college | — | One of my conversations with its messages |
-| `DELETE /api/v1/study/chat/sessions/:id` | `study:read` | college | — | Delete one of my conversations |
-| `DELETE /api/v1/study/chat/sessions` | `study:read` | college | — | Delete my whole chat history |
-| `POST /api/v1/study/chat/messages/:id/feedback` | `study:read` | college | — | Thumbs up or down on an answer, with an optional reason |
-| `POST /api/v1/study/chat/messages/:id/quiz` | `study:read` | college | — | Finish a quiz: scored once, saved as progress, and points through the award rules |
-| `POST /api/v1/study/decks` | `study:read` | college | — | Keep the flashcards of an answer as a deck |
-| `GET /api/v1/study/decks` | `study:read` | college | — | My flashcard decks |
-| `GET /api/v1/study/decks/:id` | `study:read` | college | — | One of my flashcard decks |
-| `DELETE /api/v1/study/decks/:id` | `study:read` | college | — | Delete one of my flashcard decks |
+| `GET /api/v1/study/subjects` | `study:read` · feature `study` | college | — | Subjects I take (students) or all subjects (staff, alumni); `scope=mine` for my own |
+| `POST /api/v1/study/subjects` | `study:manage` · feature `study` | college | adminWrite | Create a subject (faculty become its owner) |
+| `GET /api/v1/study/subjects/:id` | `study:read` · feature `study` | college | — | One subject I may read |
+| `PATCH /api/v1/study/subjects/:id` | `study:manage` · feature `study` | college | adminWrite | Edit or archive a subject (owners and admins) |
+| `GET /api/v1/study/subjects/:id/syllabus` | `study:read` · feature `study` | college | — | The syllabus tree (units and topics) |
+| `PUT /api/v1/study/subjects/:id/syllabus` | `study:manage` · feature `study` | college | adminWrite | Replace the syllabus tree (owners and admins); kept ids keep their material tags |
+| `POST /api/v1/study/syllabus/parse` | `study:manage` · feature `study` | college | interact | Suggest a syllabus tree from pasted text (reviewed before saving; nothing is stored) |
+| `GET /api/v1/study/subjects/:id/enrollments` | `study:manage` · feature `study` | college | — | Students added to or excluded from a subject by hand |
+| `PUT /api/v1/study/subjects/:id/enrollments` | `study:manage` · feature `study` | college | adminWrite | Include or exclude one student (overrides the branch and batch rule) |
+| `DELETE /api/v1/study/subjects/:id/enrollments/:userId` | `study:manage` · feature `study` | college | adminWrite | Remove a by-hand override |
+| `GET /api/v1/study/subjects/:id/contributors` | `study:manage` · feature `study` | college | — | Alumni and certified contributors granted to a subject |
+| `PUT /api/v1/study/subjects/:id/contributors` | `capabilities:grant` · feature `study` | college | adminWrite | Grant or revoke a contributor for a subject (admins) |
+| `GET /api/v1/study/ai-status` | `study:read` · feature `study` | college | — | Whether AI answers and semantic search are on for my college (no settings detail) |
+| `GET /api/v1/study/subjects/:id/insights` | `study:analytics` · feature `study` | college | — | Aggregate insights for a subject I own (admins: any): topics asked, content gaps, material used, units (counts under 5 suppressed) |
+| `GET /api/v1/admin/ai` | `ai:settings` · feature `study` | college | — | AI assistant settings (keys appear only as their last four characters) |
+| `PUT /api/v1/admin/ai` | `ai:settings` · feature `study` | college | adminWrite | Save provider, models, limits and toggles (changing a provider removes its key) |
+| `PUT /api/v1/admin/ai/keys` | `ai:settings` · feature `study` | college | aiTest | Store an API key (encrypted at rest; never returned) and test it |
+| `DELETE /api/v1/admin/ai/keys/:target` | `ai:settings` · feature `study` | college | adminWrite | Remove a stored API key |
+| `POST /api/v1/admin/ai/test` | `ai:settings` · feature `study` | college | aiTest | Test connection: one tiny request with the stored key; lists the models it can use |
+| `POST /api/v1/admin/ai/consent` | `ai:settings` · feature `study` | college | adminWrite | Accept the data-processing notice (versioned and audit-logged) |
+| `GET /api/v1/admin/ai/index` | `ai:settings` · feature `study` | college | — | Semantic index: passages with vectors, waiting and refused, and whether a back-fill is running |
+| `POST /api/v1/admin/ai/reindex` | `ai:settings` · feature `study` | college | adminWrite | Rebuild the semantic index from stored vectors, then embed whatever is missing (audit-logged) |
+| `GET /api/v1/admin/ai/usage` | `ai:settings` · feature `study` | college | — | College AI usage: tokens per day and model, the month against the budget, cost estimate from entered prices, failures, queue and coverage |
+| `GET /api/v1/study/subjects/:id/materials` | `study:read` · feature `study` | college | — | Material of a subject (published; your own uploads; managers can list review and drafts) |
+| `POST /api/v1/study/materials` | `study:read` · feature `study` | college | studyUpload | Upload a file (sniffed, scanned and sanitised; rights attestation required); processing starts |
+| `POST /api/v1/study/materials/link` | `study:read` · feature `study` | college | studyUpload | Add a YouTube or Vimeo link (official oEmbed metadata; never downloaded) |
+| `GET /api/v1/study/materials/:id` | `study:read` · feature `study` | college | — | One material with its chapters, transcript and page text |
+| `GET /api/v1/study/materials/:id/file` | `study:read` · feature `study` | college | — | A five-minute signed link to the file (for the viewer and player) |
+| `PATCH /api/v1/study/materials/:id` | `study:read` · feature `study` | college | — | Edit title, description, tags, language or chapters (uploader or managers) |
+| `DELETE /api/v1/study/materials/:id` | `study:read` · feature `study` | college | — | Delete a material everywhere: file, pages, chunks, vectors and transcript |
+| `POST /api/v1/study/materials/:id/versions` | `study:read` · feature `study` | college | studyUpload | Upload a new version (same kind of file); the material is re-indexed |
+| `POST /api/v1/study/materials/:id/transcript` | `study:read` · feature `study` | college | studyUpload | Add captions (WebVTT or SRT) to a video or audio; they become its transcript |
+| `POST /api/v1/study/materials/:id/reprocess` | `study:read` · feature `study` | college | studyUpload | Run processing again (after a failure, or a new OCR or transcription set-up) |
+| `POST /api/v1/study/materials/:id/review` | `study:manage` · feature `study` | college | — | Publish or send back a contribution (subject owners and admins) |
+| `POST /api/v1/study/materials/:id/takedown` | `study:manage` · feature `study` | college | — | Take material down (copyright or policy); hidden from everyone and audit-logged |
+| `GET /api/v1/study/search` | `study:read` · feature `study` | college | search | Search the material of the subjects I take, by meaning and by words (keyword-only without an embedding provider) |
+| `POST /api/v1/study/chat` | `study:read` · feature `study` | college | aiChat | Ask the study assistant or run a slash command; answers stream as server-sent events with citations |
+| `GET /api/v1/study/chat/sessions` | `study:read` · feature `study` | college | — | My conversations with the study assistant, newest first |
+| `GET /api/v1/study/chat/sessions/:id` | `study:read` · feature `study` | college | — | One of my conversations with its messages |
+| `DELETE /api/v1/study/chat/sessions/:id` | `study:read` · feature `study` | college | — | Delete one of my conversations |
+| `DELETE /api/v1/study/chat/sessions` | `study:read` · feature `study` | college | — | Delete my whole chat history |
+| `POST /api/v1/study/chat/messages/:id/feedback` | `study:read` · feature `study` | college | — | Thumbs up or down on an answer, with an optional reason |
+| `POST /api/v1/study/chat/messages/:id/quiz` | `study:read` · feature `study` | college | — | Finish a quiz: scored once, saved as progress, and points through the award rules |
+| `POST /api/v1/study/decks` | `study:read` · feature `study` | college | — | Keep the flashcards of an answer as a deck |
+| `GET /api/v1/study/decks` | `study:read` · feature `study` | college | — | My flashcard decks |
+| `GET /api/v1/study/decks/:id` | `study:read` · feature `study` | college | — | One of my flashcard decks |
+| `DELETE /api/v1/study/decks/:id` | `study:read` · feature `study` | college | — | Delete one of my flashcard decks |
 | `GET /api/v1/admin/overview` | any signed-in user | college | — | What is waiting for me: queue sizes I may act on, and member and activity counts (suppressed); 403 without admin access |
 | `GET /api/v1/admin/moderation/summary` | `moderation:act` | college | — | Counts for the moderation queue |
 | `POST /api/v1/admin/moderation/actions` | `moderation:act` | college | adminWrite | Remove or restore content (the author sees the reason and can appeal) |

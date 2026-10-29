@@ -10,6 +10,7 @@ import {
   type Capability,
   type Branding,
   type Branch,
+  LEGACY_FEATURES,
 } from '@campuslink/shared';
 import { loadEnv } from '../config/env.js';
 import { syncIndexes } from '../db/connect.js';
@@ -819,6 +820,8 @@ async function main() {
     const t = await TenantModel.create({
       slug: c.slug,
       branding: c.branding,
+      // The demo shows every module (a new college starts with fewer; see NEW_TENANT_FEATURES).
+      features: { ...LEGACY_FEATURES },
       subscription: { plan: 'trial', seatLimit: 1000, renewalDate: null },
     });
     await runInTenant(t._id, async () => {

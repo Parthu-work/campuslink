@@ -10,6 +10,7 @@ import type { ProfilesService } from '../profiles/profiles.service.js';
 import type { SafetyService } from '../moderation/safety.service.js';
 import { badRequest } from '../../lib/errors.js';
 import type { AuthState } from '../../types.js';
+import { featureEnabled } from '../tenants/features.js';
 
 const HOUR = 3600_000;
 const POST_WINDOW = 14 * 24 * HOUR;
@@ -72,6 +73,12 @@ type Ranked =
   | { kind: 'post'; doc: PostRankFields; at: Date; score: number }
   | { kind: 'item'; doc: ItemDoc; at: Date; score: number };
 
+/** Feature switches that shape the feed (B1): reels and outside content leave it while off. */
+async function switches() {
+  const [reels, outside] = await Promise.all([featureEnabled('reels'), featureEnabled('contentSources')]);
+  return { postFilter: reels ? {} : { kind: { $ne: 'reel' } }, outside };
+}
+
 export class FeedService {
   constructor(
     private readonly d: {
@@ -125,17 +132,20 @@ export class FeedService {
     const followedUsers = new Set(follows.users);
     const followedSources = new Set(follows.sources);
     const interests = new Set<string>([...follows.topics]);
+    const { postFilter, outside } = await switches();
     const [posts, items] = await Promise.all([
-      this.d.posts.rankingCandidates(new Date(asOf.getTime() - POST_WINDOW), asOf, 400),
-      this.d.sources.recentItems({
-        since: new Date(asOf.getTime() - ITEM_WINDOW),
-        until: asOf,
-        limit: 300,
-        // No follows yet: sample every active source so the feed is never empty.
-        ...(follows.sources.length || follows.topics.length
-          ? { sourceIds: follows.sources, topics: follows.topics }
-          : {}),
-      }),
+      this.d.posts.rankingCandidates(new Date(asOf.getTime() - POST_WINDOW), asOf, 400, postFilter),
+      !outside
+        ? Promise.resolve([] as ItemDoc[])
+        : this.d.sources.recentItems({
+            since: new Date(asOf.getTime() - ITEM_WINDOW),
+            until: asOf,
+            limit: 300,
+            // No follows yet: sample every active source so the feed is never empty.
+            ...(follows.sources.length || follows.topics.length
+              ? { sourceIds: follows.sources, topics: follows.topics }
+              : {}),
+          }),
     ]);
     const candidates: Ranked[] = [
       ...posts
@@ -220,9 +230,10 @@ export class FeedService {
     const or: Record<string, unknown>[] = [{ authorId: { $in: authors } }];
     if (follows.topics.length) or.push({ topics: { $in: follows.topics } });
     const until = new Date(before.getTime() - 1);
+    const { postFilter, outside } = await switches();
     const [posts, items] = await Promise.all([
-      this.d.posts.recent(new Date(0), until, limit + 1, { $or: or }),
-      follows.sources.length || follows.topics.length
+      this.d.posts.recent(new Date(0), until, limit + 1, { $or: or, ...postFilter }),
+      outside && (follows.sources.length || follows.topics.length)
         ? this.d.sources.recentItems({
             since: new Date(0),
             until,

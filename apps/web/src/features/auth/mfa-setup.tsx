@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Copy, KeyRound } from 'lucide-react';
 import { Button } from '../../components/ui/button';

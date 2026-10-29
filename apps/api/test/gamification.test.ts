@@ -23,7 +23,7 @@ const award = (
 const me = async (u: TestUser) => (await as(u).get('/me/progress')).body.data;
 
 beforeAll(async () => {
-  T = await makeTenant('gametest');
+  T = await makeTenant('gametest', 'college', { leaderboards: true });
   student = await makeUser(ctx, T, { roles: ['STUDENT'] });
   student2 = await makeUser(ctx, T, { roles: ['STUDENT'] });
   alum = await makeUser(ctx, T, { roles: ['ALUMNI'] });

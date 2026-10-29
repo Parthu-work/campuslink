@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TFunction } from 'i18next';
+import type { TFunction } from '../i18n/core';
 import { roadmapContent } from '@campuslink/shared';
 import { roadmapIssueText } from './roadmap-issues';
 

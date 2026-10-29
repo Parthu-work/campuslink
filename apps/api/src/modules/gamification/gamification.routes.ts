@@ -42,6 +42,7 @@ export function gamificationRoutes(s: GamificationService): AnyRouteSpec[] {
     {
       method: 'get',
       path: '/leaderboard',
+      feature: 'leaderboards',
       tag,
       summary: 'This month’s XP among members who opted in',
       access: PEOPLE,

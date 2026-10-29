@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { isRouteErrorResponse, Link, useLocation, useNavigate, useRouteError } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { CloudOff, Compass, RefreshCw, TriangleAlert } from 'lucide-react';
 import { ApiError } from '../../lib/api';
 import { forceReload, isChunkLoadError } from '../../lib/chunk-reload';

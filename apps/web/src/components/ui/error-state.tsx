@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { ApiError } from '../../lib/api';
 import { useOnline } from '../../lib/pwa';
 import { Button } from './button';

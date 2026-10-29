@@ -46,6 +46,7 @@ import type { SafetyService } from '../moderation/safety.service.js';
 import type { NotificationsService } from '../notifications/notifications.service.js';
 import { isModerator, type ModerationService, type Removal } from '../moderation/moderation.service.js';
 import type { AuthState } from '../../types.js';
+import { featureEnabled, requireFeature } from '../tenants/features.js';
 
 export const ALERT_JOB = 'jobs.alert';
 const DAY = 86_400_000;
@@ -55,6 +56,11 @@ const IMPORTED_TTL = 21 * DAY;
 const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11000;
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const live = () => ({ status: 'open', expiresAt: { $gt: new Date() } });
+/** Open jobs members may browse: fetched openings drop out while job sources are off (B1). */
+const browsable = async () => ({
+  ...live(),
+  ...((await featureEnabled('jobsAggregation')) ? {} : { origin: 'posted' }),
+});
 
 export interface JobsDeps {
   profiles: ProfilesService;
@@ -211,6 +217,7 @@ export class JobsService {
 
   async get(viewer: AuthState, id: string) {
     const j = await this.visibleDoc(viewer, id);
+    if (j.origin !== 'posted') await requireFeature('jobsAggregation');
     const [view] = await this.views(viewer, [j]);
     const removal = j.removal?.reason
       ? ((
@@ -276,7 +283,7 @@ export class JobsService {
       fresher: !!q.fresher,
       alumni: !!q.alumni,
     });
-    const filter: Record<string, unknown> = { ...live(), ...(and.length ? { $and: and } : {}) };
+    const filter: Record<string, unknown> = { ...(await browsable()), ...(and.length ? { $and: and } : {}) };
     if (q.q && q.q.length >= 3) {
       const rows = await withTextSearch(JobModel.find(filter), q.q).limit(30).lean<JobDoc[]>();
       if (rows.length) return { items: await this.views(viewer, rows), nextCursor: null };
@@ -304,9 +311,12 @@ export class JobsService {
    */
   async radar(viewer: AuthState): Promise<RadarView> {
     const hidden = await this.d.safety.hiddenFor(viewer.userId);
-    const docs = (await JobModel.find(live()).sort({ _id: -1 }).limit(300).lean<JobDoc[]>()).filter(
-      (j) => !j.postedBy || !hidden.has(String(j.postedBy)),
-    );
+    const docs = (
+      await JobModel.find(await browsable())
+        .sort({ _id: -1 })
+        .limit(300)
+        .lean<JobDoc[]>()
+    ).filter((j) => !j.postedBy || !hidden.has(String(j.postedBy)));
     const own = await this.d.profiles.own(viewer.userId);
     const mySkills = new Set(own.skills.map((s) => s.toLowerCase()));
     const student = viewer.roles.includes('STUDENT');
@@ -462,7 +472,7 @@ export class JobsService {
     const f = (a.filters ?? {}) as AlertFilters;
     const and = await this.filterFor(viewer, f);
     const filter: Record<string, unknown> = {
-      ...live(),
+      ...(await browsable()),
       createdAt: { $gt: a.lastRunAt ?? a.createdAt },
       ...(and.length ? { $and: and } : {}),
     };
@@ -606,7 +616,9 @@ export class JobsService {
 
   async search(viewer: AuthState, text: string) {
     if (text.length < 3) return [];
-    const rows = await withTextSearch(JobModel.find(live()), text).limit(5).lean<JobDoc[]>();
+    const rows = await withTextSearch(JobModel.find(await browsable()), text)
+      .limit(5)
+      .lean<JobDoc[]>();
     return this.views(viewer, rows);
   }
 

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, FileText, Lightbulb, Map as MapIcon, Upload } from 'lucide-react';
 import { STUDY_PERIODS, type Count, type StudyInsightsView, type StudyPeriod } from '@campuslink/shared';

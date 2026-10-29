@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Bell, LogOut, MessagesSquare, Plus, Search } from 'lucide-react';
 import { Crest } from '../ui/misc';

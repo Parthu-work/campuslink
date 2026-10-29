@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
+import { useTranslation } from '../../i18n/react';
+import type { TFunction } from '../../i18n/core';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { CalendarClock, CalendarPlus, ExternalLink, MessageSquare, Star, Video } from 'lucide-react';

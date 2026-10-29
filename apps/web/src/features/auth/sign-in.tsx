@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { email as emailSchema, safeReturnPath, type LoginResult } from '@campuslink/shared';
 import { AuthLayout, FormError } from '../../components/layout/auth-layout';

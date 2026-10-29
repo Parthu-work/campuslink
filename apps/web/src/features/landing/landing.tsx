@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { ArrowRight, BriefcaseBusiness, Compass, Orbit, ShieldCheck } from 'lucide-react';
 import { Mesh } from '../../components/ui/mesh';
 import { Crest } from '../../components/ui/misc';

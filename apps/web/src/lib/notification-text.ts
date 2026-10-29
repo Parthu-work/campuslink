@@ -1,4 +1,4 @@
-import type { TFunction } from 'i18next';
+import type { TFunction } from '../i18n/core';
 import type { NotificationView } from '@campuslink/shared';
 import { formatDateTime } from './format';
 

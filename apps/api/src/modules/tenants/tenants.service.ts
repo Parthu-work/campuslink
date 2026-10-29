@@ -6,6 +6,7 @@ import {
   type PublicBotCheck,
   type PublicTenant,
   type Feature,
+  resolveFeatures,
 } from '@campuslink/shared';
 import { TenantModel } from './tenant.model.js';
 import type { FilesService } from '../files/files.service.js';
@@ -22,7 +23,7 @@ export const toPublicTenant = (t: TenantRecord, botCheck: PublicBotCheck | null 
   branding: t.branding,
   // The file id in the link makes a replaced logo a new URL, so caches never show the old one.
   logoUrl: t.logo?.fileId ? `/api/v1/tenant/logo?v=${String(t.logo.fileId)}` : null,
-  features: t.features,
+  features: resolveFeatures(t.features),
   botCheck,
 });
 
@@ -131,7 +132,7 @@ export const tenantsService = {
 
   async settings(tenant: TenantRecord) {
     return {
-      features: tenant.features,
+      features: resolveFeatures(tenant.features),
       allowedEmailDomains: tenant.allowedEmailDomains,
       limits: tenant.limits,
       permissionOverrides: tenant.permissionOverrides,

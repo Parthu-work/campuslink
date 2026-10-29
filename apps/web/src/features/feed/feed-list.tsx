@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useWindowVirtualizer, type VirtualItem } from '@tanstack/react-virtual';
 import { useLocation } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { Button } from '../../components/ui/button';
 import { Card, Skeleton } from '../../components/ui/misc';
 import { feedList } from '../../lib/queries';
