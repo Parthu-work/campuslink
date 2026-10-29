@@ -200,7 +200,16 @@ test.describe('scroll-aware chrome and tab memory (phones)', () => {
     await page.mouse.wheel(0, 500);
     await expect(html).toHaveAttribute('data-chrome', 'hidden');
     const y = await page.evaluate(() => window.scrollY);
-    await page.goto(`${BASE}/jobs`);
+    // Open a post on screen, in the app (a full page load would have nothing to restore).
+    const posts = page.locator('main a[href^="/posts/"]');
+    for (let i = 0; i < (await posts.count()); i++) {
+      const box = await posts.nth(i).boundingBox();
+      if (box && box.y > 80 && box.y < 650) {
+        await posts.nth(i).click();
+        break;
+      }
+    }
+    await page.waitForURL(/\/posts\//);
     await expect(html).toHaveAttribute('data-chrome', 'shown');
     await page.waitForTimeout(1300); // past the window in which scrolling still counts as the member's
     await page.goBack();
