@@ -42,8 +42,10 @@ export async function axe(page: Page, screen: string): Promise<AxeResult> {
  * 24 px, horizontal overflow, the font-size histogram and images without dimensions. Same rules as
  * the audit (a target is "under" when its smaller side is), plus `exempt`: targets WCAG 2.5.8 exempts
  * (links inside running text, skip links that are visually hidden until focused, and chart columns,
- * whose values the chart's table view offers as an equivalent control). A checkbox or radio inside
- * its `<label>` is measured by the label, which is what a finger hits.
+ * whose values the chart's table view offers as an equivalent control) and focusable panels that
+ * are not pointer targets (tab panels, scrollable text regions). A checkbox or radio inside its
+ * `<label>` is measured by the label, and a link stretched over its card (`::after` overlay) by the
+ * card: that is what a finger hits.
  */
 export function measure(page: Page) {
   return page.evaluate(() => {
@@ -65,7 +67,11 @@ export function measure(page: Page) {
     const targets = Array.from(document.querySelectorAll(sel)).filter(visible);
     const box = (e: Element) => {
       const l = e instanceof HTMLInputElement ? e.closest('label') : null;
-      return (l ?? e).getBoundingClientRect();
+      const stretched =
+        e instanceof HTMLElement && getComputedStyle(e, '::after').position === 'absolute'
+          ? e.offsetParent
+          : null;
+      return (l ?? stretched ?? e).getBoundingClientRect();
     };
     const under = (n: number) =>
       targets.filter((e) => {
@@ -75,7 +81,8 @@ export function measure(page: Page) {
     const exempt = (e: Element) => {
       const r = e.getBoundingClientRect();
       const chartColumn = e.matches('figure [role=img]') && !!e.closest('figure')?.querySelector('details');
-      return inlineText(e) || chartColumn || (r.width <= 1 && r.height <= 1);
+      const panel = e.matches('[role=tabpanel], [role=region], [role=document], [role=log], pre, article');
+      return inlineText(e) || chartColumn || panel || (r.width <= 1 && r.height <= 1);
     };
     const ex = (list: Element[]) =>
       list.slice(0, 8).map((e) => {

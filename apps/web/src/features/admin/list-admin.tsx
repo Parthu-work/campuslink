@@ -100,7 +100,12 @@ export function ListAdmin() {
         <EmptyState art={<Illustration kind="people" />} title={t('admin.noUsers')} />
       )}
       {rows.length > 0 && (
-        <Card className="overflow-x-auto" tabIndex={0} role="region" aria-label={t('admin.list')}>
+        <Card
+          className="relative overflow-x-auto [contain:inline-size]"
+          tabIndex={0}
+          role="region"
+          aria-label={t('admin.list')}
+        >
           <table className="w-full min-w-[640px] text-left text-meta">
             <thead className="border-b border-line text-caption text-fg-3">
               <tr>

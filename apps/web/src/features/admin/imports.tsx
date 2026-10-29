@@ -287,7 +287,7 @@ function MappingStep({
       <section className="grid gap-2">
         <h3 className="eyebrow">{t('admin.previewRows')}</h3>
         <div
-          className="overflow-x-auto rounded-[var(--radius-md)] border border-line"
+          className="relative overflow-x-auto rounded-[var(--radius-md)] border border-line [contain:inline-size]"
           tabIndex={0}
           role="region"
           aria-label={t('admin.previewRows')}
@@ -404,7 +404,7 @@ function JobView({ id, onNew }: { id: string; onNew: () => void }) {
       </StatGrid>
       {j.rowErrors && j.rowErrors.length > 0 && (
         <div
-          className="overflow-x-auto rounded-[var(--radius-md)] border border-line"
+          className="relative overflow-x-auto rounded-[var(--radius-md)] border border-line [contain:inline-size]"
           tabIndex={0}
           role="region"
           aria-label={t('admin.errorsCount')}

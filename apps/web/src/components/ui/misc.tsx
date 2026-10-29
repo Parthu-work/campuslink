@@ -147,7 +147,7 @@ export function Avatar({
       style={{
         width: size,
         height: size,
-        fontSize: size * 0.36,
+        fontSize: Math.max(10, size * 0.36),
         background: `var(--subject-${n}-surface)`,
         color: `var(--subject-${n}-ink)`,
       }}

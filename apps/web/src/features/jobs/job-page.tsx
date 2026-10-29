@@ -185,7 +185,7 @@ function Referrers({ job }: { job: JobView }) {
             <div className="min-w-0 flex-[1_1_10rem]">
               <Link
                 to={`/people/${r.userId}`}
-                className="flex items-center gap-1 font-semibold hover:underline"
+                className="flex min-h-6 items-center gap-1 font-semibold hover:underline"
               >
                 {r.name}
                 {r.companyVerified && (

@@ -7,6 +7,8 @@ pnpm-lock.yaml
 docs/design/prototype.html
 docs/permissions.md
 docs/api/openapi.json
+# Raw re-audit measurements, written by apps/web/e2e/audit
+docs/design/revamp/data-after
 # Verbatim copies of the owner's brief; formatting must not change them
 docs/design/revamp/master-prompt.md
 docs/specs/ai-study-assistant.md

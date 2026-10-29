@@ -113,7 +113,10 @@ export function SignInPage() {
           )}
         </Field>
         <div className="flex justify-end">
-          <Link to="/forgot-password" className="text-meta font-semibold text-brand-ink hover:underline">
+          <Link
+            to="/forgot-password"
+            className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink hover:underline"
+          >
             {t('auth.forgot')}
           </Link>
         </div>
@@ -122,7 +125,10 @@ export function SignInPage() {
         </Button>
         <p className="text-center text-meta text-fg-2">
           {t('auth.noAccount')}{' '}
-          <Link to="/sign-up" className="font-semibold text-brand-ink hover:underline">
+          <Link
+            to="/sign-up"
+            className="inline-flex min-h-11 items-center font-semibold text-brand-ink hover:underline"
+          >
             {t('auth.createAccount')}
           </Link>
         </p>

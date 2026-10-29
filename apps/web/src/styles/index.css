@@ -198,7 +198,7 @@
 }
 
 @utility eyebrow {
-  font: 500 11px/1.2 var(--font-mono);
+  font: 500 0.75rem/1.2 var(--font-mono); /* 12 px, the smallest step (audit TY-3) */
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg-3);

@@ -23,9 +23,10 @@ export function Table({
       aria-label={label}
       tabIndex={0}
       // Inline-size containment: a wide table scrolls inside its region instead of widening every
-      // grid and flex parent up the tree (and with them, the page).
+      // grid and flex parent up the tree (and with them, the page). Positioned, so visually hidden
+      // labels in its cells (`sr-only` is absolutely positioned) are clipped with it too.
       className={cn(
-        'overflow-x-auto rounded-[var(--radius-lg)] border border-line bg-surface-1 [contain:inline-size]',
+        'relative overflow-x-auto rounded-[var(--radius-lg)] border border-line bg-surface-1 [contain:inline-size]',
         className,
       )}
     >

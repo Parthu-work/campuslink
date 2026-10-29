@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PASSWORD, signIn } from './helpers';
+import { adminSignIn } from './admin';
 
 /**
  * Phase 8 accessibility pass, beyond the axe scans in every other spec: a keyboard-only journey,
@@ -70,7 +71,7 @@ test('reduced motion turns animation off', async ({ browser }) => {
 });
 
 test('content reflows at 320 CSS px without horizontal scrolling', async ({ browser }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(150_000);
   const ctx = await browser.newContext({ viewport: { width: 320, height: 640 } });
   const page = await ctx.newPage();
   await signIn(page, 'ananya@dpit.example');
@@ -111,4 +112,22 @@ test('content reflows at 320 CSS px without horizontal scrolling', async ({ brow
     false,
   );
   await alumni.close();
+
+  // And the admin tables (the College list's widened a phone's layout to 613 px).
+  const admin = await browser.newContext({
+    viewport: { width: 360, height: 780 },
+    isMobile: true,
+    hasTouch: true,
+  });
+  const adminPage = await admin.newPage();
+  await adminSignIn(adminPage, 'dpit', 'admin@dpit.example');
+  for (const path of ['/admin/list', '/admin/audit', '/admin/imports']) {
+    await adminPage.goto(`${BASE}${path}`);
+    await adminPage.waitForLoadState('networkidle');
+    const width = await adminPage.evaluate(() =>
+      Math.max(window.innerWidth, document.documentElement.scrollWidth),
+    );
+    expect(width, path).toBeLessThanOrEqual(361);
+  }
+  await admin.close();
 });

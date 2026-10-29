@@ -642,7 +642,12 @@ export function AuditAdmin() {
   if (!rows.length)
     return <EmptyState icon={<ScrollText className="size-6" />} title={t('admin.auditEmpty')} />;
   return (
-    <Card className="overflow-x-auto" tabIndex={0} role="region" aria-label={t('admin.audit')}>
+    <Card
+      className="relative overflow-x-auto [contain:inline-size]"
+      tabIndex={0}
+      role="region"
+      aria-label={t('admin.audit')}
+    >
       <table className="w-full min-w-[620px] text-left text-meta">
         <thead className="border-b border-line text-caption text-fg-3">
           <tr>

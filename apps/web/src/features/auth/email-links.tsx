@@ -109,7 +109,10 @@ export function ForgotPasswordPage() {
           </Button>
         </form>
       )}
-      <Link to="/sign-in" className="text-center text-meta font-semibold text-brand-ink hover:underline">
+      <Link
+        to="/sign-in"
+        className="inline-flex min-h-11 items-center justify-center text-meta font-semibold text-brand-ink hover:underline"
+      >
         {t('common.back')}
       </Link>
     </AuthLayout>

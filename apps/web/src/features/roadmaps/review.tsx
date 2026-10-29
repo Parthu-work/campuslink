@@ -55,7 +55,10 @@ function LibraryPanel() {
               <Card className="flex items-center justify-between gap-3 p-3">
                 <div className="min-w-0">
                   {l.slug ? (
-                    <Link to={`/roadmaps/${l.slug}`} className="font-semibold hover:underline">
+                    <Link
+                      to={`/roadmaps/${l.slug}`}
+                      className="inline-flex min-h-6 items-center font-semibold hover:underline"
+                    >
                       {l.title}
                     </Link>
                   ) : (
@@ -125,7 +128,10 @@ export function RoadmapReviewPage() {
               <li key={`${i.roadmapId}-${i.version}`}>
                 <Card className="flex flex-wrap items-center justify-between gap-3 p-3">
                   <div>
-                    <Link to={`/roadmaps/${i.slug}/history`} className="font-semibold hover:underline">
+                    <Link
+                      to={`/roadmaps/${i.slug}/history`}
+                      className="inline-flex min-h-6 items-center font-semibold hover:underline"
+                    >
                       {i.title} · v{i.version}
                     </Link>
                     <p className="text-meta text-fg-2">{i.changeNote}</p>
@@ -139,7 +145,7 @@ export function RoadmapReviewPage() {
                   ) : (
                     <Link
                       to={`/roadmaps/${i.slug}/history`}
-                      className="text-meta font-semibold text-brand-ink"
+                      className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink"
                     >
                       {t('roadmaps.review.open')}
                     </Link>

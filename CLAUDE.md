@@ -14,26 +14,27 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 
 ## Commands
 
-| Task                                         | Command                                                                 |
-| -------------------------------------------- | ----------------------------------------------------------------------- |
-| Start everything (infrastructure, API, web)  | `pnpm dev`                                                              |
-| Infrastructure only, up or down              | `pnpm infra:up`, `pnpm infra:down`                                      |
-| Lint, format check                           | `pnpm lint`, `pnpm format:check`                                        |
-| Typecheck                                    | `pnpm typecheck`                                                        |
-| Unit and API tests                           | `pnpm test`                                                             |
-| End-to-end tests (Playwright plus axe)       | `pnpm test:e2e` (set `PW_CHROMIUM_PATH` to use a preinstalled Chromium) |
-| Build                                        | `pnpm build`                                                            |
-| Web bundle budget (after a build)            | `pnpm --filter @campuslink/web budget`                                  |
-| Regenerate the default palette CSS           | `pnpm --filter @campuslink/web palette`                                 |
-| Seed demo data                               | `pnpm seed` (Phase 1 onwards)                                           |
-| Dependency audit                             | `pnpm audit`                                                            |
-| Check roadmap library links                  | `pnpm --filter @campuslink/api roadmaps:verify`                         |
-| Load test (1,000 demo members, own database) | `pnpm loadtest`                                                         |
-| Backup and restore drill                     | `pnpm backup:drill`                                                     |
-| ClamAV and S3 locally (adapter tests)        | `docker compose --profile clamav --profile s3 up -d --wait`             |
-| Staging rehearsal (production images)        | `deploy/staging/up.sh --build`, `smoke.sh`, `down.sh`                   |
-| Re-encrypt after a field key rotation        | `pnpm --filter @campuslink/api rotate-field-key [--dry-run \| --check]` |
-| Study search and assistant performance       | `pnpm --filter @campuslink/api study:perf`                              |
+| Task                                          | Command                                                                                                   |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Start everything (infrastructure, API, web)   | `pnpm dev`                                                                                                |
+| Infrastructure only, up or down               | `pnpm infra:up`, `pnpm infra:down`                                                                        |
+| Lint, format check                            | `pnpm lint`, `pnpm format:check`                                                                          |
+| Typecheck                                     | `pnpm typecheck`                                                                                          |
+| Unit and API tests                            | `pnpm test`                                                                                               |
+| End-to-end tests (Playwright plus axe)        | `pnpm test:e2e` (set `PW_CHROMIUM_PATH` to use a preinstalled Chromium)                                   |
+| Build                                         | `pnpm build`                                                                                              |
+| Web bundle budget (after a build)             | `pnpm --filter @campuslink/web budget`                                                                    |
+| Regenerate the default palette CSS            | `pnpm --filter @campuslink/web palette`                                                                   |
+| Seed demo data                                | `pnpm seed` (Phase 1 onwards)                                                                             |
+| Dependency audit                              | `pnpm audit`                                                                                              |
+| Check roadmap library links                   | `pnpm --filter @campuslink/api roadmaps:verify`                                                           |
+| Load test (1,000 demo members, own database)  | `pnpm loadtest`                                                                                           |
+| Backup and restore drill                      | `pnpm backup:drill`                                                                                       |
+| ClamAV and S3 locally (adapter tests)         | `docker compose --profile clamav --profile s3 up -d --wait`                                               |
+| Staging rehearsal (production images)         | `deploy/staging/up.sh --build`, `smoke.sh`, `down.sh`                                                     |
+| Re-encrypt after a field key rotation         | `pnpm --filter @campuslink/api rotate-field-key [--dry-run \| --check]`                                   |
+| Study search and assistant performance        | `pnpm --filter @campuslink/api study:perf`                                                                |
+| UI re-audit (screens, axe, targets, journeys) | `pnpm --filter @campuslink/web audit:capture` (also `audit:journeys`, `audit:extras`, `audit:lighthouse`) |
 
 ## Folder structure
 
