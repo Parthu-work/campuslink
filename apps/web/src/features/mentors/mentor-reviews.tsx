@@ -24,6 +24,7 @@ export function MentorReviews({ mentorId }: { mentorId: string }) {
             <div className="flex items-center justify-between gap-2">
               <p className="flex items-center gap-1.5 text-meta font-semibold">
                 <span
+                  role="img"
                   className="inline-flex items-center gap-0.5"
                   aria-label={t('mentorStats.stars', { count: r.rating })}
                 >
