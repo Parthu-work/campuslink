@@ -35,12 +35,13 @@ The targets were transitions at least 4 (met) and every area at least 4 (met in 
 
 ## How every audit finding was addressed
 
-`summary.md` §4 lists all 90 findings with what was done and where. In short:
+`summary.md` §4 lists all 90 findings (the audit's 89 and A11Y-6b) with what was done and where. In short:
 
-- **Fixed: 84.**
+- **Fixed: 80.**
 - **Partly fixed: 5.** ST-6 (a few plain placeholders remain on slow reads); PF-1 (initial JS within budget and the boot parallelised, but cold first-visit LCP is still 4–5 s); PF-5 and PW-6 (videos stream through signed links; images keep the session-cached authenticated download, because caching private images across launches is an owner decision); PW-4 (pull to refresh, no tap flash and no rubber-banding are in; iOS splash images and status-bar style wait for a real iPhone).
 - **Deferred: 1.** PW-5, offline copies of the feed, sessions and messages: they keep members' private data on the device beyond the session, a privacy decision for the owner (D5). Offline today: code is precached, visited screens work, unvisited ones show a friendly offline state inside a working shell.
-- **Not verifiable here: A11Y-8** (screen readers, Telugu speech, 200% zoom), on the list below. The audit's three "done well" notes (ST-7, FO-7, PW-7) still hold.
+- **For the owner: 1.** A11Y-8 (screen readers, Telugu speech, 200% zoom), which cannot be verified here; it is on the list below.
+- **Kept: 3.** The audit's "done well" notes (ST-7, FO-7, PW-7) still hold.
 
 ## Attaching an LLM API key (college admin)
 
