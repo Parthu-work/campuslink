@@ -14,7 +14,6 @@ import { signIn } from '../helpers';
  */
 const OUT = join(process.env.AUDIT_OUT ?? '../../docs/design/revamp', 'data-after');
 mkdirSync(OUT, { recursive: true });
-const BASE = 'http://dpit.localhost:4173';
 
 interface Frame {
   t: number;
@@ -31,6 +30,8 @@ interface Step {
   journey: string;
   step: string;
   actError: string | null;
+  /** When the tap happened, from the moment the script started the step. */
+  tapAt: number;
   ms: number | null;
   firstChange: number | null;
   spinnerFrames: number;
@@ -54,8 +55,17 @@ function installProbe() {
   type W = typeof window & {
     __probe: { sel: string; path: string; t0: number; on: boolean };
     __frames: Frame[];
+    __taps: number[];
   };
   const w = window as W;
+  // The tap itself (a finger down, or Back and Forward), so the time to content starts there and not
+  // when the script began looking for what to tap (audit §5.1: "from the tap").
+  w.__taps = [];
+  const tapped = () => {
+    if (w.__probe.on) w.__taps.push(performance.now() - w.__probe.t0);
+  };
+  window.addEventListener('pointerdown', tapped, true);
+  window.addEventListener('popstate', tapped, true);
   const armed = sessionStorage.getItem('__probeCold');
   w.__probe = armed
     ? { ...(JSON.parse(armed) as { sel: string; path: string }), t0: 0, on: true }
@@ -108,10 +118,12 @@ async function measure(
   act: () => Promise<unknown>,
   after?: (page: Page) => Promise<void>,
 ): Promise<Step> {
+  console.warn(`journey ${journey} · ${step}`);
   const scrollBefore = await page.evaluate(() => Math.round(window.scrollY));
   await page.evaluate((tg) => {
     const w = window as unknown as { __probe: Record<string, unknown>; __frames: unknown[] };
     w.__frames = [];
+    (w as unknown as { __taps: number[] }).__taps = [];
     w.__probe = { ...tg, t0: performance.now(), on: true };
   }, target);
   let actError: string | null = null;
@@ -126,6 +138,7 @@ async function measure(
     await after?.(page);
   } catch (e) {
     actError = (e instanceof Error ? e.message : String(e)).split('\n')[0] ?? 'error';
+    console.warn(`  failed: ${actError}`);
   }
   return summarise(page, journey, step, scrollBefore, actError);
 }
@@ -151,6 +164,7 @@ async function summarise(
       }));
     return {
       frames: w.__frames,
+      taps: (w as unknown as { __taps?: number[] }).__taps ?? [],
       res,
       focus: document.activeElement?.tagName ?? 'BODY',
       scrollY: Math.round(window.scrollY),
@@ -158,22 +172,31 @@ async function summarise(
       dialogs: document.querySelectorAll('[role=dialog]').length,
     };
   }, cold);
-  const frames = r.frames as Frame[];
+  const all = r.frames as Frame[];
+  const readyAt = all.find((f) => f.ready)?.t ?? Infinity;
+  // The last tap before the destination was ready (none on a cold start: then the load's start).
+  const tapAt = Math.max(0, ...r.taps.filter((t) => t <= readyAt));
+  const frames = all.filter((f) => f.t >= tapAt).map((f) => ({ ...f, t: f.t - tapAt }));
   const upTo = frames.findIndex((f) => f.ready);
   const window_ = upTo >= 0 ? frames.slice(0, upTo + 1) : frames;
   const first = frames[0];
   const changed = frames.find((f) => first && (f.path !== first.path || f.textLen !== first.textLen));
+  const shift = (x: { start: number; end: number }) => ({
+    start: x.start - Math.round(tapAt),
+    end: x.end - Math.round(tapAt),
+  });
   const scripts = r.res
     .filter((x) => /\.js(\?|$)/.test(x.name))
-    .map((x) => ({ file: x.name.split('/').pop() ?? x.name, start: x.start, end: x.end }));
+    .map((x) => ({ file: x.name.split('/').pop() ?? x.name, ...shift(x) }));
   const api = r.res
     .filter((x) => x.name.includes('/api/v1/'))
-    .map((x) => ({ path: x.name.split('/api/v1')[1] ?? x.name, start: x.start, end: x.end }));
+    .map((x) => ({ path: x.name.split('/api/v1')[1] ?? x.name, ...shift(x) }));
   const screenApi = api.filter((a) => !/unread|\/me$|\/tenant$|refresh/.test(a.path));
   return {
     journey,
     step,
     actError,
+    tapAt: Math.round(tapAt),
     ms: upTo >= 0 ? Math.round(frames[upTo]?.t ?? 0) : null,
     firstChange: changed ? Math.round(changed.t) : null,
     spinnerFrames: window_.filter((f) => f.spinner).length,
@@ -270,16 +293,30 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
   await m('01-post', 'back-home', FEED, () => page.goBack());
 
   // J2: Mentors → browse → a mentor → back.
-  await m('02-mentor', 'tab-mentors', { sel: 'main a[href^="/mentors/"]', path: '^/mentors$' }, () =>
-    tapTab(page, 'Mentors'),
-  );
-  await m('02-mentor', 'browse', { sel: 'main a[href^="/mentors/"]', path: '^/mentors$' }, () =>
+  // Mentors opens on Alumni Match (a swipe deck, not a list of links); ready when it has loaded.
+  await m('02-mentor', 'tab-mentors', { sel: 'main h1', path: '^/mentors$' }, () => tapTab(page, 'Mentors'));
+  await m('02-mentor', 'browse', { sel: 'main a[href^="/mentors/"]', path: '^/mentors' }, () =>
     page.getByRole('button', { name: 'Browse', exact: true }).click(),
   );
   await m('02-mentor', 'open-mentor', { sel: 'main h1', path: '^/mentors/[a-f0-9]{24}$' }, () =>
-    page.locator('main a[href^="/mentors/"]').first().click(),
+    page
+      .getByRole('link', { name: /Sneha Reddy/ })
+      .first()
+      .click(),
   );
-  await m('02-mentor', 'back-to-mentors', { sel: 'main a[href^="/mentors/"]', path: '^/mentors$' }, () =>
+  // The request J6's mentor accepts: session and time, then one message, then Send (timed).
+  await page.getByRole('button', { name: 'Request mentorship' }).click();
+  const sheet = page.getByRole('dialog', { name: /Ask Sneha for help/ });
+  await sheet.getByRole('radio', { name: /1:1 video call/ }).click();
+  await sheet.getByRole('radiogroup', { name: 'Time' }).getByRole('radio').first().click();
+  await sheet.getByRole('button', { name: 'Continue' }).click();
+  await sheet.getByRole('button', { name: 'Goal' }).click();
+  await page.keyboard.type('DEMO: practise a system-design round before placements.');
+  await m('02-mentor', 'send-request', { sel: '[role=dialog] [role=status]', path: '^/mentors/' }, () =>
+    page.getByRole('button', { name: 'Send request' }).click(),
+  );
+  await page.keyboard.press('Escape');
+  await m('02-mentor', 'back-after-booking', { sel: 'main a[href^="/mentors/"]', path: '^/mentors' }, () =>
     page.goBack(),
   );
 
@@ -317,8 +354,9 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
   await m('05-roadmaps', 'open-roadmaps', { sel: 'main h1', path: '^/roadmaps$' }, () =>
     fromMenu(page, 'Roadmaps'),
   );
+  // In the app, as a member would (a full page load would also reset this probe).
   await m('05-roadmaps', 'open-roadmap', { sel: 'main h1', path: '^/roadmaps/sde-dsa$' }, () =>
-    page.goto(`${BASE}/roadmaps/sde-dsa`),
+    page.locator('main a[href="/roadmaps/sde-dsa"]').first().click(),
   );
   const list = page.getByRole('button', { name: 'List', exact: true });
   if (await list.isVisible().catch(() => false)) await list.click();
@@ -372,8 +410,12 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
   if (throttled) await throttle(mp);
   const mm = (...a: Parameters<typeof measure> extends [Page, ...infer R] ? R : never) =>
     measure(mp, ...a).then((s) => out.push(s));
+  // Notifications is a top-bar icon now (with the unread count in its name).
   await mm('06-notifications', 'open-notifications', { sel: 'main h1', path: '^/notifications$' }, () =>
-    fromMenu(mp, 'Notifications'),
+    mp
+      .getByRole('link', { name: /^Notifications/ })
+      .first()
+      .click(),
   );
   await mm('06-notifications', 'open-item', { sel: 'main h1', path: '^/mentorship' }, () =>
     mp.locator('main a[href^="/mentorship"]').first().click(),
@@ -387,6 +429,8 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
 
 test.setTimeout(0);
 
+// Each run needs fresh demo data, as the audit's did (J2 sends the request J6 accepts), so run them
+// one at a time: `audit:journeys -g throttled`, then `-g unthrottled`, each on a fresh seed.
 test('journeys, throttled', async ({ browser }) => {
   const steps = await run(browser, true);
   writeFileSync(join(OUT, 'journeys.json'), `${JSON.stringify(steps, null, 1)}\n`);

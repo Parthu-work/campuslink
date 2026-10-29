@@ -27,6 +27,7 @@ test('desktop rail', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: w, height: h } });
     const page = await ctx.newPage();
     await signIn(page, 'ananya@dpit.example');
+    await page.locator('.app-rail').waitFor();
     out[`${w}x${h}`] = await page.evaluate((vh) => {
       const rail = document.querySelector('.app-rail');
       if (!rail) return { error: 'no rail' };
@@ -57,18 +58,14 @@ test('desktop rail', async ({ browser }) => {
 });
 
 test('offline: an unvisited screen', async ({ browser }) => {
-  const ctx = await browser.newContext(PHONE);
-  const page = await ctx.newPage();
-  await signIn(page, 'ananya@dpit.example');
-  // Let the service worker install and take control (it precaches the screen chunks).
-  await page.waitForTimeout(3000);
-  await page.reload();
-  await page.waitForLoadState('networkidle');
-  const swControlled = await page.evaluate(() => !!navigator.serviceWorker?.controller);
-  const probe = async (label: string) => {
-    await ctx.setOffline(true);
+  // Open Events from the account menu with the network gone: the menu is opened first (online), so
+  // what is measured is the screen's own code, not the menu's.
+  const probe = async (page: Page, setOffline: (o: boolean) => Promise<void>) => {
     await page.getByRole('button', { name: /Account menu/ }).click();
-    await page.getByRole('dialog').getByRole('link', { name: 'Events', exact: true }).click();
+    const events = page.getByRole('dialog').getByRole('link', { name: 'Events', exact: true });
+    await events.waitFor();
+    await setOffline(true);
+    await events.click();
     await page.waitForTimeout(2500);
     const r = await page.evaluate(() => ({
       url: location.pathname,
@@ -78,17 +75,27 @@ test('offline: an unvisited screen', async ({ browser }) => {
         .slice(0, 300),
       shell: !!document.querySelector('nav[aria-label="Main"]'),
     }));
-    await ctx.setOffline(false);
-    return [label, r] as const;
+    await setOffline(false);
+    return r;
   };
-  const allow = await probe('events-allow');
-  // Without the service worker's copy: the chunk itself fails to load.
-  await page.goto(`${BASE}/home`);
-  await page.route(/\/assets\/events-.*\.js$/, (r) => r.abort());
-  await page.evaluate(() => caches.keys().then((ks) => Promise.all(ks.map((k) => caches.delete(k)))));
-  const block = await probe('events-block');
-  save('offline.json', { swControlled, [allow[0]]: allow[1], [block[0]]: block[1] });
+  // With the service worker: it precaches every screen's code after install.
+  const ctx = await browser.newContext(PHONE);
+  const page = await ctx.newPage();
+  await signIn(page, 'ananya@dpit.example');
+  await page.waitForTimeout(3000);
+  await page.reload();
+  await page.waitForLoadState('networkidle');
+  const swControlled = await page.evaluate(() => !!navigator.serviceWorker?.controller);
+  const allow = await probe(page, (o) => ctx.setOffline(o));
   await ctx.close();
+  // Without it (first visit, or a browser without service workers): the chunk cannot load.
+  const bare = await browser.newContext({ ...PHONE, serviceWorkers: 'block' });
+  const p2 = await bare.newPage();
+  await signIn(p2, 'ananya@dpit.example');
+  await p2.waitForTimeout(2000);
+  const block = await probe(p2, (o) => bare.setOffline(o));
+  await bare.close();
+  save('offline.json', { swControlled, 'events-allow': allow, 'events-block': block });
 });
 
 test('Telugu', async ({ browser }) => {
@@ -168,7 +175,8 @@ test('scroll memory and scroll-aware bars', async ({ browser }) => {
   await page.getByRole('feed').getByRole('article').first().waitFor();
   const barsAtTop = await bars(page);
   await page.mouse.move(180, 400);
-  await page.mouse.wheel(0, 1200);
+  // Not to the end of the (short, seeded) feed: there the bars come back by design.
+  await page.mouse.wheel(0, 600);
   await page.waitForTimeout(600);
   const homeBefore = await y();
   const barsAfterScrollDown = await bars(page);

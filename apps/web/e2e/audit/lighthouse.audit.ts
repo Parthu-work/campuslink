@@ -48,9 +48,19 @@ async function profile(run: (typeof RUNS)[number]): Promise<string> {
     run.path = href ?? '/people';
   }
   if (run.warm) {
+    // The installed app: the service worker has installed (it precaches every screen's code) and
+    // controls the page, which has been visited before.
     await page.goto(`${BASE}${run.path}`);
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await page.waitForFunction(
+      async () => !!(await navigator.serviceWorker?.getRegistration())?.active,
+      undefined,
+      { timeout: 60_000, polling: 500 },
+    );
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await page.waitForFunction(() => !!navigator.serviceWorker?.controller, undefined, { timeout: 30_000 });
+    await page.waitForTimeout(1000);
   } else {
     await page.evaluate(async () => {
       for (const r of (await navigator.serviceWorker?.getRegistrations()) ?? []) await r.unregister();
@@ -70,7 +80,19 @@ test.setTimeout(0);
 
 test('lighthouse', async () => {
   const summary: Record<string, unknown>[] = [];
-  for (const run of RUNS) {
+  // Lighthouse occasionally fails to record a trace (NO_NAVSTART): each page gets three tries, and
+  // a page that still fails is recorded as such while the others carry on.
+  for (const run of RUNS)
+    for (let attempt = 1; attempt <= 3; attempt++)
+      try {
+        await audit(run);
+        break;
+      } catch (e) {
+        if (attempt === 3) summary.push({ name: run.name, error: String(e).split('\n')[0] });
+      }
+  writeFileSync(join(resolve(OUT), 'lighthouse-summary.json'), `${JSON.stringify(summary, null, 1)}\n`);
+
+  async function audit(run: (typeof RUNS)[number]) {
     const dir = await profile(run);
     const out = join(tmpdir(), `lh-${run.name}.json`);
     try {
@@ -83,12 +105,12 @@ test('lighthouse', async () => {
           '--quiet',
           '--output=json',
           `--output-path=${out}`,
-          `--chrome-path=${CHROME}`,
           `--chrome-flags=--headless=new --no-sandbox --user-data-dir=${dir} ${RESOLVE}`,
           '--only-categories=performance,accessibility,best-practices',
           '--disable-storage-reset',
         ],
-        { stdio: 'inherit', timeout: 240_000 },
+        // Lighthouse finds Chromium through CHROME_PATH (it has no flag for it).
+        { stdio: 'inherit', timeout: 240_000, env: { ...process.env, CHROME_PATH: CHROME } },
       );
       const lhr = JSON.parse(readFileSync(out, 'utf8')) as {
         finalDisplayedUrl: string;
@@ -133,5 +155,4 @@ test('lighthouse', async () => {
       rmSync(out, { force: true });
     }
   }
-  writeFileSync(join(resolve(OUT), 'lighthouse-summary.json'), `${JSON.stringify(summary, null, 1)}\n`);
 });

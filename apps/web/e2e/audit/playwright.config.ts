@@ -12,5 +12,7 @@ export default defineConfig({
   globalSetup: '../global-setup.ts',
   retries: 0,
   reporter: 'line',
-  projects: [{ name: 'audit', use: base.use ?? {} }],
+  // Journeys run without a test time limit; a step whose element is gone fails after 15 s (and is
+  // recorded as that step's error) instead of waiting forever.
+  projects: [{ name: 'audit', use: { ...base.use, actionTimeout: 15_000, navigationTimeout: 30_000 } }],
 });
