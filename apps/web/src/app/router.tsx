@@ -17,6 +17,7 @@ import { useTenant } from '../lib/tenant-context';
 import { importWithRetry, setPendingTargetResolver } from '../lib/chunk-reload';
 import { registerPreloadRoutes, registerRouteTables } from '../lib/preload';
 import { registerRouterState } from '../lib/router-state';
+import { animateScreens } from '../lib/transitions';
 import { queryClient as qc } from '../lib/query-client';
 import * as q from '../lib/queries';
 import { AppShell } from '../components/layout/app-shell';
@@ -463,8 +464,9 @@ const animated = new WeakSet<AppRouterInstance>();
 
 /**
  * Every navigation to another screen runs as a view transition (master prompt §7b); React Router
- * replays it in reverse on Back. Same-screen updates (overlays, filters) never animate. Browsers
- * without the View Transitions API simply switch screens.
+ * replays it in reverse on Back. Same-screen updates (overlays, filters) never animate, and nor does
+ * anything on a device too slow to animate smoothly (`animateScreens()`). Browsers without the View
+ * Transitions API simply switch screens.
  */
 function withViewTransitions(router: AppRouterInstance) {
   if (animated.has(router)) return router;
@@ -475,7 +477,7 @@ function withViewTransitions(router: AppRouterInstance) {
       return navigate(to as never, opts as never);
     const target = typeof to === 'string' ? to : createPath(to as Partial<Path>);
     const next = new URL(target, window.location.href).pathname;
-    const crossScreen = next !== router.state.location.pathname;
+    const crossScreen = next !== router.state.location.pathname && animateScreens();
     return navigate(to as never, { ...opts, viewTransition: crossScreen } as never);
   }) as AppRouterInstance['navigate'];
   return router;

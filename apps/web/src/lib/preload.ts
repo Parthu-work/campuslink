@@ -10,10 +10,26 @@ const warmed = new Set<string>();
 /** When each path's data was last warmed; data is warmed again once it may be stale. */
 const dataWarmed = new Map<string, number>();
 const DATA_FRESH_MS = 30_000;
+/**
+ * Route matches per path: matching flattens, ranks and compiles every route (66 of them), and every
+ * card link that scrolls into view asks, so each path is matched once.
+ */
+const matched = new Map<string, ReturnType<typeof matchRoutes>>();
 
 export function registerPreloadRoutes(next: RouteObject[]) {
+  if (next === routes) return;
   routes = next;
+  matched.clear();
 }
+
+const matchesFor = (pathname: string) => {
+  let m = matched.get(pathname);
+  if (m === undefined) {
+    m = matchRoutes(routes, pathname);
+    matched.set(pathname, m);
+  }
+  return m ?? [];
+};
 
 interface PreloadHandle {
   preload?: () => Promise<unknown>;
@@ -24,7 +40,8 @@ interface PreloadHandle {
 export function preloadPath(to: string, { data = true } = {}) {
   const url = new URL(to, location.origin);
   const pathname = url.pathname;
-  const matches = matchRoutes(routes, pathname) ?? [];
+  if (!data && warmed.has(pathname)) return;
+  const matches = matchesFor(pathname);
   if (!warmed.has(pathname)) {
     warmed.add(pathname);
     for (const m of matches) {

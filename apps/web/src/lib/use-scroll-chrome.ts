@@ -5,9 +5,11 @@ import { useLocation } from 'react-router';
  * Scroll-aware phone chrome (audit NB-1, master prompt §7a). One passive scroll listener, throttled
  * to animation frames, sets two attributes on <html> and CSS does the rest with transforms:
  *
- * - `data-chrome="hidden"` after scrolling down past 56 px (8 px of travel against jitter); any
- *   upward scroll, the end of the page, a focused field or control, a tap on the top edge and a new
- *   screen bring the bars back.
+ * - `data-chrome="hidden"` after the member scrolls down past 56 px (8 px of travel against
+ *   jitter); any upward scroll, the end of the page, a focused field or control, a tap on the top
+ *   edge and a new screen bring the bars back. Only the member's own scrolling (touch, wheel or
+ *   keys, and the momentum after them) hides the bars: when Back or a tab restores a scrolled
+ *   position, they stay, so the tab bar is there to tap.
  * - `data-scrolled` once content runs under the top bar, which turns it from clear to glass.
  *
  * Nothing leaves the accessibility tree: hidden bars only move off screen, and focusing them brings
@@ -16,6 +18,8 @@ import { useLocation } from 'react-router';
 const HIDE_AFTER = 56;
 const THRESHOLD = 8;
 const END_ZONE = 96;
+/** Scrolling this long after the last touch, wheel or key press is still the member's (momentum). */
+const INPUT_WINDOW_MS = 1200;
 
 export function useScrollChrome() {
   const { pathname } = useLocation();
@@ -25,6 +29,10 @@ export function useScrollChrome() {
     let anchor = window.scrollY;
     let hidden = false;
     let frame = 0;
+    let touching = false;
+    let lastInput = -Infinity;
+    const byMember = () => touching || performance.now() - lastInput < INPUT_WINDOW_MS;
+    root.dataset.chrome = 'shown';
     const set = (hide: boolean) => {
       if (hide === hidden) return;
       hidden = hide;
@@ -42,7 +50,7 @@ export function useScrollChrome() {
       if (hidden ? y > anchor : y < anchor)
         anchor = y; // still moving the same way
       else if (!hidden && y - anchor > THRESHOLD) {
-        set(true);
+        if (byMember()) set(true);
         anchor = y;
       } else if (hidden && anchor - y > THRESHOLD) {
         set(false);
@@ -66,23 +74,42 @@ export function useScrollChrome() {
     const onTouch = (e: PointerEvent) => {
       if (e.clientY < 24) reveal();
     };
+    const onInput = () => {
+      lastInput = performance.now();
+    };
+    const onTouchStart = () => {
+      touching = true;
+      onInput();
+    };
+    const onTouchEnd = () => {
+      touching = false;
+      onInput();
+    };
     // First read in the next frame: reading scroll metrics now would force a layout mid-commit.
     frame = requestAnimationFrame(update);
     window.addEventListener('scroll', onScroll, { passive: true });
     document.addEventListener('focusin', onFocus);
     window.addEventListener('pointerdown', onTouch, { passive: true });
+    window.addEventListener('wheel', onInput, { passive: true });
+    window.addEventListener('keydown', onInput);
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onInput, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', onTouchEnd, { passive: true });
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener('scroll', onScroll);
       document.removeEventListener('focusin', onFocus);
       window.removeEventListener('pointerdown', onTouch);
+      window.removeEventListener('wheel', onInput);
+      window.removeEventListener('keydown', onInput);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onInput);
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchEnd);
       delete root.dataset.chrome;
       delete root.dataset.scrolled;
     };
-  }, []);
-
-  // A new screen always starts with the bars visible.
-  useEffect(() => {
-    document.documentElement.dataset.chrome = 'shown';
+    // A new screen starts over with the bars visible.
   }, [pathname]);
 }

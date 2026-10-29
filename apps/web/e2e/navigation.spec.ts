@@ -189,6 +189,28 @@ test.describe('scroll-aware chrome and tab memory (phones)', () => {
     await expect(html).toHaveAttribute('data-chrome', 'shown');
   });
 
+  test('restoring a scrolled position on Back keeps the bars (only the member’s scrolling hides them)', async ({
+    page,
+  }) => {
+    await signIn(page, 'ananya@dpit.example');
+    const feed = page.getByRole('feed', { name: 'For you' });
+    await expect(feed.getByRole('article').first()).toBeVisible();
+    const html = page.locator('html');
+    await page.mouse.move(180, 400);
+    await page.mouse.wheel(0, 500);
+    await expect(html).toHaveAttribute('data-chrome', 'hidden');
+    const y = await page.evaluate(() => window.scrollY);
+    await page.goto(`${BASE}/jobs`);
+    await expect(html).toHaveAttribute('data-chrome', 'shown');
+    await page.waitForTimeout(1300); // past the window in which scrolling still counts as the member's
+    await page.goBack();
+    await page.waitForURL(/\/home$/);
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 4000 }).toBeGreaterThan(y - 60);
+    await expect(html).not.toHaveAttribute('data-chrome', 'hidden');
+    await mainTabs(page).getByRole('link', { name: 'Jobs' }).click({ timeout: 3000 });
+    await expect(page).toHaveURL(/\/jobs$/);
+  });
+
   test('a tab remembers the screen you left it on; tapping it again goes to its root', async ({ page }) => {
     await signIn(page, 'ananya@dpit.example');
     await tapTab(page, 'Jobs');
