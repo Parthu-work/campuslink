@@ -7,7 +7,7 @@ A new session reads this file first and resumes from the first phase that is not
 | B1    | Feature switches and the cut list                              | Done        |
 | B2    | Phone-first identity, age and guardian consent                 | Done        |
 | B3    | WhatsApp and SMS channels                                      | Done        |
-| B4    | One-tap invites and class onboarding                           | Not started |
+| B4    | One-tap invites and class onboarding                           | Done        |
 | B5    | Mentorship loop that never dead-ends                           | Not started |
 | B6    | TPO console                                                    | Not started |
 | B7    | Placement drives                                               | Not started |
@@ -95,3 +95,29 @@ A new session reads this file first and resumes from the first phase that is not
 **Needs the owner (live checks).** The Meta and MSG91 documentation sites were outside this session's network allow-list, so both adapters follow the providers' published request shapes from memory and are verified only against fakes. Before turning either on, send one code and one template with real credentials (`WHATSAPP_PROVIDER=cloud`, `SMS_PROVIDER=msg91`) and confirm: the Graph API version, the copy-code button component, MSG91's `template_id` (mapped to the DLT template in the MSG91 panel) and its `var1…` names.
 
 **Next:** B4 (one-tap invites and class onboarding).
+
+## B4 · One-tap invites and class onboarding (Done)
+
+**Shipped**
+
+- Personal invite links for people on the college's list (`InviteLink`: a hash of a 256-bit token, 14 days, single use; a record is invited at most every 72 hours), sent by WhatsApp (new templates `cl_invite_student`, `cl_invite_alumni`, counted against the college's allowance) or downloaded as CSV for the college's own mail merge.
+- Class join codes (`JoinCode`: 8 characters without look-alikes, per kind and optionally branch and year, 1 to 60 days) with a printable poster and QR code; the roll number finds the record within the code's class.
+- Both end the same way: a code to the contact on the college's record (never one typed in; at most five a day per record), then a verified member with the record's name and kind, the B2 age rules, signed in. Alumni get three skippable questions (company and role, topics, "30 minutes a month?").
+- `onboarding:manage` (TPO, College admin) and Admin › Onboarding (`people` group). Public routes have a new `invite` rate limit; code requests use `otp` and `bot: true`.
+- Seed: two demo records per college with a mobile number and no account (`Demo Invite Student`, `Demo Classcode Student`).
+- Tests: `test/onboarding.test.ts` (15), `test/isolation/onboarding.test.ts` (4), a privacy case, template parity; e2e `e2e/invites.spec.ts` (WhatsApp invite → link → member; join code → poster → member).
+- CI: the e2e job runs MongoDB as a quiet step instead of a service (a service container prints its whole log at teardown, which buried Playwright's report), and Playwright keeps an HTML report in CI for the failure artifact.
+- Docs: `docs/specs/invites.md`, `docs/permissions.md`, `docs/whatsapp-templates.md`.
+
+**Decisions**
+
+- **An invite never touches an existing account.** If the contact on the record already has one, the answer is "sign in, then confirm your roll number" (409). Merging or signing in through an invite would make the link a second way into an account.
+- **WhatsApp invites need the college's attestation of opt-in** (recorded in the audit log); the people are not members, so there is no consent record of ours to check.
+- **Invites go in English** until a college-level language exists (B12).
+- **A link whose WhatsApp message failed is deleted** so the record can be invited again at once; once the allowance is reached the rest are reported "not sent".
+- **No overview count** for onboarding: unclaimed records are not a review queue.
+- Email-only records join with a verified email and no password; they sign in again through "Forgot password" or by adding a number. Noted in the spec.
+
+**Earlier phases.** B3's CI run (`60883d8`) is green including e2e; the full local e2e suite passed (144 passed, 12 skipped). B2's last run (`8f485b9`) failed only in e2e, and its logs were unreadable (see the CI change above); B3's green run supersedes it.
+
+**Next:** B5 (mentorship loop that never dead-ends).

@@ -24,6 +24,7 @@ import {
 } from '../src/modules/study/chat.model.js';
 import { FileModel } from '../src/modules/files/file.model.js';
 import { ChannelMessageModel } from '../src/modules/notifications/channels/channel.model.js';
+import { InviteLinkModel } from '../src/modules/verification/onboarding.model.js';
 
 const ctx = testApp();
 const services = ctx.app.locals.services as {
@@ -117,6 +118,16 @@ beforeAll(async () => {
       category: 'requests',
       providerMessageId: 'wamid.privacy-demo',
       expiresAt: new Date(Date.now() + 86_400_000),
+    });
+    // The invite link they joined with (B4): only the record id and who used it.
+    await InviteLinkModel.create({
+      whitelistId: new Types.ObjectId(),
+      tokenHash: 'privacy-demo-hash',
+      createdBy: new Types.ObjectId(staff.id),
+      channel: 'csv',
+      expiresAt: new Date(Date.now() + 86_400_000),
+      usedAt: new Date(),
+      usedBy: new Types.ObjectId(alum.id),
     });
     const conv = await ConversationModel.create({
       participants: [new Types.ObjectId(alum.id), new Types.ObjectId(other.id)],
@@ -225,6 +236,8 @@ describe('deletion', () => {
       expect(await SubjectModel.countDocuments({ code: 'PRV101' })).toBe(1);
       expect(await SubjectEnrollmentModel.countDocuments({ userId: alum.id })).toBe(0);
       expect(await ChannelMessageModel.countDocuments({ userId: alum.id })).toBe(0);
+      expect(await InviteLinkModel.countDocuments({ usedBy: alum.id })).toBe(0);
+      expect(await InviteLinkModel.countDocuments({ tokenHash: 'privacy-demo-hash' })).toBe(1);
       for (const m of [ChatSessionModel, ChatMessageModel, FlashcardDeckModel, UnansweredQuestionModel])
         expect(await (m as typeof ChatSessionModel).countDocuments({ userId: alum.id })).toBe(0);
       // Usage counters fold into the college's anonymous ones, so the month's budget stays true.
@@ -273,6 +286,7 @@ describe('deletion', () => {
         'studyChats',
         'channelMessages',
         'guardianConsent',
+        'onboarding',
       ]),
     );
   });

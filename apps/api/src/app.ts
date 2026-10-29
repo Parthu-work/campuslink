@@ -62,6 +62,8 @@ import { profileRoutes } from './modules/profiles/profiles.routes.js';
 import { InvitesService } from './modules/verification/invites.service.js';
 import { VerificationService } from './modules/verification/verification.service.js';
 import { verificationRoutes } from './modules/verification/verification.routes.js';
+import { onboardingRoutes } from './modules/verification/onboarding.routes.js';
+import { OnboardingService } from './modules/verification/onboarding.service.js';
 import { IdempotencyService } from './modules/idempotency/idempotency.service.js';
 import { botCheck } from './http/bot.middleware.js';
 import { disabledBotProtection, TurnstileBotProtection, type BotProtection } from './lib/bot.js';
@@ -327,6 +329,13 @@ export function createApp({
     realtime,
     jobs: queue,
     tenantUrl,
+    channels: channelService,
+  });
+  const onboardingService = new OnboardingService({
+    cipher,
+    otp: otpService,
+    auth: authService,
+    verification: verificationService,
     channels: channelService,
   });
   channelService.onAlert = async (type, data) => {
@@ -711,6 +720,7 @@ export function createApp({
   privacyService.register('consents', { exportFor: (u) => consentService.current(u) });
   privacyService.register('guardianConsent', { exportFor: (u) => consentService.guardianFor(u) });
   privacyService.register('verification', hook(verificationService));
+  privacyService.register('onboarding', hook(onboardingService));
   privacyService.register('posts', hook(postsService));
   privacyService.register('stories', hook(storiesService));
   privacyService.register('follows', hook(followsService));
@@ -821,6 +831,7 @@ export function createApp({
     API_PREFIX,
     defineModule('verification', verificationRoutes(verificationService, invitesService), pipeline),
   );
+  app.use(API_PREFIX, defineModule('onboarding', onboardingRoutes(onboardingService, cookie), pipeline));
   app.use(API_PREFIX, defineModule('profiles', profileRoutes(profilesService, extraSearch), pipeline));
   app.use(
     API_PREFIX,

@@ -36,6 +36,10 @@ import type {
   MaterialView,
   SignedFileView,
   StudySearchHit,
+  InviteView,
+  JoinCodeInfo,
+  JoinCodeView,
+  OnboardingRecordView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -399,4 +403,44 @@ export const studySearch = (q: string, subjectId?: string) =>
         signal,
       ),
     enabled: q.trim().length >= 2,
+  });
+
+// ── Onboarding (B4) ─────────────────────────────
+/** A personal invite link; a 404 (used or expired) is an answer, not a failure to retry. */
+export const invite = (token: string) =>
+  queryOptions({
+    queryKey: ['invite', token],
+    queryFn: ({ signal }) => api.get<InviteView>(`/invite/${token}`, signal),
+    retry: (n, err) => !(err instanceof ApiError && err.status < 500) && n < 2,
+  });
+
+export const joinCode = (code: string) =>
+  queryOptions({
+    queryKey: ['join-code', code],
+    queryFn: ({ signal }) => api.get<JoinCodeInfo>(`/join/${encodeURIComponent(code)}`, signal),
+    retry: (n, err) => !(err instanceof ApiError && err.status < 500) && n < 2,
+  });
+
+export const onboardingRecords = (qs: string) =>
+  infiniteQueryOptions({
+    queryKey: ['onboarding-records', qs],
+    initialPageParam: '',
+    queryFn: ({ pageParam }) =>
+      apiRequest<OnboardingRecordView[]>(
+        `/admin/onboarding/records?${qs}${pageParam ? `${qs ? '&' : ''}cursor=${pageParam}` : ''}`,
+      ),
+    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+export const joinCodes = () =>
+  queryOptions({
+    queryKey: ['join-codes'],
+    queryFn: ({ signal }) => api.get<JoinCodeView[]>('/admin/join-codes', signal),
+  });
+
+export type JoinCodePoster = JoinCodeView & { college: string; url: string; qrSvg: string; app: string };
+export const joinCodePoster = (id: string) =>
+  queryOptions({
+    queryKey: ['join-code-poster', id],
+    queryFn: ({ signal }) => api.get<JoinCodePoster>(`/admin/join-codes/${id}/poster`, signal),
   });

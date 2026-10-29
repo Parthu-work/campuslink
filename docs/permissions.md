@@ -58,6 +58,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `reports:export` Export reports and data | · | ✅ | ✅ | · | · | · |
 | `users:invite` Invite users | · | ✅ | ✅ | ✅ | · | · |
 | `users:approve` Approve pending users | · | ✅ | ✅ | ✅ | · | · |
+| `onboarding:manage` Send invite links, run class join codes and follow onboarding | · | ✅ | ✅ | · | · | · |
 | `users:read_admin` View the admin user list | · | ✅ | · | · | · | · |
 | `users:manage` Suspend or reactivate users | · | ✅ | · | · | · | · |
 | `roles:assign` Change user roles | · | ✅ | · | · | · | · |
@@ -144,6 +145,18 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/admin/verification/:id/decision` | `verification:review` | college | adminWrite | Approve or reject an ID verification request |
 | `POST /api/v1/admin/users/:id/unverify` | `verification:review` | college | adminWrite | Revoke a member’s verification and free their list record |
 | `POST /api/v1/admin/invites` | `users:invite` | college | adminWrite | Invite people by email (invitees are verified when they sign up with that email) |
+| `GET /api/v1/invite/:token` | public | college | invite | What a personal invite link is for (first name, masked roll number, where the code goes) |
+| `POST /api/v1/invite/:token/accept` | public | college | otp | Send a code to the number or email on the college's record |
+| `POST /api/v1/invite/:token/accept/confirm` | public | college | login | Confirm the code: creates the verified member from the record and signs them in |
+| `GET /api/v1/join/:code` | public | college | invite | Which class a join code is for |
+| `POST /api/v1/join/:code/start` | public | college | otp | Find my roll number in the code's class and send a code to the contact on record |
+| `POST /api/v1/join/:code/confirm` | public | college | login | Confirm the code: creates the verified member from the record and signs them in |
+| `GET /api/v1/admin/onboarding/records` | `onboarding:manage` | college | — | The college's list with invite status, filtered by branch, year and kind |
+| `POST /api/v1/admin/onboarding/invites` | `onboarding:manage` | college | adminWrite | Create personal invite links and send them by WhatsApp, or download them as CSV |
+| `GET /api/v1/admin/join-codes` | `onboarding:manage` | college | — | Recent class join codes |
+| `POST /api/v1/admin/join-codes` | `onboarding:manage` | college | adminWrite | Create a class join code (kind, optional branch and year, days valid) |
+| `POST /api/v1/admin/join-codes/:id/expire` | `onboarding:manage` | college | adminWrite | Stop a join code working now |
+| `GET /api/v1/admin/join-codes/:id/poster` | `onboarding:manage` | college | — | A printable poster for a join code (QR code of the join link) |
 | `GET /api/v1/me/profile` | any signed-in user | college | — | My profile with visibility settings |
 | `PUT /api/v1/me/profile` | any signed-in user | college | — | Update my profile and who can see each field |
 | `POST /api/v1/me/avatar` | any signed-in user | college | upload | Upload a profile photo (re-encoded, metadata removed) |

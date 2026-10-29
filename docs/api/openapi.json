@@ -356,6 +356,7 @@
                               "reports:export",
                               "users:invite",
                               "users:approve",
+                              "onboarding:manage",
                               "users:read_admin",
                               "users:manage",
                               "roles:assign",
@@ -432,6 +433,7 @@
                               "reports:export",
                               "users:invite",
                               "users:approve",
+                              "onboarding:manage",
                               "users:read_admin",
                               "users:manage",
                               "roles:assign",
@@ -3443,6 +3445,681 @@
           }
         },
         "x-permission": "users:invite"
+      }
+    },
+    "/api/v1/invite/{token}": {
+      "get": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "What a personal invite link is for (first name, masked roll number, where the code goes)",
+        "description": "Public. Host scope: college. Rate limit: invite.",
+        "operationId": "onboarding_get_invite_token",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/invite/{token}/accept": {
+      "post": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Send a code to the number or email on the college's record",
+        "description": "Public. Host scope: college. Rate limit: otp.",
+        "operationId": "onboarding_post_invite_token_accept",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "whatsapp",
+                      "sms"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/invite/{token}/accept/confirm": {
+      "post": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Confirm the code: creates the verified member from the record and signs them in",
+        "description": "Public. Host scope: college. Rate limit: login.",
+        "operationId": "onboarding_post_invite_token_accept_confirm",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "challengeId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  },
+                  "birthMonth": {
+                    "type": "string",
+                    "pattern": "^(\\d{4})-(0[1-9]|1[0-2])$"
+                  },
+                  "consents": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "account",
+                        "mentorship_matching",
+                        "email_digests",
+                        "analytics_aggregate",
+                        "whatsapp_updates"
+                      ]
+                    }
+                  },
+                  "locale": {
+                    "default": "en",
+                    "type": "string",
+                    "enum": [
+                      "en",
+                      "te"
+                    ]
+                  }
+                },
+                "required": [
+                  "challengeId",
+                  "code",
+                  "birthMonth",
+                  "consents"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/join/{code}": {
+      "get": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Which class a join code is for",
+        "description": "Public. Host scope: college. Rate limit: invite.",
+        "operationId": "onboarding_get_join_code",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/join/{code}/start": {
+      "post": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Find my roll number in the code's class and send a code to the contact on record",
+        "description": "Public. Host scope: college. Rate limit: otp.",
+        "operationId": "onboarding_post_join_code_start",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "rollNumber": {
+                    "type": "string"
+                  },
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "whatsapp",
+                      "sms"
+                    ]
+                  }
+                },
+                "required": [
+                  "rollNumber"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/join/{code}/confirm": {
+      "post": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Confirm the code: creates the verified member from the record and signs them in",
+        "description": "Public. Host scope: college. Rate limit: login.",
+        "operationId": "onboarding_post_join_code_confirm",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "challengeId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  },
+                  "birthMonth": {
+                    "type": "string",
+                    "pattern": "^(\\d{4})-(0[1-9]|1[0-2])$"
+                  },
+                  "consents": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "account",
+                        "mentorship_matching",
+                        "email_digests",
+                        "analytics_aggregate",
+                        "whatsapp_updates"
+                      ]
+                    }
+                  },
+                  "locale": {
+                    "default": "en",
+                    "type": "string",
+                    "enum": [
+                      "en",
+                      "te"
+                    ]
+                  }
+                },
+                "required": [
+                  "challengeId",
+                  "code",
+                  "birthMonth",
+                  "consents"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/admin/onboarding/records": {
+      "get": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "The college's list with invite status, filtered by branch, year and kind",
+        "description": "Requires permission `onboarding:manage` (Send invite links, run class join codes and follow onboarding). Host scope: college.",
+        "operationId": "onboarding_get_admin_onboarding_records",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "student",
+                "alumni"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "unclaimed",
+              "type": "string",
+              "enum": [
+                "unclaimed",
+                "claimed"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "onboarding:manage"
+      }
+    },
+    "/api/v1/admin/onboarding/invites": {
+      "post": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Create personal invite links and send them by WhatsApp, or download them as CSV",
+        "description": "Requires permission `onboarding:manage` (Send invite links, run class join codes and follow onboarding). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "onboarding_post_admin_onboarding_invites",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "maxItems": 1000,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  },
+                  "branch": {
+                    "type": "string",
+                    "enum": [
+                      "CSE",
+                      "IT",
+                      "ECE",
+                      "EEE",
+                      "MECH",
+                      "CIVIL",
+                      "CHEM",
+                      "AIML",
+                      "DS",
+                      "OTHER"
+                    ]
+                  },
+                  "gradYear": {
+                    "type": "integer",
+                    "minimum": 1950,
+                    "maximum": 2032
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "student",
+                      "alumni"
+                    ]
+                  },
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "whatsapp",
+                      "csv"
+                    ]
+                  },
+                  "attestOptIn": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "channel"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "onboarding:manage"
+      }
+    },
+    "/api/v1/admin/join-codes": {
+      "get": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Recent class join codes",
+        "description": "Requires permission `onboarding:manage` (Send invite links, run class join codes and follow onboarding). Host scope: college.",
+        "operationId": "onboarding_get_admin_join_codes",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "onboarding:manage"
+      },
+      "post": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Create a class join code (kind, optional branch and year, days valid)",
+        "description": "Requires permission `onboarding:manage` (Send invite links, run class join codes and follow onboarding). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "onboarding_post_admin_join_codes",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "student",
+                      "alumni"
+                    ]
+                  },
+                  "branch": {
+                    "type": "string",
+                    "enum": [
+                      "CSE",
+                      "IT",
+                      "ECE",
+                      "EEE",
+                      "MECH",
+                      "CIVIL",
+                      "CHEM",
+                      "AIML",
+                      "DS",
+                      "OTHER"
+                    ]
+                  },
+                  "gradYear": {
+                    "type": "integer",
+                    "minimum": 1950,
+                    "maximum": 2032
+                  },
+                  "days": {
+                    "default": 14,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 60
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "onboarding:manage"
+      }
+    },
+    "/api/v1/admin/join-codes/{id}/expire": {
+      "post": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "Stop a join code working now",
+        "description": "Requires permission `onboarding:manage` (Send invite links, run class join codes and follow onboarding). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "onboarding_post_admin_join_codes_id_expire",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "onboarding:manage"
+      }
+    },
+    "/api/v1/admin/join-codes/{id}/poster": {
+      "get": {
+        "tags": [
+          "Onboarding"
+        ],
+        "summary": "A printable poster for a join code (QR code of the join link)",
+        "description": "Requires permission `onboarding:manage` (Send invite links, run class join codes and follow onboarding). Host scope: college.",
+        "operationId": "onboarding_get_admin_join_codes_id_poster",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "onboarding:manage"
       }
     },
     "/api/v1/me/profile": {

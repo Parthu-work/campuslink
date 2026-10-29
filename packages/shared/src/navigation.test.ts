@@ -45,7 +45,7 @@ describe('role-aware navigation', () => {
         g.items.map((i) => i.id),
       ]);
     expect(admin([Role.COLLEGE_ADMIN])).toEqual([
-      ['people', ['users', 'verification', 'imports', 'list']],
+      ['people', ['users', 'verification', 'imports', 'list', 'onboarding']],
       ['community', ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards']],
       ['insights', ['analytics']],
       ['college', ['branding', 'features', 'ai', 'audit']],

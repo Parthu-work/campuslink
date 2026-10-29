@@ -146,6 +146,35 @@ export const WHATSAPP_TEMPLATES: Partial<Record<NotificationType, WaTemplate>> =
   },
 };
 
+/**
+ * Invites to people on the college's list who are not members yet (B4). The college confirms they
+ * agreed to hear from it on WhatsApp before sending. Variables: first name, college, the link.
+ */
+export const INVITE_TEMPLATES: Record<'student' | 'alumni', WaTemplate> = {
+  student: {
+    name: 'cl_invite_student',
+    category: 'utility',
+    critical: false,
+    params: (d) => [d.name ?? '', d.college ?? '', d.link ?? ''],
+    text: {
+      en: 'Hi {{1}}, {{2}} added you to its private student network. Tap to join; the code comes to this number: {{3}}',
+      te: 'హాయ్ {{1}}, {{2}} మిమ్మల్ని తన ప్రైవేట్ విద్యార్థి నెట్‌వర్క్‌లో చేర్చింది. చేరడానికి నొక్కండి; కోడ్ ఈ నంబర్‌కే వస్తుంది: {{3}}',
+      hi: 'नमस्ते {{1}}, {{2}} ने आपको अपने निजी छात्र नेटवर्क में जोड़ा है। जुड़ने के लिए टैप करें; कोड इसी नंबर पर आएगा: {{3}}',
+    },
+  },
+  alumni: {
+    name: 'cl_invite_alumni',
+    category: 'utility',
+    critical: false,
+    params: (d) => [d.name ?? '', d.college ?? '', d.link ?? ''],
+    text: {
+      en: 'Hi {{1}}, {{2}} invites you to its private alumni network, where you can guide current students. Tap to join: {{3}}',
+      te: 'హాయ్ {{1}}, {{2}} తన ప్రైవేట్ పూర్వ విద్యార్థుల నెట్‌వర్క్‌కి మిమ్మల్ని ఆహ్వానిస్తోంది, అక్కడ మీరు ప్రస్తుత విద్యార్థులకు మార్గదర్శనం చేయవచ్చు. చేరడానికి నొక్కండి: {{3}}',
+      hi: 'नमस्ते {{1}}, {{2}} आपको अपने निजी पूर्व छात्र नेटवर्क में आमंत्रित करता है, जहां आप मौजूदा छात्रों का मार्गदर्शन कर सकते हैं। जुड़ने के लिए टैप करें: {{3}}',
+    },
+  },
+};
+
 /** The fixed answer to any free-text message (never stored). */
 export const AUTO_REPLY: Record<WaLang, string> = {
   en: 'This number only sends updates from your college’s app and can’t read replies. Please open the app to answer.',

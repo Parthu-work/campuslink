@@ -8,6 +8,7 @@ export type LimiterName =
   | 'global'
   | 'login'
   | 'otp'
+  | 'invite'
   | 'webhook'
   | 'mfa'
   | 'signup'
@@ -37,6 +38,8 @@ const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: bo
   webhook: { windowMs: 60_000, limit: 600 },
   /** Phone codes per IP (B2), on top of the per-number and per-member daily caps. */
   otp: { windowMs: 15 * 60_000, limit: 10 },
+  /** Opening invite links and class codes (public lookups, B4). */
+  invite: { windowMs: 15 * 60_000, limit: 60 },
   mfa: { windowMs: 15 * 60_000, limit: 10 },
   signup: { windowMs: 60 * 60_000, limit: 10 },
   emailAction: { windowMs: 60 * 60_000, limit: 5 },

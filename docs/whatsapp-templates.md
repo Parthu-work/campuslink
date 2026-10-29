@@ -2,7 +2,7 @@
 
 Every business-initiated WhatsApp message is an approved template. Register each one below in Meta Business Manager under the WhatsApp Business Account, in all three languages, with exactly this text (`{{1}}`, `{{2}}` … are Meta's body variables). The text is copied from `apps/api/src/modules/notifications/channels/whatsapp-templates.ts`; a test fails when they differ.
 
-Variables carry only names, times, session types, company names and counts, never message or request text. Quick-reply buttons carry a signed, expiring token (`WHATSAPP_ACTION_SECRET`), set per message.
+Variables carry only names, times, session types, company names and counts (and, in an invite, the personal link), never message or request text. Quick-reply buttons carry a signed, expiring token (`WHATSAPP_ACTION_SECRET`), set per message.
 
 ## Authentication template
 
@@ -61,6 +61,22 @@ Sent for: `job_alert`. Category: **utility**.
 - English (en): `{{1}} new openings match your alert “{{2}}”. Open the app to see them.`
 - Telugu (te): `మీ అలర్ట్ “{{2}}”కి {{1}} కొత్త ఉద్యోగాలు సరిపోలాయి. చూడటానికి యాప్ తెరవండి.`
 - Hindi (hi): `आपके अलर्ट “{{2}}” से {{1}} नई नौकरियां मेल खाती हैं। देखने के लिए ऐप खोलें।`
+
+## `cl_invite_student`
+
+Sent for: an invite to a student on the college's list. Category: **utility**.
+
+- English (en): `Hi {{1}}, {{2}} added you to its private student network. Tap to join; the code comes to this number: {{3}}`
+- Telugu (te): `హాయ్ {{1}}, {{2}} మిమ్మల్ని తన ప్రైవేట్ విద్యార్థి నెట్‌వర్క్‌లో చేర్చింది. చేరడానికి నొక్కండి; కోడ్ ఈ నంబర్‌కే వస్తుంది: {{3}}`
+- Hindi (hi): `नमस्ते {{1}}, {{2}} ने आपको अपने निजी छात्र नेटवर्क में जोड़ा है। जुड़ने के लिए टैप करें; कोड इसी नंबर पर आएगा: {{3}}`
+
+## `cl_invite_alumni`
+
+Sent for: an invite to a alumni on the college's list. Category: **utility**.
+
+- English (en): `Hi {{1}}, {{2}} invites you to its private alumni network, where you can guide current students. Tap to join: {{3}}`
+- Telugu (te): `హాయ్ {{1}}, {{2}} తన ప్రైవేట్ పూర్వ విద్యార్థుల నెట్‌వర్క్‌కి మిమ్మల్ని ఆహ్వానిస్తోంది, అక్కడ మీరు ప్రస్తుత విద్యార్థులకు మార్గదర్శనం చేయవచ్చు. చేరడానికి నొక్కండి: {{3}}`
+- Hindi (hi): `नमस्ते {{1}}, {{2}} आपको अपने निजी पूर्व छात्र नेटवर्क में आमंत्रित करता है, जहां आप मौजूदा छात्रों का मार्गदर्शन कर सकते हैं। जुड़ने के लिए टैप करें: {{3}}`
 
 ## Fixed auto-reply (free-form, inside the 24-hour window)
 

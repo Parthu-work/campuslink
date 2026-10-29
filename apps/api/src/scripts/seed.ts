@@ -197,6 +197,11 @@ const PEOPLE: SeedUser[] = [
 /** Fictional numbers for the demo minor and their guardian (development console providers only). */
 const DEMO_MINOR_PHONE = '+919000000016';
 const DEMO_GUARDIAN_PHONE = '+919000000061';
+/**
+ * DEMO (B4): two people on each college's list with a mobile number and no account yet, for the
+ * one-tap invite link and the class join code. Numbers differ per college (console outbox).
+ */
+const demoInvitePhones = (i: number) => ({ link: `+9190000001${i}7`, code: `+9190000001${i}8` });
 
 /** Unclaimed list records: `newbie` can verify with the first one (code goes to Mailpit). */
 const UNCLAIMED: { no: string; name: string; gradYear: number; branch: Branch; localEmail: string }[] = [
@@ -904,6 +909,21 @@ async function main() {
         guardianPhoneEnc: cipher.encrypt(DEMO_GUARDIAN_PHONE),
         guardianPhoneIndex: cipher.blindIndex(DEMO_GUARDIAN_PHONE),
       });
+      const invitePhones = demoInvitePhones(COLLEGES.indexOf(c));
+      for (const [no, name, phone] of [
+        ['0521', 'Demo Invite Student', invitePhones.link],
+        ['0522', 'Demo Classcode Student', invitePhones.code],
+      ] as const)
+        await WhitelistModel.create({
+          rollNumber: `24${c.slug.slice(0, 2).toUpperCase()}1A${no}`,
+          name,
+          branch: 'ECE',
+          gradYear: new Date().getFullYear() + 2,
+          kind: 'student',
+          source: 'manual',
+          phoneEnc: cipher.encrypt(phone),
+          phoneIndex: cipher.blindIndex(phone),
+        });
       await seedMentorship(ids);
       await seedFeed(ids);
       await seedJobs(ids);
@@ -921,6 +941,7 @@ async function main() {
   for (const r of rows) console.warn(r.join(' | '));
   console.warn(
     '\nTry phone sign-up (SMS_PROVIDER or WHATSAPP_PROVIDER=console): join with +91 90000 00016 and a birth month under 18; the guardian step sends a code to +91 90000 00061. Codes: GET /api/v1/dev/outbox?to=%2B919000000016',
+    '\nTry invites (B4): sign in as tpo@dpit.example, open Admin › Onboarding, download the links (CSV) and open the one for Demo Invite Student; the code goes to +91 90000 00107. Class codes: Demo Classcode Student (roll 24DP1A0522, ECE) gets codes at +91 90000 00108.',
     '\nTry verification: sign in as newbie@dpit.example, open Verify, enter roll number 24DP1A0577; the code arrives in Mailpit (http://localhost:8025).',
   );
   console.warn('Try an import: Admin → Imports → upload docs/samples/sample-students.csv');

@@ -20,6 +20,7 @@ export {
   VerificationRequestModel,
   InviteModel,
 } from './verification/verification.model.js';
+export { InviteLinkModel, JoinCodeModel } from './verification/onboarding.model.js';
 export { IdempotencyModel } from './idempotency/idempotency.model.js';
 export { MentorProfileModel, MenteePrefsModel } from './mentorship/mentor.model.js';
 export { MentorshipRequestModel } from './mentorship/request.model.js';

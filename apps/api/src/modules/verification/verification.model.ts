@@ -8,6 +8,8 @@ export const OTP_PURPOSES = [
   'phone_login',
   'phone_change',
   'guardian_consent',
+  /** An invite link or join code: a code to the contact on a roster record (B4). */
+  'roster_claim',
 ] as const;
 export type OtpPurpose = (typeof OTP_PURPOSES)[number];
 

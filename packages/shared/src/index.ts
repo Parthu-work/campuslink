@@ -28,4 +28,5 @@ export * from './schemas/events.js';
 export * from './schemas/analytics.js';
 export * from './schemas/study.js';
 export * from './schemas/admin.js';
+export * from './schemas/onboarding.js';
 export * from './navigation.js';

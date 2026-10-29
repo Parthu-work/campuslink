@@ -8,20 +8,17 @@ import { useTranslation } from '../../i18n/react';
 import { MailCheck } from 'lucide-react';
 import {
   BIRTH_MONTH,
-  CONSENT_PURPOSES,
-  CONSENT_PURPOSE_KEYS,
   email,
   password,
   personName,
   phone as phoneSchema,
   plausibleBirthMonth,
   type CodeSent,
-  type ConsentPurpose,
   type OtpChannel,
 } from '@campuslink/shared';
 import { AuthLayout, FormError } from '../../components/layout/auth-layout';
 import { Button } from '../../components/ui/button';
-import { Checkbox, Field, Input, PasswordInput } from '../../components/ui/field';
+import { Field, Input, PasswordInput } from '../../components/ui/field';
 import { Chip, EmptyState } from '../../components/ui/misc';
 import { Segmented } from '../../components/ui/tab-nav';
 import { api } from '../../lib/api';
@@ -29,7 +26,7 @@ import { useSession } from '../../lib/session';
 import { useTenant } from '../../lib/tenant-context';
 import { applyApiError } from '../../lib/errors';
 import { toE164 } from '../../lib/phone';
-import { BirthMonthField, PhoneCodeStep, PhoneField } from './phone-parts';
+import { BirthMonthField, ConsentFields, PhoneCodeStep, PhoneField } from './phone-parts';
 import { MfaStep } from './sign-in';
 
 type Method = 'phone' | 'email';
@@ -284,38 +281,13 @@ export function SignUpPage() {
           )}
         />
 
-        <fieldset className="grid gap-3 rounded-[var(--radius-md)] border border-line p-4">
-          <legend className="px-1 text-meta font-semibold">{t('auth.consentTitle')}</legend>
-          <Controller
-            control={form.control}
-            name="consents"
-            render={({ field }) => (
-              <>
-                {CONSENT_PURPOSE_KEYS.map((p: ConsentPurpose) => (
-                  <Checkbox
-                    key={p}
-                    id={`consent-${p}`}
-                    checked={field.value.includes(p)}
-                    onChange={(on) =>
-                      field.onChange(on ? [...field.value, p] : field.value.filter((x) => x !== p))
-                    }
-                  >
-                    {t(`auth.consent.${p}`)}
-                    {CONSENT_PURPOSES[p].required && (
-                      <span className="sr-only"> ({t('settings.required')})</span>
-                    )}
-                  </Checkbox>
-                ))}
-              </>
-            )}
-          />
-          {errors.consents && (
-            <p role="alert" className="text-caption font-medium text-danger">
-              {errors.consents.message}
-            </p>
+        <Controller
+          control={form.control}
+          name="consents"
+          render={({ field }) => (
+            <ConsentFields value={field.value} onChange={field.onChange} error={errors.consents?.message} />
           )}
-          <p className="text-caption text-fg-3">{t('auth.privacyNote')}</p>
-        </fieldset>
+        />
 
         <Button type="submit" variant="primary" size="lg" loading={isSubmitting}>
           {method === 'phone' ? t('phone.sendCode') : t('auth.signUpCta')}

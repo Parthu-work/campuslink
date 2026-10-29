@@ -5,6 +5,7 @@ import {
   AUTO_REPLY,
   WA_LANGS,
   WHATSAPP_TEMPLATES,
+  INVITE_TEMPLATES,
 } from '../src/modules/notifications/channels/whatsapp-templates.js';
 import { CATEGORY_OF } from '@campuslink/shared';
 
@@ -31,7 +32,7 @@ describe('WhatsApp templates (Meta approval)', () => {
   const wa = readFileSync(new URL('../../../docs/whatsapp-templates.md', import.meta.url), 'utf8');
 
   it('docs/whatsapp-templates.md carries every template in every language, character for character', () => {
-    for (const t of Object.values(WHATSAPP_TEMPLATES)) {
+    for (const t of [...Object.values(WHATSAPP_TEMPLATES), ...Object.values(INVITE_TEMPLATES)]) {
       if (!t) continue;
       expect(wa).toContain(`## \`${t.name}\``);
       for (const l of WA_LANGS) {
@@ -63,5 +64,17 @@ describe('WhatsApp templates (Meta approval)', () => {
       }
       expect(CATEGORY_OF[type as keyof typeof CATEGORY_OF]).toBeDefined();
     }
+  });
+
+  it('invite templates fill the first name, college and link', () => {
+    for (const t of Object.values(INVITE_TEMPLATES))
+      for (const l of WA_LANGS) {
+        const params = t.params(
+          { name: 'Asha', college: 'C', link: 'https://x/invite/t' },
+          { lang: l, timezone: 'UTC' },
+        );
+        expect(params).toEqual(['Asha', 'C', 'https://x/invite/t']);
+        expect(new Set([...t.text[l].matchAll(/\{\{(\d+)\}\}/g)].map((m) => m[1])).size).toBe(3);
+      }
   });
 });

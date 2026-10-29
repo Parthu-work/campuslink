@@ -36,6 +36,7 @@ const load = {
   signIn: () => import('../features/auth/sign-in'),
   signUp: () => import('../features/auth/sign-up'),
   emailLinks: () => import('../features/auth/email-links'),
+  join: () => import('../features/join/join'),
   home: () => import('../features/home/home'),
   settings: () => import('../features/settings/settings'),
   dataSettings: () => import('../features/settings/data-settings'),
@@ -43,6 +44,7 @@ const load = {
   admin: () => import('../features/admin/admin'),
   adminOverview: () => import('../features/admin/admin-overview'),
   imports: () => import('../features/admin/imports'),
+  onboardingAdmin: () => import('../features/admin/onboarding-admin'),
   listAdmin: () => import('../features/admin/list-admin'),
   mentorshipAdmin: () => import('../features/admin/mentorship-admin'),
   analyticsAdmin: () => import('../features/admin/analytics-admin'),
@@ -274,6 +276,9 @@ function collegeRoutes(): RouteObject[] {
         // Lazy like every screen: signed-in members never download it (bundle budget).
         publicScreen(load.landing, 'LandingPage', '/', '/home'),
         publicScreen(load.signUp, 'SignUpPage', '/sign-up', '/home'),
+        // One-tap invites and class codes (B4): signed-in members are already in.
+        publicScreen(load.join, 'InvitePage', '/invite/:token', '/home'),
+        publicScreen(load.join, 'JoinPage', '/join/:code', '/home'),
         ...auth('/home'),
         // The living style guide (revamp phase 6): development builds only; production leaves it out.
         ...(import.meta.env.DEV
@@ -465,6 +470,17 @@ function collegeRoutes(): RouteObject[] {
             ]),
             screen(load.rewards, 'RewardsAdmin', 'rewards:manage', at('rewards')),
             screen(load.imports, 'ImportsAdmin', 'imports:manage', at('imports')),
+            screen(load.onboardingAdmin, 'OnboardingAdmin', 'onboarding:manage', at('onboarding'), () => [
+              qc.ensureInfiniteQueryData(q.onboardingRecords('')),
+              qc.ensureQueryData(q.joinCodes()),
+            ]),
+            screen(
+              load.onboardingAdmin,
+              'JoinPosterPage',
+              'onboarding:manage',
+              at('onboarding/poster/:id'),
+              ({ id }) => (isId(id) ? [qc.ensureQueryData(q.joinCodePoster(id))] : []),
+            ),
             screen(load.listAdmin, 'ListAdmin', 'imports:manage', at('list')),
             screen(load.listAdmin, 'VerificationAdmin', 'verification:review', at('verification')),
             still(screen(load.admin, 'BrandingAdmin', 'tenant:branding', at('branding'))),

@@ -74,6 +74,7 @@ export const ALL_PERMISSIONS = [
   // Administration
   'users:invite',
   'users:approve',
+  'onboarding:manage',
   'users:read_admin',
   'users:manage',
   'roles:assign',
@@ -142,6 +143,7 @@ export const PERMISSIONS: Record<Permission, string> = {
   // Administration
   'users:invite': 'Invite users',
   'users:approve': 'Approve pending users',
+  'onboarding:manage': 'Send invite links, run class join codes and follow onboarding',
   'users:read_admin': 'View the admin user list',
   'users:manage': 'Suspend or reactivate users',
   'roles:assign': 'Change user roles',
@@ -220,8 +222,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'reports:export',
     'mentorship:oversee',
     'jobs:sources',
-    // The TPO runs onboarding: verification and guardian-number reviews (build B2, B6).
+    // The TPO runs onboarding: verification and guardian-number reviews, invites (B2, B4, B6).
     'verification:review',
+    'onboarding:manage',
   ],
   FACULTY: STAFF,
   ALUMNI,

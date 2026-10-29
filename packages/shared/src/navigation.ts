@@ -58,6 +58,7 @@ export const ADMIN_PERMISSIONS: readonly Permission[] = [
   'analytics:cohort',
   'rewards:manage',
   'imports:manage',
+  'onboarding:manage',
   'verification:review',
   'tenant:branding',
   'tenant:settings',
@@ -72,6 +73,7 @@ export type AdminSectionId =
   | 'verification'
   | 'imports'
   | 'list'
+  | 'onboarding'
   | 'moderation'
   | 'mentorship'
   | 'sources'
@@ -104,6 +106,7 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('verification', '/admin/verification', 'verification:review', 'people'),
   section('imports', '/admin/imports', 'imports:manage', 'people'),
   section('list', '/admin/list', 'imports:manage', 'people'),
+  section('onboarding', '/admin/onboarding', 'onboarding:manage', 'people'),
   section('moderation', '/admin/moderation', 'moderation:act', 'community'),
   section('mentorship', '/admin/mentorship', 'mentorship:oversee', 'community'),
   section('sources', '/admin/sources', 'sources:manage', 'community'),

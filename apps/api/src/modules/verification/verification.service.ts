@@ -67,7 +67,7 @@ export class VerificationService {
   }
 
   /** Marks the user verified and claims the whitelist record atomically. Returns false if already claimed. */
-  private async claim(
+  async claim(
     userId: string,
     recordId: Types.ObjectId,
     method: string,
@@ -104,7 +104,7 @@ export class VerificationService {
     return true;
   }
 
-  private async sendCode(tenant: TenantRecord, to: string, code: string, what: string) {
+  async sendEmailCode(tenant: TenantRecord, to: string, code: string, what: string) {
     const content = renderEmail({
       college: tenant.branding.displayName,
       heading: `Your ${APP_NAME} code: ${code}`,
@@ -169,7 +169,7 @@ export class VerificationService {
         targetId: rec._id,
         channel: 'email',
       });
-      await this.sendCode(tenant, to, ch.code, 'confirm your college record');
+      await this.sendEmailCode(tenant, to, ch.code, 'confirm your college record');
       return { status: 'code_sent' as const, challengeId: ch.id, destination: maskEmail(to) };
     }
     if (rec.phoneEnc && this.d.otp.phoneAvailable) {
@@ -454,7 +454,7 @@ export class VerificationService {
       company: { name: company, domain },
       channel: 'email',
     });
-    await this.sendCode(tenant, email, ch.code, `confirm you work at ${company}`);
+    await this.sendEmailCode(tenant, email, ch.code, `confirm you work at ${company}`);
     await audit.record(
       {
         action: 'profile.company_verification_started',

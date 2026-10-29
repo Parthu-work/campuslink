@@ -13,7 +13,13 @@ import {
   WebhookReceiptModel,
   CHANNEL_STATUSES,
 } from './channel.model.js';
-import { WHATSAPP_TEMPLATES, AUTO_REPLY, type ChannelAction, type WaLang } from './whatsapp-templates.js';
+import {
+  WHATSAPP_TEMPLATES,
+  INVITE_TEMPLATES,
+  AUTO_REPLY,
+  type ChannelAction,
+  type WaLang,
+} from './whatsapp-templates.js';
 import type { WhatsAppProvider } from '../../../lib/whatsapp.js';
 import type { FieldCipher } from '../../../lib/crypto.js';
 import type { Logger } from '../../../lib/logger.js';
@@ -177,12 +183,51 @@ export class ChannelService {
     return 'sent';
   }
 
+  /** Invites can go by WhatsApp here: the college's switch and a live provider. */
+  async invitesUsable(): Promise<boolean> {
+    return this.d.whatsapp.available && (await featureEnabled('whatsapp'));
+  }
+
+  /**
+   * Sends an invite to the number on the college's list (B4): not a member yet, so no member caps,
+   * but it counts against the college's allowance like any other message.
+   */
+  async sendInvite(
+    phone: string,
+    kind: 'student' | 'alumni',
+    data: { name: string; college: string; link: string },
+    locale?: string | null,
+  ): Promise<SendOutcome> {
+    if (!(await this.invitesUsable())) return 'unavailable';
+    if ((await this.monthCount()) >= (await this.allowance())) {
+      await this.budgetAlerts();
+      return 'capped';
+    }
+    const tpl = INVITE_TEMPLATES[kind];
+    const lang = toLang(locale);
+    let messageId: string;
+    try {
+      ({ messageId } = await this.d.whatsapp.sendTemplate(
+        phone,
+        tpl.name,
+        lang,
+        tpl.params(data, { lang, timezone: 'UTC' }),
+        [],
+      ));
+    } catch (err) {
+      this.d.logger.warn({ err }, 'whatsapp invite failed');
+      return 'failed';
+    }
+    await this.record(null, 'whatsapp', tpl.name, 'onboarding', false, messageId);
+    return 'sent';
+  }
+
   /** Meters one message (codes included) and alerts the admins at 80% and 100% of the allowance. */
   async record(
     userId: string | null,
     channel: 'whatsapp' | 'sms',
     template: string,
-    category: NotificationCategory | 'authentication',
+    category: NotificationCategory | 'authentication' | 'onboarding',
     critical: boolean,
     providerMessageId: string,
   ) {

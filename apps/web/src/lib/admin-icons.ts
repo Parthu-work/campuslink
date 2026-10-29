@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   SlidersHorizontal,
   Sparkles,
+  UserPlus,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -23,6 +24,7 @@ export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
   verification: BadgeCheck,
   imports: FileUp,
   list: ListChecks,
+  onboarding: UserPlus,
   moderation: ShieldAlert,
   mentorship: HeartHandshake,
   sources: Newspaper,
