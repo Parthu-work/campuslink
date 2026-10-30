@@ -93,6 +93,11 @@ import {
 } from './modules/placements/placements.service.js';
 import { OffersService } from './modules/placements/offers.service.js';
 import { AcademicsService } from './modules/placements/academics.service.js';
+import { OutcomesService } from './modules/placements/outcomes.service.js';
+import { outcomeRoutes } from './modules/placements/outcomes.routes.js';
+import { ReportsService } from './modules/reports/reports.service.js';
+import { reportRoutes } from './modules/reports/reports.routes.js';
+import { findTenantById } from './modules/tenants/tenant.cache.js';
 import { placementRoutes } from './modules/placements/placements.routes.js';
 import { mentorshipRoutes } from './modules/mentorship/mentorship.routes.js';
 import { ModerationService } from './modules/moderation/moderation.service.js';
@@ -614,6 +619,50 @@ export function createApp({
   );
   filesService.registerAccess('offer_proof', (fileId, viewer) => offersService.proofAccess(fileId, viewer));
   importsService.academics = academicsService;
+  // ── Outcomes and accreditation reports (B8) ─────────────────────────────
+  const outcomesService = new OutcomesService({
+    profiles: profilesService,
+    whitelist: whitelistService,
+    notifications: notificationsService,
+  });
+  const reportsService = new ReportsService(
+    {
+      roster: (gradYears) => whitelistService.countsByCohort(gradYears),
+      offers: (gradYears) => offersService.verifiedFor(gradYears),
+      seekers: (gradYears) => placementsService.seekersFor(gradYears),
+      higherStudies: (gradYears) => outcomesService.verified('higher_study', { gradYear: gradYears }),
+      exams: (years) => outcomesService.verified('exam', { year: years }),
+      ventures: (gradYears) => outcomesService.verified('venture', { gradYear: gradYears }),
+      people: async (ids) => {
+        const [cohort, rolls] = await Promise.all([
+          profilesService.cohortOf(ids),
+          whitelistService.recordsOf(ids),
+        ]);
+        return new Map(
+          ids.map((id) => [
+            id,
+            { name: cohort.get(id)?.name ?? '', rollNumber: rolls.get(id)?.rollNumber ?? null },
+          ]),
+        );
+      },
+      alumniEngagement: async (from, to) => {
+        const alumni = new Set(
+          (await profilesService.cohorts()).filter((p) => p.roles.includes(Role.ALUMNI)).map((p) => p.userId),
+        );
+        const [events, sessions, referrals] = await Promise.all([
+          eventsService.heldBetween(from, to),
+          sessionsService.completedSince(from),
+          referralsService.referredBetween(from, to),
+        ]);
+        return {
+          events: events.filter((e) => alumni.has(e.hostId)),
+          sessions: sessions.sessions.filter((x) => x.at < to && alumni.has(x.mentorId)),
+          referrals: referrals.filter((r) => alumni.has(r.referrerId)),
+        };
+      },
+    },
+    async () => (await findTenantById(requireTenantId()))?.branding.displayName ?? '',
+  );
   channelService.registerAction('drive_register', (viewer, id) =>
     placementsService.register(viewer, id, { answers: [] }, {}),
   );
@@ -771,6 +820,7 @@ export function createApp({
     onboarding: onboardingService,
     placements: placementsService,
     offers: offersService,
+    outcomes: outcomesService,
   });
 
   // ── Privacy rights (Phase 8) ─────────────────────────────
@@ -803,6 +853,7 @@ export function createApp({
   privacyService.register('placementRegistrations', hook(placementsService));
   privacyService.register('offers', hook(offersService));
   privacyService.register('academics', hook(academicsService));
+  privacyService.register('outcomes', hook(outcomesService));
   privacyService.register('notifications', hook(notificationsService));
   privacyService.register('channelMessages', hook(channelService));
   privacyService.register('subjects', hook(subjectsService));
@@ -969,6 +1020,14 @@ export function createApp({
       ),
       pipeline,
     ),
+  );
+  app.use(
+    API_PREFIX,
+    defineModule('outcomes', withFeature('placements', outcomeRoutes(outcomesService)), pipeline),
+  );
+  app.use(
+    API_PREFIX,
+    defineModule('reports', withFeature('placements', reportRoutes(reportsService)), pipeline),
   );
   app.use(API_PREFIX, defineModule('analytics', analyticsRoutes(analyticsService), pipeline));
   app.use(API_PREFIX, defineModule('privacy', privacyRoutes(privacyService), pipeline));

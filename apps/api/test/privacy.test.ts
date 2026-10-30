@@ -31,6 +31,7 @@ import {
   DriveRegistrationModel,
   OfferModel,
 } from '../src/modules/placements/placements.model.js';
+import { HigherStudyModel, VentureModel } from '../src/modules/placements/outcomes.model.js';
 
 const ctx = testApp();
 const services = ctx.app.locals.services as {
@@ -179,6 +180,25 @@ beforeAll(async () => {
       { rollNumber: 'PRIVSELF01', userId: new Types.ObjectId(alum.id), cgpa: 7, source: 'self' },
       { rollNumber: 'PRIVCOLL01', userId: new Types.ObjectId(alum.id), cgpa: 8, source: 'import' },
     ]);
+    // Outcomes (B8): a verified one stays anonymised, an unverified one goes.
+    await HigherStudyModel.create({
+      userId: new Types.ObjectId(alum.id),
+      status: 'verified',
+      source: 'tpo',
+      branch: 'CSE',
+      gradYear: 2022,
+      institution: 'Privacy Demo University',
+      program: 'MS',
+      admitYear: 2022,
+    });
+    await VentureModel.create({
+      userId: new Types.ObjectId(alum.id),
+      status: 'reported',
+      source: 'self',
+      name: 'Privacy Demo Venture',
+      registered: false,
+      year: 2023,
+    });
     // The invite link they joined with (B4): only the record id and who used it.
     await InviteLinkModel.create({
       whitelistId: new Types.ObjectId(),
@@ -315,6 +335,12 @@ describe('deletion', () => {
       });
       expect(await FileModel.countDocuments({ sha256: 'privacy-offer-proof' })).toBe(0);
       expect(await AcademicRecordModel.countDocuments({ rollNumber: 'PRIVSELF01' })).toBe(0);
+      const hs = await HigherStudyModel.findOne({ institution: 'Privacy Demo University' }).lean();
+      expect(hs).toMatchObject({ userId: null, branch: 'CSE', gradYear: 2022 });
+      expect(hs?.anonKey).toMatch(/^[0-9a-f-]{36}$/);
+      expect(await VentureModel.countDocuments({ name: 'Privacy Demo Venture' })).toBe(0);
+      const offerAnon = await OfferModel.findOne({ companyKey: 'privacy demo co' }).lean();
+      expect(offerAnon?.anonKey).toMatch(/^[0-9a-f-]{36}$/);
       expect(await AcademicRecordModel.findOne({ rollNumber: 'PRIVCOLL01' }).lean()).toMatchObject({
         userId: null,
         cgpa: 8,
@@ -376,6 +402,7 @@ describe('deletion', () => {
         'placementRegistrations',
         'offers',
         'academics',
+        'outcomes',
       ]),
     );
   });

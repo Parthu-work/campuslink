@@ -18,6 +18,7 @@ import type { ChannelService } from '../notifications/channels/channel.service.j
 import type { OnboardingService } from '../verification/onboarding.service.js';
 import type { PlacementsService } from '../placements/placements.service.js';
 import type { OffersService } from '../placements/offers.service.js';
+import type { OutcomesService } from '../placements/outcomes.service.js';
 
 export interface OverviewDeps {
   users: UsersService;
@@ -35,6 +36,7 @@ export interface OverviewDeps {
   onboarding?: OnboardingService;
   placements?: PlacementsService;
   offers?: OffersService;
+  outcomes?: OutcomesService;
   usage: AiUsageService;
 }
 
@@ -100,7 +102,10 @@ export class AdminOverviewService {
         : null;
     const offers =
       placementsOn && this.d.offers && can('outcomes:verify')
-        ? { pending: await this.d.offers.pendingCount() }
+        ? {
+            // B8: higher studies, exams and ventures wait in the same queue.
+            pending: (await this.d.offers.pendingCount()) + ((await this.d.outcomes?.pendingCount()) ?? 0),
+          }
         : null;
     return {
       onboarding,

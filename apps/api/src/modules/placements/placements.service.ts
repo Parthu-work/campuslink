@@ -1,7 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import { Types } from 'mongoose';
 import type { z } from 'zod';
 import writeXlsxFile from 'write-excel-file/node';
-import { fileTypeFromBuffer } from 'file-type';
 import {
   DRIVE_CLOSING_SOON_HOURS,
   DRIVE_REMINDER_HOURS,
@@ -32,15 +32,13 @@ import {
 } from './placements.model.js';
 import type { AcademicsService } from './academics.service.js';
 import type { OffersService } from './offers.service.js';
+import { findHeader, readSheet, ROLL_HEADERS } from './sheet.js';
 import type { WhitelistService } from '../imports/whitelist.service.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
 import type { NotificationsService } from '../notifications/notifications.service.js';
 import type { FilesService } from '../files/files.service.js';
 import type { EventsService } from '../events/events.service.js';
 import { csvCell } from '../imports/imports.service.js';
-import { csvAdapter } from '../imports/adapters/csv.js';
-import { xlsxAdapter } from '../imports/adapters/xlsx.js';
-import { SourceError } from '../imports/adapters/types.js';
 import { companyKey } from '../../lib/company.js';
 import { requireTenantId } from '../../lib/context.js';
 import type { JobQueue, TenantJob } from '../../lib/jobs.js';
@@ -66,17 +64,6 @@ const NEXT: Record<DriveStatus, readonly DriveStatus[]> = {
 /** What students may see: drafts never, cancelled ones only if they had registered. */
 const VISIBLE: readonly DriveStatus[] = ['open', 'closed', 'in_progress', 'completed'];
 
-const ROLL_HEADERS = [
-  'roll',
-  'roll no',
-  'roll number',
-  'rollno',
-  'roll_no',
-  'hall ticket',
-  'htno',
-  'reg no',
-  'pin',
-];
 const RESULT_HEADERS = ['result', 'status', 'outcome', 'round result', 'decision'];
 /** Result words a company sheet uses, mapped to ours (anything else is reported, never guessed). */
 const RESULT_WORDS: [RegExp, RoundResult][] = [
@@ -130,7 +117,7 @@ export class PlacementsService {
     for (const r of rows) if (r.resumeFileId) await this.d.files.remove(r.resumeFileId);
     await DriveRegistrationModel.updateMany(
       { userId: u },
-      { $set: { userId: null, answers: [], resumeFileId: null } },
+      { $set: { userId: null, anonKey: randomUUID(), answers: [], resumeFileId: null } },
     );
     await PlacementDriveModel.updateMany({ 'overrides.userId': u }, { $pull: { overrides: { userId: u } } });
   }
@@ -881,20 +868,11 @@ export class PlacementsService {
     file: Express.Multer.File | undefined,
     meta: RequestMetaLite,
   ): Promise<RoundImportResult> {
-    if (!file) throw badRequest('Choose a CSV or Excel file');
+    const table = await readSheet(file);
     const d = await this.load(id);
     if (!d.rounds[round]) throw badRequest('This drive has no such round');
-    const type = await fileTypeFromBuffer(file.buffer);
-    let table;
-    try {
-      table = type?.ext === 'xlsx' ? await xlsxAdapter.read(file.buffer) : await csvAdapter.read(file.buffer);
-    } catch (e) {
-      if (e instanceof SourceError) throw badRequest(e.message);
-      throw e;
-    }
-    const norm = (h: string) => h.toLowerCase().replace(/[._]/g, ' ').replace(/\s+/g, ' ').trim();
-    const rollCol = table.headers.find((h) => ROLL_HEADERS.includes(norm(h)));
-    const resultCol = table.headers.find((h) => RESULT_HEADERS.includes(norm(h)));
+    const rollCol = findHeader(table.headers, ROLL_HEADERS);
+    const resultCol = findHeader(table.headers, RESULT_HEADERS);
     if (!rollCol || !resultCol) throw badRequest('The file needs a roll number column and a result column');
     const errors: { row: number; message: string }[] = [];
     const wanted: { roll: string; result: RoundResult }[] = [];
@@ -976,6 +954,22 @@ export class PlacementsService {
       meta,
     );
     return { final: body.final };
+  }
+
+  /** People of these batches who registered for a drive (B8 reports: "seeking placement"). */
+  async seekersFor(gradYears: number[]) {
+    const rows = await DriveRegistrationModel.find({
+      gradYear: { $in: gradYears },
+      status: { $ne: 'withdrawn' },
+    })
+      .select('userId anonKey branch gradYear')
+      .limit(100_000)
+      .lean<RegistrationDoc[]>();
+    return rows.map((r) => ({
+      subject: r.userId ? String(r.userId) : (r.anonKey ?? String(r._id)),
+      branch: r.branch ?? null,
+      gradYear: r.gradYear ?? null,
+    }));
   }
 
   /** Admin overview: drives whose registration closes in the next 48 hours. */

@@ -113,6 +113,8 @@ export const NOTIFICATION_TYPES = [
   'drive_selected',
   'offer_verified',
   'offer_rejected',
+  'outcome_verified',
+  'outcome_rejected',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -185,6 +187,8 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   drive_selected: 'placements',
   offer_verified: 'placements',
   offer_rejected: 'placements',
+  outcome_verified: 'placements',
+  outcome_rejected: 'placements',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;

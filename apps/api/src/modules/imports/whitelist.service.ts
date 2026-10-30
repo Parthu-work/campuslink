@@ -50,6 +50,18 @@ export class WhitelistService {
     return new Map(rows.flatMap((r) => (r.claimedBy ? [[r.rollNumber, String(r.claimedBy)] as const] : [])));
   }
 
+  /** Records on the college's list per branch and batch (B8 reports: the final-year count N). */
+  async countsByCohort(gradYears: number[]) {
+    const rows = await WhitelistModel.aggregate<{
+      _id: { branch: string | null; gradYear: number };
+      n: number;
+    }>([
+      { $match: { gradYear: { $in: gradYears } } },
+      { $group: { _id: { branch: '$branch', gradYear: '$gradYear' }, n: { $sum: 1 } } },
+    ]);
+    return rows.map((r) => ({ branch: r._id.branch ?? null, gradYear: r._id.gradYear, n: r.n }));
+  }
+
   /** The college's email and mobile for these members (a placement export the cell ticked). */
   async contactsOf(userIds: (string | Types.ObjectId)[]) {
     const rows = await WhitelistModel.find({

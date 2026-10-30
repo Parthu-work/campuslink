@@ -6,6 +6,7 @@ import {
   DRIVE_STATUSES,
   type DriveStatus,
   type OfferView,
+  type OutcomeKind,
   type PlacementCompanyView,
 } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
@@ -19,6 +20,8 @@ import { IntentLink } from '../../components/ui/intent-link';
 import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Table, THead, Td, Th } from '../../components/ui/table';
 import { TabPanel, Tabs } from '../../components/ui/tabs';
+import { Segmented } from '../../components/ui/tab-nav';
+import { OutcomesQueue } from './outcomes-queue';
 import { api, ApiError, apiBlob, saveBlob } from '../../lib/api';
 import { formatDateTime, formatDay } from '../../lib/format';
 import { closesSoon, ctcExact } from '../../lib/placements';
@@ -442,8 +445,8 @@ function OfferDecision({ offer: o, onClose }: { offer: OfferView; onClose: () =>
 
 type OfferStatusTab = 'reported' | 'verified' | 'rejected';
 
-/** Admin › Offers (B7): offers members reported, with proof, waiting for verification. */
-export function OffersAdmin() {
+/** Offers members reported, with proof, waiting for verification (B7). */
+function OffersQueue() {
   const { t } = useTranslation();
   const [status, setStatus] = useState<OfferStatusTab>('reported');
   const [open, setOpen] = useState<OfferView | null>(null);
@@ -518,6 +521,30 @@ export function OffersAdmin() {
         )}
       </TabPanel>
       {open && <OfferDecision offer={open} onClose={() => setOpen(null)} />}
+    </div>
+  );
+}
+
+type QueueKind = 'offers' | OutcomeKind;
+
+/** Admin › Offers and outcomes (B7, B8): offers, higher studies, exams and ventures to verify. */
+export function OffersAdmin() {
+  const { t } = useTranslation();
+  const [kind, setKind] = useState<QueueKind>('offers');
+  return (
+    <div className="grid gap-5">
+      <Segmented<QueueKind>
+        label={t('outcomes.admin.kinds')}
+        value={kind}
+        onChange={setKind}
+        options={[
+          ['offers', t('outcomes.offers')],
+          ['higher_study', t('outcomes.kind.higher_study')],
+          ['exam', t('outcomes.kind.exam')],
+          ['venture', t('outcomes.kind.venture')],
+        ]}
+      />
+      {kind === 'offers' ? <OffersQueue /> : <OutcomesQueue key={kind} kind={kind} />}
     </div>
   );
 }

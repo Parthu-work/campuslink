@@ -48,6 +48,11 @@ import type {
   OfferView,
   PlacementCompanyView,
   RegistrantView,
+  OutcomeKind,
+  OutcomeView,
+  ReportDefinitionView,
+  ReportResultView,
+  ReportsDashboardView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -543,4 +548,42 @@ export const offersQueue = (status: string) =>
     queryFn: ({ pageParam }) =>
       apiRequest<OfferView[]>(`/admin/offers?status=${status}${pageParam ? `&cursor=${pageParam}` : ''}`),
     getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+// ── Outcomes and reports (B8) ─────────────────────────────
+export const myOutcomes = () =>
+  queryOptions({
+    queryKey: ['my-outcomes'],
+    queryFn: ({ signal }) => api.get<OutcomeView[]>('/me/outcomes', signal),
+  });
+
+export const outcomesQueue = (kind: OutcomeKind, status: string) =>
+  infiniteQueryOptions({
+    queryKey: ['outcomes-queue', kind, status],
+    initialPageParam: '',
+    queryFn: ({ pageParam }) =>
+      apiRequest<OutcomeView[]>(
+        `/admin/outcomes/${kind}?status=${status}${pageParam ? `&cursor=${pageParam}` : ''}`,
+      ),
+    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+export const reportDefinitions = () =>
+  queryOptions({
+    queryKey: ['report-definitions'],
+    queryFn: ({ signal }) => api.get<ReportDefinitionView[]>('/admin/outcome-reports', signal),
+    staleTime: 10 * 60_000,
+  });
+
+/** `qs` is `gradYear=2026&branch=CSE` (either may be missing). */
+export const reportsDashboard = (qs: string) =>
+  queryOptions({
+    queryKey: ['reports-dashboard', qs],
+    queryFn: ({ signal }) => api.get<ReportsDashboardView>(`/admin/outcome-reports/dashboard?${qs}`, signal),
+  });
+
+export const outcomeReport = (id: string, qs: string) =>
+  queryOptions({
+    queryKey: ['outcome-report', id, qs],
+    queryFn: ({ signal }) => api.get<ReportResultView>(`/admin/outcome-reports/${id}?${qs}`, signal),
   });

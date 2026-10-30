@@ -91,7 +91,8 @@
       "roadmapHint": "Step-by-step guidance, with sources"
     },
     "assistant": "Study assistant",
-    "placements": "Placements"
+    "placements": "Placements",
+    "outcomes": "Your outcomes"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -435,8 +436,8 @@
       "placements": "Drives closing soon",
       "placementsHint_one": "{{count}} drive closes registration in the next 48 hours",
       "placementsHint_other": "{{count}} drives close registration in the next 48 hours",
-      "offers": "Offers to verify",
-      "offersHint": "Offers members reported, with proof"
+      "offers": "Outcomes to verify",
+      "offersHint": "Offers, higher studies, exams and ventures members reported"
     },
     "logo": {
       "label": "Logo",
@@ -466,11 +467,12 @@
     "bulkDone_other": "{{count}} requests decided.",
     "bulkPartial": "{{ok}} decided; {{failed}} could not be (already decided or changed). Refresh to see them.",
     "placements": "Placement drives",
-    "offers": "Offers",
+    "offers": "Offers and outcomes",
     "importType": "What this file holds",
     "importRoster": "College list",
     "importAcademics": "Academic records",
-    "mapIntroAcademics": "Match each figure to a column. Rows are matched to students by roll number; figures already on record are replaced. Academic imports cannot be rolled back, so try a dry run first."
+    "mapIntroAcademics": "Match each figure to a column. Rows are matched to students by roll number; figures already on record are replaced. Academic imports cannot be rolled back, so try a dry run first.",
+    "reports": "Reports"
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -1215,6 +1217,14 @@
     "offer_rejected": {
       "title": "Your {{company}} offer needs another look",
       "body": "The placement cell could not verify the offer you reported. Open it to see why and report it again."
+    },
+    "outcome_verified": {
+      "title": "Your outcome is verified: {{title}}",
+      "body": "The placement cell verified what you reported. It now counts on the college's record."
+    },
+    "outcome_rejected": {
+      "title": "Your outcome needs another look: {{title}}",
+      "body": "The placement cell could not verify what you reported. Open it to see why."
     }
   },
   "notifications": {
@@ -1263,7 +1273,7 @@
       "achievements": "New badges and reward decisions",
       "events": "Reminders, changes, cancellations and waitlist places",
       "study": "Your uploads finished processing, and review decisions",
-      "placements": "New drives you are eligible for, last-day reminders, round results and offers"
+      "placements": "New drives you are eligible for, last-day reminders, round results, offers and outcome decisions"
     },
     "toggle": "{{channel}} for {{category}}",
     "quiet": "Quiet hours",
@@ -3744,6 +3754,151 @@
       "rejectReasonHint": "The member sees this, for example: the letter does not show the CTC",
       "offerVerified": "Offer verified",
       "offerRejected": "Offer rejected; the member was told why"
+    }
+  },
+  "outcomes": {
+    "intro": "What you did after college counts for your college's accreditation and helps juniors see what is possible. The placement cell checks each one before it counts.",
+    "offers": "Offers",
+    "otherTitle": "Higher studies, exams and ventures",
+    "otherIntro": "An admission, a qualified exam such as GATE or GRE, or a company you started.",
+    "add": {
+      "higher_study": "Add higher studies",
+      "exam": "Add an exam",
+      "venture": "Add a venture"
+    },
+    "none": "Nothing reported yet.",
+    "kind": {
+      "higher_study": "Higher studies",
+      "exam": "Exams",
+      "venture": "Ventures"
+    },
+    "status": {
+      "reported": "Waiting for verification",
+      "verified": "Verified",
+      "rejected": "Not verified"
+    },
+    "source": {
+      "self": "Reported by the member",
+      "tpo": "Placement cell",
+      "import": "College sheet"
+    },
+    "remove": "Remove",
+    "removeNamed": "Remove {{title}}",
+    "hsTitle": "{{program}}, {{institution}}",
+    "examTitle": "{{exam}} {{year}}",
+    "registered": "Registered",
+    "notRegistered": "Not registered yet",
+    "dialogBody": "The placement cell checks it before it counts on the college's record.",
+    "sent": "Sent. The placement cell will verify it.",
+    "noExam": "None",
+    "field": {
+      "institution": "Institution",
+      "program": "Programme",
+      "programHint": "For example M.Tech CSE or MS in Data Science",
+      "country": "Country",
+      "admitYear": "Year admitted",
+      "qualifyingExam": "Admitted through",
+      "exam": "Exam",
+      "examYear": "Year qualified",
+      "examName": "Name of the exam",
+      "level": "Level",
+      "scoreBand": "Score or rank",
+      "scoreBandHint": "As you would say it, for example AIR under 2,000",
+      "ventureName": "Venture name",
+      "ventureYear": "Year started",
+      "registered": "Registered as a company, LLP or firm",
+      "registeredHint": "Leave it off if it is still an idea or a side project"
+    },
+    "exam": {
+      "GATE": "GATE",
+      "CAT": "CAT",
+      "GRE": "GRE",
+      "GMAT": "GMAT",
+      "IELTS": "IELTS",
+      "TOEFL": "TOEFL",
+      "UPSC": "UPSC civil services",
+      "STATE_PSC": "State public service commission",
+      "NET": "UGC NET",
+      "OTHER": "Another exam"
+    },
+    "level": {
+      "state": "State",
+      "national": "National",
+      "international": "International"
+    },
+    "admin": {
+      "kinds": "What to verify",
+      "byStatus": "By status",
+      "intro": {
+        "higher_study": "Admissions to higher studies that members reported, or that came from the college's sheet.",
+        "exam": "Exams members qualified (GATE, CAT, GRE and others).",
+        "venture": "Ventures members started."
+      },
+      "columns": {
+        "higher_study": "Sheet columns: roll number, institution, programme, country, admission year, qualifying exam.",
+        "exam": "Sheet columns: roll number, exam, year, score or rank.",
+        "venture": "Sheet columns: roll number, venture name, registered (yes or no), year."
+      },
+      "import": "From the college's sheet",
+      "imported": "{{created}} added and {{updated}} updated, as verified.",
+      "unknown": "Not members yet (skipped): {{list}}",
+      "none": {
+        "reported": "Nothing waiting for verification",
+        "verified": "Nothing verified yet",
+        "rejected": "Nothing rejected"
+      },
+      "outcome": "Outcome",
+      "source": "From",
+      "details": "Details",
+      "reviewBody": "Check it against what you know (an admission letter, a score card). The member sees your reason if you reject it.",
+      "rejectHint": "The member sees this, for example: please share the admission letter with the cell",
+      "verified": "Verified",
+      "rejected": "Rejected; the member was told why"
+    }
+  },
+  "reports": {
+    "intro": "Placement and progression figures from verified records, for this batch and the accreditation formats. Counts under 5 show as <5; the evidence workbook has the exact figures.",
+    "batch": "Batch",
+    "batchLabel": "Graduating {{year}}",
+    "programme": "Programme",
+    "allProgrammes": "All programmes",
+    "placementPct": "Placement %",
+    "placementPctHint": "Placed out of those seeking placement",
+    "placed": "Placed",
+    "seeking": "Seeking placement",
+    "finalYear": "Final-year students",
+    "medianBand": "Median package",
+    "higherStudies": "Higher studies",
+    "trend": "Placement % over five batches",
+    "trendHint": "A batch with counts under 5 shows no figure",
+    "topRecruiters": "Top recruiters",
+    "studentsN": "{{n}} students",
+    "noRecruiters": "No verified offers for this batch yet.",
+    "all": "Reports",
+    "needsReview": "Check the format",
+    "needsReviewBody": "This report follows the commonly published format but has not been checked against the framework's current manual. Check the metric and any scoring before you submit it.",
+    "threeYears": "Three batches",
+    "version": "Version {{version}}",
+    "back": "All reports",
+    "empty": "No verified records for this choice yet.",
+    "source": "Source and method",
+    "downloadExcel": "Download Excel",
+    "downloadCsv": "Download CSV",
+    "evidence": "Evidence workbook",
+    "evidenceHint": "The evidence workbook has exact counts and every student behind them. Downloads are recorded in the audit log.",
+    "framework": {
+      "NBA": "NBA",
+      "NAAC": "NAAC",
+      "NIRF": "NIRF",
+      "internal": "Internal"
+    },
+    "band": {
+      "under_3": "Under ₹3 LPA",
+      "3_5": "₹3–5 LPA",
+      "5_8": "₹5–8 LPA",
+      "8_12": "₹8–12 LPA",
+      "12_20": "₹12–20 LPA",
+      "20_plus": "₹20 LPA and above"
     }
   }
 }

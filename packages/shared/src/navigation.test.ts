@@ -48,7 +48,7 @@ describe('role-aware navigation', () => {
       ['people', ['users', 'verification', 'imports', 'list', 'onboarding']],
       ['placements', ['placements', 'offers']],
       ['community', ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards']],
-      ['insights', ['analytics']],
+      ['insights', ['analytics', 'reports']],
       ['college', ['branding', 'features', 'ai', 'audit']],
     ]);
     expect(admin([Role.FACULTY])).toEqual([

@@ -155,6 +155,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'Your {company} offer needs another look',
       body: 'The placement cell could not verify the offer you reported. Open it to see why and report it again.',
     },
+    outcome_verified: {
+      title: 'Your outcome is verified: {title}',
+      body: "The placement cell verified what you reported. It now counts on the college's record.",
+    },
+    outcome_rejected: {
+      title: 'Your outcome needs another look: {title}',
+      body: 'The placement cell could not verify what you reported. Open it to see why.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -312,6 +320,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     offer_rejected: {
       title: 'మీ {company} ఆఫర్‌ను మళ్లీ చూడాలి',
       body: 'మీరు నివేదించిన ఆఫర్‌ను ప్లేస్‌మెంట్ సెల్ ధృవీకరించలేకపోయింది. కారణం చూసి మళ్లీ నివేదించడానికి తెరవండి.',
+    },
+    outcome_verified: {
+      title: 'మీ ఫలితం ధృవీకరించబడింది: {title}',
+      body: 'మీరు నివేదించినదాన్ని ప్లేస్‌మెంట్ సెల్ ధృవీకరించింది. ఇది ఇప్పుడు కాలేజీ రికార్డ్‌లో లెక్కించబడుతుంది.',
+    },
+    outcome_rejected: {
+      title: 'మీ ఫలితాన్ని మళ్లీ చూడాలి: {title}',
+      body: 'మీరు నివేదించినదాన్ని ప్లేస్‌మెంట్ సెల్ ధృవీకరించలేకపోయింది. కారణం చూడటానికి తెరవండి.',
     },
   },
 };
@@ -475,9 +491,13 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
     case 'drive_selected':
       return '/placements?tab=offers';
     case 'offer_verified':
-      return '/placements?tab=offers';
+      return '/outcomes';
     case 'offer_rejected':
-      return '/placements?tab=offers';
+      return '/outcomes';
+    case 'outcome_verified':
+      return '/outcomes';
+    case 'outcome_rejected':
+      return '/outcomes';
     default:
       return '/sessions';
   }

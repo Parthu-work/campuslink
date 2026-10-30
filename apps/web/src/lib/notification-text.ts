@@ -117,9 +117,13 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       case 'drive_selected':
         return '/placements?tab=offers';
       case 'offer_verified':
-        return '/placements?tab=offers';
+        return '/outcomes';
       case 'offer_rejected':
-        return '/placements?tab=offers';
+        return '/outcomes';
+      case 'outcome_verified':
+        return '/outcomes';
+      case 'outcome_rejected':
+        return '/outcomes';
       default:
         return '/sessions';
     }

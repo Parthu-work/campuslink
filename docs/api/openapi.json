@@ -17443,6 +17443,793 @@
         "x-permission": "outcomes:verify"
       }
     },
+    "/api/v1/me/outcomes": {
+      "get": {
+        "tags": [
+          "Outcomes"
+        ],
+        "summary": "My higher studies, exams and ventures, with what the placement cell decided",
+        "description": "Requires permission `outcomes:report` (Report one’s own offers (with proof) to the placement cell). Host scope: college.",
+        "operationId": "outcomes_get_me_outcomes",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:report"
+      }
+    },
+    "/api/v1/me/outcomes/higher_study": {
+      "post": {
+        "tags": [
+          "Outcomes"
+        ],
+        "summary": "Report my admission to higher studies (counts once verified)",
+        "description": "Requires permission `outcomes:report` (Report one’s own offers (with proof) to the placement cell). Host scope: college. Rate limit: requests.",
+        "operationId": "outcomes_post_me_outcomes_higher_study",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "institution": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 160
+                  },
+                  "program": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "country": {
+                    "default": "India",
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 60
+                  },
+                  "admitYear": {
+                    "type": "integer",
+                    "minimum": 1990,
+                    "maximum": 2100
+                  },
+                  "qualifyingExam": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "GATE",
+                          "CAT",
+                          "GRE",
+                          "GMAT",
+                          "IELTS",
+                          "TOEFL",
+                          "UPSC",
+                          "STATE_PSC",
+                          "NET",
+                          "OTHER"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "institution",
+                  "program",
+                  "admitYear"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:report"
+      }
+    },
+    "/api/v1/me/outcomes/exam": {
+      "post": {
+        "tags": [
+          "Outcomes"
+        ],
+        "summary": "Report an exam I qualified (GATE, CAT, GRE and others; counts once verified)",
+        "description": "Requires permission `outcomes:report` (Report one’s own offers (with proof) to the placement cell). Host scope: college. Rate limit: requests.",
+        "operationId": "outcomes_post_me_outcomes_exam",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "exam": {
+                    "type": "string",
+                    "enum": [
+                      "GATE",
+                      "CAT",
+                      "GRE",
+                      "GMAT",
+                      "IELTS",
+                      "TOEFL",
+                      "UPSC",
+                      "STATE_PSC",
+                      "NET",
+                      "OTHER"
+                    ]
+                  },
+                  "examName": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 80
+                  },
+                  "year": {
+                    "type": "integer",
+                    "minimum": 1990,
+                    "maximum": 2100
+                  },
+                  "scoreBand": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 60
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "state",
+                      "national",
+                      "international"
+                    ]
+                  }
+                },
+                "required": [
+                  "exam",
+                  "year"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:report"
+      }
+    },
+    "/api/v1/me/outcomes/venture": {
+      "post": {
+        "tags": [
+          "Outcomes"
+        ],
+        "summary": "Report a venture I started (counts once verified)",
+        "description": "Requires permission `outcomes:report` (Report one’s own offers (with proof) to the placement cell). Host scope: college. Rate limit: requests.",
+        "operationId": "outcomes_post_me_outcomes_venture",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "registered": {
+                    "type": "boolean"
+                  },
+                  "year": {
+                    "type": "integer",
+                    "minimum": 1990,
+                    "maximum": 2100
+                  }
+                },
+                "required": [
+                  "name",
+                  "registered",
+                  "year"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:report"
+      }
+    },
+    "/api/v1/me/outcomes/{kind}/{id}": {
+      "delete": {
+        "tags": [
+          "Outcomes"
+        ],
+        "summary": "Take back one of my outcomes the placement cell has not verified",
+        "description": "Requires permission `outcomes:report` (Report one’s own offers (with proof) to the placement cell). Host scope: college.",
+        "operationId": "outcomes_delete_me_outcomes_kind_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "higher_study",
+                "exam",
+                "venture"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:report"
+      }
+    },
+    "/api/v1/admin/outcomes/{kind}": {
+      "get": {
+        "tags": [
+          "Outcomes"
+        ],
+        "summary": "Reported, verified or rejected outcomes of one kind",
+        "description": "Requires permission `outcomes:verify` (Verify or reject reported offers). Host scope: college.",
+        "operationId": "outcomes_get_admin_outcomes_kind",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "higher_study",
+                "exam",
+                "venture"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "reported",
+              "type": "string",
+              "enum": [
+                "reported",
+                "verified",
+                "rejected"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:verify"
+      }
+    },
+    "/api/v1/admin/outcomes/{kind}/{id}/decision": {
+      "post": {
+        "tags": [
+          "Outcomes"
+        ],
+        "summary": "Verify or reject a reported outcome (the member sees the reason)",
+        "description": "Requires permission `outcomes:verify` (Verify or reject reported offers). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "outcomes_post_admin_outcomes_kind_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "higher_study",
+                "exam",
+                "venture"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "verify",
+                      "reject"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:verify"
+      }
+    },
+    "/api/v1/admin/outcomes/{kind}/import": {
+      "post": {
+        "tags": [
+          "Outcomes"
+        ],
+        "summary": "Outcomes from the college’s CSV or Excel sheet keyed by roll number (verified; unknown rolls listed)",
+        "description": "Requires permission `outcomes:verify` (Verify or reject reported offers). Host scope: college. Rate limit: upload.",
+        "operationId": "outcomes_post_admin_outcomes_kind_import",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "higher_study",
+                "exam",
+                "venture"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:verify"
+      }
+    },
+    "/api/v1/admin/outcome-reports": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "The reports the college can generate (NBA, NAAC, NIRF-style and internal)",
+        "description": "Requires permission `analytics:tenant` (View college-wide analytics). Host scope: college.",
+        "operationId": "reports_get_admin_outcome_reports",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "analytics:tenant"
+      }
+    },
+    "/api/v1/admin/outcome-reports/dashboard": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Placement %, median band, top recruiters and the five-year trend (counts under 5 suppressed)",
+        "description": "Requires permission `analytics:tenant` (View college-wide analytics). Host scope: college.",
+        "operationId": "reports_get_admin_outcome_reports_dashboard",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "analytics:tenant"
+      }
+    },
+    "/api/v1/admin/outcome-reports/{id}": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "One report for a programme and batch (counts under 5 suppressed)",
+        "description": "Requires permission `analytics:tenant` (View college-wide analytics). Host scope: college.",
+        "operationId": "reports_get_admin_outcome_reports_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "nba-sar-placement",
+                "naac-placement",
+                "naac-higher-education",
+                "naac-exams",
+                "naac-alumni-engagement",
+                "nirf-median-salary",
+                "internal-placement"
+              ]
+            }
+          },
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "analytics:tenant"
+      }
+    },
+    "/api/v1/admin/outcome-reports/{id}/export": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Download the report table as CSV or Excel (audited)",
+        "description": "Requires permission `reports:export` (Export reports and data). Host scope: college. Rate limit: search.",
+        "operationId": "reports_get_admin_outcome_reports_id_export",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "nba-sar-placement",
+                "naac-placement",
+                "naac-higher-education",
+                "naac-exams",
+                "naac-alumni-engagement",
+                "nirf-median-salary",
+                "internal-placement"
+              ]
+            }
+          },
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "xlsx",
+              "type": "string",
+              "enum": [
+                "csv",
+                "xlsx"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "reports:export"
+      }
+    },
+    "/api/v1/admin/outcome-reports/{id}/evidence": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Evidence workbook: exact counts and every student behind them (audited)",
+        "description": "Requires permission `reports:export` (Export reports and data). Host scope: college. Rate limit: search.",
+        "operationId": "reports_get_admin_outcome_reports_id_evidence",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "nba-sar-placement",
+                "naac-placement",
+                "naac-higher-education",
+                "naac-exams",
+                "naac-alumni-engagement",
+                "nirf-median-salary",
+                "internal-placement"
+              ]
+            }
+          },
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "reports:export"
+      }
+    },
     "/api/v1/admin/analytics": {
       "get": {
         "tags": [

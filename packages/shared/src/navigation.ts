@@ -16,6 +16,7 @@ export type NavId =
   | 'mentors'
   | 'jobs'
   | 'placements'
+  | 'outcomes'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -80,6 +81,7 @@ export type AdminSectionId =
   | 'onboarding'
   | 'placements'
   | 'offers'
+  | 'reports'
   | 'moderation'
   | 'mentorship'
   | 'sources'
@@ -121,6 +123,7 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('jobSources', '/admin/job-sources', 'jobs:sources', 'community'),
   section('rewards', '/admin/rewards', 'rewards:manage', 'community'),
   section('analytics', '/admin/analytics', 'analytics:cohort', 'insights'),
+  section('reports', '/admin/reports', 'analytics:tenant', 'insights'),
   section('branding', '/admin/branding', 'tenant:branding', 'college'),
   section('features', '/admin/features', 'tenant:settings', 'college'),
   section('ai', '/admin/ai', 'ai:settings', 'college'),
@@ -158,6 +161,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   mentors: d('mentors', '/mentors', 'main', ['mentorship:request']),
   jobs: d('jobs', '/jobs', 'main', ['jobs:read']),
   placements: d('placements', '/placements', 'explore', ['placements:view', 'placements:manage']),
+  // Offers, higher studies, exams and ventures (B8): students and alumni report their own.
+  outcomes: d('outcomes', '/outcomes', 'you', ['outcomes:report']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -192,6 +197,7 @@ export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
   following: 'contentSources',
   leaderboard: 'leaderboards',
   placements: 'placements',
+  outcomes: 'placements',
 };
 
 /** Admin sections that belong to a feature switch. */
@@ -201,6 +207,7 @@ export const ADMIN_SECTION_FEATURE: Partial<Record<AdminSectionId, Feature>> = {
   ai: 'study',
   placements: 'placements',
   offers: 'placements',
+  reports: 'placements',
 };
 
 /** The shipped destinations minus those whose feature the college has switched off. */
@@ -262,6 +269,7 @@ const MENU_ORDER: readonly NavId[] = [
   'reels',
   'following',
   'leaderboard',
+  'outcomes',
   'progress',
   'rewards',
   'saved',

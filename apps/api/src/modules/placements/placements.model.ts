@@ -148,6 +148,8 @@ const registrationSchema = new Schema(
     driveId: { type: Schema.Types.ObjectId, required: true },
     /** null after the member's account is erased: the institutional record stays, anonymised. */
     userId: { type: Schema.Types.ObjectId, default: null },
+    /** Random, one per erased member (B8): reports still count them once without knowing who. */
+    anonKey: { type: String, default: null },
     answers: {
       type: [{ question: Number, value: { type: String, maxlength: 2000 }, _id: false }],
       default: [],
@@ -180,6 +182,8 @@ export const DriveRegistrationModel = defineTenantModel('DriveRegistration', reg
 const offerSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, default: null },
+    /** Random, one per erased member (B8): reports still count them once without knowing who. */
+    anonKey: { type: String, default: null },
     companyKey: { type: String, required: true },
     companyName: { type: String, required: true, maxlength: 120 },
     role: { type: String, required: true, maxlength: 120 },
@@ -203,5 +207,6 @@ const offerSchema = new Schema(
 offerSchema.index({ tenantId: 1, userId: 1, _id: -1 });
 offerSchema.index({ tenantId: 1, status: 1, _id: -1 });
 offerSchema.index({ tenantId: 1, driveId: 1, userId: 1 });
+offerSchema.index({ tenantId: 1, status: 1, gradYear: 1 });
 export type OfferDoc = InferSchemaType<typeof offerSchema> & { _id: Types.ObjectId; createdAt: Date };
 export const OfferModel = defineTenantModel('Offer', offerSchema);

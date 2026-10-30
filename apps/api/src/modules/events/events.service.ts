@@ -666,6 +666,24 @@ export class EventsService {
     return { held: held.length, rsvps, attended };
   }
 
+  /** Events held between two dates with their host (B8 alumni engagement; the host is public). */
+  async heldBetween(from: Date, to: Date) {
+    const rows = await EventModel.find({
+      startsAt: { $gte: from, $lt: to },
+      status: 'scheduled',
+      removal: null,
+    })
+      .select('title kind startsAt hostId')
+      .limit(10_000)
+      .lean<EventDoc[]>();
+    return rows.map((e) => ({
+      title: e.title,
+      kind: e.kind,
+      startsAt: e.startsAt,
+      hostId: String(e.hostId),
+    }));
+  }
+
   /** Who hosted or attended (for alumni participation). */
   async hostsSince(since: Date) {
     return (await EventModel.distinct('hostId', {

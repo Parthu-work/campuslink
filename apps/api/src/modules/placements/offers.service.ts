@@ -1,7 +1,9 @@
+import { randomUUID } from 'node:crypto';
 import { Types } from 'mongoose';
 import {
   OFFER_PROOF_RETENTION_DAYS,
   ctcBand,
+  type CtcBand,
   type DriveRoleType,
   type OfferSource,
   type OfferView,
@@ -46,7 +48,11 @@ export class OffersService {
     const u = new Types.ObjectId(userId);
     const rows = await OfferModel.find({ userId: u }).select('proofFileId').lean();
     for (const r of rows) if (r.proofFileId) await this.d.files.remove(r.proofFileId);
-    await OfferModel.updateMany({ userId: u }, { $set: { userId: null, ctcLpa: null, proofFileId: null } });
+    // One random key for all of this member's offers, so reports still count them once.
+    await OfferModel.updateMany(
+      { userId: u },
+      { $set: { userId: null, anonKey: randomUUID(), ctcLpa: null, proofFileId: null } },
+    );
   }
 
   private async views(rows: OfferDoc[], withMember = false): Promise<OfferView[]> {
@@ -257,6 +263,27 @@ export class OffersService {
 
   async pendingCount() {
     return OfferModel.countDocuments({ status: 'reported' });
+  }
+
+  /** Verified offers of these batches, for reports (B8; aggregated and suppressed there). */
+  async verifiedFor(gradYears: number[]) {
+    const rows = await OfferModel.find({ status: 'verified', gradYear: { $in: gradYears } })
+      .select('userId anonKey branch gradYear companyKey companyName role ctcLpa ctcBand type source')
+      .limit(50_000)
+      .lean<OfferDoc[]>();
+    return rows.map((r) => ({
+      subject: r.userId ? String(r.userId) : (r.anonKey ?? String(r._id)),
+      userId: r.userId ? String(r.userId) : null,
+      branch: r.branch ?? null,
+      gradYear: r.gradYear ?? null,
+      companyKey: r.companyKey,
+      companyName: r.companyName,
+      role: r.role,
+      ctcLpa: r.ctcLpa ?? null,
+      ctcBand: r.ctcBand as CtcBand,
+      type: r.type,
+      source: r.source,
+    }));
   }
 
   /** Files hook: offer proof is readable by whoever verifies offers (and its uploader). */

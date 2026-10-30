@@ -51,10 +51,7 @@ function TrackedRow({ row }: { row: TrackedJobView }) {
         )}
         {row.note && <p className="text-meta text-fg-2">“{row.note}”</p>}
         {row.status === 'offer' && canReport && (
-          <Link
-            to="/placements?tab=offers"
-            className="text-meta font-semibold text-brand-ink hover:underline"
-          >
+          <Link to="/outcomes" className="text-meta font-semibold text-brand-ink hover:underline">
             {t('placements.reportToCell')}
           </Link>
         )}

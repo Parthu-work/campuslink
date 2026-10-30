@@ -196,4 +196,34 @@ A new session reads this file first and resumes from the first phase that is not
 - **Being selected and a verified offer are celebration moments** (ADR 0008 amended, CLAUDE.md updated), once per device.
 - **Final-year students get Placements as a main tab** in place of Jobs (`inFinalYears`: from 24 months before graduation, taken as June, to 6 months after). Jobs stays in the menu.
 
+**Confirmed.** The full local e2e run on `b6862d2` passed 152 (12 skipped) and failed 6 phone-tab specs: since B7, Ananya (graduating 2027) has Placements as her last tab, and the specs still tapped Jobs. `532fec7` moves them to the Placements tab (22 passed locally) and its CI run is green. CI on `b6862d2` also failed the desktop "minor and guardian" spec: both demo colleges share the fictional minor and guardian numbers, so the second project could read the first project's code from the dev outbox before its own arrived. `c18be25` counts the outbox before each send and waits for one more (8 passed locally on both projects).
+
 **Next:** B8 (outcomes and accreditation reports).
+
+## B8 · Placement outcomes and accreditation reports (Done)
+
+**Shipped**
+
+- Outcome collections `HigherStudy`, `ExamQualification` and `Venture`: reported by students and alumni (`/me/outcomes`), verified or rejected with a reason by the placement cell (`/admin/outcomes/:kind`), or imported from the college's CSV or Excel sheet keyed by roll number (verified; unknown rolls listed back). Notifications `outcome_verified` and `outcome_rejected` (title only). Isolation, export and erasure.
+- `modules/reports`: seven versioned definitions (internal placement by branch; NBA SAR placement, higher studies and entrepreneurship; NAAC placement, higher education, exams and alumni engagement; NIRF-style median salary), each with a source note, a review flag, a suppressed `compute` and a student-level `evidence`. Routes under `/admin/outcome-reports`: definitions, dashboard, a report, CSV/Excel summary and the evidence workbook (both audited).
+- `anonKey` on offers and registrations (and outcomes), set once per erased member, so reports count people once after erasure.
+- Web: Your outcomes (`/outcomes`, also Placements › Offers for students), Admin › Offers and outcomes (offers, higher studies, exams, ventures), Admin › Reports (dashboard with stat cards, trend chart and top recruiters; report pages with downloads). Strings in en and te.
+- Seed: a DEMO higher study (Fatima) and GATE (Arjun), verified, and a waiting GATE for Vikram.
+- Tests: `test/reports.test.ts` (known answers for every definition, suppression, downloads and audit, permissions), `test/outcomes.test.ts`, `test/isolation/outcomes.test.ts`, privacy cases, e2e `e2e/reports.spec.ts`. Spec: `docs/specs/outcomes-reports.md`.
+
+**Decisions**
+
+- **`/admin/outcome-reports`, not `/admin/reports`:** moderation already serves content reports at `/admin/reports`. The web screen is still Admin › Reports.
+- **Reports need `analytics:tenant`** (TPO, college admin) and downloads `reports:export`. Faculty keep the cohort analytics they had.
+- **Ratios hide with their counts.** A ratio or percentage built on a suppressed count is left out, otherwise "<5" could be worked back from it. The exact figures are in the evidence workbook, which is audited.
+- **Every accreditation definition is marked for review** until someone checks it against the current manual; the NBA "30 × average" line is labelled "per the SAR format". The internal report is not.
+- **Placed means a verified job offer** (internships excluded; PPO-type offers included). **Seeking placement** means registered for a drive or placed off campus.
+- **NIRF median from exact figures only**, five or more; anonymised offers (band only) are left out.
+- **NAAC exams count by the year qualified**; every other report counts by graduating batch.
+- **Alumni engagement is not split by programme** and has no financial contribution yet (that is alumni giving, in Prompt 2).
+- **Outcomes need no proof file.** The cell checks them against what it knows; a rejection's reason asks for documents if needed. This keeps uploads, and their retention, to offers.
+- **Imports apply only to members.** Students not yet on the platform are listed back; their outcomes can be imported again once they join.
+- **Report content is English** (titles, headings, notes), as accreditation bodies take it and as it downloads; the screens around it are translated.
+- **Erasure keeps verified outcomes anonymised** (like offers): they are the college's record. Unverified ones are deleted.
+
+**Next:** B9 (product analytics, first party).

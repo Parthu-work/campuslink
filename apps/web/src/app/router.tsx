@@ -12,7 +12,13 @@ import {
 import { RouterProvider } from 'react-router/dom';
 import { useTranslation } from '../i18n/react';
 import { Compass } from 'lucide-react';
-import { ADMIN_PERMISSIONS, type Feature, type Permission, type PublicTenant } from '@campuslink/shared';
+import {
+  ADMIN_PERMISSIONS,
+  currentGradYear,
+  type Feature,
+  type Permission,
+  type PublicTenant,
+} from '@campuslink/shared';
 import { useTenant } from '../lib/tenant-context';
 import { importWithRetry, setPendingTargetResolver } from '../lib/chunk-reload';
 import { registerPreloadRoutes, registerRouteTables } from '../lib/preload';
@@ -92,6 +98,8 @@ const load = {
   placementsAdmin: () => import('../features/admin/placements-admin'),
   driveEditor: () => import('../features/admin/drive-editor'),
   driveManage: () => import('../features/admin/drive-manage'),
+  outcomes: () => import('../features/outcomes/outcomes'),
+  reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
 };
 
@@ -106,6 +114,12 @@ type Data = (params: Params, url: URL) => Promise<unknown>[];
 const LOADER_WAIT_MS = 1500;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const isId = (v: string | undefined): v is string => !!v && /^[a-f0-9]{24}$/.test(v);
+/** Reports keep batch and programme in the URL; the loader asks for the same query the screen does. */
+const reportQs = (url: URL) => {
+  const g = Number(url.searchParams.get('gradYear')) || currentGradYear();
+  const b = url.searchParams.get('branch');
+  return new URLSearchParams({ gradYear: String(g), ...(b ? { branch: b } : {}) }).toString();
+};
 
 /**
  * Loaders never fail the navigation: a failed read shows the screen's own error state. They wait
@@ -441,6 +455,13 @@ function collegeRoutes(): RouteObject[] {
             },
           ),
           screen(
+            load.outcomes,
+            'OutcomesPage',
+            inFeature('placements', 'outcomes:report'),
+            at('/outcomes'),
+            () => [qc.ensureQueryData(q.myOffers()), qc.ensureQueryData(q.myOutcomes())],
+          ),
+          screen(
             load.drivePage,
             'DrivePage',
             inFeature('placements', 'placements:view'),
@@ -551,6 +572,23 @@ function collegeRoutes(): RouteObject[] {
               inFeature('placements', 'outcomes:verify'),
               at('offers'),
               () => [qc.ensureInfiniteQueryData(q.offersQueue('reported'))],
+            ),
+            screen(
+              load.reports,
+              'ReportsDashboard',
+              inFeature('placements', 'analytics:tenant'),
+              at('reports'),
+              (_, url) => [
+                qc.ensureQueryData(q.reportsDashboard(reportQs(url))),
+                qc.ensureQueryData(q.reportDefinitions()),
+              ],
+            ),
+            screen(
+              load.reports,
+              'ReportPage',
+              inFeature('placements', 'analytics:tenant'),
+              at('reports/:id'),
+              ({ id }, url) => (id ? [qc.ensureQueryData(q.outcomeReport(id, reportQs(url)))] : []),
             ),
             screen(load.listAdmin, 'ListAdmin', 'imports:manage', at('list')),
             screen(load.listAdmin, 'VerificationAdmin', 'verification:review', at('verification')),

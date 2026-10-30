@@ -47,6 +47,13 @@
 - **Offer proof** (a PDF or a photo, rebuilt without metadata) is readable only by whoever verifies offers. It is deleted 30 days after the offer is verified.
 - **Erasure:** self-reported marks are deleted. Registrations are anonymised (answers and the résumé are deleted; branch, batch and results stay without the member), and overrides naming the member are removed. Offers are **anonymised**: the member and the exact CTC are removed and the proof is deleted. The company, CTC band, branch and batch stay, so the college's placement statistics do not change when someone leaves. College-imported marks stay on the college's list by roll number (they are the college's records, like the roster) and are unlinked from the account.
 
+## Outcomes and accreditation reports (build B8)
+
+- **Higher studies, exams and ventures** are reported by the member or imported from the college's own sheet, and count only once the placement cell verifies them. A score band is what the member chooses to say ("AIR under 2,000"), never a score sheet.
+- **Reports are aggregates.** Every count of people is suppressed under 5 on screen, on the dashboard and in summary downloads, and ratios are shown only when the counts behind them are not suppressed.
+- **Evidence workbooks name students** (the accreditation bodies ask for it). They need `reports:export` (placement cell and college admin) and every download is audited with the report, the parameters and the row count.
+- **Erasure:** unverified outcomes are deleted. Verified outcomes, offers and drive registrations stay in the college's record without the member: the member id is removed and one random key per collection lets reports count the person once without saying who they were.
+
 ## Data minimisation (implemented)
 
 - IP addresses are reduced to /24 (IPv4) or /48 (IPv6) prefixes in sessions and audit.

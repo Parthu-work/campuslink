@@ -372,6 +372,19 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/admin/placements/academics/:id/decision` | `placements:manage` · feature `placements` | college | adminWrite | Verify or reject a self-reported academic record |
 | `GET /api/v1/admin/offers` | `outcomes:verify` · feature `placements` | college | — | Offers by status (reported ones wait for verification) |
 | `POST /api/v1/admin/offers/:id/decision` | `outcomes:verify` · feature `placements` | college | adminWrite | Verify or reject a reported offer (the member sees the reason) |
+| `GET /api/v1/me/outcomes` | `outcomes:report` · feature `placements` | college | — | My higher studies, exams and ventures, with what the placement cell decided |
+| `POST /api/v1/me/outcomes/higher_study` | `outcomes:report` · feature `placements` | college | requests | Report my admission to higher studies (counts once verified) |
+| `POST /api/v1/me/outcomes/exam` | `outcomes:report` · feature `placements` | college | requests | Report an exam I qualified (GATE, CAT, GRE and others; counts once verified) |
+| `POST /api/v1/me/outcomes/venture` | `outcomes:report` · feature `placements` | college | requests | Report a venture I started (counts once verified) |
+| `DELETE /api/v1/me/outcomes/:kind/:id` | `outcomes:report` · feature `placements` | college | — | Take back one of my outcomes the placement cell has not verified |
+| `GET /api/v1/admin/outcomes/:kind` | `outcomes:verify` · feature `placements` | college | — | Reported, verified or rejected outcomes of one kind |
+| `POST /api/v1/admin/outcomes/:kind/:id/decision` | `outcomes:verify` · feature `placements` | college | adminWrite | Verify or reject a reported outcome (the member sees the reason) |
+| `POST /api/v1/admin/outcomes/:kind/import` | `outcomes:verify` · feature `placements` | college | upload | Outcomes from the college’s CSV or Excel sheet keyed by roll number (verified; unknown rolls listed) |
+| `GET /api/v1/admin/outcome-reports` | `analytics:tenant` · feature `placements` | college | — | The reports the college can generate (NBA, NAAC, NIRF-style and internal) |
+| `GET /api/v1/admin/outcome-reports/dashboard` | `analytics:tenant` · feature `placements` | college | — | Placement %, median band, top recruiters and the five-year trend (counts under 5 suppressed) |
+| `GET /api/v1/admin/outcome-reports/:id` | `analytics:tenant` · feature `placements` | college | — | One report for a programme and batch (counts under 5 suppressed) |
+| `GET /api/v1/admin/outcome-reports/:id/export` | `reports:export` · feature `placements` | college | search | Download the report table as CSV or Excel (audited) |
+| `GET /api/v1/admin/outcome-reports/:id/evidence` | `reports:export` · feature `placements` | college | search | Evidence workbook: exact counts and every student behind them (audited) |
 | `GET /api/v1/admin/analytics` | `analytics:cohort` | college | — | Aggregated college analytics (cohort view for faculty); counts under 5 are suppressed |
 | `GET /api/v1/admin/analytics/export` | `reports:export` | college | search | Download a report as CSV (audited) |
 | `GET /api/v1/me/export` | any signed-in user | college | privacy | Download everything this college’s space holds about me (JSON, audited) |

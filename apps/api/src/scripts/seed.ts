@@ -52,6 +52,7 @@ import {
   PlacementCompanyModel,
   PlacementDriveModel,
 } from '../modules/placements/placements.model.js';
+import { ExamQualificationModel, HigherStudyModel } from '../modules/placements/outcomes.model.js';
 import { ctcBand } from '@campuslink/shared';
 import { XP_RULES, type XpKind } from '@campuslink/shared';
 import {
@@ -962,6 +963,49 @@ async function seedPlacements(ids: Map<string, Types.ObjectId>, prefix: string) 
   });
 }
 
+/** DEMO outcomes (B8): an alumna's higher studies and an alumnus's GATE (verified), a student's GATE (waiting). */
+async function seedOutcomes(ids: Map<string, Types.ObjectId>) {
+  const id = (local: string) => {
+    const v = ids.get(local);
+    if (!v) throw new Error(`seed: missing ${local}`);
+    return v;
+  };
+  const verified = { status: 'verified', source: 'tpo', verifiedBy: id('tpo'), verifiedAt: new Date() };
+  await HigherStudyModel.create({
+    ...verified,
+    userId: id('fatima'),
+    branch: 'CSE',
+    gradYear: 2020,
+    institution: 'Demo Institute of Technology (demo)',
+    program: 'MS in Computer Science',
+    country: 'Germany',
+    admitYear: 2020,
+    qualifyingExam: 'GRE',
+  });
+  await ExamQualificationModel.create([
+    {
+      ...verified,
+      userId: id('arjun'),
+      branch: 'MECH',
+      gradYear: 2018,
+      exam: 'GATE',
+      year: 2018,
+      level: 'national',
+      scoreBand: 'DEMO score',
+    },
+    {
+      status: 'reported',
+      source: 'self',
+      userId: id('vikram'),
+      branch: 'CSE',
+      gradYear: 2026,
+      exam: 'GATE',
+      year: 2026,
+      level: 'national',
+    },
+  ]);
+}
+
 async function main() {
   await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
   await mongoose.connection.dropDatabase();
@@ -1098,6 +1142,7 @@ async function main() {
       await seedRoadmaps(ids);
       await seedPhase7(ids);
       await seedPlacements(ids, c.slug.slice(0, 2).toUpperCase());
+      await seedOutcomes(ids);
       await seedStudy(t._id, ids.get('faculty') as Types.ObjectId, { material: studyMaterial });
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
@@ -1128,6 +1173,9 @@ async function main() {
   );
   console.warn(
     'Try placements: ananya@dpit.example opens Placements (a drive she can register for, one she cannot and why); tpo@dpit.example opens Admin → Placement drives to enter round results and export registrants; vikram@dpit.example has a verified DEMO offer.',
+  );
+  console.warn(
+    'Try reports: admin@dpit.example or tpo@dpit.example opens Admin → Reports (placement %, recruiters, NBA, NAAC and NIRF-style reports, evidence workbook); tpo@dpit.example verifies Vikram’s DEMO GATE result under Admin → Offers and outcomes.',
   );
   console.warn(
     'Try roadmaps: ananya@dpit.example opens Roadmaps (Career Galaxy) and marks steps done; faculty@dpit.example reviews Rahul’s DEMO draft under Roadmaps → Review.',

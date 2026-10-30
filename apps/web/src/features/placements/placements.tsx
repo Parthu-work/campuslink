@@ -1,8 +1,8 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { BadgeCheck, Building2, CalendarClock, FilePlus2, GraduationCap } from 'lucide-react';
-import type { DriveView, OfferView } from '@campuslink/shared';
+import { useQuery } from '@tanstack/react-query';
+import { BadgeCheck, Building2, CalendarClock, GraduationCap } from 'lucide-react';
+import type { DriveView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { Button } from '../../components/ui/button';
 import { ErrorState } from '../../components/ui/error-state';
@@ -11,19 +11,14 @@ import { IntentLink } from '../../components/ui/intent-link';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { TabPanel, Tabs } from '../../components/ui/tabs';
-import { api, ApiError } from '../../lib/api';
-import { celebrate, firstSighting } from '../../lib/celebrate';
 import { formatDay, formatRelative } from '../../lib/format';
 import { useCan } from '../../lib/me';
-import { closesSoon, ctcExact, driveCtc, isRegistered } from '../../lib/placements';
+import { closesSoon, driveCtc, isRegistered } from '../../lib/placements';
 import * as q from '../../lib/queries';
 import { SCREEN } from '../../lib/query-client';
-import { toast } from '../../lib/toast';
 import { CompanyMark } from '../jobs/job-card';
+import { OutcomesPanel } from '../outcomes/outcomes-panel';
 
-const OfferReportDialog = lazy(() =>
-  import('./offer-report').then((m) => ({ default: m.OfferReportDialog })),
-);
 const AcademicDialog = lazy(() => import('./academic-dialog').then((m) => ({ default: m.AcademicDialog })));
 
 type Tab = q.DriveScope | 'offers';
@@ -172,98 +167,6 @@ function AcademicCard() {
   );
 }
 
-function OfferRow({ offer: o }: { offer: OfferView }) {
-  const { t } = useTranslation();
-  const qc = useQueryClient();
-  const decline = useMutation({
-    mutationFn: () => api.post<OfferView>(`/placements/offers/${o.id}/decline`, {}),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['my-offers'] }),
-    onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
-  });
-  const tone = {
-    verified: 'success',
-    reported: 'warning',
-    rejected: 'danger',
-    declined_by_student: 'neutral',
-  } as const;
-  return (
-    <li>
-      <Card variant="raised" className="grid gap-2 p-4">
-        <div className="flex items-start gap-3">
-          <CompanyMark name={o.companyName} />
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold">{o.companyName}</h3>
-            <p className="text-meta text-fg-2">
-              {o.role} · {t(`placements.roleType.${o.type}`)}
-            </p>
-          </div>
-          <Badge tone={tone[o.status]}>{t(`placements.offerStatus.${o.status}`)}</Badge>
-        </div>
-        <p className="flex flex-wrap gap-x-2 text-meta">
-          <span className="font-semibold tabular-nums">{ctcExact(t, o.ctcLpa)}</span>
-          <span className="text-fg-2">· {t(`placements.source.${o.source}`)}</span>
-          <span className="text-fg-2">· {formatDay(o.offerDate)}</span>
-        </p>
-        {o.status === 'rejected' && o.reason && (
-          <p className="rounded-[var(--radius-md)] bg-danger-surface p-3 text-meta text-danger-ink">
-            {t('placements.rejectedBecause', { reason: o.reason })}
-          </p>
-        )}
-        {(o.status === 'verified' || o.status === 'reported') && (
-          <div>
-            <Button size="sm" variant="ghost" loading={decline.isPending} onClick={() => decline.mutate()}>
-              {t('placements.declineOffer')}
-            </Button>
-          </div>
-        )}
-      </Card>
-    </li>
-  );
-}
-
-function Offers() {
-  const { t } = useTranslation();
-  const offers = useQuery({ ...SCREEN, ...q.myOffers() });
-  const [reporting, setReporting] = useState(false);
-  const firstRef = useRef<HTMLUListElement>(null);
-  const verified = (offers.data ?? []).filter((o) => o.status === 'verified').map((o) => o.id);
-  const verifiedKey = verified.join(',');
-  // A verified offer is a moment (ADR 0008): celebrated once per device, never a decline.
-  useEffect(() => {
-    const ids = verifiedKey ? verifiedKey.split(',') : [];
-    if (ids.length && firstSighting('verified-offers', ids)) celebrate(firstRef.current);
-  }, [verifiedKey]);
-  return (
-    <div className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="max-w-[60ch] text-meta text-fg-2">{t('placements.offersIntro')}</p>
-        <Button variant="primary" onClick={() => setReporting(true)}>
-          <FilePlus2 className="size-4" aria-hidden /> {t('placements.reportOffer')}
-        </Button>
-      </div>
-      {offers.isLoading && <Skeleton className="h-32 rounded-[var(--radius-lg)]" />}
-      {offers.isError && <ErrorState error={offers.error} onRetry={() => void offers.refetch()} />}
-      {offers.isSuccess && !offers.data.length && (
-        <EmptyState art={<Illustration kind="empty" />} title={t('placements.noOffers')}>
-          {t('placements.noOffersBody')}
-        </EmptyState>
-      )}
-      {!!offers.data?.length && (
-        <ul ref={firstRef} className="grid gap-3 sm:grid-cols-2">
-          {offers.data.map((o) => (
-            <OfferRow key={o.id} offer={o} />
-          ))}
-        </ul>
-      )}
-      {reporting && (
-        <Suspense fallback={null}>
-          <OfferReportDialog onClose={() => setReporting(false)} />
-        </Suspense>
-      )}
-    </div>
-  );
-}
-
 /**
  * Placements (B7): drives the student is eligible for, every drive (with why not), the ones they
  * registered for, and their offers. Final-year students have this as a main tab.
@@ -288,7 +191,7 @@ export function PlacementsPage() {
         tabs={tabs.map((id) => ({ id, label: t(`placements.tab.${id}`) }))}
       />
       <TabPanel idBase={idBase} id={tab}>
-        {tab === 'offers' ? <Offers /> : <DriveList scope={tab} />}
+        {tab === 'offers' ? <OutcomesPanel /> : <DriveList scope={tab} />}
       </TabPanel>
       <p className="flex items-center gap-1.5 text-caption text-fg-3">
         <BadgeCheck className="size-4" aria-hidden /> {t('placements.privacyNote')}
