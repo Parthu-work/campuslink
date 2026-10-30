@@ -682,7 +682,7 @@ erDiagram
     string baseUrl "public https, or a platform-allowlisted origin"
     object keys "chat, embedding, youtube: apiKeyEnc (FieldCipher), last4, status, validatedAt, models, error"
     object limits "answer tokens, passages, monthly budget, daily messages, chat retention"
-    object features "chatbot, studentUploads, externalVideos, ocr, transcription, facultySeeChats"
+    object features "chatbot, studentUploads, externalVideos, ocr, transcription"
     bool killSwitch
     object consent "version, acceptedAt, acceptedBy"
     object prices "currency and per-million prices the admin entered (estimate only)"

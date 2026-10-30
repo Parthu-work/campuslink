@@ -84,7 +84,7 @@ Phase 9 is done when everything in the spec's §12 has a passing test, the only 
 
 **Gaps and things to verify:**
 
-- Real providers were tested against recorded-format fakes, not live keys: attach a key per provider and run a few questions, `/quiz` and a back-fill.
+- Real providers were tested against recorded-format fakes, not live keys: attach a key per provider and run a few questions, `/quiz` and a back-fill. _(B11: `pnpm --filter @campuslink/api ai:smoke` runs one answer, one embedding and `/quiz` per provider configured in env and prints the token counts.)_
 - The worker image could not be built in this sandbox (its TLS-intercepting proxy blocks npm inside `docker build`); its build stage is the API image's. The process roles were checked from source: an `api` process left uploads queued, and a `worker` process processed them. Build it and run `deploy/staging/up.sh --build` and `smoke.sh` on a normal machine.
 - Whisper transcription and OpenAI transcription were tested with fakes; uploaded captions are the tested path.
 - **Faculty reading chats** (`facultySeeChats`) is stored but does nothing: whether faculty may ever read students' conversations is a privacy decision for the owner (with notice to students) before any such view is built.

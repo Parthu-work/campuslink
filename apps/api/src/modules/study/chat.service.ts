@@ -650,6 +650,7 @@ export class ChatService {
     await this.d.usage.record({
       kind: 'chat',
       model: this.modelOf(t) ?? chat.model,
+      platform: chat.platform,
       userId: t.viewer.userId,
       inputTokens: res.inputTokens,
       outputTokens: res.outputTokens,

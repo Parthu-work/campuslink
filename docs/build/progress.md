@@ -283,4 +283,29 @@ A new session reads this file first and resumes from the first phase that is not
 - **SAC code empty by default** with a console warning, and the GST rate in env, both to be confirmed by a chartered accountant.
 - **Phone tabs** now light the most specific root (`/platform/billing/…` lights Billing, not Colleges); the same bug lit Colleges on Traction.
 
+**Confirmed.** Gate green; CI green on `cb82c8a`; full local e2e 168 passed, 16 skipped, none failed.
+
 **Next:** B11 (AI cost control), including D7 (remove `facultySeeChats`), which no earlier phase covered.
+
+## B11 · AI cost control (Done)
+
+**Shipped**
+
+- Answers default to `claude-haiku-5-5` (`DEFAULT_CHAT_MODEL.anthropic`); `claude-sonnet-5-5` is the "deep" model (`DEEP_CHAT_MODEL`, `ActiveChat.deepModel`) for Prompt 2's heavy tasks; Opus only when an admin picks it. Other providers keep no default. ADR 0009 records the override of two Phase 9 decisions, and `docs/design/revamp/decisions.md` points to it.
+- A college with no key answers on the platform's provider with the plan's allowance as its monthly budget; admins can lower it, never raise it (refused on save); only platform-key tokens count; a plan with no AI tokens leaves the college not configured. Colleges with their own key keep their own budget.
+- Usage counters record `feature` and `platform` (migration for older counters). Admin › Billing shows platform tokens against the allowance, own-key tokens, and tokens by feature; the platform console estimates each college's AI cost from `AI_PLATFORM_PRICE_*`.
+- `pnpm --filter @campuslink/api ai:smoke`: one answer, one embedding and `/quiz` per configured provider, with token counts (not in CI).
+- D7: `facultySeeChats` removed everywhere (model, service, shared schema, admin screen, strings, six test files), a `$unset` migration, and a test that an old settings document loads before and loads and saves after it. `docs/privacy.md` says faculty never read study chats.
+- Tests: `test/ai-cost.test.ts` (10). Spec: `docs/specs/ai-cost.md`.
+
+**Decisions**
+
+- **Whose key served a call is recorded** (`platform` on usage counters), so the allowance counts only the platform's tokens and the cost estimate prices only what the platform pays. Counters from before B11 count as the college's own (whose key served them was not recorded), so they are never billed as platform usage.
+- **0 means "all of the allowance"** on the platform's provider (as 0 meant "no budget" before), so existing colleges with no budget set get their plan's allowance without anyone editing settings.
+- **The allowance check happens on save (400 with the allowance in the message)** rather than silently clamping, so an admin sees why the number was not taken; the runtime also caps it, in case a plan is lowered after a budget was set.
+- **Platform prices live in env** (`AI_PLATFORM_PRICE_*`, per million tokens), entered once by the platform owner; a console editor can come later. The estimate sums this month's platform tokens at those prices; nothing is billed from it.
+- **The smoke script reads extra provider keys straight from the process env** (`ANTHROPIC_API_KEY` and so on), not from the app's validated env, because they are for the operator's one-off run only; the app never reads them.
+- **No usage from a college's own key is billed or capped by the plan;** the plan only pays for the platform's provider.
+- **D7 found six test files, not four** (also `study.test.ts` and `study-index.test.ts`); all were cleaned.
+
+**Next:** B12 (Hindi and the language framework).

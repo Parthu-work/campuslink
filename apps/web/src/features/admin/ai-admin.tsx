@@ -39,6 +39,7 @@ import { FormError } from '../../components/layout/auth-layout';
 import { api, ApiError } from '../../lib/api';
 import { aiIndex, aiSettings } from '../../lib/queries';
 import { formatDateTime } from '../../lib/format';
+import { formatNumber } from '../../lib/numbers';
 import { toast } from '../../lib/toast';
 import { cn } from '../../lib/cn';
 import { AiUsagePanel } from './ai-usage';
@@ -638,10 +639,14 @@ export function AiAdmin() {
         <div className="grid gap-4 sm:grid-cols-2">
           <NumberField
             label={t('ai.monthlyBudget')}
-            hint={t('ai.monthlyBudgetHint')}
+            hint={
+              v.planAllowance !== null && !d.chatProvider
+                ? t('ai.monthlyBudgetPlan', { allowance: formatNumber(v.planAllowance) })
+                : t('ai.monthlyBudgetHint')
+            }
             value={d.monthlyTokenBudget}
             min={0}
-            max={1_000_000_000}
+            max={v.planAllowance !== null && !d.chatProvider ? v.planAllowance : 1_000_000_000}
             onChange={(n) => set({ monthlyTokenBudget: n })}
           />
           <NumberField

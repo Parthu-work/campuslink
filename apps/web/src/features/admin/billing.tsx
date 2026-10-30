@@ -124,8 +124,33 @@ export function AdminBilling() {
               label={t('billing.aiTokens')}
               used={v.usage.aiTokens.used}
               allowance={v.usage.aiTokens.allowance}
+              note={
+                v.usage.aiTokens.ownKey > 0
+                  ? t('billing.ownKey', { tokens: compact(v.usage.aiTokens.ownKey) })
+                  : undefined
+              }
             />
           </StatGrid>
+          {v.usage.aiByFeature.length > 0 && (
+            <Table label={t('billing.aiByFeature')}>
+              <THead>
+                <tr>
+                  <Th>{t('billing.aiFeature')}</Th>
+                  <Th className="text-right">{t('billing.aiPlatform')}</Th>
+                  <Th className="text-right">{t('billing.aiOwn')}</Th>
+                </tr>
+              </THead>
+              <tbody>
+                {v.usage.aiByFeature.map((f) => (
+                  <tr key={f.feature}>
+                    <Td>{t(`billing.feature.${f.feature}`)}</Td>
+                    <TdNum>{count(f.platform)}</TdNum>
+                    <TdNum>{count(f.own)}</TdNum>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
 
           <section className="grid gap-3">
             <h2 className="text-heading font-semibold">{t('billing.invoices')}</h2>
@@ -238,7 +263,17 @@ export function AdminBilling() {
   );
 }
 
-function Meter({ label, used, allowance }: { label: string; used: number; allowance: number }) {
+function Meter({
+  label,
+  used,
+  allowance,
+  note,
+}: {
+  label: string;
+  used: number;
+  allowance: number;
+  note?: string | undefined;
+}) {
   const { t } = useTranslation();
   const text = t('billing.usedOf', { used: count(used), allowance: count(allowance) });
   return (
@@ -248,6 +283,7 @@ function Meter({ label, used, allowance }: { label: string; used: number; allowa
       hint={
         <>
           {t('billing.ofAllowance', { allowance: compact(allowance) })}
+          {note && <span className="block">{note}</span>}
           <ProgressBar
             className="mt-2"
             value={used}

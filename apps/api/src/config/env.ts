@@ -2,6 +2,8 @@ import { z } from 'zod';
 import {
   AI_PROVIDERS,
   APP_NAME,
+  DEFAULT_CHAT_MODEL,
+  PRICE_CURRENCIES,
   EMBEDDING_PROVIDERS,
   GST_STATE_CODES,
   GSTIN_PATTERN,
@@ -181,7 +183,18 @@ export const envSchema = z.object({
    */
   AI_DEFAULT_PROVIDER: z.enum(AI_PROVIDERS).optional(),
   AI_DEFAULT_API_KEY: z.string().min(8).max(500).optional(),
+  /** Optional for Anthropic (its default answer model, `claude-haiku-5-5`, is used); required otherwise. */
   AI_DEFAULT_CHAT_MODEL: z.string().min(1).max(120).optional(),
+  /** The "deep" model for heavy tasks (Prompt 2); Anthropic defaults to `claude-sonnet-5-5`. */
+  AI_DEFAULT_DEEP_MODEL: z.string().min(1).max(120).optional(),
+  /**
+   * What the platform pays its AI provider per million tokens, in AI_PLATFORM_PRICE_CURRENCY: the
+   * console's per-college cost estimate (B11). Unset: no estimate is shown.
+   */
+  AI_PLATFORM_PRICE_INPUT: z.coerce.number().min(0).max(10_000).optional(),
+  AI_PLATFORM_PRICE_OUTPUT: z.coerce.number().min(0).max(10_000).optional(),
+  AI_PLATFORM_PRICE_EMBEDDING: z.coerce.number().min(0).max(10_000).optional(),
+  AI_PLATFORM_PRICE_CURRENCY: z.enum(PRICE_CURRENCIES).default('USD'),
   AI_DEFAULT_BASE_URL: z.url({ protocol: /^https?$/ }).optional(),
   AI_DEFAULT_EMBEDDING_PROVIDER: z.enum(EMBEDDING_PROVIDERS).optional(),
   AI_DEFAULT_EMBEDDING_API_KEY: z.string().min(8).max(500).optional(),
@@ -311,8 +324,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     !env.BILLING_SELLER_GSTIN.startsWith(env.BILLING_SELLER_STATE)
   )
     throw new Error('BILLING_SELLER_GSTIN must start with BILLING_SELLER_STATE');
-  if (env.AI_DEFAULT_PROVIDER && !env.AI_DEFAULT_CHAT_MODEL)
-    throw new Error('AI_DEFAULT_PROVIDER needs AI_DEFAULT_CHAT_MODEL');
+  if (env.AI_DEFAULT_PROVIDER && !env.AI_DEFAULT_CHAT_MODEL && !DEFAULT_CHAT_MODEL[env.AI_DEFAULT_PROVIDER])
+    throw new Error('AI_DEFAULT_PROVIDER needs AI_DEFAULT_CHAT_MODEL (only Anthropic has a default)');
   if (env.AI_DEFAULT_EMBEDDING_PROVIDER && !env.AI_DEFAULT_EMBEDDING_MODEL)
     throw new Error('AI_DEFAULT_EMBEDDING_PROVIDER needs AI_DEFAULT_EMBEDDING_MODEL');
   if (env.NODE_ENV === 'production') {

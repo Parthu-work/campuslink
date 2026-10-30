@@ -50,11 +50,23 @@ export const KEYED_PROVIDERS: readonly string[] = ['anthropic', 'openai', 'gemin
 export const CUSTOM_ENDPOINT_PROVIDERS: readonly string[] = ['openai_compatible'];
 /**
  * Default chat model per provider. Only Anthropic's is filled in: for the others the admin picks a
- * model from the list "Test connection" detects, so we never guess a model name.
+ * model from the list "Test connection" detects, so we never guess a model name. Answers use the
+ * fast, inexpensive model (decision D6, ADR 0009); Opus is used only when an admin picks it.
  */
 export const DEFAULT_CHAT_MODEL: Record<AiProvider, string> = {
   mock: 'mock-chat-1',
-  anthropic: 'claude-opus-5-5',
+  anthropic: 'claude-haiku-5-5',
+  openai: '',
+  gemini: '',
+  openai_compatible: '',
+};
+/**
+ * The "deep" model, used only by features that ask for it (mock interviews and résumé rewrites in
+ * Prompt 2), never for study answers. Empty: that provider's chat model is used.
+ */
+export const DEEP_CHAT_MODEL: Record<AiProvider, string> = {
+  mock: 'mock-chat-1',
+  anthropic: 'claude-sonnet-5-5',
   openai: '',
   gemini: '',
   openai_compatible: '',
@@ -75,14 +87,7 @@ export type KeyStatus = (typeof KEY_STATUSES)[number];
  * when the notice changes: admins then accept again.
  */
 export const AI_CONSENT_VERSION = '2026-10-1';
-export const AI_FEATURES = [
-  'chatbot',
-  'studentUploads',
-  'externalVideos',
-  'ocr',
-  'transcription',
-  'facultySeeChats',
-] as const;
+export const AI_FEATURES = ['chatbot', 'studentUploads', 'externalVideos', 'ocr', 'transcription'] as const;
 export type AiFeature = (typeof AI_FEATURES)[number];
 
 export const ANSWER_MODES = ['simple', 'detailed', 'exam'] as const;
@@ -142,6 +147,27 @@ export const CHUNK_EMBEDDING_STATUSES = ['embedding_pending', 'embedded', 'faile
 /** What AI usage is counted for (budgets and the admin dashboard). */
 export const AI_USAGE_KINDS = ['chat', 'embedding', 'transcription', 'rerank'] as const;
 export type AiUsageKind = (typeof AI_USAGE_KINDS)[number];
+/**
+ * What the tokens were spent on (build B11): billing usage and the platform's cost estimate split
+ * by it. Prompt 2 adds résumé, interview and copilot work under their own names.
+ */
+export const AI_USAGE_FEATURES = [
+  'study_chat',
+  'embedding',
+  'transcription',
+  'rerank',
+  'resume',
+  'interview',
+  'copilot',
+] as const;
+export type AiUsageFeature = (typeof AI_USAGE_FEATURES)[number];
+/** The feature a kind of usage counts under when the caller names none. */
+export const USAGE_FEATURE_OF_KIND: Readonly<Record<AiUsageKind, AiUsageFeature>> = {
+  chat: 'study_chat',
+  embedding: 'embedding',
+  transcription: 'transcription',
+  rerank: 'rerank',
+};
 /** Currencies the admin can enter provider prices in (for the dashboard's cost estimate). */
 export const PRICE_CURRENCIES = ['USD', 'INR', 'EUR', 'GBP'] as const;
 export type PriceCurrency = (typeof PRICE_CURRENCIES)[number];

@@ -57,7 +57,6 @@ const settings = (patch: Record<string, unknown> = {}) => ({
     externalVideos: false,
     ocr: true,
     transcription: true,
-    facultySeeChats: false,
   },
   killSwitch: false,
   ...patch,

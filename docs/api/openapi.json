@@ -20454,9 +20454,6 @@
                       },
                       "transcription": {
                         "type": "boolean"
-                      },
-                      "facultySeeChats": {
-                        "type": "boolean"
                       }
                     },
                     "required": [
@@ -20464,8 +20461,7 @@
                       "studentUploads",
                       "externalVideos",
                       "ocr",
-                      "transcription",
-                      "facultySeeChats"
+                      "transcription"
                     ],
                     "additionalProperties": false
                   },

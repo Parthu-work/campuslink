@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import type { AiUsageKind } from '@campuslink/shared';
+import { USAGE_FEATURE_OF_KIND, type AiUsageFeature, type AiUsageKind } from '@campuslink/shared';
 import { AiUsageModel, type AiUsageDoc } from './ai-usage.model.js';
 import { requireTenantId } from '../../lib/context.js';
 
@@ -24,6 +24,10 @@ export interface UsageTotals {
 
 export interface UsageEntry {
   kind: AiUsageKind;
+  /** What it was for; the kind's own feature when left out (chat → study_chat). */
+  feature?: AiUsageFeature;
+  /** The platform's key served it (B11: counted against the plan's allowance and costed). */
+  platform?: boolean;
   /** `provider:model`. */
   model: string;
   /** The member it was for; null for background work (embeddings, transcripts). */
@@ -40,6 +44,7 @@ export interface UsageEntry {
 export class AiUsageService {
   /** The month's token total per college, kept briefly so budget checks stay cheap. */
   private readonly month = new Map<string, { month: string; at: number; tokens: number }>();
+  private monthKey = (platformOnly: boolean) => `${String(requireTenantId())}|${platformOnly ? 'p' : 'a'}`;
 
   async record(e: UsageEntry) {
     const tokens = (n: number | undefined) => (Number.isFinite(n) && (n ?? 0) > 0 ? Math.round(n ?? 0) : 0);
@@ -48,29 +53,78 @@ export class AiUsageService {
         day: usageDay(),
         userId: e.userId ? oid(e.userId) : null,
         kind: e.kind,
+        feature: e.feature ?? USAGE_FEATURE_OF_KIND[e.kind],
+        platform: !!e.platform,
         model: e.model.slice(0, 160),
       },
       { $inc: { requests: 1, inputTokens: tokens(e.inputTokens), outputTokens: tokens(e.outputTokens) } },
       { upsert: true },
     );
-    const cached = this.month.get(String(requireTenantId()));
-    if (cached) cached.tokens += tokens(e.inputTokens) + tokens(e.outputTokens);
+    const added = tokens(e.inputTokens) + tokens(e.outputTokens);
+    const all = this.month.get(this.monthKey(false));
+    if (all) all.tokens += added;
+    const platform = this.month.get(this.monthKey(true));
+    if (platform && e.platform) platform.tokens += added;
   }
 
-  /** Tokens the college used this calendar month (UTC), for the monthly budget. */
-  async monthTokens(now = new Date()): Promise<number> {
-    const key = String(requireTenantId());
+  /**
+   * Tokens the college used this calendar month (UTC), for the monthly budget; with `platformOnly`,
+   * only what the platform's key served (the plan's allowance, B11).
+   */
+  async monthTokens(now = new Date(), opts: { platformOnly?: boolean } = {}): Promise<number> {
+    const key = this.monthKey(!!opts.platformOnly);
     const month = monthStart(now);
     const hit = this.month.get(key);
     if (hit && hit.month === month && now.getTime() - hit.at < MONTH_CACHE_MS) return hit.tokens;
     const [row] = await AiUsageModel.aggregate<{ tokens: number }>([
-      { $match: { day: { $gte: month } } },
+      { $match: { day: { $gte: month }, ...(opts.platformOnly ? { platform: true } : {}) } },
       { $group: { _id: null, tokens: { $sum: { $add: ['$inputTokens', '$outputTokens'] } } } },
     ]);
     const tokens = row?.tokens ?? 0;
     if (this.month.size > 5000) this.month.clear();
     this.month.set(key, { month, at: now.getTime(), tokens });
     return tokens;
+  }
+
+  /**
+   * This month's tokens by feature, split by whose key served them (billing usage), and the
+   * platform's tokens by price class (the platform's cost estimate). Counts only, never members.
+   */
+  async monthBreakdown(now = new Date()) {
+    const rows = await AiUsageModel.aggregate<{
+      _id: { feature: AiUsageFeature; platform: boolean; embedding: boolean };
+      input: number;
+      output: number;
+    }>([
+      { $match: { day: { $gte: monthStart(now) } } },
+      {
+        $group: {
+          _id: { feature: '$feature', platform: '$platform', embedding: { $eq: ['$kind', 'embedding'] } },
+          input: { $sum: '$inputTokens' },
+          output: { $sum: '$outputTokens' },
+        },
+      },
+    ]);
+    const byFeature = new Map<AiUsageFeature, { platform: number; own: number }>();
+    const platform = { chatInput: 0, chatOutput: 0, embedding: 0 };
+    for (const r of rows) {
+      const f = byFeature.get(r._id.feature) ?? { platform: 0, own: 0 };
+      if (r._id.platform) f.platform += r.input + r.output;
+      else f.own += r.input + r.output;
+      byFeature.set(r._id.feature, f);
+      if (!r._id.platform) continue;
+      if (r._id.embedding) platform.embedding += r.input + r.output;
+      else {
+        platform.chatInput += r.input;
+        platform.chatOutput += r.output;
+      }
+    }
+    return {
+      byFeature: [...byFeature]
+        .map(([feature, t]) => ({ feature, ...t }))
+        .sort((a, b) => b.platform + b.own - (a.platform + a.own)),
+      platform,
+    };
   }
 
   /** Model requests of one kind a member made today (the per-member daily limit). */
@@ -128,7 +182,14 @@ export class AiUsageService {
     const rows = await AiUsageModel.find({ userId: oid(userId) }).lean<AiUsageDoc[]>();
     for (const r of rows) {
       await AiUsageModel.updateOne(
-        { day: r.day, userId: null, kind: r.kind, model: r.model },
+        {
+          day: r.day,
+          userId: null,
+          kind: r.kind,
+          feature: r.feature,
+          platform: !!r.platform,
+          model: r.model,
+        },
         {
           $inc: {
             requests: r.requests ?? 0,

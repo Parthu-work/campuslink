@@ -7,6 +7,7 @@ import {
   BUDGET_WARNING_PERCENT,
   CUSTOM_ENDPOINT_PROVIDERS,
   DEFAULT_CHAT_MODEL,
+  DEEP_CHAT_MODEL,
   DEFAULT_EMBEDDING_MODEL,
   EMBEDDING_PROVIDERS,
   KEYED_PROVIDERS,
@@ -49,6 +50,8 @@ export interface PlatformAiDefault {
   provider: AiProvider;
   apiKey: string | null;
   chatModel: string;
+  /** The "deep" model (AI_DEFAULT_DEEP_MODEL); the provider's default deep model when unset. */
+  deepModel?: string | null;
   baseUrl: string | null;
   embeddingProvider: EmbeddingProviderId | null;
   embeddingApiKey: string | null;
@@ -64,6 +67,11 @@ export interface AiSettingsDeps {
   privateEndpoints: readonly string[];
   platformDefault: PlatformAiDefault | null;
   usage: AiUsageService;
+  /**
+   * The college's plan allowance of tokens a month on the platform's provider (B10, B11). Without
+   * it (some unit tests) the platform provider is not capped by a plan.
+   */
+  allowance?: () => Promise<number>;
 }
 /** Alerts for the college's admins (wired to NotificationsService in app.ts). */
 export type AiAlert = Extract<NotificationType, 'ai_key_invalid' | 'ai_budget_warning' | 'ai_budget_reached'>;
@@ -105,6 +113,8 @@ interface Settings {
 export interface ActiveChat {
   provider: LLMProvider;
   model: string;
+  /** For features that ask for "deep" work only (Prompt 2); study answers use `model`. */
+  deepModel: string;
   platform: boolean;
 }
 export interface ActiveEmbedding {
@@ -165,7 +175,6 @@ function normalize(d: AiSettingsDoc): Settings {
       externalVideos: !!f.externalVideos,
       ocr: f.ocr ?? true,
       transcription: f.transcription ?? true,
-      facultySeeChats: !!f.facultySeeChats,
     },
     killSwitch: !!d.killSwitch,
     prices: {
@@ -195,6 +204,15 @@ function normalize(d: AiSettingsDoc): Settings {
  * probe. Every provider call goes through the SSRF-safe fetcher; private endpoints only when the
  * platform owner allowlisted them. Key changes, provider changes and consent are audit-logged.
  */
+/**
+ * The month's token limit: the admin's budget (0: none), capped by the plan's allowance when the
+ * platform's provider answers (an allowance with no budget set is the limit itself).
+ */
+export function budgetLimit(budget: number, allowance: number | null): number {
+  if (allowance === null) return budget;
+  return budget > 0 ? Math.min(budget, allowance) : allowance;
+}
+
 export class AiSettingsService {
   /** Back-fill and re-index hook (the indexing service registers it). */
   onEmbeddingReady: () => Promise<void> = async () => undefined;
@@ -298,6 +316,7 @@ export class AiSettingsService {
             this.guard(this.breakerKey('chat', false, provider, s.baseUrl ?? null)),
           ),
           model,
+          deepModel: DEEP_CHAT_MODEL[provider] || model,
           platform: false,
         };
     } else if (pd && pd.chatModel) {
@@ -307,6 +326,7 @@ export class AiSettingsService {
           this.guard(this.breakerKey('chat', true, pd.provider, pd.baseUrl)),
         ),
         model: pd.chatModel,
+        deepModel: pd.deepModel || DEEP_CHAT_MODEL[pd.provider] || pd.chatModel,
         platform: true,
       };
     }
@@ -350,9 +370,20 @@ export class AiSettingsService {
     }
     const waitingConsent = !chat && !consentOk && (s.chatProvider ?? pd?.provider) !== 'mock';
 
+    // On the platform's provider the plan's allowance is the budget (B11, D6): the admin may set a
+    // lower one, never a higher one. No allowance (a plan without AI): not configured.
+    const onPlatform = !!chat?.platform || !!embedding?.platform;
+    const allowance = onPlatform ? await this.allowance() : null;
+    if (allowance === 0) {
+      if (chat?.platform) chat = null;
+      if (embedding?.platform) embedding = null;
+    }
     // The monthly budget: once it is used, every AI call stops and keyword-only mode stays (spec §7).
-    const limit = s.monthlyTokenBudget;
-    const used = limit > 0 && (chat || embedding) ? await this.d.usage.monthTokens() : 0;
+    const limit = budgetLimit(s.monthlyTokenBudget, allowance);
+    const used =
+      limit > 0 && (chat || embedding)
+        ? await this.d.usage.monthTokens(undefined, { platformOnly: onPlatform && allowance !== null })
+        : 0;
     const exhausted = limit > 0 && used >= limit;
     if (exhausted) {
       chat = null;
@@ -393,8 +424,24 @@ export class AiSettingsService {
 
   /** Whether the month's budget is used now (checked between embedding batches). */
   async budgetExhausted(): Promise<boolean> {
-    const limit = (await this.load()).monthlyTokenBudget;
-    return limit > 0 && (await this.d.usage.monthTokens()) >= limit;
+    const s = await this.load();
+    const allowance = this.usesPlatform(s) ? await this.allowance() : null;
+    const limit = budgetLimit(s.monthlyTokenBudget, allowance);
+    return (
+      allowance === 0 ||
+      (limit > 0 &&
+        (await this.d.usage.monthTokens(undefined, { platformOnly: allowance !== null })) >= limit)
+    );
+  }
+
+  /** The college answers on the platform's provider (it has no provider of its own). */
+  private usesPlatform(s: Pick<Settings, 'chatProvider'>) {
+    return !s.chatProvider && !!this.d.platformDefault;
+  }
+
+  /** The plan's allowance on the platform's provider; null when no plan applies (no dependency). */
+  private async allowance(): Promise<number | null> {
+    return this.d.allowance ? Math.max(0, await this.d.allowance()) : null;
   }
 
   /** Tells the admins once a month at BUDGET_WARNING_PERCENT and once when the budget is used. */
@@ -462,6 +509,7 @@ export class AiSettingsService {
           : null,
       consentVersion: AI_CONSENT_VERSION,
       platformDefault: pd ? { provider: pd.provider, embeddingProvider: pd.embeddingProvider } : null,
+      planAllowance: this.usesPlatform(s) ? await this.allowance() : null,
       status,
       providers: AI_PROVIDERS.map((id) => ({
         id,
@@ -489,6 +537,14 @@ export class AiSettingsService {
       throw fieldError('baseUrl', 'Enter the endpoint address');
     if (body.embeddingProvider === 'openai_compatible' && !embedEndpoint?.url)
       throw fieldError('embeddingBaseUrl', 'Enter the embeddings endpoint address');
+
+    // On the platform's provider the budget may only be lowered below the plan's allowance (D6).
+    const allowance = this.usesPlatform({ chatProvider: body.chatProvider }) ? await this.allowance() : null;
+    if (allowance !== null && body.monthlyTokenBudget > allowance)
+      throw fieldError(
+        'monthlyTokenBudget',
+        `Your plan includes ${allowance.toLocaleString('en-IN')} tokens a month on the platform’s provider; set a budget up to that, or 0 to use all of it`,
+      );
 
     const doc = await this.doc();
     const changed: string[] = [];

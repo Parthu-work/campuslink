@@ -111,11 +111,20 @@ beforeAll(async () => {
         day,
         userId: new Types.ObjectId(alum.id),
         kind: 'embedding',
+        feature: 'embedding',
         model: 'mock:m',
         requests: 2,
         inputTokens: 30,
       },
-      { day, userId: null, kind: 'embedding', model: 'mock:m', requests: 1, inputTokens: 100 },
+      {
+        day,
+        userId: null,
+        kind: 'embedding',
+        feature: 'embedding',
+        model: 'mock:m',
+        requests: 1,
+        inputTokens: 100,
+      },
     ]);
     await services.gamification.award(alum.id, 'event_attended', 'privacy-event', { from: staff.id });
     // A WhatsApp message record (B3): template and status only.

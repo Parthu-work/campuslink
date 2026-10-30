@@ -17,6 +17,7 @@ import { ApiError, api, apiBlob, saveBlob } from '../../lib/api';
 import { INVOICE_TONE, compact, count, day, rupees } from '../../lib/billing';
 import { platformBilling, platformCollegeBilling, platformPlans } from '../../lib/queries';
 import { SCREEN } from '../../lib/query-client';
+import { formatMoney } from '../../lib/numbers';
 import { toast } from '../../lib/toast';
 import {
   InvoiceDialog,
@@ -245,6 +246,13 @@ export function PlatformCollegeBilling() {
             <StatCard
               label={t('pbilling.annualPrice')}
               value={rupees(v.annualPricePaise, { paise: false })}
+              hint={
+                v.aiCost.estimate !== null
+                  ? t('pbilling.aiCost', {
+                      amount: formatMoney(v.aiCost.estimate, v.aiCost.currency),
+                    })
+                  : undefined
+              }
             />
           </StatGrid>
           {v.readOnly && (

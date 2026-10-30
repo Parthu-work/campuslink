@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { FEATURE_KEYS } from '../features.js';
+import type { AiUsageFeature } from '../constants/study.js';
 import {
   GST_STATE_CODES,
   GSTIN_PATTERN,
@@ -168,7 +169,13 @@ export interface BillingUsageView {
   /** The calendar month (UTC), YYYY-MM. */
   month: string;
   whatsapp: MeterView;
-  aiTokens: MeterView;
+  /** Tokens on the platform's provider against the plan's allowance (B11). */
+  aiTokens: MeterView & {
+    /** Tokens on the college's own provider key this month (not counted against the plan). */
+    ownKey: number;
+  };
+  /** This month's AI tokens by what they were for, split by whose key served them. */
+  aiByFeature: { feature: AiUsageFeature; platform: number; own: number }[];
   seats: {
     used: number | null;
     contracted: number;
@@ -220,6 +227,17 @@ export interface PlatformCollegeBillingView extends AdminBillingView {
   /** The invoice the plan suggests for the current term (the platform owner may edit it). */
   suggested: { periodStart: string; periodEnd: string; lines: InvoiceLineView[] };
   warnings: BillingWarning[];
+  /**
+   * This month's tokens on the platform's provider by price class, and what they cost at the prices
+   * the platform owner set (AI_PLATFORM_PRICE_*); null estimate when no prices are set.
+   */
+  aiCost: {
+    chatInput: number;
+    chatOutput: number;
+    embedding: number;
+    estimate: number | null;
+    currency: string;
+  };
 }
 
 /** Things to fix before invoicing (shown to the platform owner, never blocking). */

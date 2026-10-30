@@ -22,7 +22,8 @@
     "loadtest": "tsx --env-file-if-exists=../../.env src/scripts/loadtest.ts",
     "study:perf": "tsx --env-file-if-exists=../../.env src/scripts/study-perf.ts",
     "rotate-field-key": "tsx --env-file-if-exists=../../.env src/scripts/rotate-field-key.ts",
-    "docs:whatsapp": "tsx src/scripts/gen-whatsapp-doc.ts && prettier --write ../../docs/whatsapp-templates.md"
+    "docs:whatsapp": "tsx src/scripts/gen-whatsapp-doc.ts && prettier --write ../../docs/whatsapp-templates.md",
+    "ai:smoke": "tsx --env-file-if-exists=../../.env src/scripts/ai-smoke.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1152.0",

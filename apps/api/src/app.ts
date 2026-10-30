@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { pinoHttp } from 'pino-http';
 import type { Redis } from 'ioredis';
-import { API_PREFIX, Role } from '@campuslink/shared';
+import { API_PREFIX, DEFAULT_CHAT_MODEL, Role } from '@campuslink/shared';
 import type { Env } from './config/env.js';
 import { httpLogSerializers, type Logger } from './lib/logger.js';
 import { requestId } from './middleware/request-id.js';
@@ -728,12 +728,18 @@ export function createApp({
     profiles: profilesService,
     usage: aiUsageService,
     privateEndpoints: env.AI_PRIVATE_ENDPOINTS,
+    // The platform's provider is every college's default (D6), metered against its plan (B11).
+    allowance: async () => {
+      const t = await findTenantById(requireTenantId());
+      return t ? entitlements.limit(t, 'aiTokens') : 0;
+    },
     platformDefault:
-      env.AI_DEFAULT_PROVIDER && env.AI_DEFAULT_CHAT_MODEL
+      env.AI_DEFAULT_PROVIDER && (env.AI_DEFAULT_CHAT_MODEL || DEFAULT_CHAT_MODEL[env.AI_DEFAULT_PROVIDER])
         ? {
             provider: env.AI_DEFAULT_PROVIDER,
             apiKey: env.AI_DEFAULT_API_KEY ?? null,
-            chatModel: env.AI_DEFAULT_CHAT_MODEL,
+            chatModel: env.AI_DEFAULT_CHAT_MODEL || DEFAULT_CHAT_MODEL[env.AI_DEFAULT_PROVIDER],
+            deepModel: env.AI_DEFAULT_DEEP_MODEL ?? null,
             baseUrl: env.AI_DEFAULT_BASE_URL ?? null,
             embeddingProvider: env.AI_DEFAULT_EMBEDDING_PROVIDER ?? null,
             embeddingApiKey: env.AI_DEFAULT_EMBEDDING_API_KEY ?? null,
@@ -878,7 +884,13 @@ export function createApp({
     entitlements,
     logger,
     whatsappUsed: async () => (await channelService.usage()).sent,
-    aiTokensUsed: () => aiUsageService.monthTokens(),
+    aiUsage: () => aiUsageService.monthBreakdown(),
+    aiPrices: {
+      input: env.AI_PLATFORM_PRICE_INPUT ?? null,
+      output: env.AI_PLATFORM_PRICE_OUTPUT ?? null,
+      embedding: env.AI_PLATFORM_PRICE_EMBEDDING ?? null,
+      currency: env.AI_PLATFORM_PRICE_CURRENCY,
+    },
     tenantUrl,
   });
   queue.register(BILLING_DAILY_JOB, () => billingService.daily());

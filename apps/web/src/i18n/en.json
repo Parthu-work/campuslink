@@ -3134,9 +3134,7 @@
       "ocr": "Read scanned pages (OCR)",
       "ocrDetail": "Text is recognised on this server; nothing is sent out",
       "transcription": "Transcribe videos",
-      "transcriptionDetail": "So /videos can jump to where a topic is discussed",
-      "facultySeeChats": "Faculty may read chats",
-      "facultySeeChatsDetail": "Off by default: faculty see only anonymous totals. If on, students are told."
+      "transcriptionDetail": "So /videos can jump to where a topic is discussed"
     },
     "killSwitch": "Stop all AI now",
     "killSwitchDetail": "No request reaches any provider; search and the library keep working",
@@ -3234,7 +3232,8 @@
       "chatInput": "Answers: input, per 1M tokens",
       "chatOutput": "Answers: output, per 1M tokens",
       "embedding": "Embeddings, per 1M tokens"
-    }
+    },
+    "monthlyBudgetPlan": "Your plan includes {{allowance}} tokens a month on the platform’s provider. Set a lower budget, or 0 to use all of it."
   },
   "featureHint": {
     "studentPosting": "Students can post in the feed, not only comment. Posts are moderated like everyone else’s.",
@@ -4047,7 +4046,21 @@
     "ofAllowance": "of {{allowance}} this month",
     "issuedOn": "Issued {{date}}",
     "toPay": "{{amount}} to pay by {{date}}",
-    "dueOn": "due {{date}}"
+    "dueOn": "due {{date}}",
+    "ownKey": "plus {{tokens}} on your own provider key",
+    "aiByFeature": "AI tokens this month by feature",
+    "aiFeature": "Used for",
+    "aiPlatform": "Platform provider",
+    "aiOwn": "Your own key",
+    "feature": {
+      "study_chat": "Study assistant answers",
+      "embedding": "Indexing material for search",
+      "transcription": "Transcripts",
+      "rerank": "Ranking passages",
+      "resume": "Résumé help",
+      "interview": "Mock interviews",
+      "copilot": "Copilot"
+    }
   },
   "pbilling": {
     "title": "Billing",
@@ -4149,6 +4162,7 @@
     "method": {
       "bank": "Bank transfer",
       "online": "Online"
-    }
+    },
+    "aiCost": "AI this month: about {{amount}}"
   }
 }

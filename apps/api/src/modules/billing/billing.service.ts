@@ -21,6 +21,7 @@ import {
   type InvoiceLineView,
   type InvoiceView,
   type PaymentView,
+  type AiUsageFeature,
   type PlanId,
   type PlanTerms,
   type PlanTermsPatch,
@@ -79,9 +80,15 @@ export interface BillingDeps {
   payments: PaymentProvider;
   entitlements: EntitlementsService;
   logger: Logger;
-  /** This month's WhatsApp messages and AI tokens, in the current college (B3, Phase 9). */
+  /** This month's WhatsApp messages, in the current college (B3). */
   whatsappUsed: () => Promise<number>;
-  aiTokensUsed: () => Promise<number>;
+  /** This month's AI tokens by feature and key, in the current college (B11). */
+  aiUsage: () => Promise<{
+    byFeature: { feature: AiUsageFeature; platform: number; own: number }[];
+    platform: { chatInput: number; chatOutput: number; embedding: number };
+  }>;
+  /** What the platform pays per million tokens (cost estimate only); null when not set. */
+  aiPrices: { input: number | null; output: number | null; embedding: number | null; currency: string };
   tenantUrl: (tenant: TenantRecord, path: string) => string;
 }
 
@@ -158,11 +165,17 @@ export class BillingService {
   // ── Views ─────────────────────────────
 
   async usage(t: TenantRecord, now = new Date()): Promise<BillingUsageView> {
-    const [whatsapp, tokens] = await Promise.all([this.d.whatsappUsed(), this.d.aiTokensUsed()]);
+    const [whatsapp, ai] = await Promise.all([this.d.whatsappUsed(), this.d.aiUsage()]);
+    const sum = (k: 'platform' | 'own') => ai.byFeature.reduce((n, f) => n + f[k], 0);
     return {
       month: now.toISOString().slice(0, 7),
       whatsapp: { used: whatsapp, allowance: this.d.entitlements.limit(t, 'whatsapp') },
-      aiTokens: { used: tokens, allowance: this.d.entitlements.limit(t, 'aiTokens') },
+      aiTokens: {
+        used: sum('platform'),
+        allowance: this.d.entitlements.limit(t, 'aiTokens'),
+        ownKey: sum('own'),
+      },
+      aiByFeature: ai.byFeature,
       seats: {
         used: t.billing?.seatsUsed ?? null,
         contracted: this.d.entitlements.limit(t, 'seats'),
@@ -308,6 +321,20 @@ export class BillingService {
     return { periodStart: start, periodEnd: end, lines };
   }
 
+  /** The platform's cost for a college's tokens on its provider, at the prices it set. */
+  private aiCost(p: { chatInput: number; chatOutput: number; embedding: number }) {
+    const { input, output, embedding, currency } = this.d.aiPrices;
+    const priced = input !== null || output !== null || embedding !== null;
+    const estimate = priced
+      ? Math.round(
+          ((p.chatInput * (input ?? 0) + p.chatOutput * (output ?? 0) + p.embedding * (embedding ?? 0)) /
+            1_000_000) *
+            100,
+        ) / 100
+      : null;
+    return { ...p, estimate, currency };
+  }
+
   private warnings(t: TenantRecord): BillingWarning[] {
     const w: BillingWarning[] = [];
     if (!this.d.seller.sacCode) w.push('no_sac_code');
@@ -366,6 +393,7 @@ export class BillingService {
       custom: t.subscription?.terms ?? null,
       suggested: this.suggestedInvoice(t),
       warnings: this.warnings(t),
+      aiCost: this.aiCost((await this.d.aiUsage()).platform),
     }));
   }
 

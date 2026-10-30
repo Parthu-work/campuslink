@@ -1,9 +1,11 @@
-import { FEATURE_KEYS, LEGACY_FEATURES } from '@campuslink/shared';
+import { FEATURE_KEYS, LEGACY_FEATURES, USAGE_FEATURE_OF_KIND } from '@campuslink/shared';
 import { withPlatformScope } from '../lib/context.js';
 import type { Logger } from '../lib/logger.js';
 import { MigrationModel } from '../modules/platform/migration.model.js';
 import { TenantModel } from '../modules/tenants/tenant.model.js';
 import { UserModel } from '../modules/auth/user.model.js';
+import { AiSettingsModel } from '../modules/study/ai-settings.model.js';
+import { AiUsageModel } from '../modules/study/ai-usage.model.js';
 
 /**
  * One-off data migrations, run once per database at boot (after index sync), in order. Each must
@@ -63,6 +65,35 @@ export const MIGRATIONS: readonly Migration[] = [
       ] as const)
         changed += (await c.updateMany({ 'subscription.plan': from }, { $set: { 'subscription.plan': to } }))
           .modifiedCount;
+      return changed;
+    },
+  },
+  {
+    // D7: faculty never read students' study chats; the unused switch is removed from every college.
+    // Raw collection: the field is no longer in the schema (strict 'throw').
+    name: 'b11-unset-faculty-see-chats',
+    async run() {
+      const r = await AiSettingsModel.collection.updateMany(
+        { 'features.facultySeeChats': { $exists: true } },
+        { $unset: { 'features.facultySeeChats': '' } },
+      );
+      return r.modifiedCount;
+    },
+  },
+  {
+    // B11: usage counters say what they were for and whether the platform's key served them.
+    // Counters from before used the college's own key or the platform's; that was not recorded,
+    // so they count as the college's own (never billed as platform usage).
+    name: 'b11-ai-usage-feature',
+    async run() {
+      let changed = 0;
+      for (const [kind, feature] of Object.entries(USAGE_FEATURE_OF_KIND))
+        changed += (
+          await AiUsageModel.collection.updateMany(
+            { kind, feature: { $exists: false } },
+            { $set: { feature, platform: false } },
+          )
+        ).modifiedCount;
       return changed;
     },
   },
