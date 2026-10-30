@@ -101,6 +101,7 @@ const load = {
   outcomes: () => import('../features/outcomes/outcomes'),
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
+  traction: () => import('../features/platform/traction'),
 };
 
 type Gate = Permission | readonly Permission[] | { permission: Permission; feature: Feature };
@@ -613,6 +614,9 @@ function platformRoutes(): RouteObject[] {
         ...auth('/platform'),
         shell(true, [
           screen(load.platform, 'PlatformTenants', 'platform:tenants', at('/platform')),
+          screen(load.traction, 'PlatformTraction', 'platform:tenants', at('/platform/traction'), () => [
+            qc.ensureQueryData(q.platformInsights()),
+          ]),
           screen(load.platform, 'PlatformHealth', 'platform:health', at('/platform/health')),
           settingsRoutes,
         ]),

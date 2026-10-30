@@ -28,6 +28,7 @@ import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthState } from '../../types.js';
 import { backgroundAuth } from '../users/users.service.js';
 import { findTenantById } from '../tenants/tenant.cache.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 export const EXPIRE_JOB = 'mentorship.expire';
 /** B5: a day without a reply nudges the mentor; two offer the mentee mentors likely to reply. */
@@ -59,6 +60,8 @@ export class RequestsService {
     await MentorshipRequestModel.deleteMany({ $or: [{ menteeId: u }, { mentorId: u }] });
   }
 
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(private readonly d: RequestsDeps) {}
 
   private async views(rows: RequestDoc[]): Promise<RequestView[]> {
@@ -163,6 +166,7 @@ export class RequestsService {
       sessionType: body.sessionType,
       requestId: id,
     });
+    await this.track(viewer.userId, 'request_sent', { requestId: id, sessionType: body.sessionType });
     return this.view(doc.toObject() as RequestDoc);
   }
 
@@ -187,6 +191,20 @@ export class RequestsService {
   }
 
   /** The request left `pending`: its delayed jobs have nothing left to do. */
+  /** Hours from request to reply for requests answered since a date (B9 insights). */
+  async replyHoursSince(since: Date) {
+    const rows = await MentorshipRequestModel.find({
+      status: { $in: ['accepted', 'declined'] },
+      respondedAt: { $gte: since },
+    })
+      .select('createdAt respondedAt')
+      .limit(50_000)
+      .lean<{ createdAt: Date; respondedAt: Date | null }[]>();
+    return rows.flatMap((r) =>
+      r.respondedAt ? [(r.respondedAt.getTime() - r.createdAt.getTime()) / 3600_000] : [],
+    );
+  }
+
   private async settled(id: string) {
     await this.d.jobs.cancel(EXPIRE_JOB, `reqexp-${id}`);
     await this.d.jobs.cancel(REQUEST_NUDGE_JOB, `reqnudge-${id}`);
@@ -232,6 +250,7 @@ export class RequestsService {
       if (!done) throw conflict('This request just changed. Refresh and try again.');
       await this.settled(id);
       await this.d.notifications.notify(menteeId, 'request_declined', { name: mentorName, requestId: id });
+      await this.track(viewer.userId, 'request_answered', { requestId: id, outcome: 'declined' });
       return this.view(done);
     }
 
@@ -287,6 +306,7 @@ export class RequestsService {
       conversationId,
       ...(bookingId && start ? { bookingId, start: start.toISOString() } : {}),
     });
+    await this.track(viewer.userId, 'request_answered', { requestId: id, outcome: 'accepted' });
     return this.view(done as RequestDoc);
   }
 

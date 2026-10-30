@@ -35,7 +35,7 @@ describe('role-aware navigation', () => {
     expect(tabs([Role.FACULTY], withStudy)).toEqual(['home', 'subjects', 'create', 'review', 'jobs']);
     expect(tabs([Role.TPO], withStudy)).toEqual(['home', 'subjects', 'create', 'review', 'jobs']);
     expect(tabs([Role.COLLEGE_ADMIN], withStudy)).toEqual(['home', 'subjects', 'create', 'review', 'jobs']);
-    expect(tabs([Role.SUPER_ADMIN])).toEqual(['platform', 'health', 'settings']);
+    expect(tabs([Role.SUPER_ADMIN])).toEqual(['platform', 'traction', 'health', 'settings']);
   });
 
   it('groups the admin sections a member may open (none for students)', () => {

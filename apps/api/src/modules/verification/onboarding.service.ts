@@ -37,6 +37,7 @@ import { sha256 } from '../../lib/crypto.js';
 import { AppError, badRequest, conflict, notFound, tooMany } from '../../lib/errors.js';
 import { audit } from '../audit/audit.service.js';
 import { consentService } from '../consent/consent.service.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 const DAY_MS = 24 * 3600_000;
 /** Codes per roster record per day, whichever way they were asked for. */
@@ -79,6 +80,8 @@ export interface ClaimBody {
  * with the record's name and kind, already verified. See also VerificationService.claim.
  */
 export class OnboardingService {
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(private readonly d: OnboardingDeps) {}
 
   /** Invite links and join codes hold no personal data beyond the record id (the roster's own). */
@@ -455,6 +458,11 @@ export class OnboardingService {
     return doc;
   }
 
+  /** Invite links created since a date (B9 activation funnel: "invited"). */
+  async invitedSince(since: Date) {
+    return InviteLinkModel.countDocuments({ createdAt: { $gte: since } });
+  }
+
   async joinInfo(tenant: TenantRecord, code: string): Promise<JoinCodeInfo> {
     const doc = await this.liveCode(code);
     return {
@@ -622,6 +630,7 @@ export class OnboardingService {
     );
     if (!(await this.d.verification.claim(String(user._id), rec._id as Types.ObjectId, method, meta)))
       throw conflict('This college record was just claimed. Contact your college administrator.');
+    await this.track(user._id, 'invite_accepted', { method });
     return { kind, session: await this.d.auth.createSession(user._id, user.tokenVersion, meta) };
   }
 }

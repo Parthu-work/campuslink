@@ -19,6 +19,7 @@ import {
   HeartHandshake,
   Home,
   Inbox,
+  TrendingUp,
   Library,
   Medal,
   MessageCircleQuestion,
@@ -82,6 +83,7 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   admin: Shield,
   verify: BadgeCheck,
   platform: Building2,
+  traction: TrendingUp,
   health: Activity,
 };
 
@@ -119,7 +121,7 @@ const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'admin',
   'verify',
 ]);
-const PLATFORM_SHIPPED: ReadonlySet<NavId> = new Set<NavId>(['platform', 'health', 'settings']);
+const PLATFORM_SHIPPED: ReadonlySet<NavId> = new Set<NavId>(['platform', 'traction', 'health', 'settings']);
 
 export interface NavEntry {
   id: NavId;

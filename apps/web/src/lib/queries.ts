@@ -53,6 +53,8 @@ import type {
   ReportDefinitionView,
   ReportResultView,
   ReportsDashboardView,
+  InsightsView,
+  PlatformInsightsView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -586,4 +588,19 @@ export const outcomeReport = (id: string, qs: string) =>
   queryOptions({
     queryKey: ['outcome-report', id, qs],
     queryFn: ({ signal }) => api.get<ReportResultView>(`/admin/outcome-reports/${id}?${qs}`, signal),
+  });
+
+// ── Product analytics (B9) ─────────────────────────────
+export const insights = () =>
+  queryOptions({
+    queryKey: ['insights'],
+    queryFn: ({ signal }) => api.get<InsightsView>('/admin/insights', signal),
+    staleTime: 5 * 60_000,
+  });
+
+export const platformInsights = () =>
+  queryOptions({
+    queryKey: ['platform-insights'],
+    queryFn: ({ signal }) => api.get<PlatformInsightsView>('/platform/insights', signal),
+    staleTime: 5 * 60_000,
   });

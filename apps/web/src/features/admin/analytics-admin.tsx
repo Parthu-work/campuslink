@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { Download, Printer } from 'lucide-react';
@@ -18,6 +18,10 @@ import { useCan } from '../../lib/me';
 import { formatNumber } from '../../lib/numbers';
 import { analytics, ANALYTICS_DEFAULTS } from '../../lib/queries';
 import { toast } from '../../lib/toast';
+import { TabPanel, Tabs } from '../../components/ui/tabs';
+import type { InsightTab } from './insights-tabs';
+
+const InsightsTab = lazy(() => import('./insights-tabs').then((m) => ({ default: m.InsightsTab })));
 
 const num = (c: Count) => (c === '<5' ? null : c);
 const shown = (c: Count) => (c === '<5' ? '<5' : formatNumber(c));
@@ -62,7 +66,7 @@ function OutcomeBars({ title, rows }: { title: string; rows: [string, Count][] }
  * Counts only (every one through `suppress()` on the server, "<5" here); the charts are the shared
  * `ColumnChart`, each with a table view, and the engagement breakdown is a `Table`.
  */
-export function AnalyticsAdmin() {
+function AnalyticsOverview() {
   const { t } = useTranslation();
   const canExport = useCan('reports:export');
   const [filters, setFilters] = useState(ANALYTICS_DEFAULTS);
@@ -260,6 +264,41 @@ export function AnalyticsAdmin() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+type AnalyticsTab = 'overview' | InsightTab;
+const INSIGHT_TABS: readonly InsightTab[] = ['activation', 'retention', 'mentorship', 'placements'];
+
+/**
+ * Admin › Analytics: the period overview for everyone with cohort analytics, and for the college's
+ * placement cell and admins the product tabs (B9): activation, retention, mentorship, placements.
+ */
+export function AnalyticsAdmin() {
+  const { t } = useTranslation();
+  const canProduct = useCan('analytics:tenant');
+  const [tab, setTab] = useState<AnalyticsTab>('overview');
+  if (!canProduct) return <AnalyticsOverview />;
+  const idBase = 'analytics';
+  return (
+    <div className="grid gap-4">
+      <Tabs<AnalyticsTab>
+        label={t('insights.tabsLabel')}
+        idBase={idBase}
+        value={tab}
+        onChange={setTab}
+        tabs={(['overview', ...INSIGHT_TABS] as const).map((id) => ({ id, label: t(`insights.tab.${id}`) }))}
+      />
+      <TabPanel idBase={idBase} id={tab}>
+        {tab === 'overview' ? (
+          <AnalyticsOverview />
+        ) : (
+          <Suspense fallback={<Skeleton className="h-64 rounded-[var(--radius-lg)]" />}>
+            <InsightsTab tab={tab} />
+          </Suspense>
+        )}
+      </TabPanel>
     </div>
   );
 }

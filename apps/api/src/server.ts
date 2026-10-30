@@ -7,6 +7,7 @@ import { createLogger } from './lib/logger.js';
 import { MemoryMailProvider, SmtpMailProvider } from './lib/mailer.js';
 import { BullJobQueue, InlineJobQueue } from './lib/jobs.js';
 import { runRetention } from './lib/maintenance.js';
+import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
 import { createApp } from './app.js';
@@ -96,6 +97,7 @@ async function main() {
     files: FilesService;
     realtime: RealtimeGateway;
     privacy: PrivacyService;
+    productInsights: InsightsService;
   };
   // A worker serves only its health and readiness (for the container check), never the API.
   const server =
@@ -113,7 +115,7 @@ async function main() {
   else services.realtime.attach(server, createAdapter(ioPub, ioSub));
   const files = services.files;
   const retention = () =>
-    runRetention(files, logger, services.privacy).catch((err: unknown) =>
+    runRetention(files, logger, services.privacy, services.productInsights).catch((err: unknown) =>
       logger.error({ err }, 'retention failed'),
     );
   // Timers that queue background work run where jobs run (an `api` process leaves them to workers).

@@ -22,6 +22,7 @@ import type { OtpService } from './otp.service.js';
 import type { GuardianService } from './guardian.service.js';
 import { AppError, badRequest, conflict, notFound } from '../../lib/errors.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 const ID_PHOTO_RETENTION_MS = 30 * 24 * 3600_000;
 const roleFor = (kind: 'student' | 'alumni'): Role => (kind === 'alumni' ? 'ALUMNI' : 'STUDENT');
@@ -49,6 +50,8 @@ export class VerificationService {
     ]);
   }
 
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(private readonly d: VerificationDeps) {}
 
   /** Set by the app (guardian consent shares the verification queue). */
@@ -97,6 +100,7 @@ export class VerificationService {
     ];
     await UserModel.updateOne({ _id: userId }, { $set: { verified: true, roles: nextRoles } });
     await this.d.profiles.sync(userId, { branch: rec.branch ?? null, gradYear: rec.gradYear ?? null });
+    await this.track(userId, 'verified', { method });
     await audit.record(
       {
         action: 'verification.approved',
@@ -210,6 +214,7 @@ export class VerificationService {
       const roles = invite.kind ? [roleFor(invite.kind)] : (user.roles as Role[]);
       await UserModel.updateOne({ _id: userId }, { $set: { verified: true, roles } });
       await this.d.profiles.sync(userId);
+      await this.track(userId, 'verified', { method: 'invite' });
       await audit.record(
         {
           action: 'verification.approved',

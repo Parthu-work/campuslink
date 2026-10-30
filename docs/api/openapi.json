@@ -18379,6 +18379,54 @@
         "x-permission": "reports:export"
       }
     },
+    "/api/v1/admin/insights": {
+      "get": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "Activation, weekly actives, retention, mentorship and placement metrics (counts under 5 suppressed)",
+        "description": "Requires permission `analytics:tenant` (View college-wide analytics). Host scope: college.",
+        "operationId": "insights_get_admin_insights",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "analytics:tenant"
+      }
+    },
+    "/api/v1/platform/insights": {
+      "get": {
+        "tags": [
+          "Insights"
+        ],
+        "summary": "The same metrics per college, from per-college aggregates only (audited)",
+        "description": "Requires permission `platform:tenants` (Create, suspend and configure colleges). Host scope: platform.",
+        "operationId": "insights_get_platform_insights",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:tenants"
+      }
+    },
     "/api/v1/me/export": {
       "get": {
         "tags": [

@@ -54,6 +54,15 @@
 - **Evidence workbooks name students** (the accreditation bodies ask for it). They need `reports:export` (placement cell and college admin) and every download is audited with the report, the parameters and the row count.
 - **Erasure:** unverified outcomes are deleted. Verified outcomes, offers and drive registrations stay in the college's record without the member: the member id is removed and one random key per collection lets reports count the person once without saying who they were.
 
+## Product analytics (build B9)
+
+- **First party only.** Product events are stored in the college's own database; there is no third-party tracker or analytics script.
+- **Only adults who allow it.** Events are recorded only for active members over 18 who hold the `analytics_aggregate` consent. Withdrawing it in Settings stops recording at once and detaches the member's past events (kept as anonymous counts).
+- **No text.** An event is a name from a closed list, a day, and ids or enum values (for example a request id or "accepted"). Nothing a member wrote is ever recorded.
+- **13 months.** Events are then rolled up into daily counts with no member in them, and deleted.
+- **Aggregates only.** Colleges see counts (under 5 suppressed); the platform sees per-college counts through a named, audit-logged path and never member rows.
+- **Erasure** detaches the member's events in the same way as withdrawal.
+
 ## Data minimisation (implemented)
 
 - IP addresses are reduced to /24 (IPv4) or /48 (IPv6) prefixes in sessions and audit.
@@ -98,6 +107,7 @@
 | Unattached résumé uploads           | Deleted after 24 hours                                                 |
 | Résumés on referral requests        | Deleted 60 days after the request                                      |
 | Offer proof files                   | Deleted 30 days after the offer is verified                            |
+| Product events                      | Rolled up into daily counts after 13 months, then deleted              |
 | Audit log                           | Kept                                                                   |
 
 File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable per tenant: inactive accounts (default 3 years) and deleted-account grace (default 30 days); those purges ship with the privacy release.

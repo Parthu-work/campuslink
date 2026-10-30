@@ -16,6 +16,7 @@ import { companyKey } from '../../lib/company.js';
 import { badRequest, conflict, notFound } from '../../lib/errors.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import type { AuthState } from '../../types.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 const DAY = 24 * 3600_000;
 const PAGE = 30;
@@ -31,6 +32,8 @@ export interface OffersDeps {
  * verified by the placement cell. The exact CTC is for the member and the cell only.
  */
 export class OffersService {
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(private readonly d: OffersDeps) {}
 
   // ── Privacy ─────────────────────────────
@@ -211,6 +214,8 @@ export class OffersService {
       },
       meta,
     );
+    if (doc.userId && decision === 'verify')
+      await this.track(doc.userId, 'offer_verified', { source: doc.source, offerId: id });
     if (doc.userId)
       await this.d.notifications.notify(
         String(doc.userId),
@@ -258,6 +263,7 @@ export class OffersService {
       branch: input.branch,
       gradYear: input.gradYear,
     });
+    await this.track(input.userId, 'offer_verified', { source: 'drive', driveId: String(input.driveId) });
     return true;
   }
 

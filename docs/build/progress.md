@@ -226,4 +226,29 @@ A new session reads this file first and resumes from the first phase that is not
 - **Report content is English** (titles, headings, notes), as accreditation bodies take it and as it downloads; the screens around it are translated.
 - **Erasure keeps verified outcomes anonymised** (like offers): they are the college's record. Unverified ones are deleted.
 
+**Confirmed.** Gate green; CI green on `ca925a5`; full local e2e 162 passed, 12 skipped, none failed.
+
 **Next:** B9 (product analytics, first party).
+
+## B9 · Product analytics, first party (Done)
+
+**Shipped**
+
+- `ProductEvent` (closed list of names, a day, ids and enum values only) recorded through a `track` callback after confirmed writes: visits (once a day), sign-ups, invites accepted, verification, mentorship requests and replies, completed sessions, drive registrations, verified offers, study questions and roadmap steps. Only active adults with the `analytics_aggregate` consent; withdrawing it stops recording and detaches past events.
+- `InsightsService`: activation funnel, weekly actives by role, signup-week retention, request-to-session conversion with median reply time, drive registration rate, offers per 100 final-years, study questions per active student. Every count through `suppress()`; ratios only from shown counts.
+- Retention: events past 13 months roll up into `ProductEventDaily` (no member in it) on the retention timer, then are deleted.
+- Admin › Analytics tabs Activation, Retention, Mentorship and Placements (`analytics:tenant`). Platform › Traction: every college's counts side by side through `withPlatformScope('insights:platform-aggregates', …)`, counts only, audit-logged.
+- Tests: `test/insights.test.ts` (fixture maths, minors, consent, roll-up, isolation, the platform path), e2e `e2e/insights.spec.ts`. Spec: `docs/specs/product-analytics.md`.
+
+**Decisions**
+
+- **A `visited` event** stands in for "active": the closed list in the prompt has no event for opening the app, and weekly actives and retention need one. It is written at most once a day per member (memory, then a partial unique index).
+- **`request_sent`, not `first_request`:** conversion needs every request; "first" is worked out when counting.
+- **No tenancy change.** `withPlatformScope` already accepts any `area:reason`; the platform view adds a name, not a rule (D10 did not apply). Its pipeline sizes member sets inside the database and returns counts per college.
+- **The cross-college view is its own screen** (Platform › Traction), so the audited read happens only when someone opens it, not on every visit to the colleges list.
+- **Eligibility is cached for 10 minutes** and cleared when a member changes a consent in Settings, so a withdrawal stops recording at once.
+- **Withdrawal and erasure detach** (random `anonKey`) rather than delete, so past counts do not shift; the events never held text.
+- **No backfill and no demo events.** Numbers start when B9 ships, and the seed does not invent usage.
+- **Product tabs need `analytics:tenant`** (college-wide); faculty keep the cohort overview.
+
+**Next:** B10 (plans, entitlements and billing).

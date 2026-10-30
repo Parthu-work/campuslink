@@ -387,6 +387,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/admin/outcome-reports/:id/evidence` | `reports:export` · feature `placements` | college | search | Evidence workbook: exact counts and every student behind them (audited) |
 | `GET /api/v1/admin/analytics` | `analytics:cohort` | college | — | Aggregated college analytics (cohort view for faculty); counts under 5 are suppressed |
 | `GET /api/v1/admin/analytics/export` | `reports:export` | college | search | Download a report as CSV (audited) |
+| `GET /api/v1/admin/insights` | `analytics:tenant` | college | — | Activation, weekly actives, retention, mentorship and placement metrics (counts under 5 suppressed) |
+| `GET /api/v1/platform/insights` | `platform:tenants` | platform | — | The same metrics per college, from per-college aggregates only (audited) |
 | `GET /api/v1/me/export` | any signed-in user | college | privacy | Download everything this college’s space holds about me (JSON, audited) |
 | `GET /api/v1/me/deletion` | any signed-in user | college | — | Whether my account is scheduled for deletion, and when |
 | `POST /api/v1/me/deletion` | any signed-in user | college | privacy | Delete my account after the college’s grace period (password required; signs out everywhere) |

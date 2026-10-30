@@ -127,6 +127,8 @@ import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
 import { PrivacyService } from './modules/privacy/privacy.service.js';
 import { privacyRoutes } from './modules/privacy/privacy.routes.js';
 import { consentService } from './modules/consent/consent.service.js';
+import { InsightsService } from './modules/insights/insights.service.js';
+import { insightsRoutes } from './modules/insights/insights.routes.js';
 import { SubjectsService } from './modules/study/subjects.service.js';
 import { AiSettingsService } from './modules/study/ai-settings.service.js';
 import { aiSettingsRoutes, studyRoutes } from './modules/study/study.routes.js';
@@ -823,6 +825,50 @@ export function createApp({
     outcomes: outcomesService,
   });
 
+  // ── Product analytics (B9) ─────────────────────────────
+  const productInsights = new InsightsService({
+    eligible: async (userId) => {
+      if (!(await usersService.isActiveAdult(userId))) return false;
+      return (await consentService.current(userId)).some(
+        (c) => c.purpose === 'analytics_aggregate' && c.granted,
+      );
+    },
+    roles: async () => new Map((await profilesService.cohorts()).map((p) => [p.userId, p.roles])),
+    invitedSince: (since) => onboardingService.invitedSince(since),
+    replyHoursSince: (since) => requestsService.replyHoursSince(since),
+    placement: async (gradYear) => {
+      const [roster, seekers, offers] = await Promise.all([
+        whitelistService.countsByCohort([gradYear]),
+        placementsService.seekersFor([gradYear]),
+        offersService.verifiedFor([gradYear]),
+      ]);
+      return {
+        finalYear: roster.reduce((n, r) => n + r.n, 0),
+        registered: new Set(seekers.map((r) => r.subject)).size,
+        jobOffers: offers.filter((o) => o.type !== 'internship').length,
+      };
+    },
+  });
+  for (const svc of [
+    usersService,
+    verificationService,
+    onboardingService,
+    requestsService,
+    sessionsService,
+    roadmapsService,
+    placementsService,
+    offersService,
+    chatService,
+  ])
+    svc.track = productInsights.track;
+  const afterUserCreated = authService.onUserCreated;
+  authService.onUserCreated = async (userId) => {
+    await afterUserCreated?.(userId);
+    await productInsights.track(userId, 'signed_up');
+  };
+  consentService.onChange = (userId, purpose, granted) =>
+    purpose === 'analytics_aggregate' ? productInsights.onConsent(userId, granted) : Promise.resolve();
+
   // ── Privacy rights (Phase 8) ─────────────────────────────
   const privacyService = new PrivacyService({ auth: authService, profiles: profilesService, logger });
   const hook = (svc: { exportFor(u: string): Promise<unknown>; eraseFor(u: string): Promise<void> }) => ({
@@ -854,6 +900,7 @@ export function createApp({
   privacyService.register('offers', hook(offersService));
   privacyService.register('academics', hook(academicsService));
   privacyService.register('outcomes', hook(outcomesService));
+  privacyService.register('productEvents', hook(productInsights));
   privacyService.register('notifications', hook(notificationsService));
   privacyService.register('channelMessages', hook(channelService));
   privacyService.register('subjects', hook(subjectsService));
@@ -1030,6 +1077,7 @@ export function createApp({
     defineModule('reports', withFeature('placements', reportRoutes(reportsService)), pipeline),
   );
   app.use(API_PREFIX, defineModule('analytics', analyticsRoutes(analyticsService), pipeline));
+  app.use(API_PREFIX, defineModule('insights', insightsRoutes(productInsights, platformService), pipeline));
   app.use(API_PREFIX, defineModule('privacy', privacyRoutes(privacyService), pipeline));
   app.use(
     API_PREFIX,
@@ -1118,6 +1166,7 @@ export function createApp({
     events: eventsService,
     analytics: analyticsService,
     privacy: privacyService,
+    productInsights,
     subjects: subjectsService,
     aiSettings: aiSettingsService,
     materials: materialsService,

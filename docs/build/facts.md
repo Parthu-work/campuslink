@@ -14,6 +14,8 @@ Copied from §2 of `master-prompt-1.md` (verified against `cc965b1`). Correction
 
 - **Changed by B8.** New module `reports` (`modules/reports/`: `ReportData`, seven definitions, `ReportsService`) under `/admin/outcome-reports` (`/admin/reports` is moderation's). Outcome collections `HigherStudy`, `ExamQualification`, `Venture` live in the placements module (`OutcomesService`, routes `/me/outcomes`, `/admin/outcomes/:kind`). Offers and registrations have `anonKey`. Nav destination `outcomes` (`/outcomes`, avatar menu) and admin section `reports` (group insights, `analytics:tenant`). Notification types `outcome_verified`, `outcome_rejected` (category placements). Shared: `constants/outcomes.ts` (`EXAMS`, `EXAM_LEVEL`, `REPORT_IDS`, `gradYearLabel`, `currentGradYear`), `schemas/outcomes.ts`.
 
+- **Changed by B9.** New module `insights` (`ProductEvent`, `ProductEventDaily`, `InsightsService`) with `GET /admin/insights` and `GET /platform/insights` (named path `insights:platform-aggregates`). Services that record events have a `track` property (`lib/product-events.ts`, set in `app.ts`). `consentService.onChange` hook. `runRetention(files, logger, privacy, insights)` also rolls up expired events. Nav destination `traction` (platform tab). Shared: `constants/insights.ts`, `schemas/insights.ts`.
+
 ## 2. Verified codebase facts (commit `cc965b1`)
 
 Read `CLAUDE.md` once. It is authoritative for conventions; this section is the map.

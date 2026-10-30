@@ -27,6 +27,7 @@ import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthState } from '../../types.js';
 import { zonedParts, zonedToUtc } from '../../lib/timezone.js';
 import { noAward, type Award } from '../../lib/awards.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 export const REMINDER_JOB = 'sessions.reminder';
 export const COMPLETE_JOB = 'sessions.complete';
@@ -91,6 +92,8 @@ export class SessionsService {
   award: Award = noAward;
   slotCheck: SlotCheck | null = null;
   slotList: SlotList | null = null;
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(private readonly d: SessionsDeps) {}
 
   /** Busy holds of these people overlapping [from, to) (scheduled bookings only). */
@@ -551,6 +554,10 @@ export class SessionsService {
       bookingId: String(b._id),
     });
     await this.award(b.menteeId, 'session_completed', String(b._id), { from: b.mentorId });
+    await this.track(b.menteeId, 'session_completed', {
+      requestId: String(b.requestId),
+      bookingId: String(b._id),
+    });
     await this.award(b.mentorId, 'session_mentored', String(b._id), { from: b.menteeId });
     // Once per mentee: the dedupe key includes the mentor.
     await this.award(b.mentorId, 'new_mentee', String(b.menteeId), { from: b.menteeId });

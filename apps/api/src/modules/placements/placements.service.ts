@@ -45,6 +45,7 @@ import type { JobQueue, TenantJob } from '../../lib/jobs.js';
 import { AppError, badRequest, conflict, notFound } from '../../lib/errors.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import type { AuthState } from '../../types.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 export const DRIVE_OPEN_JOB = 'placements.open';
 export const DRIVE_REMINDER_JOB = 'placements.reminder';
@@ -101,6 +102,8 @@ const registrationOpen = (d: DriveDoc) => d.status === 'open' && d.registrationC
  * one-tap registration, overrides, exports for the company, round results and selections.
  */
 export class PlacementsService {
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(private readonly d: PlacementsDeps) {}
 
   // ── Privacy ─────────────────────────────
@@ -385,6 +388,7 @@ export class PlacementsService {
       throw e;
     }
     for (const f of files) await this.d.files.claim(f, viewer.userId, 'placement_resume', null);
+    await this.track(viewer.userId, 'drive_registered', { driveId: id });
     await audit.record(
       {
         action: 'placements.registered',

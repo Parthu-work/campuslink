@@ -39,6 +39,7 @@ export type NavId =
   | 'admin'
   | 'verify'
   | 'platform'
+  | 'traction'
   | 'health';
 
 export type NavGroup = 'main' | 'explore' | 'community' | 'you' | 'manage' | 'platform';
@@ -185,6 +186,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   verify: d('verify', '/verify', 'you'),
   admin: d('admin', '/admin', 'manage', ADMIN_PERMISSIONS),
   platform: d('platform', '/platform', 'platform', ['platform:tenants']),
+  // The cross-college traction view (B9): per-college aggregates only.
+  traction: d('traction', '/platform/traction', 'platform', ['platform:tenants']),
   health: d('health', '/platform/health', 'platform', ['platform:health']),
 };
 
@@ -246,7 +249,7 @@ export const PERSONA_TABS: Record<NavPersona, readonly (readonly NavId[])[]> = {
   alumni: [['home'], ['requests', 'mentoring'], ['create'], ['mentors'], ['jobs']],
   staff: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
   admin: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
-  platform: [['platform'], ['health'], ['settings']],
+  platform: [['platform'], ['traction'], ['health'], ['settings']],
 };
 
 /** The avatar menu: everything that is not a tab, grouped, in this order. */

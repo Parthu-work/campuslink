@@ -92,7 +92,8 @@
     },
     "assistant": "Study assistant",
     "placements": "Placements",
-    "outcomes": "Your outcomes"
+    "outcomes": "Your outcomes",
+    "traction": "Traction"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -3899,6 +3900,62 @@
       "8_12": "₹8–12 LPA",
       "12_20": "₹12–20 LPA",
       "20_plus": "₹20 LPA and above"
+    }
+  },
+  "insights": {
+    "tabsLabel": "Analytics",
+    "tab": {
+      "overview": "Overview",
+      "activation": "Activation",
+      "retention": "Retention",
+      "mentorship": "Mentorship",
+      "placements": "Placements"
+    },
+    "window": "From the week of {{since}}",
+    "invited": "Invited",
+    "signedUp": "Signed up",
+    "verified": "Verified",
+    "activated": "Active in their first week",
+    "activatedHint": "Of {{matured}} who joined at least a week ago",
+    "activationPct": "Activation",
+    "activationNote": "Active means a mentorship request or reply, a session, a drive registration, a study question or a roadmap step within 7 days of joining. Members under 18 and members who have not allowed aggregate analytics are not counted.",
+    "weeklyActive": "Members active each week",
+    "weeklyActiveHint": "Members who opened the app or did something that week",
+    "week": "Week",
+    "members": "Members",
+    "byRole": "Students {{students}} · Alumni {{alumni}} · Staff {{staff}}",
+    "retention": "Retention by signup week",
+    "retentionIntro": "Of the members who joined in a week, the share who came back 1, 2, 3 … weeks later. Weeks with fewer than 5 sign-ups show no percentages.",
+    "signupWeek": "Joined the week of",
+    "cohort": "Joined",
+    "weekN": "Week {{n}}",
+    "requests": "Requests sent",
+    "converted": "Led to a session",
+    "conversionPct": "Request to session",
+    "medianReply": "Median reply time",
+    "hours": "{{n}} h",
+    "mentorshipNote": "Quick chats have no session, so only bookable requests can convert. Reply time counts requests answered in the period.",
+    "batch": "Graduating batch {{year}}",
+    "registrationPct": "Registered for a drive",
+    "registrationHint": "{{registered}} of {{total}} on the college list",
+    "offersPer100": "Offers per 100 final-years",
+    "questionsPerStudent": "Study questions per active student",
+    "questionsHint": "{{questions}} questions from {{students}} students"
+  },
+  "traction": {
+    "title": "Traction",
+    "intro": "Every college's product metrics side by side, from per-college counts only. Opening this page is recorded in the audit log.",
+    "window": "The last {{weeks}} weeks. Counts under 5 show as <5.",
+    "college": "College",
+    "col": {
+      "active7d": "Active, 7 days",
+      "active28d": "Active, 28 days",
+      "signUps": "Sign-ups",
+      "requests": "Requests",
+      "sessions": "Sessions",
+      "driveRegistrations": "Drive registrations",
+      "offersVerified": "Offers verified",
+      "studyQuestions": "Study questions"
     }
   }
 }

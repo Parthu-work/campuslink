@@ -53,6 +53,7 @@ import type { MaterialsService } from './materials.service.js';
 import type { RetrievalService, RetrievedPassage } from './retrieval.service.js';
 import type { SubjectsService } from './subjects.service.js';
 import type { AuthState } from '../../types.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 const oid = (id: string | Types.ObjectId) => new Types.ObjectId(String(id));
 /** The phrase the system prompt asks for when the sources do not cover a question. */
@@ -148,6 +149,8 @@ const citation = (p: RetrievedPassage, n: number, q: string): ChatCitation => ({
  * private to the member and expire with the college's retention setting.
  */
 export class ChatService {
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(private readonly d: ChatDeps) {}
 
   // ── Asking ─────────────────────────────
@@ -307,6 +310,7 @@ export class ChatService {
         expireAt,
       });
       await ChatSessionModel.updateOne({ _id: sessionId }, { $inc: { messageCount: regenerate ? 1 : 2 } });
+      if (!regenerate) await this.track(viewer.userId, 'study_question', { subjectId: String(subjectId) });
       sink({ type: 'done', message: this.view(saved.toObject() as unknown as ChatMessageDoc) });
     };
   }

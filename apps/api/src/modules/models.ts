@@ -33,6 +33,7 @@ export {
   PlacementDriveModel,
 } from './placements/placements.model.js';
 export { ExamQualificationModel, HigherStudyModel, VentureModel } from './placements/outcomes.model.js';
+export { ProductEventDailyModel, ProductEventModel } from './insights/insights.model.js';
 export { BookingModel, FeedbackModel } from './sessions/booking.model.js';
 export { ConversationModel, MessageModel } from './messaging/conversation.model.js';
 export {

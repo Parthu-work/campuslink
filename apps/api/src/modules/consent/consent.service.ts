@@ -20,6 +20,9 @@ export interface ConsentState {
 }
 
 export const consentService = {
+  /** Set by the app: a member changed a consent in Settings (B9 stops and detaches analytics). */
+  onChange: null as ((userId: string, purpose: ConsentPurpose, granted: boolean) => Promise<void>) | null,
+
   async recordMany(
     userId: Types.ObjectId,
     granted: ConsentPurpose[],
@@ -120,6 +123,7 @@ export const consentService = {
       },
       req,
     );
+    await this.onChange?.(userId, purpose, granted);
     return this.current(userId);
   },
 };

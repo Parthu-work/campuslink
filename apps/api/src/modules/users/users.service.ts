@@ -18,6 +18,7 @@ import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthService } from '../auth/auth.service.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
 import type { FieldCipher } from '../../lib/crypto.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const ADMIN_FIELDS =
@@ -88,13 +89,23 @@ export async function backgroundAuth(
 export class UsersService {
   /** Set by the app: closes a suspended member's live sockets. */
   onSuspended: ((userId: string) => void) | null = null;
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(
     private readonly auth: AuthService,
     private readonly profiles: ProfilesService,
     private readonly cipher: FieldCipher,
   ) {}
 
+  /** An active adult member (B9: minors are never in product analytics). */
+  async isActiveAdult(userId: string) {
+    const u = await UserModel.findById(userId).select('status adultOn').lean();
+    return !!u && u.status === 'active' && !isMinor(u.adultOn);
+  }
+
   async me(auth: AuthState): Promise<MeResponse> {
+    // Weekly actives and retention (B9): one `visited` a day, deduplicated in memory and by index.
+    await this.track(auth.userId, 'visited');
     const u = await UserModel.findById(auth.userId)
       .select('name email locale deletionPurgeAt +phoneEnc +passwordHash status adultOn')
       .lean();
