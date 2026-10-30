@@ -26,6 +26,11 @@ import { FileModel } from '../src/modules/files/file.model.js';
 import { ChannelMessageModel } from '../src/modules/notifications/channels/channel.model.js';
 import { InviteLinkModel } from '../src/modules/verification/onboarding.model.js';
 import { MentorReviewModel } from '../src/modules/mentorship/review.model.js';
+import {
+  AcademicRecordModel,
+  DriveRegistrationModel,
+  OfferModel,
+} from '../src/modules/placements/placements.model.js';
 
 const ctx = testApp();
 const services = ctx.app.locals.services as {
@@ -139,6 +144,41 @@ beforeAll(async () => {
         text: 'A review about the member.',
       },
     ]);
+    // Placements (B7): a registration and an offer with proof, kept anonymised after erasure.
+    const proof = await FileModel.create({
+      ownerId: new Types.ObjectId(alum.id),
+      purpose: 'offer_proof',
+      mime: 'application/pdf',
+      size: 10,
+      storageKey: 'privacy/offer-proof',
+      sha256: 'privacy-offer-proof',
+    });
+    await DriveRegistrationModel.create({
+      driveId: new Types.ObjectId(),
+      userId: new Types.ObjectId(alum.id),
+      answers: [{ question: 0, value: 'A private answer' }],
+      branch: 'CSE',
+      gradYear: 2022,
+    });
+    await OfferModel.create({
+      userId: new Types.ObjectId(alum.id),
+      companyKey: 'privacy demo co',
+      companyName: 'Privacy Demo Co',
+      role: 'Engineer',
+      ctcLpa: 9.25,
+      ctcBand: '8_12',
+      offerDate: new Date(),
+      type: 'full_time',
+      source: 'off_campus',
+      proofFileId: proof._id,
+      branch: 'CSE',
+      gradYear: 2022,
+    });
+    // Academic records: their own (self-reported) figures go; the college's imported ones stay, unlinked.
+    await AcademicRecordModel.create([
+      { rollNumber: 'PRIVSELF01', userId: new Types.ObjectId(alum.id), cgpa: 7, source: 'self' },
+      { rollNumber: 'PRIVCOLL01', userId: new Types.ObjectId(alum.id), cgpa: 8, source: 'import' },
+    ]);
     // The invite link they joined with (B4): only the record id and who used it.
     await InviteLinkModel.create({
       whitelistId: new Types.ObjectId(),
@@ -193,6 +233,8 @@ describe('export', () => {
     ]);
     expect(d.subjects.enrollmentOverrides).toEqual([expect.objectContaining({ kind: 'include' })]);
     expect(d.aiSettings).toEqual([]);
+    expect(d.offers).toEqual([expect.objectContaining({ companyName: 'Privacy Demo Co', ctcLpa: 9.25 })]);
+    expect(d.placementRegistrations).toEqual([expect.objectContaining({ status: 'registered' })]);
     expect(d.mentorReviews).toEqual([
       expect.objectContaining({ text: 'A review the member wrote.', rating: 5 }),
     ]);
@@ -260,6 +302,23 @@ describe('deletion', () => {
       expect(await SubjectEnrollmentModel.countDocuments({ userId: alum.id })).toBe(0);
       expect(await ChannelMessageModel.countDocuments({ userId: alum.id })).toBe(0);
       expect(await InviteLinkModel.countDocuments({ usedBy: alum.id })).toBe(0);
+      // Placements are the college's record: anonymised, not deleted.
+      const reg = await DriveRegistrationModel.findOne({ branch: 'CSE', gradYear: 2022 }).lean();
+      expect(reg).toMatchObject({ userId: null, answers: [] });
+      const offer = await OfferModel.findOne({ companyKey: 'privacy demo co' }).lean();
+      expect(offer).toMatchObject({
+        userId: null,
+        ctcLpa: null,
+        ctcBand: '8_12',
+        branch: 'CSE',
+        proofFileId: null,
+      });
+      expect(await FileModel.countDocuments({ sha256: 'privacy-offer-proof' })).toBe(0);
+      expect(await AcademicRecordModel.countDocuments({ rollNumber: 'PRIVSELF01' })).toBe(0);
+      expect(await AcademicRecordModel.findOne({ rollNumber: 'PRIVCOLL01' }).lean()).toMatchObject({
+        userId: null,
+        cgpa: 8,
+      });
       expect(
         await MentorReviewModel.countDocuments({ $or: [{ menteeId: alum.id }, { mentorId: alum.id }] }),
       ).toBe(0);
@@ -314,6 +373,9 @@ describe('deletion', () => {
         'guardianConsent',
         'onboarding',
         'mentorReviews',
+        'placementRegistrations',
+        'offers',
+        'academics',
       ]),
     );
   });

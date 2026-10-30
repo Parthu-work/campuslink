@@ -4,8 +4,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { CheckCircle2, Download, FileSpreadsheet, Link2, Server, Undo2, Upload } from 'lucide-react';
 import {
+  ACADEMIC_IMPORT_FIELDS,
   IMPORT_FIELDS,
   REQUIRED_IMPORT_FIELDS,
+  type AcademicImportField,
   type ImportField,
   type ImportMapping,
   type ImportPreview,
@@ -19,8 +21,10 @@ import { StatCard, StatGrid } from '../../components/ui/stat-card';
 import { ProgressBar } from '../../components/ui/progress';
 import { Dialog } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
+import { Segmented } from '../../components/ui/tab-nav';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
 import { cn } from '../../lib/cn';
+import { useFeature } from '../../lib/tenant-context';
 
 interface Job {
   id: string;
@@ -40,6 +44,7 @@ interface Job {
   rowErrors?: { row: number; field: string; message: string }[];
   createdAt: string;
   rollback?: { removed?: number; restored?: number; keptClaimed?: number } | null;
+  mapping?: { type?: ImportMapping['type'] };
 }
 type Source = 'file' | 'gsheet' | 'rest';
 
@@ -219,7 +224,12 @@ function MappingStep({
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const placements = useFeature('placements');
+  const [type, setType] = useState<ImportMapping['type']>('roster');
   const [columns, setColumns] = useState<ImportMapping['columns']>(preview.suggestedMapping);
+  const [academicColumns, setAcademicColumns] = useState<ImportMapping['academicColumns']>(
+    preview.suggestedAcademicMapping,
+  );
   const [defaultKind, setDefaultKind] = useState<ImportMapping['defaultKind']>('derive');
   const [dryRun, setDryRun] = useState(true);
   const [error, setError] = useState<string>();
@@ -227,7 +237,7 @@ function MappingStep({
     mutationFn: () =>
       api.post<{ id: string }>('/admin/imports', {
         previewId: preview.previewId,
-        mapping: { columns, defaultKind },
+        mapping: type === 'academics' ? { type, academicColumns } : { type, columns, defaultKind },
         dryRun,
       }),
     onSuccess: (r) => {
@@ -236,37 +246,88 @@ function MappingStep({
     },
     onError: (e: Error) => setError(e.message),
   });
-  const missing = REQUIRED_IMPORT_FIELDS.filter((f) => !columns[f]);
-  const mapped = IMPORT_FIELDS.filter((f) => columns[f]);
+  const academics = type === 'academics';
+  const missing = academics
+    ? !academicColumns.rollNumber ||
+      ACADEMIC_IMPORT_FIELDS.every((f) => f === 'rollNumber' || !academicColumns[f])
+      ? ['rollNumber']
+      : []
+    : REQUIRED_IMPORT_FIELDS.filter((f) => !columns[f]);
+  const mapped: { field: string; column: string | undefined }[] = academics
+    ? ACADEMIC_IMPORT_FIELDS.filter((f) => academicColumns[f]).map((f) => ({
+        field: f,
+        column: academicColumns[f],
+      }))
+    : IMPORT_FIELDS.filter((f) => columns[f]).map((f) => ({ field: f, column: columns[f] }));
+  const headerSelect = (
+    value: string | undefined,
+    onChange: (v: string | undefined) => void,
+    id: string,
+    invalid: boolean,
+  ) => (
+    <Select
+      id={id}
+      value={value ?? ''}
+      onChange={(e) => onChange(e.target.value || undefined)}
+      aria-invalid={invalid}
+    >
+      <option value="">{t('admin.notMapped')}</option>
+      {preview.headers.map((h) => (
+        <option key={h} value={h}>
+          {h}
+        </option>
+      ))}
+    </Select>
+  );
   return (
     <Card className="grid gap-5 p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-title font-semibold">{t('admin.mapTitle')}</h2>
         <Badge>{t('admin.rows', { count: preview.totalRows })}</Badge>
       </div>
-      <p className="text-meta text-fg-2">{t('admin.mapIntro')}</p>
+      {placements && (
+        <Segmented<ImportMapping['type']>
+          label={t('admin.importType')}
+          value={type}
+          onChange={setType}
+          options={[
+            ['roster', t('admin.importRoster')],
+            ['academics', t('admin.importAcademics')],
+          ]}
+        />
+      )}
+      <p className="text-meta text-fg-2">{academics ? t('admin.mapIntroAcademics') : t('admin.mapIntro')}</p>
       <FormError message={error} />
       <div className="grid gap-3 sm:grid-cols-2">
-        {IMPORT_FIELDS.map((f: ImportField) => (
-          <Field key={f} label={`${t(`admin.field.${f}`)}${REQUIRED_IMPORT_FIELDS.includes(f) ? ' *' : ''}`}>
-            {({ id }) => (
-              <Select
-                id={id}
-                value={columns[f] ?? ''}
-                onChange={(e) => setColumns({ ...columns, [f]: e.target.value || undefined })}
-                aria-invalid={REQUIRED_IMPORT_FIELDS.includes(f) && !columns[f]}
+        {academics
+          ? ACADEMIC_IMPORT_FIELDS.map((f: AcademicImportField) => (
+              <Field key={f} label={`${t(`admin.field.${f}`)}${f === 'rollNumber' ? ' *' : ''}`}>
+                {({ id }) =>
+                  headerSelect(
+                    academicColumns[f],
+                    (v) => setAcademicColumns({ ...academicColumns, [f]: v }),
+                    id,
+                    f === 'rollNumber' && !academicColumns[f],
+                  )
+                }
+              </Field>
+            ))
+          : IMPORT_FIELDS.map((f: ImportField) => (
+              <Field
+                key={f}
+                label={`${t(`admin.field.${f}`)}${REQUIRED_IMPORT_FIELDS.includes(f) ? ' *' : ''}`}
               >
-                <option value="">{t('admin.notMapped')}</option>
-                {preview.headers.map((h) => (
-                  <option key={h} value={h}>
-                    {h}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
-        ))}
-        {!columns.kind && (
+                {({ id }) =>
+                  headerSelect(
+                    columns[f],
+                    (v) => setColumns({ ...columns, [f]: v }),
+                    id,
+                    REQUIRED_IMPORT_FIELDS.includes(f) && !columns[f],
+                  )
+                }
+              </Field>
+            ))}
+        {!academics && !columns.kind && (
           <Field label={t('admin.kindLabel')}>
             {({ id }) => (
               <Select
@@ -295,9 +356,9 @@ function MappingStep({
           <table className="w-full min-w-[560px] text-left text-meta">
             <thead className="border-b border-line bg-surface-2 text-caption text-fg-2">
               <tr>
-                {mapped.map((f) => (
-                  <th key={f} scope="col" className="px-3 py-2 font-medium">
-                    {t(`admin.field.${f}`)}
+                {mapped.map((m) => (
+                  <th key={m.field} scope="col" className="px-3 py-2 font-medium">
+                    {t(`admin.field.${m.field}`)}
                   </th>
                 ))}
               </tr>
@@ -305,9 +366,9 @@ function MappingStep({
             <tbody>
               {preview.rows.map((r, i) => (
                 <tr key={i} className="border-b border-line last:border-0">
-                  {mapped.map((f) => (
-                    <td key={f} className="max-w-[220px] truncate px-3 py-2 font-mono text-caption">
-                      {r[columns[f] ?? ''] ?? ''}
+                  {mapped.map((m) => (
+                    <td key={m.field} className="max-w-[220px] truncate px-3 py-2 font-mono text-caption">
+                      {r[m.column ?? ''] ?? ''}
                     </td>
                   ))}
                 </tr>
@@ -450,7 +511,7 @@ function JobView({ id, onNew }: { id: string; onNew: () => void }) {
             <Download className="size-4" aria-hidden /> {t('admin.downloadErrors')}
           </Button>
         )}
-        {j.status === 'completed' && !j.dryRun && (
+        {j.status === 'completed' && !j.dryRun && j.mapping?.type !== 'academics' && (
           <Button variant="ghost" onClick={() => setConfirm(true)}>
             <Undo2 className="size-4" aria-hidden /> {t('admin.rollback')}
           </Button>

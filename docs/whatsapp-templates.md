@@ -65,6 +65,44 @@ Sent for: `booking_cancelled`. Category: **utility**.
 - Telugu (te): `{{3}}న {{2}}తో మీ {{1}} రద్దయింది. యాప్‌లో మరో సమయం బుక్ చేసుకోవచ్చు.`
 - Hindi (hi): `{{3}} को {{2}} के साथ आपका {{1}} रद्द हो गया है। आप ऐप में दूसरा समय बुक कर सकते हैं।`
 
+## `cl_drive_open`
+
+Sent for: `drive_open`. Category: **utility**.
+
+- English (en): `{{1}} is hiring through your college and you are eligible. Registration closes {{2}}.`
+  - Quick replies: `Register`
+- Telugu (te): `{{1}} మీ కాలేజీ ద్వారా నియామకాలు చేస్తోంది, మీరు అర్హులు. నమోదు {{2}}కి ముగుస్తుంది.`
+  - Quick replies: `నమోదు చేయండి`
+- Hindi (hi): `{{1}} आपके कॉलेज के ज़रिए भर्ती कर रहा है और आप पात्र हैं। पंजीकरण {{2}} को बंद होगा।`
+  - Quick replies: `पंजीकरण करें`
+
+## `cl_drive_closing`
+
+Sent for: `drive_reminder`. Category: **utility**. Critical (exempt from the weekly cap).
+
+- English (en): `Last day: registration for the {{1}} drive closes {{2}}. You are eligible and not registered yet.`
+  - Quick replies: `Register`
+- Telugu (te): `చివరి రోజు: {{1}} డ్రైవ్ నమోదు {{2}}కి ముగుస్తుంది. మీరు అర్హులు, ఇంకా నమోదు చేసుకోలేదు.`
+  - Quick replies: `నమోదు చేయండి`
+- Hindi (hi): `आखिरी दिन: {{1}} ड्राइव का पंजीकरण {{2}} को बंद होगा। आप पात्र हैं और अभी पंजीकृत नहीं हैं।`
+  - Quick replies: `पंजीकरण करें`
+
+## `cl_drive_round`
+
+Sent for: `drive_round_result`. Category: **utility**.
+
+- English (en): `Your {{2}} result for the {{1}} drive is out. Open the app to see it.`
+- Telugu (te): `{{1}} డ్రైవ్‌లో మీ {{2}} ఫలితం వచ్చింది. చూడటానికి యాప్ తెరవండి.`
+- Hindi (hi): `{{1}} ड्राइव में आपका {{2}} परिणाम आ गया है। देखने के लिए ऐप खोलें।`
+
+## `cl_drive_selected`
+
+Sent for: `drive_selected`. Category: **utility**. Critical (exempt from the weekly cap).
+
+- English (en): `Congratulations: {{1}} selected you. Open the app to see your offer.`
+- Telugu (te): `అభినందనలు: {{1}} మిమ్మల్ని ఎంపిక చేసింది. మీ ఆఫర్ చూడటానికి యాప్ తెరవండి.`
+- Hindi (hi): `बधाई हो: {{1}} ने आपको चुना है। अपना ऑफ़र देखने के लिए ऐप खोलें।`
+
 ## `college_announcement`
 
 Sent for: `announcement`. Category: **utility**. Critical only when the sender marks it urgent.

@@ -86,6 +86,14 @@ import {
   RequestsService,
 } from './modules/mentorship/requests.service.js';
 import { ReviewsService } from './modules/mentorship/reviews.service.js';
+import {
+  DRIVE_OPEN_JOB,
+  DRIVE_REMINDER_JOB,
+  PlacementsService,
+} from './modules/placements/placements.service.js';
+import { OffersService } from './modules/placements/offers.service.js';
+import { AcademicsService } from './modules/placements/academics.service.js';
+import { placementRoutes } from './modules/placements/placements.routes.js';
 import { mentorshipRoutes } from './modules/mentorship/mentorship.routes.js';
 import { ModerationService } from './modules/moderation/moderation.service.js';
 import { queueRoutes } from './modules/moderation/queue.routes.js';
@@ -576,6 +584,39 @@ export function createApp({
     eventsService,
   ])
     svc.award = gamificationService.award;
+  // ── Placements (B7) ─────────────────────────────
+  const academicsService = new AcademicsService({ whitelist: whitelistService });
+  const offersService = new OffersService({
+    files: filesService,
+    profiles: profilesService,
+    notifications: notificationsService,
+  });
+  const placementsService = new PlacementsService({
+    whitelist: whitelistService,
+    academics: academicsService,
+    offers: offersService,
+    profiles: profilesService,
+    notifications: notificationsService,
+    files: filesService,
+    jobs: queue,
+    events: eventsService,
+  });
+  queue.register(
+    DRIVE_OPEN_JOB,
+    gatedJob('placements', (data) => placementsService.onOpen(data)),
+  );
+  queue.register(
+    DRIVE_REMINDER_JOB,
+    gatedJob('placements', (data) => placementsService.onReminder(data)),
+  );
+  filesService.registerAccess('placement_resume', (fileId, viewer) =>
+    placementsService.resumeAccess(fileId, viewer),
+  );
+  filesService.registerAccess('offer_proof', (fileId, viewer) => offersService.proofAccess(fileId, viewer));
+  importsService.academics = academicsService;
+  channelService.registerAction('drive_register', (viewer, id) =>
+    placementsService.register(viewer, id, { answers: [] }, {}),
+  );
   moderationService.register('event', eventsService.handler);
   moderationService.register('event_question', eventsService.questionHandler);
   for (const type of ['event', 'event_question'] as const)
@@ -728,6 +769,8 @@ export function createApp({
     usage: aiUsageService,
     channels: channelService,
     onboarding: onboardingService,
+    placements: placementsService,
+    offers: offersService,
   });
 
   // ── Privacy rights (Phase 8) ─────────────────────────────
@@ -757,6 +800,9 @@ export function createApp({
   privacyService.register('roadmaps', hook(roadmapsService));
   privacyService.register('points', hook(gamificationService));
   privacyService.register('events', hook(eventsService));
+  privacyService.register('placementRegistrations', hook(placementsService));
+  privacyService.register('offers', hook(offersService));
+  privacyService.register('academics', hook(academicsService));
   privacyService.register('notifications', hook(notificationsService));
   privacyService.register('channelMessages', hook(channelService));
   privacyService.register('subjects', hook(subjectsService));
@@ -908,6 +954,22 @@ export function createApp({
   app.use(API_PREFIX, defineModule('roadmaps', roadmapRoutes(roadmapsService), pipeline));
   app.use(API_PREFIX, defineModule('gamification', gamificationRoutes(gamificationService), pipeline));
   app.use(API_PREFIX, defineModule('events', eventRoutes(eventsService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule(
+      'placements',
+      withFeature(
+        'placements',
+        placementRoutes({
+          placements: placementsService,
+          offers: offersService,
+          academics: academicsService,
+          files: filesService,
+        }),
+      ),
+      pipeline,
+    ),
+  );
   app.use(API_PREFIX, defineModule('analytics', analyticsRoutes(analyticsService), pipeline));
   app.use(API_PREFIX, defineModule('privacy', privacyRoutes(privacyService), pipeline));
   app.use(

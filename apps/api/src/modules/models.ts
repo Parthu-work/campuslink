@@ -25,6 +25,13 @@ export { IdempotencyModel } from './idempotency/idempotency.model.js';
 export { MentorProfileModel, MenteePrefsModel } from './mentorship/mentor.model.js';
 export { MentorshipRequestModel } from './mentorship/request.model.js';
 export { MentorReviewModel } from './mentorship/review.model.js';
+export {
+  AcademicRecordModel,
+  DriveRegistrationModel,
+  OfferModel,
+  PlacementCompanyModel,
+  PlacementDriveModel,
+} from './placements/placements.model.js';
 export { BookingModel, FeedbackModel } from './sessions/booking.model.js';
 export { ConversationModel, MessageModel } from './messaging/conversation.model.js';
 export {

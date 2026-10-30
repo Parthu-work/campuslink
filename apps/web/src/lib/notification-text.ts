@@ -20,6 +20,7 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     type: d.sessionType ? t(`session.type.${d.sessionType}`) : '',
     time: d.start ? formatDateTime(d.start) : '',
     percent: d.percent ?? '',
+    round: d.round ?? '',
   };
   const href = (() => {
     switch (n.type) {
@@ -107,6 +108,18 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return `/mentorship?box=sent${d.requestId ? `&request=${d.requestId}` : ''}`;
       case 'announcement':
         return `/posts/${d.postId}`;
+      case 'drive_open':
+        return `/placements/${d.driveId}`;
+      case 'drive_reminder':
+        return `/placements/${d.driveId}`;
+      case 'drive_round_result':
+        return `/placements/${d.driveId}`;
+      case 'drive_selected':
+        return '/placements?tab=offers';
+      case 'offer_verified':
+        return '/placements?tab=offers';
+      case 'offer_rejected':
+        return '/placements?tab=offers';
       default:
         return '/sessions';
     }

@@ -48,7 +48,8 @@ export function pop(el: HTMLElement) {
 
 /**
  * Celebrate a real moment (ADR 0008: request accepted, booking confirmed, step done, badge,
- * streak milestone, referral, verification, quiz complete): an aurora burst of at most 1.2 s from
+ * streak milestone, referral, verification, quiz complete, placement selection or verified offer):
+ * an aurora burst of at most 1.2 s from
  * the element that caused it, never blocking, a still glow under reduced motion. Never for quiet
  * moments (declines, cancellations, failures).
  */

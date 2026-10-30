@@ -46,6 +46,7 @@ describe('role-aware navigation', () => {
       ]);
     expect(admin([Role.COLLEGE_ADMIN])).toEqual([
       ['people', ['users', 'verification', 'imports', 'list', 'onboarding']],
+      ['placements', ['placements', 'offers']],
       ['community', ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards']],
       ['insights', ['analytics']],
       ['college', ['branding', 'features', 'ai', 'audit']],
@@ -55,6 +56,28 @@ describe('role-aware navigation', () => {
       ['insights', ['analytics']],
     ]);
     expect(admin([Role.STUDENT])).toEqual([]);
+  });
+
+  it('gives students in their final two years a Placements tab; others find it in the menu (B7)', () => {
+    const now = new Date();
+    const nav = (roles: Role[], gradYear: number | null) =>
+      buildNav(
+        { roles, permissions: perms(roles), verified: true, gradYear },
+        new Set([...today, 'placements', 'jobs']),
+      );
+    const final = nav([Role.STUDENT], now.getUTCFullYear() + 1);
+    expect(final.tabs.map((t) => t.id)).toContain('placements');
+    expect(final.menu.flatMap((g) => g.items.map((i) => i.id))).toContain('jobs');
+    const first = nav([Role.STUDENT], now.getUTCFullYear() + 4);
+    expect(first.tabs.map((t) => t.id)).toContain('jobs');
+    expect(first.menu.flatMap((g) => g.items.map((i) => i.id))).toContain('placements');
+    const staff = nav([Role.TPO], null);
+    expect(staff.tabs.map((t) => t.id)).not.toContain('placements');
+    expect(staff.menu.flatMap((g) => g.items.map((i) => i.id))).toContain('placements');
+    // Alumni neither register nor see drives.
+    expect(nav([Role.ALUMNI], 2015).menu.flatMap((g) => g.items.map((i) => i.id))).not.toContain(
+      'placements',
+    );
   });
 
   it('gives every member the same settings sections', () => {

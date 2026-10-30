@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { email, objectId, totpCode } from './common.js';
 import { AUDIENCES, BRANCHES, IMPORT_FIELDS, PROFILE_FIELDS } from '../constants/people.js';
+import { ACADEMIC_IMPORT_FIELDS } from '../constants/placements.js';
 
 // ── Member identity ─────────────────────────────
 const thisYear = () => new Date().getUTCFullYear();
@@ -32,7 +33,10 @@ export const phone = z
 
 // ── Imports ─────────────────────────────
 export const importMapping = z.strictObject({
-  columns: z.partialRecord(z.enum(IMPORT_FIELDS), z.string().min(1).max(100)),
+  /** B7: the college list (roster) or academic records for placements, both keyed by roll number. */
+  type: z.enum(['roster', 'academics']).default('roster'),
+  columns: z.partialRecord(z.enum(IMPORT_FIELDS), z.string().min(1).max(100)).default({}),
+  academicColumns: z.partialRecord(z.enum(ACADEMIC_IMPORT_FIELDS), z.string().min(1).max(100)).default({}),
   /** Used when no `kind` column: derive from graduation year, or force one value. */
   defaultKind: z.enum(['derive', 'student', 'alumni']).default('derive'),
 });
@@ -61,6 +65,7 @@ export interface ImportPreview {
   rows: Record<string, string>[];
   totalRows: number;
   suggestedMapping: ImportMapping['columns'];
+  suggestedAcademicMapping: ImportMapping['academicColumns'];
 }
 
 export const startImportBody = z.strictObject({

@@ -38,6 +38,15 @@
 - What was sent is kept per member as the template name and delivery status for 90 days (`channel_messages`), exported with their data and erased with their account; daily counts per college carry no member ids.
 - Replies are not stored. A tap on a button runs that one action as the member; free text gets a fixed answer pointing to the app.
 
+## Placements (build B7)
+
+- **Academic records** (CGPA, backlogs, school percentages) are read only by the student and the placement cell (`placements:manage`). Students see their own record and every rule that stands between them and a drive; nobody else sees their figures.
+- **Eligibility rules are academic and cohort facts only.** There is no field for gender, caste, religion or any other protected attribute.
+- **Exact CTC** is visible only to the member and the placement cell. Statistics use bands and suppressed counts.
+- **Exports for companies** contain only the columns the cell ticks (phone numbers and marks are opt-in). Each export is audited with the columns, the format and the row count.
+- **Offer proof** (a PDF or a photo, rebuilt without metadata) is readable only by whoever verifies offers. It is deleted 30 days after the offer is verified.
+- **Erasure:** self-reported marks are deleted. Registrations are anonymised (answers and the résumé are deleted; branch, batch and results stay without the member), and overrides naming the member are removed. Offers are **anonymised**: the member and the exact CTC are removed and the proof is deleted. The company, CTC band, branch and batch stay, so the college's placement statistics do not change when someone leaves. College-imported marks stay on the college's list by roll number (they are the college's records, like the roster) and are unlinked from the account.
+
 ## Data minimisation (implemented)
 
 - IP addresses are reduced to /24 (IPv4) or /48 (IPv6) prefixes in sessions and audit.
@@ -81,6 +90,7 @@
 | Job listings                        | Deleted 60 days after they close or expire (TTL)                       |
 | Unattached résumé uploads           | Deleted after 24 hours                                                 |
 | Résumés on referral requests        | Deleted 60 days after the request                                      |
+| Offer proof files                   | Deleted 30 days after the offer is verified                            |
 | Audit log                           | Kept                                                                   |
 
 File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable per tenant: inactive accounts (default 3 years) and deleted-account grace (default 30 days); those purges ship with the privacy release.

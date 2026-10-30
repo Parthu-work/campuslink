@@ -131,6 +131,30 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'From your college: {title}',
       body: 'Your college posted an announcement for you. Open it to read the details.',
     },
+    drive_open: {
+      title: '{company} is hiring: register by {time}',
+      body: 'A new placement drive is open and you are eligible. Register in one tap before it closes.',
+    },
+    drive_reminder: {
+      title: 'Last day to register for {company}',
+      body: 'Registration for the {company} drive closes at {time}. You are eligible and not registered yet.',
+    },
+    drive_round_result: {
+      title: '{company}: {round} result is out',
+      body: 'Your result for the {round} round is in. Open the drive to see it and what comes next.',
+    },
+    drive_selected: {
+      title: 'Congratulations: {company} selected you',
+      body: 'You have an offer from {company}. It is on your placement record; open it to see the details.',
+    },
+    offer_verified: {
+      title: 'Your {company} offer is verified',
+      body: 'The placement cell verified the offer you reported. It now counts on your placement record.',
+    },
+    offer_rejected: {
+      title: 'Your {company} offer needs another look',
+      body: 'The placement cell could not verify the offer you reported. Open it to see why and report it again.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -264,6 +288,30 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     announcement: {
       title: 'మీ కాలేజీ నుండి: {title}',
       body: 'మీ కాలేజీ మీ కోసం ఒక ప్రకటన చేసింది. వివరాలు చదవడానికి తెరవండి.',
+    },
+    drive_open: {
+      title: '{company} నియామకం: {time} లోపు నమోదు చేసుకోండి',
+      body: 'కొత్త ప్లేస్‌మెంట్ డ్రైవ్ తెరవబడింది, మీరు అర్హులు. ముగిసేలోపు ఒక్క ట్యాప్‌తో నమోదు చేసుకోండి.',
+    },
+    drive_reminder: {
+      title: '{company}కి నమోదుకు చివరి రోజు',
+      body: '{company} డ్రైవ్ నమోదు {time}కి ముగుస్తుంది. మీరు అర్హులు, ఇంకా నమోదు చేసుకోలేదు.',
+    },
+    drive_round_result: {
+      title: '{company}: {round} ఫలితం వచ్చింది',
+      body: '{round} రౌండ్‌లో మీ ఫలితం వచ్చింది. చూడటానికి, తర్వాత ఏమిటో తెలుసుకోవడానికి డ్రైవ్ తెరవండి.',
+    },
+    drive_selected: {
+      title: 'అభినందనలు: {company} మిమ్మల్ని ఎంపిక చేసింది',
+      body: 'మీకు {company} నుండి ఆఫర్ వచ్చింది. ఇది మీ ప్లేస్‌మెంట్ రికార్డ్‌లో ఉంది; వివరాలు చూడటానికి తెరవండి.',
+    },
+    offer_verified: {
+      title: 'మీ {company} ఆఫర్ ధృవీకరించబడింది',
+      body: 'మీరు నివేదించిన ఆఫర్‌ను ప్లేస్‌మెంట్ సెల్ ధృవీకరించింది. ఇప్పుడు ఇది మీ ప్లేస్‌మెంట్ రికార్డ్‌లో లెక్కించబడుతుంది.',
+    },
+    offer_rejected: {
+      title: 'మీ {company} ఆఫర్‌ను మళ్లీ చూడాలి',
+      body: 'మీరు నివేదించిన ఆఫర్‌ను ప్లేస్‌మెంట్ సెల్ ధృవీకరించలేకపోయింది. కారణం చూసి మళ్లీ నివేదించడానికి తెరవండి.',
     },
   },
 };
@@ -418,6 +466,18 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return `/mentorship?box=sent${data.requestId ? `&request=${data.requestId}` : ''}`;
     case 'announcement':
       return `/posts/${data.postId}`;
+    case 'drive_open':
+      return `/placements/${data.driveId}`;
+    case 'drive_reminder':
+      return `/placements/${data.driveId}`;
+    case 'drive_round_result':
+      return `/placements/${data.driveId}`;
+    case 'drive_selected':
+      return '/placements?tab=offers';
+    case 'offer_verified':
+      return '/placements?tab=offers';
+    case 'offer_rejected':
+      return '/placements?tab=offers';
     default:
       return '/sessions';
   }

@@ -99,6 +99,7 @@ export class UsersService {
       .select('name email locale deletionPurgeAt +phoneEnc +passwordHash status adultOn')
       .lean();
     if (!u) throw notFound('User');
+    const cohort = (await this.profiles.cohortOf([auth.userId])).get(auth.userId);
     return {
       id: auth.userId,
       deletionPurgeAt: u.deletionPurgeAt ? u.deletionPurgeAt.toISOString() : null,
@@ -108,6 +109,7 @@ export class UsersService {
       hasPassword: !!u.passwordHash,
       guardianPending: u.status === 'guardian_pending',
       minor: isMinor(u.adultOn),
+      gradYear: cohort?.gradYear ?? null,
       roles: auth.roles,
       capabilities: auth.capabilities,
       verified: auth.verified,

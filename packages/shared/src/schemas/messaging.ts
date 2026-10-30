@@ -107,6 +107,12 @@ export const NOTIFICATION_TYPES = [
   'request_nudge',
   'request_rematch',
   'announcement',
+  'drive_open',
+  'drive_reminder',
+  'drive_round_result',
+  'drive_selected',
+  'offer_verified',
+  'offer_rejected',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -121,6 +127,7 @@ export const NOTIFICATION_CATEGORIES = [
   'achievements',
   'events',
   'study',
+  'placements',
 ] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
@@ -172,6 +179,12 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   request_nudge: 'requests',
   request_rematch: 'requests',
   announcement: 'community',
+  drive_open: 'placements',
+  drive_reminder: 'placements',
+  drive_round_result: 'placements',
+  drive_selected: 'placements',
+  offer_verified: 'placements',
+  offer_rejected: 'placements',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;
@@ -205,6 +218,8 @@ export const DEFAULT_CHANNELS: Record<NotificationCategory, ChannelPrefs> = {
   events: { inApp: true, email: true, push: true, whatsapp: false },
   // Your uploads finished processing (or failed), and review decisions about them.
   study: { inApp: true, email: false, push: true, whatsapp: false },
+  // Drives opening for you, closing soon, round results and offers (B7).
+  placements: { inApp: true, email: true, push: true, whatsapp: true },
 };
 
 const channelPrefs = z.strictObject({
@@ -227,6 +242,8 @@ export const notificationPrefsBody = z.strictObject({
     achievements: channelPrefs,
     study: channelPrefs,
     events: channelPrefs,
+    // Added in B7: clients from before it leave it out and get the default.
+    placements: channelPrefs.default(DEFAULT_CHANNELS.placements),
   }),
   quietHours: z.strictObject({
     enabled: z.boolean(),

@@ -20,4 +20,8 @@ export interface AdminOverviewView {
   whatsapp?: { sent: number; allowance: number } | null;
   /** B6: students on the list who have not joined yet (onboarding:manage). */
   onboarding?: { notJoined: number } | null;
+  /** B7: drives whose registration closes within 48 hours (placements:manage). */
+  placements?: { closingSoon: number } | null;
+  /** B7: offers reported by members and waiting for verification (outcomes:verify). */
+  offers?: { pending: number } | null;
 }

@@ -16,6 +16,8 @@ import type { AiUsageService } from '../study/ai-usage.service.js';
 import { featureEnabled } from '../tenants/features.js';
 import type { ChannelService } from '../notifications/channels/channel.service.js';
 import type { OnboardingService } from '../verification/onboarding.service.js';
+import type { PlacementsService } from '../placements/placements.service.js';
+import type { OffersService } from '../placements/offers.service.js';
 
 export interface OverviewDeps {
   users: UsersService;
@@ -31,6 +33,8 @@ export interface OverviewDeps {
   ai: AiSettingsService;
   channels?: ChannelService;
   onboarding?: OnboardingService;
+  placements?: PlacementsService;
+  offers?: OffersService;
   usage: AiUsageService;
 }
 
@@ -88,8 +92,20 @@ export class AdminOverviewService {
       this.d.onboarding && can('onboarding:manage')
         ? { notJoined: await this.d.onboarding.notJoined() }
         : null;
+    // B7: drives closing in 48 hours and offers waiting for verification (switched off: none).
+    const placementsOn = await featureEnabled('placements');
+    const placements =
+      placementsOn && this.d.placements && can('placements:manage')
+        ? { closingSoon: await this.d.placements.closingSoon() }
+        : null;
+    const offers =
+      placementsOn && this.d.offers && can('outcomes:verify')
+        ? { pending: await this.d.offers.pendingCount() }
+        : null;
     return {
       onboarding,
+      placements,
+      offers,
       members,
       activity,
       verification,

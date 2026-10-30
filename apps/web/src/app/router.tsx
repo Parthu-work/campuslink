@@ -87,6 +87,11 @@ const load = {
   tracker: () => import('../features/jobs/tracker'),
   postJob: () => import('../features/jobs/post-job'),
   referrals: () => import('../features/referrals/referrals'),
+  placements: () => import('../features/placements/placements'),
+  drivePage: () => import('../features/placements/drive-page'),
+  placementsAdmin: () => import('../features/admin/placements-admin'),
+  driveEditor: () => import('../features/admin/drive-editor'),
+  driveManage: () => import('../features/admin/drive-manage'),
   platform: () => import('../features/platform/platform'),
 };
 
@@ -418,6 +423,30 @@ function collegeRoutes(): RouteObject[] {
             isId(jobId) ? [qc.ensureQueryData(q.job(jobId))] : [],
           ),
           screen(load.referrals, 'ReferralsPage', ['referrals:request', 'referrals:offer'], at('/referrals')),
+          screen(
+            load.placements,
+            'PlacementsPage',
+            inFeature('placements', 'placements:view'),
+            at('/placements'),
+            (_, url) => {
+              const tab = url.searchParams.get('tab');
+              return [
+                qc.ensureQueryData(q.myAcademics()),
+                tab === 'offers'
+                  ? qc.ensureQueryData(q.myOffers())
+                  : qc.ensureQueryData(
+                      q.placementDrives(tab === 'all' || tab === 'registered' ? tab : 'eligible'),
+                    ),
+              ];
+            },
+          ),
+          screen(
+            load.drivePage,
+            'DrivePage',
+            inFeature('placements', 'placements:view'),
+            at('/placements/:id'),
+            ({ id }) => (isId(id) ? [qc.ensureQueryData(q.placementDrive(id))] : []),
+          ),
           screen(load.mentors, 'MentorsPage', 'mentorship:request', at('/mentors'), (_, url) =>
             url.searchParams.get('view') === 'browse' ? [] : [qc.ensureQueryData(q.mentorMatch())],
           ),
@@ -481,6 +510,47 @@ function collegeRoutes(): RouteObject[] {
               'onboarding:manage',
               at('onboarding/poster/:id'),
               ({ id }) => (isId(id) ? [qc.ensureQueryData(q.joinCodePoster(id))] : []),
+            ),
+            screen(
+              load.placementsAdmin,
+              'DrivesAdmin',
+              inFeature('placements', 'placements:manage'),
+              at('placements'),
+              () => [qc.ensureInfiniteQueryData(q.adminDrives(''))],
+            ),
+            still(
+              screen(
+                load.driveEditor,
+                'DriveEditor',
+                inFeature('placements', 'placements:manage'),
+                at('placements/new'),
+              ),
+            ),
+            screen(
+              load.driveManage,
+              'DriveManage',
+              inFeature('placements', 'placements:manage'),
+              at('placements/:id'),
+              ({ id }) =>
+                isId(id)
+                  ? [qc.ensureQueryData(q.placementDrive(id)), qc.ensureQueryData(q.driveRegistrants(id))]
+                  : [],
+            ),
+            still(
+              screen(
+                load.driveEditor,
+                'DriveEditPage',
+                inFeature('placements', 'placements:manage'),
+                at('placements/:id/edit'),
+                ({ id }) => (isId(id) ? [qc.ensureQueryData(q.placementDrive(id))] : []),
+              ),
+            ),
+            screen(
+              load.placementsAdmin,
+              'OffersAdmin',
+              inFeature('placements', 'outcomes:verify'),
+              at('offers'),
+              () => [qc.ensureInfiniteQueryData(q.offersQueue('reported'))],
             ),
             screen(load.listAdmin, 'ListAdmin', 'imports:manage', at('list')),
             screen(load.listAdmin, 'VerificationAdmin', 'verification:review', at('verification')),

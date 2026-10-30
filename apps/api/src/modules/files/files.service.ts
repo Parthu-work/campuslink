@@ -22,16 +22,18 @@ export interface MalwareScanner {
 export const noopScanner: MalwareScanner = { scan: async () => 'skipped' };
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-type ImagePurpose = 'avatar' | 'id_card' | 'message_attachment' | 'post_media' | 'story_media';
+type ImagePurpose =
+  'avatar' | 'id_card' | 'message_attachment' | 'post_media' | 'story_media' | 'offer_proof';
 const IMAGE_RULES: Record<ImagePurpose, { maxEdge: number }> = {
   avatar: { maxEdge: 512 },
   id_card: { maxEdge: 2000 },
   message_attachment: { maxEdge: 2000 },
   post_media: { maxEdge: 1600 },
   story_media: { maxEdge: 1440 },
+  offer_proof: { maxEdge: 2000 },
 };
 const VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime']);
-type ClaimablePurpose = 'post_media' | 'story_media' | 'referral_resume';
+type ClaimablePurpose = 'post_media' | 'story_media' | 'referral_resume' | 'placement_resume' | 'offer_proof';
 const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const PPTX = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 const AUDIO_TYPES = new Set([
@@ -169,7 +171,7 @@ export class FilesService {
     } catch {
       throw unsupported('That image could not be read');
     }
-    const pending = purpose === 'post_media' || purpose === 'story_media';
+    const pending = purpose === 'post_media' || purpose === 'story_media' || purpose === 'offer_proof';
     return this.store(
       ownerId,
       purpose,
@@ -286,7 +288,11 @@ export class FilesService {
   }
 
   /** Résumé for a referral request: PDF only, rebuilt like chat PDFs; purged unless a request claims it. */
-  async storeResume(ownerId: string, data: Buffer) {
+  async storeResume(
+    ownerId: string,
+    data: Buffer,
+    purpose: 'referral_resume' | 'placement_resume' = 'referral_resume',
+  ) {
     const type = await fileTypeFromBuffer(data);
     if (type?.mime !== 'application/pdf') throw unsupported('Upload your résumé as a PDF');
     let out: Uint8Array;
@@ -297,11 +303,39 @@ export class FilesService {
     }
     return this.store(
       ownerId,
-      'referral_resume',
+      purpose,
       Buffer.from(out),
       'application/pdf',
       new Date(Date.now() + UNATTACHED_TTL_MS),
     );
+  }
+
+  /**
+   * Proof of an offer (B7): an image (re-encoded) or a PDF (rebuilt). Purged unless an offer report
+   * claims it; the offer schedules deletion 30 days after it is verified.
+   */
+  async storeOfferProof(ownerId: string, data: Buffer) {
+    const type = await fileTypeFromBuffer(data);
+    if (type && IMAGE_TYPES.has(type.mime)) return this.storeImage(ownerId, 'offer_proof', data);
+    if (type?.mime !== 'application/pdf') throw unsupported('Upload the offer letter as a PDF or an image');
+    let out: Uint8Array;
+    try {
+      out = await sanitisePdf(data);
+    } catch {
+      throw unsupported('That PDF could not be read (password-protected PDFs are not supported)');
+    }
+    return this.store(
+      ownerId,
+      'offer_proof',
+      Buffer.from(out),
+      'application/pdf',
+      new Date(Date.now() + UNATTACHED_TTL_MS),
+    );
+  }
+
+  /** Retention for an attached file (offer proof after verification). */
+  async deleteAfter(fileId: string | Types.ObjectId, at: Date): Promise<void> {
+    await FileModel.updateOne({ _id: fileId }, { $set: { deleteAfter: at } });
   }
 
   /** Raw spreadsheet or CSV for an import: kept only until the import job has read it. */
@@ -519,7 +553,11 @@ export class FilesService {
       f.purpose === 'avatar' ||
       (f.purpose === 'id_card' && (isOwner || can('verification:review'))) ||
       // The uploader previews their own media before posting.
-      ((f.purpose === 'post_media' || f.purpose === 'story_media' || f.purpose === 'referral_resume') &&
+      ((f.purpose === 'post_media' ||
+        f.purpose === 'story_media' ||
+        f.purpose === 'referral_resume' ||
+        f.purpose === 'placement_resume' ||
+        f.purpose === 'offer_proof') &&
         isOwner);
     const resolver = this.resolvers.get(f.purpose);
     if (!allowed && resolver) {

@@ -158,6 +158,64 @@ export const WHATSAPP_TEMPLATES: Partial<Record<NotificationType, WaTemplate>> =
       hi: '{{3}} को {{2}} के साथ आपका {{1}} रद्द हो गया है। आप ऐप में दूसरा समय बुक कर सकते हैं।',
     },
   },
+  drive_open: {
+    name: 'cl_drive_open',
+    category: 'utility',
+    critical: false,
+    params: (d, c) => [d.company ?? '', when(d.start, c.lang, c.timezone)],
+    buttons: [
+      {
+        action: 'drive_register',
+        ref: 'driveId',
+        label: { en: 'Register', te: 'నమోదు చేయండి', hi: 'पंजीकरण करें' },
+      },
+    ],
+    text: {
+      en: '{{1}} is hiring through your college and you are eligible. Registration closes {{2}}.',
+      te: '{{1}} మీ కాలేజీ ద్వారా నియామకాలు చేస్తోంది, మీరు అర్హులు. నమోదు {{2}}కి ముగుస్తుంది.',
+      hi: '{{1}} आपके कॉलेज के ज़रिए भर्ती कर रहा है और आप पात्र हैं। पंजीकरण {{2}} को बंद होगा।',
+    },
+  },
+  drive_reminder: {
+    name: 'cl_drive_closing',
+    category: 'utility',
+    critical: true,
+    params: (d, c) => [d.company ?? '', when(d.start, c.lang, c.timezone)],
+    buttons: [
+      {
+        action: 'drive_register',
+        ref: 'driveId',
+        label: { en: 'Register', te: 'నమోదు చేయండి', hi: 'पंजीकरण करें' },
+      },
+    ],
+    text: {
+      en: 'Last day: registration for the {{1}} drive closes {{2}}. You are eligible and not registered yet.',
+      te: 'చివరి రోజు: {{1}} డ్రైవ్ నమోదు {{2}}కి ముగుస్తుంది. మీరు అర్హులు, ఇంకా నమోదు చేసుకోలేదు.',
+      hi: 'आखिरी दिन: {{1}} ड्राइव का पंजीकरण {{2}} को बंद होगा। आप पात्र हैं और अभी पंजीकृत नहीं हैं।',
+    },
+  },
+  drive_round_result: {
+    name: 'cl_drive_round',
+    category: 'utility',
+    critical: false,
+    params: (d) => [d.company ?? '', d.round ?? ''],
+    text: {
+      en: 'Your {{2}} result for the {{1}} drive is out. Open the app to see it.',
+      te: '{{1}} డ్రైవ్‌లో మీ {{2}} ఫలితం వచ్చింది. చూడటానికి యాప్ తెరవండి.',
+      hi: '{{1}} ड्राइव में आपका {{2}} परिणाम आ गया है। देखने के लिए ऐप खोलें।',
+    },
+  },
+  drive_selected: {
+    name: 'cl_drive_selected',
+    category: 'utility',
+    critical: true,
+    params: (d) => [d.company ?? ''],
+    text: {
+      en: 'Congratulations: {{1}} selected you. Open the app to see your offer.',
+      te: 'అభినందనలు: {{1}} మిమ్మల్ని ఎంపిక చేసింది. మీ ఆఫర్ చూడటానికి యాప్ తెరవండి.',
+      hi: 'बधाई हो: {{1}} ने आपको चुना है। अपना ऑफ़र देखने के लिए ऐप खोलें।',
+    },
+  },
   announcement: {
     name: 'college_announcement',
     category: 'utility',

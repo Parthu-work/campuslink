@@ -165,3 +165,35 @@ A new session reads this file first and resumes from the first phase that is not
 - **Urgent needs WhatsApp**: urgency only changes the WhatsApp cap, so on its own it means nothing.
 
 **Next:** B7 (placement drives).
+
+## B7 · Placement drives (Done)
+
+**Shipped**
+
+- Module `placements` with five tenant collections (companies, academic records, drives, registrations, offers), each with isolation tests, export and erasure, and indexes led by `tenantId`.
+- Shared eligibility (`checkEligibility`, with all unmet rules listed) and constants (`constants/placements.ts`: modes, statuses, rounds, results, CTC bands, export columns, `inFinalYears`).
+- Drives: create (optionally with a linked `drive` event), edit until started, open (eligible students told, WhatsApp **Register** button), a reminder 24 hours before close (critical, versioned), close, start, complete, cancel. One-tap registration, or questions and a PDF résumé. Withdraw. Overrides by roll number with a reason (audited).
+- Round results per student or from a CSV or Excel sheet keyed by roll number (unknown rolls listed back). Final results: a selection records a verified offer and congratulates the student.
+- Offers: reported with proof (PDF or photo, rebuilt), verified or rejected with a reason by `outcomes:verify`; proof deleted 30 days after verification; declined by the student.
+- Academic records: an "Academic records" type in the imports wizard; self-reported marks verified by the cell when the college has none.
+- Export for a company: ticked columns only, CSV (BOM, formula-safe) or Excel, audited with columns, format and rows.
+- Admin overview cards "Drives closing soon" and "Offers to verify"; notification category `placements`; job tracker link to report an offer.
+- Web: Placements (For you, All drives, Registered, Offers, academic record), the drive page, Admin › Placement drives (drives, marks to verify, companies), the drive console (status, registrants, rounds, finals, let in, export), the drive editor, and Admin › Offers. Strings in en and te.
+- Seed: DEMO drives at fictional companies (one Ananya can register for, one she cannot and why, one completed with Vikram's verified offer) and fictional marks.
+- Tests: `test/placements.test.ts`, `test/isolation/placements.test.ts`, privacy cases for registrations, offers and academic records, `eligibility.test.ts` (shared), and e2e `e2e/placements.spec.ts`. Spec: `docs/specs/placements.md`.
+
+**Decisions**
+
+- **Overrides take a roll number**, which is what the placement cell has, as well as a member id.
+- **Academic imports have no rollback.** They overwrite figures in place and keep no undo log, so a corrected file is the fix. The roster's "undo the latest import" skips them, so they never block it.
+- **The academics import runs from Admin › Imports**, so it needs `imports:manage` (college admins). The TPO verifies self-reported marks instead. Granting the TPO imports would also give them roster imports.
+- **Self-reports are refused once the college has a record** for that roll number: the college's figures win, and corrections go through the cell.
+- **CTC and marks are not field-encrypted.** They are access-controlled (member and cell only) and shown elsewhere only as bands and suppressed counts. Encrypting them would block the aggregates B8 needs and would change the encryption scheme, which D10 reserves.
+- **Erasure anonymises offers and registrations** (member, exact CTC, answers and proof removed; company, band, branch and batch kept), so the college's placement record does not shift when someone leaves. Self-reported marks are deleted; college marks are unlinked.
+- **A diploma stands in for the 12th** (lateral entry), as colleges accept it.
+- **The linked event is in person** at the venue (or "Placement cell") for four hours from the drive time; online drives can edit the event afterwards.
+- **Alumni do not get `placements:view`** (campus drives are for current students; their outcomes come in B8). Faculty and staff can view drives but not register.
+- **Being selected and a verified offer are celebration moments** (ADR 0008 amended, CLAUDE.md updated), once per device.
+- **Final-year students get Placements as a main tab** in place of Jobs (`inFinalYears`: from 24 months before graduation, taken as June, to 6 months after). Jobs stays in the menu.
+
+**Next:** B8 (outcomes and accreditation reports).

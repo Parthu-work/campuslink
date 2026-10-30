@@ -13,6 +13,9 @@ export const FILE_PURPOSES = [
   'study_thumbnail',
   'study_transcript',
   'branding',
+  // Placements (B7): a résumé attached to a drive registration, and proof of an offer.
+  'placement_resume',
+  'offer_proof',
 ] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 

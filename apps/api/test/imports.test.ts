@@ -95,7 +95,12 @@ describe('mapping helpers', () => {
     expect(normaliseBranch('Biotech')).toBe('OTHER');
     const r = mapRow(
       { R: ' 21dp1a 0501 ', N: 'A  B', Y: '2021-2025', P: '098480 22338' },
-      { columns: { rollNumber: 'R', name: 'N', gradYear: 'Y', phone: 'P' }, defaultKind: 'derive' },
+      {
+        type: 'roster',
+        columns: { rollNumber: 'R', name: 'N', gradYear: 'Y', phone: 'P' },
+        academicColumns: {},
+        defaultKind: 'derive',
+      },
       new Date('2026-10-01'),
     );
     expect(r).toEqual({
@@ -113,7 +118,12 @@ describe('mapping helpers', () => {
     });
     const s = mapRow(
       { R: 'X12345', N: 'Name', Y: '2027' },
-      { columns: { rollNumber: 'R', name: 'N', gradYear: 'Y' }, defaultKind: 'derive' },
+      {
+        type: 'roster',
+        columns: { rollNumber: 'R', name: 'N', gradYear: 'Y' },
+        academicColumns: {},
+        defaultKind: 'derive',
+      },
       new Date('2026-10-01'),
     );
     expect(s.ok && s.value.kind).toBe('student');

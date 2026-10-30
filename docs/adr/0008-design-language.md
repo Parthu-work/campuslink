@@ -53,3 +53,7 @@ Self-hosted with `@fontsource` (no font CDN; the CSP only allows `font-src 'self
 - Fonts: Geist Latin (29 KB) is preloaded; Bricolage (41 KB) and Anek Telugu (140 KB) load when used.
 - Browser baseline: OKLCH, `color-mix()` and `linear()` need Chrome 111+, Safari 16.4+ and Firefox 128+, the same as Tailwind 4, which the app already requires.
 - Canvas-drawn backgrounds (the landing mesh) read `--mesh-strength` so text over them keeps its contrast in light mode, where axe cannot measure it.
+
+## Amendments
+
+- **Celebration moments (build B7).** The moments that earn the aurora burst (`celebrate()`, once per device through `firstSighting`) are: a mentorship request accepted, a booking confirmed, a roadmap step done, a badge, a streak milestone, a referral given, verification, a quiz complete, and now **being selected in a placement drive or an offer verified**. Declines, cancellations, withdrawals and failures never celebrate.

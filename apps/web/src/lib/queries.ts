@@ -43,6 +43,11 @@ import type {
   OnboardingProgressRow,
   MentorReviewView,
   MentorMatch as MentorMatchView,
+  AcademicRecordView,
+  DriveView,
+  OfferView,
+  PlacementCompanyView,
+  RegistrantView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -472,4 +477,70 @@ export const requestAlternatives = (requestId: string) =>
     queryKey: ['request-alternatives', requestId],
     queryFn: ({ signal }) =>
       api.get<MentorMatchView[]>(`/mentorship/requests/${requestId}/alternatives`, signal),
+  });
+
+// ── Placements (B7) ─────────────────────────────
+export type DriveScope = 'eligible' | 'all' | 'registered';
+export const placementDrives = (scope: DriveScope) =>
+  queryOptions({
+    queryKey: ['placement-drives', scope],
+    queryFn: ({ signal }) => api.get<DriveView[]>(`/placements/drives?scope=${scope}`, signal),
+  });
+
+export const placementDrive = (id: string) =>
+  queryOptions({
+    queryKey: ['placement-drive', id],
+    queryFn: ({ signal }) => api.get<DriveView>(`/placements/drives/${id}`, signal),
+  });
+
+export const myAcademics = () =>
+  queryOptions({
+    queryKey: ['my-academics'],
+    queryFn: ({ signal }) => api.get<AcademicRecordView | null>('/me/academics', signal),
+  });
+
+export const myOffers = () =>
+  queryOptions({
+    queryKey: ['my-offers'],
+    queryFn: ({ signal }) => api.get<OfferView[]>('/placements/offers', signal),
+  });
+
+export const adminDrives = (status: string) =>
+  infiniteQueryOptions({
+    queryKey: ['admin-drives', status],
+    initialPageParam: '',
+    queryFn: ({ pageParam }) =>
+      apiRequest<DriveView[]>(
+        `/admin/placements/drives?${status ? `status=${status}` : ''}${pageParam ? `${status ? '&' : ''}cursor=${pageParam}` : ''}`,
+      ),
+    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+export const driveRegistrants = (id: string) =>
+  queryOptions({
+    queryKey: ['drive-registrants', id],
+    queryFn: ({ signal }) => api.get<RegistrantView[]>(`/admin/placements/drives/${id}/registrants`, signal),
+  });
+
+export const placementCompanies = () =>
+  queryOptions({
+    queryKey: ['placement-companies'],
+    queryFn: ({ signal }) => api.get<PlacementCompanyView[]>('/admin/placements/companies', signal),
+    staleTime: 5 * 60_000,
+  });
+
+export type PendingAcademicRecord = AcademicRecordView & { id: string; rollNumber: string };
+export const pendingAcademics = () =>
+  queryOptions({
+    queryKey: ['pending-academics'],
+    queryFn: ({ signal }) => api.get<PendingAcademicRecord[]>('/admin/placements/academics/pending', signal),
+  });
+
+export const offersQueue = (status: string) =>
+  infiniteQueryOptions({
+    queryKey: ['offers-queue', status],
+    initialPageParam: '',
+    queryFn: ({ pageParam }) =>
+      apiRequest<OfferView[]>(`/admin/offers?status=${status}${pageParam ? `&cursor=${pageParam}` : ''}`),
+    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
   });

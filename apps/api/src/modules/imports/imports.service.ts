@@ -1,9 +1,11 @@
 import { Types } from 'mongoose';
 import { fileTypeFromBuffer } from 'file-type';
 import {
+  ACADEMIC_IMPORT_FIELDS,
   BRANCHES,
   ErrorCode,
   IMPORT_FIELDS,
+  type AcademicImportField,
   email as emailSchema,
   gradYear as gradYearSchema,
   phone as phoneSchema,
@@ -97,6 +99,83 @@ export function suggestMapping(headers: string[]): ImportMapping['columns'] {
   return out;
 }
 
+const ACADEMIC_SYNONYMS: Record<AcademicImportField, string[]> = {
+  rollNumber: SYNONYMS.rollNumber,
+  cgpa: ['cgpa', 'gpa', 'aggregate cgpa', 'cgpa 10', 'cumulative gpa', 'b tech cgpa', 'btech cgpa'],
+  activeBacklogs: ['active backlogs', 'backlogs', 'current backlogs', 'arrears', 'active arrears'],
+  historyBacklogs: [
+    'backlog history',
+    'history of backlogs',
+    'history backlogs',
+    'total backlogs',
+    'history of arrears',
+  ],
+  tenthPct: ['10th', '10th %', '10th percentage', 'ssc', 'ssc %', 'tenth', 'class 10', 'x %'],
+  twelfthPct: [
+    '12th',
+    '12th %',
+    '12th percentage',
+    'inter',
+    'intermediate',
+    'inter %',
+    'hsc',
+    'class 12',
+    'xii %',
+  ],
+  diplomaPct: ['diploma', 'diploma %', 'diploma percentage'],
+};
+
+export function suggestAcademicMapping(headers: string[]): ImportMapping['academicColumns'] {
+  const norm = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[._()]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  const out: ImportMapping['academicColumns'] = {};
+  for (const field of ACADEMIC_IMPORT_FIELDS) {
+    const hit = headers.find((h) => ACADEMIC_SYNONYMS[field].includes(norm(h)));
+    if (hit) out[field] = hit;
+  }
+  return out;
+}
+
+/** Validates one academic row (CGPA 0–10, backlogs whole numbers, percentages 0–100; blank = unknown). */
+export function mapAcademicRow(
+  row: Record<string, string>,
+  mapping: ImportMapping,
+): { ok: true; value: AcademicRow } | { ok: false; errors: { field: string; message: string }[] } {
+  const get = (f: AcademicImportField) =>
+    mapping.academicColumns[f] ? (row[mapping.academicColumns[f] ?? ''] ?? '').trim() : '';
+  const errors: { field: string; message: string }[] = [];
+  const roll = rollSchema.safeParse(get('rollNumber'));
+  if (!roll.success)
+    errors.push({
+      field: 'rollNumber',
+      message: get('rollNumber') ? 'Invalid roll number' : 'Missing roll number',
+    });
+  const num = (f: AcademicImportField, max: number, whole: boolean): number | null => {
+    const raw = get(f).replace('%', '').replace(',', '.').trim();
+    if (!raw || raw === '-' || /^n\/?a$/i.test(raw)) return null;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n < 0 || n > max || (whole && !Number.isInteger(n))) {
+      errors.push({ field: f, message: whole ? 'Use a whole number' : `Use a number from 0 to ${max}` });
+      return null;
+    }
+    return n;
+  };
+  const value = {
+    rollNumber: roll.success ? roll.data : '',
+    cgpa: num('cgpa', 10, false),
+    activeBacklogs: num('activeBacklogs', 50, true),
+    historyBacklogs: num('historyBacklogs', 50, true),
+    tenthPct: num('tenthPct', 100, false),
+    twelfthPct: num('twelfthPct', 100, false),
+    diplomaPct: num('diplomaPct', 100, false),
+  };
+  return errors.length ? { ok: false, errors } : { ok: true, value };
+}
+
 export function normaliseBranch(v: string): Branch {
   if ((BRANCHES as readonly string[]).includes(v.toUpperCase())) return v.toUpperCase() as Branch;
   return BRANCH_SYNONYMS.find(([rx]) => rx.test(v.trim()))?.[1] ?? 'OTHER';
@@ -187,6 +266,20 @@ export function csvCell(v: string | number): string {
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
+/** What an `academics` import writes through (the placements module's AcademicsService). */
+export interface AcademicRow {
+  rollNumber: string;
+  cgpa: number | null;
+  activeBacklogs: number | null;
+  historyBacklogs: number | null;
+  tenthPct: number | null;
+  twelfthPct: number | null;
+  diplomaPct: number | null;
+}
+export interface AcademicImporter {
+  importRow(row: AcademicRow): Promise<'created' | 'updated' | 'unchanged'>;
+}
+
 export interface ImportsDeps {
   files: FilesService;
   cipher: FieldCipher;
@@ -196,6 +289,9 @@ export interface ImportsDeps {
 
 export class ImportsService {
   constructor(private readonly d: ImportsDeps) {}
+
+  /** Set by the app (B7): where academic records go. */
+  academics: AcademicImporter | null = null;
 
   // ── preview ─────────────────────────────
   private async previewFrom(
@@ -222,6 +318,7 @@ export class ImportsService {
       rows: table.rows.slice(0, 10),
       totalRows: table.rows.length,
       suggestedMapping: suggestMapping(table.headers),
+      suggestedAcademicMapping: suggestAcademicMapping(table.headers),
     };
   }
 
@@ -270,11 +367,18 @@ export class ImportsService {
     dryRun: boolean,
     meta: RequestMetaLite,
   ) {
-    const missing = (['rollNumber', 'name'] as const).filter((f) => !mapping.columns[f]);
-    if (missing.length) throw badRequest('Map the roll number and name columns', missing);
+    if (mapping.type === 'academics') {
+      if (!this.academics) throw badRequest('Academic records are not available here');
+      if (!mapping.academicColumns.rollNumber) throw badRequest('Map the roll number column', ['rollNumber']);
+      if (ACADEMIC_IMPORT_FIELDS.every((f) => f === 'rollNumber' || !mapping.academicColumns[f]))
+        throw badRequest('Map at least one academic column (CGPA, backlogs, percentages)');
+    } else {
+      const missing = (['rollNumber', 'name'] as const).filter((f) => !mapping.columns[f]);
+      if (missing.length) throw badRequest('Map the roll number and name columns', missing);
+    }
     const preview = await ImportPreviewModel.findOne({ _id: previewId, createdBy: userId }).lean();
     if (!preview) throw notFound('Preview (it may have expired; upload again)');
-    for (const col of Object.values(mapping.columns))
+    for (const col of [...Object.values(mapping.columns), ...Object.values(mapping.academicColumns)])
       if (col && !preview.headers.includes(col)) throw badRequest(`Unknown column “${col}”`);
     if (await ImportJobModel.exists({ status: { $in: ['queued', 'running'] } }))
       throw conflict('Another import is still running. Wait for it to finish.');
@@ -337,6 +441,10 @@ export class ImportsService {
         if (rowErrors.length < MAX_STORED_ERRORS) rowErrors.push({ row, field, message });
       };
 
+      if (mapping.type === 'academics') {
+        await this.runAcademics(job, rows, mapping, counts, addError, progress);
+        return;
+      }
       for (let i = 0; i < rows.length; i++) {
         if (i > 0 && i % 200 === 0) {
           const pct = Math.round((i / rows.length) * 100);
@@ -481,6 +589,72 @@ export class ImportsService {
     }
   }
 
+  /**
+   * B7: academic records keyed by roll number. Trusted (imported) values replace a student's own
+   * report. Not rolled back like the roster: a corrected sheet imported again is the fix.
+   */
+  private async runAcademics(
+    job: { _id: Types.ObjectId; dryRun?: boolean | null; createdBy: Types.ObjectId },
+    rows: Record<string, string>[],
+    mapping: ImportMapping,
+    counts: {
+      created: number;
+      updated: number;
+      unchanged: number;
+      errors: number;
+      total: number;
+      skippedClaimed: number;
+    },
+    addError: (row: number, field: string, message: string) => void,
+    progress: (pct: number) => Promise<void>,
+  ) {
+    const seen = new Map<string, number>();
+    const rowErrors: { row: number; field: string; message: string }[] = [];
+    const collect = (row: number, field: string, message: string) => {
+      addError(row, field, message);
+      rowErrors.push({ row, field, message });
+    };
+    for (let i = 0; i < rows.length; i++) {
+      if (i > 0 && i % 200 === 0) await progress(Math.round((i / rows.length) * 100));
+      const rowNo = i + 2;
+      const r = mapAcademicRow(rows[i] ?? {}, mapping);
+      if (!r.ok) {
+        r.errors.forEach((e) => collect(rowNo, e.field, e.message));
+        continue;
+      }
+      const dup = seen.get(r.value.rollNumber);
+      if (dup) {
+        collect(rowNo, 'rollNumber', `Duplicate of row ${dup}`);
+        continue;
+      }
+      seen.set(r.value.rollNumber, rowNo);
+      if (job.dryRun) {
+        counts.created++;
+        continue;
+      }
+      counts[await (this.academics as AcademicImporter).importRow(r.value)]++;
+    }
+    await ImportJobModel.updateOne(
+      { _id: job._id },
+      {
+        $set: {
+          status: 'completed',
+          progress: 100,
+          counts,
+          rowErrors: rowErrors.slice(0, MAX_STORED_ERRORS),
+          finishedAt: new Date(),
+        },
+      },
+    );
+    await audit.record({
+      action: 'import.completed',
+      actorId: String(job.createdBy),
+      targetType: 'import',
+      targetId: String(job._id),
+      meta: { ...counts, dryRun: !!job.dryRun, type: 'academics' },
+    });
+  }
+
   // ── read / report / rollback ─────────────────────────────
   /** Imports queued or running, and those that failed in the last 7 days (Admin › Overview). */
   async activityCounts() {
@@ -520,9 +694,15 @@ export class ImportsService {
 
   /** Only the most recent applied import can be rolled back; claimed records are never removed. */
   async rollback(id: string, actorId: string, meta: RequestMetaLite) {
+    // Academic-record imports (B7) overwrite figures in place and keep no undo log: correct them
+    // with a fresh import. They never block undoing the latest college-list import.
+    const target = await ImportJobModel.findById(id).select('mapping').lean();
+    if ((target?.mapping as { type?: string } | undefined)?.type === 'academics')
+      throw conflict('Academic record imports cannot be rolled back; import a corrected file');
     const latest = await ImportJobModel.findOne({
       dryRun: false,
       status: { $in: ['completed', 'rolled_back'] },
+      'mapping.type': { $ne: 'academics' },
     })
       .sort({ _id: -1 })
       .select('+changes')

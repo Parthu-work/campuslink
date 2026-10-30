@@ -57,6 +57,7 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   create: Plus,
   mentors: Compass,
   jobs: BriefcaseBusiness,
+  placements: Building2,
   requests: Inbox,
   review: ClipboardCheck,
   roadmaps: Orbit,
@@ -93,6 +94,7 @@ const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'subjects',
   'mentors',
   'jobs',
+  'placements',
   'requests',
   'roadmaps',
   'events',
@@ -159,6 +161,7 @@ export function useNav() {
         permissions: permissions as never[],
         verified: platform || !!me?.verified,
         features: tenant.features,
+        gradYear: me?.gradYear ?? null,
       },
       platform ? PLATFORM_SHIPPED : featureShipped(COLLEGE_SHIPPED, tenant.features),
     );

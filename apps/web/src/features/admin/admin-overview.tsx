@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Activity,
   BadgeCheck,
+  Building2,
+  FileCheck2,
   BookOpenCheck,
   FileUp,
   Orbit,
@@ -100,6 +102,28 @@ export function AdminOverview() {
                 waiting={v.onboarding.notJoined > 0}
               >
                 {t('admin.ov.onboardingHint', { count: v.onboarding.notJoined })}
+              </QueueCard>
+            )}
+            {v.placements && (
+              <QueueCard
+                to="/admin/placements"
+                icon={Building2}
+                title={t('admin.ov.placements')}
+                value={shown(v.placements.closingSoon)}
+                waiting={v.placements.closingSoon > 0}
+              >
+                {t('admin.ov.placementsHint', { count: v.placements.closingSoon })}
+              </QueueCard>
+            )}
+            {v.offers && (
+              <QueueCard
+                to="/admin/offers"
+                icon={FileCheck2}
+                title={t('admin.ov.offers')}
+                value={shown(v.offers.pending)}
+                waiting={v.offers.pending > 0}
+              >
+                {t('admin.ov.offersHint')}
               </QueueCard>
             )}
             {v.verification && (

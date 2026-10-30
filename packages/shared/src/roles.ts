@@ -71,6 +71,12 @@ export const ALL_PERMISSIONS = [
   'analytics:cohort',
   'analytics:tenant',
   'reports:export',
+  // Placements (B7)
+  'placements:view',
+  'placements:register',
+  'placements:manage',
+  'outcomes:report',
+  'outcomes:verify',
   // Administration
   'users:invite',
   'users:approve',
@@ -158,6 +164,11 @@ export const PERMISSIONS: Record<Permission, string> = {
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants': 'Create, suspend and configure colleges',
   'platform:health': 'View platform health',
+  'placements:view': 'See placement drives and the eligibility rules',
+  'placements:register': 'Register for placement drives one is eligible for',
+  'placements:manage': 'Run placement drives: companies, eligibility, registrants, rounds, overrides',
+  'outcomes:report': 'Report one’s own offers (with proof) to the placement cell',
+  'outcomes:verify': 'Verify or reject reported offers',
 };
 export const PLATFORM_PERMISSIONS: readonly Permission[] = ['platform:tenants', 'platform:health'];
 
@@ -180,9 +191,14 @@ const STUDENT: Permission[] = [
   'events:rsvp',
   'rewards:redeem',
   'study:read',
+  'placements:view',
+  'placements:register',
+  'outcomes:report',
 ];
+/** Students only: alumni and staff do not register for drives (staff still see them). */
+const STUDENT_ONLY: readonly Permission[] = ['placements:view', 'placements:register'];
 const ALUMNI: Permission[] = [
-  ...STUDENT,
+  ...STUDENT.filter((p) => !STUDENT_ONLY.includes(p)),
   'feed:post',
   'qa:answer',
   'mentorship:mentor',
@@ -193,7 +209,7 @@ const ALUMNI: Permission[] = [
   'study:contribute',
 ];
 const STAFF: Permission[] = [
-  ...STUDENT,
+  ...STUDENT.filter((p) => p !== 'placements:register' && p !== 'outcomes:report'),
   'feed:post',
   'qa:answer',
   'announcements:post',
@@ -225,6 +241,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     // The TPO runs onboarding: verification and guardian-number reviews, invites (B2, B4, B6).
     'verification:review',
     'onboarding:manage',
+    // Placements (B7).
+    'placements:manage',
+    'outcomes:verify',
   ],
   FACULTY: STAFF,
   ALUMNI,

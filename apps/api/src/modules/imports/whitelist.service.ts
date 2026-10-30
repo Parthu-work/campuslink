@@ -23,6 +23,51 @@ export function maskPhone(phone: string): string {
 export class WhitelistService {
   constructor(private readonly cipher: FieldCipher) {}
 
+  // ── For placements (B7): the college's own list is where roll numbers and contacts live ──
+  /** Roll number, branch and batch of each member who claimed a record. */
+  async recordsOf(userIds: (string | Types.ObjectId)[]) {
+    const rows = await WhitelistModel.find({
+      claimedBy: { $in: userIds.map((u) => new Types.ObjectId(String(u))) },
+    })
+      .select('claimedBy rollNumber branch gradYear')
+      .lean();
+    return new Map(
+      rows.map((r) => [
+        String(r.claimedBy),
+        { rollNumber: r.rollNumber, branch: r.branch ?? null, gradYear: r.gradYear ?? null },
+      ]),
+    );
+  }
+
+  /** Members (by user id) for roll numbers, among claimed records. */
+  async membersByRoll(rolls: string[]): Promise<Map<string, string>> {
+    const rows = await WhitelistModel.find({
+      rollNumber: { $in: rolls.map((r) => r.trim().toUpperCase()) },
+      status: 'claimed',
+    })
+      .select('rollNumber claimedBy')
+      .lean();
+    return new Map(rows.flatMap((r) => (r.claimedBy ? [[r.rollNumber, String(r.claimedBy)] as const] : [])));
+  }
+
+  /** The college's email and mobile for these members (a placement export the cell ticked). */
+  async contactsOf(userIds: (string | Types.ObjectId)[]) {
+    const rows = await WhitelistModel.find({
+      claimedBy: { $in: userIds.map((u) => new Types.ObjectId(String(u))) },
+    })
+      .select('claimedBy emailEnc phoneEnc')
+      .lean();
+    return new Map(
+      rows.map((r) => [
+        String(r.claimedBy),
+        {
+          email: r.emailEnc ? this.cipher.decrypt(r.emailEnc) : null,
+          phone: r.phoneEnc ? this.cipher.decrypt(r.phoneEnc) : null,
+        },
+      ]),
+    );
+  }
+
   async list(q: {
     q?: string | undefined;
     status?: 'unclaimed' | 'claimed' | undefined;

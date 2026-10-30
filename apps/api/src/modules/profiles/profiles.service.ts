@@ -369,6 +369,19 @@ export class ProfilesService {
     return { company: p.company ?? '', companyKey: p.companyKey ?? '' };
   }
 
+  /** B7 placements: branch and batch per member (eligibility, the institutional record). */
+  async cohortOf(userIds: (string | Types.ObjectId)[]) {
+    const rows = await ProfileModel.find({ userId: { $in: userIds.map(String) } })
+      .select('userId name branch gradYear')
+      .lean();
+    return new Map(
+      rows.map((r) => [
+        String(r.userId),
+        { name: r.name, branch: r.branch ?? null, gradYear: r.gradYear ?? null },
+      ]),
+    );
+  }
+
   /** B6 announcements: verified members an audience covers (empty lists mean everyone). */
   async idsForAudience(a: { branches: string[]; gradYears: number[]; roles: string[] }): Promise<string[]> {
     const rows = await ProfileModel.find({

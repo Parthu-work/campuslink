@@ -46,6 +46,8 @@ export interface MeResponse {
   guardianPending: boolean;
   /** Under 18 (with consent): some features work differently (docs/specs/phone-identity.md). */
   minor: boolean;
+  /** Graduation year from the member's profile (the Placements tab for final-year students, B7). */
+  gradYear: number | null;
   roles: Role[];
   capabilities: Capability[];
   verified: boolean;

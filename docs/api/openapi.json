@@ -354,6 +354,11 @@
                               "analytics:cohort",
                               "analytics:tenant",
                               "reports:export",
+                              "placements:view",
+                              "placements:register",
+                              "placements:manage",
+                              "outcomes:report",
+                              "outcomes:verify",
                               "users:invite",
                               "users:approve",
                               "onboarding:manage",
@@ -431,6 +436,11 @@
                               "analytics:cohort",
                               "analytics:tenant",
                               "reports:export",
+                              "placements:view",
+                              "placements:register",
+                              "placements:manage",
+                              "outcomes:report",
+                              "outcomes:verify",
                               "users:invite",
                               "users:approve",
                               "onboarding:manage",
@@ -2589,7 +2599,16 @@
                   "mapping": {
                     "type": "object",
                     "properties": {
+                      "type": {
+                        "default": "roster",
+                        "type": "string",
+                        "enum": [
+                          "roster",
+                          "academics"
+                        ]
+                      },
                       "columns": {
+                        "default": {},
                         "type": "object",
                         "propertyNames": {
                           "type": "string",
@@ -2610,6 +2629,27 @@
                           "maxLength": 100
                         }
                       },
+                      "academicColumns": {
+                        "default": {},
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "enum": [
+                            "rollNumber",
+                            "cgpa",
+                            "activeBacklogs",
+                            "historyBacklogs",
+                            "tenthPct",
+                            "twelfthPct",
+                            "diplomaPct"
+                          ]
+                        },
+                        "additionalProperties": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        }
+                      },
                       "defaultKind": {
                         "default": "derive",
                         "type": "string",
@@ -2620,9 +2660,6 @@
                         ]
                       }
                     },
-                    "required": [
-                      "columns"
-                    ],
                     "additionalProperties": false
                   },
                   "dryRun": {
@@ -7133,6 +7170,36 @@
                         "additionalProperties": false
                       },
                       "events": {
+                        "type": "object",
+                        "properties": {
+                          "inApp": {
+                            "type": "boolean"
+                          },
+                          "email": {
+                            "type": "boolean"
+                          },
+                          "push": {
+                            "type": "boolean"
+                          },
+                          "whatsapp": {
+                            "default": false,
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "inApp",
+                          "email",
+                          "push"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "placements": {
+                        "default": {
+                          "inApp": true,
+                          "email": true,
+                          "push": true,
+                          "whatsapp": true
+                        },
                         "type": "object",
                         "properties": {
                           "inApp": {
@@ -15379,6 +15446,2001 @@
           }
         },
         "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/placements/drives": {
+      "get": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Drives open to me (eligible), every visible drive, or the ones I registered for",
+        "description": "Requires permission `placements:view` (See placement drives and the eligibility rules). Host scope: college.",
+        "operationId": "placements_get_placements_drives",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "eligible",
+              "type": "string",
+              "enum": [
+                "eligible",
+                "all",
+                "registered"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:view"
+      }
+    },
+    "/api/v1/placements/drives/{id}": {
+      "get": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "A drive with my eligibility (and why not) and my registration",
+        "description": "Requires permission `placements:view` (See placement drives and the eligibility rules). Host scope: college.",
+        "operationId": "placements_get_placements_drives_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:view"
+      }
+    },
+    "/api/v1/placements/resume": {
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Upload a PDF résumé (or a file answer) for a drive registration",
+        "description": "Requires permission `placements:register` (Register for placement drives one is eligible for). Host scope: college. Rate limit: upload.",
+        "operationId": "placements_post_placements_resume",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:register"
+      }
+    },
+    "/api/v1/placements/drives/{id}/register": {
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Register for a drive in one tap (eligible, or let in by the placement cell)",
+        "description": "Requires permission `placements:register` (Register for placement drives one is eligible for). Host scope: college. Rate limit: requests.",
+        "operationId": "placements_post_placements_drives_id_register",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "answers": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "question": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9
+                        },
+                        "value": {
+                          "type": "string",
+                          "minLength": 0,
+                          "maxLength": 2000
+                        }
+                      },
+                      "required": [
+                        "question",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "resumeFileId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:register"
+      }
+    },
+    "/api/v1/placements/drives/{id}/withdraw": {
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Withdraw my registration before the drive starts",
+        "description": "Requires permission `placements:register` (Register for placement drives one is eligible for). Host scope: college.",
+        "operationId": "placements_post_placements_drives_id_withdraw",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:register"
+      }
+    },
+    "/api/v1/me/academics": {
+      "get": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "My academic record for placement eligibility",
+        "description": "Requires permission `placements:view` (See placement drives and the eligibility rules). Host scope: college.",
+        "operationId": "placements_get_me_academics",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:view"
+      },
+      "put": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Report my academic record (counts once the placement cell verifies it)",
+        "description": "Requires permission `placements:register` (Register for placement drives one is eligible for). Host scope: college. Rate limit: verify.",
+        "operationId": "placements_put_me_academics",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "cgpa": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "activeBacklogs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50
+                  },
+                  "historyBacklogs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50
+                  },
+                  "tenthPct": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "twelfthPct": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "diplomaPct": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "cgpa",
+                  "activeBacklogs",
+                  "historyBacklogs"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:register"
+      }
+    },
+    "/api/v1/placements/offers": {
+      "get": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "My offers (exact CTC visible to me only)",
+        "description": "Requires permission `outcomes:report` (Report one’s own offers (with proof) to the placement cell). Host scope: college.",
+        "operationId": "placements_get_placements_offers",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:report"
+      },
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Report an offer (off campus, PPO, internship conversion) for the placement cell to verify",
+        "description": "Requires permission `outcomes:report` (Report one’s own offers (with proof) to the placement cell). Host scope: college. Rate limit: requests.",
+        "operationId": "placements_post_placements_offers",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "companyName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "role": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "ctcLpa": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 500
+                  },
+                  "offerDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "full_time",
+                      "internship",
+                      "ppo"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "off_campus",
+                      "ppo",
+                      "internship_conversion"
+                    ]
+                  },
+                  "proofFileId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "companyName",
+                  "role",
+                  "ctcLpa",
+                  "offerDate",
+                  "type",
+                  "source",
+                  "proofFileId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:report"
+      }
+    },
+    "/api/v1/placements/offers/proof": {
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Upload proof of an offer (PDF or image; rebuilt, metadata removed)",
+        "description": "Requires permission `outcomes:report` (Report one’s own offers (with proof) to the placement cell). Host scope: college. Rate limit: upload.",
+        "operationId": "placements_post_placements_offers_proof",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:report"
+      }
+    },
+    "/api/v1/placements/offers/{id}/decline": {
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Mark one of my offers as declined",
+        "description": "Requires permission `outcomes:report` (Report one’s own offers (with proof) to the placement cell). Host scope: college.",
+        "operationId": "placements_post_placements_offers_id_decline",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:report"
+      }
+    },
+    "/api/v1/admin/placements/companies": {
+      "get": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Companies that recruit through the college (with the cell’s notes)",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college.",
+        "operationId": "placements_get_admin_placements_companies",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      },
+      "put": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Add or update a company (matched on its normalised name)",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "placements_put_admin_placements_companies",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "website": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "sector": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 80
+                  },
+                  "notes": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/placements/drives": {
+      "get": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Every drive with its registration count",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college.",
+        "operationId": "placements_get_admin_placements_drives",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "open",
+                "closed",
+                "in_progress",
+                "completed",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      },
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Create a drive (draft), optionally with a linked calendar event",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "placements_post_admin_placements_drives",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "companyId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "companyName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 160
+                  },
+                  "description": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 4000
+                  },
+                  "roles": {
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 120
+                        },
+                        "ctcMinLpa": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 500
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "ctcMaxLpa": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 500
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "location": {
+                          "default": "",
+                          "type": "string",
+                          "minLength": 0,
+                          "maxLength": 120
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "full_time",
+                            "internship",
+                            "ppo"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "title",
+                        "type"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "on_campus",
+                      "off_campus",
+                      "pool",
+                      "virtual"
+                    ]
+                  },
+                  "venue": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 200
+                  },
+                  "driveDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "registrationCloseAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "eligibility": {
+                    "default": {
+                      "branches": [],
+                      "gradYears": [],
+                      "minCgpa": null,
+                      "maxActiveBacklogs": null,
+                      "maxHistoryBacklogs": null,
+                      "minTenthPct": null,
+                      "minTwelfthPct": null
+                    },
+                    "type": "object",
+                    "properties": {
+                      "branches": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "CSE",
+                            "IT",
+                            "ECE",
+                            "EEE",
+                            "MECH",
+                            "CIVIL",
+                            "CHEM",
+                            "AIML",
+                            "DS",
+                            "OTHER"
+                          ]
+                        }
+                      },
+                      "gradYears": {
+                        "default": [],
+                        "maxItems": 6,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1950,
+                          "maximum": 2032
+                        }
+                      },
+                      "minCgpa": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "maxActiveBacklogs": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 50
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "maxHistoryBacklogs": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 50
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "minTenthPct": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "minTwelfthPct": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "questions": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 200
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "text",
+                            "choice",
+                            "file"
+                          ]
+                        },
+                        "options": {
+                          "default": [],
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          }
+                        },
+                        "required": {
+                          "default": true,
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "rounds": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 80
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "aptitude",
+                            "coding",
+                            "technical",
+                            "hr",
+                            "group_discussion",
+                            "other"
+                          ]
+                        },
+                        "at": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "resumeRequired": {
+                    "default": true,
+                    "type": "boolean"
+                  },
+                  "createEvent": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "title",
+                  "roles",
+                  "mode",
+                  "driveDate",
+                  "registrationCloseAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/placements/drives/{id}": {
+      "put": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Edit a drive before it starts",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "placements_put_admin_placements_drives_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "companyId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "companyName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 160
+                  },
+                  "description": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 4000
+                  },
+                  "roles": {
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 120
+                        },
+                        "ctcMinLpa": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 500
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "ctcMaxLpa": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 500
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "location": {
+                          "default": "",
+                          "type": "string",
+                          "minLength": 0,
+                          "maxLength": 120
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "full_time",
+                            "internship",
+                            "ppo"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "title",
+                        "type"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "on_campus",
+                      "off_campus",
+                      "pool",
+                      "virtual"
+                    ]
+                  },
+                  "venue": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 200
+                  },
+                  "driveDate": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "registrationCloseAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "eligibility": {
+                    "default": {
+                      "branches": [],
+                      "gradYears": [],
+                      "minCgpa": null,
+                      "maxActiveBacklogs": null,
+                      "maxHistoryBacklogs": null,
+                      "minTenthPct": null,
+                      "minTwelfthPct": null
+                    },
+                    "type": "object",
+                    "properties": {
+                      "branches": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "CSE",
+                            "IT",
+                            "ECE",
+                            "EEE",
+                            "MECH",
+                            "CIVIL",
+                            "CHEM",
+                            "AIML",
+                            "DS",
+                            "OTHER"
+                          ]
+                        }
+                      },
+                      "gradYears": {
+                        "default": [],
+                        "maxItems": 6,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1950,
+                          "maximum": 2032
+                        }
+                      },
+                      "minCgpa": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "maxActiveBacklogs": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 50
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "maxHistoryBacklogs": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 50
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "minTenthPct": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "minTwelfthPct": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "questions": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 200
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "text",
+                            "choice",
+                            "file"
+                          ]
+                        },
+                        "options": {
+                          "default": [],
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          }
+                        },
+                        "required": {
+                          "default": true,
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "rounds": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 80
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "aptitude",
+                            "coding",
+                            "technical",
+                            "hr",
+                            "group_discussion",
+                            "other"
+                          ]
+                        },
+                        "at": {
+                          "default": null,
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "resumeRequired": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "title",
+                  "roles",
+                  "mode",
+                  "driveDate",
+                  "registrationCloseAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/placements/drives/{id}/status": {
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Open (notifies eligible students), close, start, complete or cancel a drive",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "placements_post_admin_placements_drives_id_status",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "closed",
+                      "in_progress",
+                      "completed",
+                      "cancelled"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/placements/drives/{id}/registrants": {
+      "get": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Registrants with roll number, CGPA, round results and final result",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college.",
+        "operationId": "placements_get_admin_placements_drives_id_registrants",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/placements/drives/{id}/override": {
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Let an ineligible student register for this drive (audited, with a reason)",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "placements_post_admin_placements_drives_id_override",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "rollNumber": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 20
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/placements/drives/{id}/export": {
+      "get": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Export registrants for the company: only the ticked columns, CSV or Excel (audited)",
+        "description": "Requires permission `reports:export` (Export reports and data). Host scope: college.",
+        "operationId": "placements_get_admin_placements_drives_id_export",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "csv",
+              "type": "string",
+              "enum": [
+                "csv",
+                "xlsx"
+              ]
+            }
+          },
+          {
+            "name": "columns",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "reports:export"
+      }
+    },
+    "/api/v1/admin/placements/drives/{id}/rounds/{round}": {
+      "put": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Enter round results (each student is told when theirs changes)",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "placements_put_admin_placements_drives_id_rounds_round",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "round",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "results": {
+                    "minItems": 1,
+                    "maxItems": 2000,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "registrationId": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{24}$"
+                        },
+                        "result": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "cleared",
+                            "not_cleared",
+                            "absent"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "registrationId",
+                        "result"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "results"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/placements/drives/{id}/rounds/{round}/import": {
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Round results from a CSV or Excel sheet keyed by roll number (unknown rolls listed)",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college. Rate limit: upload.",
+        "operationId": "placements_post_admin_placements_drives_id_rounds_round_import",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "round",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/placements/registrations/{id}/final": {
+      "put": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Record the final result; a selection records a verified offer",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "placements_put_admin_placements_registrations_id_final",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "final": {
+                    "type": "string",
+                    "enum": [
+                      "in_process",
+                      "selected",
+                      "not_selected",
+                      "withdrawn"
+                    ]
+                  },
+                  "role": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "ctcLpa": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 500
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "full_time",
+                      "internship",
+                      "ppo"
+                    ]
+                  }
+                },
+                "required": [
+                  "final"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/placements/academics/pending": {
+      "get": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Self-reported academic records waiting for verification",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college.",
+        "operationId": "placements_get_admin_placements_academics_pending",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/placements/academics/{id}/decision": {
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Verify or reject a self-reported academic record",
+        "description": "Requires permission `placements:manage` (Run placement drives: companies, eligibility, registrants, rounds, overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "placements_post_admin_placements_academics_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "verify",
+                      "reject"
+                    ]
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "placements:manage"
+      }
+    },
+    "/api/v1/admin/offers": {
+      "get": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Offers by status (reported ones wait for verification)",
+        "description": "Requires permission `outcomes:verify` (Verify or reject reported offers). Host scope: college.",
+        "operationId": "placements_get_admin_offers",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "reported",
+              "type": "string",
+              "enum": [
+                "reported",
+                "verified",
+                "rejected",
+                "declined_by_student"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:verify"
+      }
+    },
+    "/api/v1/admin/offers/{id}/decision": {
+      "post": {
+        "tags": [
+          "Placements"
+        ],
+        "summary": "Verify or reject a reported offer (the member sees the reason)",
+        "description": "Requires permission `outcomes:verify` (Verify or reject reported offers). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "placements_post_admin_offers_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "verify",
+                      "reject"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "outcomes:verify"
       }
     },
     "/api/v1/admin/analytics": {

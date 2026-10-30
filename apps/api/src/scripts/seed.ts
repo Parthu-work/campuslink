@@ -45,6 +45,14 @@ import {
   XpEventModel,
 } from '../modules/gamification/gamification.model.js';
 import { EventModel, EventRsvpModel } from '../modules/events/event.model.js';
+import {
+  AcademicRecordModel,
+  DriveRegistrationModel,
+  OfferModel,
+  PlacementCompanyModel,
+  PlacementDriveModel,
+} from '../modules/placements/placements.model.js';
+import { ctcBand } from '@campuslink/shared';
 import { XP_RULES, type XpKind } from '@campuslink/shared';
 import {
   RoadmapModel,
@@ -804,6 +812,156 @@ async function seedJobs(ids: Map<string, Types.ObjectId>) {
   });
 }
 
+/**
+ * DEMO placement drives (B7) at fictional companies: one Ananya is eligible for, one she is not
+ * (branch rule), and a completed one that selected Vikram. Marks are fictional and labelled demo.
+ */
+async function seedPlacements(ids: Map<string, Types.ObjectId>, prefix: string) {
+  const id = (local: string) => {
+    const v = ids.get(local);
+    if (!v) throw new Error(`seed: missing ${local}`);
+    return v;
+  };
+  const now = Date.now();
+  // The demo students' batches (PEOPLE): Vikram graduates in 2026, Ananya in 2027.
+  const [vikramYear, ananyaYear] = [2026, 2027];
+  await AcademicRecordModel.create([
+    {
+      rollNumber: `23${prefix}1A0542`,
+      userId: id('ananya'),
+      cgpa: 8.2,
+      activeBacklogs: 0,
+      historyBacklogs: 0,
+      tenthPct: 91,
+      twelfthPct: 88,
+      source: 'import',
+      verifiedBy: id('tpo'),
+      verifiedAt: new Date(),
+    },
+    {
+      rollNumber: `22${prefix}1A0519`,
+      userId: id('vikram'),
+      cgpa: 7.4,
+      activeBacklogs: 0,
+      historyBacklogs: 1,
+      tenthPct: 84,
+      twelfthPct: 79,
+      source: 'import',
+      verifiedBy: id('tpo'),
+      verifiedAt: new Date(),
+    },
+  ]);
+  const company = (name: string, sector: string, notes: string) =>
+    PlacementCompanyModel.create({ name, companyKey: companyKey(name), sector, notes });
+  const nimbus = await company('Nimbus Labs (demo)', 'Software', 'DEMO: fictional company for the demo.');
+  const ironleaf = await company('Ironleaf Motors (demo)', 'Automotive', 'DEMO: fictional company.');
+  const kestrel = await company('Kestrel Analytics (demo)', 'Analytics', 'DEMO: fictional company.');
+  const rounds = (at: number) => [
+    { name: 'Online assessment', kind: 'aptitude', at: new Date(at) },
+    { name: 'Technical interview', kind: 'technical', at: new Date(at + 3 * 3600_000) },
+    { name: 'HR interview', kind: 'hr', at: new Date(at + 5 * 3600_000) },
+  ];
+  await PlacementDriveModel.create([
+    {
+      companyId: nimbus._id,
+      title: 'Software engineer campus drive (DEMO)',
+      description:
+        'DEMO drive at a fictional company. Online assessment, then two interviews on the same day.',
+      roles: [
+        {
+          title: 'Software Engineer',
+          ctcMinLpa: 6,
+          ctcMaxLpa: 8.5,
+          location: 'Hyderabad',
+          type: 'full_time',
+        },
+      ],
+      mode: 'on_campus',
+      venue: 'Seminar hall, block B',
+      driveDate: new Date(now + 10 * DAY),
+      registrationCloseAt: new Date(now + 5 * DAY),
+      eligibility: {
+        branches: ['CSE', 'IT', 'ECE'],
+        gradYears: [vikramYear, ananyaYear],
+        minCgpa: 7,
+        maxActiveBacklogs: 0,
+      },
+      questions: [
+        { label: 'Preferred location', kind: 'choice', options: ['Hyderabad', 'Bengaluru'], required: true },
+      ],
+      rounds: rounds(now + 10 * DAY),
+      resumeRequired: false,
+      status: 'open',
+      openedAt: new Date(),
+      createdBy: id('tpo'),
+    },
+    {
+      companyId: ironleaf._id,
+      title: 'Graduate engineer trainee (DEMO)',
+      description: 'DEMO drive at a fictional company for core branches.',
+      roles: [
+        {
+          title: 'Graduate Engineer Trainee',
+          ctcMinLpa: 4.5,
+          ctcMaxLpa: 4.5,
+          location: 'Chennai',
+          type: 'full_time',
+        },
+      ],
+      mode: 'virtual',
+      driveDate: new Date(now + 14 * DAY),
+      registrationCloseAt: new Date(now + 7 * DAY),
+      eligibility: { branches: ['MECH', 'EEE'], gradYears: [vikramYear, ananyaYear], minCgpa: 6.5 },
+      rounds: [{ name: 'Technical interview', kind: 'technical', at: null }],
+      resumeRequired: true,
+      status: 'open',
+      openedAt: new Date(),
+      createdBy: id('tpo'),
+    },
+  ]);
+  const done = await PlacementDriveModel.create({
+    companyId: kestrel._id,
+    title: 'Data analyst drive (DEMO)',
+    description: 'DEMO drive at a fictional company; results are in.',
+    roles: [{ title: 'Data Analyst', ctcMinLpa: 7, ctcMaxLpa: 7, location: 'Bengaluru', type: 'full_time' }],
+    mode: 'on_campus',
+    driveDate: new Date(now - 20 * DAY),
+    registrationCloseAt: new Date(now - 25 * DAY),
+    eligibility: { branches: [], gradYears: [vikramYear], minCgpa: 7 },
+    rounds: rounds(now - 20 * DAY),
+    resumeRequired: false,
+    status: 'completed',
+    openedAt: new Date(now - 30 * DAY),
+    createdBy: id('tpo'),
+  });
+  await DriveRegistrationModel.create({
+    driveId: done._id,
+    userId: id('vikram'),
+    status: 'registered',
+    final: 'selected',
+    roundResults: [0, 1, 2].map((round) => ({ round, result: 'cleared' })),
+    branch: 'CSE',
+    gradYear: vikramYear,
+  });
+  await OfferModel.create({
+    userId: id('vikram'),
+    companyKey: companyKey(kestrel.name),
+    companyName: kestrel.name,
+    role: 'Data Analyst',
+    ctcLpa: 7,
+    ctcBand: ctcBand(7),
+    offerDate: new Date(now - 18 * DAY),
+    type: 'full_time',
+    source: 'drive',
+    driveId: done._id,
+    status: 'verified',
+    verifiedBy: id('tpo'),
+    verifiedAt: new Date(now - 18 * DAY),
+    branch: 'CSE',
+    gradYear: vikramYear,
+  });
+}
+
 async function main() {
   await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
   await mongoose.connection.dropDatabase();
@@ -939,6 +1097,7 @@ async function main() {
       await seedJobs(ids);
       await seedRoadmaps(ids);
       await seedPhase7(ids);
+      await seedPlacements(ids, c.slug.slice(0, 2).toUpperCase());
       await seedStudy(t._id, ids.get('faculty') as Types.ObjectId, { material: studyMaterial });
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
@@ -966,6 +1125,9 @@ async function main() {
   );
   console.warn(
     'Try events and progress: ananya@dpit.example opens Events (RSVP, add to calendar, ask in the AMA) and Progress (XP, badges, rewards); admin@dpit.example opens Admin → Analytics and Admin → Rewards.',
+  );
+  console.warn(
+    'Try placements: ananya@dpit.example opens Placements (a drive she can register for, one she cannot and why); tpo@dpit.example opens Admin → Placement drives to enter round results and export registrants; vikram@dpit.example has a verified DEMO offer.',
   );
   console.warn(
     'Try roadmaps: ananya@dpit.example opens Roadmaps (Career Galaxy) and marks steps done; faculty@dpit.example reviews Rahul’s DEMO draft under Roadmaps → Review.',

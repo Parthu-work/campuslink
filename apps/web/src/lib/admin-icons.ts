@@ -1,5 +1,7 @@
 import {
   BadgeCheck,
+  Building2,
+  FileCheck2,
   BarChart3,
   Brush,
   FileUp,
@@ -25,6 +27,8 @@ export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
   imports: FileUp,
   list: ListChecks,
   onboarding: UserPlus,
+  placements: Building2,
+  offers: FileCheck2,
   moderation: ShieldAlert,
   mentorship: HeartHandshake,
   sources: Newspaper,

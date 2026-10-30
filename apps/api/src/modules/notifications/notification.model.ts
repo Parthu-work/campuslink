@@ -38,6 +38,7 @@ const prefsSchema = new Schema(
       achievements: { type: channel, _id: false },
       events: { type: channel, _id: false },
       study: { type: channel, _id: false },
+      placements: { type: channel, _id: false },
     },
     quietHours: {
       enabled: { type: Boolean, default: false },

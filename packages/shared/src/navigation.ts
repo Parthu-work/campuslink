@@ -1,5 +1,6 @@
 import { Role, type Permission } from './roles.js';
 import type { Feature } from './features.js';
+import { inFinalYears } from './constants/placements.js';
 
 /**
  * One navigation model for every surface (bottom tabs, desktop rail, avatar menu, Create sheet,
@@ -14,6 +15,7 @@ export type NavId =
   | 'create'
   | 'mentors'
   | 'jobs'
+  | 'placements'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -64,16 +66,20 @@ export const ADMIN_PERMISSIONS: readonly Permission[] = [
   'tenant:settings',
   'ai:settings',
   'audit:read',
+  'placements:manage',
+  'outcomes:verify',
 ];
 
 /** The admin area's sections, grouped (desktop side menu, phone overview). Each needs one permission. */
-export type AdminGroup = 'people' | 'community' | 'insights' | 'college';
+export type AdminGroup = 'people' | 'placements' | 'community' | 'insights' | 'college';
 export type AdminSectionId =
   | 'users'
   | 'verification'
   | 'imports'
   | 'list'
   | 'onboarding'
+  | 'placements'
+  | 'offers'
   | 'moderation'
   | 'mentorship'
   | 'sources'
@@ -107,6 +113,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('imports', '/admin/imports', 'imports:manage', 'people'),
   section('list', '/admin/list', 'imports:manage', 'people'),
   section('onboarding', '/admin/onboarding', 'onboarding:manage', 'people'),
+  section('placements', '/admin/placements', 'placements:manage', 'placements'),
+  section('offers', '/admin/offers', 'outcomes:verify', 'placements'),
   section('moderation', '/admin/moderation', 'moderation:act', 'community'),
   section('mentorship', '/admin/mentorship', 'mentorship:oversee', 'community'),
   section('sources', '/admin/sources', 'sources:manage', 'community'),
@@ -118,7 +126,7 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('ai', '/admin/ai', 'ai:settings', 'college'),
   section('audit', '/admin/audit', 'audit:read', 'college'),
 ];
-const ADMIN_GROUPS: readonly AdminGroup[] = ['people', 'community', 'insights', 'college'];
+const ADMIN_GROUPS: readonly AdminGroup[] = ['people', 'placements', 'community', 'insights', 'college'];
 
 /** The settings area's sections: the same for every member (its tab row). */
 export type SettingsSectionId = 'security' | 'privacy' | 'preferences' | 'notifications' | 'data';
@@ -149,6 +157,7 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   create: d('create', '', 'main'),
   mentors: d('mentors', '/mentors', 'main', ['mentorship:request']),
   jobs: d('jobs', '/jobs', 'main', ['jobs:read']),
+  placements: d('placements', '/placements', 'explore', ['placements:view', 'placements:manage']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -182,6 +191,7 @@ export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
   reels: 'reels',
   following: 'contentSources',
   leaderboard: 'leaderboards',
+  placements: 'placements',
 };
 
 /** Admin sections that belong to a feature switch. */
@@ -189,6 +199,8 @@ export const ADMIN_SECTION_FEATURE: Partial<Record<AdminSectionId, Feature>> = {
   sources: 'contentSources',
   jobSources: 'jobsAggregation',
   ai: 'study',
+  placements: 'placements',
+  offers: 'placements',
 };
 
 /** The shipped destinations minus those whose feature the college has switched off. */
@@ -222,7 +234,8 @@ export function navPersona(roles: readonly Role[]): NavPersona {
  * leaves a dead tab.
  */
 export const PERSONA_TABS: Record<NavPersona, readonly (readonly NavId[])[]> = {
-  student: [['home'], ['study', 'roadmaps'], ['create'], ['mentors', 'verify'], ['jobs']],
+  // Placements takes the last tab for students in their final two years (then Jobs is in the menu).
+  student: [['home'], ['study', 'roadmaps'], ['create'], ['mentors', 'verify'], ['placements', 'jobs']],
   alumni: [['home'], ['requests', 'mentoring'], ['create'], ['mentors'], ['jobs']],
   staff: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
   admin: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
@@ -232,6 +245,8 @@ export const PERSONA_TABS: Record<NavPersona, readonly (readonly NavId[])[]> = {
 /** The avatar menu: everything that is not a tab, grouped, in this order. */
 const MENU_ORDER: readonly NavId[] = [
   'verify',
+  'placements',
+  'jobs',
   'roadmaps',
   'events',
   'questions',
@@ -273,6 +288,8 @@ export interface NavSubject {
   verified: boolean;
   /** The college's feature switches: admin sections of a switched-off feature are hidden. */
   features?: Partial<Record<Feature, boolean>>;
+  /** Students in their final two years get Placements as a main tab (B7). */
+  gradYear?: number | null;
 }
 
 export interface NavModel {
@@ -302,9 +319,12 @@ export function buildNav(subject: NavSubject, shipped: ReadonlySet<NavId>): NavM
     const dest = NAV_DESTINATIONS[id];
     return shipped.has(id) && may(subject.permissions, dest.permissions);
   };
+  // Placements is a tab only for students close to graduating; others find it in the menu.
+  const tabUsable = (id: NavId) =>
+    usable(id) && (id !== 'placements' || (persona === 'student' && inFinalYears(subject.gradYear)));
   const tabIds: NavId[] = [];
   for (const slot of PERSONA_TABS[persona]) {
-    const pick = slot.find((id) => usable(id) && !tabIds.includes(id));
+    const pick = slot.find((id) => tabUsable(id) && !tabIds.includes(id));
     if (pick) tabIds.push(pick);
   }
   const tabs = tabIds.map((id) => NAV_DESTINATIONS[id]);
@@ -317,7 +337,10 @@ export function buildNav(subject: NavSubject, shipped: ReadonlySet<NavId>): NavM
   const menu = groups
     .map((group) => ({
       group,
-      items: deduped.map((id) => NAV_DESTINATIONS[id]).filter((x) => x.group === group),
+      // Main destinations that are not a tab (Jobs for final-year students) sit under Explore.
+      items: deduped
+        .map((id) => NAV_DESTINATIONS[id])
+        .filter((x) => x.group === group || (x.group === 'main' && group === 'explore')),
     }))
     .filter((g) => g.items.length > 0);
   const admin = ADMIN_GROUPS.map((group) => ({

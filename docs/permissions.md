@@ -72,6 +72,11 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `rewards:redeem` Redeem points for rewards | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `platform:tenants` Create, suspend and configure colleges | ✅ | · | · | · | · | · |
 | `platform:health` View platform health | ✅ | · | · | · | · | · |
+| `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ |
+| `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ |
+| `placements:manage` Run placement drives: companies, eligibility, registrants, rounds, overrides | · | ✅ | ✅ | · | · | · |
+| `outcomes:report` Report one’s own offers (with proof) to the placement cell | · | ✅ | · | · | ✅ | ✅ |
+| `outcomes:verify` Verify or reject reported offers | · | ✅ | ✅ | · | · | · |
 
 ## Endpoints
 | Endpoint | Requires | Host | Rate limit | Purpose |
@@ -340,6 +345,33 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/events/:id/questions` | `events:rsvp` | college | interact | Ask a question in the queue |
 | `PUT /api/v1/event-questions/:id/vote` | `events:rsvp` | college | interact | Upvote a question (one vote each) |
 | `PATCH /api/v1/event-questions/:id` | `events:rsvp` | college | — | Mark a question answered, reopen it or hide it (host or staff) |
+| `GET /api/v1/placements/drives` | `placements:view` · feature `placements` | college | — | Drives open to me (eligible), every visible drive, or the ones I registered for |
+| `GET /api/v1/placements/drives/:id` | `placements:view` · feature `placements` | college | — | A drive with my eligibility (and why not) and my registration |
+| `POST /api/v1/placements/resume` | `placements:register` · feature `placements` | college | upload | Upload a PDF résumé (or a file answer) for a drive registration |
+| `POST /api/v1/placements/drives/:id/register` | `placements:register` · feature `placements` | college | requests | Register for a drive in one tap (eligible, or let in by the placement cell) |
+| `POST /api/v1/placements/drives/:id/withdraw` | `placements:register` · feature `placements` | college | — | Withdraw my registration before the drive starts |
+| `GET /api/v1/me/academics` | `placements:view` · feature `placements` | college | — | My academic record for placement eligibility |
+| `PUT /api/v1/me/academics` | `placements:register` · feature `placements` | college | verify | Report my academic record (counts once the placement cell verifies it) |
+| `GET /api/v1/placements/offers` | `outcomes:report` · feature `placements` | college | — | My offers (exact CTC visible to me only) |
+| `POST /api/v1/placements/offers/proof` | `outcomes:report` · feature `placements` | college | upload | Upload proof of an offer (PDF or image; rebuilt, metadata removed) |
+| `POST /api/v1/placements/offers` | `outcomes:report` · feature `placements` | college | requests | Report an offer (off campus, PPO, internship conversion) for the placement cell to verify |
+| `POST /api/v1/placements/offers/:id/decline` | `outcomes:report` · feature `placements` | college | — | Mark one of my offers as declined |
+| `GET /api/v1/admin/placements/companies` | `placements:manage` · feature `placements` | college | — | Companies that recruit through the college (with the cell’s notes) |
+| `PUT /api/v1/admin/placements/companies` | `placements:manage` · feature `placements` | college | adminWrite | Add or update a company (matched on its normalised name) |
+| `GET /api/v1/admin/placements/drives` | `placements:manage` · feature `placements` | college | — | Every drive with its registration count |
+| `POST /api/v1/admin/placements/drives` | `placements:manage` · feature `placements` | college | adminWrite | Create a drive (draft), optionally with a linked calendar event |
+| `PUT /api/v1/admin/placements/drives/:id` | `placements:manage` · feature `placements` | college | adminWrite | Edit a drive before it starts |
+| `POST /api/v1/admin/placements/drives/:id/status` | `placements:manage` · feature `placements` | college | adminWrite | Open (notifies eligible students), close, start, complete or cancel a drive |
+| `GET /api/v1/admin/placements/drives/:id/registrants` | `placements:manage` · feature `placements` | college | — | Registrants with roll number, CGPA, round results and final result |
+| `POST /api/v1/admin/placements/drives/:id/override` | `placements:manage` · feature `placements` | college | adminWrite | Let an ineligible student register for this drive (audited, with a reason) |
+| `GET /api/v1/admin/placements/drives/:id/export` | `reports:export` · feature `placements` | college | — | Export registrants for the company: only the ticked columns, CSV or Excel (audited) |
+| `PUT /api/v1/admin/placements/drives/:id/rounds/:round` | `placements:manage` · feature `placements` | college | adminWrite | Enter round results (each student is told when theirs changes) |
+| `POST /api/v1/admin/placements/drives/:id/rounds/:round/import` | `placements:manage` · feature `placements` | college | upload | Round results from a CSV or Excel sheet keyed by roll number (unknown rolls listed) |
+| `PUT /api/v1/admin/placements/registrations/:id/final` | `placements:manage` · feature `placements` | college | adminWrite | Record the final result; a selection records a verified offer |
+| `GET /api/v1/admin/placements/academics/pending` | `placements:manage` · feature `placements` | college | — | Self-reported academic records waiting for verification |
+| `POST /api/v1/admin/placements/academics/:id/decision` | `placements:manage` · feature `placements` | college | adminWrite | Verify or reject a self-reported academic record |
+| `GET /api/v1/admin/offers` | `outcomes:verify` · feature `placements` | college | — | Offers by status (reported ones wait for verification) |
+| `POST /api/v1/admin/offers/:id/decision` | `outcomes:verify` · feature `placements` | college | adminWrite | Verify or reject a reported offer (the member sees the reason) |
 | `GET /api/v1/admin/analytics` | `analytics:cohort` | college | — | Aggregated college analytics (cohort view for faculty); counts under 5 are suppressed |
 | `GET /api/v1/admin/analytics/export` | `reports:export` | college | search | Download a report as CSV (audited) |
 | `GET /api/v1/me/export` | any signed-in user | college | privacy | Download everything this college’s space holds about me (JSON, audited) |
