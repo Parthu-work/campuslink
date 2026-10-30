@@ -26,7 +26,10 @@ let currentOwner: string | null = null;
 export function useTabMemory(tabs: readonly { id: string; to: string }[]) {
   const location = useLocation();
   const type = useNavigationType();
-  const direct = tabs.find((t) => within(location.pathname, t.to))?.id;
+  // The most specific root wins: /platform/billing/… belongs to Billing, not to /platform.
+  const direct = tabs
+    .filter((t) => within(location.pathname, t.to))
+    .sort((a, b) => b.to.length - a.to.length)[0]?.id;
   const remembered = type === 'POP' ? owners.get(location.key) : undefined;
   const owner = remembered ?? direct ?? currentOwner ?? tabs[0]?.id ?? null;
 

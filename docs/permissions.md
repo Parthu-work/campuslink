@@ -72,6 +72,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `rewards:redeem` Redeem points for rewards | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `platform:tenants` Create, suspend and configure colleges | ✅ | · | · | · | · | · |
 | `platform:health` View platform health | ✅ | · | · | · | · | · |
+| `platform:billing` Plans, invoices and payments for every college | ✅ | · | · | · | · | · |
 | `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ |
 | `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ |
 | `placements:manage` Run placement drives: companies, eligibility, registrants, rounds, overrides | · | ✅ | ✅ | · | · | · |
@@ -393,6 +394,22 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/me/deletion` | any signed-in user | college | — | Whether my account is scheduled for deletion, and when |
 | `POST /api/v1/me/deletion` | any signed-in user | college | privacy | Delete my account after the college’s grace period (password required; signs out everywhere) |
 | `DELETE /api/v1/me/deletion` | any signed-in user | college | — | Cancel my account deletion during the grace period |
+| `GET /api/v1/platform/plans` | `platform:billing` | platform | — | The plans with their terms (defaults and the platform owner’s changes) |
+| `PATCH /api/v1/platform/plans/:plan` | `platform:billing` | platform | adminWrite | Change a plan’s price, minimum, features or allowances |
+| `GET /api/v1/platform/billing` | `platform:billing` | platform | — | Every college’s plan, seats and outstanding balance |
+| `GET /api/v1/platform/billing/:id` | `platform:billing` | platform | — | One college’s subscription, usage and invoices |
+| `PATCH /api/v1/platform/billing/:id` | `platform:billing` | platform | adminWrite | Set a college’s plan, seats, term, custom deal and invoice details |
+| `POST /api/v1/platform/billing/:id/invoices` | `platform:billing` | platform | adminWrite | Draft an invoice for a college |
+| `DELETE /api/v1/platform/billing/:id/invoices/:invoiceId` | `platform:billing` | platform | adminWrite | Discard a draft invoice |
+| `POST /api/v1/platform/billing/:id/invoices/:invoiceId/issue` | `platform:billing` | platform | adminWrite | Issue a draft: its number, tax and PDF are fixed from now on |
+| `POST /api/v1/platform/billing/:id/invoices/:invoiceId/void` | `platform:billing` | platform | adminWrite | Void an issued invoice that has no payments |
+| `POST /api/v1/platform/billing/:id/invoices/:invoiceId/payments` | `platform:billing` | platform | adminWrite | Record a bank payment (amount, date, UTR) |
+| `GET /api/v1/platform/billing/:id/invoices/:invoiceId/pdf` | `platform:billing` | platform | — | Download an issued invoice (PDF) |
+| `GET /api/v1/admin/billing` | `tenant:settings` | college | — | Our plan, seats, usage against allowances, and invoices |
+| `GET /api/v1/admin/billing/notice` | `tenant:settings` | college | — | Whether to show admins a billing banner (seats, pilot end, overdue, read-only) |
+| `GET /api/v1/admin/billing/invoices/:invoiceId/pdf` | `tenant:settings` | college | — | Download one of our invoices (PDF) |
+| `POST /api/v1/admin/billing/invoices/:invoiceId/pay` | `tenant:settings` | college | adminWrite | A link to pay an invoice online (when the platform has online payment) |
+| `POST /api/v1/webhooks/razorpay` | public | any | webhook | Razorpay deliveries (payment_link.paid; signed with X-Razorpay-Signature) |
 | `GET /api/v1/study/subjects` | `study:read` · feature `study` | college | — | Subjects I take (students) or all subjects (staff, alumni); `scope=mine` for my own |
 | `POST /api/v1/study/subjects` | `study:manage` · feature `study` | college | adminWrite | Create a subject (faculty become its owner) |
 | `GET /api/v1/study/subjects/:id` | `study:read` · feature `study` | college | — | One subject I may read |

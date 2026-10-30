@@ -61,6 +61,8 @@ import {
   RoadmapVersionModel,
 } from '../modules/roadmaps/roadmap.model.js';
 import { studySeeder } from './seed-study.js';
+import { InvoiceCounterModel, InvoiceModel, PaymentModel } from '../modules/billing/billing.model.js';
+import { financialYearOf, gstSplit, invoiceNumber, istDay } from '@campuslink/shared';
 
 const env = loadEnv();
 if (env.NODE_ENV === 'production') throw new Error('Refusing to seed a production database');
@@ -817,6 +819,98 @@ async function seedJobs(ids: Map<string, Types.ObjectId>) {
  * DEMO placement drives (B7) at fictional companies: one Ananya is eligible for, one she is not
  * (branch rule), and a completed one that selected Vikram. Marks are fictional and labelled demo.
  */
+/**
+ * Billing (B10): DPIT's year invoice, paid by a demo bank transfer, and an open add-on invoice to
+ * try "Pay online" with the stub provider. Numbers come from the real sequence; the seller is the
+ * env's demo seller, and every name and reference is marked demo.
+ */
+async function seedBilling(college: string) {
+  const seller = {
+    name: env.BILLING_SELLER_NAME,
+    address: env.BILLING_SELLER_ADDRESS,
+    gstin: env.BILLING_SELLER_GSTIN ?? null,
+    stateCode: env.BILLING_SELLER_STATE ?? null,
+  };
+  const buyer = {
+    name: 'DPIT Demo Educational Society (demo)',
+    address: '1 Demo Road, Hyderabad, Telangana 500001 (fictional)',
+    gstin: null,
+    stateCode: '36',
+  };
+  const invoice = async (
+    lines: { description: string; quantity: number; unitPaise: number }[],
+    issuedOn: string,
+    dueOn: string,
+  ) => {
+    const c = await InvoiceCounterModel.findOneAndUpdate(
+      { prefix: env.BILLING_INVOICE_PREFIX, fy: financialYearOf(new Date(`${issuedOn}T12:00:00+05:30`)) },
+      { $inc: { seq: 1 } },
+      { upsert: true, returnDocument: 'after' },
+    ).lean();
+    const taxablePaise = lines.reduce((sum, l) => sum + l.quantity * l.unitPaise, 0);
+    const gst = gstSplit({
+      taxablePaise,
+      ratePercent: env.BILLING_GST_RATE,
+      registered: env.BILLING_GST_REGISTERED,
+      sellerState: seller.stateCode ?? '',
+      placeOfSupply: buyer.stateCode,
+    });
+    return InvoiceModel.create({
+      number: invoiceNumber(env.BILLING_INVOICE_PREFIX, c?.fy ?? '2026-27', c?.seq ?? 1),
+      fy: c?.fy,
+      status: 'issued',
+      periodStart: '2026-04-01',
+      periodEnd: '2027-03-31',
+      dueDays: 30,
+      issuedOn,
+      dueOn,
+      lines: lines.map((l) => ({ ...l, amountPaise: l.quantity * l.unitPaise })),
+      taxablePaise,
+      gst,
+      totalPaise: taxablePaise + gst.taxPaise,
+      sacCode: env.BILLING_SAC_CODE,
+      seller,
+      buyer,
+      notes: `Demo invoice for ${college}.`,
+    });
+  };
+  const year = await invoice(
+    [
+      {
+        description: 'Placement plan (demo): 1,800 students at ₹75.00 per student per year',
+        quantity: 1800,
+        unitPaise: 75_00,
+      },
+    ],
+    '2026-04-06',
+    '2026-05-06',
+  );
+  await PaymentModel.create({
+    invoiceId: year._id,
+    amountPaise: year.totalPaise,
+    method: 'bank',
+    paidOn: '2026-04-28',
+    reference: 'DEMOUTR0000001',
+    note: 'Demo bank transfer',
+  });
+  await InvoiceModel.updateOne(
+    { _id: year._id },
+    { $set: { status: 'paid', paidPaise: year.totalPaise, paidAt: new Date('2026-04-28T11:00:00+05:30') } },
+  );
+  // Open, and due in 20 days whenever the seed runs (so the demo never turns read-only).
+  await invoice(
+    [
+      {
+        description: 'Additional seats (demo): 200 students at ₹75.00 per student per year',
+        quantity: 200,
+        unitPaise: 75_00,
+      },
+    ],
+    istDay(new Date(Date.now() - 10 * 86_400_000)),
+    istDay(new Date(Date.now() + 20 * 86_400_000)),
+  );
+}
+
 async function seedPlacements(ids: Map<string, Types.ObjectId>, prefix: string) {
   const id = (local: string) => {
     const v = ids.get(local);
@@ -1043,7 +1137,25 @@ async function main() {
       branding: c.branding,
       // The demo shows every module (a new college starts with fewer; see NEW_TENANT_FEATURES).
       features: { ...LEGACY_FEATURES },
-      subscription: { plan: 'trial', seatLimit: 1000, renewalDate: null },
+      // Billing (B10): DPIT is a paying Placement college, MRCE is on its pilot.
+      ...(c.slug === 'dpit'
+        ? {
+            subscription: {
+              plan: 'placement',
+              seats: 1800,
+              startedOn: new Date('2026-04-01T00:00:00+05:30'),
+              renewalDate: new Date('2027-03-31T00:00:00+05:30'),
+            },
+            billing: {
+              buyer: {
+                legalName: 'DPIT Demo Educational Society (demo)',
+                address: '1 Demo Road, Hyderabad, Telangana 500001 (fictional)',
+                gstin: null,
+                stateCode: '36',
+              },
+            },
+          }
+        : { subscription: { plan: 'pilot', seats: 1000, startedOn: new Date(), renewalDate: null } }),
     });
     await runInTenant(t._id, async () => {
       const ids = new Map<string, Types.ObjectId>();
@@ -1143,6 +1255,7 @@ async function main() {
       await seedPhase7(ids);
       await seedPlacements(ids, c.slug.slice(0, 2).toUpperCase());
       await seedOutcomes(ids);
+      if (c.slug === 'dpit') await seedBilling(t.branding.displayName);
       await seedStudy(t._id, ids.get('faculty') as Types.ObjectId, { material: studyMaterial });
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
@@ -1170,6 +1283,9 @@ async function main() {
   );
   console.warn(
     'Try events and progress: ananya@dpit.example opens Events (RSVP, add to calendar, ask in the AMA) and Progress (XP, badges, rewards); admin@dpit.example opens Admin → Analytics and Admin → Rewards.',
+  );
+  console.warn(
+    'Try billing: admin@dpit.example opens Admin › Billing (plan, seats, usage, a paid and an open invoice; Pay online with PAYMENT_PROVIDER=stub); superadmin@campuslink.example opens Platform › Billing to issue invoices and record bank payments.',
   );
   console.warn(
     'Try placements: ananya@dpit.example opens Placements (a drive she can register for, one she cannot and why); tpo@dpit.example opens Admin → Placement drives to enter round results and export registrants; vikram@dpit.example has a verified DEMO offer.',

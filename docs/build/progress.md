@@ -251,4 +251,36 @@ A new session reads this file first and resumes from the first phase that is not
 - **No backfill and no demo events.** Numbers start when B9 ships, and the seed does not invent usage.
 - **Product tabs need `analytics:tenant`** (college-wide); faculty keep the cohort overview.
 
+**Confirmed.** Gate green; CI green on `efae9b1`; full local e2e 165 passed, 13 skipped, none failed.
+
 **Next:** B10 (plans, entitlements and billing).
+
+## B10 · Plans, entitlements and billing (Done)
+
+**Shipped**
+
+- Plans as config (`constants/plans.ts`): Pilot (free, 90 days), Connect (₹40 per student per year, minimum ₹60,000, no placement drives) and Placement (₹75, minimum ₹1,20,000), each with features, WhatsApp and AI allowances per student per month. The platform owner edits a plan's terms (`PlanSetting`) and gives a college a custom deal; `mergeTerms()` layers them.
+- Entitlements: feature switches are plan ∧ college choice, resolved in the tenant cache, so routes, jobs, navigation and permissions agree; Admin › Features shows switches outside the plan as unavailable. The WhatsApp allowance (B3) now comes from the plan. Nightly seat count (verified students + alumni active in 12 months) with a banner to admins when over, never blocking.
+- Invoices: drafts, issue with the next number from `InvoiceCounter` (`CL/2026-27/0001`, unique index, retried race), GST (CGST + SGST/UTGST or IGST, none when unregistered), total in words, a PDF with Noto Sans for ₹ stored as file purpose `invoice`; void without payments.
+- Payments: bank transfers recorded by the platform (amount, date, UTR; once per UTR; audited); online through `PaymentProvider` (`stub`, `razorpay` Payment Links) with the webhook verified by HMAC SHA256 and recorded once per payment id.
+- Daily billing run per college: overdue marking, reminders 7 days before, on and 7 days after the due date (each once), and read-only from 30 days overdue until paid. Read-only refuses writes in the pipeline except an allowlist; nothing is deleted.
+- Screens: Admin › Billing (plan, seats, usage, invoices to pay and download), an admin billing banner, a member notice while read-only, Platform › Billing (colleges, plans, a college's subscription, invoices and payments). Plan migration `b10-plans`; demo data: DPIT on Placement with a paid and an open invoice, MRCE on its pilot.
+- Tests: `test/billing.test.ts` (19), a phone sign-up case in `test/phone-auth.test.ts`, a privacy case, e2e `e2e/billing.spec.ts`. Spec: `docs/specs/billing.md`.
+
+**Decisions**
+
+- **D10 check.** No change to session tokens, refresh rotation or the encryption scheme. Tenancy enforcement is unchanged: the plugin, the throw without context and `withPlatformScope` work as before. Two platform collections were added to the allowlist the prompt names for this purpose: `InvoiceCounter` (named in the prompt) and `PlanSetting` (the plan terms the console edits, D9 "can be edited in the platform console"); both are the seller's, not any college's, and the allowlist test pins the exact list. Razorpay is the provider D5 names; only the college's legal name, the invoice number and the amount go to it.
+- **Allowances per student,** not flat per plan: a flat AI or WhatsApp allowance would be generous for 500 students and useless for 5,000. They are sized to the contracted seats, or to the minimum's worth when that is more.
+- **Plan migration:** `trial` → Pilot, `standard` → Connect, `premium` → Placement, `seatLimit` → `seats`. `standard` becomes Connect (no drives) safely: drives arrived in B7, so no college had them before.
+- **A new college starts on the Pilot** with its start date set, so it keeps every feature its switches allow until the platform moves it to a paid plan. Nothing locks when a pilot ends; the admin banner shows the date.
+- **Numbers on issue, not on draft,** so a discarded draft never leaves a gap in the GST series. Issue claims the draft first, then takes the number (reverted to draft if numbering fails).
+- **One invoice series for all colleges:** the seller issues every invoice, so the sequence is the seller's (per prefix and financial year).
+- **Void only without payments;** credit notes are out of scope for this build.
+- **Read-only refuses writes before authentication,** so every caller gets the same answer and the test can walk every write route. The allowlist (46 existing routes, plus paying and the Razorpay webhook) is account, privacy, safety, sessions already booked, provider webhooks and paying; a phone code during read-only signs members in but creates no account (`assertWritable`). Moderation stays open: removing harmful content is not adding content.
+- **Seat activity** counts alumni who signed in within 12 months or kept a session going (a refreshed session), since `lastLoginAt` changes only at sign-in.
+- **Webhook idempotency** rests on the unique payment reference per college and a check that the link was made for that invoice (`payLinkIds`), rather than `WebhookReceipt` (the channels module's model).
+- **Razorpay docs:** razorpay.com was not reachable from the build environment; the adapter follows the official Node SDK source (`razorpay/razorpay-node`: payment link fields, `validateWebhookSignature`). Deployment lists a live test event as a gap before launch.
+- **SAC code empty by default** with a console warning, and the GST rate in env, both to be confirmed by a chartered accountant.
+- **Phone tabs** now light the most specific root (`/platform/billing/…` lights Billing, not Colleges); the same bug lit Colleges on Traction.
+
+**Next:** B11 (AI cost control), including D7 (remove `facultySeeChats`), which no earlier phase covered.

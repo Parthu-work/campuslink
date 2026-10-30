@@ -44,6 +44,28 @@ export const MIGRATIONS: readonly Migration[] = [
       return r.modifiedCount;
     },
   },
+  {
+    // B10: the placeholder plans become the priced ones (D9), and the seat limit is the
+    // contracted seat count. `standard` becomes Connect: no college had drives before B7.
+    name: 'b10-plans',
+    async run() {
+      const c = TenantModel.collection;
+      let changed = (
+        await c.updateMany(
+          { 'subscription.seatLimit': { $exists: true } },
+          { $rename: { 'subscription.seatLimit': 'subscription.seats' } },
+        )
+      ).modifiedCount;
+      for (const [from, to] of [
+        ['trial', 'pilot'],
+        ['standard', 'connect'],
+        ['premium', 'placement'],
+      ] as const)
+        changed += (await c.updateMany({ 'subscription.plan': from }, { $set: { 'subscription.plan': to } }))
+          .modifiedCount;
+      return changed;
+    },
+  },
 ];
 
 const isDuplicate = (e: unknown) => (e as { code?: number }).code === 11000;

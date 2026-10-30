@@ -6,10 +6,12 @@ import {
   resolvePermissions,
   effectiveOverrides,
   isMinor,
+  SEAT_ALUMNI_ACTIVE_DAYS,
   type Capability,
   type MeResponse,
 } from '@campuslink/shared';
 import { UserModel } from '../auth/user.model.js';
+import { SessionModel } from '../auth/session.model.js';
 import { AppError, badRequest, forbidden, notFound } from '../../lib/errors.js';
 import { ErrorCode } from '@campuslink/shared';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
@@ -171,6 +173,22 @@ export class UsersService {
       UserModel.countDocuments({ status: 'suspended' }),
     ]);
     return { active, unverified, suspended };
+  }
+
+  /**
+   * Seats in use (B10, D9): verified students, plus alumni active in the last 12 months (signed in,
+   * or kept a session going, in that time). A member is counted once.
+   */
+  async seatCount(now = new Date()): Promise<number> {
+    const since = new Date(now.getTime() - SEAT_ALUMNI_ACTIVE_DAYS * 86_400_000);
+    const recent = await SessionModel.distinct('userId', { lastUsedAt: { $gte: since } });
+    return UserModel.countDocuments({
+      status: 'active',
+      $or: [
+        { roles: Role.STUDENT, verified: true },
+        { roles: Role.ALUMNI, $or: [{ lastLoginAt: { $gte: since } }, { _id: { $in: recent } }] },
+      ],
+    });
   }
 
   /** Active members of the college with a role (for alerts to its admins). */

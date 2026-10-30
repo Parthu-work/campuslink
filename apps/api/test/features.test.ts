@@ -56,7 +56,7 @@ describe('feature switches (B1)', () => {
           accent: '#f2b705',
           monogram: 'FC',
         },
-        subscription: { plan: 'trial', seatLimit: 800, renewalDate: null },
+        subscription: { plan: 'pilot', seats: 800, renewalDate: null },
         firstAdmin: { name: 'Focused Admin', email: 'admin@focused.example' },
       });
     expect(created.status).toBe(201);

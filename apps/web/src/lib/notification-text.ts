@@ -124,6 +124,18 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return '/outcomes';
       case 'outcome_rejected':
         return '/outcomes';
+      case 'invoice_issued':
+        return '/admin/billing';
+      case 'invoice_due_soon':
+        return '/admin/billing';
+      case 'invoice_due':
+        return '/admin/billing';
+      case 'invoice_overdue':
+        return '/admin/billing';
+      case 'college_read_only':
+        return '/admin/billing';
+      case 'payment_received':
+        return '/admin/billing';
       default:
         return '/sessions';
     }

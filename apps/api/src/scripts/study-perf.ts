@@ -126,7 +126,7 @@ async function main() {
       accent: '#f2b705',
       monogram: 'PD',
     },
-    subscription: { plan: 'trial', seatLimit: 1000, renewalDate: null },
+    subscription: { plan: 'pilot', seats: 1000, renewalDate: null },
   });
   const app = createApp({
     env: { ...env, VECTOR_STORE: 'memory' },

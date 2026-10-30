@@ -1,5 +1,9 @@
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import type {
+  AdminBillingView,
+  PlanView,
+  PlatformBillingRow,
+  PlatformCollegeBillingView,
   AdminOverviewView,
   AiUsageView,
   AnalyticsView,
@@ -603,4 +607,45 @@ export const platformInsights = () =>
     queryKey: ['platform-insights'],
     queryFn: ({ signal }) => api.get<PlatformInsightsView>('/platform/insights', signal),
     staleTime: 5 * 60_000,
+  });
+
+// ── Billing (B10) ─────────────────────────────
+export const adminBilling = () =>
+  queryOptions({
+    queryKey: ['admin-billing'],
+    queryFn: ({ signal }) => api.get<AdminBillingView>('/admin/billing', signal),
+  });
+
+export interface BillingNotice {
+  readOnly: boolean;
+  overdue: number;
+  overSeats: boolean;
+  seatsUsed: number | null;
+  seats: number;
+  pilotEndsOn: string | null;
+}
+/** The admin screens' billing banner (seats, pilot end, overdue, read-only). */
+export const billingNotice = () =>
+  queryOptions({
+    queryKey: ['admin-billing', 'notice'],
+    queryFn: ({ signal }) => api.get<BillingNotice>('/admin/billing/notice', signal),
+    staleTime: 10 * 60_000,
+  });
+
+export const platformBilling = () =>
+  queryOptions({
+    queryKey: ['platform-billing'],
+    queryFn: ({ signal }) => api.get<PlatformBillingRow[]>('/platform/billing', signal),
+  });
+
+export const platformCollegeBilling = (id: string) =>
+  queryOptions({
+    queryKey: ['platform-billing', id],
+    queryFn: ({ signal }) => api.get<PlatformCollegeBillingView>(`/platform/billing/${id}`, signal),
+  });
+
+export const platformPlans = () =>
+  queryOptions({
+    queryKey: ['platform-plans'],
+    queryFn: ({ signal }) => api.get<PlanView[]>('/platform/plans', signal),
   });

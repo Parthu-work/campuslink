@@ -374,7 +374,8 @@
                               "rewards:manage",
                               "rewards:redeem",
                               "platform:tenants",
-                              "platform:health"
+                              "platform:health",
+                              "platform:billing"
                             ]
                           }
                         }
@@ -456,7 +457,8 @@
                               "rewards:manage",
                               "rewards:redeem",
                               "platform:tenants",
-                              "platform:health"
+                              "platform:health",
+                              "platform:billing"
                             ]
                           }
                         }
@@ -2177,12 +2179,12 @@
                       "plan": {
                         "type": "string",
                         "enum": [
-                          "trial",
-                          "standard",
-                          "premium"
+                          "pilot",
+                          "connect",
+                          "placement"
                         ]
                       },
-                      "seatLimit": {
+                      "seats": {
                         "type": "integer",
                         "minimum": 10,
                         "maximum": 100000
@@ -2202,7 +2204,7 @@
                     },
                     "required": [
                       "plan",
-                      "seatLimit",
+                      "seats",
                       "renewalDate"
                     ],
                     "additionalProperties": false
@@ -2297,12 +2299,12 @@
                       "plan": {
                         "type": "string",
                         "enum": [
-                          "trial",
-                          "standard",
-                          "premium"
+                          "pilot",
+                          "connect",
+                          "placement"
                         ]
                       },
-                      "seatLimit": {
+                      "seats": {
                         "type": "integer",
                         "minimum": 10,
                         "maximum": 100000
@@ -18539,6 +18541,918 @@
           }
         },
         "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/platform/plans": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "The plans with their terms (defaults and the platform owner’s changes)",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform.",
+        "operationId": "billing_get_platform_plans",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/plans/{plan}": {
+      "patch": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Change a plan’s price, minimum, features or allowances",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_patch_platform_plans_plan",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pilot",
+                "connect",
+                "placement"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "pricePerStudentPaise": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "annualMinimumPaise": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000000
+                  },
+                  "features": {
+                    "maxItems": 11,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "studentPosting",
+                        "stories",
+                        "reels",
+                        "leaderboards",
+                        "alumniMatch",
+                        "jobsAggregation",
+                        "contentSources",
+                        "study",
+                        "placements",
+                        "whatsapp",
+                        "peerMentors"
+                      ]
+                    }
+                  },
+                  "whatsappPerStudentMonthly": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "aiTokensPerStudentMonthly": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "days": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 366
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Every college’s plan, seats and outstanding balance",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform.",
+        "operationId": "billing_get_platform_billing",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing/{id}": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "One college’s subscription, usage and invoices",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform.",
+        "operationId": "billing_get_platform_billing_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      },
+      "patch": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Set a college’s plan, seats, term, custom deal and invoice details",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_patch_platform_billing_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "plan": {
+                    "type": "string",
+                    "enum": [
+                      "pilot",
+                      "connect",
+                      "placement"
+                    ]
+                  },
+                  "seats": {
+                    "type": "integer",
+                    "minimum": 10,
+                    "maximum": 100000
+                  },
+                  "startedOn": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "renewalDate": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "terms": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "pricePerStudentPaise": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000
+                          },
+                          "annualMinimumPaise": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000000
+                          },
+                          "features": {
+                            "maxItems": 11,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "studentPosting",
+                                "stories",
+                                "reels",
+                                "leaderboards",
+                                "alumniMatch",
+                                "jobsAggregation",
+                                "contentSources",
+                                "study",
+                                "placements",
+                                "whatsapp",
+                                "peerMentors"
+                              ]
+                            }
+                          },
+                          "whatsappPerStudentMonthly": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          "aiTokensPerStudentMonthly": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000
+                          },
+                          "days": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 366
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "buyer": {
+                    "type": "object",
+                    "properties": {
+                      "legalName": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 160
+                      },
+                      "address": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 400
+                      },
+                      "gstin": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "stateCode": {
+                        "type": "string",
+                        "enum": [
+                          "10",
+                          "11",
+                          "12",
+                          "13",
+                          "14",
+                          "15",
+                          "16",
+                          "17",
+                          "18",
+                          "19",
+                          "20",
+                          "21",
+                          "22",
+                          "23",
+                          "24",
+                          "26",
+                          "27",
+                          "29",
+                          "30",
+                          "31",
+                          "32",
+                          "33",
+                          "34",
+                          "35",
+                          "36",
+                          "37",
+                          "38",
+                          "01",
+                          "02",
+                          "03",
+                          "04",
+                          "05",
+                          "06",
+                          "07",
+                          "08",
+                          "09"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "legalName",
+                      "address",
+                      "gstin",
+                      "stateCode"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing/{id}/invoices": {
+      "post": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Draft an invoice for a college",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_post_platform_billing_id_invoices",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "periodStart": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "periodEnd": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "lines": {
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "description": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 200
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000000
+                        },
+                        "unitPaise": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000
+                        }
+                      },
+                      "required": [
+                        "description",
+                        "quantity",
+                        "unitPaise"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "dueDays": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 90
+                  },
+                  "notes": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "periodStart",
+                  "periodEnd",
+                  "lines"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing/{id}/invoices/{invoiceId}": {
+      "delete": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Discard a draft invoice",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_delete_platform_billing_id_invoices_invoiceId",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing/{id}/invoices/{invoiceId}/issue": {
+      "post": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Issue a draft: its number, tax and PDF are fixed from now on",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_post_platform_billing_id_invoices_invoiceId_issue",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing/{id}/invoices/{invoiceId}/void": {
+      "post": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Void an issued invoice that has no payments",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_post_platform_billing_id_invoices_invoiceId_void",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing/{id}/invoices/{invoiceId}/payments": {
+      "post": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Record a bank payment (amount, date, UTR)",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_post_platform_billing_id_invoices_invoiceId_payments",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "amountPaise": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000000
+                  },
+                  "paidOn": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "utr": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9]{6,30}$"
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "amountPaise",
+                  "paidOn",
+                  "utr"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing/{id}/invoices/{invoiceId}/pdf": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Download an issued invoice (PDF)",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform.",
+        "operationId": "billing_get_platform_billing_id_invoices_invoiceId_pdf",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/admin/billing": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Our plan, seats, usage against allowances, and invoices",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college.",
+        "operationId": "billing_get_admin_billing",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
+    "/api/v1/admin/billing/notice": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Whether to show admins a billing banner (seats, pilot end, overdue, read-only)",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college.",
+        "operationId": "billing_get_admin_billing_notice",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
+    "/api/v1/admin/billing/invoices/{invoiceId}/pdf": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Download one of our invoices (PDF)",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college.",
+        "operationId": "billing_get_admin_billing_invoices_invoiceId_pdf",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
+    "/api/v1/admin/billing/invoices/{invoiceId}/pay": {
+      "post": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "A link to pay an invoice online (when the platform has online payment)",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "billing_post_admin_billing_invoices_invoiceId_pay",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
+    "/api/v1/webhooks/razorpay": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Razorpay deliveries (payment_link.paid; signed with X-Razorpay-Signature)",
+        "description": "Public. Host scope: any. Rate limit: webhook.",
+        "operationId": "billing_post_webhooks_razorpay",
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
       }
     },
     "/api/v1/study/subjects": {

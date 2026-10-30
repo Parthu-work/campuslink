@@ -7,10 +7,11 @@ import {
   type PublicTenant,
   type Feature,
   resolveFeatures,
+  FEATURE_KEYS,
 } from '@campuslink/shared';
 import { TenantModel } from './tenant.model.js';
 import type { FilesService } from '../files/files.service.js';
-import { invalidateTenant, type TenantRecord } from './tenant.cache.js';
+import { findTenantById, invalidateTenant, type TenantRecord } from './tenant.cache.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import { notFound } from '../../lib/errors.js';
 import type { z } from 'zod';
@@ -30,6 +31,7 @@ export const toPublicTenant = (
   features: resolveFeatures(t.features),
   botCheck,
   phoneSignIn,
+  readOnly: !!t.billing?.readOnlyAt,
 });
 
 /** The app's own icons (apps/web/public/icons), used when a college has no logo and alongside it. */
@@ -135,9 +137,11 @@ export const tenantsService = {
     return toPublicTenant({ ...tenant, logo: { fileId: null } });
   },
 
+  /** Admin › Settings: the switches as the college chose them, and which its plan includes (B10). */
   async settings(tenant: TenantRecord) {
     return {
-      features: resolveFeatures(tenant.features),
+      features: resolveFeatures(tenant.chosenFeatures ?? tenant.features),
+      planFeatures: tenant.terms ? tenant.terms.features : FEATURE_KEYS,
       allowedEmailDomains: tenant.allowedEmailDomains,
       limits: tenant.limits,
       permissionOverrides: tenant.permissionOverrides,
@@ -176,6 +180,6 @@ export const tenantsService = {
       meta,
     );
     if (!updated) throw notFound('College');
-    return this.settings(updated);
+    return this.settings((await findTenantById(updated._id)) ?? updated);
   },
 };

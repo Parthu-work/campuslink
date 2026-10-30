@@ -27,6 +27,7 @@ export function meRoutes(svc: UsersService): AnyRouteSpec[] {
     {
       method: 'patch',
       path: '/me',
+      readOnlyOk: true,
       tag: 'Me',
       summary: 'Update my name or language',
       access: { kind: 'authenticated' },
@@ -45,6 +46,7 @@ export function meRoutes(svc: UsersService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/me/consents',
+      readOnlyOk: true,
       tag: 'Me',
       summary: 'Grant or withdraw a consent purpose',
       access: { kind: 'authenticated' },
@@ -99,6 +101,7 @@ export function adminUserRoutes(svc: UsersService): AnyRouteSpec[] {
     {
       method: 'patch',
       path: '/admin/users/:id/status',
+      readOnlyOk: true,
       tag: 'Admin',
       summary: 'Suspend or reactivate a user',
       access: { kind: 'permission', permission: 'users:manage' },

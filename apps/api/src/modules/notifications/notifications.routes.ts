@@ -42,6 +42,7 @@ export function notificationRoutes(svc: NotificationsService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/notifications/read',
+      readOnlyOk: true,
       tag,
       summary: 'Mark notifications as read',
       access: SELF,
@@ -59,6 +60,7 @@ export function notificationRoutes(svc: NotificationsService): AnyRouteSpec[] {
     {
       method: 'put',
       path: '/me/notification-preferences',
+      readOnlyOk: true,
       tag,
       summary: 'Update channels and quiet hours',
       access: SELF,
@@ -76,6 +78,7 @@ export function notificationRoutes(svc: NotificationsService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/notifications/push/subscriptions',
+      readOnlyOk: true,
       tag,
       summary: 'Register this browser for push (known push services only)',
       access: SELF,
@@ -86,6 +89,7 @@ export function notificationRoutes(svc: NotificationsService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/notifications/push/unsubscribe',
+      readOnlyOk: true,
       tag,
       summary: 'Remove this browser’s push subscription',
       access: SELF,

@@ -170,7 +170,7 @@ describe('super admin is platform-only', () => {
           accent: '#f2b705',
           monogram: 'NC',
         },
-        subscription: { plan: 'trial', seatLimit: 800, renewalDate: null },
+        subscription: { plan: 'pilot', seats: 800, renewalDate: null },
         firstAdmin: { name: 'Priya Admin', email: 'priya@newcollege.example' },
       });
     expect(created.status).toBe(201);

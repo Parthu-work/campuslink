@@ -7,6 +7,7 @@ import { createLogger } from './lib/logger.js';
 import { MemoryMailProvider, SmtpMailProvider } from './lib/mailer.js';
 import { BullJobQueue, InlineJobQueue } from './lib/jobs.js';
 import { runRetention } from './lib/maintenance.js';
+import { BillingService } from './modules/billing/billing.service.js';
 import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
@@ -148,6 +149,15 @@ async function main() {
   if (runsJobs) {
     setTimeout(adultTick, 60_000).unref();
     setInterval(adultTick, 3600_000).unref();
+  }
+
+  // Billing (B10): hourly, one daily run per college (job ids dedupe per day): seats, overdue
+  // invoices, reminders and read-only.
+  const billingTick = () =>
+    BillingService.enqueueDaily(jobs).catch((err: unknown) => logger.error({ err }, 'billing tick failed'));
+  if (runsJobs) {
+    setTimeout(billingTick, 90_000).unref();
+    setInterval(billingTick, 3600_000).unref();
   }
 
   const shutdown = (signal: string) => {

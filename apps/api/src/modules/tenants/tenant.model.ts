@@ -1,5 +1,5 @@
 import { Schema, type InferSchemaType, type HydratedDocument } from 'mongoose';
-import { FEATURE_KEYS, NEW_TENANT_FEATURES } from '@campuslink/shared';
+import { FEATURE_KEYS, NEW_TENANT_FEATURES, PLAN_IDS } from '@campuslink/shared';
 import { definePlatformModel, baseSchemaOptions } from '../../db/models.js';
 
 /** The tenant registry is the only platform-level collection besides nothing else in Phase 1. */
@@ -32,10 +32,34 @@ const tenantSchema = new Schema(
       grant: { type: Schema.Types.Mixed, default: {} },
       revoke: { type: Schema.Types.Mixed, default: {} },
     },
+    /** Plan and term (B10). `terms` is a custom deal: only the plan terms it changes. */
     subscription: {
-      plan: { type: String, enum: ['trial', 'standard', 'premium'], default: 'trial' },
-      seatLimit: { type: Number, default: 1000 },
+      plan: { type: String, enum: PLAN_IDS, default: 'pilot' },
+      /** Contracted seats: the enrolled students the college is quoted for (never a hard limit). */
+      seats: { type: Number, default: 1000 },
+      startedOn: { type: Date, default: null },
       renewalDate: { type: Date, default: null },
+      terms: { type: Schema.Types.Mixed, default: null },
+    },
+    /** Invoicing and the state the billing timer keeps (B10). */
+    billing: {
+      buyer: {
+        type: new Schema(
+          {
+            legalName: { type: String, required: true },
+            address: { type: String, required: true },
+            gstin: { type: String, default: null },
+            stateCode: { type: String, required: true },
+          },
+          { _id: false, strict: 'throw' },
+        ),
+        default: null,
+      },
+      /** Seats in use (verified students + alumni active in 12 months), counted nightly. */
+      seatsUsed: { type: Number, default: null },
+      seatsCountedAt: { type: Date, default: null },
+      /** Set when an invoice is 30 days overdue; cleared when it is paid. Nothing is deleted. */
+      readOnlyAt: { type: Date, default: null },
     },
     retention: {
       inactiveAccountDays: { type: Number, default: 1095 },

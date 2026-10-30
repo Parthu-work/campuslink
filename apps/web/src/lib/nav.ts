@@ -20,6 +20,7 @@ import {
   Home,
   Inbox,
   TrendingUp,
+  ReceiptIndianRupee,
   Library,
   Medal,
   MessageCircleQuestion,
@@ -84,6 +85,7 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   verify: BadgeCheck,
   platform: Building2,
   traction: TrendingUp,
+  billing: ReceiptIndianRupee,
   health: Activity,
 };
 
@@ -121,7 +123,13 @@ const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'admin',
   'verify',
 ]);
-const PLATFORM_SHIPPED: ReadonlySet<NavId> = new Set<NavId>(['platform', 'traction', 'health', 'settings']);
+const PLATFORM_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
+  'platform',
+  'billing',
+  'traction',
+  'health',
+  'settings',
+]);
 
 export interface NavEntry {
   id: NavId;

@@ -59,6 +59,7 @@ export function sessionRoutes(svc: SessionsService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/bookings/:id/cancel',
+      readOnlyOk: true,
       tag,
       summary: 'Cancel an upcoming session (late cancellations are recorded)',
       access: BOOK,
@@ -71,6 +72,7 @@ export function sessionRoutes(svc: SessionsService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/bookings/:id/join',
+      readOnlyOk: true,
       tag,
       summary: 'Short-lived video link (participants, around the session time only)',
       access: BOOK,

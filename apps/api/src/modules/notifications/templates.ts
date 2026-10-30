@@ -163,6 +163,30 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'Your outcome needs another look: {title}',
       body: 'The placement cell could not verify what you reported. Open it to see why.',
     },
+    invoice_issued: {
+      title: 'New invoice {number}',
+      body: 'Invoice {number} for {amount} is due on {due}. Download it in Admin › Billing.',
+    },
+    invoice_due_soon: {
+      title: 'Invoice {number} is due on {due}',
+      body: '{amount} is due on {due}. Pay by bank transfer quoting {number}, or online in Admin › Billing.',
+    },
+    invoice_due: {
+      title: 'Invoice {number} is due today',
+      body: '{amount} is due today. The bank details and the online option are in Admin › Billing.',
+    },
+    invoice_overdue: {
+      title: 'Invoice {number} is overdue',
+      body: '{amount} was due on {due}. If it is still unpaid 30 days after that, your college becomes read-only until it is paid. Nothing is deleted.',
+    },
+    college_read_only: {
+      title: 'Your college is read-only',
+      body: 'Invoice {number} is 30 days overdue. Members can still read and export everything, but nothing new can be added. Paying it restores everything at once.',
+    },
+    payment_received: {
+      title: 'Payment received for {number}',
+      body: 'We received {amount} for invoice {number}. Thank you.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -328,6 +352,30 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     outcome_rejected: {
       title: 'మీ ఫలితాన్ని మళ్లీ చూడాలి: {title}',
       body: 'మీరు నివేదించినదాన్ని ప్లేస్‌మెంట్ సెల్ ధృవీకరించలేకపోయింది. కారణం చూడటానికి తెరవండి.',
+    },
+    invoice_issued: {
+      title: 'కొత్త ఇన్‌వాయిస్ {number}',
+      body: '{amount} కోసం ఇన్‌వాయిస్ {number} గడువు {due}. అడ్మిన్ › బిల్లింగ్‌లో డౌన్‌లోడ్ చేసుకోండి.',
+    },
+    invoice_due_soon: {
+      title: 'ఇన్‌వాయిస్ {number} గడువు {due}',
+      body: '{amount} చెల్లింపు గడువు {due}. {number}ను రిఫరెన్స్‌గా ఇచ్చి బ్యాంక్ బదిలీ ద్వారా, లేదా అడ్మిన్ › బిల్లింగ్‌లో ఆన్‌లైన్‌లో చెల్లించండి.',
+    },
+    invoice_due: {
+      title: 'ఇన్‌వాయిస్ {number} గడువు ఈ రోజు',
+      body: '{amount} చెల్లింపు గడువు ఈ రోజు. బ్యాంక్ వివరాలు, ఆన్‌లైన్ చెల్లింపు అడ్మిన్ › బిల్లింగ్‌లో ఉన్నాయి.',
+    },
+    invoice_overdue: {
+      title: 'ఇన్‌వాయిస్ {number} గడువు దాటింది',
+      body: '{amount} గడువు {due}. ఆ తర్వాత 30 రోజులకూ చెల్లించకపోతే, చెల్లించే వరకు మీ కాలేజీ చదవడానికి మాత్రమే ఉంటుంది. ఏదీ తొలగించబడదు.',
+    },
+    college_read_only: {
+      title: 'మీ కాలేజీ ఇప్పుడు చదవడానికి మాత్రమే',
+      body: 'ఇన్‌వాయిస్ {number} గడువు దాటి 30 రోజులైంది. సభ్యులు అన్నీ చదవగలరు, ఎగుమతి చేయగలరు, కానీ కొత్తది ఏదీ జోడించలేరు. చెల్లించిన వెంటనే అన్నీ తిరిగి పనిచేస్తాయి.',
+    },
+    payment_received: {
+      title: '{number}కు చెల్లింపు అందింది',
+      body: 'ఇన్‌వాయిస్ {number}కు {amount} అందింది. ధన్యవాదాలు.',
     },
   },
 };
@@ -498,6 +546,18 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/outcomes';
     case 'outcome_rejected':
       return '/outcomes';
+    case 'invoice_issued':
+      return '/admin/billing';
+    case 'invoice_due_soon':
+      return '/admin/billing';
+    case 'invoice_due':
+      return '/admin/billing';
+    case 'invoice_overdue':
+      return '/admin/billing';
+    case 'college_read_only':
+      return '/admin/billing';
+    case 'payment_received':
+      return '/admin/billing';
     default:
       return '/sessions';
   }

@@ -33,6 +33,7 @@ export function phoneRoutes(
     {
       method: 'post',
       path: '/auth/phone/start',
+      readOnlyOk: true,
       tag,
       summary: 'Send a sign-up or sign-in code to a mobile number (same answer either way)',
       access: { kind: 'public' },
@@ -47,6 +48,7 @@ export function phoneRoutes(
     {
       method: 'post',
       path: '/auth/phone/verify',
+      readOnlyOk: true,
       tag,
       summary: 'Confirm a phone code: sign in, or create the account from the sign-up fields',
       access: { kind: 'public' },
@@ -64,6 +66,7 @@ export function phoneRoutes(
     {
       method: 'post',
       path: '/me/phone/change',
+      readOnlyOk: true,
       tag,
       summary: 'Change my number: a code to the old number (or the password), then to the new one',
       access: { kind: 'authenticated' },
@@ -77,6 +80,7 @@ export function phoneRoutes(
     {
       method: 'post',
       path: '/me/phone/change/confirm',
+      readOnlyOk: true,
       tag,
       summary: 'Confirm a phone-change code (old number first, then the new one)',
       access: { kind: 'authenticated' },
@@ -98,6 +102,7 @@ export function phoneRoutes(
     {
       method: 'post',
       path: '/me/guardian/start',
+      readOnlyOk: true,
       tag,
       summary: "Send a code to the guardian's number on the college's record",
       access: { kind: 'authenticated' },
@@ -111,6 +116,7 @@ export function phoneRoutes(
     {
       method: 'post',
       path: '/me/guardian/confirm',
+      readOnlyOk: true,
       tag,
       summary: 'Record the guardian’s consent with the code they received',
       access: { kind: 'authenticated' },
@@ -123,6 +129,7 @@ export function phoneRoutes(
     {
       method: 'post',
       path: '/me/guardian/manual',
+      readOnlyOk: true,
       tag,
       summary: 'Ask the college to check a guardian number (no number on its record)',
       access: { kind: 'authenticated' },

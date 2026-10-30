@@ -122,6 +122,7 @@ export function jobRoutes(s: { jobs: JobsService; referrals: ReferralsService })
     {
       method: 'delete',
       path: '/me/job-alerts/:id',
+      readOnlyOk: true,
       tag,
       summary: 'Delete a job alert',
       access: SAVE,

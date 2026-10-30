@@ -90,6 +90,7 @@ export function messagingRoutes(svc: MessagingService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/conversations/:id/read',
+      readOnlyOk: true,
       tag,
       summary: 'Read receipt up to a message',
       access: SEND,

@@ -19,6 +19,8 @@ import { WhitelistModel } from '../src/modules/imports/whitelist.model.js';
 import { DisabledSmsProvider } from '../src/lib/sms.js';
 import { DisabledWhatsAppProvider } from '../src/lib/whatsapp.js';
 import { loadEnv } from '../src/config/env.js';
+import { TenantModel } from '../src/modules/tenants/tenant.model.js';
+import { clearTenantCache } from '../src/modules/tenants/tenant.cache.js';
 
 const ctx = testApp();
 let T: TestTenant;
@@ -346,6 +348,27 @@ describe('changing the number (B2)', () => {
     expect(
       await runInTenant(T._id, () => SessionModel.countDocuments({ userId: other.id, revokedAt: null })),
     ).toBe(1);
+  });
+});
+
+describe('read-only for non-payment (B10)', () => {
+  it('phone codes still sign members in, but create no new accounts', async () => {
+    const known = newPhone();
+    expect((await signUp(known)).status).toBe(200);
+    await TenantModel.updateOne({ _id: T._id }, { $set: { 'billing.readOnlyAt': new Date() } });
+    clearTenantCache();
+    try {
+      const fresh = await signUp(newPhone());
+      expect([fresh.status, fresh.body.error?.code]).toEqual([403, 'READ_ONLY']);
+      const s = await start(known, 'login');
+      const ok = await pub()
+        .post('/auth/phone/verify')
+        .send({ challengeId: s.body.data.challengeId, code: phoneCodeFrom(ctx, known).code });
+      expect(ok.body.data).toMatchObject({ mfaRequired: false, created: false });
+    } finally {
+      await TenantModel.updateOne({ _id: T._id }, { $set: { 'billing.readOnlyAt': null } });
+      clearTenantCache();
+    }
   });
 });
 

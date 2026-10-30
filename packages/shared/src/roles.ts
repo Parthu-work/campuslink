@@ -95,6 +95,7 @@ export const ALL_PERMISSIONS = [
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
   'platform:health',
+  'platform:billing',
 ] as const;
 export type Permission = (typeof ALL_PERMISSIONS)[number];
 /** What each permission allows (docs/permissions.md and the OpenAPI document). */
@@ -164,13 +165,18 @@ export const PERMISSIONS: Record<Permission, string> = {
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants': 'Create, suspend and configure colleges',
   'platform:health': 'View platform health',
+  'platform:billing': 'Plans, invoices and payments for every college',
   'placements:view': 'See placement drives and the eligibility rules',
   'placements:register': 'Register for placement drives one is eligible for',
   'placements:manage': 'Run placement drives: companies, eligibility, registrants, rounds, overrides',
   'outcomes:report': 'Report one’s own offers (with proof) to the placement cell',
   'outcomes:verify': 'Verify or reject reported offers',
 };
-export const PLATFORM_PERMISSIONS: readonly Permission[] = ['platform:tenants', 'platform:health'];
+export const PLATFORM_PERMISSIONS: readonly Permission[] = [
+  'platform:tenants',
+  'platform:health',
+  'platform:billing',
+];
 
 const STUDENT: Permission[] = [
   'feed:read',
@@ -228,7 +234,7 @@ const STAFF: Permission[] = [
 const COLLEGE_ADMIN: Permission[] = ALL_PERMISSIONS.filter((p) => !PLATFORM_PERMISSIONS.includes(p));
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
-  SUPER_ADMIN: ['platform:tenants', 'platform:health', 'audit:read'],
+  SUPER_ADMIN: ['platform:tenants', 'platform:health', 'platform:billing', 'audit:read'],
   COLLEGE_ADMIN,
   TPO: [
     ...STAFF,

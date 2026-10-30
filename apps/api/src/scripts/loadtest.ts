@@ -82,7 +82,7 @@ async function seed(): Promise<{ members: Member[] }> {
       accent: '#f2b705',
       monogram: 'LT',
     },
-    subscription: { plan: 'trial', seatLimit: 2000, renewalDate: null },
+    subscription: { plan: 'pilot', seats: 2000, renewalDate: null },
   });
   const year = new Date().getFullYear();
   const members: Member[] = [];

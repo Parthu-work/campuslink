@@ -42,6 +42,7 @@ export function privacyRoutes(s: PrivacyService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/me/deletion',
+      readOnlyOk: true,
       tag,
       summary: 'Delete my account after the college’s grace period (password required; signs out everywhere)',
       access: SIGNED_IN,
@@ -54,6 +55,7 @@ export function privacyRoutes(s: PrivacyService): AnyRouteSpec[] {
     {
       method: 'delete',
       path: '/me/deletion',
+      readOnlyOk: true,
       tag,
       summary: 'Cancel my account deletion during the grace period',
       access: SIGNED_IN,

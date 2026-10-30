@@ -40,6 +40,7 @@ export type NavId =
   | 'verify'
   | 'platform'
   | 'traction'
+  | 'billing'
   | 'health';
 
 export type NavGroup = 'main' | 'explore' | 'community' | 'you' | 'manage' | 'platform';
@@ -92,6 +93,7 @@ export type AdminSectionId =
   | 'branding'
   | 'features'
   | 'ai'
+  | 'billing'
   | 'audit';
 export interface AdminSection {
   id: AdminSectionId;
@@ -128,6 +130,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('branding', '/admin/branding', 'tenant:branding', 'college'),
   section('features', '/admin/features', 'tenant:settings', 'college'),
   section('ai', '/admin/ai', 'ai:settings', 'college'),
+  // Plan, seats, usage against allowances and invoices (B10).
+  section('billing', '/admin/billing', 'tenant:settings', 'college'),
   section('audit', '/admin/audit', 'audit:read', 'college'),
 ];
 const ADMIN_GROUPS: readonly AdminGroup[] = ['people', 'placements', 'community', 'insights', 'college'];
@@ -188,6 +192,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   platform: d('platform', '/platform', 'platform', ['platform:tenants']),
   // The cross-college traction view (B9): per-college aggregates only.
   traction: d('traction', '/platform/traction', 'platform', ['platform:tenants']),
+  // Plans, subscriptions, invoices and payments (B10).
+  billing: d('billing', '/platform/billing', 'platform', ['platform:billing']),
   health: d('health', '/platform/health', 'platform', ['platform:health']),
 };
 
@@ -249,7 +255,7 @@ export const PERSONA_TABS: Record<NavPersona, readonly (readonly NavId[])[]> = {
   alumni: [['home'], ['requests', 'mentoring'], ['create'], ['mentors'], ['jobs']],
   staff: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
   admin: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
-  platform: [['platform'], ['traction'], ['health'], ['settings']],
+  platform: [['platform'], ['billing'], ['traction'], ['health'], ['settings']],
 };
 
 /** The avatar menu: everything that is not a tab, grouped, in this order. */

@@ -149,6 +149,15 @@ import { CliMediaTools, noMediaTools, type MediaTools } from './modules/study/me
 import { noOcr, TesseractOcr, type OcrProvider } from './modules/study/media/ocr.js';
 import { WhisperServiceTranscriber, type TranscriptionProvider } from './modules/study/media/transcribe.js';
 import { createHmac } from 'node:crypto';
+import { BILLING_DAILY_JOB, BillingService } from './modules/billing/billing.service.js';
+import { billingRoutes, stubPayRoutes } from './modules/billing/billing.routes.js';
+import { EntitlementsService } from './modules/billing/entitlements.js';
+import {
+  DisabledPaymentProvider,
+  RazorpayPaymentProvider,
+  StubPaymentProvider,
+  type PaymentProvider,
+} from './lib/payments.js';
 
 export interface AppDeps {
   env: Env;
@@ -177,6 +186,22 @@ export interface AppDeps {
   /** Phone channels (tests inject console providers); otherwise from SMS_PROVIDER and WHATSAPP_PROVIDER. */
   sms?: SmsProvider;
   whatsapp?: WhatsAppProvider;
+  /** Online invoice payment (tests inject a stub); otherwise from PAYMENT_PROVIDER. */
+  payments?: PaymentProvider;
+}
+
+function paymentsFromEnv(env: Env, fetcher: typeof safeFetch): PaymentProvider {
+  if (env.PAYMENT_PROVIDER === 'stub') return new StubPaymentProvider();
+  if (env.PAYMENT_PROVIDER === 'razorpay')
+    return new RazorpayPaymentProvider(
+      {
+        keyId: env.RAZORPAY_KEY_ID ?? '',
+        keySecret: env.RAZORPAY_KEY_SECRET ?? '',
+        webhookSecret: env.RAZORPAY_WEBHOOK_SECRET ?? '',
+      },
+      fetcher,
+    );
+  return new DisabledPaymentProvider();
 }
 
 function smsFromEnv(env: Env, fetcher: typeof safeFetch): SmsProvider {
@@ -229,6 +254,7 @@ export function createApp({
   vectorStore,
   sms = smsFromEnv(env, fetcher),
   whatsapp = whatsappFromEnv(env, fetcher),
+  payments = paymentsFromEnv(env, fetcher),
 }: AppDeps) {
   const app = express();
   app.disable('x-powered-by');
@@ -296,6 +322,7 @@ export function createApp({
     ...(fetchImpl ? { fetchImpl } : {}),
   });
   const store = storage ?? storageFromEnv(env).storage;
+  const entitlements = new EntitlementsService();
   const queue = jobs ?? new InlineJobQueue();
   const filesService = new FilesService(
     store,
@@ -339,6 +366,11 @@ export function createApp({
       env.WHATSAPP_ACTION_SECRET ??
       createHmac('sha256', env.JWT_TICKET_SECRET).update('whatsapp-actions-v1').digest('hex'),
     appSecret: env.WHATSAPP_APP_SECRET ?? '',
+    // The plan's allowance (B10): per student per month, for the students the plan is sized for.
+    allowance: async (tenantId) => {
+      const t = await findTenantById(tenantId);
+      return t ? entitlements.limit(t, 'whatsapp') : 0;
+    },
   });
   otpService.onSent = (userId, channel, messageId) =>
     channelService.record(userId, channel, 'auth_code', 'authentication', true, messageId);
@@ -825,6 +857,32 @@ export function createApp({
     outcomes: outcomesService,
   });
 
+  // ── Plans, entitlements and billing (B10) ─────────────────────────────
+  const billingService = new BillingService({
+    seller: {
+      name: env.BILLING_SELLER_NAME,
+      address: env.BILLING_SELLER_ADDRESS,
+      gstin: env.BILLING_SELLER_GSTIN ?? null,
+      stateCode: env.BILLING_SELLER_STATE ?? null,
+      registered: env.BILLING_GST_REGISTERED,
+      gstRate: env.BILLING_GST_RATE,
+      sacCode: env.BILLING_SAC_CODE,
+      prefix: env.BILLING_INVOICE_PREFIX,
+      termsDays: env.BILLING_PAYMENT_TERMS_DAYS,
+      bankDetails: env.BILLING_BANK_DETAILS ?? null,
+    },
+    files: filesService,
+    notifications: notificationsService,
+    users: usersService,
+    payments,
+    entitlements,
+    logger,
+    whatsappUsed: async () => (await channelService.usage()).sent,
+    aiTokensUsed: () => aiUsageService.monthTokens(),
+    tenantUrl,
+  });
+  queue.register(BILLING_DAILY_JOB, () => billingService.daily());
+
   // ── Product analytics (B9) ─────────────────────────────
   const productInsights = new InsightsService({
     eligible: async (userId) => {
@@ -1079,6 +1137,9 @@ export function createApp({
   app.use(API_PREFIX, defineModule('analytics', analyticsRoutes(analyticsService), pipeline));
   app.use(API_PREFIX, defineModule('insights', insightsRoutes(productInsights, platformService), pipeline));
   app.use(API_PREFIX, defineModule('privacy', privacyRoutes(privacyService), pipeline));
+  app.use(API_PREFIX, defineModule('billing', billingRoutes(billingService, payments), pipeline));
+  if (env.NODE_ENV !== 'production' && payments instanceof StubPaymentProvider)
+    app.use(API_PREFIX, defineModule('dev-payments', stubPayRoutes(billingService, payments), pipeline));
   app.use(
     API_PREFIX,
     defineModule(
@@ -1176,6 +1237,9 @@ export function createApp({
     aiUsage: aiUsageService,
     vectors: vectorIndex,
     chat: chatService,
+    billing: billingService,
+    entitlements,
+    payments,
   };
   return app;
 }

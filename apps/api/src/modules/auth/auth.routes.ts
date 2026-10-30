@@ -53,6 +53,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/verify-email',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Confirm an email address with the emailed token',
       access: { kind: 'public' },
@@ -66,6 +67,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/verify-email/resend',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Send a new email confirmation link',
       access: { kind: 'public' },
@@ -79,6 +81,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/login',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Sign in with email and password',
       access: { kind: 'public' },
@@ -97,6 +100,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/login/mfa',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Complete sign-in with a TOTP or recovery code',
       access: { kind: 'public' },
@@ -116,6 +120,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/refresh',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Rotate the refresh cookie and get a new access token',
       access: { kind: 'public' },
@@ -136,6 +141,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/logout',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Sign out on this device',
       access: { kind: 'public' },
@@ -151,6 +157,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/password/forgot',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Email a password reset link',
       access: { kind: 'public' },
@@ -165,6 +172,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/password/reset',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Set a new password with a reset token',
       access: { kind: 'public' },
@@ -179,6 +187,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/password/change',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Change password (signs out other devices)',
       access: { kind: 'authenticated' },
@@ -210,6 +219,7 @@ export function authRoutes(
     {
       method: 'delete',
       path: '/auth/sessions/:id',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Sign out one of my devices',
       access: { kind: 'authenticated' },
@@ -223,6 +233,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/sessions/revoke-others',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Sign out all my other devices',
       access: { kind: 'authenticated' },
@@ -240,6 +251,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/mfa/setup',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Start TOTP enrolment (returns QR code)',
       access: { kind: 'authenticated' },
@@ -252,6 +264,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/mfa/enable',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Confirm TOTP enrolment; returns one-time recovery codes',
       access: { kind: 'authenticated' },
@@ -265,6 +278,7 @@ export function authRoutes(
     {
       method: 'post',
       path: '/auth/mfa/disable',
+      readOnlyOk: true,
       tag: 'Auth',
       summary: 'Turn off TOTP (not allowed for admins)',
       access: { kind: 'authenticated' },

@@ -104,31 +104,37 @@ Indexes are created on boot (`syncIndexes()`), and every compound index leads wi
   - `RATE_LIMIT_SCALE` above 2;
   - `MAIL_DRIVER=disabled`;
   - `MALWARE_SCANNER=none`;
-  - `S3_SSE=none` with S3 storage.
+  - `S3_SSE=none` with S3 storage;
+  - `PAYMENT_PROVIDER=stub`.
 - Store secrets as SecureString parameters in SSM Parameter Store (KMS-encrypted).
   - Inject them through the ECS task definition `secrets` field.
   - Never put them in images, task definition plain-text environment, or logs.
 
-| Variable                                                        | Production value                                                                                         |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `NODE_ENV`                                                      | `production`                                                                                             |
-| `APP_ROOT_DOMAIN`                                               | `campuslink.example`                                                                                     |
-| `WEB_ORIGIN`, `CORS_ALLOWED_ORIGINS`                            | `https://campuslink.example`, `https://*.campuslink.example`                                             |
-| `TRUST_PROXY_HOPS`                                              | `1` (the ALB routes `/api/*` straight to the API); `1` on a single host behind nginx                     |
-| `MONGODB_URI`, `REDIS_URL`                                      | SSM SecureString; TLS (`tls=true`, `rediss://`)                                                          |
-| `JWT_ACCESS_SECRET`, `JWT_TICKET_SECRET`                        | SSM; 32+ random bytes each; different values                                                             |
-| `FIELD_ENCRYPTION_KEY`, `FIELD_ENCRYPTION_KEYS_PREVIOUS`        | SSM; 32 random bytes, base64 (`openssl rand -base64 32`); previous keys only during a rotation (runbook) |
-| `COOKIE_SECURE`                                                 | unset (defaults to `true` in production)                                                                 |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | SES SMTP endpoint for `ap-south-1`, port 587, SES SMTP credentials, a verified sender                    |
-| `STORAGE_DRIVER`, `S3_BUCKET`, `S3_REGION`                      | `s3`, the private files bucket, `ap-south-1`                                                             |
-| `S3_SSE`, `S3_KMS_KEY_ID`, `S3_PREFIX`                          | `aws:kms` (default), the customer-managed key, `files/` (default)                                        |
-| `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`       | unset on AWS (the task role supplies credentials); only for S3-compatible stores                         |
-| `MALWARE_SCANNER`, `CLAMAV_ADDRESS`                             | `clamav`, `127.0.0.1:3310` (the sidecar)                                                                 |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`        | from `pnpm --filter @campuslink/api vapid`; subject `mailto:` the operator                               |
-| `JITSI_BASE_URL`, `JITSI_APP_ID`, `JITSI_APP_SECRET`            | the self-hosted Jitsi in `ap-south-1`                                                                    |
-| `BOT_PROTECTION`, `TURNSTILE_SECRET`, `TURNSTILE_SITE_KEY`      | `turnstile`, the secret (SSM), the public site key for the college domains                               |
-| `HIBP_ENABLED`                                                  | `true` (k-anonymity; only a 5-character hash prefix leaves the server)                                   |
-| `LOG_LEVEL`                                                     | `info`                                                                                                   |
+| Variable                                                                                | Production value                                                                                                                                                                                |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`                                                                              | `production`                                                                                                                                                                                    |
+| `APP_ROOT_DOMAIN`                                                                       | `campuslink.example`                                                                                                                                                                            |
+| `WEB_ORIGIN`, `CORS_ALLOWED_ORIGINS`                                                    | `https://campuslink.example`, `https://*.campuslink.example`                                                                                                                                    |
+| `TRUST_PROXY_HOPS`                                                                      | `1` (the ALB routes `/api/*` straight to the API); `1` on a single host behind nginx                                                                                                            |
+| `MONGODB_URI`, `REDIS_URL`                                                              | SSM SecureString; TLS (`tls=true`, `rediss://`)                                                                                                                                                 |
+| `JWT_ACCESS_SECRET`, `JWT_TICKET_SECRET`                                                | SSM; 32+ random bytes each; different values                                                                                                                                                    |
+| `FIELD_ENCRYPTION_KEY`, `FIELD_ENCRYPTION_KEYS_PREVIOUS`                                | SSM; 32 random bytes, base64 (`openssl rand -base64 32`); previous keys only during a rotation (runbook)                                                                                        |
+| `COOKIE_SECURE`                                                                         | unset (defaults to `true` in production)                                                                                                                                                        |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`                         | SES SMTP endpoint for `ap-south-1`, port 587, SES SMTP credentials, a verified sender                                                                                                           |
+| `STORAGE_DRIVER`, `S3_BUCKET`, `S3_REGION`                                              | `s3`, the private files bucket, `ap-south-1`                                                                                                                                                    |
+| `S3_SSE`, `S3_KMS_KEY_ID`, `S3_PREFIX`                                                  | `aws:kms` (default), the customer-managed key, `files/` (default)                                                                                                                               |
+| `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`                               | unset on AWS (the task role supplies credentials); only for S3-compatible stores                                                                                                                |
+| `MALWARE_SCANNER`, `CLAMAV_ADDRESS`                                                     | `clamav`, `127.0.0.1:3310` (the sidecar)                                                                                                                                                        |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`                                | from `pnpm --filter @campuslink/api vapid`; subject `mailto:` the operator                                                                                                                      |
+| `JITSI_BASE_URL`, `JITSI_APP_ID`, `JITSI_APP_SECRET`                                    | the self-hosted Jitsi in `ap-south-1`                                                                                                                                                           |
+| `BOT_PROTECTION`, `TURNSTILE_SECRET`, `TURNSTILE_SITE_KEY`                              | `turnstile`, the secret (SSM), the public site key for the college domains                                                                                                                      |
+| `BILLING_SELLER_NAME`, `BILLING_SELLER_ADDRESS`                                         | the platform owner's registered business name and address (printed on every invoice)                                                                                                            |
+| `BILLING_GST_REGISTERED`, `BILLING_SELLER_GSTIN`, `BILLING_SELLER_STATE`                | `true`, the GSTIN, its two-digit state code (the GSTIN must start with it)                                                                                                                      |
+| `BILLING_SAC_CODE`, `BILLING_GST_RATE`                                                  | as confirmed by a chartered accountant (the console warns while the SAC code is empty)                                                                                                          |
+| `BILLING_INVOICE_PREFIX`, `BILLING_PAYMENT_TERMS_DAYS`, `BILLING_BANK_DETAILS`          | `CL`, `30`, the account, IFSC and bank for transfers                                                                                                                                            |
+| `PAYMENT_PROVIDER`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | `razorpay` (or `disabled`; `stub` is refused), the live key id, the key secret and webhook secret (SSM). Webhook URL `https://admin.<root>/api/v1/webhooks/razorpay`, event `payment_link.paid` |
+| `HIBP_ENABLED`                                                                          | `true` (k-anonymity; only a 5-character hash prefix leaves the server)                                                                                                                          |
+| `LOG_LEVEL`                                                                             | `info`                                                                                                                                                                                          |
 
 ## Monitoring
 
@@ -231,3 +237,5 @@ Not covered by the rehearsal: AWS itself. The ALB, ACM, KMS, IAM policies, SES, 
 | An external penetration test                        | Platform owner  | Before the first real college                                               |
 | Infrastructure as code                              | Ops             | Terraform or CDK for the topology above, including the `ap-south-2` standby |
 | Legal review of the Privacy Policy and Terms drafts | College / legal | [`legal/`](legal/) templates; name the grievance officer                    |
+| SAC code and GST treatment of the plans             | Platform owner  | Confirm with a chartered accountant; set `BILLING_SAC_CODE` and the rate    |
+| Razorpay webhook payload against a live test event  | Platform owner  | Send the dashboard's test `payment_link.paid` to staging before going live  |

@@ -487,6 +487,12 @@ export class FilesService {
     }
   }
 
+  /** An issued invoice's PDF (B10): the college's own file, served only by the billing routes. */
+  async storeInvoice(data: Buffer) {
+    if (data.subarray(0, 5).toString('latin1') !== '%PDF-') throw unsupported('Not a PDF');
+    return this.store(null, 'invoice', data, 'application/pdf');
+  }
+
   /** `ownerId` null: the college's own file (its logo). */
   private async store(
     ownerId: string | null,

@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { Types } from 'mongoose';
 import { api, makeTenant, makeUser, PASSWORD, testApp, type TestTenant, type TestUser } from './helpers.js';
 import { postJob } from './jobs-fixtures.js';
+import { InvoiceModel, PaymentModel } from '../src/modules/billing/billing.model.js';
 import { runInTenant } from '../src/lib/context.js';
 import type { PrivacyService } from '../src/modules/privacy/privacy.service.js';
 import type { GamificationService } from '../src/modules/gamification/gamification.service.js';
@@ -375,6 +376,14 @@ describe('deletion', () => {
     ).toBe(401);
     // The other person's view of the conversation shows a former member.
     expect((await as(other).get(`/profiles/${alum.id}`)).status).toBe(404);
+  });
+
+  it('billing holds no member data (B10): invoices and payments are the college’s, about the college', () => {
+    for (const model of [InvoiceModel, PaymentModel])
+      expect(
+        Object.keys(model.schema.paths).filter((p) => /userId|ownerId|email|phone|anonKey/i.test(p)),
+        model.modelName,
+      ).toEqual([]);
   });
 
   it('every module with personal data registers an exporter', () => {

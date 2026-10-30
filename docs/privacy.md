@@ -63,6 +63,13 @@
 - **Aggregates only.** Colleges see counts (under 5 suppressed); the platform sees per-college counts through a named, audit-logged path and never member rows.
 - **Erasure** detaches the member's events in the same way as withdrawal.
 
+## Billing (build B10)
+
+- **About the college, not its members.** Invoices and payments name the college (its legal name, address, optional GSTIN and state) and the platform's seller. No member's id, name or contact is stored with them; the platform admin who recorded a bank payment is kept as the recorder.
+- **Online payment sends no personal data.** A Razorpay Payment Link carries the invoice number, the amount, the college's legal name and two internal ids; Razorpay's own SMS and email notifications are off.
+- **Seat counts are counts.** The nightly seat count stores one number per college.
+- **Kept as tax records.** Invoices are not erased with a member (they hold no member data) and are never deleted for non-payment; a college that does not pay becomes read-only, with everything still readable and exportable.
+
 ## Data minimisation (implemented)
 
 - IP addresses are reduced to /24 (IPv4) or /48 (IPv6) prefixes in sessions and audit.

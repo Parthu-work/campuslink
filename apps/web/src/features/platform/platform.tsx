@@ -5,7 +5,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '../../lib/toast';
 import { Building2, Plus, Power } from 'lucide-react';
-import { createTenantBody, onColor, type Branding } from '@campuslink/shared';
+import { createTenantBody, onColor, PLAN_IDS, type Branding, type PlanId } from '@campuslink/shared';
 import type { z } from 'zod';
 import { Button } from '../../components/ui/button';
 import { Field, Input, Select } from '../../components/ui/field';
@@ -23,7 +23,7 @@ interface TenantRow {
   slug: string;
   status: 'active' | 'suspended';
   branding: Branding;
-  subscription: { plan: string; seatLimit: number; renewalDate: string | null };
+  subscription: { plan: PlanId; seats: number; renewalDate: string | null };
   users: number;
   active30d: number;
 }
@@ -92,7 +92,7 @@ export function PlatformTenants() {
                 <div>
                   <dt className="eyebrow">{t('platform.plan')}</dt>
                   <dd className="font-mono">
-                    {tn.subscription.plan} · {tn.subscription.seatLimit}
+                    {t(`billing.plan.${tn.subscription.plan}`)} · {tn.subscription.seats}
                   </dd>
                 </div>
                 <div>
@@ -163,7 +163,7 @@ function CreateTenantDialog({ onClose }: { onClose: () => void }) {
         accent: '#f2b705',
         monogram: '',
       },
-      subscription: { plan: 'trial', seatLimit: 1000, renewalDate: null },
+      subscription: { plan: 'pilot', seats: 1000, renewalDate: null },
       firstAdmin: { name: '', email: '' },
     },
   });
@@ -219,20 +219,22 @@ function CreateTenantDialog({ onClose }: { onClose: () => void }) {
           <Field label={t('platform.plan')}>
             {({ id }) => (
               <Select id={id} {...form.register('subscription.plan')}>
-                <option value="trial">trial</option>
-                <option value="standard">standard</option>
-                <option value="premium">premium</option>
+                {PLAN_IDS.map((p) => (
+                  <option key={p} value={p}>
+                    {t(`billing.plan.${p}`)}
+                  </option>
+                ))}
               </Select>
             )}
           </Field>
-          <Field label={t('platform.seats')} error={e.subscription?.seatLimit?.message}>
+          <Field label={t('platform.seats')} error={e.subscription?.seats?.message}>
             {({ id }) => (
               <Input
                 id={id}
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                {...form.register('subscription.seatLimit', { valueAsNumber: true })}
+                {...form.register('subscription.seats', { valueAsNumber: true })}
               />
             )}
           </Field>

@@ -3,6 +3,7 @@ import { HEX_COLOR } from '../color.js';
 import { tenantSlug, email, personName } from './common.js';
 import { ALL_PERMISSIONS, PLATFORM_PERMISSIONS, TENANT_ROLES } from '../roles.js';
 import { FEATURE_KEYS, type Feature } from '../features.js';
+import { PLAN_IDS } from '../constants/plan-ids.js';
 
 const hex = z
   .string()
@@ -65,9 +66,11 @@ export const tenantSettingsBody = z.strictObject({
   permissionOverrides: z.strictObject({ grant: roleMap.optional(), revoke: roleMap.optional() }).optional(),
 });
 
+/** A new college's plan (B10): the platform console sets the rest in Billing. */
 export const subscriptionSchema = z.strictObject({
-  plan: z.enum(['trial', 'standard', 'premium']),
-  seatLimit: z.number().int().min(10).max(100_000),
+  plan: z.enum(PLAN_IDS),
+  /** Contracted seats: the enrolled students the college is quoted for. */
+  seats: z.number().int().min(10).max(100_000),
   renewalDate: z.iso.date().nullable(),
 });
 
@@ -100,4 +103,6 @@ export interface PublicTenant {
   botCheck: PublicBotCheck | null;
   /** Phone sign-up and sign-in work (a WhatsApp or SMS channel can deliver codes). */
   phoneSignIn: boolean;
+  /** Read-only for non-payment (B10): everything reads and exports; nothing new is written. */
+  readOnly: boolean;
 }

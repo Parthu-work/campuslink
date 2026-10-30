@@ -11,6 +11,7 @@ import {
   ListChecks,
   Newspaper,
   Radar,
+  ReceiptIndianRupee,
   ScrollText,
   ShieldAlert,
   SlidersHorizontal,
@@ -40,5 +41,6 @@ export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
   branding: Brush,
   features: SlidersHorizontal,
   ai: Sparkles,
+  billing: ReceiptIndianRupee,
   audit: ScrollText,
 };

@@ -35,7 +35,7 @@ describe('role-aware navigation', () => {
     expect(tabs([Role.FACULTY], withStudy)).toEqual(['home', 'subjects', 'create', 'review', 'jobs']);
     expect(tabs([Role.TPO], withStudy)).toEqual(['home', 'subjects', 'create', 'review', 'jobs']);
     expect(tabs([Role.COLLEGE_ADMIN], withStudy)).toEqual(['home', 'subjects', 'create', 'review', 'jobs']);
-    expect(tabs([Role.SUPER_ADMIN])).toEqual(['platform', 'traction', 'health', 'settings']);
+    expect(tabs([Role.SUPER_ADMIN])).toEqual(['platform', 'billing', 'traction', 'health', 'settings']);
   });
 
   it('groups the admin sections a member may open (none for students)', () => {
@@ -49,7 +49,7 @@ describe('role-aware navigation', () => {
       ['placements', ['placements', 'offers']],
       ['community', ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards']],
       ['insights', ['analytics', 'reports']],
-      ['college', ['branding', 'features', 'ai', 'audit']],
+      ['college', ['branding', 'features', 'ai', 'billing', 'audit']],
     ]);
     expect(admin([Role.FACULTY])).toEqual([
       ['community', ['moderation']],

@@ -93,7 +93,8 @@
     "assistant": "Study assistant",
     "placements": "Placements",
     "outcomes": "Your outcomes",
-    "traction": "Traction"
+    "traction": "Traction",
+    "billing": "Billing"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -473,7 +474,9 @@
     "importRoster": "College list",
     "importAcademics": "Academic records",
     "mapIntroAcademics": "Match each figure to a column. Rows are matched to students by roll number; figures already on record are replaced. Academic imports cannot be rolled back, so try a dry run first.",
-    "reports": "Reports"
+    "reports": "Reports",
+    "billing": "Billing",
+    "notInPlan": "Not in your college’s plan. Talk to us to add it."
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -1226,6 +1229,30 @@
     "outcome_rejected": {
       "title": "Your outcome needs another look: {{title}}",
       "body": "The placement cell could not verify what you reported. Open it to see why."
+    },
+    "invoice_issued": {
+      "title": "New invoice {{number}}",
+      "body": "Invoice {{number}} for {{amount}} is due on {{due}}. Download it in Admin › Billing."
+    },
+    "invoice_due_soon": {
+      "title": "Invoice {{number}} is due on {{due}}",
+      "body": "{{amount}} is due on {{due}}. Pay by bank transfer quoting {{number}}, or online in Admin › Billing."
+    },
+    "invoice_due": {
+      "title": "Invoice {{number}} is due today",
+      "body": "{{amount}} is due today. The bank details and the online option are in Admin › Billing."
+    },
+    "invoice_overdue": {
+      "title": "Invoice {{number}} is overdue",
+      "body": "{{amount}} was due on {{due}}. If it is still unpaid 30 days after that, your college becomes read-only until it is paid. Nothing is deleted."
+    },
+    "college_read_only": {
+      "title": "Your college is read-only",
+      "body": "Invoice {{number}} is 30 days overdue. Members can still read and export everything, but nothing new can be added. Paying it restores everything at once."
+    },
+    "payment_received": {
+      "title": "Payment received for {{number}}",
+      "body": "We received {{amount}} for invoice {{number}}. Thank you."
     }
   },
   "notifications": {
@@ -3956,6 +3983,172 @@
       "driveRegistrations": "Drive registrations",
       "offersVerified": "Offers verified",
       "studyQuestions": "Study questions"
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "intro": "Your plan, what you use against it, and your invoices. Students and alumni never pay.",
+    "plan": {
+      "pilot": "Pilot",
+      "connect": "Connect",
+      "placement": "Placement"
+    },
+    "customDeal": "Custom terms",
+    "pricePerStudent": "{{price}} per student per year",
+    "minimum": "annual minimum {{amount}}",
+    "annual": "This year: {{amount}} before GST",
+    "renews": "Renews on {{date}}",
+    "pilotEnds": "The pilot ends on {{date}}",
+    "seats": "Seats in use",
+    "seatsHint": "Verified students, and alumni active in the last 12 months. Counted every night.",
+    "notCounted": "Not counted yet",
+    "whatsapp": "WhatsApp messages this month",
+    "aiTokens": "Study assistant tokens this month",
+    "usedOf": "{{used}} of {{allowance}}",
+    "invoices": "Invoices",
+    "noInvoices": "No invoices yet",
+    "noInvoicesBody": "Invoices from us appear here, to download and pay.",
+    "col": {
+      "number": "Invoice",
+      "due": "Due",
+      "total": "Total",
+      "balance": "Balance",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "draft": "Draft",
+      "issued": "Issued",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "void": "Void"
+    },
+    "downloadNamed": "Download invoice {{number}}",
+    "payOnline": "Pay online",
+    "payNamed": "Pay invoice {{number}} online",
+    "payHint": "You can also pay by bank transfer to the account on the invoice, quoting its number.",
+    "paidReturn": "Thank you. The payment shows here as soon as it is confirmed.",
+    "billedTo": "Invoices are addressed to",
+    "billedToMissing": "We don’t have your college’s legal name and address yet. Write to us and we’ll add them before the first invoice.",
+    "readOnly": {
+      "title": "Your college is read-only",
+      "body": "An invoice is more than 30 days overdue. Everyone can still read and export everything, but nothing new can be added until it is paid. Nothing has been deleted."
+    },
+    "memberReadOnly": "Your college’s account is read-only for now. You can read and export everything; posting and other changes are paused.",
+    "banner": {
+      "readOnly": "The college is read-only until an overdue invoice is paid.",
+      "overdue_one": "An invoice is overdue.",
+      "overdue_other": "{{count}} invoices are overdue.",
+      "overSeats": "{{used}} seats are in use; your plan covers {{seats}}. Nobody is blocked; we’ll settle it at renewal.",
+      "pilot": "Your pilot ends on {{date}}.",
+      "open": "Billing"
+    },
+    "ofContracted": "of {{seats}} contracted",
+    "ofAllowance": "of {{allowance}} this month",
+    "issuedOn": "Issued {{date}}",
+    "toPay": "{{amount}} to pay by {{date}}",
+    "dueOn": "due {{date}}"
+  },
+  "pbilling": {
+    "title": "Billing",
+    "intro": "Plans, subscriptions, invoices and payments for every college.",
+    "tabs": {
+      "colleges": "Colleges",
+      "plans": "Plans"
+    },
+    "col": {
+      "college": "College",
+      "plan": "Plan",
+      "seats": "Seats used / contracted",
+      "renewal": "Renewal",
+      "outstanding": "Outstanding",
+      "status": "Status"
+    },
+    "overdue_one": "{{count}} overdue",
+    "overdue_other": "{{count}} overdue",
+    "readOnly": "Read-only",
+    "readOnlySince": "Read-only since {{date}}",
+    "overSeats": "Over seats",
+    "plans": {
+      "intro": "Defaults for every college on the plan. A college’s custom terms override them."
+    },
+    "terms": {
+      "pricePerStudentPaise": "Price per student per year",
+      "annualMinimumPaise": "Annual minimum",
+      "whatsappPerStudentMonthly": "WhatsApp messages per student per month",
+      "aiTokensPerStudentMonthly": "AI tokens per student per month",
+      "days": "Length in days",
+      "features": "Features included"
+    },
+    "yearly": "Yearly",
+    "changed": "Changed",
+    "featureCount": "{{count}} of {{total}} features",
+    "edit": "Edit {{plan}}",
+    "rupeesHint": "In rupees",
+    "invalidNumber": "Enter a number for “{{field}}”.",
+    "back": "All colleges",
+    "collegeIntro": "{{slug}} · {{plan}} plan",
+    "annualPrice": "Price this year",
+    "subscription": "Subscription",
+    "seats": "Contracted seats",
+    "startedOn": "Started on",
+    "renewalDate": "Renews or ends on",
+    "buyer": "Invoice details",
+    "legalName": "Legal name",
+    "address": "Address",
+    "gstin": "GSTIN (optional)",
+    "state": "State (place of supply)",
+    "custom": "Custom terms",
+    "customHint": "Leave a box empty to use the plan’s terms.",
+    "customFeatures": "Different features from the plan",
+    "planValue": "Plan: {{value}}",
+    "warnings": {
+      "no_sac_code": "No SAC code is set (BILLING_SAC_CODE). Confirm it with a chartered accountant before issuing invoices.",
+      "no_buyer": "Add the college’s legal name, address and state before issuing.",
+      "seller_unregistered": "The seller is not registered for GST, so invoices carry no tax."
+    },
+    "newInvoice": "New invoice",
+    "newInvoiceHint": "Saved as a draft. It gets its number, tax and PDF when you issue it.",
+    "periodStart": "Period from",
+    "periodEnd": "Period to",
+    "dueDays": "Days to pay",
+    "dueDaysHint": "Empty: the usual payment terms",
+    "lines": "Lines",
+    "description": "Description",
+    "quantity": "Quantity",
+    "unit": "Unit price (₹)",
+    "addLine": "Add a line",
+    "removeLine": "Remove line {{n}}",
+    "invalidLines": "Each line needs a whole quantity and a price in rupees.",
+    "notes": "Note on the invoice (optional)",
+    "createDraft": "Save draft",
+    "drafted": "Draft saved",
+    "draft": "Draft",
+    "issue": "Issue",
+    "issueTitle": "Issue this invoice for {{amount}}?",
+    "issueConfirm": "It gets the next number, today’s date and tax, and the college’s admins are told. It can’t be edited afterwards.",
+    "issued": "Invoice issued",
+    "discard": "Discard",
+    "discarded": "Draft discarded",
+    "void": "Void",
+    "voidTitle": "Void invoice {{number}}?",
+    "voidReason": "Why it is void",
+    "voided": "Invoice voided",
+    "recordPayment": "Record payment",
+    "recordPaymentFor": "Record a payment for {{number}}",
+    "balance": "Balance {{amount}}",
+    "amount": "Amount (₹)",
+    "paidOn": "Received on",
+    "utr": "UTR or bank reference",
+    "utrHint": "As the bank statement shows it",
+    "paymentNote": "Note (optional)",
+    "paymentRecorded": "Payment recorded",
+    "payments": "Payments",
+    "methodLabel": "How",
+    "reference": "Reference",
+    "method": {
+      "bank": "Bank transfer",
+      "online": "Online"
     }
   }
 }

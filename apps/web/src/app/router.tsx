@@ -102,6 +102,8 @@ const load = {
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
+  platformBilling: () => import('../features/platform/billing'),
+  adminBilling: () => import('../features/admin/billing'),
 };
 
 type Gate = Permission | readonly Permission[] | { permission: Permission; feature: Feature };
@@ -596,6 +598,9 @@ function collegeRoutes(): RouteObject[] {
             still(screen(load.admin, 'BrandingAdmin', 'tenant:branding', at('branding'))),
             still(screen(load.admin, 'FeaturesAdmin', 'tenant:settings', at('features'))),
             still(screen(load.aiAdmin, 'AiAdmin', inFeature('study', 'ai:settings'), at('ai'))),
+            screen(load.adminBilling, 'AdminBilling', 'tenant:settings', at('billing'), () => [
+              qc.ensureQueryData(q.adminBilling()),
+            ]),
             screen(load.admin, 'AuditAdmin', 'audit:read', at('audit')),
           ]),
         ]),
@@ -617,6 +622,18 @@ function platformRoutes(): RouteObject[] {
           screen(load.traction, 'PlatformTraction', 'platform:tenants', at('/platform/traction'), () => [
             qc.ensureQueryData(q.platformInsights()),
           ]),
+          screen(load.platformBilling, 'PlatformBilling', 'platform:billing', at('/platform/billing'), () => [
+            qc.ensureQueryData(q.platformBilling()),
+          ]),
+          still(
+            screen(
+              load.platformBilling,
+              'PlatformCollegeBilling',
+              'platform:billing',
+              at('/platform/billing/:id'),
+              ({ id }) => (id ? [qc.ensureQueryData(q.platformCollegeBilling(id))] : []),
+            ),
+          ),
           screen(load.platform, 'PlatformHealth', 'platform:health', at('/platform/health')),
           settingsRoutes,
         ]),

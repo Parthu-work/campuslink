@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { AI_PROVIDERS, APP_NAME, EMBEDDING_PROVIDERS } from '@campuslink/shared';
+import {
+  AI_PROVIDERS,
+  APP_NAME,
+  EMBEDDING_PROVIDERS,
+  GST_STATE_CODES,
+  GSTIN_PATTERN,
+} from '@campuslink/shared';
 
 const bool = z
   .enum(['true', 'false'])
@@ -216,6 +222,40 @@ export const envSchema = z.object({
     .string()
     .regex(/^(mailto:|https:\/\/)/)
     .default('mailto:no-reply@campuslink.localhost'),
+  /**
+   * Billing (B10): the seller on every invoice (the platform owner's business). Confirm the SAC
+   * code and the GST rate with a chartered accountant before issuing real invoices.
+   */
+  BILLING_SELLER_NAME: z.string().trim().min(3).max(160).default(`${APP_NAME} (demo seller)`),
+  /** One line, commas between parts; printed under the seller's name. */
+  BILLING_SELLER_ADDRESS: z.string().trim().min(5).max(400).default('Address not set'),
+  BILLING_SELLER_GSTIN: z.string().trim().toUpperCase().regex(GSTIN_PATTERN).optional(),
+  /** The seller's GST state code: same state as the college → CGST + SGST, otherwise IGST. */
+  BILLING_SELLER_STATE: z.enum(GST_STATE_CODES).optional(),
+  /** `false`: the seller is not registered for GST and invoices carry no tax. */
+  BILLING_GST_REGISTERED: bool,
+  BILLING_GST_RATE: z.coerce.number().min(0).max(28).default(18),
+  /** Services Accounting Code printed on invoices; empty shows a warning in the console. */
+  BILLING_SAC_CODE: z
+    .string()
+    .regex(/^(\d{4,8})?$/)
+    .default(''),
+  BILLING_INVOICE_PREFIX: z
+    .string()
+    .regex(/^[A-Z]{1,6}$/)
+    .default('CL'),
+  BILLING_PAYMENT_TERMS_DAYS: z.coerce.number().int().min(0).max(90).default(30),
+  /** Bank details printed on invoices for transfers (one line), e.g. `A/c 0000, IFSC ABCD0000000`. */
+  BILLING_BANK_DETAILS: z.string().trim().max(300).optional(),
+  /** Online payment (D5): `stub` (development and tests), `razorpay` (Payment Links), or off. */
+  PAYMENT_PROVIDER: z.enum(['disabled', 'stub', 'razorpay']).default('disabled'),
+  RAZORPAY_KEY_ID: z
+    .string()
+    .regex(/^rzp_(test|live)_[A-Za-z0-9]{6,40}$/)
+    .optional(),
+  RAZORPAY_KEY_SECRET: z.string().min(8).optional(),
+  /** Razorpay signs webhook deliveries with it (X-Razorpay-Signature, HMAC SHA256). */
+  RAZORPAY_WEBHOOK_SECRET: z.string().min(16).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -256,6 +296,21 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     );
   if (env.SMS_PROVIDER === 'msg91' && !(env.SMS_API_KEY && env.SMS_SENDER_ID && env.SMS_DLT_ENTITY_ID))
     throw new Error('SMS_PROVIDER=msg91 needs SMS_API_KEY, SMS_SENDER_ID and SMS_DLT_ENTITY_ID');
+  if (
+    env.PAYMENT_PROVIDER === 'razorpay' &&
+    !(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET && env.RAZORPAY_WEBHOOK_SECRET)
+  )
+    throw new Error(
+      'PAYMENT_PROVIDER=razorpay needs RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET',
+    );
+  if (env.BILLING_GST_REGISTERED && !(env.BILLING_SELLER_GSTIN && env.BILLING_SELLER_STATE))
+    throw new Error('BILLING_GST_REGISTERED=true needs BILLING_SELLER_GSTIN and BILLING_SELLER_STATE');
+  if (
+    env.BILLING_SELLER_GSTIN &&
+    env.BILLING_SELLER_STATE &&
+    !env.BILLING_SELLER_GSTIN.startsWith(env.BILLING_SELLER_STATE)
+  )
+    throw new Error('BILLING_SELLER_GSTIN must start with BILLING_SELLER_STATE');
   if (env.AI_DEFAULT_PROVIDER && !env.AI_DEFAULT_CHAT_MODEL)
     throw new Error('AI_DEFAULT_PROVIDER needs AI_DEFAULT_CHAT_MODEL');
   if (env.AI_DEFAULT_EMBEDDING_PROVIDER && !env.AI_DEFAULT_EMBEDDING_MODEL)
@@ -270,6 +325,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     if (env.MAIL_DRIVER === 'disabled') throw new Error('MAIL_DRIVER=disabled is not allowed in production');
     if (env.WHATSAPP_PROVIDER === 'cloud' && !env.WHATSAPP_ACTION_SECRET)
       throw new Error('WHATSAPP_ACTION_SECRET is required in production with WHATSAPP_PROVIDER=cloud');
+    if (env.PAYMENT_PROVIDER === 'stub')
+      throw new Error('PAYMENT_PROVIDER=stub is not allowed in production');
     if (env.SMS_PROVIDER === 'console' || env.WHATSAPP_PROVIDER === 'console')
       throw new Error('The console SMS and WhatsApp providers are not allowed in production');
     if (env.STORAGE_DRIVER === 's3' && env.S3_SSE === 'none')

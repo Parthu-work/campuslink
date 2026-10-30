@@ -330,6 +330,14 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
               </Link>
             </div>
           )}
+          {tenant.readOnly && (
+            <p
+              role="status"
+              className="rounded-[var(--radius-md)] border border-warning bg-warning-surface p-3 text-meta text-warning-ink"
+            >
+              {t('billing.memberReadOnly')}
+            </p>
+          )}
           <Outlet />
         </div>
       </main>

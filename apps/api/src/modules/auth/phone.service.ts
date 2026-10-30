@@ -20,6 +20,7 @@ import { AppError, badRequest, conflict, tooMany } from '../../lib/errors.js';
 import { verifyPassword } from '../../lib/passwords.js';
 import { RESEND_AFTER_SEC, type OtpService } from '../verification/otp.service.js';
 import { audit } from '../audit/audit.service.js';
+import { assertWritable } from '../tenants/features.js';
 import { consentService } from '../consent/consent.service.js';
 
 export interface PhoneAuthDeps {
@@ -160,6 +161,8 @@ export class PhoneAuthService {
     channel: OtpChannel | undefined,
     meta: ClientMeta,
   ): Promise<PhoneVerifyResult> {
+    // Phone codes still sign members in while the college is read-only (B10); no new accounts.
+    await assertWritable();
     const consents = f.consents.filter((c): c is ConsentPurpose =>
       (CONSENT_PURPOSE_KEYS as string[]).includes(c),
     );

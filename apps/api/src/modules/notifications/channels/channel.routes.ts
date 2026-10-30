@@ -34,6 +34,7 @@ export function channelRoutes(svc: ChannelService, verifyToken: string | undefin
     {
       method: 'post',
       path: '/webhooks/whatsapp',
+      readOnlyOk: true,
       tag: 'Webhooks',
       summary: 'Meta webhook deliveries (signed with X-Hub-Signature-256)',
       access: { kind: 'public' },

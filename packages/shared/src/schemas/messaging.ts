@@ -115,6 +115,12 @@ export const NOTIFICATION_TYPES = [
   'offer_rejected',
   'outcome_verified',
   'outcome_rejected',
+  'invoice_issued',
+  'invoice_due_soon',
+  'invoice_due',
+  'invoice_overdue',
+  'college_read_only',
+  'payment_received',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -189,6 +195,12 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   offer_rejected: 'placements',
   outcome_verified: 'placements',
   outcome_rejected: 'placements',
+  invoice_issued: 'reminders',
+  invoice_due_soon: 'reminders',
+  invoice_due: 'reminders',
+  invoice_overdue: 'reminders',
+  college_read_only: 'reminders',
+  payment_received: 'reminders',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;

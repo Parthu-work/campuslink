@@ -34,6 +34,7 @@ import { intentPreload } from '../../lib/preload';
 import { ADMIN_ICONS } from '../../lib/admin-icons';
 import { BackLink } from '../../components/ui/back-link';
 import { cn } from '../../lib/cn';
+import { BillingBanner } from './billing-banner';
 
 /** One admin section in the side menu: a 44px row with its icon, the current one marked. */
 function AdminMenu({ groups }: { groups: AdminNavGroup[] }) {
@@ -76,6 +77,7 @@ export function AdminLayout() {
   const { admin } = useNav();
   const { pathname } = useLocation();
   const atHome = pathname.replace(/\/+$/, '') === '/admin';
+  const billing = useCan('tenant:settings');
   const current = admin
     .flatMap((g) => g.items)
     .find((i) => pathname === i.to || pathname.startsWith(`${i.to}/`));
@@ -95,6 +97,7 @@ export function AdminLayout() {
           eyebrow={atHome ? undefined : t('nav.admin')}
           title={atHome ? t('nav.admin') : (current?.label ?? t('nav.admin'))}
         />
+        {billing && <BillingBanner />}
         <Outlet />
       </div>
     </div>
@@ -547,6 +550,8 @@ export function BrandingAdmin() {
 
 interface Settings {
   features: Record<Feature, boolean>;
+  /** The switches the college's plan includes (B10); the others stay off whatever is chosen. */
+  planFeatures: Feature[];
   allowedEmailDomains: string[];
 }
 export function FeaturesAdmin() {
@@ -575,16 +580,20 @@ export function FeaturesAdmin() {
       <Card className="grid gap-3 p-5">
         <p className="text-meta text-fg-2">{t('admin.featuresIntro')}</p>
         <ul className="grid gap-2">
-          {(Object.keys(FEATURES) as Feature[]).map((f) => (
-            <li key={f} className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-1">
-              <Switch
-                label={t(`feature.${f}`)}
-                description={t(`featureHint.${f}`)}
-                checked={settings.data.features[f]}
-                onChange={(on) => save.mutate({ features: { [f]: on } })}
-              />
-            </li>
-          ))}
+          {(Object.keys(FEATURES) as Feature[]).map((f) => {
+            const inPlan = settings.data.planFeatures.includes(f);
+            return (
+              <li key={f} className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-1">
+                <Switch
+                  label={t(`feature.${f}`)}
+                  description={inPlan ? t(`featureHint.${f}`) : t('admin.notInPlan')}
+                  checked={inPlan && settings.data.features[f]}
+                  disabled={!inPlan}
+                  onChange={(on) => save.mutate({ features: { [f]: on } })}
+                />
+              </li>
+            );
+          })}
         </ul>
       </Card>
       <Card className="p-5">

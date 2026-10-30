@@ -16,6 +16,8 @@ export const FILE_PURPOSES = [
   // Placements (B7): a résumé attached to a drive registration, and proof of an offer.
   'placement_resume',
   'offer_proof',
+  // Billing (B10): an issued invoice's PDF, served only through the billing routes.
+  'invoice',
 ] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 
