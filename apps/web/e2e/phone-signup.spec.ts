@@ -94,16 +94,19 @@ test('a minor on the college list joins, and their guardian consents with a code
   await page.getByLabel('Mobile number').fill('9000000016');
   await page.getByLabel('Month').selectOption({ label: 'January' });
   await page.getByLabel('Year').selectOption(String(new Date().getFullYear() - 16));
+  // Both demo colleges use these fictional numbers: wait for this run's message, not an earlier one.
+  const minorBefore = (await outbox(page, '+919000000016')).length;
   await page.getByRole('button', { name: 'Send code' }).click();
-  const code = await codeFor(page, '+919000000016');
+  const code = await codeFor(page, '+919000000016', minorBefore + 1);
   for (let i = 0; i < 6; i++) await page.getByLabel(`6-digit code ${i + 1}`).fill(code[i] ?? '');
   // Matched to the record by the proved number, so the guardian's number is known.
   await expect(page.getByRole('heading', { name: 'For your parent or guardian to read' })).toBeVisible();
   await page.getByRole('button', { name: 'తెలుగు' }).click();
   await expect(page.locator('ul[lang="te"]')).toBeVisible();
   await expectNoA11yViolations(page);
+  const guardianBefore = (await outbox(page, '+919000000061')).length;
   await page.getByRole('button', { name: /Send the code to/ }).click();
-  const guardianCode = await codeFor(page, '+919000000061');
+  const guardianCode = await codeFor(page, '+919000000061', guardianBefore + 1);
   for (let i = 0; i < 6; i++) await page.getByLabel(`6-digit code ${i + 1}`).fill(guardianCode[i] ?? '');
   await page.waitForURL(/\/home$/);
   await expect(page.getByRole('heading', { name: 'Your guardian’s consent' })).toHaveCount(0);
