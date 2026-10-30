@@ -111,9 +111,9 @@ test.describe('tabs (phones)', () => {
     const y = await scrollTo(page, Math.min(600, Math.max(0, max - 50)));
     expect(y).toBeGreaterThan(100);
 
-    // A new screen starts at the top...
-    await tapTab(page, 'Jobs');
-    await page.waitForURL(/\/jobs$/);
+    // A new screen starts at the top (Ananya is in her final year: Placements is her last tab)...
+    await tapTab(page, 'Placements');
+    await page.waitForURL(/\/placements$/);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(5);
 
     // ...and Home, tapped again, is where it was left.
@@ -158,7 +158,8 @@ test('the shell never remounts while moving between screens', async ({ page, isM
     w.__shell = [...document.querySelectorAll('header:not(main header), nav[aria-label="Main"], main#main')];
   });
   const links = isMobile ? mainTabs(page) : nav.first();
-  for (const name of ['Jobs', 'Mentors', 'Home']) {
+  // On phones Ananya (final year) has Placements as a tab; the desktop rail lists Jobs.
+  for (const name of [isMobile ? 'Placements' : 'Jobs', 'Mentors', 'Home']) {
     await links.getByRole('link', { name, exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/${name.toLowerCase()}$`));
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
@@ -184,7 +185,7 @@ test.describe('scroll-aware chrome and tab memory (phones)', () => {
     await expect(html).toHaveAttribute('data-chrome', 'hidden');
     await expect(html).toHaveAttribute('data-scrolled', 'true');
     // Still in the accessibility tree while hidden.
-    await expect(mainTabs(page).getByRole('link', { name: 'Jobs' })).toHaveCount(1);
+    await expect(mainTabs(page).getByRole('link', { name: 'Placements' })).toHaveCount(1);
     await page.mouse.wheel(0, -120);
     await expect(html).toHaveAttribute('data-chrome', 'shown');
   });
@@ -216,25 +217,27 @@ test.describe('scroll-aware chrome and tab memory (phones)', () => {
     await page.waitForURL(/\/home$/);
     await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 4000 }).toBeGreaterThan(y - 60);
     await expect(html).not.toHaveAttribute('data-chrome', 'hidden');
-    await mainTabs(page).getByRole('link', { name: 'Jobs' }).click({ timeout: 3000 });
-    await expect(page).toHaveURL(/\/jobs$/);
+    await mainTabs(page).getByRole('link', { name: 'Placements' }).click({ timeout: 3000 });
+    await expect(page).toHaveURL(/\/placements$/);
   });
 
   test('a tab remembers the screen you left it on; tapping it again goes to its root', async ({ page }) => {
     await signIn(page, 'ananya@dpit.example');
-    await tapTab(page, 'Jobs');
-    await page.waitForURL(/\/jobs$/);
-    const job = page.locator('a[href^="/jobs/"]:not([href="/jobs/tracker"]):not([href="/jobs/new"])').first();
-    await job.click();
-    await page.waitForURL(/\/jobs\/[a-f0-9]{24}$/);
-    const jobUrl = page.url();
+    await tapTab(page, 'Placements');
+    await page.waitForURL(/\/placements$/);
+    await page.locator('main a[href^="/placements/"]').first().click();
+    await page.waitForURL(/\/placements\/[a-f0-9]{24}$/);
+    const driveUrl = page.url();
     await tapTab(page, 'Home');
     await page.waitForURL(/\/home$/);
-    await tapTab(page, 'Jobs');
-    await expect(page).toHaveURL(jobUrl);
-    await expect(mainTabs(page).getByRole('link', { name: 'Jobs' })).toHaveAttribute('aria-current', 'page');
-    await tapTab(page, 'Jobs');
-    await expect(page).toHaveURL(/\/jobs$/);
+    await tapTab(page, 'Placements');
+    await expect(page).toHaveURL(driveUrl);
+    await expect(mainTabs(page).getByRole('link', { name: 'Placements' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await tapTab(page, 'Placements');
+    await expect(page).toHaveURL(/\/placements$/);
   });
 });
 

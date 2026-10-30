@@ -67,8 +67,9 @@ test.describe('role-aware bottom tabs (phones)', () => {
   test.skip(({ isMobile }) => !isMobile, 'Bottom tabs are a phone surface');
 
   test('students and alumni get their own tabs with Create in the middle', async ({ page }) => {
+    // Ananya graduates next year: Placements takes the last tab (B7); Jobs is in the menu.
     await signIn(page, 'ananya@dpit.example');
-    expect(await bottomTabs(page)).toEqual(['Home', 'Study', 'Create', 'Mentors', 'Jobs']);
+    expect(await bottomTabs(page)).toEqual(['Home', 'Study', 'Create', 'Mentors', 'Placements']);
     await page.context().clearCookies();
 
     await signIn(page, 'rahul@dpit.example');
