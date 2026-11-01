@@ -53,7 +53,7 @@ import {
   PlacementDriveModel,
 } from '../modules/placements/placements.model.js';
 import { ExamQualificationModel, HigherStudyModel } from '../modules/placements/outcomes.model.js';
-import { ctcBand } from '@campuslink/shared';
+import { ctcBand, PRIVACY_NOTICE_VERSION } from '@campuslink/shared';
 import { XP_RULES, type XpKind } from '@campuslink/shared';
 import {
   RoadmapModel,
@@ -244,7 +244,8 @@ async function addUser(
       userId: u._id,
       purpose,
       version: 1,
-      noticeVersion: 'seed',
+      // The current notice (B14): demo members have accepted it, so no notice gate on first sign-in.
+      noticeVersion: PRIVACY_NOTICE_VERSION,
       granted: true,
       source: 'signup',
     })),
