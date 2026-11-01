@@ -17,10 +17,13 @@ import { syncIndexes } from '../db/connect.js';
 import { runInTenant } from '../lib/context.js';
 import { hashPassword } from '../lib/passwords.js';
 import { TenantModel } from '../modules/tenants/tenant.model.js';
+import { ProductEventModel } from '../modules/insights/insights.model.js';
+import { SupportTicketModel } from '../modules/support/support.model.js';
 import { UserModel } from '../modules/auth/user.model.js';
 import { ConsentModel } from '../modules/consent/consent.model.js';
 import { AuditModel } from '../modules/audit/audit.model.js';
 import { ProfileModel } from '../modules/profiles/profile.model.js';
+import { ChannelMessageModel, ChannelUsageModel } from '../modules/notifications/channels/channel.model.js';
 import { WhitelistModel } from '../modules/imports/whitelist.model.js';
 import { MentorReviewModel } from '../modules/mentorship/review.model.js';
 import { FieldCipher } from '../lib/crypto.js';
@@ -54,7 +57,7 @@ import {
 } from '../modules/placements/placements.model.js';
 import { ExamQualificationModel, HigherStudyModel } from '../modules/placements/outcomes.model.js';
 import { ctcBand, PRIVACY_NOTICE_VERSION } from '@campuslink/shared';
-import { XP_RULES, type XpKind } from '@campuslink/shared';
+import { XP_RULES, type ProductEventName, type XpKind } from '@campuslink/shared';
 import {
   RoadmapModel,
   RoadmapProgressModel,
@@ -214,6 +217,8 @@ const DEMO_GUARDIAN_PHONE = '+919000000061';
  * one-tap invite link and the class join code. Numbers differ per college (console outbox).
  */
 const demoInvitePhones = (i: number) => ({ link: `+9190000001${i}7`, code: `+9190000001${i}8` });
+/** DEMO (B15): a minor who has joined and is waiting for their guardian's consent. */
+const demoPendingMinorPhones = (i: number) => ({ minor: `+9190000001${i}9`, guardian: `+9190000002${i}9` });
 
 /** Unclaimed list records: `newbie` can verify with the first one (code goes to Mailpit). */
 const UNCLAIMED: { no: string; name: string; gradYear: number; branch: Branch; localEmail: string }[] = [
@@ -1056,6 +1061,181 @@ async function seedPlacements(ids: Map<string, Types.ObjectId>, prefix: string) 
     branch: 'CSE',
     gradYear: vikramYear,
   });
+  // A drive in progress (B15): the first round is in, the interview results are not yet.
+  const brightwave = await company('Brightwave Systems (demo)', 'Software', 'DEMO: fictional company.');
+  const live = await PlacementDriveModel.create({
+    companyId: brightwave._id,
+    title: 'Associate engineer drive (DEMO)',
+    description: 'DEMO drive at a fictional company; the assessment is done, interviews are under way.',
+    roles: [
+      { title: 'Associate Engineer', ctcMinLpa: 5, ctcMaxLpa: 6, location: 'Hyderabad', type: 'full_time' },
+    ],
+    mode: 'virtual',
+    driveDate: new Date(now - 2 * DAY),
+    registrationCloseAt: new Date(now - 6 * DAY),
+    eligibility: { branches: [], gradYears: [vikramYear], minCgpa: 6.5 },
+    rounds: rounds(now - 2 * DAY),
+    resumeRequired: false,
+    status: 'in_progress',
+    openedAt: new Date(now - 12 * DAY),
+    createdBy: id('tpo'),
+  });
+  await DriveRegistrationModel.create({
+    driveId: live._id,
+    userId: id('vikram'),
+    status: 'registered',
+    final: 'in_process',
+    roundResults: [
+      { round: 0, result: 'cleared' },
+      { round: 1, result: 'pending' },
+      { round: 2, result: 'pending' },
+    ],
+    branch: 'CSE',
+    gradYear: vikramYear,
+  });
+}
+
+/**
+ * DEMO (B15): six weeks of product events, so Admin › Analytics has something to show. Sixty
+ * fictional sign-ups (ten a week) stand in as detached members: an `anonKey` starting `demo-` and
+ * no account, so nobody fictional appears in the directory. The demo accounts add their own visits.
+ * Every sign-up is labelled `source: demo`. The shape is chosen, not measured: 80% verify, 80% take
+ * a first step within a week, and 70%, 50%, 40% and 30% come back one to four weeks later.
+ */
+const DEMO_COHORT = { perWeek: 10, weeks: 6, comeBack: [70, 50, 40, 30, 30] } as const;
+
+async function seedCohort(ids: Map<string, Types.ObjectId>, prefix: string) {
+  const day = (d: number) => new Date(Date.now() - d * DAY).toISOString().slice(0, 10);
+  type Row = {
+    day: string;
+    userId: Types.ObjectId | null;
+    anonKey: string | null;
+    name: ProductEventName;
+    props: Record<string, string>;
+  };
+  const rows: Row[] = [];
+  const total = DEMO_COHORT.perWeek * DEMO_COHORT.weeks;
+  for (let n = 0; n < total; n++) {
+    const who = { userId: null, anonKey: `demo-${prefix}-${n}` };
+    const add = (daysAgo: number, name: ProductEventName, props: Record<string, string> = {}) => {
+      if (daysAgo >= 0) rows.push({ ...who, day: day(daysAgo), name, props });
+    };
+    const weeksAgo = DEMO_COHORT.weeks - 1 - (n % DEMO_COHORT.weeks);
+    const joined = weeksAgo * 7 + (n % 3);
+    add(joined, 'signed_up', { source: 'demo' });
+    add(joined, 'visited');
+    if (n % 5 !== 4) add(joined, 'verified');
+    // A first step: a mentorship request (half end in a session), or a roadmap step.
+    if (n % 5 < 3) {
+      const requestId = String(new mongoose.Types.ObjectId());
+      add(joined - 1, 'request_sent', { requestId });
+      if (n % 2 === 0) add(joined - 4, 'session_completed', { requestId });
+    } else if (n % 5 === 3) add(joined - 2, 'roadmap_step');
+    if (n % 4 === 0) add(joined - 3, 'study_question');
+    // Coming back k weeks later: the share in DEMO_COHORT.comeBack.
+    DEMO_COHORT.comeBack.forEach((pct, k) => {
+      if ((n % 10) * 10 < pct) add(joined - 7 * (k + 1), 'visited');
+    });
+  }
+  // The demo accounts were active the last three weeks (never today: a real visit takes today).
+  for (const userId of new Set(ids.values()))
+    for (const d of [1, 8, 15]) rows.push({ day: day(d), userId, anonKey: null, name: 'visited', props: {} });
+  await ProductEventModel.insertMany(rows);
+}
+
+/**
+ * DEMO (B15): the WhatsApp message log an admin sees under Admin › Messaging usage. Like the real log
+ * it holds template names, statuses and ids only, never text. (What the console provider "sent"
+ * lives in memory and is read through GET /dev/outbox.)
+ */
+async function seedWhatsAppLog(ids: Map<string, Types.ObjectId>, prefix: string) {
+  const rows: [string, string, 'requests' | 'sessions' | 'placements' | 'authentication', boolean, string][] =
+    [
+      ['rahul', 'cl_request_received', 'requests', false, 'read'],
+      ['ananya', 'cl_request_accepted', 'requests', false, 'read'],
+      ['ananya', 'cl_session_reminder', 'sessions', true, 'delivered'],
+      ['ananya', 'cl_drive_open', 'placements', false, 'delivered'],
+      ['vikram', 'cl_drive_round', 'placements', true, 'read'],
+      ['vikram', 'cl_drive_selected', 'placements', true, 'read'],
+      ['ananya', 'auth_code', 'authentication', true, 'delivered'],
+      ['rahul', 'cl_session_reminder', 'sessions', true, 'failed'],
+    ];
+  const day = 3600_000 * 24;
+  const docs = rows.flatMap(([who, template, category, critical, status], i) => {
+    const userId = ids.get(who);
+    if (!userId) return [];
+    const at = new Date(Date.now() - (rows.length - i) * 5 * 3600_000);
+    return [
+      {
+        userId,
+        channel: 'whatsapp' as const,
+        template,
+        category,
+        critical,
+        providerMessageId: `demo-wamid-${prefix}-${i}`,
+        status,
+        statusAt: at,
+        expiresAt: new Date(at.getTime() + 90 * day),
+        createdAt: at,
+      },
+    ];
+  });
+  await ChannelMessageModel.insertMany(docs);
+  const counts = new Map<string, number>();
+  for (const d of docs) {
+    const key = `${d.createdAt.toISOString().slice(0, 10)}|${d.category}`;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  for (const [key, count] of counts) {
+    const [dayKey, category] = key.split('|') as [string, string];
+    await ChannelUsageModel.updateOne(
+      { day: dayKey, channel: 'whatsapp', category },
+      { $inc: { count } },
+      { upsert: true },
+    );
+  }
+}
+
+/** DEMO help and legal (B14): a problem report the college answered, and the college's legal details. */
+async function seedSupport(ids: Map<string, Types.ObjectId>, tenantId: Types.ObjectId, college: string) {
+  const ananya = ids.get('ananya');
+  const admin = ids.get('admin');
+  if (ananya && admin)
+    await SupportTicketModel.create({
+      userId: ananya,
+      category: 'account',
+      desk: 'college',
+      subject: 'DEMO: my phone number changed',
+      body: 'DEMO report: I have a new SIM and cannot receive codes on my old number.',
+      status: 'answered',
+      replies: [
+        {
+          from: 'college',
+          authorId: admin,
+          authorName: 'Demo College Admin',
+          body: 'DEMO reply: use Settings › Security › Change number with your password, then the new number gets a code.',
+          at: new Date(),
+        },
+      ],
+      lastActivityAt: new Date(),
+    });
+  // Filled for the demo without publishing a new version, so demo members meet no notice gate.
+  await TenantModel.updateOne(
+    { _id: tenantId },
+    {
+      $set: {
+        'legal.legalName': `${college} Demo Educational Society (demo)`,
+        'legal.address': '1 Demo Road, Hyderabad, Telangana 500001 (fictional)',
+        'legal.grievanceOfficer': {
+          name: 'Demo Grievance Officer',
+          designation: 'Grievance officer (demo)',
+          email: 'grievance@demo.example',
+          phone: null,
+        },
+        'legal.updatedAt': new Date(),
+      },
+    },
+  );
 }
 
 /** DEMO outcomes (B8): an alumna's higher studies and an alumnus's GATE (verified), a student's GATE (waiting). */
@@ -1234,6 +1414,65 @@ async function main() {
         guardianPhoneEnc: cipher.encrypt(DEMO_GUARDIAN_PHONE),
         guardianPhoneIndex: cipher.blindIndex(DEMO_GUARDIAN_PHONE),
       });
+      // DEMO (B15): a first-year under 18 who joined by phone and claimed their record, waiting for
+      // their guardian's consent (status guardian_pending: read-only until the guardian confirms).
+      {
+        const ph = demoPendingMinorPhones(COLLEGES.indexOf(c));
+        const adultOn = new Date();
+        adultOn.setMonth(adultOn.getMonth() + 10, 1);
+        const minor = await UserModel.create({
+          name: 'Demo Pending Minor',
+          roles: ['STUDENT'],
+          verified: true,
+          status: 'guardian_pending',
+          adultOn,
+          ageCheckedAt: new Date(),
+          phoneEnc: cipher.encrypt(ph.minor),
+          phoneIndex: cipher.blindIndex(ph.minor),
+          phoneVerifiedAt: new Date(),
+          otpChannel: 'sms',
+        });
+        await ConsentModel.insertMany(
+          CONSENT_PURPOSE_KEYS.map((purpose) => ({
+            userId: minor._id,
+            purpose,
+            version: 1,
+            noticeVersion: PRIVACY_NOTICE_VERSION,
+            granted: true,
+            source: 'signup',
+          })),
+        );
+        await WhitelistModel.create({
+          rollNumber: `25${c.slug.slice(0, 2).toUpperCase()}1A0519`,
+          name: 'Demo Pending Minor',
+          branch: 'CSE',
+          gradYear: new Date().getFullYear() + 4,
+          kind: 'student',
+          source: 'manual',
+          phoneEnc: cipher.encrypt(ph.minor),
+          phoneIndex: cipher.blindIndex(ph.minor),
+          guardianPhoneEnc: cipher.encrypt(ph.guardian),
+          guardianPhoneIndex: cipher.blindIndex(ph.guardian),
+          status: 'claimed',
+          claimedBy: minor._id,
+          claimedAt: new Date(),
+        });
+        await ProfileModel.create({
+          userId: minor._id,
+          name: 'Demo Pending Minor',
+          roles: ['STUDENT'],
+          verified: false,
+          minorUntil: adultOn,
+          branch: 'CSE',
+          gradYear: new Date().getFullYear() + 4,
+        });
+        rows.push([
+          `${c.slug}.localhost`,
+          `phone ${ph.minor}`,
+          'STUDENT',
+          `minor, guardian consent pending (guardian's code goes to ${ph.guardian})`,
+        ]);
+      }
       const invitePhones = demoInvitePhones(COLLEGES.indexOf(c));
       for (const [no, name, phone] of [
         ['0521', 'Demo Invite Student', invitePhones.link],
@@ -1257,6 +1496,9 @@ async function main() {
       await seedPlacements(ids, c.slug.slice(0, 2).toUpperCase());
       await seedOutcomes(ids);
       if (c.slug === 'dpit') await seedBilling(t.branding.displayName);
+      await seedCohort(ids, c.slug);
+      await seedWhatsAppLog(ids, c.slug);
+      await seedSupport(ids, t._id, t.branding.displayName);
       await seedStudy(t._id, ids.get('faculty') as Types.ObjectId, { material: studyMaterial });
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });

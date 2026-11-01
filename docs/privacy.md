@@ -85,6 +85,12 @@
 - **Error reports** carry the error type, a scrubbed message (emails, numbers, ids and tokens removed), the request id, the route pattern and the college's slug; from browsers, a one-way hash of the member's id instead of the id. No names, bodies or query strings. Browsers send them to the college's own API, never straight to a third party.
 - **Metrics** are counters by route pattern, job, channel and status, with no member or college in them.
 
+## Demo data (build B15)
+
+- `pnpm seed` creates two fictional colleges for development and demos only. Every person, company, drive, offer and report in it is invented and labelled DEMO, with `.example` email addresses and `+91 90000 …` numbers that belong to nobody.
+- The demo analytics cohort is 60 detached sign-ups (`anonKey` starting `demo-`) with no account behind them, so they never appear as people anywhere in the app.
+- The seed refuses to run with `NODE_ENV=production`, because it starts by dropping the whole database it is pointed at (`MONGODB_URI`).
+
 ## Data minimisation (implemented)
 
 - IP addresses are reduced to /24 (IPv4) or /48 (IPv6) prefixes in sessions and audit.

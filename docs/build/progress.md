@@ -2,23 +2,23 @@
 
 A new session reads this file first and resumes from the first phase that is not **Done**. The prompt is [`master-prompt-1.md`](master-prompt-1.md); the codebase map is [`facts.md`](facts.md).
 
-| Phase | Name                                                           | Status      |
-| ----- | -------------------------------------------------------------- | ----------- |
-| B1    | Feature switches and the cut list                              | Done        |
-| B2    | Phone-first identity, age and guardian consent                 | Done        |
-| B3    | WhatsApp and SMS channels                                      | Done        |
-| B4    | One-tap invites and class onboarding                           | Done        |
-| B5    | Mentorship loop that never dead-ends                           | Done        |
-| B6    | TPO console                                                    | Done        |
-| B7    | Placement drives                                               | Done        |
-| B8    | Placement outcomes and accreditation reports                   | Done        |
-| B9    | Product analytics                                              | Done        |
-| B10   | Plans, entitlements and billing                                | Done        |
-| B11   | AI cost control                                                | Done        |
-| B12   | Hindi and the language framework                               | Done        |
-| B13   | Offline and low-data mode                                      | Done        |
-| B14   | In-app help, feedback, legal pages and app-level observability | Done        |
-| B15   | Hardening, demo data and final report                          | Not started |
+| Phase | Name                                                           | Status |
+| ----- | -------------------------------------------------------------- | ------ |
+| B1    | Feature switches and the cut list                              | Done   |
+| B2    | Phone-first identity, age and guardian consent                 | Done   |
+| B3    | WhatsApp and SMS channels                                      | Done   |
+| B4    | One-tap invites and class onboarding                           | Done   |
+| B5    | Mentorship loop that never dead-ends                           | Done   |
+| B6    | TPO console                                                    | Done   |
+| B7    | Placement drives                                               | Done   |
+| B8    | Placement outcomes and accreditation reports                   | Done   |
+| B9    | Product analytics                                              | Done   |
+| B10   | Plans, entitlements and billing                                | Done   |
+| B11   | AI cost control                                                | Done   |
+| B12   | Hindi and the language framework                               | Done   |
+| B13   | Offline and low-data mode                                      | Done   |
+| B14   | In-app help, feedback, legal pages and app-level observability | Done   |
+| B15   | Hardening, demo data and final report                          | Done   |
 
 ## Step 0 · Set up
 
@@ -376,3 +376,21 @@ A new session reads this file first and resumes from the first phase that is not
 - **Bug reports are read college by college** (`runInTenant` per college), not through a new platform scope.
 
 **Next:** B15 (hardening, demo data and final report).
+
+## B15 · Hardening, demo data and final report (Done)
+
+**Shipped**
+
+- Seed: an in-progress drive (`Associate engineer drive (DEMO)` at `Brightwave Systems (demo)`, Vikram past round one) next to the open and completed drives; a six-week product-event cohort (60 detached demo sign-ups, ten a week, plus the demo accounts' visits); an answered demo problem report and published legal details; a WhatsApp message log (template names and statuses only); `Demo Pending Minor`, who joined by phone and waits for the guardian's code (`+91 90000 001x9`, guardian `+91 90000 002x9`).
+- Load test: phone sign-in for 100 members through the console SMS provider and the dev outbox; 500 students registering for one drive at the same moment, with a check that exactly 500 are stored and that a second tap is refused (409); NBA SAR, NIRF and dashboard reports over three batches of 1,000 graduates with registrations and offers.
+- Docs: `architecture.md`, `data-model.md` (every B1–B14 collection), `threat-model.md` (phone codes, minors, the WhatsApp webhook and action tokens, invite links, placements, the billing webhook, help and metrics), `security-review.md` (master prompt review, two new gaps), `privacy.md` (demo data), `CLAUDE.md` (product events, phone identity, channels, placements, the offline copy, `ErrorReporter`); ADR 0012 and ADR 0013; the final report [`report-1.md`](report-1.md).
+- Fix: B14 gave members who are not yet verified `support:create`; `test/auth.test.ts` pinned their permission list without it (CI on `e528c01` failed there).
+- Fix (found while seeding the cohort): B9's one-visit-a-day unique index also covered detached visits (`userId: null`), so erasing or withdrawing consent for a second member who visited on the same day as an already-detached one failed with a duplicate key. The index now applies only to visits that still have a member (`test/insights.test.ts`).
+
+**Decisions**
+
+- **Demo product events are detached sign-ups** (`anonKey` `demo-…`, no account), so the directory and the e2e specs see no fictional people; B9's "no demo events" gives way to B15's explicit ask. The cohort's shape is chosen and documented in the seed and the report, not measured.
+- **The WhatsApp "console log" is the message log**, since the console outbox lives in memory.
+- **The load test is not in CI** (it needs its own database and takes minutes); this environment had no MongoDB, so its figures are still to be recorded in `docs/performance.md`.
+
+**Next:** none in this prompt. The owner's registrations and reviews are listed in [`report-1.md`](report-1.md).
