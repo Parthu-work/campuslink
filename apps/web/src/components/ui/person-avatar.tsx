@@ -13,7 +13,7 @@ export function PersonAvatar({
   size?: number;
   verified?: boolean;
 }) {
-  const url = useFileUrl(fileId);
+  const url = useFileUrl(fileId, 160);
   if (!url) return <Avatar name={name} size={size} verified={verified} />;
   return (
     <span className="relative flex-none" style={{ width: size, height: size }} aria-hidden>

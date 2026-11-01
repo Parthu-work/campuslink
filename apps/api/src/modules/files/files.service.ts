@@ -33,6 +33,8 @@ const IMAGE_RULES: Record<ImagePurpose, { maxEdge: number }> = {
   offer_proof: { maxEdge: 2000 },
 };
 const VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime']);
+/** Data-saver variants kept in memory (each is a small WebP, typically 5–40 KB). */
+const VARIANT_CACHE_SIZE = 300;
 type ClaimablePurpose = 'post_media' | 'story_media' | 'referral_resume' | 'placement_resume' | 'offer_proof';
 const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const PPTX = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
@@ -138,6 +140,8 @@ export class FilesService {
   }
 
   private readonly resolvers = new Map<FilePurpose, FileAccessResolver>();
+  /** Data-saver image variants (`readResized`), bounded to VARIANT_CACHE_SIZE entries. */
+  private readonly variants = new Map<string, Buffer>();
   constructor(
     private readonly storage: StorageProvider,
     private readonly scanner: MalwareScanner = noopScanner,
@@ -546,6 +550,33 @@ export class FilesService {
     const data = await this.storage.get(f.storageKey);
     if (!data) throw notFound('File');
     return { data, mime: f.mime, purpose: f.purpose, name: f.grantName };
+  }
+
+  /**
+   * Data saver (build B13): a smaller WebP of an image the viewer may see, at one of
+   * DATA_SAVER_WIDTHS. Access is checked exactly as for the original; anything that is not an
+   * image is returned unchanged. Variants are kept in a small in-process cache (by file and width).
+   */
+  async readResized(fileId: string, viewer: AuthState, width: number) {
+    const f = await this.readForViewer(fileId, viewer);
+    if (!IMAGE_TYPES.has(f.mime)) return f;
+    const key = `${fileId}:${width}`;
+    let data = this.variants.get(key);
+    if (data) {
+      // Most recently used last, so the oldest entry is the first one evicted.
+      this.variants.delete(key);
+    } else {
+      data = await sharp(f.data, { limitInputPixels: 40_000_000, failOn: 'error' })
+        .resize({ width, withoutEnlargement: true })
+        .webp({ quality: 55 })
+        .toBuffer();
+      if (this.variants.size >= VARIANT_CACHE_SIZE) {
+        const oldest = this.variants.keys().next().value;
+        if (oldest !== undefined) this.variants.delete(oldest);
+      }
+    }
+    this.variants.set(key, data);
+    return { ...f, data, mime: 'image/webp' };
   }
 
   /** The file record if `viewer` may read it (404 otherwise, like a missing file). */

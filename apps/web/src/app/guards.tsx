@@ -59,7 +59,8 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const { data: me, isLoading, isError, refetch } = useMe();
   const online = useOnline();
   const { t } = useTranslation();
-  if (status !== 'signed-in')
+  // `offline`: the saved copy on this device (B13), read-only until the session is checked again.
+  if (status !== 'signed-in' && status !== 'offline')
     return (
       <Navigate
         to="/sign-in"
@@ -107,7 +108,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 export function PublicOnly({ children, home }: { children: ReactNode; home: string }) {
   const status = useSession((s) => s.status);
   const location = useLocation();
-  if (status !== 'signed-in') return <>{children}</>;
+  if (status !== 'signed-in' && status !== 'offline') return <>{children}</>;
   const from = safeReturnPath((location.state as { from?: unknown } | null)?.from);
   return <Navigate to={from ?? home} replace />;
 }

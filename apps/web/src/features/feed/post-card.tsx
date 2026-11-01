@@ -24,6 +24,7 @@ import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, ApiError } from '../../lib/api';
 import { useFileUrl, useStreamedFile } from '../../lib/files';
+import { useDataSaver } from '../../lib/data-saver';
 import { formatDateTime, formatRelative } from '../../lib/format';
 import { patchPost, usePostActions } from '../../lib/feed';
 import { useCan } from '../../lib/me';
@@ -97,7 +98,7 @@ function PostImage({
   single: boolean;
   onDoubleTap?: () => void;
 }) {
-  const url = useFileUrl(fileId);
+  const url = useFileUrl(fileId, 640);
   return (
     <div
       onDoubleClick={onDoubleTap}
@@ -132,6 +133,8 @@ export function ReelVideo({
 }) {
   const stream = useStreamedFile(fileId);
   const descId = useId();
+  // Data saver (B13): nothing of the video downloads until the member presses play.
+  const saver = useDataSaver();
   return (
     <figure className={cn('grid gap-1.5', className)}>
       <div className="overflow-hidden rounded-[var(--radius-sm)] bg-black">
@@ -143,7 +146,7 @@ export function ReelVideo({
             muted={autoPlay}
             autoPlay={autoPlay}
             loop={autoPlay}
-            preload="metadata"
+            preload={saver ? 'none' : 'metadata'}
             aria-describedby={descId}
             className="mx-auto max-h-[70vh] w-full object-contain"
           />

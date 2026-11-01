@@ -4,6 +4,7 @@ import { useTranslation } from '../i18n/react';
 import i18n from '../i18n/core';
 import { LOCALE_TAGS, toLocale, type JobView, type Salary, type TrackStatus } from '@campuslink/shared';
 import { api, ApiError } from './api';
+import { putOrQueue } from './offline-writes';
 
 /** Number formatters by locale and options; building an Intl formatter is slow and lists show many. */
 const numberFormats = new Map<string, Intl.NumberFormat>();
@@ -60,10 +61,13 @@ export function useTrack(job: Pick<JobView, 'id'>) {
     mutationFn: (v: { status: TrackStatus | null; note?: string }) =>
       v.status === null
         ? api.delete(`/jobs/${job.id}/track`)
-        : api.put(`/jobs/${job.id}/track`, {
-            status: v.status,
-            ...(v.note !== undefined ? { note: v.note } : {}),
-          }),
+        : // Saving and tracking wait in the outbox when offline (B13); unsaving needs a connection.
+          putOrQueue(
+            qc,
+            `/jobs/${job.id}/track`,
+            { status: v.status, ...(v.note !== undefined ? { note: v.note } : {}) },
+            [['job-tracker'], ['jobs'], ['job', job.id]],
+          ),
     onMutate: (v) => ({
       rollback: apply((j) => ({
         ...j,
@@ -77,7 +81,9 @@ export function useTrack(job: Pick<JobView, 'id'>) {
       c?.rollback();
       toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
     },
-    onSuccess: (_d, v) => {
+    onSuccess: (d, v) => {
+      // Queued offline: the change stays on screen and the outbox says it will be sent.
+      if (d === undefined && v.status !== null) return;
       if (v.status === 'saved') toast.success(t('jobs.savedToast'));
       void qc.invalidateQueries({ queryKey: ['job-tracker'] });
     },

@@ -16,7 +16,7 @@ A new session reads this file first and resumes from the first phase that is not
 | B10   | Plans, entitlements and billing                                | Done        |
 | B11   | AI cost control                                                | Done        |
 | B12   | Hindi and the language framework                               | Done        |
-| B13   | Offline and low-data mode                                      | Not started |
+| B13   | Offline and low-data mode                                      | Done        |
 | B14   | In-app help, feedback, legal pages and app-level observability | Not started |
 | B15   | Hardening, demo data and final report                          | Not started |
 
@@ -331,3 +331,23 @@ A new session reads this file first and resumes from the first phase that is not
 - **Everyday Hindi** with the English loanwords students use (मेंटर, प्लेसमेंट, ड्राइव), `आप` throughout; product, brand and exam names untranslated. A native speaker and, for the declaration and consents, a lawyer must review it (`translation-review.md`).
 
 **Next:** B13 (offline and low-data mode).
+
+## B13 · Offline and low-data mode (Done)
+
+**Shipped**
+
+- A hand-written IndexedDB persister (`lib/offline-cache.ts`, its own chunk loaded at boot; rules in `lib/offline-rules.ts`) for the member's own reads: profile, sessions, conversations and their last 50 messages, job tracker, followed roadmaps, registered drives, opened study material and the first feed page. Contact fields are stripped from everything but the member's own profile; other members' profiles are never kept. Wiped on sign-out, on a dead session and when another member signs in; dropped after 7 days.
+- Cold start shows the last-known content at once (the first render waits at most 400 ms for it) with a quiet "Updated N min ago"; offline the pill says "You're offline · saved N min ago".
+- An offline session: when the session cannot be checked because the network is down and the device holds a saved copy, the app opens read-only from it and checks the session again on reconnect.
+- Offline writes for RSVP, saving a job and marking a roadmap step wait in an outbox and are replayed with their Idempotency-Key (the three PUT routes are now `idempotent: true`); everything else still says "you're offline".
+- Data saver (Settings › Preferences: Automatic, On, Off; automatic on Save-Data or 2G): images at the width shown (`GET /files/:id?w=160|320|640`), no stories on Home, no video preloading.
+- Strings in en, te and hi. Spec: `docs/specs/offline.md`; privacy: `docs/privacy.md` › The offline copy on the device. Tests: `offline-rules.test.ts`, `test/offline.test.ts`, `e2e/offline.spec.ts`.
+
+**Decisions**
+
+- **An `offline` session status** rather than treating a network failure as "signed out", so a member on a dead connection still sees their saved copy. It changes only client-side gating; tokens, refresh rotation and `refresh-coordinator.ts` are untouched (D10 did not apply). No token exists while offline, so nothing can be written to the API.
+- **Only state-setting PUTs are queued** (they are safe to replay and now idempotent); unsaving a job, messages, posts and requests need a connection.
+- **Image variants are made on request and kept in memory** (300 at most) rather than stored as files: they are small, derived and access-checked like the original.
+- **No digests over WhatsApp:** no digest feature exists yet (deviation; recorded in the spec).
+
+**Next:** B14 (in-app help, feedback, legal pages and observability).

@@ -2,6 +2,7 @@ import { API_PREFIX, type ApiResponse, type ErrorCode } from '@campuslink/shared
 import { useSession } from './session';
 import { botCheckEnabled } from './bot-check-config';
 import { createRefreshCoordinator } from './refresh-coordinator';
+import { hasOfflineCopy } from './offline-probe';
 
 export class ApiError extends Error {
   constructor(
@@ -68,7 +69,12 @@ export async function refreshSession(): Promise<boolean> {
     useSession.getState().setToken(token);
     return true;
   } catch {
-    if (useSession.getState().status === 'unknown') useSession.getState().signedOut();
+    // The session could not be checked (no network, or the API is down). With a saved copy on this
+    // device the app opens read-only from it; the check runs again on reconnect (B13).
+    if (useSession.getState().status === 'unknown') {
+      if (await hasOfflineCopy()) useSession.getState().offline();
+      else useSession.getState().signedOut();
+    }
     return false;
   }
 }

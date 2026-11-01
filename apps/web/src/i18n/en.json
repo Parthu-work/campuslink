@@ -4165,5 +4165,20 @@
       "online": "Online"
     },
     "aiCost": "AI this month: about {{amount}}"
+  },
+  "offline": {
+    "updated": "Updated {{when}}",
+    "offlineSaved": "You’re offline · saved {{when}}",
+    "queued": "Saved on this phone. It will be sent when you’re back online.",
+    "replayed_one": "{{count}} change you made offline was saved.",
+    "replayed_other": "{{count}} changes you made offline were saved.",
+    "replayFailed": "A change you made offline couldn’t be saved. Check it and try again.",
+    "dataSaver": "Data saver",
+    "dataSaverMode": {
+      "auto": "Automatic",
+      "on": "On",
+      "off": "Off"
+    },
+    "dataSaverHint": "Smaller images, no stories, and videos that load only when you press play. Automatic turns it on when your phone asks to save data or the connection is 2G."
   }
 }

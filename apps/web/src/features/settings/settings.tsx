@@ -14,6 +14,8 @@ import {
   LOCALE_NAMES,
   toLocale,
   type Locale,
+  DATA_SAVER_MODES,
+  type DataSaverMode,
 } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Field, PasswordInput } from '../../components/ui/field';
@@ -271,7 +273,8 @@ export function PrivacySettings() {
 
 export function PreferenceSettings() {
   const { t, i18n } = useTranslation();
-  const { theme, motion, haptics, setTheme, setMotion, setHaptics, setLanguage } = usePreferences();
+  const { theme, motion, haptics, dataSaver, setTheme, setMotion, setHaptics, setLanguage, setDataSaver } =
+    usePreferences();
   return (
     <Card className="grid gap-6 p-5">
       <fieldset className="grid gap-2">
@@ -321,6 +324,17 @@ export function PreferenceSettings() {
         checked={haptics}
         onChange={setHaptics}
       />
+      <fieldset className="grid gap-2">
+        <legend className="mb-1 text-meta font-semibold">{t('offline.dataSaver')}</legend>
+        <ChoiceGroup<DataSaverMode>
+          variant="chip"
+          label={t('offline.dataSaver')}
+          value={dataSaver}
+          onChange={setDataSaver}
+          options={DATA_SAVER_MODES.map((m) => ({ value: m, label: t(`offline.dataSaverMode.${m}`) }))}
+        />
+        <p className="text-caption text-fg-3">{t('offline.dataSaverHint')}</p>
+      </fieldset>
     </Card>
   );
 }

@@ -70,6 +70,14 @@
 - **Seat counts are counts.** The nightly seat count stores one number per college.
 - **Kept as tax records.** Invoices are not erased with a member (they hold no member data) and are never deleted for non-payment; a college that does not pay becomes read-only, with everything still readable and exportable.
 
+## The offline copy on the device (build B13)
+
+- To open on a bad connection, the app keeps a copy of a few of the member's **own** reads in the browser's IndexedDB on their phone: their profile, their sessions, their conversations and the last 50 messages of each, their job tracker, the roadmaps they follow, the drives they registered for, study material they opened and the first page of their feed. Nothing about other members beyond what those screens already show (names, photos, session types); contact fields (email, phone) are stripped from everything except the member's own profile, and other members' profiles are never kept.
+- The copy lives only on that device, is dropped after 7 days, and is **wiped when the member signs out**, when the session turns out to be gone (for example after "sign out everywhere"), and when a different member signs in on the same device (shared phones). It is never sent anywhere.
+- Offline, the app opens read-only from the copy only if the device already holds one for the member and the session could not be checked because the network is down; the session is checked again as soon as the connection returns, and a dead session wipes the copy.
+- Writes made offline are limited to an RSVP, saving or tracking a job and marking a roadmap step. They wait in the same database (with no message or request text) and are sent with their Idempotency-Key on reconnect, or wiped with the rest on sign-out.
+- Data saver changes nothing about what is stored; it asks the API for smaller copies of images the member may already see.
+
 ## Data minimisation (implemented)
 
 - IP addresses are reduced to /24 (IPv4) or /48 (IPv6) prefixes in sessions and audit.

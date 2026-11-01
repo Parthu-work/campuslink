@@ -27,6 +27,7 @@ import { RichText } from '../../components/ui/rich-text';
 import { PageHeader } from '../../components/ui/page-header';
 import { BackLink } from '../../components/ui/back-link';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
+import { putOrQueue } from '../../lib/offline-writes';
 import { findCached, hasId } from '../../lib/query-seed';
 import { event } from '../../lib/queries';
 import { formatDateTime, formatTime } from '../../lib/format';
@@ -246,7 +247,9 @@ export function EventPage() {
   });
   const fail = (e: unknown) => toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
   const rsvp = useMutation({
-    mutationFn: (going: boolean) => api.put<EventView>(`/events/${id}/rsvp`, { going }),
+    // Waits in the outbox when offline (B13); the optimistic RSVP stays on screen meanwhile.
+    mutationFn: (going: boolean) =>
+      putOrQueue<EventView>(qc, `/events/${id}/rsvp`, { going }, [['event', id], ['events']]),
     // Optimistic: the button and counts change at once; a failure puts them back (audit ST-4).
     onMutate: async (going) => {
       await qc.cancelQueries({ queryKey: ['event', id] });
@@ -265,6 +268,7 @@ export function EventPage() {
       return { before };
     },
     onSuccess: (v) => {
+      if (v === undefined) return;
       qc.setQueryData(['event', id], v);
       void qc.invalidateQueries({ queryKey: ['events'] });
       toast.success(

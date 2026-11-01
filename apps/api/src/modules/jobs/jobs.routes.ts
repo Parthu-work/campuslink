@@ -72,6 +72,8 @@ export function jobRoutes(s: { jobs: JobsService; referrals: ReferralsService })
       limiter: 'interact',
       params: idParams,
       body: trackBody,
+      // Replayed from the offline outbox with its key (B13).
+      idempotent: true,
       handler: async ({ req, params, body }) => ({ data: await s.jobs.track(authOf(req), params.id, body) }),
     },
     {

@@ -546,7 +546,8 @@
                     "type": "string",
                     "enum": [
                       "en",
-                      "te"
+                      "te",
+                      "hi"
                     ]
                   }
                 },
@@ -1191,7 +1192,8 @@
                     "type": "string",
                     "enum": [
                       "en",
-                      "te"
+                      "te",
+                      "hi"
                     ]
                   }
                 },
@@ -1278,7 +1280,8 @@
                         "type": "string",
                         "enum": [
                           "en",
-                          "te"
+                          "te",
+                          "hi"
                         ]
                       }
                     },
@@ -1519,7 +1522,8 @@
                     "type": "string",
                     "enum": [
                       "en",
-                      "te"
+                      "te",
+                      "hi"
                     ]
                   }
                 },
@@ -1670,7 +1674,8 @@
                     "type": "string",
                     "enum": [
                       "en",
-                      "te"
+                      "te",
+                      "hi"
                     ]
                   }
                 },
@@ -2451,6 +2456,16 @@
             "schema": {
               "type": "string",
               "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "w",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
             }
           }
         ],
@@ -3688,7 +3703,8 @@
                     "type": "string",
                     "enum": [
                       "en",
-                      "te"
+                      "te",
+                      "hi"
                     ]
                   }
                 },
@@ -3856,7 +3872,8 @@
                     "type": "string",
                     "enum": [
                       "en",
-                      "te"
+                      "te",
+                      "hi"
                     ]
                   }
                 },
@@ -20987,6 +21004,7 @@
                     "enum": [
                       "en",
                       "te",
+                      "hi",
                       "other"
                     ]
                   },
@@ -21095,6 +21113,7 @@
                     "enum": [
                       "en",
                       "te",
+                      "hi",
                       "other"
                     ]
                   },
@@ -21258,6 +21277,7 @@
                     "enum": [
                       "en",
                       "te",
+                      "hi",
                       "other"
                     ]
                   },

@@ -168,6 +168,8 @@ export function roadmapRoutes(s: RoadmapsService): AnyRouteSpec[] {
       limiter: 'interact',
       params: idParams,
       body: progressBody,
+      // Replayed from the offline outbox with its key (B13).
+      idempotent: true,
       handler: async ({ req, params, body }) => ({ data: await s.setProgress(authOf(req), params.id, body) }),
     },
     {
