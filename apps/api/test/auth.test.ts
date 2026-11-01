@@ -98,7 +98,13 @@ describe('sign-up and email verification', () => {
       .send({ email: 'ananya@auth.example', password: 'quiet-river-lantern-91' });
     const me = await api(ctx, T.host, login.body.data.session.accessToken).get('/me');
     expect(me.body.data.verified).toBe(false);
-    expect(me.body.data.permissions).toEqual(['content:report', 'feed:read', 'jobs:read', 'roadmaps:read']);
+    expect(me.body.data.permissions).toEqual([
+      'content:report',
+      'feed:read',
+      'jobs:read',
+      'roadmaps:read',
+      'support:create',
+    ]);
   });
 });
 
