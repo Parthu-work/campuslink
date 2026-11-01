@@ -92,10 +92,14 @@ export const ALL_PERMISSIONS = [
   'audit:read',
   'rewards:manage',
   'rewards:redeem',
+  // Help and support (B14)
+  'support:create',
+  'support:manage',
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
   'platform:health',
   'platform:billing',
+  'platform:support',
 ] as const;
 export type Permission = (typeof ALL_PERMISSIONS)[number];
 /** What each permission allows (docs/permissions.md and the OpenAPI document). */
@@ -166,6 +170,9 @@ export const PERMISSIONS: Record<Permission, string> = {
   'platform:tenants': 'Create, suspend and configure colleges',
   'platform:health': 'View platform health',
   'platform:billing': 'Plans, invoices and payments for every college',
+  'platform:support': 'Answer problem reports members sent to the platform (bugs)',
+  'support:create': 'Report a problem and follow its replies',
+  'support:manage': 'Answer and close problem reports sent to the college',
   'placements:view': 'See placement drives and the eligibility rules',
   'placements:register': 'Register for placement drives one is eligible for',
   'placements:manage': 'Run placement drives: companies, eligibility, registrants, rounds, overrides',
@@ -176,6 +183,7 @@ export const PLATFORM_PERMISSIONS: readonly Permission[] = [
   'platform:tenants',
   'platform:health',
   'platform:billing',
+  'platform:support',
 ];
 
 const STUDENT: Permission[] = [
@@ -200,6 +208,7 @@ const STUDENT: Permission[] = [
   'placements:view',
   'placements:register',
   'outcomes:report',
+  'support:create',
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
 const STUDENT_ONLY: readonly Permission[] = ['placements:view', 'placements:register'];
@@ -234,7 +243,7 @@ const STAFF: Permission[] = [
 const COLLEGE_ADMIN: Permission[] = ALL_PERMISSIONS.filter((p) => !PLATFORM_PERMISSIONS.includes(p));
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
-  SUPER_ADMIN: ['platform:tenants', 'platform:health', 'platform:billing', 'audit:read'],
+  SUPER_ADMIN: ['platform:tenants', 'platform:health', 'platform:billing', 'platform:support', 'audit:read'],
   COLLEGE_ADMIN,
   TPO: [
     ...STAFF,
@@ -266,6 +275,8 @@ export const UNVERIFIED_PERMISSIONS: readonly Permission[] = [
   'roadmaps:read',
   'jobs:read',
   'content:report',
+  // A member stuck before verification can still ask for help (B14).
+  'support:create',
 ];
 
 /** Roles that must have TOTP enabled before any permission is effective. */

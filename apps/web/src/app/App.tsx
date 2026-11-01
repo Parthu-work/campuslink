@@ -26,7 +26,9 @@ function TenantGate() {
   const { t } = useTranslation();
   const tenant = useTenantQuery();
   if (tenant.isLoading) return <Splash />;
-  if (tenant.error || !tenant.data) {
+  // Offline with the college in the device's saved copy (B13): open the app from it.
+  const offlineCopy = !!tenant.data && tenant.error instanceof ApiError && tenant.error.code === 'NETWORK';
+  if ((tenant.error && !offlineCopy) || !tenant.data) {
     const code = tenant.error instanceof ApiError ? tenant.error.code : null;
     const demo = import.meta.env.DEV ? ['dpit', 'mrce', 'admin'] : [];
     return (

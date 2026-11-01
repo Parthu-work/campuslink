@@ -94,7 +94,9 @@
     "placements": "Placements",
     "outcomes": "Your outcomes",
     "traction": "Traction",
-    "billing": "Billing"
+    "billing": "Billing",
+    "help": "Help",
+    "platformSupport": "Support"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -476,7 +478,8 @@
     "mapIntroAcademics": "Match each figure to a column. Rows are matched to students by roll number; figures already on record are replaced. Academic imports cannot be rolled back, so try a dry run first.",
     "reports": "Reports",
     "billing": "Billing",
-    "notInPlan": "Not in your college’s plan. Talk to us to add it."
+    "notInPlan": "Not in your college’s plan. Talk to us to add it.",
+    "support": "Support"
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -1253,6 +1256,14 @@
     "payment_received": {
       "title": "Payment received for {{number}}",
       "body": "We received {{amount}} for invoice {{number}}. Thank you."
+    },
+    "support_reply": {
+      "title": "A reply to your problem report",
+      "body": "Your college or the {{app}} team replied to a problem you reported. Open it to read the reply."
+    },
+    "support_ticket": {
+      "title": "New problem report",
+      "body": "A member reported a problem for the college to answer. Open Admin › Support to read it."
     }
   },
   "notifications": {
@@ -4180,5 +4191,116 @@
       "off": "Off"
     },
     "dataSaverHint": "Smaller images, no stories, and videos that load only when you press play. Automatic turns it on when your phone asks to save data or the connection is 2G."
+  },
+  "legal": {
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "intro": "How your college and {{app}} handle your data, and the rules for using it.",
+    "englishOnly": "This page is in English for now. A translation will be checked by a lawyer before it replaces it.",
+    "incomplete": "Your college has not filled in all its legal details yet; the parts it has not filled say so.",
+    "other": "Other legal pages",
+    "gateTitle": "Your college updated its privacy policy and terms",
+    "gateBody": "Please read what changed. You need to agree to the new version to keep using the app.",
+    "agree": "I have read them and agree",
+    "officerTitle": "Grievance officer",
+    "officerName": "Name",
+    "officerDesignation": "Designation",
+    "officerPhone": "Office phone (optional)",
+    "officerMissing": "Your college has not named its grievance officer here yet. Write to the college office meanwhile.",
+    "officerBody": "For a complaint about how your data is handled. If you are not satisfied with the answer, you may complain to the Data Protection Board of India.",
+    "detailsTitle": "Legal details",
+    "detailsIntro": "Your college's legal name, address and grievance officer appear in the privacy policy and terms members read. Members are asked to agree again each time you publish.",
+    "detailsVersion": "Version {{version}}, published {{date}}",
+    "publish": "Publish",
+    "preview": "Preview the privacy policy",
+    "publishTitle": "Publish the new legal details?",
+    "publishBody": "Every member will be asked to read and agree to the updated privacy policy and terms on their next visit.",
+    "publishNote": "Check the names, email and address carefully: they are shown to every member and on the public policy page.",
+    "published": "Published. Members will be asked to agree on their next visit."
+  },
+  "help": {
+    "title": "Help",
+    "intro": "Short guides to the app, and a way to tell your college or the {{app}} team when something is wrong.",
+    "guides": "Guides",
+    "reports": "Your problem reports",
+    "reportsIntro": "Your college answers questions about your account and its features; problems with the app itself go to the {{app}} team.",
+    "report": "Report a problem",
+    "noReports": "You have not reported a problem.",
+    "reportTitle": "Report a problem",
+    "categoryLabel": "What is it about?",
+    "subject": "In a few words",
+    "description": "What happened",
+    "descriptionHint": "What you did, what you expected and what you saw. Don’t include passwords or codes.",
+    "screenshot": "Screenshot (optional)",
+    "screenshotHint": "A PNG, JPEG or WebP image, up to {{mb}} MB. Check it shows nothing private.",
+    "send": "Send",
+    "sent": "Sent. You’ll be told when someone replies.",
+    "goesTo": {
+      "college": "This goes to your college’s admins.",
+      "platform": "This goes to the {{app}} team."
+    },
+    "category": {
+      "account": "My account or sign-in",
+      "verification": "Verification",
+      "mentorship": "Mentorship",
+      "placements": "Placements",
+      "study": "Study material",
+      "bug": "Something in the app is broken",
+      "other": "Something else"
+    },
+    "status": {
+      "open": "Waiting for a reply",
+      "answered": "Answered",
+      "closed": "Closed"
+    },
+    "desk": {
+      "college": "Your college",
+      "platform": "{{app}} team"
+    },
+    "from": {
+      "college": "{{name}}, your college",
+      "platform": "{{name}}, {{app}} team"
+    },
+    "replies": "Replies",
+    "reply": "Your reply",
+    "sendReply": "Send reply",
+    "reopen": "Reopen",
+    "close": "Close",
+    "screenshotAlt": "The screenshot sent with this report",
+    "adminIntro": "Problems members reported to the college. Bugs in the app go to the {{app}} team instead.",
+    "platformIntro": "Bugs members reported from every college. Opening a report is recorded in that college's audit log.",
+    "filter": "Show",
+    "all": "All",
+    "queueEmpty": "No reports here",
+    "article": {
+      "getting-started": {
+        "title": "Getting started",
+        "summary": "Sign in, verify, and find your way around."
+      },
+      "verification": {
+        "title": "Verifying your account",
+        "summary": "Why your college checks your roll number, and what to do if it fails."
+      },
+      "mentorship": {
+        "title": "Asking for mentorship",
+        "summary": "How to write a request a mentor says yes to."
+      },
+      "placements": {
+        "title": "Placement drives",
+        "summary": "Eligibility, registering, rounds and offers."
+      },
+      "study-assistant": {
+        "title": "The study assistant",
+        "summary": "Asking about your course material, and its limits."
+      },
+      "offline": {
+        "title": "Using the app on a weak connection",
+        "summary": "What works offline, and data saver."
+      },
+      "privacy": {
+        "title": "Your privacy",
+        "summary": "Who sees what, and how to download or delete your data."
+      }
+    }
   }
 }

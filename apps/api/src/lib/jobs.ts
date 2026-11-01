@@ -1,6 +1,7 @@
 import { Queue, Worker, type ConnectionOptions } from 'bullmq';
 import { runInTenant } from './context.js';
 import type { Logger } from './logger.js';
+import { metrics } from './metrics.js';
 
 /** Every job carries the tenant it belongs to; it is set server-side from the request context. */
 export interface TenantJob {
@@ -23,6 +24,16 @@ export interface JobQueue {
   cancel(name: string, jobId: string): Promise<void>;
   close(): Promise<void>;
 }
+
+/** Set by the app (B14): failed jobs go to the error reporter (job name and message only). */
+let onJobFailure: ((name: string, err: unknown) => void) | null = null;
+export const setJobFailureReporter = (fn: (name: string, err: unknown) => void) => {
+  onJobFailure = fn;
+};
+const jobFailed = (name: string, err: unknown) => {
+  metrics.jobs.inc({ job: name, outcome: 'failed' });
+  onJobFailure?.(name, err);
+};
 
 /**
  * Runs jobs in-process (unit tests, and as an explicit fallback). Awaitable via `drain()`.
@@ -49,7 +60,9 @@ export class InlineJobQueue implements JobQueue {
     const h = this.handlers.get(name);
     if (!h) throw new Error(`No handler for job ${name}`);
     this.pending.push(
-      runInTenant(data.tenantId, () => h(data, async () => undefined)).catch(() => undefined),
+      runInTenant(data.tenantId, () => h(data, async () => undefined))
+        .then(() => metrics.jobs.inc({ job: name, outcome: 'completed' }))
+        .catch((err: unknown) => jobFailed(name, err)),
     );
   }
   async cancel(name: string, jobId: string) {
@@ -105,9 +118,11 @@ export class BullJobQueue implements JobQueue {
       },
       { connection: this.connection, concurrency: 2 },
     );
-    worker.on('failed', (job, err) =>
-      this.logger.error({ job: job?.name, jobId: job?.id, err: err.message }, 'job failed'),
-    );
+    worker.on('completed', () => metrics.jobs.inc({ job: name, outcome: 'completed' }));
+    worker.on('failed', (job, err) => {
+      this.logger.error({ job: job?.name, jobId: job?.id, err: err.message }, 'job failed');
+      jobFailed(name, err);
+    });
     this.workers.push(worker);
   }
   async enqueue(name: string, data: TenantJob, opts: EnqueueOptions = {}) {

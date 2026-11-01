@@ -136,6 +136,14 @@ export const envSchema = z.object({
   MALWARE_SCANNER: z.enum(['none', 'clamav']).default('none'),
   /** clamd address: `host:port` or an absolute Unix socket path. */
   CLAMAV_ADDRESS: z.string().min(1).default('127.0.0.1:3310'),
+  /**
+   * Error reporting (B14): `disabled`, `console` (the log) or `sentry` (Sentry, self-hosted Sentry or
+   * GlitchTip, via ERROR_REPORTER_DSN). Reports carry no personal data (lib/error-reporter.ts).
+   */
+  ERROR_REPORTER: z.enum(['disabled', 'console', 'sentry']).default('disabled'),
+  ERROR_REPORTER_DSN: z.url({ protocol: /^https$/ }).optional(),
+  /** Bearer token for GET /metrics on the platform host (Prometheus). Unset: the route answers 404. */
+  METRICS_TOKEN: z.string().min(32).optional(),
   /** bullmq (Redis-backed, default) or inline (in-process; tests only). */
   JOBS_DRIVER: z.enum(['bullmq', 'inline']).default('bullmq'),
   /**
@@ -307,6 +315,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error(
       'WHATSAPP_PROVIDER=cloud needs WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_APP_SECRET, WHATSAPP_VERIFY_TOKEN and WHATSAPP_GRAPH_VERSION',
     );
+  if (env.ERROR_REPORTER === 'sentry' && !env.ERROR_REPORTER_DSN)
+    throw new Error('ERROR_REPORTER=sentry needs ERROR_REPORTER_DSN');
   if (env.SMS_PROVIDER === 'msg91' && !(env.SMS_API_KEY && env.SMS_SENDER_ID && env.SMS_DLT_ENTITY_ID))
     throw new Error('SMS_PROVIDER=msg91 needs SMS_API_KEY, SMS_SENDER_ID and SMS_DLT_ENTITY_ID');
   if (

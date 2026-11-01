@@ -24,4 +24,6 @@ export interface AdminOverviewView {
   placements?: { closingSoon: number } | null;
   /** B7: offers reported by members and waiting for verification (outcomes:verify). */
   offers?: { pending: number } | null;
+  /** B14: problem reports sent to the college and not answered yet (support:manage). */
+  support?: { open: number } | null;
 }

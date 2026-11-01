@@ -6,7 +6,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 
 ## Rules
 - **Deny by default.** A route without an explicit permission is either public (listed below) or open to any signed-in user of that college for self-service only.
-- **Unverified users** (college verification pending) are limited to: `feed:read`, `roadmaps:read`, `jobs:read`, `content:report`.
+- **Unverified users** (college verification pending) are limited to: `feed:read`, `roadmaps:read`, `jobs:read`, `content:report`, `support:create`.
 - **MFA:** SUPER_ADMIN, COLLEGE_ADMIN have **no** permissions until TOTP is enabled.
 - **Capabilities:** `CERTIFIED_CONTRIBUTOR` adds `roadmaps:write`, `study:contribute` (students only).
 - **Tenant overrides:** a college admin may grant or revoke permissions per role; `platform:*` permissions can never be granted to a college role.
@@ -73,6 +73,9 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `platform:tenants` Create, suspend and configure colleges | ✅ | · | · | · | · | · |
 | `platform:health` View platform health | ✅ | · | · | · | · | · |
 | `platform:billing` Plans, invoices and payments for every college | ✅ | · | · | · | · | · |
+| `platform:support` Answer problem reports members sent to the platform (bugs) | ✅ | · | · | · | · | · |
+| `support:create` Report a problem and follow its replies | · | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `support:manage` Answer and close problem reports sent to the college | · | ✅ | · | · | · | · |
 | `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ |
 | `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ |
 | `placements:manage` Run placement drives: companies, eligibility, registrants, rounds, overrides | · | ✅ | ✅ | · | · | · |
@@ -390,6 +393,24 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/admin/analytics/export` | `reports:export` | college | search | Download a report as CSV (audited) |
 | `GET /api/v1/admin/insights` | `analytics:tenant` | college | — | Activation, weekly actives, retention, mentorship and placement metrics (counts under 5 suppressed) |
 | `GET /api/v1/platform/insights` | `platform:tenants` | platform | — | The same metrics per college, from per-college aggregates only (audited) |
+| `POST /api/v1/support/screenshots` | `support:create` | college | upload | Upload a screenshot for a problem report (attach it within a day, once) |
+| `POST /api/v1/support/tickets` | `support:create` | college | support | Report a problem (college matters go to the college, bugs to the platform) |
+| `GET /api/v1/support/tickets` | `support:create` | college | — | My problem reports |
+| `GET /api/v1/support/tickets/:id` | any signed-in user | college | — | A problem report (its reporter, or the college’s desk for college matters) |
+| `POST /api/v1/support/tickets/:id/replies` | any signed-in user | college | support | Reply to a problem report (its reporter, or the college’s desk) |
+| `PATCH /api/v1/support/tickets/:id` | any signed-in user | college | — | Close or reopen a problem report |
+| `GET /api/v1/admin/support/tickets` | `support:manage` | college | — | Problem reports sent to the college, newest activity first |
+| `GET /api/v1/platform/support/tickets` | `platform:support` | platform | — | Bug reports from every college, newest activity first |
+| `GET /api/v1/platform/support/tickets/:tenantId/:id` | `platform:support` | platform | — | A bug report sent to the platform (audited) |
+| `POST /api/v1/platform/support/tickets/:tenantId/:id/replies` | `platform:support` | platform | adminWrite | Answer a bug report (the member is told; audited) |
+| `PATCH /api/v1/platform/support/tickets/:tenantId/:id` | `platform:support` | platform | adminWrite | Close or reopen a bug report |
+| `GET /api/v1/platform/support/tickets/:tenantId/:id/screenshot` | `platform:support` | platform | — | The screenshot attached to a bug report |
+| `GET /api/v1/legal/:doc` | public | college | — | The college’s privacy policy or terms, with its details filled in (public) |
+| `GET /api/v1/admin/legal` | `tenant:branding` | college | — | The college’s legal details (legal name, address, grievance officer) |
+| `PUT /api/v1/admin/legal` | `tenant:branding` | college | adminWrite | Publish the college’s legal details (members accept the new notice on next sign-in) |
+| `POST /api/v1/me/notice` | any signed-in user | college | — | Accept the current privacy notice and terms |
+| `POST /api/v1/client-errors` | public | any | telemetry | A browser reports a broken screen or a failed chunk load (no personal data; rate-limited) |
+| `GET /api/v1/metrics` | public | platform | — | Prometheus metrics for this process (bearer token; platform host only) |
 | `GET /api/v1/me/export` | any signed-in user | college | privacy | Download everything this college’s space holds about me (JSON, audited) |
 | `GET /api/v1/me/deletion` | any signed-in user | college | — | Whether my account is scheduled for deletion, and when |
 | `POST /api/v1/me/deletion` | any signed-in user | college | privacy | Delete my account after the college’s grace period (password required; signs out everywhere) |

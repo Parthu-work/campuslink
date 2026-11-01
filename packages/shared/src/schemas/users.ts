@@ -56,4 +56,9 @@ export interface MeResponse {
   mfaRequired: boolean;
   locale: Locale;
   permissions: string[];
+  /**
+   * The privacy notice and terms this member must have accepted (B14): when `accepted` is false the
+   * app asks again before anything else. Absent from older API responses.
+   */
+  notice?: { version: string; accepted: boolean };
 }

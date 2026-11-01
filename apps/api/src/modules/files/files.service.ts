@@ -23,7 +23,13 @@ export const noopScanner: MalwareScanner = { scan: async () => 'skipped' };
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 type ImagePurpose =
-  'avatar' | 'id_card' | 'message_attachment' | 'post_media' | 'story_media' | 'offer_proof';
+  | 'avatar'
+  | 'id_card'
+  | 'message_attachment'
+  | 'post_media'
+  | 'story_media'
+  | 'offer_proof'
+  | 'support_screenshot';
 const IMAGE_RULES: Record<ImagePurpose, { maxEdge: number }> = {
   avatar: { maxEdge: 512 },
   id_card: { maxEdge: 2000 },
@@ -31,11 +37,18 @@ const IMAGE_RULES: Record<ImagePurpose, { maxEdge: number }> = {
   post_media: { maxEdge: 1600 },
   story_media: { maxEdge: 1440 },
   offer_proof: { maxEdge: 2000 },
+  support_screenshot: { maxEdge: 2000 },
 };
 const VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime']);
 /** Data-saver variants kept in memory (each is a small WebP, typically 5–40 KB). */
 const VARIANT_CACHE_SIZE = 300;
-type ClaimablePurpose = 'post_media' | 'story_media' | 'referral_resume' | 'placement_resume' | 'offer_proof';
+type ClaimablePurpose =
+  | 'post_media'
+  | 'story_media'
+  | 'referral_resume'
+  | 'placement_resume'
+  | 'offer_proof'
+  | 'support_screenshot';
 const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const PPTX = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 const AUDIO_TYPES = new Set([
@@ -175,7 +188,11 @@ export class FilesService {
     } catch {
       throw unsupported('That image could not be read');
     }
-    const pending = purpose === 'post_media' || purpose === 'story_media' || purpose === 'offer_proof';
+    const pending =
+      purpose === 'post_media' ||
+      purpose === 'story_media' ||
+      purpose === 'offer_proof' ||
+      purpose === 'support_screenshot';
     return this.store(
       ownerId,
       purpose,
@@ -594,7 +611,8 @@ export class FilesService {
         f.purpose === 'story_media' ||
         f.purpose === 'referral_resume' ||
         f.purpose === 'placement_resume' ||
-        f.purpose === 'offer_proof') &&
+        f.purpose === 'offer_proof' ||
+        f.purpose === 'support_screenshot') &&
         isOwner);
     const resolver = this.resolvers.get(f.purpose);
     if (!allowed && resolver) {

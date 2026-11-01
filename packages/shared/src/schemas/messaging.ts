@@ -121,6 +121,9 @@ export const NOTIFICATION_TYPES = [
   'invoice_overdue',
   'college_read_only',
   'payment_received',
+  // Help and support (B14): a reply to your report; a new report for the college's admins.
+  'support_reply',
+  'support_ticket',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -201,6 +204,8 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   invoice_overdue: 'reminders',
   college_read_only: 'reminders',
   payment_received: 'reminders',
+  support_reply: 'requests',
+  support_ticket: 'requests',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;

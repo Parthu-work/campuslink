@@ -18,6 +18,8 @@ export const FILE_PURPOSES = [
   'offer_proof',
   // Billing (B10): an issued invoice's PDF, served only through the billing routes.
   'invoice',
+  // Help and support (B14): a screenshot attached to a problem report.
+  'support_screenshot',
 ] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 

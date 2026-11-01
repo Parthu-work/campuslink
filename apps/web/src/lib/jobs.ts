@@ -58,6 +58,8 @@ export function useTrack(job: Pick<JobView, 'id'>) {
     return () => snaps.forEach(([k, d]) => qc.setQueryData(k, d));
   };
   return useMutation({
+    // Runs offline too (the default would pause it), so saving can wait in the outbox (B13).
+    networkMode: 'always',
     mutationFn: (v: { status: TrackStatus | null; note?: string }) =>
       v.status === null
         ? api.delete(`/jobs/${job.id}/track`)

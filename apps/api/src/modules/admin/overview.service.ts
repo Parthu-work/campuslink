@@ -19,6 +19,7 @@ import type { OnboardingService } from '../verification/onboarding.service.js';
 import type { PlacementsService } from '../placements/placements.service.js';
 import type { OffersService } from '../placements/offers.service.js';
 import type { OutcomesService } from '../placements/outcomes.service.js';
+import type { SupportService } from '../support/support.service.js';
 
 export interface OverviewDeps {
   users: UsersService;
@@ -37,6 +38,7 @@ export interface OverviewDeps {
   placements?: PlacementsService;
   offers?: OffersService;
   outcomes?: OutcomesService;
+  support?: SupportService;
   usage: AiUsageService;
 }
 
@@ -107,10 +109,13 @@ export class AdminOverviewService {
             pending: (await this.d.offers.pendingCount()) + ((await this.d.outcomes?.pendingCount()) ?? 0),
           }
         : null;
+    const support =
+      this.d.support && can('support:manage') ? { open: await this.d.support.openCount() } : null;
     return {
       onboarding,
       placements,
       offers,
+      support,
       members,
       activity,
       verification,

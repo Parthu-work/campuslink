@@ -217,6 +217,8 @@ export function useRoadmapProgress(roadmap: Pick<RoadmapView, 'id' | 'slug'>) {
   };
   const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
   const toggle = useMutation({
+    // Runs offline too (the default would pause it), so it can wait in the outbox (B13).
+    networkMode: 'always',
     mutationFn: (v: { nodeId: string; done: boolean }) =>
       // Waits in the outbox when offline (B13); the step stays ticked meanwhile.
       putOrQueue<RoadmapView['myProgress']>(qc, `/roadmaps/${roadmap.id}/progress`, v, [

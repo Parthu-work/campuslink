@@ -1,4 +1,4 @@
-import { LOCALE_TAGS, type Locale } from '@campuslink/shared';
+import { APP_NAME, LOCALE_TAGS, type Locale } from '@campuslink/shared';
 import type { NotificationType, SessionType } from '@campuslink/shared';
 
 /**
@@ -193,6 +193,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'Payment received for {number}',
       body: 'We received {amount} for invoice {number}. Thank you.',
     },
+    support_reply: {
+      title: 'A reply to your problem report',
+      body: 'Your college or the {app} team replied to a problem you reported. Open it to read the reply.',
+    },
+    support_ticket: {
+      title: 'New problem report',
+      body: 'A member reported a problem for the college to answer. Open Admin › Support to read it.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -383,6 +391,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: '{number}కు చెల్లింపు అందింది',
       body: 'ఇన్‌వాయిస్ {number}కు {amount} అందింది. ధన్యవాదాలు.',
     },
+    support_reply: {
+      title: 'మీ సమస్య నివేదికకు సమాధానం',
+      body: 'మీరు నివేదించిన సమస్యకు మీ కాలేజీ లేదా {app} బృందం సమాధానం ఇచ్చింది. చదవడానికి దాన్ని తెరవండి.',
+    },
+    support_ticket: {
+      title: 'కొత్త సమస్య నివేదిక',
+      body: 'కాలేజీ సమాధానం ఇవ్వాల్సిన ఒక సమస్యను సభ్యులు నివేదించారు. చదవడానికి అడ్మిన్ › సపోర్ట్ తెరవండి.',
+    },
   },
   hi: {
     request_received: { title: 'नया मेंटरशिप अनुरोध', body: '{name} ने आपसे {type} के लिए पूछा है।' },
@@ -557,6 +573,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     payment_received: {
       title: '{number} का भुगतान मिला',
       body: 'हमें इनवॉइस {number} के लिए {amount} मिल गए। धन्यवाद।',
+    },
+    support_reply: {
+      title: 'आपकी समस्या रिपोर्ट का जवाब',
+      body: 'आपकी बताई समस्या पर आपके कॉलेज या {app} टीम ने जवाब दिया है। जवाब पढ़ने के लिए इसे खोलें।',
+    },
+    support_ticket: {
+      title: 'नई समस्या रिपोर्ट',
+      body: 'एक सदस्य ने कॉलेज के जवाब के लिए एक समस्या बताई है। इसे पढ़ने के लिए एडमिन › सपोर्ट खोलें।',
     },
   },
 };
@@ -762,6 +786,10 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/admin/billing';
     case 'payment_received':
       return '/admin/billing';
+    case 'support_reply':
+      return `/help/reports/${data.ticketId ?? ''}`;
+    case 'support_ticket':
+      return `/admin/support?report=${data.ticketId ?? ''}`;
     default:
       return '/sessions';
   }
@@ -783,6 +811,7 @@ export function renderNotification(
     : '';
   const fill = (s: string) =>
     s
+      .replace('{app}', APP_NAME)
       .replace('{name}', data.name ?? '')
       .replace('{type}', TYPE_LABEL[locale][data.sessionType as SessionType] ?? '')
       .replace('{time}', time)

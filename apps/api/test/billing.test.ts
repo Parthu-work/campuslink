@@ -475,7 +475,7 @@ describe('reminders and read-only (B10)', () => {
     }
     // A new route opts in on purpose: this list changes only with a review.
     // Signing in and out, a member's own account, consents and privacy rights, safety and
-    // moderation, sessions already booked, provider webhooks and paying.
+    // moderation, sessions already booked, provider webhooks, paying, and asking for help (B14).
     expect(allowed.sort()).toEqual(
       [
         'DELETE /auth/sessions/:id',
@@ -526,6 +526,12 @@ describe('reminders and read-only (B10)', () => {
         'PUT /me/notification-preferences',
         'PUT /me/profile',
         'PUT /me/progress/settings',
+        // B14: accepting a new notice, browser error reports, and asking for help.
+        'POST /me/notice',
+        'POST /client-errors',
+        'POST /support/tickets',
+        'POST /support/tickets/:id/replies',
+        'PATCH /support/tickets/:id',
       ].sort(),
     );
   });

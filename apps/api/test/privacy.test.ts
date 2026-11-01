@@ -27,6 +27,7 @@ import { FileModel } from '../src/modules/files/file.model.js';
 import { ChannelMessageModel } from '../src/modules/notifications/channels/channel.model.js';
 import { InviteLinkModel } from '../src/modules/verification/onboarding.model.js';
 import { MentorReviewModel } from '../src/modules/mentorship/review.model.js';
+import { SupportTicketModel } from '../src/modules/support/support.model.js';
 import {
   AcademicRecordModel,
   DriveRegistrationModel,
@@ -155,6 +156,25 @@ beforeAll(async () => {
         text: 'A review about the member.',
       },
     ]);
+    // A problem report (B14): about the member's own problem, so it goes with them.
+    await SupportTicketModel.create({
+      userId: new Types.ObjectId(alum.id),
+      category: 'account',
+      desk: 'college',
+      subject: 'Demo problem report',
+      body: 'Demo: I cannot change my phone number.',
+      status: 'answered',
+      replies: [
+        {
+          from: 'college',
+          authorId: new Types.ObjectId(staff.id),
+          authorName: 'Demo staff',
+          body: 'Demo reply from the college.',
+          at: new Date(),
+        },
+      ],
+      lastActivityAt: new Date(),
+    });
     // Placements (B7): a registration and an offer with proof, kept anonymised after erasure.
     const proof = await FileModel.create({
       ownerId: new Types.ObjectId(alum.id),
@@ -265,6 +285,7 @@ describe('export', () => {
     expect(d.aiSettings).toEqual([]);
     expect(d.offers).toEqual([expect.objectContaining({ companyName: 'Privacy Demo Co', ctcLpa: 9.25 })]);
     expect(d.placementRegistrations).toEqual([expect.objectContaining({ status: 'registered' })]);
+    expect(d.support).toEqual([expect.objectContaining({ subject: 'Demo problem report', desk: 'college' })]);
     expect(d.mentorReviews).toEqual([
       expect.objectContaining({ text: 'A review the member wrote.', rating: 5 }),
     ]);
@@ -332,6 +353,7 @@ describe('deletion', () => {
       expect(await SubjectEnrollmentModel.countDocuments({ userId: alum.id })).toBe(0);
       expect(await ChannelMessageModel.countDocuments({ userId: alum.id })).toBe(0);
       expect(await InviteLinkModel.countDocuments({ usedBy: alum.id })).toBe(0);
+      expect(await SupportTicketModel.countDocuments({ userId: alum.id })).toBe(0);
       // Placements are the college's record: anonymised, not deleted.
       const reg = await DriveRegistrationModel.findOne({ branch: 'CSE', gradYear: 2022 }).lean();
       expect(reg).toMatchObject({ userId: null, answers: [] });
@@ -421,6 +443,7 @@ describe('deletion', () => {
         'offers',
         'academics',
         'outcomes',
+        'support',
       ]),
     );
   });

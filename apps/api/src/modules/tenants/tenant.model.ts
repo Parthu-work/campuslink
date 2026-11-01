@@ -61,6 +61,29 @@ const tenantSchema = new Schema(
       /** Set when an invoice is 30 days overdue; cleared when it is paid. Nothing is deleted. */
       readOnlyAt: { type: Date, default: null },
     },
+    /**
+     * The college's legal details (B14): who it is and its grievance officer, filled into the privacy
+     * policy and terms. `version` goes up each time an admin publishes changes; members accept the
+     * new notice on their next sign-in.
+     */
+    legal: {
+      legalName: { type: String, default: null },
+      address: { type: String, default: null },
+      grievanceOfficer: {
+        type: new Schema(
+          {
+            name: { type: String, required: true },
+            designation: { type: String, required: true },
+            email: { type: String, required: true },
+            phone: { type: String, default: null },
+          },
+          { _id: false, strict: 'throw' },
+        ),
+        default: null,
+      },
+      version: { type: Number, default: 0 },
+      updatedAt: { type: Date, default: null },
+    },
     retention: {
       inactiveAccountDays: { type: Number, default: 1095 },
       deletedAccountGraceDays: { type: Number, default: 30 },

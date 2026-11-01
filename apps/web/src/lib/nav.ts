@@ -19,6 +19,7 @@ import {
   HeartHandshake,
   Home,
   Inbox,
+  LifeBuoy,
   TrendingUp,
   ReceiptIndianRupee,
   Library,
@@ -87,6 +88,8 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   traction: TrendingUp,
   billing: ReceiptIndianRupee,
   health: Activity,
+  help: LifeBuoy,
+  platformSupport: LifeBuoy,
 };
 
 /** i18n keys under `nav.` (a few ids reuse older keys). */
@@ -122,12 +125,14 @@ const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'settings',
   'admin',
   'verify',
+  'help',
 ]);
 const PLATFORM_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'platform',
   'billing',
   'traction',
   'health',
+  'platformSupport',
   'settings',
 ]);
 

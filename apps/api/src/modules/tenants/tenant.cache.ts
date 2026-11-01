@@ -42,6 +42,13 @@ export interface TenantRecord {
   limits: { mentorshipRequestsPerWeek: number; referralRequestsPerWeek: number };
   permissionOverrides: PermissionOverrides;
   retention?: { inactiveAccountDays: number; deletedAccountGraceDays: number };
+  legal?: {
+    legalName?: string | null;
+    address?: string | null;
+    grievanceOfficer?: { name: string; designation: string; email: string; phone: string | null } | null;
+    version?: number;
+    updatedAt?: Date | null;
+  };
 }
 
 const TTL_MS = 30_000;

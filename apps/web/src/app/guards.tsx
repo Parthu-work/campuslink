@@ -19,6 +19,9 @@ const MfaGate = lazy(() => import('../features/auth/mfa-gate').then((m) => ({ de
 const GuardianGate = lazy(() =>
   import('../features/guardian/guardian-gate').then((m) => ({ default: m.GuardianGate })),
 );
+const NoticeGate = lazy(() =>
+  import('../features/legal/notice-gate').then((m) => ({ default: m.NoticeGate })),
+);
 
 /**
  * Boot only (college lookup, session): the launch mark index.html painted, so the hand-over is
@@ -90,6 +93,14 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     return (
       <Suspense fallback={<Splash />}>
         <MfaGate />
+      </Suspense>
+    );
+  }
+  // A new privacy notice or terms (B14): accepted before anything else; the documents stay readable.
+  if (me.notice && !me.notice.accepted && !location.pathname.startsWith('/legal/')) {
+    return (
+      <Suspense fallback={<Splash />}>
+        <NoticeGate version={me.notice.version} />
       </Suspense>
     );
   }

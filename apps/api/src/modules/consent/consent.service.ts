@@ -6,7 +6,7 @@ import {
   PRIVACY_NOTICE_VERSION,
   type ConsentPurpose,
 } from '@campuslink/shared';
-import { ConsentModel } from './consent.model.js';
+import { ConsentModel, NOTICE_PURPOSE } from './consent.model.js';
 import { badRequest } from '../../lib/errors.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 
@@ -23,17 +23,45 @@ export const consentService = {
   /** Set by the app: a member changed a consent in Settings (B9 stops and detaches analytics). */
   onChange: null as ((userId: string, purpose: ConsentPurpose, granted: boolean) => Promise<void>) | null,
 
+  /** Set by the app: the notice version of the current college (B14; the platform's alone until then). */
+  currentNotice: async (): Promise<string> => PRIVACY_NOTICE_VERSION,
+
+  /** The member accepted a new notice (B14). Append-only, kept on erasure. */
+  async recordNotice(userId: string, noticeVersion: string): Promise<void> {
+    await ConsentModel.create({
+      userId: new Types.ObjectId(userId),
+      purpose: NOTICE_PURPOSE,
+      version: 1,
+      noticeVersion,
+      granted: true,
+      source: 'notice',
+    });
+  },
+
+  /** The notice version the member last agreed to (at sign-up or since), or null without records. */
+  async latestNoticeVersion(userId: string): Promise<string | null> {
+    const r = await ConsentModel.findOne({
+      userId: new Types.ObjectId(userId),
+      purpose: { $in: ['account', NOTICE_PURPOSE] },
+    })
+      .sort({ _id: -1 })
+      .select('noticeVersion')
+      .lean();
+    return r?.noticeVersion ?? null;
+  },
+
   async recordMany(
     userId: Types.ObjectId,
     granted: ConsentPurpose[],
     source: 'signup' | 'settings',
   ): Promise<void> {
+    const noticeVersion = await this.currentNotice();
     await ConsentModel.insertMany(
       CONSENT_PURPOSE_KEYS.map((purpose) => ({
         userId,
         purpose,
         version: CONSENT_PURPOSES[purpose].version,
-        noticeVersion: PRIVACY_NOTICE_VERSION,
+        noticeVersion,
         granted: granted.includes(purpose),
         source,
       })),

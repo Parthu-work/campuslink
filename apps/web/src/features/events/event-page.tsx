@@ -247,6 +247,8 @@ export function EventPage() {
   });
   const fail = (e: unknown) => toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
   const rsvp = useMutation({
+    // Runs offline too (the default would pause it), so it can wait in the outbox.
+    networkMode: 'always',
     // Waits in the outbox when offline (B13); the optimistic RSVP stays on screen meanwhile.
     mutationFn: (going: boolean) =>
       putOrQueue<EventView>(qc, `/events/${id}/rsvp`, { going }, [['event', id], ['events']]),

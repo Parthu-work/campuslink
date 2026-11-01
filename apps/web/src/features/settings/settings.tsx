@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Outlet } from 'react-router';
 import { TabNav } from '../../components/ui/tab-nav';
 import { useTranslation } from '../../i18n/react';
@@ -34,6 +34,10 @@ import { usePreferences, type MotionPref, type ThemePref } from '../../lib/prefe
 import { applyApiError } from '../../lib/errors';
 import { lazyPart } from '../../lib/lazy-part';
 import { useTenant } from '../../lib/tenant-context';
+
+const GrievanceCard = lazy(() =>
+  import('../legal/grievance-card').then((m) => ({ default: m.GrievanceCard })),
+);
 // Its code (the phone and code fields) loads only on the Security tab, after it renders.
 const PhoneSettings = lazyPart(() => import('./phone-settings').then((m) => m.PhoneSettings));
 
@@ -228,46 +232,52 @@ export function PrivacySettings() {
     onError: (e: Error) => toast.error(e.message),
   });
   return (
-    <Card className="grid gap-4 p-5">
-      <div>
-        <h2 className="text-title font-semibold">{t('settings.consentsTitle')}</h2>
-        <p className="text-meta text-fg-2">{t('settings.consentsBody')}</p>
-      </div>
-      {consents.isLoading && <Skeleton className="h-40" />}
-      <ul className="grid gap-2">
-        {consents.data?.map((c) => (
-          <li key={c.purpose} className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-2">
-            {c.required ? (
-              <div className="flex items-start gap-3 py-1">
-                <div className="min-w-0 flex-1">
-                  <p className="text-body font-medium">{t(`auth.consent.${c.purpose}`)}</p>
-                  {c.updatedAt && (
-                    <p className="mt-1 font-mono text-caption text-fg-3">
-                      {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
-                    </p>
-                  )}
+    <div className="grid gap-4">
+      <Card className="grid gap-4 p-5">
+        <div>
+          <h2 className="text-title font-semibold">{t('settings.consentsTitle')}</h2>
+          <p className="text-meta text-fg-2">{t('settings.consentsBody')}</p>
+        </div>
+        {consents.isLoading && <Skeleton className="h-40" />}
+        <ul className="grid gap-2">
+          {consents.data?.map((c) => (
+            <li key={c.purpose} className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-2">
+              {c.required ? (
+                <div className="flex items-start gap-3 py-1">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-body font-medium">{t(`auth.consent.${c.purpose}`)}</p>
+                    {c.updatedAt && (
+                      <p className="mt-1 font-mono text-caption text-fg-3">
+                        {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
+                      </p>
+                    )}
+                  </div>
+                  <Badge>{t('settings.required')}</Badge>
                 </div>
-                <Badge>{t('settings.required')}</Badge>
-              </div>
-            ) : (
-              <Switch
-                label={t(`auth.consent.${c.purpose}`)}
-                description={
-                  c.updatedAt && (
-                    <span className="font-mono text-caption text-fg-3">
-                      {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
-                    </span>
-                  )
-                }
-                checked={c.granted}
-                onChange={(on) => set.mutate({ purpose: c.purpose, granted: on })}
-              />
-            )}
-          </li>
-        ))}
-      </ul>
-      <p className="text-caption text-fg-3">{t('settings.rights')}</p>
-    </Card>
+              ) : (
+                <Switch
+                  label={t(`auth.consent.${c.purpose}`)}
+                  description={
+                    c.updatedAt && (
+                      <span className="font-mono text-caption text-fg-3">
+                        {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
+                      </span>
+                    )
+                  }
+                  checked={c.granted}
+                  onChange={(on) => set.mutate({ purpose: c.purpose, granted: on })}
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+        <p className="text-caption text-fg-3">{t('settings.rights')}</p>
+      </Card>
+      {/* The college's grievance officer and legal pages (B14), loaded after the consents. */}
+      <Suspense fallback={null}>
+        <GrievanceCard />
+      </Suspense>
+    </div>
   );
 }
 

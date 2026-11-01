@@ -95,6 +95,8 @@ export class UsersService {
   onSuspended: ((userId: string) => void) | null = null;
   /** Product analytics (B9), set in app.ts. */
   track: Track = noTrack;
+  /** The member's notice state (B14), set in app.ts from LegalService. */
+  notice: ((userId: string) => Promise<{ version: string; accepted: boolean }>) | null = null;
   constructor(
     private readonly auth: AuthService,
     private readonly profiles: ProfilesService,
@@ -132,6 +134,7 @@ export class UsersService {
       mfaRequired: requiresMfa(auth.roles),
       locale: toLocale(u.locale),
       permissions: [...auth.permissions].sort(),
+      ...(this.notice ? { notice: await this.notice(auth.userId) } : {}),
     };
   }
 

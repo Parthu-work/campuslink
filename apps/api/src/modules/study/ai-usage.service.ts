@@ -1,3 +1,4 @@
+import { metrics } from '../../lib/metrics.js';
 import { Types } from 'mongoose';
 import { USAGE_FEATURE_OF_KIND, type AiUsageFeature, type AiUsageKind } from '@campuslink/shared';
 import { AiUsageModel, type AiUsageDoc } from './ai-usage.model.js';
@@ -60,6 +61,8 @@ export class AiUsageService {
       { $inc: { requests: 1, inputTokens: tokens(e.inputTokens), outputTokens: tokens(e.outputTokens) } },
       { upsert: true },
     );
+    metrics.aiTokens.inc({ kind: e.kind, direction: 'input' }, tokens(e.inputTokens));
+    metrics.aiTokens.inc({ kind: e.kind, direction: 'output' }, tokens(e.outputTokens));
     const added = tokens(e.inputTokens) + tokens(e.outputTokens);
     const all = this.month.get(this.monthKey(false));
     if (all) all.tokens += added;

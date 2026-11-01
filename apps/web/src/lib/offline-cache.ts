@@ -127,6 +127,10 @@ async function restore(qc: QueryClient): Promise<{ owner: string | null }> {
     qc.setQueryData(r.key, r.data, { updatedAt: r.at });
     markRestored(r.hash, r.at);
   }
+  // Shown at once, but never trusted as fresh: every screen asks the server again on mount (a copy
+  // saved seconds ago would otherwise count as fresh and hide what changed since).
+  const restored = new Set(fresh.map((r) => r.hash));
+  await qc.invalidateQueries({ predicate: (q) => restored.has(q.queryHash), refetchType: 'none' });
   return { owner: me && now - me.at < MAX_AGE_MS ? owner : null };
 }
 
@@ -172,6 +176,12 @@ function watch(qc: QueryClient) {
     dirty.set(e.query.queryHash, e.query);
     timer ??= setTimeout(() => void flush(), WRITE_DELAY_MS);
   });
+
+  // Reads that finished before this module loaded (the college, fetched at boot) are saved too.
+  for (const q of qc.getQueryCache().getAll())
+    if (q.state.status === 'success' && persistable(q.queryKey) && !restoredHashes().includes(q.queryHash))
+      dirty.set(q.queryHash, q);
+  if (dirty.size) timer ??= setTimeout(() => void flush(), WRITE_DELAY_MS);
 
   useSession.subscribe((s, prev) => {
     if (s.status === prev.status) return;

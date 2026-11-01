@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useDeferredValue, useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -35,6 +35,9 @@ import { ADMIN_ICONS } from '../../lib/admin-icons';
 import { BackLink } from '../../components/ui/back-link';
 import { cn } from '../../lib/cn';
 import { BillingBanner } from './billing-banner';
+
+/** The legal details form (B14) loads with Branding, after the colours. */
+const LegalDetails = lazy(() => import('./legal-admin').then((m) => ({ default: m.LegalDetails })));
 
 /** One admin section in the side menu: a 44px row with its icon, the current one marked. */
 function AdminMenu({ groups }: { groups: AdminNavGroup[] }) {
@@ -544,6 +547,11 @@ export function BrandingAdmin() {
           ))}
         </ul>
       </Card>
+      <div className="lg:col-span-2">
+        <Suspense fallback={<Skeleton className="h-64 rounded-[var(--radius-lg)]" />}>
+          <LegalDetails />
+        </Suspense>
+      </div>
     </div>
   );
 }

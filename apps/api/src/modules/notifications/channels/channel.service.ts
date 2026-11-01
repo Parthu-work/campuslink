@@ -1,3 +1,4 @@
+import { metrics } from '../../../lib/metrics.js';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { Types } from 'mongoose';
 import { SignJWT, jwtVerify } from 'jose';
@@ -342,6 +343,7 @@ export class ChannelService {
         { $set: { status: s.status, statusAt: new Date() } },
       ),
     );
+    if (r.modifiedCount > 0 && s.status === 'failed') metrics.whatsappFailures.inc();
     return r.modifiedCount > 0;
   }
 

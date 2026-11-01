@@ -1,3 +1,4 @@
+import { metrics } from '../../../lib/metrics.js';
 import type { OtpChannel } from '@campuslink/shared';
 import type { SmsProvider } from '../../../lib/sms.js';
 import type { WhatsAppProvider } from '../../../lib/whatsapp.js';
@@ -55,6 +56,7 @@ export class OtpSender {
     if (channel === 'whatsapp') {
       try {
         const r = await this.d.whatsapp.sendAuthCode(phone, code, lang);
+        metrics.otpSends.inc({ channel: 'whatsapp' });
         return { channel: 'whatsapp', messageId: r.messageId };
       } catch (err) {
         if (!this.d.sms.available) throw err;
@@ -62,6 +64,7 @@ export class OtpSender {
       }
     }
     const r = await this.d.sms.sendTemplate(phone, this.d.smsTemplateId(this.smsKey(lang)), [code]);
+    metrics.otpSends.inc({ channel: 'sms' });
     return { channel: 'sms', messageId: r.messageId };
   }
 }

@@ -2,15 +2,26 @@ import { Schema, type InferSchemaType } from 'mongoose';
 import { CONSENT_PURPOSE_KEYS, GUARDIAN_CONSENT } from '@campuslink/shared';
 import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
 
+/** Accepting a new privacy notice and terms (B14); not a choice in Settings. */
+export const NOTICE_PURPOSE = 'privacy_notice';
+
 /** Versioned consent events. Current state = latest event per purpose; history is never rewritten. */
 const consentSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
-    purpose: { type: String, enum: [...CONSENT_PURPOSE_KEYS, GUARDIAN_CONSENT.purpose], required: true },
+    purpose: {
+      type: String,
+      enum: [...CONSENT_PURPOSE_KEYS, GUARDIAN_CONSENT.purpose, NOTICE_PURPOSE],
+      required: true,
+    },
     version: { type: Number, required: true },
     noticeVersion: { type: String, required: true },
     granted: { type: Boolean, required: true },
-    source: { type: String, enum: ['signup', 'settings', 'admin_import', 'guardian'], required: true },
+    source: {
+      type: String,
+      enum: ['signup', 'settings', 'admin_import', 'guardian', 'notice'],
+      required: true,
+    },
     /**
      * Guardian consent only: how it was verified (the roster record whose guardian number got the
      * code, the declaration's language and the channel). The guardian's number itself is not kept.

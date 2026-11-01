@@ -129,6 +129,14 @@ import { privacyRoutes } from './modules/privacy/privacy.routes.js';
 import { consentService } from './modules/consent/consent.service.js';
 import { InsightsService } from './modules/insights/insights.service.js';
 import { insightsRoutes } from './modules/insights/insights.routes.js';
+import { SupportService } from './modules/support/support.service.js';
+import { supportRoutes } from './modules/support/support.routes.js';
+import { LegalService } from './modules/tenants/legal.service.js';
+import { legalRoutes } from './modules/tenants/legal.routes.js';
+import { observabilityRoutes } from './modules/observability/observability.routes.js';
+import { createErrorReporter, scrub } from './lib/error-reporter.js';
+import { metrics, routePattern } from './lib/metrics.js';
+import { setJobFailureReporter } from './lib/jobs.js';
 import { SubjectsService } from './modules/study/subjects.service.js';
 import { AiSettingsService } from './modules/study/ai-settings.service.js';
 import { aiSettingsRoutes, studyRoutes } from './modules/study/study.routes.js';
@@ -843,6 +851,35 @@ export function createApp({
     indexing: indexingService,
   });
 
+  // ── Help, support, legal pages and error reporting (B14) ─────────────────────────────
+  const errorReporter = createErrorReporter(
+    { reporter: env.ERROR_REPORTER, dsn: env.ERROR_REPORTER_DSN, environment: env.NODE_ENV },
+    logger,
+  );
+  setJobFailureReporter((name, err) => {
+    void errorReporter
+      .report({
+        kind: 'job',
+        type: err instanceof Error ? err.name : 'Error',
+        message: `${name}: ${scrub(err instanceof Error ? err.message : String(err))}`,
+      })
+      .catch(() => undefined);
+  });
+  const legalService = new LegalService();
+  consentService.currentNotice = () => legalService.currentNoticeVersion();
+  usersService.notice = (userId) => legalService.noticeStateForCurrent(userId);
+  const supportService = new SupportService({
+    colleges: async () =>
+      (await platformService.listTenants()).map((t) => ({
+        id: String(t.id),
+        slug: t.slug,
+        name: t.branding.displayName,
+      })),
+    files: filesService,
+    notifications: notificationsService,
+    users: usersService,
+  });
+
   // Admin › Overview: what is waiting for staff and admins (revamp phase 10).
   const overviewService = new AdminOverviewService({
     users: usersService,
@@ -862,6 +899,7 @@ export function createApp({
     placements: placementsService,
     offers: offersService,
     outcomes: outcomesService,
+    support: supportService,
   });
 
   // ── Plans, entitlements and billing (B10) ─────────────────────────────
@@ -979,6 +1017,7 @@ export function createApp({
   privacyService.register('aiUsage', hook(aiUsageService));
   privacyService.register('studyChats', hook(chatService));
   privacyService.register('aiSettings', hook(aiSettingsService));
+  privacyService.register('support', hook(supportService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -994,6 +1033,17 @@ export function createApp({
   };
 
   app.use(requestId);
+  // Requests by route pattern and status (B14); never the concrete path, which holds ids.
+  app.use((req, res, next) => {
+    res.on('finish', () =>
+      metrics.httpRequests.inc({
+        route: routePattern(req),
+        method: req.method,
+        status: String(res.statusCode),
+      }),
+    );
+    next();
+  });
   app.use(
     pinoHttp({
       logger,
@@ -1149,6 +1199,12 @@ export function createApp({
   );
   app.use(API_PREFIX, defineModule('analytics', analyticsRoutes(analyticsService), pipeline));
   app.use(API_PREFIX, defineModule('insights', insightsRoutes(productInsights, platformService), pipeline));
+  app.use(API_PREFIX, defineModule('support', supportRoutes(supportService, filesService), pipeline));
+  app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('observability', observabilityRoutes(errorReporter, env.METRICS_TOKEN), pipeline),
+  );
   app.use(API_PREFIX, defineModule('privacy', privacyRoutes(privacyService), pipeline));
   app.use(API_PREFIX, defineModule('billing', billingRoutes(billingService, payments), pipeline));
   if (env.NODE_ENV !== 'production' && payments instanceof StubPaymentProvider)
@@ -1203,7 +1259,7 @@ export function createApp({
   app.get(`${API_PREFIX}/openapi.json`, (_req, res) => res.json(openapi));
 
   app.use(notFoundHandler);
-  app.use(errorHandler(logger));
+  app.use(errorHandler(logger, errorReporter));
   app.locals.registry = registry;
   app.locals.services = {
     auth: authService,

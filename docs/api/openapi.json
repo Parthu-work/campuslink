@@ -373,9 +373,12 @@
                               "audit:read",
                               "rewards:manage",
                               "rewards:redeem",
+                              "support:create",
+                              "support:manage",
                               "platform:tenants",
                               "platform:health",
-                              "platform:billing"
+                              "platform:billing",
+                              "platform:support"
                             ]
                           }
                         }
@@ -456,9 +459,12 @@
                               "audit:read",
                               "rewards:manage",
                               "rewards:redeem",
+                              "support:create",
+                              "support:manage",
                               "platform:tenants",
                               "platform:health",
-                              "platform:billing"
+                              "platform:billing",
+                              "platform:support"
                             ]
                           }
                         }
@@ -18444,6 +18450,841 @@
           }
         },
         "x-permission": "platform:tenants"
+      }
+    },
+    "/api/v1/support/screenshots": {
+      "post": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Upload a screenshot for a problem report (attach it within a day, once)",
+        "description": "Requires permission `support:create` (Report a problem and follow its replies). Host scope: college. Rate limit: upload.",
+        "operationId": "support_post_support_screenshots",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "support:create"
+      }
+    },
+    "/api/v1/support/tickets": {
+      "post": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Report a problem (college matters go to the college, bugs to the platform)",
+        "description": "Requires permission `support:create` (Report a problem and follow its replies). Host scope: college. Rate limit: support.",
+        "operationId": "support_post_support_tickets",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "account",
+                      "verification",
+                      "mentorship",
+                      "placements",
+                      "study",
+                      "bug",
+                      "other"
+                    ]
+                  },
+                  "subject": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 120
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  },
+                  "screenshotFileId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "category",
+                  "subject",
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "support:create"
+      },
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "My problem reports",
+        "description": "Requires permission `support:create` (Report a problem and follow its replies). Host scope: college.",
+        "operationId": "support_get_support_tickets",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "support:create"
+      }
+    },
+    "/api/v1/support/tickets/{id}": {
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "A problem report (its reporter, or the college’s desk for college matters)",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "support_get_support_tickets_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "patch": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Close or reopen a problem report",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "support_patch_support_tickets_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "closed",
+                      "open"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/support/tickets/{id}/replies": {
+      "post": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Reply to a problem report (its reporter, or the college’s desk)",
+        "description": "Any signed-in user. Host scope: college. Rate limit: support.",
+        "operationId": "support_post_support_tickets_id_replies",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/admin/support/tickets": {
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Problem reports sent to the college, newest activity first",
+        "description": "Requires permission `support:manage` (Answer and close problem reports sent to the college). Host scope: college.",
+        "operationId": "support_get_admin_support_tickets",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "answered",
+                "closed"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "support:manage"
+      }
+    },
+    "/api/v1/platform/support/tickets": {
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Bug reports from every college, newest activity first",
+        "description": "Requires permission `platform:support` (Answer problem reports members sent to the platform (bugs)). Host scope: platform.",
+        "operationId": "support_get_platform_support_tickets",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "answered",
+                "closed"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:support"
+      }
+    },
+    "/api/v1/platform/support/tickets/{tenantId}/{id}": {
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "A bug report sent to the platform (audited)",
+        "description": "Requires permission `platform:support` (Answer problem reports members sent to the platform (bugs)). Host scope: platform.",
+        "operationId": "support_get_platform_support_tickets_tenantId_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:support"
+      },
+      "patch": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Close or reopen a bug report",
+        "description": "Requires permission `platform:support` (Answer problem reports members sent to the platform (bugs)). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "support_patch_platform_support_tickets_tenantId_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "closed",
+                      "open"
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:support"
+      }
+    },
+    "/api/v1/platform/support/tickets/{tenantId}/{id}/replies": {
+      "post": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Answer a bug report (the member is told; audited)",
+        "description": "Requires permission `platform:support` (Answer problem reports members sent to the platform (bugs)). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "support_post_platform_support_tickets_tenantId_id_replies",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:support"
+      }
+    },
+    "/api/v1/platform/support/tickets/{tenantId}/{id}/screenshot": {
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "The screenshot attached to a bug report",
+        "description": "Requires permission `platform:support` (Answer problem reports members sent to the platform (bugs)). Host scope: platform.",
+        "operationId": "support_get_platform_support_tickets_tenantId_id_screenshot",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:support"
+      }
+    },
+    "/api/v1/legal/{doc}": {
+      "get": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "The college’s privacy policy or terms, with its details filled in (public)",
+        "description": "Public. Host scope: college.",
+        "operationId": "legal_get_legal_doc",
+        "parameters": [
+          {
+            "name": "doc",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "privacy",
+                "terms"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/admin/legal": {
+      "get": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "The college’s legal details (legal name, address, grievance officer)",
+        "description": "Requires permission `tenant:branding` (Change college branding). Host scope: college.",
+        "operationId": "legal_get_admin_legal",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:branding"
+      },
+      "put": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Publish the college’s legal details (members accept the new notice on next sign-in)",
+        "description": "Requires permission `tenant:branding` (Change college branding). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "legal_put_admin_legal",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "legalName": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 200
+                  },
+                  "address": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 400
+                  },
+                  "grievanceOfficer": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100
+                      },
+                      "designation": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100
+                      },
+                      "email": {
+                        "type": "string",
+                        "maxLength": 254,
+                        "format": "email",
+                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                      },
+                      "phone": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[0-9 +()-]{6,20}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "designation",
+                      "email"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "legalName",
+                  "address",
+                  "grievanceOfficer"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:branding"
+      }
+    },
+    "/api/v1/me/notice": {
+      "post": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Accept the current privacy notice and terms",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "legal_post_me_notice",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
+                  }
+                },
+                "required": [
+                  "version"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/client-errors": {
+      "post": {
+        "tags": [
+          "Observability"
+        ],
+        "summary": "A browser reports a broken screen or a failed chunk load (no personal data; rate-limited)",
+        "description": "Public. Host scope: any. Rate limit: telemetry.",
+        "operationId": "observability_post_client_errors",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "boundary",
+                      "chunk",
+                      "unhandled"
+                    ]
+                  },
+                  "message": {
+                    "type": "string",
+                    "maxLength": 300
+                  },
+                  "route": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "release": {
+                    "type": "string",
+                    "pattern": "^[\\w.-]{1,40}$"
+                  },
+                  "userHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{16,64}$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "message",
+                  "route"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "summary": "Prometheus metrics for this process (bearer token; platform host only)",
+        "description": "Public. Host scope: platform.",
+        "operationId": "observability_get_metrics",
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
       }
     },
     "/api/v1/me/export": {

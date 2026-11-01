@@ -27,6 +27,14 @@ export function RouteError({ fullPage = false, error: given }: { fullPage?: bool
 
   useEffect(() => {
     if (import.meta.env.DEV) console.error(error);
+    // A broken screen or chunk is reported (B14); a missing page or a refused read is not a bug.
+    const expected =
+      (isRouteErrorResponse(error) && error.status < 500) ||
+      (error instanceof ApiError && (error.status < 500 || error.code === 'NETWORK'));
+    if (!expected)
+      void import('../../lib/report-error')
+        .then((m) => m.reportClientError(isChunkLoadError(error) ? 'chunk' : 'boundary', error))
+        .catch(() => undefined);
   }, [error]);
   // Leaving the error screen forgets reads that failed with nothing to show, so the next visit
   // asks again instead of rethrowing the old error (a screen's main read does not retry on mount).

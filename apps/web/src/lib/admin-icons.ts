@@ -7,6 +7,7 @@ import {
   Brush,
   FileUp,
   Gift,
+  LifeBuoy,
   HeartHandshake,
   ListChecks,
   Newspaper,
@@ -43,4 +44,5 @@ export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
   ai: Sparkles,
   billing: ReceiptIndianRupee,
   audit: ScrollText,
+  support: LifeBuoy,
 };

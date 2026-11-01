@@ -17,7 +17,7 @@ A new session reads this file first and resumes from the first phase that is not
 | B11   | AI cost control                                                | Done        |
 | B12   | Hindi and the language framework                               | Done        |
 | B13   | Offline and low-data mode                                      | Done        |
-| B14   | In-app help, feedback, legal pages and app-level observability | Not started |
+| B14   | In-app help, feedback, legal pages and app-level observability | Done        |
 | B15   | Hardening, demo data and final report                          | Not started |
 
 ## Step 0 · Set up
@@ -350,4 +350,29 @@ A new session reads this file first and resumes from the first phase that is not
 - **Image variants are made on request and kept in memory** (300 at most) rather than stored as files: they are small, derived and access-checked like the original.
 - **No digests over WhatsApp:** no digest feature exists yet (deviation; recorded in the spec).
 
+**Fixes after CI (shipped with B14).** B13's first e2e run failed in its own offline specs and in three older specs. Reproduced locally against a mock API: (1) restored reads kept their saved time and counted as fresh, so a page loaded seconds later showed data from before a booking (now restored reads are marked stale and refetch on mount); (2) TanStack Query pauses mutations offline by default, so the outbox never ran (the three queued writes use `networkMode: 'always'`); (3) the college record, fetched at boot before the cache listened, was never saved, so an offline cold start had no college (reads that finished earlier are now swept in, and the app opens offline when the college comes from the saved copy).
+
 **Next:** B14 (in-app help, feedback, legal pages and observability).
+
+## B14 · In-app help, feedback, legal pages and app-level observability (Done)
+
+**Shipped**
+
+- Help centre (`/help`): seven guides in en, te and hi; **Report a problem** with an optional screenshot; the member's reports as threads. Admin › Support (college matters, overview count) and Platform › Support (bugs from every college, audited).
+- Legal pages: privacy policy and terms from versioned templates filled with the college's details (Admin › Branding › Legal details), public at `/legal/privacy` and `/legal/terms`; a new version asks members to accept again (notice gate; `POST /me/notice`); the grievance officer in Settings › Privacy.
+- `ErrorReporter` (`disabled`, `console`, `sentry` via the envelope protocol, no SDK) for unhandled API errors, failed jobs and browser errors relayed through `POST /client-errors`; `scrub()` keeps personal data out.
+- `GET /metrics` (platform host, bearer `METRICS_TOKEN`): requests, jobs, OTP sends, WhatsApp failures, AI tokens, client and server errors.
+- New permissions `support:create`, `support:manage`, `platform:support`; notification types `support_reply`, `support_ticket` (category _requests_); env `ERROR_REPORTER`, `ERROR_REPORTER_DSN`, `METRICS_TOKEN`.
+- Spec: `docs/specs/help-support-legal.md`. Tests: `support.test.ts`, `legal.test.ts`, `observability.test.ts`, a privacy case, `e2e/help.spec.ts`.
+
+**Decisions**
+
+- **Browser errors go through the college's own API**, not straight to Sentry: no DSN in the browser and no CSP change (the prompt suggested adding the DSN host to the CSP when configured).
+- **No Sentry SDK:** the envelope protocol is a few lines over `safeFetch` and works with GlitchTip too.
+- **Support notifications use the existing _requests_ category** rather than a new one in everyone's settings.
+- **Legal templates are English only** and need legal review; a translation is a new, reviewed version (the page says so in the member's language). The policy promises only what the product does (the inactive-account purge is not implemented, so it is not promised).
+- **Re-consent compares notice versions:** `PRIVACY_NOTICE_VERSION` plus the college's published version. Accounts with no consent record at all count as accepted (they predate consent records).
+- **Read-only colleges** can still accept a notice, report errors and ask for help (create, reply, close a report); the pinned list in the billing test records it.
+- **Bug reports are read college by college** (`runInTenant` per college), not through a new platform scope.
+
+**Next:** B15 (hardening, demo data and final report).

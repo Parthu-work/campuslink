@@ -41,7 +41,9 @@ export type NavId =
   | 'platform'
   | 'traction'
   | 'billing'
-  | 'health';
+  | 'health'
+  | 'help'
+  | 'platformSupport';
 
 export type NavGroup = 'main' | 'explore' | 'community' | 'you' | 'manage' | 'platform';
 
@@ -71,6 +73,7 @@ export const ADMIN_PERMISSIONS: readonly Permission[] = [
   'audit:read',
   'placements:manage',
   'outcomes:verify',
+  'support:manage',
 ];
 
 /** The admin area's sections, grouped (desktop side menu, phone overview). Each needs one permission. */
@@ -94,6 +97,7 @@ export type AdminSectionId =
   | 'features'
   | 'ai'
   | 'billing'
+  | 'support'
   | 'audit';
 export interface AdminSection {
   id: AdminSectionId;
@@ -132,6 +136,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('ai', '/admin/ai', 'ai:settings', 'college'),
   // Plan, seats, usage against allowances and invoices (B10).
   section('billing', '/admin/billing', 'tenant:settings', 'college'),
+  // Problem reports members sent to the college (B14).
+  section('support', '/admin/support', 'support:manage', 'college'),
   section('audit', '/admin/audit', 'audit:read', 'college'),
 ];
 const ADMIN_GROUPS: readonly AdminGroup[] = ['people', 'placements', 'community', 'insights', 'college'];
@@ -195,6 +201,10 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   // Plans, subscriptions, invoices and payments (B10).
   billing: d('billing', '/platform/billing', 'platform', ['platform:billing']),
   health: d('health', '/platform/health', 'platform', ['platform:health']),
+  // Help centre and problem reports (B14): every member, verified or not.
+  help: d('help', '/help', 'you'),
+  // Bug reports members sent to the platform (B14).
+  platformSupport: d('platformSupport', '/platform/support', 'platform', ['platform:support']),
 };
 
 /** Destinations that belong to a feature switch: hidden while the college has it off. */
@@ -286,6 +296,8 @@ const MENU_ORDER: readonly NavId[] = [
   'notifications',
   'admin',
   'profile',
+  'help',
+  'platformSupport',
   'settings',
 ];
 

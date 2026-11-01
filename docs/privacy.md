@@ -78,6 +78,13 @@
 - Writes made offline are limited to an RSVP, saving or tracking a job and marking a roadmap step. They wait in the same database (with no message or request text) and are sent with their Idempotency-Key on reconnect, or wiped with the rest on sign-out.
 - Data saver changes nothing about what is stored; it asks the API for smaller copies of images the member may already see.
 
+## Help, legal pages and error reports (build B14)
+
+- **Problem reports** are seen by the member who sent them and the desk that answers: the college's admins for college matters, the platform owner for bugs (each platform read and reply is recorded in the college's audit log). Notifications about them carry an id and a category, never the text. A screenshot is re-encoded (no EXIF), visible to the same people and deleted after 180 days. Reports are exported with the member's data and erased with their account.
+- **Legal pages** show the college's legal name, address and grievance officer, which the college publishes for that purpose. Accepting a new notice is an append-only consent record, kept on erasure. The templates follow this document and **need legal review**.
+- **Error reports** carry the error type, a scrubbed message (emails, numbers, ids and tokens removed), the request id, the route pattern and the college's slug; from browsers, a one-way hash of the member's id instead of the id. No names, bodies or query strings. Browsers send them to the college's own API, never straight to a third party.
+- **Metrics** are counters by route pattern, job, channel and status, with no member or college in them.
+
 ## Data minimisation (implemented)
 
 - IP addresses are reduced to /24 (IPv4) or /48 (IPv6) prefixes in sessions and audit.

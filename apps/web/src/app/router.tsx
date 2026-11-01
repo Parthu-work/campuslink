@@ -104,6 +104,10 @@ const load = {
   traction: () => import('../features/platform/traction'),
   platformBilling: () => import('../features/platform/billing'),
   adminBilling: () => import('../features/admin/billing'),
+  help: () => import('../features/help/help'),
+  supportAdmin: () => import('../features/admin/support-admin'),
+  platformSupport: () => import('../features/platform/support'),
+  legal: () => import('../features/legal/legal-page'),
 };
 
 type Gate = Permission | readonly Permission[] | { permission: Permission; feature: Feature };
@@ -301,6 +305,8 @@ function collegeRoutes(): RouteObject[] {
         // One-tap invites and class codes (B4): signed-in members are already in.
         publicScreen(load.join, 'InvitePage', '/invite/:token', '/home'),
         publicScreen(load.join, 'JoinPage', '/join/:code', '/home'),
+        // The college's privacy policy and terms (B14): readable before and after signing in.
+        publicScreen(load.legal, 'LegalPage', '/legal/:doc'),
         ...auth('/home'),
         // The living style guide (revamp phase 6): development builds only; production leaves it out.
         ...(import.meta.env.DEV
@@ -498,6 +504,16 @@ function collegeRoutes(): RouteObject[] {
           screen(load.notifications, 'NotificationsPage', undefined, at('/notifications'), () => [
             qc.ensureQueryData(q.notifications()),
           ]),
+          // Help centre and problem reports (B14).
+          screen(load.help, 'HelpPage', undefined, at('/help'), () => [
+            qc.ensureQueryData(q.supportTickets()),
+          ]),
+          screen(load.help, 'HelpArticlePage', undefined, at('/help/articles/:id')),
+          still(
+            screen(load.help, 'ReportPage', 'support:create', at('/help/reports/:id'), ({ id }) =>
+              isId(id) ? [qc.ensureQueryData(q.supportTicket(id))] : [],
+            ),
+          ),
           settingsRoutes,
           layout(load.admin, 'AdminLayout', ADMIN_PERMISSIONS, 'admin', [
             screen(load.adminOverview, 'AdminOverview', undefined, index, () => [
@@ -601,6 +617,11 @@ function collegeRoutes(): RouteObject[] {
             screen(load.adminBilling, 'AdminBilling', 'tenant:settings', at('billing'), () => [
               qc.ensureQueryData(q.adminBilling()),
             ]),
+            still(
+              screen(load.supportAdmin, 'SupportAdmin', 'support:manage', at('support'), () => [
+                qc.ensureQueryData(q.adminSupport('open')),
+              ]),
+            ),
             screen(load.admin, 'AuditAdmin', 'audit:read', at('audit')),
           ]),
         ]),
@@ -635,6 +656,15 @@ function platformRoutes(): RouteObject[] {
             ),
           ),
           screen(load.platform, 'PlatformHealth', 'platform:health', at('/platform/health')),
+          still(
+            screen(
+              load.platformSupport,
+              'PlatformSupport',
+              'platform:support',
+              at('/platform/support'),
+              () => [qc.ensureQueryData(q.platformSupport('open'))],
+            ),
+          ),
           settingsRoutes,
         ]),
       ],

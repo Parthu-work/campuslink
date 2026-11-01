@@ -136,6 +136,10 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return '/admin/billing';
       case 'payment_received':
         return '/admin/billing';
+      case 'support_reply':
+        return `/help/reports/${d.ticketId ?? ''}`;
+      case 'support_ticket':
+        return `/admin/support?report=${d.ticketId ?? ''}`;
       default:
         return '/sessions';
     }

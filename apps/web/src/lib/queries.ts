@@ -59,6 +59,11 @@ import type {
   ReportsDashboardView,
   InsightsView,
   PlatformInsightsView,
+  LegalDoc,
+  LegalDocView,
+  LegalSettingsView,
+  SupportStatus,
+  SupportTicketView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -648,4 +653,51 @@ export const platformPlans = () =>
   queryOptions({
     queryKey: ['platform-plans'],
     queryFn: ({ signal }) => api.get<PlanView[]>('/platform/plans', signal),
+  });
+
+// ── Help, support and legal pages (B14) ─────────────────────────────
+
+/** My problem reports. */
+export const supportTickets = () =>
+  queryOptions({
+    queryKey: ['support-tickets'],
+    queryFn: ({ signal }) => api.get<SupportTicketView[]>('/support/tickets', signal),
+  });
+
+/** One report (the reporter's, or the college desk's). */
+export const supportTicket = (id: string) =>
+  queryOptions({
+    queryKey: ['support-ticket', id],
+    queryFn: ({ signal }) => api.get<SupportTicketView>(`/support/tickets/${id}`, signal),
+  });
+
+/** Admin › Support: reports sent to the college. */
+export const adminSupport = (status: SupportStatus | '') =>
+  queryOptions({
+    queryKey: ['admin-support', status],
+    queryFn: ({ signal }) =>
+      api.get<SupportTicketView[]>(`/admin/support/tickets${status ? `?status=${status}` : ''}`, signal),
+  });
+
+/** Platform › Support: bug reports from every college. */
+export const platformSupport = (status: SupportStatus | '') =>
+  queryOptions({
+    queryKey: ['platform-support', status],
+    queryFn: ({ signal }) =>
+      api.get<SupportTicketView[]>(`/platform/support/tickets${status ? `?status=${status}` : ''}`, signal),
+  });
+
+/** The college's privacy policy or terms (public). */
+export const legalDoc = (doc: LegalDoc) =>
+  queryOptions({
+    queryKey: ['legal', doc],
+    queryFn: ({ signal }) => api.get<LegalDocView>(`/legal/${doc}`, signal),
+    staleTime: 10 * 60_000,
+  });
+
+/** Admin › Branding › Legal details. */
+export const adminLegal = () =>
+  queryOptions({
+    queryKey: ['admin-legal'],
+    queryFn: ({ signal }) => api.get<LegalSettingsView>('/admin/legal', signal),
   });
