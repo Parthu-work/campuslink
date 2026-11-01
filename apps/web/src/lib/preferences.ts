@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import type { Locale } from '@campuslink/shared';
 import { create } from 'zustand';
 import i18n, { loadLanguage } from '../i18n';
 import { prefs } from './storage';
@@ -14,7 +15,7 @@ interface PrefState {
   setTheme: (t: ThemePref) => void;
   setMotion: (m: MotionPref) => void;
   setHaptics: (on: boolean) => void;
-  setLanguage: (l: 'en' | 'te') => void;
+  setLanguage: (l: Locale) => void;
 }
 
 const root = document.documentElement;

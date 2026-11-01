@@ -5,6 +5,8 @@ import {
   CONSENT_PURPOSE_KEYS,
   type ConsentPurpose,
   type OtpChannel,
+  LOCALE_TAGS,
+  toLocale,
 } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { Button } from '../../components/ui/button';
@@ -71,7 +73,7 @@ export function BirthMonthField({
   const id = useId();
   const [y = '', m = ''] = value.split('-');
   const months = Array.from({ length: 12 }, (_, i) =>
-    new Intl.DateTimeFormat(i18n.language === 'te' ? 'te-IN' : 'en-IN', {
+    new Intl.DateTimeFormat(LOCALE_TAGS[toLocale(i18n.language)], {
       month: 'long',
       timeZone: 'UTC',
     }).format(new Date(Date.UTC(2000, i, 1))),

@@ -9,6 +9,8 @@ import {
   SEAT_ALUMNI_ACTIVE_DAYS,
   type Capability,
   type MeResponse,
+  toLocale,
+  type Locale,
 } from '@campuslink/shared';
 import { UserModel } from '../auth/user.model.js';
 import { SessionModel } from '../auth/session.model.js';
@@ -128,12 +130,12 @@ export class UsersService {
       verified: auth.verified,
       mfaEnabled: auth.mfaEnabled,
       mfaRequired: requiresMfa(auth.roles),
-      locale: u.locale as 'en' | 'te',
+      locale: toLocale(u.locale),
       permissions: [...auth.permissions].sort(),
     };
   }
 
-  async updateMe(auth: AuthState, patch: { name?: string | undefined; locale?: 'en' | 'te' | undefined }) {
+  async updateMe(auth: AuthState, patch: { name?: string | undefined; locale?: Locale | undefined }) {
     const set = Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined));
     if (Object.keys(set).length) await UserModel.updateOne({ _id: auth.userId }, { $set: set });
     if (set.name) await this.profiles.sync(auth.userId);

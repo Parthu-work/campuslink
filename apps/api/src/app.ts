@@ -308,6 +308,7 @@ export function createApp({
     whatsapp,
     sms,
     smsTemplateId: (key) => dltIds[key] ?? key,
+    smsTemplateRegistered: (key) => !!dltIds[key],
     logger,
   });
   const otpService = new OtpService(cipher, otpSender);

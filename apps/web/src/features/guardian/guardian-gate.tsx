@@ -7,6 +7,9 @@ import {
   type CodeSent,
   type GuardianStatus,
   type OtpChannel,
+  LOCALE_NAMES,
+  SUPPORTED_LOCALES,
+  toLocale,
 } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { AuthLayout, FormError } from '../../components/layout/auth-layout';
@@ -30,7 +33,7 @@ export function GuardianGate() {
   const qc = useQueryClient();
   const signOut = useSignOut();
   const status = useQuery({ queryKey: ['guardian'], queryFn: () => api.get<GuardianStatus>('/me/guardian') });
-  const [lang, setLang] = useState<DeclarationLanguage>(i18n.language === 'te' ? 'te' : 'en');
+  const [lang, setLang] = useState<DeclarationLanguage>(toLocale(i18n.language));
   const [sent, setSent] = useState<CodeSent | null>(null);
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -97,10 +100,7 @@ export function GuardianGate() {
             <Segmented<DeclarationLanguage>
               label={t('guardian.language')}
               value={lang}
-              options={[
-                ['en', 'English'],
-                ['te', 'తెలుగు'],
-              ]}
+              options={SUPPORTED_LOCALES.map((l) => [l, LOCALE_NAMES[l]] as const)}
               onChange={setLang}
             />
           </div>

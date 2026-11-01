@@ -13,6 +13,14 @@ export const SMS_TEMPLATES = {
     category: 'service_implicit',
     text: `{#var#} is your ${APP_NAME} code. It expires in 10 minutes. Never share it with anyone.`,
   },
+  /**
+   * The same code in Hindi (B12; a Unicode SMS, registered as its own template). Sent only to
+   * members who use Hindi and only once its id is in SMS_DLT_TEMPLATE_IDS; English until then.
+   */
+  otp_hi: {
+    category: 'service_implicit',
+    text: `{#var#} आपका ${APP_NAME} कोड है। यह 10 मिनट में समाप्त हो जाएगा। इसे किसी के साथ साझा न करें।`,
+  },
 } as const;
 export type SmsTemplateKey = keyof typeof SMS_TEMPLATES;
 

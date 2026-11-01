@@ -7,7 +7,7 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 ## Stack
 
 - **Monorepo:** pnpm workspaces and Turborepo. Node 22 or later, TypeScript ~6.0 (see `docs/adr/0003`).
-- **apps/web:** React 19, Vite 8, Tailwind 4 (tokens as CSS variables), PWA (vite-plugin-pwa), React Router, TanStack Query, Zustand, motion, i18n (`src/i18n/core.ts`: i18next-style keys, `{{vars}}` and plurals in 1 KB; en, te), React Hook Form with Zod.
+- **apps/web:** React 19, Vite 8, Tailwind 4 (tokens as CSS variables), PWA (vite-plugin-pwa), React Router, TanStack Query, Zustand, motion, i18n (`src/i18n/core.ts`: i18next-style keys, `{{vars}}` and plurals in 1 KB; en, te, hi), React Hook Form with Zod.
 - **apps/api:** Express 5, Mongoose 9 (MongoDB 8 replica set), Redis (ioredis), BullMQ, Socket.io, Zod, Pino, Helmet, argon2id, JWT.
 - **packages/shared:** Zod schemas, types, constants and permission definitions shared by web and api.
 - **Dev infrastructure:** `docker-compose.yml` runs MongoDB, Redis and Mailpit.
@@ -51,7 +51,7 @@ apps/web/src/
   features/<name>/  screens, components and hooks per feature
   components/ui/ design-system primitives
   styles/        tokens.css (design tokens), index.css
-  i18n/          en.json, te.json
+  i18n/          en.json, te.json, hi.json (one per SUPPORTED_LOCALES entry)
 apps/web/e2e/    Playwright specs
 packages/shared/src/  schemas, permissions, constants
 docs/            architecture, ADRs, threat model, privacy, design brief, deployment, runbook
@@ -135,7 +135,7 @@ Everything runs on localhost with free, open-source tools. Any paid or external 
 
 - Strict TypeScript, with no `any` and no non-null `!` unless justified in a comment. Use `import type` for types.
 - Name files in kebab-case. Name React components in PascalCase. Prefer named exports.
-- Write no hard-coded UI strings; every string goes through `t()` (`src/i18n`) in both `en.json` and `te.json`.
+- Write no hard-coded UI strings; every string goes through `t()` (`src/i18n`) in every locale file (`en.json`, `te.json`, `hi.json`; `parity.test.ts` checks them). Languages come only from `SUPPORTED_LOCALES` (`packages/shared/src/locales.ts`); never hard-code `'en' | 'te'`. Adding one: `docs/adding-a-language.md`.
 - Styling uses design tokens only (`bg-surface-1`, `text-fg-2`, `text-brand-ink`, `text-title`, `shadow-elev-2`, `bg-aurora`), never raw colour values in components. Every colour is generated from the college's hue by `packages/shared/src/palette.ts` (ADR 0008): `styles/palette.css` is its output (regenerate with `pnpm --filter @campuslink/web palette`, never edit by hand) and `applyBranding()` swaps in each college's palette at runtime. Use `*-ink` tokens for coloured text; they are contrast-checked to 5.5:1 by `palette.test.ts`. Aurora is for the moments ADR 0008 lists, never for plain text or buttons.
 - Web files that export components export only components (fast refresh): put hooks and helpers in `lib/`. Unsent writing goes through `useDraft()` (`lib/drafts.ts`, memory only); names in greetings and avatars through `firstName()`/`initialsOf()` (`lib/names.ts`). A horizontal row scrolls itself with `revealInRow()`, never `scrollIntoView()` (which also scrolls the page).
 - New tokens and primitives appear in the living style guide (`/design`, development builds only, `features/design/style-guide.tsx`) in both themes.

@@ -175,11 +175,11 @@
   p {
     text-wrap: pretty;
   }
-  /* Telugu needs room for its vowel signs: looser lines, no tightened headings. */
-  :root[lang='te'] body {
+  /* Telugu and Hindi need room for their vowel signs: looser lines, no tightened headings. */
+  :root:is([lang='te'], [lang='hi']) body {
     line-height: 1.7;
   }
-  :root[lang='te'] :is(h1, h2, h3, h4) {
+  :root:is([lang='te'], [lang='hi']) :is(h1, h2, h3, h4) {
     line-height: 1.3;
     letter-spacing: 0;
   }

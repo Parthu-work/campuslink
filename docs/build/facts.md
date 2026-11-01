@@ -88,6 +88,8 @@ Server-side text lives in `modules/notifications/templates.ts` as `Record<Locale
 
 **Locales.** `SUPPORTED_LOCALES = ['en','te']` (`packages/shared/src/locales.ts`). `'en'|'te'` is also hard-coded in `user.model.ts`, `schemas/auth.ts`, `schemas/users.ts`, `constants/study.ts`, `study/chat.model.ts`, `notifications/templates.ts` and `apps/web/src/i18n/index.ts`. `en.json` and `te.json` each have 3,080 lines, with top-level keys `common nav landing auth mfa home settings admin role feature platform errors verify people profile palette session slots mentors match request sessions messages mentor notify notifications safety topics content feed stories qa mod sources jobs referrals jobSources roadmaps progress rewards events analytics pwa botCheck design study ai`.
 
+> **Updated in B12:** `SUPPORTED_LOCALES = ['en','te','hi']`, and every site above now derives from it (`LOCALE_NAMES`, `LOCALE_TAGS`, `toLocale()`); `hi.json` exists. See `docs/adding-a-language.md`.
+
 **Permissions.** `packages/shared/src/roles.ts` defines the roles `SUPER_ADMIN COLLEGE_ADMIN TPO FACULTY ALUMNI STUDENT`, the capability `CERTIFIED_CONTRIBUTOR`, `ALL_PERMISSIONS` (with the descriptions map `PERMISSIONS`), the `STUDENT`, `ALUMNI` and `STAFF` arrays, `ROLE_PERMISSIONS`, `MFA_REQUIRED_ROLES = [SUPER_ADMIN, COLLEGE_ADMIN]` and `ASSIGNABLE_ROLES`. Permissions that already exist and are relevant here: `announcements:post` (staff; used in `feed/posts.service.ts` for `announcement` posts), `reports:export` (TPO, admin), `analytics:cohort`, `analytics:tenant`, `verification:review`, `imports:manage`, `tenant:settings`, `events:create`.
 
 **Navigation.** `packages/shared/src/navigation.ts` is the single source for every menu:

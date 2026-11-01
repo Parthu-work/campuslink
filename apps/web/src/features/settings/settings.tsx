@@ -8,7 +8,13 @@ import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { Laptop, Smartphone } from 'lucide-react';
-import { password as passwordSchema, SUPPORTED_LOCALES } from '@campuslink/shared';
+import {
+  password as passwordSchema,
+  SUPPORTED_LOCALES,
+  LOCALE_NAMES,
+  toLocale,
+  type Locale,
+} from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Field, PasswordInput } from '../../components/ui/field';
 import { Badge, Card, Skeleton } from '../../components/ui/misc';
@@ -284,15 +290,15 @@ export function PreferenceSettings() {
       </fieldset>
       <fieldset className="grid gap-2">
         <legend className="mb-1 text-meta font-semibold">{t('settings.language')}</legend>
-        <ChoiceGroup<'en' | 'te'>
+        <ChoiceGroup<Locale>
           variant="chip"
           label={t('settings.language')}
-          value={i18n.language as 'en' | 'te'}
+          value={toLocale(i18n.language)}
           onChange={(l) => {
             setLanguage(l);
             void api.patch('/me', { locale: l }).catch(() => undefined);
           }}
-          options={SUPPORTED_LOCALES.map((l) => ({ value: l, label: l === 'en' ? 'English' : 'తెలుగు' }))}
+          options={SUPPORTED_LOCALES.map((l) => ({ value: l, label: LOCALE_NAMES[l] }))}
         />
       </fieldset>
       <fieldset className="grid gap-2">

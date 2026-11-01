@@ -33,6 +33,16 @@ test.describe('landing', () => {
     ).toBe('0');
   });
 
+  test('switches to Hindi (B12), and back', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'हिन्दी' }).click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'hi');
+    await expect(page.getByText('आपकी ही कक्षाओं में।')).toBeVisible();
+    await expectNoA11yViolations(page);
+    await page.getByRole('button', { name: 'English' }).click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  });
+
   test('unknown subdomains get a clear message', async ({ page }) => {
     await page.goto('http://nowhere.localhost:4173/');
     await expect(page.getByRole('heading', { name: 'No college lives at this address' })).toBeVisible();

@@ -15,6 +15,7 @@ import {
   plausibleBirthMonth,
   type CodeSent,
   type OtpChannel,
+  toLocale,
 } from '@campuslink/shared';
 import { AuthLayout, FormError } from '../../components/layout/auth-layout';
 import { Button } from '../../components/ui/button';
@@ -97,7 +98,7 @@ export function SignUpPage() {
   });
   const { errors, isSubmitting } = form.formState;
   const method = useWatch({ control: form.control, name: 'method' });
-  const locale = i18n.language === 'te' ? 'te' : 'en';
+  const locale = toLocale(i18n.language);
 
   const finish = async (accessToken: string) => {
     setToken(accessToken);

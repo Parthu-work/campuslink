@@ -234,6 +234,9 @@ importers:
       '@campuslink/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@fontsource-variable/anek-devanagari':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource-variable/anek-telugu':
         specifier: ^5.3.0
         version: 5.3.0
@@ -1257,6 +1260,9 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@fontsource-variable/anek-devanagari@5.3.0':
+    resolution: {integrity: sha512-mng3nw6XK5/5agZqIgCHcspyYbXe5HcF3F6b8J3v7He3Ilk4Mp7/irelZnCNde1rPg2JSiC7LeuI9Y9DcZk4yw==}
 
   '@fontsource-variable/anek-telugu@5.3.0':
     resolution: {integrity: sha512-0mMvBxwEi7qd3G8Q1MVx1Yzm5HQBb0Y5RMftKwageWsKW5Loocu+pv/qon8LUwUJTvFg8ZLA0EAS4KvyS2tEHg==}
@@ -7188,6 +7194,8 @@ snapshots:
       react-dom: 19.3.1(react@19.3.1)
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@fontsource-variable/anek-devanagari@5.3.0': {}
 
   '@fontsource-variable/anek-telugu@5.3.0': {}
 

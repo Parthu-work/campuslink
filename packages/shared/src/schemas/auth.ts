@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { email, password, personName, recoveryCode, totpCode } from './common.js';
 import { CONSENT_PURPOSE_KEYS } from '../consent.js';
+import { SUPPORTED_LOCALES } from '../locales.js';
 import { BIRTH_MONTH, plausibleBirthMonth } from '../age.js';
 import { phone } from './people.js';
 
@@ -14,7 +15,7 @@ export const birthMonth = z
   .refine((v) => plausibleBirthMonth(v), 'Check the year and month you were born');
 
 const consents = z.array(z.enum(CONSENT_PURPOSE_KEYS as [string, ...string[]])).max(10);
-const locale = z.enum(['en', 'te']).default('en');
+const locale = z.enum(SUPPORTED_LOCALES).default('en');
 const intent = z.enum(['STUDENT', 'ALUMNI']);
 
 export const signupBody = z.strictObject({
@@ -66,7 +67,7 @@ export const phoneStartBody = z.strictObject({
   purpose: z.enum(['signup', 'login']),
   channel: z.enum(OTP_CHANNELS).optional(),
   /** The language of the code message (the account's own language wins when it exists). */
-  locale: z.enum(['en', 'te']).optional(),
+  locale: z.enum(SUPPORTED_LOCALES).optional(),
 });
 export const phoneSignupFields = z.strictObject({ name: personName, intent, birthMonth, consents, locale });
 export const phoneVerifyBody = z.strictObject({
@@ -88,7 +89,7 @@ export const guardianStartBody = z.strictObject({ channel: z.enum(OTP_CHANNELS).
 export const guardianConfirmBody = z.strictObject({
   challengeId,
   code: otpCode,
-  language: z.enum(['en', 'te']),
+  language: z.enum(SUPPORTED_LOCALES),
 });
 export const guardianManualBody = z.strictObject({ phone });
 

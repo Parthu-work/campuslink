@@ -1,7 +1,8 @@
+import { LOCALE_TAGS, toLocale } from '@campuslink/shared';
 import i18n from '../i18n/core';
 
 /** Dates and times in the viewer's own timezone and language. */
-export const locale = () => (i18n.language === 'te' ? 'te-IN' : 'en-IN');
+export const locale = () => LOCALE_TAGS[toLocale(i18n.language)];
 
 /** One formatter per language, made on first use: building an Intl formatter is slow. */
 export const perLocale = <T>(make: (locale: string) => T) => {

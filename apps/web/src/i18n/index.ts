@@ -4,11 +4,12 @@ import { prefs } from '../lib/storage';
 
 /**
  * Only the member's language is downloaded (audit PF-1: both languages were 54 KB of the first
- * load). The other one loads when they switch (`loadLanguage`).
+ * load). Another one loads when they switch (`loadLanguage`).
  */
 const bundles: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> = {
   en: () => import('./en.json'),
   te: () => import('./te.json'),
+  hi: () => import('./hi.json'),
 };
 
 const saved = prefs.get('lang');

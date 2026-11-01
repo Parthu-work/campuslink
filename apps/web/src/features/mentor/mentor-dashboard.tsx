@@ -12,6 +12,8 @@ import {
   type ImpactView,
   type MentorSettingsBody,
   type MentorSettingsView,
+  LOCALE_TAGS,
+  toLocale,
 } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Field, Input, Select } from '../../components/ui/field';
@@ -313,7 +315,7 @@ function AvailabilityEditor({ initial }: { initial: AvailabilityBody }) {
   });
   const zones = Intl.supportedValuesOf('timeZone');
   const dayName = (d: number) =>
-    new Intl.DateTimeFormat(i18n.language === 'te' ? 'te-IN' : 'en-IN', { weekday: 'long' }).format(
+    new Intl.DateTimeFormat(LOCALE_TAGS[toLocale(i18n.language)], { weekday: 'long' }).format(
       new Date(Date.UTC(2026, 0, 4 + d)),
     );
   const rule = (d: number) => a.weekly.find((r) => r.day === d);

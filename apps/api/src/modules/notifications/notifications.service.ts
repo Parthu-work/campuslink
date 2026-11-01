@@ -5,12 +5,12 @@ import {
   CATEGORY_OF,
   DEFAULT_CHANNELS,
   DEFAULT_TIMEZONE,
-  type Locale,
   type NotificationPrefs,
   type NotificationType,
   type NotificationView,
   type notificationsQuery,
   type pushSubscriptionBody,
+  toLocale,
 } from '@campuslink/shared';
 import {
   NotificationModel,
@@ -192,7 +192,7 @@ export class NotificationsService {
     const user = await UserModel.findById(job.userId).select('email locale status').lean();
     const tenant = await findTenantById(job.tenantId);
     if (!user || user.status !== 'active' || !tenant || tenant.status !== 'active') return;
-    const locale = (user.locale === 'te' ? 'te' : 'en') as Locale;
+    const locale = toLocale(user.locale);
     const prefs = await this.prefs(String(job.userId));
     const text = renderNotification(type, data, locale, prefs.quietHours.timezone);
     const path = pathFor(type, data);

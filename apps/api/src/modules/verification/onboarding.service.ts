@@ -21,6 +21,7 @@ import {
   type OtpChannel,
   type Role,
   suppress,
+  type Locale,
 } from '@campuslink/shared';
 import { InviteLinkModel, JoinCodeModel } from './onboarding.model.js';
 import { OtpChallengeModel } from './verification.model.js';
@@ -71,7 +72,7 @@ export interface ClaimBody {
   code: string;
   birthMonth: string;
   consents: string[];
-  locale: 'en' | 'te';
+  locale: Locale;
 }
 
 /**

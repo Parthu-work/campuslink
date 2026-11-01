@@ -3,6 +3,7 @@ import { BRANCHES } from '../constants/people.js';
 import { CONSENT_PURPOSE_KEYS } from '../consent.js';
 import { birthMonth, OTP_CHANNELS, type OtpChannel } from './auth.js';
 import { objectId } from './common.js';
+import { SUPPORTED_LOCALES } from '../locales.js';
 import { gradYear, rollNumber } from './people.js';
 
 /** One-tap invites and class join codes (build B4). */
@@ -40,7 +41,7 @@ export const claimConfirmBody = z.strictObject({
   code: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code'),
   birthMonth,
   consents: z.array(z.enum(CONSENT_PURPOSE_KEYS as [string, ...string[]])).max(10),
-  locale: z.enum(['en', 'te']).default('en'),
+  locale: z.enum(SUPPORTED_LOCALES).default('en'),
 });
 export const joinStartBody = z.strictObject({ rollNumber, channel: z.enum(OTP_CHANNELS).optional() });
 

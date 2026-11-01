@@ -12,6 +12,7 @@ import {
   type CodeSent,
   type LoginResult,
   type OtpChannel,
+  toLocale,
 } from '@campuslink/shared';
 import { AuthLayout, FormError } from '../../components/layout/auth-layout';
 import { Button } from '../../components/ui/button';
@@ -199,7 +200,7 @@ function PhoneSignIn({
     api.post<CodeSent>('/auth/phone/start', {
       phone,
       purpose: 'login',
-      locale: i18n.language === 'te' ? 'te' : 'en',
+      locale: toLocale(i18n.language),
       ...(channel ? { channel } : {}),
     });
 

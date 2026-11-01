@@ -686,7 +686,7 @@
     "prefs": "Preferences",
     "noResults": "No results. Try a name, company or skill.",
     "toggleTheme": "Switch light / dark",
-    "switchLang": "Switch language · తెలుగు / English",
+    "switchLang": "Switch language · English / తెలుగు / हिन्दी",
     "open": "Search",
     "label": "Command palette",
     "posts": "Posts",
@@ -2787,6 +2787,7 @@
     "language": {
       "en": "English",
       "te": "Telugu",
+      "hi": "Hindi",
       "other": "Another language"
     },
     "provider": {

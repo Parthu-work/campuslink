@@ -10,12 +10,12 @@ A new session reads this file first and resumes from the first phase that is not
 | B4    | One-tap invites and class onboarding                           | Done        |
 | B5    | Mentorship loop that never dead-ends                           | Done        |
 | B6    | TPO console                                                    | Done        |
-| B7    | Placement drives                                               | Not started |
-| B8    | Placement outcomes and accreditation reports                   | Not started |
-| B9    | Product analytics                                              | Not started |
-| B10   | Plans, entitlements and billing                                | Not started |
-| B11   | AI cost control                                                | Not started |
-| B12   | Hindi and the language framework                               | Not started |
+| B7    | Placement drives                                               | Done        |
+| B8    | Placement outcomes and accreditation reports                   | Done        |
+| B9    | Product analytics                                              | Done        |
+| B10   | Plans, entitlements and billing                                | Done        |
+| B11   | AI cost control                                                | Done        |
+| B12   | Hindi and the language framework                               | Done        |
 | B13   | Offline and low-data mode                                      | Not started |
 | B14   | In-app help, feedback, legal pages and app-level observability | Not started |
 | B15   | Hardening, demo data and final report                          | Not started |
@@ -25,6 +25,7 @@ A new session reads this file first and resumes from the first phase that is not
 - **Baseline:** `main` is at `35fc3e4`; `claude/sleepy-euler-bi65m3` is at `df83e3c` (six commits past `cc965b1`: revamp phases 12 and 13), a straight continuation of `main`. The gate is green on `df83e3c` (format, lint, typecheck, 120 shared + 55 web + 758 API tests, build, bundle budget 169.5 KB, gitleaks).
 - **Branch rule (deviation from Step 0.1):** this session must develop and push on `claude/keen-babbage-ts0wgj` and may not push to any other branch, so `main` was **not** fast-forwarded. The working branch was fast-forwarded to `df83e3c` and every phase is pushed there. Fast-forwarding `main` to it is left to the owner.
 - **ADR numbering (conflict inside the prompt):** D6 asks for the AI-cost override to be ADR 0009, and B15 lists 0009 to 0012 for phone identity, WhatsApp, placements and plans. Decisions in §1 win, so the numbers shift by one: **0009** AI cost and model tiers (D6), **0010** phone-first identity and minors, **0011** WhatsApp channel and action tokens, **0012** placement records survive erasure in anonymised form, **0013** plans, entitlements and read-only on non-payment.
+- **Session handover (B12 onwards):** the session that built B1 to B11 stopped before pushing B12. A new session took over on its own required branch, `claude/vigilant-cray-oelucl`, starting from `4a15de8` (B11), redid B12 there and carries on from B13. The owner asked for the work to reach `main` through one pull request from that branch.
 - **Local infrastructure** notes (Docker Hub rate limits, MongoDB open-file limit) are in `facts.md` › Corrections.
 
 ## B1 · Feature switches and the cut list (Done)
@@ -308,4 +309,25 @@ A new session reads this file first and resumes from the first phase that is not
 - **No usage from a college's own key is billed or capped by the plan;** the plan only pays for the platform's provider.
 - **D7 found six test files, not four** (also `study.test.ts` and `study-index.test.ts`); all were cleaned.
 
+**Confirmed.** CI green on `4a15de8` (verify, e2e, adapters and security).
+
 **Next:** B12 (Hindi and the language framework).
+
+## B12 · Hindi and the language framework (Done)
+
+**Shipped**
+
+- `hi` in `SUPPORTED_LOCALES`, with `LOCALE_NAMES`, `LOCALE_TAGS`, `LOCALE_ENGLISH_NAMES`, `toLocale()` and `nextLocale()` in `packages/shared/src/locales.ts`. Every `'en' | 'te'` site now derives from the list: the Zod schemas (auth, users, onboarding, guardian), the Mongoose enums (users, study chats), the web's formatters (`lib/format.ts`, `lib/jobs.ts`, phone and mentor date pickers), the language pickers (Settings, the landing page, the guardian declaration) and the command palette, which now cycles through every language.
+- `apps/web/src/i18n/hi.json`: all 3,563 strings, same keys and placeholders as English, loaded lazily like Telugu (the first load is unchanged at 158.5 KB). `parity.test.ts` now covers every supported locale (a file per locale, same keys, same placeholders, no empty strings).
+- Anek Devanagari (self-hosted, `unicode-range`, nothing preloaded) next to Anek Telugu; Hindi gets Telugu's looser line height.
+- Server texts: Hindi for every email and push notification (`templates.ts`, with a test that every language uses the English placeholders), the guardian declaration (`declaration.ts`), and a Hindi code SMS `otp_hi` used only once its DLT id is configured (English until then; `docs/sms-templates.md`). WhatsApp templates already had Hindi from B3.
+- The study assistant recognises Devanagari (`detectLanguage()`) and answers in Hindi; teachers can tag material as Hindi (`MATERIAL_LANGUAGES`).
+- Docs: `docs/adding-a-language.md` (Tamil or Kannada in five steps), `docs/build/translation-review.md` (what a native speaker must check, legal texts first). E2E: switching to Hindi and back (`core.spec.ts`).
+
+**Decisions**
+
+- **Invoices stay in English.** GST invoices are commonly issued in English, and `pdf-lib` cannot shape Devanagari (vowel signs and conjuncts would render broken). Recorded in `docs/adding-a-language.md`.
+- **The Hindi code SMS is opt-in by registration:** a carrier silently drops an unregistered text, so `otp_hi` is sent only when `SMS_DLT_TEMPLATE_IDS` has its id.
+- **Everyday Hindi** with the English loanwords students use (मेंटर, प्लेसमेंट, ड्राइव), `आप` throughout; product, brand and exam names untranslated. A native speaker and, for the declaration and consents, a lawyer must review it (`translation-review.md`).
+
+**Next:** B13 (offline and low-data mode).

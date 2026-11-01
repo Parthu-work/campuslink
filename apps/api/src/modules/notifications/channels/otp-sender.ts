@@ -2,13 +2,15 @@ import type { OtpChannel } from '@campuslink/shared';
 import type { SmsProvider } from '../../../lib/sms.js';
 import type { WhatsAppProvider } from '../../../lib/whatsapp.js';
 import type { Logger } from '../../../lib/logger.js';
-import type { SmsTemplateKey } from './sms-templates.js';
+import { SMS_TEMPLATES, type SmsTemplateKey } from './sms-templates.js';
 
 export interface OtpSenderDeps {
   whatsapp: WhatsAppProvider;
   sms: SmsProvider;
   /** Registered DLT template id for a key (the key itself for the console provider). */
   smsTemplateId: (key: SmsTemplateKey) => string;
+  /** The template is registered on DLT (a language's own code SMS is used only then). */
+  smsTemplateRegistered?: (key: SmsTemplateKey) => boolean;
   logger: Logger;
 }
 
@@ -33,6 +35,14 @@ export class OtpSender {
     return this.d.sms.available ? 'sms' : null;
   }
 
+  /** The member's language's code SMS when it is registered, else English (`otp`). */
+  smsKey(lang: string): SmsTemplateKey {
+    const own = `otp_${lang}`;
+    return own in SMS_TEMPLATES && this.d.smsTemplateRegistered?.(own as SmsTemplateKey)
+      ? (own as SmsTemplateKey)
+      : 'otp';
+  }
+
   async send(
     phone: string,
     code: string,
@@ -51,7 +61,7 @@ export class OtpSender {
         this.d.logger.warn({ err }, 'whatsapp code failed; falling back to sms');
       }
     }
-    const r = await this.d.sms.sendTemplate(phone, this.d.smsTemplateId('otp'), [code]);
+    const r = await this.d.sms.sendTemplate(phone, this.d.smsTemplateId(this.smsKey(lang)), [code]);
     return { channel: 'sms', messageId: r.messageId };
   }
 }

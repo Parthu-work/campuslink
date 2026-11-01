@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from './toast';
 import { useTranslation } from '../i18n/react';
 import i18n from '../i18n/core';
-import type { JobView, Salary, TrackStatus } from '@campuslink/shared';
+import { LOCALE_TAGS, toLocale, type JobView, type Salary, type TrackStatus } from '@campuslink/shared';
 import { api, ApiError } from './api';
 
 /** Number formatters by locale and options; building an Intl formatter is slow and lists show many. */
@@ -16,7 +16,7 @@ const numberFormat = (locale: string, options: Intl.NumberFormatOptions = {}) =>
 
 /** "₹4.5L–6L a year" / "₹30k–40k a month" (Indian lakh notation for INR). */
 export function formatSalary(s: Salary): string {
-  const locale = i18n.language === 'te' ? 'te-IN' : 'en-IN';
+  const locale = LOCALE_TAGS[toLocale(i18n.language)];
   const inr = s.currency === 'INR';
   const short = (n: number) => {
     if (inr && n >= 100_000)

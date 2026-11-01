@@ -7,7 +7,10 @@ import {
   WHATSAPP_TEMPLATES,
   INVITE_TEMPLATES,
 } from '../src/modules/notifications/channels/whatsapp-templates.js';
-import { CATEGORY_OF } from '@campuslink/shared';
+import { CATEGORY_OF, SUPPORTED_LOCALES } from '@campuslink/shared';
+import { NOTIFICATION_TEXTS, renderNotification } from '../src/modules/notifications/templates.js';
+import { OtpSender } from '../src/modules/notifications/channels/otp-sender.js';
+import { detectLanguage, systemPrompt } from '../src/modules/study/chat/prompt.js';
 
 const doc = readFileSync(new URL('../../../docs/sms-templates.md', import.meta.url), 'utf8');
 
@@ -76,5 +79,60 @@ describe('WhatsApp templates (Meta approval)', () => {
         expect(params).toEqual(['Asha', 'C', 'https://x/invite/t']);
         expect(new Set([...t.text[l].matchAll(/\{\{(\d+)\}\}/g)].map((m) => m[1])).size).toBe(3);
       }
+  });
+});
+
+describe('server texts in every language (B12)', () => {
+  const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+
+  it('every notification has a title and body in every language, with the English placeholders', () => {
+    const mismatched: string[] = [];
+    for (const l of SUPPORTED_LOCALES) {
+      for (const [type, en] of Object.entries(NOTIFICATION_TEXTS.en)) {
+        const t = NOTIFICATION_TEXTS[l][type as keyof typeof NOTIFICATION_TEXTS.en];
+        if (!t?.title.trim() || !t.body.trim()) mismatched.push(`${l}:${type} empty`);
+        else if (
+          JSON.stringify(placeholders(t.title)) !== JSON.stringify(placeholders(en.title)) ||
+          JSON.stringify(placeholders(t.body)) !== JSON.stringify(placeholders(en.body))
+        )
+          mismatched.push(`${l}:${type}`);
+      }
+    }
+    expect(mismatched).toEqual([]);
+  });
+
+  it('renders Hindi with Indian date formatting', () => {
+    const r = renderNotification(
+      'booking_reminder',
+      { name: 'Asha', sessionType: 'quick_chat', start: '2026-11-02T10:00:00.000Z' },
+      'hi',
+      'Asia/Kolkata',
+    );
+    expect(r.body).toContain('Asha');
+    expect(r.body).toContain('क्विक चैट');
+    expect(r.open).toBe('खोलें');
+  });
+
+  it('a code SMS is in Hindi only once its template is registered', () => {
+    const deps = {
+      whatsapp: {} as never,
+      sms: {} as never,
+      logger: {} as never,
+      smsTemplateId: (k: string) => k,
+    };
+    expect(new OtpSender({ ...deps }).smsKey('hi')).toBe('otp');
+    expect(new OtpSender({ ...deps, smsTemplateRegistered: (k) => k === 'otp_hi' }).smsKey('hi')).toBe(
+      'otp_hi',
+    );
+    expect(new OtpSender({ ...deps, smsTemplateRegistered: () => true }).smsKey('te')).toBe('otp');
+    expect(new OtpSender({ ...deps, smsTemplateRegistered: () => true }).smsKey('en')).toBe('otp');
+  });
+
+  it('the study assistant answers in the script the question is written in', () => {
+    expect(detectLanguage('What is a transistor?')).toBe('en');
+    expect(detectLanguage('ట్రాన్సిస్టర్ అంటే ఏమిటి?')).toBe('te');
+    expect(detectLanguage('ट्रांजिस्टर क्या है?')).toBe('hi');
+    expect(detectLanguage('Explain ट्रांजिस्टर please')).toBe('hi');
+    expect(systemPrompt({ kind: 'answer' }, 'simple', 'hi')).toContain('Reply in Hindi.');
   });
 });

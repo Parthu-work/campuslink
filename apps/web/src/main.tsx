@@ -5,6 +5,8 @@ import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '@fontsource-variable/bricolage-grotesque';
 import '@fontsource-variable/anek-telugu';
+// Devanagari for Hindi (B12): unicode-range keeps it from downloading until Hindi text shows.
+import '@fontsource-variable/anek-devanagari';
 import './styles/index.css';
 import { i18nReady } from './i18n';
 import './lib/preferences';

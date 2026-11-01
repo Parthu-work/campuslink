@@ -1,5 +1,5 @@
 import { Schema, type InferSchemaType, type HydratedDocument } from 'mongoose';
-import { ROLES, CAPABILITIES } from '@campuslink/shared';
+import { ROLES, CAPABILITIES, SUPPORTED_LOCALES } from '@campuslink/shared';
 import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
 
 const userSchema = new Schema(
@@ -37,7 +37,7 @@ const userSchema = new Schema(
     adultOn: { type: Date, default: null },
     /** When a guardian confirmed consent for this member (DPDP Rules 2025, Rule 10). */
     guardianConsentAt: { type: Date, default: null },
-    locale: { type: String, enum: ['en', 'te'], default: 'en' },
+    locale: { type: String, enum: SUPPORTED_LOCALES, default: 'en' },
     /** Encrypted with FieldCipher; phoneIndex is a blind index for lookups. */
     phoneEnc: { type: String, default: null, select: false },
     phoneIndex: { type: String, default: null },

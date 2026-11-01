@@ -12,6 +12,8 @@ import {
   type ClaimCodeSent,
   type MentorSettingsView,
   type OtpChannel,
+  toLocale,
+  type Locale,
 } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { AuthLayout, FormError } from '../../components/layout/auth-layout';
@@ -30,7 +32,7 @@ import * as q from '../../lib/queries';
 import { BirthMonthField, ConsentFields, PhoneCodeStep } from '../auth/phone-parts';
 
 type Joined = { kind: 'student' | 'alumni'; session: { accessToken: string } };
-type ClaimFields = { birthMonth: string; consents: string[]; locale: 'en' | 'te' };
+type ClaimFields = { birthMonth: string; consents: string[]; locale: Locale };
 
 const claimSchema = z.object({
   rollNumber: z.string(),
@@ -67,7 +69,7 @@ function ClaimFlow({
   const setToken = useSession((s) => s.setToken);
   const [sent, setSent] = useState<ClaimCodeSent | null>(null);
   const [alumni, setAlumni] = useState(false);
-  const locale = i18n.language === 'te' ? 'te' : 'en';
+  const locale = toLocale(i18n.language);
   const form = useForm<ClaimForm>({
     mode: 'onTouched',
     resolver: zodResolver(

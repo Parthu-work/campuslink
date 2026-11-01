@@ -125,7 +125,7 @@ export const DEFAULT_TAB: Record<MaterialType, MaterialTab> = {
   video_link: 'videos',
   audio: 'other',
 };
-export const MATERIAL_LANGUAGES = ['en', 'te', 'other'] as const;
+export const MATERIAL_LANGUAGES = ['en', 'te', 'hi', 'other'] as const;
 export type MaterialLanguage = (typeof MATERIAL_LANGUAGES)[number];
 /** Size caps (the API enforces them again after sniffing the real type). */
 export const MATERIAL_MAX_MB = { document: 50, media: 200 } as const;

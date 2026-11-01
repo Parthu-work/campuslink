@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { CAPABILITIES, TENANT_ROLES, type Capability, type Role } from '../roles.js';
 import { CONSENT_PURPOSE_KEYS, type ConsentPurpose } from '../consent.js';
 import { personName } from './common.js';
+import { SUPPORTED_LOCALES, type Locale } from '../locales.js';
 
 export const updateRolesBody = z.strictObject({
   roles: z
@@ -15,7 +16,7 @@ export const updateCapabilitiesBody = z.strictObject({
 export const updateStatusBody = z.strictObject({ status: z.enum(['active', 'suspended']) });
 export const updateMeBody = z.strictObject({
   name: personName.optional(),
-  locale: z.enum(['en', 'te']).optional(),
+  locale: z.enum(SUPPORTED_LOCALES).optional(),
 });
 export const consentBody = z.strictObject({
   purpose: z.enum(CONSENT_PURPOSE_KEYS as [ConsentPurpose, ...ConsentPurpose[]]),
@@ -53,6 +54,6 @@ export interface MeResponse {
   verified: boolean;
   mfaEnabled: boolean;
   mfaRequired: boolean;
-  locale: 'en' | 'te';
+  locale: Locale;
   permissions: string[];
 }
