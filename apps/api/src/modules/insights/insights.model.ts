@@ -21,10 +21,15 @@ const eventSchema = new Schema(
 eventSchema.index({ tenantId: 1, name: 1, createdAt: -1 });
 eventSchema.index({ tenantId: 1, userId: 1, createdAt: -1 });
 eventSchema.index({ tenantId: 1, day: 1 });
-// One `visited` per member and day: the write that loses a race is a no-op.
+// One `visited` per member and day: the write that loses a race is a no-op. Only events that still
+// have a member: detached visits (`userId: null`) of two members on the same day must not collide.
 eventSchema.index(
   { tenantId: 1, userId: 1, day: 1 },
-  { unique: true, partialFilterExpression: { name: 'visited' }, name: 'one_visit_a_day' },
+  {
+    unique: true,
+    partialFilterExpression: { name: 'visited', userId: { $type: 'objectId' } },
+    name: 'one_visit_a_day',
+  },
 );
 export interface ProductEventDoc {
   _id: Types.ObjectId;

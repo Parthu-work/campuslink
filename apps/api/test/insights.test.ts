@@ -80,6 +80,22 @@ describe('recording product events (B9)', () => {
     expect(detached[0]?.anonKey).toMatch(/^[0-9a-f-]{36}$/);
     await consent(T, adult);
   });
+
+  it('detaches two members who visited on the same day (erasure never collides)', async () => {
+    const a = await makeUser(ctx, T, { roles: ['STUDENT'] });
+    const b = await makeUser(ctx, T, { roles: ['ALUMNI'] });
+    for (const u of [a, b]) {
+      await consent(T, u);
+      await api(ctx, T.host, u.token).get('/me');
+    }
+    await runInTenant(T._id, async () => {
+      await insights().eraseFor(a.id);
+      await insights().eraseFor(b.id);
+    });
+    for (const u of [a, b]) expect(await events(T, { userId: new Types.ObjectId(u.id) })).toEqual([]);
+    const today = await events(T, { name: 'visited', userId: null, day: dayOf(new Date()) });
+    expect(new Set(today.map((e) => e.anonKey)).size).toBeGreaterThanOrEqual(2);
+  });
 });
 
 describe('metrics on fixtures (B9)', () => {
