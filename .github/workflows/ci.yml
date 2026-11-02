@@ -134,6 +134,10 @@ jobs:
       - run: pnpm --filter @campuslink/shared build
       - run: pnpm --filter @campuslink/web exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+      # The page snapshot of each failure in the log itself, readable without the artifact.
+      - name: Print failure snapshots
+        if: failure()
+        run: find apps/web/test-results -name error-context.md -print -exec cat {} \; 2>/dev/null | head -c 200000 || true
       - uses: actions/upload-artifact@v7
         if: failure()
         with:

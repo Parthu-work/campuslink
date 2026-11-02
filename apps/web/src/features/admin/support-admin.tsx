@@ -1,9 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
-import { LifeBuoy } from 'lucide-react';
 import { SUPPORT_STATUSES, type SupportStatus, type SupportTicketView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
-import { PageHeader } from '../../components/ui/page-header';
 import { Segmented } from '../../components/ui/tab-nav';
 import { Sheet } from '../../components/ui/dialog';
 import { ErrorState } from '../../components/ui/error-state';
@@ -45,7 +43,7 @@ export function SupportAdmin() {
     );
   return (
     <div className="grid gap-5">
-      <PageHeader icon={<LifeBuoy />} title={t('admin.support')} intro={t('help.adminIntro')} />
+      <p className="text-meta text-fg-2">{t('help.adminIntro')}</p>
       <Segmented<Filter>
         label={t('help.filter')}
         value={filter}
