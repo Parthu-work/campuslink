@@ -20,6 +20,8 @@ All Hindi text was machine-assisted and has **not** been checked by a native spe
 | `apps/api/src/modules/notifications/channels/whatsapp-templates.ts` (`hi`)  | WhatsApp templates submitted to Meta (`docs/whatsapp-templates.md`)                        |
 | `apps/api/src/modules/notifications/templates.ts` (`hi`)                    | Email and push notifications                                                               |
 | `sms-templates.ts` › `session_reminder_hi`, `drive_reminder_hi` (and `_te`) | Reminder SMS (prompt 1b, R4), Hindi and Telugu. Fixed once registered on DLT.              |
+| `whatsapp-templates.ts` › `cl_weekly_digest` (`hi`, `te`)                   | The weekly digest template (prompt 1b, R8), submitted to Meta                              |
+| `hi.json` › `notifications.weeklyDigest*`, `notify.weekly_digest`           | The digest switch and its push and email text                                              |
 | `hi.json` › `notifications.smsReminders`, `notifications.smsRemindersBody`  | The SMS reminders switch (prompt 1b, R4)                                                   |
 
 ## 3. High-traffic screens

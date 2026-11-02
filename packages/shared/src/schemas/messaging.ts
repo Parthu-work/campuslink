@@ -124,6 +124,8 @@ export const NOTIFICATION_TYPES = [
   // Help and support (B14): a reply to your report; a new report for the college's admins.
   'support_reply',
   'support_ticket',
+  // The weekly WhatsApp digest (prompt 1b, R8): counts and first names only, off by default.
+  'weekly_digest',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -206,6 +208,7 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   payment_received: 'reminders',
   support_reply: 'requests',
   support_ticket: 'requests',
+  weekly_digest: 'reminders',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;
@@ -278,6 +281,12 @@ export const notificationPrefsBody = z.strictObject({
    * Optional so clients from before it keep saving.
    */
   smsReminders: z.boolean().default(true),
+  /**
+   * A weekly digest on WhatsApp (prompt 1b, R8): new drives you can register for, requests waiting
+   * for your reply and sessions this week, as counts. Off by default; push or email when WhatsApp
+   * cannot carry it. Optional so clients from before it keep saving.
+   */
+  weeklyDigest: z.boolean().default(false),
 });
 export type NotificationPrefs = z.infer<typeof notificationPrefsBody>;
 

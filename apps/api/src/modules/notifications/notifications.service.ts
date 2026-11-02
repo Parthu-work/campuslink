@@ -120,13 +120,21 @@ export class NotificationsService {
         timezone: p?.quietHours?.timezone ?? DEFAULT_TIMEZONE,
       },
       smsReminders: p?.smsReminders ?? true,
+      weeklyDigest: p?.weeklyDigest ?? false,
     };
   }
 
   async updatePrefs(viewer: AuthState, body: NotificationPrefs) {
     await NotificationPrefsModel.updateOne(
       { userId: viewer.userId },
-      { $set: { channels: body.channels, quietHours: body.quietHours, smsReminders: body.smsReminders } },
+      {
+        $set: {
+          channels: body.channels,
+          quietHours: body.quietHours,
+          smsReminders: body.smsReminders,
+          weeklyDigest: body.weeklyDigest,
+        },
+      },
       { upsert: true },
     );
     return this.prefs(viewer.userId);
@@ -146,6 +154,9 @@ export class NotificationsService {
     const uid = String(userId);
     const prefs = await this.prefs(uid);
     const ch = prefs.channels[CATEGORY_OF[type]];
+    // The weekly digest (R8) has its own switch: WhatsApp first, push or email only as a fallback,
+    // and never in the in-app list (it only counts what the app already shows).
+    if (type === 'weekly_digest') return this.queueDigest(String(tenantId), uid, data, prefs);
     if (ch.inApp) {
       if (type === 'new_message') {
         // Messages show as a live toast and an unread badge, not as stored notifications.
@@ -189,6 +200,32 @@ export class NotificationsService {
     return { emailQueued: email };
   }
 
+  private async queueDigest(
+    tenantId: string,
+    uid: string,
+    data: Record<string, string>,
+    prefs: NotificationPrefs,
+  ) {
+    if (!prefs.weeklyDigest) return { emailQueued: false };
+    const whatsapp = !!this.d.channels && (await this.d.channels.usable('weekly_digest'));
+    const delayMs = quietDelayMs(prefs.quietHours);
+    await this.d.jobs.enqueue(
+      DELIVER_JOB,
+      {
+        tenantId,
+        userId: uid,
+        type: 'weekly_digest',
+        data,
+        email: false,
+        push: false,
+        whatsapp,
+        fallback: true,
+      },
+      delayMs ? { delayMs } : {},
+    );
+    return { emailQueued: false };
+  }
+
   /** Job handler: email and push for one notification (runs inside the tenant context). */
   async deliver(job: TenantJob): Promise<void> {
     const type = job.type as NotificationType;
@@ -198,11 +235,18 @@ export class NotificationsService {
     if (!user || user.status !== 'active' || !tenant || tenant.status !== 'active') return;
     const locale = toLocale(user.locale);
     const prefs = await this.prefs(String(job.userId));
+    // Turned off while it waited (quiet hours): not sent.
+    if (type === 'weekly_digest' && !prefs.weeklyDigest) return;
     const text = renderNotification(type, data, locale, prefs.quietHours.timezone);
     const path = pathFor(type, data);
     let email = !!job.email;
     let push = !!job.push;
     let whatsappSent = false;
+    // Fallback-only messages (the weekly digest) go by push, else email, when WhatsApp is not usable.
+    if (job.fallback && !job.whatsapp) {
+      if (this.d.push.enabled && (await PushSubscriptionModel.exists({ userId: job.userId }))) push = true;
+      else email = true;
+    }
     if (job.whatsapp && this.d.channels) {
       const outcome = await this.d.channels.send(String(job.userId), type, data, prefs.quietHours.timezone);
       whatsappSent = outcome === 'sent';

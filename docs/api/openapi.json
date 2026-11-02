@@ -7295,6 +7295,10 @@
                   "smsReminders": {
                     "default": true,
                     "type": "boolean"
+                  },
+                  "weeklyDigest": {
+                    "default": false,
+                    "type": "boolean"
                   }
                 },
                 "required": [

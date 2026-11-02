@@ -45,6 +45,7 @@ import {
 import { ChannelService } from './modules/notifications/channels/channel.service.js';
 import { channelRoutes } from './modules/notifications/channels/channel.routes.js';
 import { OtpSender } from './modules/notifications/channels/otp-sender.js';
+import { DIGEST_JOB, DigestService } from './modules/notifications/digest.service.js';
 import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
 import { OtpService } from './modules/verification/otp.service.js';
 import { ADULT_JOB, GuardianService } from './modules/verification/guardian.service.js';
@@ -659,6 +660,19 @@ export function createApp({
   queue.register(
     DRIVE_REMINDER_JOB,
     gatedJob('placements', (data) => placementsService.onReminder(data)),
+  );
+  // The weekly WhatsApp digest (prompt 1b, R8): counts from the services that own them.
+  const digestService = new DigestService({
+    notifications: notificationsService,
+    newDrives: (ids, now) => placementsService.newEligibleCounts(ids, now),
+    pendingRequests: (ids) => requestsService.pendingCounts(ids),
+    sessionsThisWeek: (ids, now) => sessionsService.upcomingCounts(ids, now),
+  });
+  queue.register(
+    DIGEST_JOB,
+    gatedJob('whatsapp', async () => {
+      await digestService.run();
+    }),
   );
   filesService.registerAccess('placement_resume', (fileId, viewer) =>
     placementsService.resumeAccess(fileId, viewer),
@@ -1310,6 +1324,8 @@ export function createApp({
     vectors: vectorIndex,
     chat: chatService,
     billing: billingService,
+    digest: digestService,
+    placements: placementsService,
     entitlements,
     payments,
   };

@@ -96,6 +96,24 @@ export class SessionsService {
   track: Track = noTrack;
   constructor(private readonly d: SessionsDeps) {}
 
+  /** The weekly digest (prompt 1b, R8): each member's sessions in the next seven days, as counts. */
+  async upcomingCounts(userIds: string[], now = new Date()): Promise<Map<string, number>> {
+    const ids = userIds.map((u) => new Types.ObjectId(u));
+    const rows = await BookingModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+      {
+        $match: {
+          participants: { $in: ids },
+          status: 'scheduled',
+          start: { $gte: now, $lt: new Date(now.getTime() + 7 * 86_400_000) },
+        },
+      },
+      { $unwind: '$participants' },
+      { $match: { participants: { $in: ids } } },
+      { $group: { _id: '$participants', n: { $sum: 1 } } },
+    ]);
+    return new Map(rows.map((r) => [String(r._id), r.n]));
+  }
+
   /** Busy holds of these people overlapping [from, to) (scheduled bookings only). */
   async busy(userIds: string[], from: Date, to: Date, ignoreBookingId?: string): Promise<Set<string>> {
     const rows = await BookingModel.find({

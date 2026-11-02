@@ -201,6 +201,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'New problem report',
       body: 'A member reported a problem for the college to answer. Open Admin › Support to read it.',
     },
+    weekly_digest: {
+      title: 'Your week, {name}',
+      body: '{drives} new drives you can register for, {requests} requests waiting for your reply, {sessions} sessions this week.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -399,6 +403,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'కొత్త సమస్య నివేదిక',
       body: 'కాలేజీ సమాధానం ఇవ్వాల్సిన ఒక సమస్యను సభ్యులు నివేదించారు. చదవడానికి అడ్మిన్ › సపోర్ట్ తెరవండి.',
     },
+    weekly_digest: {
+      title: '{name}, మీ వారం',
+      body: 'మీరు నమోదు చేయగల కొత్త డ్రైవ్‌లు {drives}, మీ జవాబు కోసం ఎదురుచూస్తున్న అభ్యర్థనలు {requests}, ఈ వారం సెషన్‌లు {sessions}.',
+    },
   },
   hi: {
     request_received: { title: 'नया मेंटरशिप अनुरोध', body: '{name} ने आपसे {type} के लिए पूछा है।' },
@@ -581,6 +589,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     support_ticket: {
       title: 'नई समस्या रिपोर्ट',
       body: 'एक सदस्य ने कॉलेज के जवाब के लिए एक समस्या बताई है। इसे पढ़ने के लिए एडमिन › सपोर्ट खोलें।',
+    },
+    weekly_digest: {
+      title: '{name}, आपका हफ़्ता',
+      body: 'आप जिनमें पंजीकरण कर सकते हैं ऐसी नई ड्राइव {drives}, आपके जवाब का इंतज़ार कर रहे अनुरोध {requests}, इस हफ़्ते के सत्र {sessions}।',
     },
   },
 };
@@ -790,6 +802,8 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return `/help/reports/${data.ticketId ?? ''}`;
     case 'support_ticket':
       return `/admin/support?report=${data.ticketId ?? ''}`;
+    case 'weekly_digest':
+      return '/home';
     default:
       return '/sessions';
   }

@@ -140,6 +140,8 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return `/help/reports/${d.ticketId ?? ''}`;
       case 'support_ticket':
         return `/admin/support?report=${d.ticketId ?? ''}`;
+      case 'weekly_digest':
+        return '/home';
       default:
         return '/sessions';
     }

@@ -40,6 +40,8 @@
 
 ## WhatsApp messages (build B3)
 
+- **Weekly digest (prompt 1b):** only for members who turn it on. Meta receives the member's first name and three counts (new drives, requests waiting, sessions this week); never names of others, companies or text.
+
 - Sent only to members who opted in (`whatsapp_updates`, optional, versioned) and have a verified number, for the kinds of notification they leave switched on. Meta (WhatsApp) receives the number and the template's variables: names, times, session types, company names and counts, never message or request text.
 - What was sent is kept per member as the template name and delivery status for 90 days (`channel_messages`), exported with their data and erased with their account; daily counts per college carry no member ids.
 - Replies are not stored. A tap on a button runs that one action as the member; free text gets a fixed answer pointing to the app.

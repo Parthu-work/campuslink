@@ -416,7 +416,7 @@ A new session reads this file first and resumes from the first phase that is not
 | R5   | Credit notes                                       | Done        |
 | R6   | Edit AI prices in the platform console             | Done        |
 | R7   | Inactive-account purge                             | Not started |
-| R8   | WhatsApp digests (owner: yes)                      | Not started |
+| R8   | WhatsApp digests (owner: yes)                      | Done        |
 | R9   | Hindi invoices (owner: evaluate)                   | Not started |
 | R10  | Revisit `style-src 'unsafe-inline'`                | Not started |
 | R11  | Find and fix the intermittent API test             | Not started |
@@ -472,3 +472,9 @@ A new session reads this file first and resumes from the first phase that is not
 **Shipped.** `PlatformSetting` (a new platform collection, key `ai_prices`, on the `PLATFORM_MODELS` allowlist with its reason; the pinned list in `billing.test.ts` updated), following `PlanSetting`'s pattern. `GET`/`PUT /platform/ai-prices` (`platform:billing`, platform host): prices per million tokens for input, output and embeddings (each may be empty) and a currency from `PRICE_CURRENCIES`; audited as `platform.ai_prices_changed` with each value before and after. The per-college estimate reads the saved prices; env stays the default until a value is saved. Platform › Billing › Plans has an **AI prices** card (en, te, hi). Tests in `ai-cost.test.ts`: permission (401, and 404 on a college host), validation (negative, unknown currency, missing and extra fields), the estimate before and after a change and with a cleared price, and the audit entries. Spec: `docs/specs/ai-cost.md`.
 
 **Decision.** A new platform collection rather than reusing `PlanSetting` itself: its `plan` key is an enum of plan ids, and AI prices are not a plan's terms. The pattern (one document per key, `updatedBy`, upsert) is the same.
+
+### R8 · WhatsApp digests (Done; owner said yes in this session)
+
+**Shipped.** A weekly per-member digest, off by default (Settings › Notifications › **Weekly digest on WhatsApp**, `weeklyDigest`). `DigestService` runs once a week per college from Monday 09:00 IST (an hourly timer queues `digest-<college>-<monday>`; job ids dedupe), as a gated job (`gatedJob('whatsapp')`). It sends the new utility template `cl_weekly_digest` (en, te, hi; `docs/whatsapp-templates.md` regenerated) with the member's first name and three counts, each from the service that owns it: drives opened this week that the member is eligible for and not registered for (`PlacementsService.newEligibleCounts`), requests waiting for their reply (`RequestsService.pendingCounts`) and sessions in the next seven days (`SessionsService.upcomingCounts`). Nothing when all three are zero. The member's weekly cap and the college's allowance apply (it is not critical); when WhatsApp cannot carry it, push, else email. It never goes into the in-app list. New notification type `weekly_digest` (category reminders) with texts in three languages. Tests: `digest.test.ts` (WhatsApp with counts only and no request text, off by default, nothing new means nothing sent, fallback when not opted in and when capped, the allowance, the gated job, the weekly schedule) and a drive count check in `placements.test.ts`. Docs: `docs/specs/whatsapp-channel.md`, `docs/privacy.md`, `translation-review.md`.
+
+**For the owner (O2):** register `cl_weekly_digest` in all three languages with the other templates.

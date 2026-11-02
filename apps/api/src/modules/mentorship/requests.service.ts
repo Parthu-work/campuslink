@@ -64,6 +64,15 @@ export class RequestsService {
   track: Track = noTrack;
   constructor(private readonly d: RequestsDeps) {}
 
+  /** The weekly digest (prompt 1b, R8): requests waiting for each mentor's reply, as counts. */
+  async pendingCounts(userIds: string[]): Promise<Map<string, number>> {
+    const rows = await MentorshipRequestModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+      { $match: { mentorId: { $in: userIds.map((u) => new Types.ObjectId(u)) }, status: 'pending' } },
+      { $group: { _id: '$mentorId', n: { $sum: 1 } } },
+    ]);
+    return new Map(rows.map((r) => [String(r._id), r.n]));
+  }
+
   private async views(rows: RequestDoc[]): Promise<RequestView[]> {
     const refs = await this.d.profiles.refsFor(rows.flatMap((r) => [r.mentorId, r.menteeId]));
     const ref = (id: Types.ObjectId) =>

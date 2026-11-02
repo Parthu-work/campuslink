@@ -8,6 +8,7 @@ import { MemoryMailProvider, SmtpMailProvider } from './lib/mailer.js';
 import { BullJobQueue, InlineJobQueue } from './lib/jobs.js';
 import { runRetention } from './lib/maintenance.js';
 import { BillingService } from './modules/billing/billing.service.js';
+import { DigestService } from './modules/notifications/digest.service.js';
 import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
@@ -158,6 +159,14 @@ async function main() {
   if (runsJobs) {
     setTimeout(billingTick, 90_000).unref();
     setInterval(billingTick, 3600_000).unref();
+  }
+
+  // The weekly digest (prompt 1b, R8): hourly; one run per college a week, from Monday 09:00 IST.
+  const digestTick = () =>
+    DigestService.enqueueWeekly(jobs).catch((err: unknown) => logger.error({ err }, 'digest tick failed'));
+  if (runsJobs) {
+    setTimeout(digestTick, 120_000).unref();
+    setInterval(digestTick, 3600_000).unref();
   }
 
   const shutdown = (signal: string) => {

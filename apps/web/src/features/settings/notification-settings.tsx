@@ -222,6 +222,12 @@ function PrefsForm({ initial, whatsapp }: { initial: NotificationPrefs; whatsapp
         label={t('notifications.smsReminders')}
         description={t('notifications.smsRemindersBody')}
       />
+      <Switch
+        checked={p.weeklyDigest}
+        onChange={(v) => setP({ ...p, weeklyDigest: v })}
+        label={t('notifications.weeklyDigest')}
+        description={t('notifications.weeklyDigestBody')}
+      />
       <Button
         variant="primary"
         className="justify-self-start"

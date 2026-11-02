@@ -119,6 +119,14 @@ Sent for: `job_alert`. Category: **utility**.
 - Telugu (te): `మీ అలర్ట్ “{{2}}”కి {{1}} కొత్త ఉద్యోగాలు సరిపోలాయి. చూడటానికి యాప్ తెరవండి.`
 - Hindi (hi): `आपके अलर्ट “{{2}}” से {{1}} नई नौकरियां मेल खाती हैं। देखने के लिए ऐप खोलें।`
 
+## `cl_weekly_digest`
+
+Sent for: `weekly_digest`. Category: **utility**.
+
+- English (en): `Hi {{1}}, your week on your college app: {{2}} new drives you can register for, {{3}} requests waiting for your reply, {{4}} sessions this week. Open the app to see them.`
+- Telugu (te): `{{1}} గారూ, మీ కాలేజీ యాప్‌లో మీ వారం: మీరు నమోదు చేయగల కొత్త డ్రైవ్‌లు {{2}}, మీ జవాబు కోసం ఎదురుచూస్తున్న అభ్యర్థనలు {{3}}, ఈ వారం సెషన్‌లు {{4}}. చూడటానికి యాప్ తెరవండి.`
+- Hindi (hi): `नमस्ते {{1}}, आपके कॉलेज ऐप पर आपका हफ़्ता: आप जिनमें पंजीकरण कर सकते हैं ऐसी नई ड्राइव {{2}}, आपके जवाब का इंतज़ार कर रहे अनुरोध {{3}}, इस हफ़्ते के सत्र {{4}}। देखने के लिए ऐप खोलें।`
+
 ## `cl_invite_student`
 
 Sent for: an invite to a student on the college's list. Category: **utility**.

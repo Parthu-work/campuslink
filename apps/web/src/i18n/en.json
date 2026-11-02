@@ -1264,6 +1264,10 @@
     "support_ticket": {
       "title": "New problem report",
       "body": "A member reported a problem for the college to answer. Open Admin › Support to read it."
+    },
+    "weekly_digest": {
+      "title": "Your week, {{name}}",
+      "body": "{{drives}} new drives you can register for, {{requests}} requests waiting for your reply, {{sessions}} sessions this week."
     }
   },
   "notifications": {
@@ -1322,6 +1326,8 @@
     "quietNote": "Session reminders still arrive on time.",
     "smsReminders": "SMS reminders",
     "smsRemindersBody": "If WhatsApp cannot reach you, we text you when a session is about to start or a drive is about to close. Nothing else is ever sent by SMS.",
+    "weeklyDigest": "Weekly digest on WhatsApp",
+    "weeklyDigestBody": "Once a week: how many new drives you can register for, requests waiting for your reply and sessions this week. Counts only, and only when there is something new. Off unless you turn it on.",
     "emptyBody": "Requests, replies, sessions and badges will appear here as they happen.",
     "emptyAction": "See what's new at home",
     "whatsapp": "WhatsApp",

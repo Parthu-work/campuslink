@@ -19,7 +19,7 @@ import { FileModel } from '../src/modules/files/file.model.js';
 import { TenantModel } from '../src/modules/tenants/tenant.model.js';
 import { invalidateTenant } from '../src/modules/tenants/tenant.cache.js';
 import { AcademicRecordModel, DriveRegistrationModel } from '../src/modules/placements/placements.model.js';
-import { DRIVE_REMINDER_JOB } from '../src/modules/placements/placements.service.js';
+import { DRIVE_REMINDER_JOB, type PlacementsService } from '../src/modules/placements/placements.service.js';
 
 const ctx = testApp();
 let T: TestTenant;
@@ -140,6 +140,12 @@ describe('drives (B7)', () => {
     expect(await notified(strong, 'drive_open')).toBeGreaterThanOrEqual(1);
     expect(await notified(low, 'drive_open')).toBe(0);
     expect(await notified(ece, 'drive_open')).toBe(0);
+    // The weekly digest counts it for the eligible student who has not registered (prompt 1b, R8).
+    const placements = ctx.app.locals.services.placements as PlacementsService;
+    const counts = await runInTenant(T._id, () => placements.newEligibleCounts([strong.id, low.id, ece.id]));
+    expect(counts.get(strong.id)).toBeGreaterThanOrEqual(1);
+    expect(counts.has(low.id)).toBe(false);
+    expect(counts.has(ece.id)).toBe(false);
     // Open a second time (closed → open) does not notify again.
     const before = await notified(strong, 'drive_open');
     await as(tpo).post(`/admin/placements/drives/${id}/status`).send({ status: 'closed' });

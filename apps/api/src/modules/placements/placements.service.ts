@@ -106,6 +106,32 @@ export class PlacementsService {
   track: Track = noTrack;
   constructor(private readonly d: PlacementsDeps) {}
 
+  /**
+   * The weekly digest (prompt 1b, R8): for each member, drives opened in the last seven days that
+   * are still open, that they are eligible for and have not registered for, as counts.
+   */
+  async newEligibleCounts(userIds: string[], now = new Date()): Promise<Map<string, number>> {
+    const wanted = new Set(userIds);
+    const out = new Map<string, number>();
+    const drives = await PlacementDriveModel.find({
+      status: 'open',
+      openedAt: { $gte: new Date(now.getTime() - 7 * 86_400_000) },
+      registrationCloseAt: { $gt: now },
+    }).lean<DriveDoc[]>();
+    for (const d of drives) {
+      const registered = new Set(
+        (
+          await DriveRegistrationModel.find({ driveId: d._id, status: { $ne: 'withdrawn' } })
+            .select('userId')
+            .lean()
+        ).map((r) => String(r.userId)),
+      );
+      for (const u of await this.eligibleStudents(d))
+        if (wanted.has(u) && !registered.has(u)) out.set(u, (out.get(u) ?? 0) + 1);
+    }
+    return out;
+  }
+
   // ── Privacy ─────────────────────────────
   async exportFor(userId: string) {
     return DriveRegistrationModel.find({ userId: new Types.ObjectId(userId) })

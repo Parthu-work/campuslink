@@ -240,6 +240,20 @@ export const WHATSAPP_TEMPLATES: Partial<Record<NotificationType, WaTemplate>> =
       te: 'మీ అలర్ట్ “{{2}}”కి {{1}} కొత్త ఉద్యోగాలు సరిపోలాయి. చూడటానికి యాప్ తెరవండి.',
       hi: 'आपके अलर्ट “{{2}}” से {{1}} नई नौकरियां मेल खाती हैं। देखने के लिए ऐप खोलें।',
     },
+  } /**
+   * The weekly digest (prompt 1b, R8): the member's first name and three counts, never names of
+   * others, companies or text. Not critical: the member's weekly cap and the allowance apply.
+   */,
+  weekly_digest: {
+    name: 'cl_weekly_digest',
+    category: 'utility',
+    critical: false,
+    params: (d) => [d.name ?? '', d.drives ?? '0', d.requests ?? '0', d.sessions ?? '0'],
+    text: {
+      en: 'Hi {{1}}, your week on your college app: {{2}} new drives you can register for, {{3}} requests waiting for your reply, {{4}} sessions this week. Open the app to see them.',
+      te: '{{1}} గారూ, మీ కాలేజీ యాప్‌లో మీ వారం: మీరు నమోదు చేయగల కొత్త డ్రైవ్‌లు {{2}}, మీ జవాబు కోసం ఎదురుచూస్తున్న అభ్యర్థనలు {{3}}, ఈ వారం సెషన్‌లు {{4}}. చూడటానికి యాప్ తెరవండి.',
+      hi: 'नमस्ते {{1}}, आपके कॉलेज ऐप पर आपका हफ़्ता: आप जिनमें पंजीकरण कर सकते हैं ऐसी नई ड्राइव {{2}}, आपके जवाब का इंतज़ार कर रहे अनुरोध {{3}}, इस हफ़्ते के सत्र {{4}}। देखने के लिए ऐप खोलें।',
+    },
   },
 };
 
