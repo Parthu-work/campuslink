@@ -182,17 +182,22 @@ function watch(qc: QueryClient) {
     timer ??= setTimeout(() => void flush(), WRITE_DELAY_MS);
   });
 
-  // Reads that finished before this module loaded (the college, fetched at boot) are saved too.
-  for (const q of qc.getQueryCache().getAll())
-    if (q.state.status === 'success' && persistable(q.queryKey) && !restoredHashes().includes(q.queryHash))
-      dirty.set(q.queryHash, q);
-  if (dirty.size) timer ??= setTimeout(() => void flush(), WRITE_DELAY_MS);
+  // Reads that finished before this module loaded or before sign-in (the college, fetched at boot)
+  // are saved too: swept now, and again when the member is signed in.
+  const sweep = () => {
+    const restored = restoredHashes();
+    for (const q of qc.getQueryCache().getAll())
+      if (q.state.status === 'success' && persistable(q.queryKey) && !restored.includes(q.queryHash))
+        dirty.set(q.queryHash, q);
+    if (dirty.size) timer ??= setTimeout(() => void flush(), WRITE_DELAY_MS);
+  };
+  sweep();
 
   useSession.subscribe((s, prev) => {
     if (s.status === prev.status) return;
     if (s.status === 'signed-out') void wipe(qc);
     if (s.status === 'signed-in') {
-      if (dirty.size) timer ??= setTimeout(() => void flush(), WRITE_DELAY_MS);
+      sweep();
       void replayOutbox(qc);
     }
   });

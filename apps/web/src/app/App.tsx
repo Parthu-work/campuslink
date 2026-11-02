@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../lib/query-client';
 import { useTranslation } from '../i18n/react';
 import { Building2, PauseCircle } from 'lucide-react';
+import { useSavedCopySettled } from '../lib/offline-probe';
 import { ApiError } from '../lib/api';
 import { TenantProvider } from '../lib/tenant';
 import { useTenantQuery } from '../lib/tenant-context';
@@ -25,7 +26,9 @@ const Toaster = lazy(() => loadSonner().then((m) => ({ default: m.Toaster })));
 function TenantGate() {
   const { t } = useTranslation();
   const tenant = useTenantQuery();
-  if (tenant.isLoading) return <Splash />;
+  const savedCopySettled = useSavedCopySettled();
+  // Offline, the college may still be on its way from the device's saved copy (B13).
+  if (tenant.isLoading || (!tenant.data && !savedCopySettled)) return <Splash />;
   // Offline with the college in the device's saved copy (B13): open the app from it.
   const offlineCopy = !!tenant.data && tenant.error instanceof ApiError && tenant.error.code === 'NETWORK';
   if ((tenant.error && !offlineCopy) || !tenant.data) {

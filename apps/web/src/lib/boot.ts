@@ -1,7 +1,7 @@
 import { refreshSession } from './api';
 import { queryClient } from './query-client';
 import { me, tenant } from './queries';
-import { setOfflineProbe } from './offline-probe';
+import { setOfflineProbe, setSavedCopyPending } from './offline-probe';
 
 /**
  * Cold start without a chain (audit PF-1, J0): the college lookup and the session refresh start
@@ -17,6 +17,7 @@ export function startBoot() {
     .then((m) => m.startOfflineCache(queryClient))
     .catch(() => ({ owner: null }));
   setOfflineProbe(() => saved.then((s) => s.owner !== null));
+  setSavedCopyPending(saved);
   const college = queryClient.fetchQuery(tenant());
   const session = refreshSession();
   void session.then((ok) => (ok ? queryClient.prefetchQuery(me()) : undefined));
