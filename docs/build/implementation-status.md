@@ -71,11 +71,7 @@ Two kinds of work remain. The details and the order are in [`master-prompt-1b-re
 - Have the Hindi and Telugu translations reviewed by native speakers.
 - Commission a penetration test.
 
-**For an engineer or agent (code):**
+**For an engineer or agent (code):** prompt 1b (R1 to R13) is done; see [`report-1.md`](report-1.md) › Prompt 1b. Two items wait on someone else:
 
-- **Fix (minor):** which consent records count as accepting the privacy notice. A Settings change to the `account` consent records the platform's base notice version, which can ask a member who already accepted the college's newer notice to accept again.
-- **Run and record:** run the load test and record its figures.
-- **Check:** do the 360 px, theme, reduced-motion and keyboard checks on the B12–B14 screens.
-- **Build:** SMS for critical reminders, credit notes, a console editor for AI prices, and the inactive-account purge if the owner wants it promised.
-- **Revisit:** the CSP's `style-src 'unsafe-inline'`.
-- **Owner's call:** WhatsApp digests and Hindi invoices are optional and need the owner to decide.
+- **R12:** check the three NAAC report definitions against the manual once `naac.gov.in` serves a valid certificate (NBA and NIRF are checked).
+- **R13:** after the native-speaker review (O7), set `reviewed` on the Telugu and Hindi legal texts, bump `PRIVACY_NOTICE_VERSION` and record the new fingerprint in `legal.test.ts`.

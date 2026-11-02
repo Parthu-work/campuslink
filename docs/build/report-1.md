@@ -116,6 +116,52 @@ Worked out from the seeded events with the dashboard's own rules (suppression un
 
 The demo accounts (staff, alumni, two students) add visits in the last three weeks; their per-role counts are under 5 and show as "<5".
 
+## Prompt 1b
+
+**Date:** 2 November 2026. **Branch:** `feat/prompt-1b-remaining`, from `claude/vigilant-cray-oelucl` at `a471e43` (`main` at `1d527a1` plus prompt 1b's file), as the owner asked; it reaches `main` through a pull request. The per-item record is [`progress.md`](progress.md) › Prompt 1b; the owner's items are in [`owner-checklists.md`](owner-checklists.md).
+
+| Item | Status              | What                                                                                                                                                                                                                                                                                                                                              |
+| ---- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1   | Done                | Only the sign-up `account` record and accepted notices count as accepting; Settings changes log the college's notice                                                                                                                                                                                                                              |
+| R2   | Done                | Load test recorded in `docs/performance.md`: 500 of 500 registrations stored, second taps refused, reports under 2 s at p99                                                                                                                                                                                                                       |
+| R3   | Done                | B12 to B14 screens: no axe violations, no sideways scroll, keyboard reaches everything; small legal links and a segment fixed to 44 px                                                                                                                                                                                                            |
+| R4   | Done                | SMS for a session within the hour and a drive closing, when WhatsApp does not reach the member; on by default, metered, capped by the allowance                                                                                                                                                                                                   |
+| R5   | Done                | Credit notes: own `CN` series, mirrored tax, capped atomically; outstanding = total − payments − credit notes                                                                                                                                                                                                                                     |
+| R6   | Done                | AI prices edited in Platform › Billing › Plans; env is the default until saved                                                                                                                                                                                                                                                                    |
+| R7   | Done                | Optional purge of accounts unused for 24 to 120 months: two warnings, then erasure scheduled with the grace period; never staff or open placements and reports                                                                                                                                                                                    |
+| R8   | Done                | Weekly WhatsApp digest, off by default, counts only, push or email fallback                                                                                                                                                                                                                                                                       |
+| R9   | Done: stays English | Evaluated: the current PDF path cannot draw Devanagari; a Hindi copy needs glyph offsets and a native speaker's check                                                                                                                                                                                                                             |
+| R10  | Done: gap kept      | `style-src 'unsafe-inline'` stays; the gap row names sonner, react-remove-scroll and the palette, and what tightening needs                                                                                                                                                                                                                       |
+| R11  | Done                | Two timing causes fixed, each with a test that catches it: the error report's random id sometimes matched the phone pattern (the reporter takes its id and clock from the caller), and the realtime expiry test raced a one-second token (the gateway's clock is injectable). Two full local runs passed 1000 tests; CI passed on every run since |
+| R12  | Partly done         | NBA (January 2025 SAR, criterion 4.6) applied: index as a percentage, 0.3 × average, no undefined column; NIRF 2025 agrees except one ambiguity; NAAC unchecked (revoked certificate)                                                                                                                                                             |
+| R13  | Blocked: O7         | Telugu and Hindi legal texts written, served only after a native speaker's review; text changes are pinned to the notice version                                                                                                                                                                                                                  |
+
+### Decisions and deviations
+
+- **Branch and pull request** instead of working on `main` (the owner's instruction for this session).
+- **The privacy notice version is now `2026-11b-draft`:** the policy says what SMS is used for (R4) and, for colleges that turn it on, that unused accounts are deleted (R7). Every member accepts again; both sentences need the lawyer's look.
+- **SMS reminders share the college's monthly allowance with WhatsApp and stop at it**; codes by SMS do not use it.
+- **Credit notes may follow full payment** (a refund is then made outside the platform); void applies to drafts only; a settled invoice shows as paid.
+- **A new platform collection, `PlatformSetting`**, holds the AI prices (on the allowlist with its reason).
+- **The weekly digest never enters the in-app list**, and runs once a week per college from Monday 09:00 IST.
+- **The inactive-account purge never shortens anyone's notice:** each step waits for the one before, so a college that turns it on gives long-inactive members both warnings and at least 60 days.
+- **The NBA report changed to follow the manual** (version `2026.2`): colleges that downloaded the old format see a percentage and a new points line.
+- **Manuals were downloaded with the owner's approval**; nothing was taken from `naac.gov.in`, whose certificate was revoked.
+- **Local test runs** use MongoDB with its data on tmpfs: the compose replica set on Docker Desktop for Windows cannot build the suite's indexes in time, and it stalled under the load test. CI is unchanged.
+- **D10 was not triggered:** no change to session tokens, refresh rotation, tenancy enforcement or the encryption scheme; MSG91 and Meta (already listed) receive only a first name, a time, months or counts and a link.
+
+### New environment variables
+
+None. `SMS_DLT_TEMPLATE_IDS` accepts the new keys `session_reminder`, `drive_reminder` and their `_te`/`_hi` versions. `AI_PLATFORM_PRICE_*` stay as the defaults the console overrides.
+
+### Load test figures
+
+From `docs/performance.md` › Results (prompt 1b), on a 4-core laptop under Windows: phone sign-in 41 req/s (p99 315 ms); the 500-registration burst stored all 500 and the 50 second taps were refused; `GET /tenant` 1,782 req/s; For you 50 req/s at 50 connections (p99 272 ms at 10); `POST /posts` 75 req/s; the NBA SAR report p99 0.73 s, NIRF 0.68 s, the dashboard 1.49 s. Most routes are 1.5 to 1.9 times slower than on 16 October's Linux server; login and `/me` a little over twice, explained in the doc.
+
+### Still the owner's
+
+Everything in [`owner-checklists.md`](owner-checklists.md): merge this branch (O1); Meta templates including `cl_weekly_digest` and `cl_account_inactive` (O2); DLT and MSG91 with the reminder templates (O3); Razorpay (O4); the chartered accountant's review including credit notes (O5); the lawyer's look at the SMS and inactive-account sentences (O6); the native-speaker review, which also publishes the legal translations (O7); the penetration test (O8). And the NAAC check (R12), once `naac.gov.in` serves a valid certificate.
+
 ## Next
 
-Prompt 2 (peer mentors, alumni giving, the deep-model features). Before the first real college: the registrations and reviews above, a live run of `pnpm loadtest`, and the penetration test.
+Prompt 1b is done except the NAAC check (R12) and publishing the legal translations (R13), both waiting on someone outside the code. Prompt 2 is next. Before the first real college: the registrations and reviews above, a live run of `pnpm loadtest`, and the penetration test.
