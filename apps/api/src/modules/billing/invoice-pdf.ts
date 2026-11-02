@@ -10,9 +10,10 @@ import { APP_NAME, GST_STATES, formatRupees, type GstSplit } from '@campuslink/s
 export interface InvoicePdfInput {
   number: string;
   issuedOn: string;
-  dueOn: string;
-  periodStart: string;
-  periodEnd: string;
+  /** Invoices only (a credit note has no due date or period). */
+  dueOn?: string;
+  periodStart?: string;
+  periodEnd?: string;
   /** Registered sellers issue a tax invoice; an unregistered one, a plain invoice. */
   registered: boolean;
   seller: { name: string; address: string; gstin: string | null; stateCode: string | null };
@@ -25,6 +26,8 @@ export interface InvoicePdfInput {
   totalInWords: string;
   notes: string | null;
   bankDetails: string | null;
+  /** Set for a credit note (prompt 1b, R5): the invoice it adjusts and why. */
+  creditNote?: { invoiceNumber: string; invoiceDate: string; reason: string };
 }
 
 let fonts: Promise<[Buffer, Buffer]> | null = null;
@@ -70,7 +73,10 @@ export async function renderInvoicePdf(inv: InvoicePdfInput): Promise<Buffer> {
   doc.registerFontkit(fontkit);
   const regular = await doc.embedFont(regularBytes, { subset: true });
   const bold = await doc.embedFont(boldBytes, { subset: true });
-  doc.setTitle(`Invoice ${inv.number}`);
+  const cn = inv.creditNote;
+  doc.setTitle(cn ? `Credit note ${inv.number}` : `Invoice ${inv.number}`);
+  // Searchable without parsing the page (the drawn text is subset glyphs).
+  if (cn) doc.setSubject(`Against invoice ${cn.invoiceNumber}. Reason: ${cn.reason}`);
   doc.setCreator(APP_NAME);
   doc.setProducer(APP_NAME);
   doc.setCreationDate(new Date(`${inv.issuedOn}T00:00:00Z`));
@@ -93,7 +99,7 @@ export async function renderInvoicePdf(inv: InvoicePdfInput): Promise<Buffer> {
   };
 
   // Title and number.
-  text(inv.registered ? 'Tax Invoice' : 'Invoice', M, 20, bold);
+  text(cn ? 'Credit Note' : inv.registered ? 'Tax Invoice' : 'Invoice', M, 20, bold);
   right(inv.number, M + width, 12, bold);
   y -= 30;
   rule();
@@ -119,12 +125,22 @@ export async function renderInvoicePdf(inv: InvoicePdfInput): Promise<Buffer> {
 
   y = top;
   const kx = M + width / 2 + 12;
-  const details: [string, string][] = [
-    ['Invoice date', longDate(inv.issuedOn)],
-    ['Due date', longDate(inv.dueOn)],
-    ['Period', `${longDate(inv.periodStart)} to ${longDate(inv.periodEnd)}`],
-    ['Place of supply', stateLabel(inv.buyer.stateCode)],
-  ];
+  const details: [string, string][] = cn
+    ? [
+        ['Credit note date', longDate(inv.issuedOn)],
+        ['Against invoice', cn.invoiceNumber],
+        ['Invoice date', longDate(cn.invoiceDate)],
+        ['Place of supply', stateLabel(inv.buyer.stateCode)],
+      ]
+    : [
+        ['Invoice date', longDate(inv.issuedOn)],
+        ['Due date', longDate(inv.dueOn ?? inv.issuedOn)],
+        [
+          'Period',
+          `${longDate(inv.periodStart ?? inv.issuedOn)} to ${longDate(inv.periodEnd ?? inv.issuedOn)}`,
+        ],
+        ['Place of supply', stateLabel(inv.buyer.stateCode)],
+      ];
   for (const [k, v] of details) {
     text(k, kx, 9, regular, MUTED);
     right(v, M + width, 9, bold);
@@ -199,7 +215,7 @@ export async function renderInvoicePdf(inv: InvoicePdfInput): Promise<Buffer> {
     thickness: 0.6,
     color: RULE,
   });
-  total('Total', formatRupees(inv.totalPaise), true);
+  total(cn ? 'Total credit' : 'Total', formatRupees(inv.totalPaise), true);
   for (const l of wrap(inv.totalInWords, regular, 9, width)) {
     text(l, M, 9, regular, MUTED);
     y -= 12;
@@ -208,11 +224,17 @@ export async function renderInvoicePdf(inv: InvoicePdfInput): Promise<Buffer> {
 
   // Payment and notes.
   const footer: string[] = [];
+  if (cn) {
+    footer.push(`Reason: ${cn.reason}`);
+    footer.push(
+      `This credit note reduces invoice ${cn.invoiceNumber} by the total above; the invoice itself is unchanged.`,
+    );
+  }
   if (inv.bankDetails)
     footer.push(`Pay by bank transfer: ${inv.bankDetails}. Quote ${inv.number} as the reference.`);
   if (!inv.registered) footer.push('The supplier is not registered for GST; no tax is charged.');
   if (inv.notes) footer.push(inv.notes);
-  footer.push('This is a computer-generated invoice.');
+  footer.push(cn ? 'This is a computer-generated credit note.' : 'This is a computer-generated invoice.');
   for (const f of footer) {
     const ls = wrap(f, regular, 8.5, width);
     ensure(ls.length * 11 + 6);

@@ -66,6 +66,25 @@ test('the platform drafts, issues and records a bank payment for a college', asy
   await expect(page.getByRole('region', { name: 'Payments' })).toBeVisible();
   await expect(invoices.getByRole('cell', { name: 'Paid', exact: true }).first()).toBeVisible();
   await expectNoA11yViolations(page);
+
+  // Prompt 1b, R5: a credit note against the issued invoice, drafted, issued and downloaded.
+  await invoices.getByRole('button', { name: 'Credit note' }).first().click();
+  const credit = page.getByRole('dialog', { name: /^Credit note for / });
+  await credit.getByLabel('What it corrects').fill('Pilot extension shortened (demo)');
+  await credit.getByLabel('Amount before GST (₹)').fill('1000');
+  await credit.getByLabel('Reason (printed on the credit note)').fill('Extension cut by two weeks (demo)');
+  await expectNoA11yViolations(page);
+  await credit.getByRole('button', { name: 'Save draft' }).click();
+  const credits = page.getByRole('region', { name: 'Credit notes' });
+  await expect(credits.getByRole('cell', { name: /^Draft/ })).toBeVisible();
+  await credits.getByRole('button', { name: 'Issue' }).click();
+  await expect(credits.getByRole('cell', { name: /^CN\// })).toBeVisible();
+  const [pdf] = await Promise.all([
+    page.waitForEvent('download'),
+    credits.getByRole('button', { name: /^Download credit note CN\// }).click(),
+  ]);
+  expect(pdf.suggestedFilename()).toMatch(/^CN-.*\.pdf$/);
+  await expectNoA11yViolations(page);
 });
 
 test('a pilot college’s billing fits a phone, with no invoices yet', async ({ page }, info) => {

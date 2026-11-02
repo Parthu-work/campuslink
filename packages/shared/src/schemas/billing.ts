@@ -148,6 +148,9 @@ export interface InvoiceView {
   gst: GstSplit;
   totalPaise: number;
   paidPaise: number;
+  /** Issued credit notes against it (prompt 1b, R5). */
+  creditedPaise: number;
+  /** What is still owed: total − payments − credit notes (never below zero). */
   balancePaise: number;
   totalInWords: string;
   sacCode: string;
@@ -198,6 +201,8 @@ export interface AdminBillingView {
   readOnly: boolean;
   readOnlySince: string | null;
   invoices: InvoiceView[];
+  /** Credit notes (issued ones for the college; drafts too in the platform console). */
+  creditNotes: CreditNoteView[];
   /** "Pay online" works at this deployment (a payment provider is set up). */
   payOnline: boolean;
   buyer: Buyer | null;
@@ -246,4 +251,45 @@ export type BillingWarning = 'no_sac_code' | 'no_buyer' | 'seller_unregistered' 
 /** A link to pay an invoice online. */
 export interface PayLinkView {
   url: string;
+}
+
+// ── Credit notes (prompt 1b, R5) ─────────────────────────────────────
+
+/**
+ * A credit note corrects an issued invoice the GST way, without changing it: its own number from
+ * the `CN` series (given on issue), lines, and the tax split mirroring the invoice it adjusts.
+ */
+export const CREDIT_NOTE_STATUSES = ['draft', 'issued', 'void'] as const;
+export type CreditNoteStatus = (typeof CREDIT_NOTE_STATUSES)[number];
+/** The credit note series' prefix in the invoice counter (one sequence per financial year). */
+export const CREDIT_NOTE_PREFIX = 'CN';
+
+export const creditNoteDraftBody = z.strictObject({
+  lines: z.array(invoiceLineSchema).min(1).max(10),
+  /** Why the invoice is corrected (printed on the credit note). */
+  reason: plain(3, 200),
+});
+
+export const creditNoteParams = z.strictObject({
+  id: z.string().regex(/^[a-f0-9]{24}$/),
+  creditNoteId: z.string().regex(/^[a-f0-9]{24}$/),
+});
+export const ownCreditNoteParams = z.strictObject({ creditNoteId: z.string().regex(/^[a-f0-9]{24}$/) });
+
+export interface CreditNoteView {
+  id: string;
+  invoiceId: string;
+  /** The invoice's number (what this credit note adjusts). */
+  invoiceNumber: string;
+  /** Null while a draft (numbers are given on issue). */
+  number: string | null;
+  status: CreditNoteStatus;
+  issuedOn: string | null;
+  lines: InvoiceLineView[];
+  taxablePaise: number;
+  gst: GstSplit;
+  totalPaise: number;
+  totalInWords: string;
+  reason: string;
+  hasPdf: boolean;
 }

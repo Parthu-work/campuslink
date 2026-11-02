@@ -426,9 +426,14 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/platform/billing/:id/invoices/:invoiceId/void` | `platform:billing` | platform | adminWrite | Void an issued invoice that has no payments |
 | `POST /api/v1/platform/billing/:id/invoices/:invoiceId/payments` | `platform:billing` | platform | adminWrite | Record a bank payment (amount, date, UTR) |
 | `GET /api/v1/platform/billing/:id/invoices/:invoiceId/pdf` | `platform:billing` | platform | — | Download an issued invoice (PDF) |
+| `POST /api/v1/platform/billing/:id/invoices/:invoiceId/credit-notes` | `platform:billing` | platform | adminWrite | Draft a credit note against an issued invoice (lines and a reason) |
+| `POST /api/v1/platform/billing/:id/credit-notes/:creditNoteId/issue` | `platform:billing` | platform | adminWrite | Issue a draft credit note: its number from the CN series, and its PDF |
+| `POST /api/v1/platform/billing/:id/credit-notes/:creditNoteId/void` | `platform:billing` | platform | adminWrite | Void a draft credit note (it is kept, never numbered) |
+| `GET /api/v1/platform/billing/:id/credit-notes/:creditNoteId/pdf` | `platform:billing` | platform | — | Download an issued credit note (PDF) |
 | `GET /api/v1/admin/billing` | `tenant:settings` | college | — | Our plan, seats, usage against allowances, and invoices |
 | `GET /api/v1/admin/billing/notice` | `tenant:settings` | college | — | Whether to show admins a billing banner (seats, pilot end, overdue, read-only) |
 | `GET /api/v1/admin/billing/invoices/:invoiceId/pdf` | `tenant:settings` | college | — | Download one of our invoices (PDF) |
+| `GET /api/v1/admin/billing/credit-notes/:creditNoteId/pdf` | `tenant:settings` | college | — | Download one of our credit notes (PDF) |
 | `POST /api/v1/admin/billing/invoices/:invoiceId/pay` | `tenant:settings` | college | adminWrite | A link to pay an invoice online (when the platform has online payment) |
 | `POST /api/v1/webhooks/razorpay` | public | any | webhook | Razorpay deliveries (payment_link.paid; signed with X-Razorpay-Signature) |
 | `GET /api/v1/study/subjects` | `study:read` · feature `study` | college | — | Subjects I take (students) or all subjects (staff, alumni); `scope=mine` for my own |

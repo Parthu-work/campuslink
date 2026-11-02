@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router';
 import { AlertTriangle, Download, Pencil, Plus } from 'lucide-react';
-import { FEATURE_KEYS, type InvoiceView, type PlanView } from '@campuslink/shared';
+import { FEATURE_KEYS, type CreditNoteView, type InvoiceView, type PlanView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
@@ -20,6 +20,7 @@ import { SCREEN } from '../../lib/query-client';
 import { formatMoney } from '../../lib/numbers';
 import { toast } from '../../lib/toast';
 import {
+  CreditNoteDialog,
   InvoiceDialog,
   IssueDialog,
   PaymentDialog,
@@ -164,6 +165,7 @@ type Dialogs =
   | { kind: 'payment'; invoice: InvoiceView }
   | { kind: 'void'; invoice: InvoiceView }
   | { kind: 'issue'; invoice: InvoiceView }
+  | { kind: 'credit'; invoice: InvoiceView }
   | null;
 
 /** Platform › Billing › one college: subscription, usage, invoices and payments. */
@@ -193,6 +195,28 @@ export function PlatformCollegeBilling() {
       saveBlob(
         await apiBlob(`/platform/billing/${id}/invoices/${inv.id}/pdf`),
         `${(inv.number ?? inv.id).replaceAll('/', '-')}.pdf`,
+      );
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
+    } finally {
+      setBusy('');
+    }
+  };
+  const creditAction = useMutation({
+    mutationFn: ({ note, action }: { note: CreditNoteView; action: 'issue' | 'void' }) =>
+      api.post(`/platform/billing/${id}/credit-notes/${note.id}/${action}`),
+    onSuccess: (data, { action }) => {
+      refresh(data);
+      toast.success(t(action === 'issue' ? 'pbilling.creditIssued' : 'pbilling.creditVoided'));
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
+  });
+  const downloadCredit = async (note: CreditNoteView) => {
+    setBusy(note.id);
+    try {
+      saveBlob(
+        await apiBlob(`/platform/billing/${id}/credit-notes/${note.id}/pdf`),
+        `${(note.number ?? note.id).replaceAll('/', '-')}.pdf`,
       );
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
@@ -342,6 +366,15 @@ export function PlatformCollegeBilling() {
                                 )}
                               </>
                             )}
+                            {(open || inv.status === 'paid') && inv.creditedPaise < inv.totalPaise && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setDialog({ kind: 'credit', invoice: inv })}
+                              >
+                                {t('pbilling.creditNew')}
+                              </Button>
+                            )}
                             {inv.hasPdf && (
                               <Button
                                 size="sm"
@@ -362,6 +395,81 @@ export function PlatformCollegeBilling() {
               </Table>
             )}
           </section>
+
+          {v.creditNotes.length > 0 && (
+            <section className="grid gap-3">
+              <h2 id="pbilling-credits" className="text-heading font-semibold">
+                {t('billing.creditNotes')}
+              </h2>
+              <Table label={t('billing.creditNotes')}>
+                <THead>
+                  <tr>
+                    <Th>{t('billing.col.number')}</Th>
+                    <Th>{t('billing.col.against')}</Th>
+                    <Th className="text-right">{t('billing.col.total')}</Th>
+                    <Th>{t('billing.col.status')}</Th>
+                    <Th>
+                      <span className="sr-only">{t('billing.col.actions')}</span>
+                    </Th>
+                  </tr>
+                </THead>
+                <tbody>
+                  {v.creditNotes.map((note) => {
+                    const name = note.number ?? t('pbilling.draft');
+                    return (
+                      <tr key={note.id}>
+                        <Td className="whitespace-nowrap font-mono">{name}</Td>
+                        <Td className="whitespace-nowrap font-mono">{note.invoiceNumber}</Td>
+                        <TdNum>{rupees(note.totalPaise)}</TdNum>
+                        <Td>
+                          <Badge tone={note.status === 'issued' ? 'success' : 'neutral'}>
+                            {t(`billing.creditStatus.${note.status}`)}
+                          </Badge>
+                          <span className="block text-caption text-fg-3">{note.reason}</span>
+                        </Td>
+                        <Td>
+                          <div className="flex flex-wrap justify-end gap-2">
+                            {note.status === 'draft' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="primary"
+                                  loading={
+                                    creditAction.isPending && creditAction.variables.note.id === note.id
+                                  }
+                                  onClick={() => creditAction.mutate({ note, action: 'issue' })}
+                                >
+                                  {t('pbilling.issue')}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => creditAction.mutate({ note, action: 'void' })}
+                                >
+                                  {t('pbilling.void')}
+                                </Button>
+                              </>
+                            )}
+                            {note.hasPdf && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                loading={busy === note.id}
+                                onClick={() => void downloadCredit(note)}
+                                aria-label={t('billing.downloadCreditNamed', { number: name })}
+                              >
+                                <Download className="size-4" aria-hidden />
+                              </Button>
+                            )}
+                          </div>
+                        </Td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </Table>
+            </section>
+          )}
 
           {payments.length > 0 && (
             <section className="grid gap-3">
@@ -410,6 +518,14 @@ export function PlatformCollegeBilling() {
           )}
           {dialog?.kind === 'issue' && (
             <IssueDialog
+              tenantId={id}
+              invoice={dialog.invoice}
+              onClose={() => setDialog(null)}
+              onSaved={refresh}
+            />
+          )}
+          {dialog?.kind === 'credit' && (
+            <CreditNoteDialog
               tenantId={id}
               invoice={dialog.invoice}
               onClose={() => setDialog(null)}

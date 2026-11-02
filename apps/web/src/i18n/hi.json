@@ -4027,7 +4027,8 @@
       "total": "कुल",
       "balance": "बकाया",
       "status": "स्थिति",
-      "actions": "कार्रवाई"
+      "actions": "कार्रवाई",
+      "against": "किस इनवॉइस पर"
     },
     "status": {
       "draft": "ड्राफ़्ट",
@@ -4074,7 +4075,15 @@
       "resume": "रिज़्यूमे में मदद",
       "interview": "मॉक इंटरव्यू",
       "copilot": "कोपायलट"
-    }
+    },
+    "creditNotes": "क्रेडिट नोट",
+    "creditNotesIntro": "क्रेडिट नोट किसी इनवॉइस की माँगी गई राशि घटाता है। इनवॉइस खुद कभी नहीं बदलता।",
+    "creditStatus": {
+      "draft": "ड्राफ़्ट",
+      "issued": "जारी",
+      "void": "रद्द"
+    },
+    "downloadCreditNamed": "क्रेडिट नोट {{number}} डाउनलोड करें"
   },
   "pbilling": {
     "title": "बिलिंग",
@@ -4177,7 +4186,19 @@
       "bank": "बैंक ट्रांसफ़र",
       "online": "ऑनलाइन"
     },
-    "aiCost": "इस महीने AI: लगभग {{amount}}"
+    "aiCost": "इस महीने AI: लगभग {{amount}}",
+    "creditNew": "क्रेडिट नोट",
+    "creditTitle": "{{number}} के लिए क्रेडिट नोट",
+    "creditIntro": "इस इनवॉइस पर अभी {{left}} तक क्रेडिट दिया जा सकता है। GST इनवॉइस की तरह जुड़ता है।",
+    "creditLine": "क्या सुधारता है",
+    "creditAmount": "GST से पहले राशि (₹)",
+    "creditAmountHint": "उदाहरण के लिए 7500 या 7,500.00",
+    "creditReason": "कारण (क्रेडिट नोट पर छपेगा)",
+    "creditSave": "ड्राफ़्ट सहेजें",
+    "creditDrafted": "क्रेडिट नोट ड्राफ़्ट हो गया। नंबर के लिए इसे जारी करें।",
+    "creditIssued": "क्रेडिट नोट जारी हुआ",
+    "creditVoided": "ड्राफ़्ट क्रेडिट नोट रद्द हुआ",
+    "amountInvalid": "रुपयों में राशि लिखें"
   },
   "offline": {
     "updated": "{{when}} अपडेट हुआ",

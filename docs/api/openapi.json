@@ -20180,6 +20180,236 @@
         "x-permission": "platform:billing"
       }
     },
+    "/api/v1/platform/billing/{id}/invoices/{invoiceId}/credit-notes": {
+      "post": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Draft a credit note against an issued invoice (lines and a reason)",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_post_platform_billing_id_invoices_invoiceId_credit_notes",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "lines": {
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "description": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 200
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 1000000
+                        },
+                        "unitPaise": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 1000000000
+                        }
+                      },
+                      "required": [
+                        "description",
+                        "quantity",
+                        "unitPaise"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "lines",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing/{id}/credit-notes/{creditNoteId}/issue": {
+      "post": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Issue a draft credit note: its number from the CN series, and its PDF",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_post_platform_billing_id_credit_notes_creditNoteId_issue",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "creditNoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing/{id}/credit-notes/{creditNoteId}/void": {
+      "post": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Void a draft credit note (it is kept, never numbered)",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_post_platform_billing_id_credit_notes_creditNoteId_void",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "creditNoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
+    "/api/v1/platform/billing/{id}/credit-notes/{creditNoteId}/pdf": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Download an issued credit note (PDF)",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform.",
+        "operationId": "billing_get_platform_billing_id_credit_notes_creditNoteId_pdf",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "creditNoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
     "/api/v1/admin/billing": {
       "get": {
         "tags": [
@@ -20244,6 +20474,41 @@
         "parameters": [
           {
             "name": "invoiceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
+    "/api/v1/admin/billing/credit-notes/{creditNoteId}/pdf": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Download one of our credit notes (PDF)",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college.",
+        "operationId": "billing_get_admin_billing_credit_notes_creditNoteId_pdf",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "creditNoteId",
             "in": "path",
             "required": true,
             "schema": {

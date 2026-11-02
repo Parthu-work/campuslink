@@ -413,7 +413,7 @@ A new session reads this file first and resumes from the first phase that is not
 | R2   | Run the load test and record it                    | Not started |
 | R3   | UI checks on the B12 to B14 screens                | Not started |
 | R4   | SMS for critical reminders                         | Done        |
-| R5   | Credit notes                                       | Not started |
+| R5   | Credit notes                                       | Done        |
 | R6   | Edit AI prices in the platform console             | Not started |
 | R7   | Inactive-account purge                             | Not started |
 | R8   | WhatsApp digests (owner: yes)                      | Not started |
@@ -446,3 +446,23 @@ A new session reads this file first and resumes from the first phase that is not
 - **Session reminders ignore quiet hours on SMS too**, as on every other channel (the member chose the time); drive reminders wait for quiet hours to end.
 - **The privacy policy now says what SMS is used for**, so `PRIVACY_NOTICE_VERSION` moves from `2026-10-draft` to `2026-11-draft` and members accept again. The new sentence needs the lawyer's look (O6).
 - The link is the third variable. DLT platforms limit a plain variable to 30 characters, so it must be registered as a URL variable with the college domains whitelisted (written in the doc for the owner).
+
+### R5 · Credit notes (Done)
+
+**Shipped.**
+
+- `CreditNote` (tenant collection, indexes led by `tenantId`): the invoice it adjusts, lines, taxable value, GST split mirroring the invoice (same rate and kind), total in paise, reason, PDF, created and issued by. The invoice gains a running `creditedPaise` and nothing else changes on it.
+- Numbers from their own series (`InvoiceCounter`, prefix `CN`, same financial-year rule), taken only on issue; a voided draft never takes one.
+- Issue is atomic against the cap: a conditional update keeps the credited total at or under the invoice total, even with two issued at once (tested). Issuing an issued credit note is a no-op.
+- Outstanding is total − payments − credit notes everywhere (overview, bank payments, the pay link, reminders, read-only). A credit note that leaves nothing owed marks the invoice `paid` and ends read-only.
+- Routes (platform host, `platform:billing`): draft, issue, void a draft, download; the college's admins download theirs (`tenant:settings`). Audited in both logs. Platform › Billing › college: a **Credit note** action on issued invoices and a credit notes table; Admin › Billing lists issued credit notes (en, te, hi).
+- The PDF says "Credit Note", the invoice it adjusts and its date, and the reason (also in the PDF's title and subject).
+- Docs: `docs/specs/billing.md` (with what a CA should check), ADR 0013's consequences line, `docs/permissions.md`.
+- Tests: `credit-notes.test.ts`, a privacy case (no member data; kept), and the e2e billing spec on desktop.
+
+**Decisions.**
+
+- **A credit note may follow full payment** (the college is then owed a refund, made outside the platform and not recorded here). Without that, a wrongly paid invoice could not be corrected the GST way.
+- **Void applies to drafts only.** An issued credit note is final; a second credit note or a new invoice corrects it.
+- **A settled invoice shows as `paid`** whether payments or credit notes settled it; the view shows `creditedPaise` beside `paidPaise`.
+- No new notification type for the college's admins: the credit note appears in Admin › Billing.

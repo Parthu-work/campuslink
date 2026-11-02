@@ -20,4 +20,4 @@ Colleges buy the product on one of a few plans (a free pilot, Connect, Placement
 - One place to answer "may this college do X" (`tenant.features`, `EntitlementsService`), and one test that walks every write route under read-only and pins the allowlist (`test/billing.test.ts`); a new route opts in only on purpose.
 - Members can always reach their data, exercise their rights and ask for help, whatever the college's billing state.
 - A college that never pays stays read-only with its data intact; any deletion follows the normal retention and contract terms, not non-payment.
-- GST rate and SAC code are settings to be confirmed by a chartered accountant; credit notes are out of scope for now.
+- GST rate and SAC code are settings to be confirmed by a chartered accountant; credit notes correct issued invoices without changing them (prompt 1b, R5): their own `CN` series, tax mirrored from the invoice, and the outstanding amount (total − payments − credit notes) drives overdue, reminders and read-only.

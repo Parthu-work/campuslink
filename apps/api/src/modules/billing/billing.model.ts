@@ -87,6 +87,7 @@ export interface InvoiceDoc {
   gst: GstSplit;
   totalPaise: number;
   paidPaise: number;
+  creditedPaise: number;
   sacCode: string;
   seller: { name: string; address: string; gstin: string | null; stateCode: string | null } | null;
   buyer: { name: string; address: string; gstin: string | null; stateCode: string | null } | null;
@@ -116,6 +117,8 @@ const invoiceSchema = new Schema(
     gst: { type: gstSchema, required: true },
     totalPaise: { type: Number, required: true },
     paidPaise: { type: Number, default: 0 },
+    /** Issued credit notes against it (prompt 1b, R5); the invoice itself never changes. */
+    creditedPaise: { type: Number, default: 0 },
     sacCode: { type: String, default: '' },
     /** Both parties as they were on the day of issue (an invoice never changes afterwards). */
     seller: { type: partySchema, default: null },
@@ -182,3 +185,54 @@ const paymentSchema = new Schema(
 paymentSchema.index({ tenantId: 1, method: 1, reference: 1 }, { unique: true });
 paymentSchema.index({ tenantId: 1, invoiceId: 1 });
 export const PaymentModel = defineTenantModel('Payment', paymentSchema);
+
+export interface CreditNoteDoc {
+  _id: Types.ObjectId;
+  tenantId: Types.ObjectId;
+  invoiceId: Types.ObjectId;
+  number: string | null;
+  fy: string | null;
+  status: 'draft' | 'issued' | 'void';
+  issuedOn: string | null;
+  lines: { description: string; quantity: number; unitPaise: number; amountPaise: number }[];
+  taxablePaise: number;
+  gst: GstSplit;
+  totalPaise: number;
+  reason: string;
+  pdfFileId: Types.ObjectId | null;
+  createdBy: Types.ObjectId;
+  issuedBy: Types.ObjectId | null;
+  createdAt: Date;
+}
+
+/**
+ * A credit note (prompt 1b, R5): corrects an issued invoice without changing it. Its number comes
+ * from its own series (`CN`, same financial-year rule), taken only on issue; the tax split mirrors
+ * the invoice's (same rate, same kind, same place of supply). The college's record: kept on erasure.
+ */
+const creditNoteSchema = new Schema(
+  {
+    invoiceId: { type: Schema.Types.ObjectId, required: true },
+    number: { type: String, default: null },
+    fy: { type: String, default: null },
+    status: { type: String, enum: ['draft', 'issued', 'void'], default: 'draft', required: true },
+    issuedOn: { type: String, default: null },
+    lines: { type: [lineSchema], default: [] },
+    taxablePaise: { type: Number, required: true },
+    gst: { type: gstSchema, required: true },
+    totalPaise: { type: Number, required: true, min: 1 },
+    reason: { type: String, required: true, maxlength: 200 },
+    /** The rendered PDF (file purpose `invoice`); rendered again on download if missing. */
+    pdfFileId: { type: Schema.Types.ObjectId, default: null },
+    createdBy: { type: Schema.Types.ObjectId, required: true },
+    issuedBy: { type: Schema.Types.ObjectId, default: null },
+  },
+  baseSchemaOptions,
+);
+creditNoteSchema.index(
+  { tenantId: 1, number: 1 },
+  { unique: true, partialFilterExpression: { number: { $type: 'string' } } },
+);
+creditNoteSchema.index({ tenantId: 1, invoiceId: 1, status: 1 });
+creditNoteSchema.index({ tenantId: 1, createdAt: -1 });
+export const CreditNoteModel = defineTenantModel('CreditNote', creditNoteSchema);

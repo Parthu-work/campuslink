@@ -734,3 +734,103 @@ export function VoidDialog({
     </Dialog>
   );
 }
+
+/** Prompt 1b, R5: a credit note against an issued invoice (an amount before tax, and a reason). */
+export function CreditNoteDialog({
+  tenantId,
+  invoice,
+  onClose,
+  onSaved,
+}: {
+  tenantId: string;
+  invoice: InvoiceView;
+  onClose: () => void;
+  onSaved: Saved;
+}) {
+  const { t } = useTranslation();
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [reason, setReason] = useState('');
+  const [errors, setErrors] = useState<Errors>(noErrors);
+  const [saving, setSaving] = useState(false);
+  const left = invoice.totalPaise - invoice.creditedPaise;
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const unitPaise = toPaise(amount);
+    if (Number.isNaN(unitPaise) || unitPaise < 1) {
+      setErrors({ root: '', fields: { amount: t('pbilling.amountInvalid') } });
+      return;
+    }
+    setSaving(true);
+    setErrors(noErrors);
+    try {
+      onSaved(
+        await api.post<PlatformCollegeBillingView>(
+          `/platform/billing/${tenantId}/invoices/${invoice.id}/credit-notes`,
+          { lines: [{ description, quantity: 1, unitPaise }], reason },
+        ),
+      );
+      toast.success(t('pbilling.creditDrafted'));
+      onClose();
+    } catch (err) {
+      setErrors(saveErrors(err, t('errors.generic')));
+      setSaving(false);
+    }
+  };
+  return (
+    <Dialog
+      open
+      onOpenChange={(o) => !o && onClose()}
+      title={t('pbilling.creditTitle', { number: invoice.number ?? '' })}
+      description={t('pbilling.creditIntro', { left: rupees(left) })}
+    >
+      <form onSubmit={(e) => void onSubmit(e)} noValidate className="grid gap-4">
+        <FormError message={errors.root} />
+        <Field label={t('pbilling.creditLine')} error={errors.fields['lines.0.description']}>
+          {({ id, invalid }) => (
+            <Input
+              id={id}
+              aria-invalid={invalid}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          )}
+        </Field>
+        <Field
+          label={t('pbilling.creditAmount')}
+          hint={t('pbilling.creditAmountHint')}
+          error={errors.fields.amount ?? errors.fields['lines.0.unitPaise']}
+        >
+          {({ id, invalid, describedBy }) => (
+            <Input
+              id={id}
+              inputMode="decimal"
+              aria-invalid={invalid}
+              aria-describedby={describedBy}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          )}
+        </Field>
+        <Field label={t('pbilling.creditReason')} error={errors.fields.reason}>
+          {({ id, invalid }) => (
+            <Input
+              id={id}
+              aria-invalid={invalid}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          )}
+        </Field>
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" variant="primary" loading={saving}>
+            {t('pbilling.creditSave')}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}

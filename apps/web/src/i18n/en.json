@@ -4027,7 +4027,8 @@
       "total": "Total",
       "balance": "Balance",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "against": "Against invoice"
     },
     "status": {
       "draft": "Draft",
@@ -4074,7 +4075,15 @@
       "resume": "Résumé help",
       "interview": "Mock interviews",
       "copilot": "Copilot"
-    }
+    },
+    "creditNotes": "Credit notes",
+    "creditNotesIntro": "A credit note reduces what an invoice asks for. The invoice itself never changes.",
+    "creditStatus": {
+      "draft": "Draft",
+      "issued": "Issued",
+      "void": "Void"
+    },
+    "downloadCreditNamed": "Download credit note {{number}}"
   },
   "pbilling": {
     "title": "Billing",
@@ -4177,7 +4186,19 @@
       "bank": "Bank transfer",
       "online": "Online"
     },
-    "aiCost": "AI this month: about {{amount}}"
+    "aiCost": "AI this month: about {{amount}}",
+    "creditNew": "Credit note",
+    "creditTitle": "Credit note for {{number}}",
+    "creditIntro": "Up to {{left}} is left to credit on this invoice. GST is added as on the invoice.",
+    "creditLine": "What it corrects",
+    "creditAmount": "Amount before GST (₹)",
+    "creditAmountHint": "For example 7500 or 7,500.00",
+    "creditReason": "Reason (printed on the credit note)",
+    "creditSave": "Save draft",
+    "creditDrafted": "Credit note drafted. Issue it to give it a number.",
+    "creditIssued": "Credit note issued",
+    "creditVoided": "Draft credit note voided",
+    "amountInvalid": "Enter an amount in rupees"
   },
   "offline": {
     "updated": "Updated {{when}}",

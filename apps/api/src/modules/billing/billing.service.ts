@@ -14,7 +14,10 @@ import {
   istDay,
   mergeTerms,
   rupeesInWords,
+  CREDIT_NOTE_PREFIX,
   type AdminBillingView,
+  type CreditNoteView,
+  type creditNoteDraftBody,
   type BillingUsageView,
   type BillingWarning,
   type Buyer,
@@ -45,8 +48,10 @@ import type { FilesService } from '../files/files.service.js';
 import type { NotificationsService } from '../notifications/notifications.service.js';
 import type { UsersService } from '../users/users.service.js';
 import {
+  CreditNoteModel,
   InvoiceCounterModel,
   InvoiceModel,
+  type CreditNoteDoc,
   PaymentModel,
   PlanSettingModel,
   type InvoiceDoc,
@@ -101,6 +106,9 @@ const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.p
 const dayOrNull = (d: Date | null | undefined) => (d ? istDay(d) : null);
 const isDuplicate = (e: unknown) => (e as { code?: number }).code === 11000;
 const OPEN = ['issued', 'overdue'] as const;
+/** What is still owed on an invoice: total − payments − credit notes (never below zero). */
+const owed = (r: Pick<InvoiceDoc, 'totalPaise' | 'paidPaise' | 'creditedPaise'>) =>
+  Math.max(0, r.totalPaise - r.paidPaise - (r.creditedPaise ?? 0));
 
 const toPayment = (p: PaymentDoc): PaymentView => ({
   id: String(p._id),
@@ -212,6 +220,7 @@ export class BillingService {
       readOnly: !!t.billing?.readOnlyAt,
       readOnlySince: t.billing?.readOnlyAt ? t.billing.readOnlyAt.toISOString() : null,
       invoices: await this.invoices(opts.drafts ?? false),
+      creditNotes: await this.creditNotes(opts.drafts ?? false),
       payOnline: this.d.payments.available,
       buyer: t.billing?.buyer ?? null,
     };
@@ -278,7 +287,8 @@ export class BillingService {
       gst: { ...r.gst },
       totalPaise: r.totalPaise,
       paidPaise: r.paidPaise,
-      balancePaise: r.status === 'void' ? 0 : r.totalPaise - r.paidPaise,
+      creditedPaise: r.creditedPaise ?? 0,
+      balancePaise: r.status === 'void' ? 0 : owed(r),
       totalInWords: rupeesInWords(r.totalPaise),
       sacCode: r.sacCode,
       buyer,
@@ -362,7 +372,16 @@ export class BillingService {
         {
           $group: {
             _id: '$tenantId',
-            outstanding: { $sum: { $subtract: ['$totalPaise', '$paidPaise'] } },
+            outstanding: {
+              $sum: {
+                $max: [
+                  0,
+                  {
+                    $subtract: ['$totalPaise', { $add: ['$paidPaise', { $ifNull: ['$creditedPaise', 0] }] }],
+                  },
+                ],
+              },
+            },
             overdue: { $sum: { $cond: [{ $eq: ['$status', 'overdue'] }, 1, 0] } },
           },
         },
@@ -503,8 +522,7 @@ export class BillingService {
   }
 
   /** The next number in the seller's series for a financial year (unique index; retried on a race). */
-  async nextNumber(fy: string): Promise<string> {
-    const prefix = this.d.seller.prefix;
+  async nextNumber(fy: string, prefix = this.d.seller.prefix): Promise<string> {
     for (let attempt = 0; ; attempt++) {
       try {
         const c = await InvoiceCounterModel.findOneAndUpdate(
@@ -667,6 +685,254 @@ export class BillingService {
     return this.collegeView(id);
   }
 
+  // ── Credit notes (prompt 1b, R5) ─────────────────────────────
+
+  private async creditNotes(drafts: boolean): Promise<CreditNoteView[]> {
+    const rows = await CreditNoteModel.find(drafts ? {} : { status: 'issued' })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean<CreditNoteDoc[]>();
+    const invoices = await InvoiceModel.find({ _id: { $in: rows.map((r) => r.invoiceId) } })
+      .select('number')
+      .lean<{ _id: Types.ObjectId; number: string | null }[]>();
+    const numberOf = new Map(invoices.map((i) => [String(i._id), i.number ?? '']));
+    return rows.map((r) => ({
+      id: String(r._id),
+      invoiceId: String(r.invoiceId),
+      invoiceNumber: numberOf.get(String(r.invoiceId)) ?? '',
+      number: r.number,
+      status: r.status,
+      issuedOn: r.issuedOn,
+      lines: r.lines.map((l) => ({ ...l })),
+      taxablePaise: r.taxablePaise,
+      gst: { ...r.gst },
+      totalPaise: r.totalPaise,
+      totalInWords: rupeesInWords(r.totalPaise),
+      reason: r.reason,
+      hasPdf: r.status === 'issued',
+    }));
+  }
+
+  /**
+   * The tax on a credit note mirrors its invoice: the same rate and the same kind (intra-state,
+   * inter-state or none) whatever has changed since, so the two always net off.
+   */
+  private creditTotals(inv: InvoiceDoc, lines: { quantity: number; unitPaise: number }[]) {
+    const taxablePaise = lines.reduce((s, l) => s + l.quantity * l.unitPaise, 0);
+    const gst = gstSplit({
+      taxablePaise,
+      ratePercent: inv.gst.ratePercent,
+      registered: inv.gst.kind !== 'none',
+      // Two codes that are equal (intra) or not (inter): only the kind matters here.
+      sellerState: '00',
+      placeOfSupply: inv.gst.kind === 'intra' ? '00' : '01',
+    });
+    return {
+      taxablePaise,
+      gst: { ...gst, stateTaxName: inv.gst.stateTaxName },
+      totalPaise: taxablePaise + gst.taxPaise,
+    };
+  }
+
+  /** What a new credit note may still take off an invoice (its total less issued credit notes). */
+  private creditLeft(inv: InvoiceDoc) {
+    return inv.totalPaise - (inv.creditedPaise ?? 0);
+  }
+
+  async draftCreditNote(
+    actorId: string,
+    id: string,
+    invoiceId: string,
+    body: z.output<typeof creditNoteDraftBody>,
+    meta: RequestMetaLite,
+  ) {
+    const t = await this.college(id);
+    const cn = await runInTenant(t._id, async () => {
+      const inv = await InvoiceModel.findOne({
+        _id: invoiceId,
+        status: { $in: ['issued', 'overdue', 'paid'] },
+      }).lean<InvoiceDoc>();
+      if (!inv?.number) throw notFound('Issued invoice');
+      const lines = body.lines.map((l) => ({ ...l, amountPaise: l.quantity * l.unitPaise }));
+      const totals = this.creditTotals(inv, lines);
+      if (totals.totalPaise > this.creditLeft(inv))
+        throw conflict('That is more than what is left of the invoice after earlier credit notes');
+      return CreditNoteModel.create({
+        invoiceId: inv._id,
+        lines,
+        ...totals,
+        reason: body.reason,
+        createdBy: new Types.ObjectId(actorId),
+      });
+    });
+    await audit.record(
+      {
+        action: 'platform.credit_note_drafted',
+        actorId,
+        targetType: 'credit_note',
+        targetId: String(cn._id),
+        meta: { tenantId: id, invoiceId },
+      },
+      meta,
+    );
+    return this.collegeView(id);
+  }
+
+  /** A draft that will not be issued is voided (kept, never numbered). */
+  async voidCreditNote(actorId: string, id: string, creditNoteId: string, meta: RequestMetaLite) {
+    const t = await this.college(id);
+    const r = await runInTenant(t._id, () =>
+      CreditNoteModel.updateOne({ _id: creditNoteId, status: 'draft' }, { $set: { status: 'void' } }),
+    );
+    if (!r.modifiedCount) throw notFound('Draft credit note');
+    await audit.record(
+      {
+        action: 'platform.credit_note_voided',
+        actorId,
+        targetType: 'credit_note',
+        targetId: creditNoteId,
+        meta: { tenantId: id },
+      },
+      meta,
+    );
+    return this.collegeView(id);
+  }
+
+  /**
+   * Issues a draft credit note: claims it, takes its amount off the invoice's balance (never past
+   * what is left after earlier credit notes), gives it the next `CN` number and renders the PDF. A
+   * credit note that settles the invoice ends read-only like a payment. Issuing twice is a no-op.
+   */
+  async issueCreditNote(
+    actorId: string,
+    id: string,
+    creditNoteId: string,
+    meta: RequestMetaLite,
+    now = new Date(),
+  ) {
+    const t = await this.college(id);
+    const issued = await runInTenant(t._id, async () => {
+      const current = await CreditNoteModel.findOne({ _id: creditNoteId }).lean<CreditNoteDoc>();
+      if (current?.status === 'issued') return null;
+      if (current?.status !== 'draft') throw notFound('Draft credit note');
+      const claimed = await CreditNoteModel.findOneAndUpdate(
+        { _id: creditNoteId, status: 'draft' },
+        {
+          $set: { status: 'issued', issuedOn: istDay(now), issuedBy: new Types.ObjectId(actorId) },
+        },
+        { returnDocument: 'after' },
+      ).lean<CreditNoteDoc>();
+      if (!claimed) return null; // issued by a concurrent request
+      const undoClaim = () =>
+        CreditNoteModel.updateOne(
+          { _id: creditNoteId },
+          { $set: { status: 'draft', issuedOn: null, issuedBy: null } },
+        );
+      // The cap, atomically: the invoice's credited total never exceeds its total.
+      const inv = await InvoiceModel.findOneAndUpdate(
+        {
+          _id: claimed.invoiceId,
+          status: { $in: ['issued', 'overdue', 'paid'] },
+          $expr: {
+            $lte: [{ $add: [{ $ifNull: ['$creditedPaise', 0] }, claimed.totalPaise] }, '$totalPaise'],
+          },
+        },
+        { $inc: { creditedPaise: claimed.totalPaise }, $set: { payLink: null } },
+        { returnDocument: 'after' },
+      ).lean<InvoiceDoc>();
+      if (!inv) {
+        await undoClaim();
+        throw conflict('That is more than what is left of the invoice after earlier credit notes');
+      }
+      let number: string;
+      const fy = financialYearOf(now);
+      try {
+        number = await this.nextNumber(fy, CREDIT_NOTE_PREFIX);
+      } catch (e) {
+        await InvoiceModel.updateOne({ _id: inv._id }, { $inc: { creditedPaise: -claimed.totalPaise } });
+        await undoClaim();
+        throw e;
+      }
+      await CreditNoteModel.updateOne({ _id: creditNoteId }, { $set: { number, fy } });
+      const cn = { ...claimed, number, fy };
+      if (owed(inv) === 0 && (OPEN as readonly string[]).includes(inv.status)) {
+        await InvoiceModel.updateOne({ _id: inv._id }, { $set: { status: 'paid', paidAt: now } });
+        await this.refreshReadOnly(t, now);
+      }
+      await this.renderCreditNote(cn, inv).catch((err: unknown) =>
+        this.d.logger.warn(
+          { err, creditNoteId },
+          'credit note pdf render failed; it will render on download',
+        ),
+      );
+      await audit.record(
+        {
+          action: 'billing.credit_note_issued',
+          targetType: 'credit_note',
+          targetId: creditNoteId,
+          meta: { number, invoice: inv.number, amountPaise: cn.totalPaise },
+        },
+        meta,
+      );
+      return cn;
+    });
+    if (issued)
+      await audit.record(
+        {
+          action: 'platform.credit_note_issued',
+          actorId,
+          targetType: 'credit_note',
+          targetId: creditNoteId,
+          meta: { tenantId: id, number: issued.number },
+        },
+        meta,
+      );
+    return this.collegeView(id);
+  }
+
+  private async renderCreditNote(cn: CreditNoteDoc, inv: InvoiceDoc): Promise<Buffer> {
+    if (!cn.number || !cn.issuedOn || !inv.number || !inv.issuedOn || !inv.seller || !inv.buyer)
+      throw notFound('Credit note');
+    const pdf = await renderInvoicePdf({
+      number: cn.number,
+      issuedOn: cn.issuedOn,
+      registered: inv.gst.kind !== 'none',
+      seller: inv.seller,
+      buyer: inv.buyer,
+      lines: cn.lines,
+      sacCode: inv.sacCode,
+      taxablePaise: cn.taxablePaise,
+      gst: cn.gst,
+      totalPaise: cn.totalPaise,
+      totalInWords: rupeesInWords(cn.totalPaise),
+      notes: null,
+      bankDetails: null,
+      creditNote: { invoiceNumber: inv.number, invoiceDate: inv.issuedOn, reason: cn.reason },
+    });
+    const stored = await this.d.files.storeInvoice(pdf);
+    await CreditNoteModel.updateOne({ _id: cn._id, pdfFileId: null }, { $set: { pdfFileId: stored.id } });
+    return pdf;
+  }
+
+  /** An issued credit note's PDF, in the current college. */
+  async creditNotePdf(creditNoteId: string): Promise<{ data: Buffer; name: string }> {
+    const cn = await CreditNoteModel.findOne({ _id: creditNoteId, status: 'issued' }).lean<CreditNoteDoc>();
+    if (!cn?.number) throw notFound('Credit note');
+    let data: Buffer;
+    if (cn.pdfFileId) data = await this.d.files.read(String(cn.pdfFileId));
+    else {
+      const inv = await InvoiceModel.findOne({ _id: cn.invoiceId }).lean<InvoiceDoc>();
+      if (!inv) throw notFound('Credit note');
+      data = await this.renderCreditNote(cn, inv);
+    }
+    return { data, name: `${cn.number.replaceAll('/', '-')}.pdf` };
+  }
+
+  async platformCreditNotePdf(id: string, creditNoteId: string) {
+    const t = await this.college(id);
+    return runInTenant(t._id, () => this.creditNotePdf(creditNoteId));
+  }
+
   // ── Payments ─────────────────────────────
 
   /** D5's primary flow: the platform owner records a bank transfer it has seen arrive. */
@@ -684,7 +950,7 @@ export class BillingService {
         status: { $in: [...OPEN] },
       }).lean<InvoiceDoc>();
       if (!inv) throw notFound('Open invoice');
-      if (body.amountPaise > inv.totalPaise - inv.paidPaise)
+      if (body.amountPaise > owed(inv))
         throw new AppError(409, ErrorCode.CONFLICT, 'That is more than the invoice’s balance');
       try {
         await PaymentModel.create({
@@ -732,7 +998,7 @@ export class BillingService {
       { returnDocument: 'after' },
     ).lean<InvoiceDoc>();
     if (!after) return;
-    if (after.paidPaise >= after.totalPaise && after.status !== 'paid' && after.status !== 'void') {
+    if (owed(after) === 0 && after.status !== 'paid' && after.status !== 'void') {
       await InvoiceModel.updateOne(
         { _id: inv._id },
         { $set: { status: 'paid', paidAt: new Date(), payLink: null } },
@@ -754,8 +1020,12 @@ export class BillingService {
     if (inv.payLink) return { url: inv.payLink.url };
     const link = await this.d.payments.createLink({
       // A new link after a part payment needs a new reference (they are unique per account).
-      reference: inv.paidPaise > 0 ? `${inv.number}-${inv.paidPaise}` : inv.number,
-      amountPaise: inv.totalPaise - inv.paidPaise,
+      reference: inv.creditedPaise
+        ? `${inv.number}-${inv.paidPaise}-${inv.creditedPaise}`
+        : inv.paidPaise > 0
+          ? `${inv.number}-${inv.paidPaise}`
+          : inv.number,
+      amountPaise: owed(inv),
       description: `Invoice ${inv.number}`,
       payerName: inv.buyer?.name ?? t.branding.displayName,
       callbackUrl: this.d.tenantUrl(t, '/admin/billing?paid=1'),
@@ -859,7 +1129,7 @@ export class BillingService {
       for (const admin of admins)
         await this.d.notifications.notify(admin, type, {
           number: inv.number,
-          amount: formatRupees(inv.totalPaise - inv.paidPaise),
+          amount: formatRupees(owed(inv)),
           due: inv.dueOn,
         });
     }

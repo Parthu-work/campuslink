@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import {
   ErrorCode,
+  creditNoteDraftBody,
+  creditNoteParams,
+  ownCreditNoteParams,
   invoiceDraftBody,
   invoiceParams,
   ownInvoiceParams,
@@ -196,6 +199,67 @@ export function billingRoutes(svc: BillingService, payments: PaymentProvider): A
       handler: async ({ params }) => pdf(await svc.platformPdf(params.id, params.invoiceId)),
     },
 
+    // Credit notes (prompt 1b, R5): correct an issued invoice without changing it.
+    {
+      method: 'post',
+      path: '/platform/billing/:id/invoices/:invoiceId/credit-notes',
+      tag: 'Billing',
+      summary: 'Draft a credit note against an issued invoice (lines and a reason)',
+      access: platform,
+      scope: 'platform',
+      limiter: 'adminWrite',
+      idempotent: true,
+      params: invoiceParams,
+      body: creditNoteDraftBody,
+      handler: async ({ req, params, body }) => ({
+        status: 201,
+        data: await svc.draftCreditNote(
+          authOf(req).userId,
+          params.id,
+          params.invoiceId,
+          body,
+          requestMeta(req),
+        ),
+      }),
+    },
+    {
+      method: 'post',
+      path: '/platform/billing/:id/credit-notes/:creditNoteId/issue',
+      tag: 'Billing',
+      summary: 'Issue a draft credit note: its number from the CN series, and its PDF',
+      access: platform,
+      scope: 'platform',
+      limiter: 'adminWrite',
+      idempotent: true,
+      params: creditNoteParams,
+      handler: async ({ req, params }) => ({
+        data: await svc.issueCreditNote(authOf(req).userId, params.id, params.creditNoteId, requestMeta(req)),
+      }),
+    },
+    {
+      method: 'post',
+      path: '/platform/billing/:id/credit-notes/:creditNoteId/void',
+      tag: 'Billing',
+      summary: 'Void a draft credit note (it is kept, never numbered)',
+      access: platform,
+      scope: 'platform',
+      limiter: 'adminWrite',
+      params: creditNoteParams,
+      handler: async ({ req, params }) => ({
+        data: await svc.voidCreditNote(authOf(req).userId, params.id, params.creditNoteId, requestMeta(req)),
+      }),
+    },
+    {
+      method: 'get',
+      path: '/platform/billing/:id/credit-notes/:creditNoteId/pdf',
+      tag: 'Billing',
+      summary: 'Download an issued credit note (PDF)',
+      access: platform,
+      scope: 'platform',
+      params: creditNoteParams,
+      handler: async ({ params }) => pdf(await svc.platformCreditNotePdf(params.id, params.creditNoteId)),
+    },
+
     // ── The college ─────────────────────────────
     {
       method: 'get',
@@ -221,6 +285,15 @@ export function billingRoutes(svc: BillingService, payments: PaymentProvider): A
       access: college,
       params: ownInvoiceParams,
       handler: async ({ params }) => pdf(await svc.pdf(params.invoiceId)),
+    },
+    {
+      method: 'get',
+      path: '/admin/billing/credit-notes/:creditNoteId/pdf',
+      tag: 'Billing',
+      summary: 'Download one of our credit notes (PDF)',
+      access: college,
+      params: ownCreditNoteParams,
+      handler: async ({ params }) => pdf(await svc.creditNotePdf(params.creditNoteId)),
     },
     {
       method: 'post',

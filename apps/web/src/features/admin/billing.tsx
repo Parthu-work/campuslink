@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { Download, ExternalLink, Lock } from 'lucide-react';
-import type { InvoiceView } from '@campuslink/shared';
+import type { CreditNoteView, InvoiceView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { Button } from '../../components/ui/button';
 import { ErrorState } from '../../components/ui/error-state';
@@ -36,6 +36,19 @@ export function AdminBilling() {
       saveBlob(
         await apiBlob(`/admin/billing/invoices/${inv.id}/pdf`),
         `${(inv.number ?? inv.id).replaceAll('/', '-')}.pdf`,
+      );
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
+    } finally {
+      setBusy('');
+    }
+  };
+  const downloadCredit = async (note: CreditNoteView) => {
+    setBusy(`cn-${note.id}`);
+    try {
+      saveBlob(
+        await apiBlob(`/admin/billing/credit-notes/${note.id}/pdf`),
+        `${(note.number ?? note.id).replaceAll('/', '-')}.pdf`,
       );
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
@@ -245,6 +258,51 @@ export function AdminBilling() {
             )}
             <p className="text-caption text-fg-3">{t('billing.payHint')}</p>
           </section>
+
+          {v.creditNotes.length > 0 && (
+            <section className="grid gap-3">
+              <h2 className="text-heading font-semibold">{t('billing.creditNotes')}</h2>
+              <p className="text-meta text-fg-2">{t('billing.creditNotesIntro')}</p>
+              <Table label={t('billing.creditNotes')}>
+                <THead>
+                  <tr>
+                    <Th>{t('billing.col.number')}</Th>
+                    <Th>{t('billing.col.against')}</Th>
+                    <Th className="text-right">{t('billing.col.total')}</Th>
+                    <Th>
+                      <span className="sr-only">{t('billing.col.actions')}</span>
+                    </Th>
+                  </tr>
+                </THead>
+                <tbody>
+                  {v.creditNotes.map((note) => (
+                    <tr key={note.id}>
+                      <Td className="whitespace-nowrap">
+                        <span className="font-mono">{note.number}</span>
+                        <span className="block text-caption text-fg-3">{note.reason}</span>
+                      </Td>
+                      <Td className="whitespace-nowrap font-mono">{note.invoiceNumber}</Td>
+                      <TdNum>{rupees(note.totalPaise)}</TdNum>
+                      <Td>
+                        <div className="flex justify-end">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            loading={busy === `cn-${note.id}`}
+                            onClick={() => void downloadCredit(note)}
+                            aria-label={t('billing.downloadCreditNamed', { number: note.number ?? '' })}
+                            title={t('billing.downloadCreditNamed', { number: note.number ?? '' })}
+                          >
+                            <Download className="size-4" aria-hidden />
+                          </Button>
+                        </div>
+                      </Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </section>
+          )}
 
           <section className="grid gap-1">
             <h2 className="text-heading font-semibold">{t('billing.billedTo')}</h2>
