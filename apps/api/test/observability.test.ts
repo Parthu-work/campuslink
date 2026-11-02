@@ -104,10 +104,25 @@ describe('error reports carry no personal data', () => {
     expect(maskRoute(nasty.route ?? '')).toBe('/profiles/:id');
   });
 
+  /**
+   * Prompt 1b, R11: these two tests failed now and then (CI on 2f8f71f) because the phone pattern
+   * matched the random event id or the timestamp (`…91681334226…`), not anything personal. The
+   * id and the clock are now fixed, and the check runs on what the report put in, not on them.
+   */
+  const FIXED = { now: new Date('2026-01-01T00:00:00Z'), id: 'e'.repeat(32) };
+  const withoutIds = (json: string) =>
+    json.replace(/"(event_id|sent_at|timestamp)":("[^"]*"|[d.]+)/g, '"$1":0');
+
+  it('the check ignores ids and times that merely look like numbers (R11 regression)', () => {
+    const e = sentryEvent(nasty, 'test', new Date(1_791_234_567_890), '91'.padEnd(32, '0123456789'));
+    expect(JSON.stringify(e)).toMatch(PERSONAL); // what used to fail the test
+    expect(withoutIds(JSON.stringify(e))).not.toMatch(PERSONAL);
+  });
+
   it('the Sentry event holds only the type, scrubbed message, request id, route and college', () => {
-    const e = sentryEvent(nasty, 'test');
+    const e = sentryEvent(nasty, 'test', FIXED.now, FIXED.id);
     const json = JSON.stringify(e);
-    expect(json).not.toMatch(PERSONAL);
+    expect(withoutIds(json)).not.toMatch(PERSONAL);
     expect(e.tags).toEqual({ kind: 'api', request_id: 'req-1', route: '/profiles/:id', tenant: 'dpit' });
     expect(e.exception.values[0]?.type).toBe('TypeError');
   });
@@ -128,12 +143,14 @@ describe('error reports carry no personal data', () => {
         sent.push({ url, body: String(opts?.body ?? ''), hosts: opts?.allowHosts });
         return { status: 200, contentType: 'application/json', body: Buffer.from('{}'), finalUrl: url };
       },
+      { now: () => FIXED.now, eventId: () => FIXED.id },
     );
     await reporter.report({ ...nasty, kind: 'web', userHash: 'a'.repeat(64) });
     expect(sent).toHaveLength(1);
     expect(sent[0]?.url).toBe('https://errors.example.org/api/42/envelope/');
     expect(sent[0]?.hosts).toEqual(['errors.example.org']);
-    expect(sent[0]?.body).not.toMatch(PERSONAL);
+    expect(sent[0]?.body).toContain(FIXED.id);
+    expect(withoutIds(sent[0]?.body ?? '')).not.toMatch(PERSONAL);
     expect(sent[0]?.body.split('\n')).toHaveLength(3);
   });
 

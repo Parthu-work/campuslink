@@ -87,10 +87,15 @@ export function parseDsn(dsn: string): { endpoint: string; key: string; host: st
 }
 
 /** The Sentry event built from a cleaned report (exported for the payload test). */
-export function sentryEvent(r: ErrorReport, environment: string, now = new Date()) {
+export function sentryEvent(
+  r: ErrorReport,
+  environment: string,
+  now = new Date(),
+  eventId = randomUUID().replace(/-/g, ''),
+) {
   const c = clean(r);
   return {
-    event_id: randomUUID().replace(/-/g, ''),
+    event_id: eventId,
     timestamp: now.getTime() / 1000,
     platform: c.kind === 'web' ? 'javascript' : 'node',
     level: 'error',
@@ -117,15 +122,18 @@ export class SentryErrorReporter implements ErrorReporter {
     private readonly environment: string,
     private readonly logger: Logger,
     private readonly send: Send = safeFetch,
+    /** The clock and event ids (tests pass fixed ones so the payload is deterministic). */
+    private readonly make: { now?: () => Date; eventId?: () => string } = {},
   ) {
     this.dsn = parseDsn(dsn);
   }
 
   async report(r: ErrorReport): Promise<void> {
     metrics.serverErrors.inc({ kind: r.kind });
-    const event = sentryEvent(r, this.environment);
+    const now = this.make.now?.() ?? new Date();
+    const event = sentryEvent(r, this.environment, now, this.make.eventId?.());
     const body = [
-      JSON.stringify({ event_id: event.event_id, sent_at: new Date().toISOString() }),
+      JSON.stringify({ event_id: event.event_id, sent_at: now.toISOString() }),
       JSON.stringify({ type: 'event', content_type: 'application/json' }),
       JSON.stringify(event),
     ].join('\n');
