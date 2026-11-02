@@ -17,17 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     services:
-      # API tests (incl. the mandatory tenant-isolation and permission suites) run against real MongoDB.
-      mongo:
-        image: mongo:8.0
-        ports: ['27017:27017']
-        # Kernels 6.19 to 7.0.13 (current runners) make mongod refuse to start (SERVER-121912) unless
-        # glibc owns rseq, which keeps tcmalloc off the affected kernel path.
-        env:
-          GLIBC_TUNABLES: glibc.pthread.rseq=1
-        options: >-
-          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
-          --health-interval 5s --health-timeout 5s --health-retries 20
       redis:
         image: redis:7.4-alpine
         ports: ['6379:6379']
@@ -42,6 +31,19 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # API tests (incl. the mandatory tenant-isolation and permission suites) run against real
+      # MongoDB. Started as a quiet step rather than a service, as in e2e: a service container prints
+      # its whole log at teardown, which buries the test output. Kernels 6.19 to 7.0.13 (current
+      # runners) make mongod refuse to start (SERVER-121912) unless glibc owns rseq.
+      - name: Start MongoDB
+        run: |
+          docker run -d --name mongo -p 27017:27017 -e GLIBC_TUNABLES=glibc.pthread.rseq=1 mongo:8.0 --quiet
+          for i in $(seq 1 40); do
+            docker exec mongo mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' && exit 0
+            sleep 2
+          done
+          docker logs mongo | tail -50
+          exit 1
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
