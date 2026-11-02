@@ -65,6 +65,49 @@ The load generator shares the machine, so treat these figures as a regression ba
   - the post view returned to the author.
 - **Sign-in** is argon2id at 19 MiB and t=2 by design (ASVS). About 86 per second per process is plenty, and the login limiter caps it per IP and per account long before that.
 
+## Results (prompt 1b)
+
+**Date:** 2 November 2026. **Machine:** a laptop, Intel Core i7-10510U at 1.80 GHz (4 cores, 8 threads), 16 GB, Windows 11; Node 24.14; MongoDB 8.0 as a single-node replica set and Redis 7.4 in Docker Desktop; MongoDB's data on tmpfs (see below). One API process through `tsx`, and the load generator on the same machine. The database: 1,000 members (100 with phones), 5,000 posts, 20,000 notifications, three batches of 1,000 graduates with registrations and offers, and an open drive.
+
+| Scenario                                           | Req/s | p50 ms | p90 ms | p99 ms | Max ms | Requests | Non-2xx | Errors |
+| -------------------------------------------------- | ----: | -----: | -----: | -----: | -----: | -------: | ------: | -----: |
+| Phone sign-in: start + verify (console SMS)        |    41 |    234 |    295 |    315 |    315 |      100 |       0 |      0 |
+| Drive registration: 500 at once                    |    59 |   8205 |   8353 |   8367 |   8372 |      500 |       0 |      0 |
+| Drive registration: the same 50 again (refused)    |   109 |    445 |    452 |    458 |    458 |       50 |       0 |      0 |
+| GET /tenant (public)                               |  1782 |     27 |     35 |     47 |     77 |    35632 |       0 |      0 |
+| GET /me                                            |   210 |    231 |    275 |    351 |    475 |     4196 |       0 |      0 |
+| GET /feed (For you)                                |    50 |    964 |   1086 |   1157 |   1180 |      998 |       0 |      0 |
+| GET /feed (For you), 10 connections                |    52 |    185 |    222 |    272 |    638 |     1030 |       0 |      0 |
+| GET /feed?tab=following                            |   131 |    366 |    471 |    572 |    633 |     2610 |       0 |      0 |
+| GET /directory (filter)                            |   182 |    277 |    315 |    374 |    402 |     3635 |       0 |      0 |
+| GET /directory?q= (search)                         |   268 |    185 |    219 |    307 |    443 |     5367 |       0 |      0 |
+| GET /notifications                                 |   243 |    205 |    235 |    295 |    356 |     4850 |       0 |      0 |
+| GET /roadmaps                                      |   147 |    338 |    380 |    441 |    524 |     2935 |       0 |      0 |
+| GET /jobs                                          |   227 |    216 |    250 |    490 |    562 |     4544 |       0 |      0 |
+| GET /events                                        |   271 |    182 |    207 |    275 |    390 |     5426 |       0 |      0 |
+| POST /posts (write)                                |    75 |    607 |    894 |   1316 |   1413 |     1503 |       0 |      0 |
+| POST /auth/login (argon2id)                        |    37 |    248 |    348 |    941 |    950 |      741 |       0 |      0 |
+| GET NBA SAR placement report (3 × 1,000 graduates) |    26 |    376 |    486 |    730 |    993 |      523 |       0 |      0 |
+| GET NIRF median salary report                      |    25 |    394 |    501 |    682 |    826 |      497 |       0 |      0 |
+| GET reports dashboard                              |    11 |    923 |   1098 |   1486 |   1504 |      210 |       0 |      0 |
+
+**The drive burst stored exactly 500**, and the 50 second taps were all refused (409). The unique index `one_per_drive` held in every run.
+
+### What the runs found
+
+- **The load test could not start its API on Windows:** it spawned `pnpm`, which is `pnpm.cmd` there. It now runs `tsx`'s CLI through Node directly, which also lets it stop the API cleanly. Fixed in `loadtest.ts`.
+- **On the compose MongoDB (data on Docker Desktop's virtual disk) the first run stalled:** the database stopped answering during the report scenarios (`MongoServerSelectionError`, 20 errors each, every dashboard request failed). The figures above use a replica set with its data on tmpfs (`docker run … --tmpfs /data/db mongo:8.0 --replSet rs0`, then `MONGODB_URI=mongodb://127.0.0.1:27019/campuslink?replicaSet=rs0&directConnection=true pnpm loadtest`). This is a Windows development setup limit, not the API.
+- **Two runs stored 473 and 470 of 500 registrations.** The burst now records why a registration fails. In the run that logged it, every request that got an HTTP response got 201, and the number stored equalled the number accepted: the missing ones never reached the API (their connections failed when 500 opened at once; Windows queues far fewer pending connections than Linux). A registration path that lost writes would store fewer than it accepted. The third run had no connection failures and stored all 500.
+
+### Compared with 2026-10-16
+
+Every scenario is slower here, by a similar factor: 1.5 to 1.9 times for most routes, including `GET /tenant`, which does almost no database work. That is the machine (a 1.8 GHz laptop CPU on Windows and Docker Desktop against a 2.1 GHz Xeon on Linux). Two scenarios are more than twice as slow:
+
+- **`POST /auth/login` (86 → 37 req/s):** argon2id is pure CPU, so it slows the most on a slower CPU. Unchanged code.
+- **`GET /me` (501 → 210 req/s):** the machine, plus more work since 16 October: `/me` now also reads the member's notice state (B14, one consent query) and more fields. Still about 6 times the busy-minute estimate below, per process.
+
+The reports (new since 16 October) stay under 2 s at p99 even at 50 connections: NBA SAR 0.73 s, NIRF 0.68 s, the dashboard 1.49 s. Nothing needed profiling.
+
 ## Changes made from the results
 
 - **For You ranks on a projection, then loads only the page.** Before, it fetched 400 full post documents (bodies up to 3,000 characters, media, polls) to rank them. Now `PostsService.rankingCandidates()` selects only the ranking fields, and `byIds()` loads the 15 posts on the page.

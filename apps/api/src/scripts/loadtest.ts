@@ -10,6 +10,7 @@
  * Everything here is demo data (CLAUDE.md: never invent real people).
  */
 import { spawn, type ChildProcess } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { request } from 'node:http';
 import { setTimeout as sleep } from 'node:timers/promises';
 import autocannon from 'autocannon';
@@ -289,7 +290,9 @@ async function seed(): Promise<{ members: Member[]; tenantId: Types.ObjectId; dr
 }
 
 function startApi(): ChildProcess {
-  const child = spawn('pnpm', ['exec', 'tsx', 'src/server.ts'], {
+  // Node runs tsx's CLI directly: no shell, so it works on Windows (no pnpm.cmd) and kill() stops the API.
+  const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'));
+  const child = spawn(process.execPath, [tsxCli, 'src/server.ts'], {
     env: {
       ...process.env,
       NODE_ENV: 'development',
@@ -560,6 +563,8 @@ async function main() {
     // 500 students register for one drive at the same moment (B15): each once, none lost.
     const burstStudents = members.filter((m) => m.roles.includes('STUDENT')).slice(0, DRIVE_BURST);
     const burstTokens: string[] = [];
+    /** Why a registration in the burst was not created (status and error code), to explain a shortfall. */
+    const burstFailures = new Map<string, number>();
     await burst('(sign-in for the drive burst)', burstStudents.length, 20, async (i) => {
       burstTokens[i] = await signIn((burstStudents[i] as Member).email);
       return true;
@@ -570,7 +575,18 @@ async function main() {
           `/placements/drives/${String(driveId)}/register`,
           {},
           { authorization: `Bearer ${burstTokens[i] ?? ''}`, 'idempotency-key': `burst-${i}-${Date.now()}` },
-        );
+        ).catch((e: unknown) => {
+          // No response at all (the connection failed): recorded, so a shortfall is explained.
+          const k = `no response: ${(e as { code?: string; message?: string }).code ?? (e as Error).message}`;
+          burstFailures.set(k, (burstFailures.get(k) ?? 0) + 1);
+          return null;
+        });
+        if (!r) return false;
+        if (r.status !== 201) {
+          const code = (r.body as { error?: { code?: string } })?.error?.code ?? '';
+          const k = `${r.status} ${code}`;
+          burstFailures.set(k, (burstFailures.get(k) ?? 0) + 1);
+        }
         return r.status === 201;
       }),
     );
@@ -591,6 +607,8 @@ async function main() {
     );
     await mongoose.disconnect();
     console.warn(`Drive registrations stored: ${registered} (expected ${DRIVE_BURST})`);
+    if (burstFailures.size)
+      console.warn(`Burst responses other than 201: ${JSON.stringify(Object.fromEntries(burstFailures))}`);
     if (registered !== DRIVE_BURST) process.exitCode = 1;
     for (const s of scenarios) {
       const row = await run(s);
