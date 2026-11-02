@@ -91,8 +91,11 @@ describe('socket authentication', () => {
   });
 
   it('disconnects when the access token expires', async () => {
+    // Prompt 1b, R11: a 1-second token could expire before the socket connected (JWT expiry is in
+    // whole seconds, and a busy machine is slow), so the handshake was refused instead. The token
+    // now lives a minute, and the gateway's clock is moved to just before its expiry.
     const env = loadEnv({ NODE_ENV: 'test' });
-    const short = new TokenService(env.JWT_ACCESS_SECRET, env.JWT_TICKET_SECRET, 1);
+    const short = new TokenService(env.JWT_ACCESS_SECRET, env.JWT_TICKET_SECRET, 60);
     const claims = decodeJwt(mentee.token);
     const token = await short.signAccess({
       sub: String(claims.sub),
@@ -100,10 +103,17 @@ describe('socket authentication', () => {
       sid: String(claims.sid),
       ver: Number(claims.ver),
     });
-    const s = connect(A.host, token);
-    await connected(s);
-    const reason = await new Promise<string>((r) => s.once('disconnect', r));
-    expect(reason).toBe('io server disconnect');
+    const exp = Number(decodeJwt(token).exp) * 1000;
+    gateway.now = () => exp - 300;
+    try {
+      const s = connect(A.host, token);
+      // Listening before the connection completes, so a quick disconnect is never missed.
+      const gone = new Promise<string>((r) => s.once('disconnect', r));
+      await connected(s);
+      expect(await gone).toBe('io server disconnect');
+    } finally {
+      gateway.now = () => Date.now();
+    }
   });
 
   it('disconnects a member who gets suspended', async () => {

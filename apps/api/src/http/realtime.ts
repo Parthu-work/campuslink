@@ -37,6 +37,9 @@ export class RealtimeGateway {
   private io: RealtimeServer | null = null;
   readonly hooks: RealtimeHooks = {};
 
+  /** The clock the expiry disconnect counts from (tests move it; prompt 1b, R11). */
+  now: () => number = () => Date.now();
+
   constructor(
     private readonly deps: {
       tokens: TokenService;
@@ -96,7 +99,7 @@ export class RealtimeGateway {
     const { expiresAt, ...state } = auth;
     socket.data.tenant = tenant;
     socket.data.auth = state;
-    const ms = expiresAt - Date.now();
+    const ms = expiresAt - this.now();
     const timer = setTimeout(() => socket.disconnect(true), Math.max(0, ms));
     timer.unref();
     socket.on('disconnect', () => clearTimeout(timer));
