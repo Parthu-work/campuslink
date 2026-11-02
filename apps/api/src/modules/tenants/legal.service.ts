@@ -10,6 +10,7 @@ import {
 import { TenantModel } from './tenant.model.js';
 import { findTenantById, invalidateTenant, type TenantRecord } from './tenant.cache.js';
 import { LEGAL_TEMPLATES } from './legal-templates.js';
+import { LEGAL_TRANSLATIONS } from './legal-translations.js';
 import { consentService } from '../consent/consent.service.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import { AppError } from '../../lib/errors.js';
@@ -76,7 +77,21 @@ export class LegalService {
     return this.settings(next);
   }
 
-  doc(t: TenantRecord, doc: LegalDoc): LegalDocView {
+  /** A published translation for the language, or null (English is then served). */
+  translation(lang: string | undefined) {
+    const tr = lang === 'te' || lang === 'hi' ? LEGAL_TRANSLATIONS[lang] : null;
+    return tr?.reviewed ? { lang: lang as 'te' | 'hi', ...tr } : null;
+  }
+
+  doc(t: TenantRecord, doc: LegalDoc, lang?: string): LegalDocView {
+    const tr = this.translation(lang);
+    const labels = tr?.labels ?? {
+      email: 'Email',
+      phone: 'Phone',
+      noOfficer:
+        'The college has not named its grievance officer here yet. Write to the college office meanwhile.',
+      noAddress: 'not published yet (ask the college office)',
+    };
     const l = t.legal;
     const officer = l?.grievanceOfficer ?? null;
     const legalName = l?.legalName ?? t.billing?.buyer?.legalName ?? t.branding.displayName;
@@ -85,14 +100,14 @@ export class LegalService {
       app: APP_NAME,
       college: t.branding.displayName,
       legalName,
-      address: address ?? 'not published yet (ask the college office)',
+      address: address ?? labels.noAddress,
       graceDays: String(t.retention?.deletedAccountGraceDays ?? 30),
       version: this.noticeVersion(t),
       officer: officer
-        ? `- **${officer.name}**, ${officer.designation}\n- Email: ${officer.email}${officer.phone ? `\n- Phone: ${officer.phone}` : ''}`
-        : 'The college has not named its grievance officer here yet. Write to the college office meanwhile.',
+        ? `- **${officer.name}**, ${officer.designation}\n- ${labels.email}: ${officer.email}${officer.phone ? `\n- ${labels.phone}: ${officer.phone}` : ''}`
+        : labels.noOfficer,
     };
-    const tpl = LEGAL_TEMPLATES[doc];
+    const tpl = tr ? tr.docs[doc] : LEGAL_TEMPLATES[doc];
     return {
       doc,
       title: tpl.title,
@@ -100,6 +115,8 @@ export class LegalService {
       body: tpl.body.replace(/\{\{(\w+)\}\}/g, (_m, k: string) => values[k] ?? ''),
       complete: !!(l?.legalName && l.address && officer),
       grievanceOfficer: officer,
+      language: tr?.lang ?? 'en',
+      translated: !!tr,
     };
   }
 

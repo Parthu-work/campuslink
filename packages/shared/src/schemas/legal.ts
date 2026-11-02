@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { email } from './common.js';
+import type { Locale } from '../locales.js';
 
 /**
  * The college's legal pages (build B14): the privacy policy and terms are versioned templates the
@@ -50,5 +51,12 @@ export interface LegalDocView {
   /** False until the college has filled in its legal details (the page says so). */
   complete: boolean;
   grievanceOfficer: GrievanceOfficerView | null;
+  /**
+   * The language of the text (prompt 1b, R13): the member's own once its translation has been
+   * reviewed and published, else English. English is always the legal reference.
+   */
+  language: Locale;
+  /** The text is a translation (the page says the English version is the legal reference). */
+  translated: boolean;
 }
 export const noticeAcceptBody = z.strictObject({ version: z.string().min(1).max(60) });

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LEGAL_DOCS, legalSettingsBody, noticeAcceptBody } from '@campuslink/shared';
+import { LEGAL_DOCS, SUPPORTED_LOCALES, legalSettingsBody, noticeAcceptBody } from '@campuslink/shared';
 import type { AnyRouteSpec } from '../../http/registry.js';
 import { authOf, tenantOf } from '../../http/request-context.js';
 import { requestMeta } from '../../lib/request-meta.js';
@@ -7,6 +7,8 @@ import type { LegalService } from './legal.service.js';
 
 const tag = 'Legal';
 const docParams = z.strictObject({ doc: z.enum(LEGAL_DOCS) });
+/** The reader's language (prompt 1b, R13): its reviewed translation when published, else English. */
+const docQuery = z.strictObject({ lang: z.enum(SUPPORTED_LOCALES).optional() });
 
 /** The college's privacy policy and terms, its legal details, and accepting a new notice (B14). */
 export function legalRoutes(s: LegalService): AnyRouteSpec[] {
@@ -18,7 +20,8 @@ export function legalRoutes(s: LegalService): AnyRouteSpec[] {
       summary: 'The college’s privacy policy or terms, with its details filled in (public)',
       access: { kind: 'public' },
       params: docParams,
-      handler: async ({ req, params }) => ({ data: s.doc(tenantOf(req), params.doc) }),
+      query: docQuery,
+      handler: async ({ req, params, query }) => ({ data: s.doc(tenantOf(req), params.doc, query.lang) }),
     },
     {
       method: 'get',

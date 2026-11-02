@@ -19042,6 +19042,19 @@
                 "terms"
               ]
             }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "te",
+                "hi"
+              ]
+            }
           }
         ],
         "responses": {

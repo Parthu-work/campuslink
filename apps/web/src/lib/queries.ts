@@ -696,10 +696,11 @@ export const platformSupport = (status: SupportStatus | '') =>
   });
 
 /** The college's privacy policy or terms (public). */
-export const legalDoc = (doc: LegalDoc) =>
+export const legalDoc = (doc: LegalDoc, lang = 'en') =>
   queryOptions({
-    queryKey: ['legal', doc],
-    queryFn: ({ signal }) => api.get<LegalDocView>(`/legal/${doc}`, signal),
+    queryKey: ['legal', doc, lang],
+    // The reader's language: its reviewed translation once published, else English (R13).
+    queryFn: ({ signal }) => api.get<LegalDocView>(`/legal/${doc}?lang=${lang}`, signal),
     staleTime: 10 * 60_000,
   });
 

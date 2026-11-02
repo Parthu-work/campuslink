@@ -6,8 +6,8 @@ import * as q from '../../lib/queries';
 
 /** Settings › Privacy (B14): the college's grievance officer and its legal pages. */
 export function GrievanceCard() {
-  const { t } = useTranslation();
-  const doc = useQuery(q.legalDoc('privacy'));
+  const { t, i18n } = useTranslation();
+  const doc = useQuery(q.legalDoc('privacy', i18n.language));
   const officer = doc.data?.grievanceOfficer;
   return (
     <Card className="grid gap-3 p-5">

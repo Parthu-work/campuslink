@@ -407,21 +407,21 @@ A new session reads this file first and resumes from the first phase that is not
 
 **Owner's answers (this session, 2 November 2026).** R7: no answer given, so not built (the purge is not promised). R8: yes, build the weekly WhatsApp digest. R9: yes, evaluate Hindi invoices. R13: the lawyer's review of the English texts (O6) is done; start the translations.
 
-| Item | What                                               | Status      |
-| ---- | -------------------------------------------------- | ----------- |
-| R1   | Only sign-up and notice records count as accepting | Done        |
-| R2   | Run the load test and record it                    | Not started |
-| R3   | UI checks on the B12 to B14 screens                | Not started |
-| R4   | SMS for critical reminders                         | Done        |
-| R5   | Credit notes                                       | Done        |
-| R6   | Edit AI prices in the platform console             | Done        |
-| R7   | Inactive-account purge                             | Not started |
-| R8   | WhatsApp digests (owner: yes)                      | Done        |
-| R9   | Hindi invoices (owner: evaluate)                   | Not started |
-| R10  | Revisit `style-src 'unsafe-inline'`                | Not started |
-| R11  | Find and fix the intermittent API test             | Not started |
-| R12  | Check the report definitions against the manuals   | Not started |
-| R13  | Translated legal texts (owner: O6 done, start)     | Not started |
+| Item | What                                               | Status             |
+| ---- | -------------------------------------------------- | ------------------ |
+| R1   | Only sign-up and notice records count as accepting | Done               |
+| R2   | Run the load test and record it                    | Not started        |
+| R3   | UI checks on the B12 to B14 screens                | Not started        |
+| R4   | SMS for critical reminders                         | Done               |
+| R5   | Credit notes                                       | Done               |
+| R6   | Edit AI prices in the platform console             | Done               |
+| R7   | Inactive-account purge                             | Not started        |
+| R8   | WhatsApp digests (owner: yes)                      | Done               |
+| R9   | Hindi invoices (owner: evaluate)                   | Not started        |
+| R10  | Revisit `style-src 'unsafe-inline'`                | Done (gap kept)    |
+| R11  | Find and fix the intermittent API test             | Not started        |
+| R12  | Check the report definitions against the manuals   | Not started        |
+| R13  | Translated legal texts (owner: O6 done, start)     | Blocked: O7 review |
 
 ### R1 · Only sign-up and notice records count as accepting (Done)
 
@@ -478,3 +478,17 @@ A new session reads this file first and resumes from the first phase that is not
 **Shipped.** A weekly per-member digest, off by default (Settings › Notifications › **Weekly digest on WhatsApp**, `weeklyDigest`). `DigestService` runs once a week per college from Monday 09:00 IST (an hourly timer queues `digest-<college>-<monday>`; job ids dedupe), as a gated job (`gatedJob('whatsapp')`). It sends the new utility template `cl_weekly_digest` (en, te, hi; `docs/whatsapp-templates.md` regenerated) with the member's first name and three counts, each from the service that owns it: drives opened this week that the member is eligible for and not registered for (`PlacementsService.newEligibleCounts`), requests waiting for their reply (`RequestsService.pendingCounts`) and sessions in the next seven days (`SessionsService.upcomingCounts`). Nothing when all three are zero. The member's weekly cap and the college's allowance apply (it is not critical); when WhatsApp cannot carry it, push, else email. It never goes into the in-app list. New notification type `weekly_digest` (category reminders) with texts in three languages. Tests: `digest.test.ts` (WhatsApp with counts only and no request text, off by default, nothing new means nothing sent, fallback when not opted in and when capped, the allowance, the gated job, the weekly schedule) and a drive count check in `placements.test.ts`. Docs: `docs/specs/whatsapp-channel.md`, `docs/privacy.md`, `translation-review.md`.
 
 **For the owner (O2):** register `cl_weekly_digest` in all three languages with the other templates.
+
+### R10 · Revisit `style-src 'unsafe-inline'` (Done: gap kept, with the exact reason)
+
+**Found.** `style-src 'self'` with `style-src-attr 'unsafe-inline'` would break three things in production, found by searching the built bundle for runtime style injection: **sonner 2.0.8** injects its stylesheet as a `<style>` element when imported (no nonce, no opt-out), so toasts would lose their styles; **react-remove-scroll 2.7.2** through **react-style-singleton 2.2.3** (Radix Dialog and Sheet scroll lock) injects a `<style>` with the computed scrollbar gap and accepts a nonce only from `__webpack_nonce__`, so dialogs would stop locking page scroll; and our own `applyBranding()` writes each college's palette into a `<style>` element. pdf.js uses constructable stylesheets, and React `style` props and motion set styles through the CSSOM; CSP governs neither.
+
+**Decision.** The CSP is unchanged. Tightening it needs a per-response nonce (nginx `sub_filter` into `index.html` and the same in `vite preview`) passed to react-style-singleton through `window.__webpack_nonce__`, sonner's CSS as a file with its injector removed (or another toast library), and the palette moved to `document.adoptedStyleSheets`. That is a change to the deploy and to two libraries, not a header edit; the gap row in `docs/security-review.md` now says exactly this.
+
+### R13 · Translated legal texts (Blocked: waiting for the native-speaker review, O7)
+
+**Owner's answer.** The lawyer has reviewed the English texts (O6), so the translations were started (this session, 2 November 2026). The SMS sentence added by R4 came after that review and needs the lawyer's look too.
+
+**Shipped (unpublished).** Telugu and Hindi versions of the privacy policy and terms in `legal-translations.ts`, with the filled-in labels (email, phone, the missing-officer and missing-address sentences) translated too. `GET /legal/:doc?lang=` serves a translation only once its `reviewed` field names the review; the response says `language` and `translated`, and the page then says the English version is the legal reference (en, te, hi). Every language accepts the same notice version, so the notice gate works the same in each. Tests in `legal.test.ts`: placeholders and sections match English; an unreviewed translation is not served; once reviewed it is served, filled in, and accepting the notice from it works; and a fingerprint of every published text is pinned to `PRIVACY_NOTICE_VERSION`, so publishing a translation or changing any text without a version bump fails. Docs: `docs/specs/help-support-legal.md`, `translation-review.md` (the legal texts first).
+
+**To finish (after O7):** set `reviewed` for each language, bump `PRIVACY_NOTICE_VERSION`, record the new fingerprint in the test.

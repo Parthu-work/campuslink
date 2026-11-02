@@ -3,8 +3,8 @@ import { PRIVACY_NOTICE_VERSION } from '@campuslink/shared';
 /**
  * The privacy policy and terms (build B14): templates the platform maintains, versioned with
  * `PRIVACY_NOTICE_VERSION`, filled with the college's own details ({{placeholders}}). They follow
- * what the product does (docs/privacy.md). English only, and **needs legal review** before a college
- * relies on them (docs/build/report-1.md); a translated version is a new, reviewed version.
+ * what the product does (docs/privacy.md). English is the legal reference; the Telugu and Hindi
+ * versions (legal-translations.ts, prompt 1b) are served only after a native speaker's review.
  *
  * Text uses the app's markdown subset: headings (`## `), lists (`- `) and **bold**.
  */

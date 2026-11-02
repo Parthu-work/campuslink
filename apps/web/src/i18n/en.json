@@ -4236,7 +4236,7 @@
     "privacy": "Privacy policy",
     "terms": "Terms of use",
     "intro": "How your college and {{app}} handle your data, and the rules for using it.",
-    "englishOnly": "This page is in English for now. A translation will be checked by a lawyer before it replaces it.",
+    "englishOnly": "This page is in English for now. A translation will replace it once a native speaker has checked it.",
     "incomplete": "Your college has not filled in all its legal details yet; the parts it has not filled say so.",
     "other": "Other legal pages",
     "gateTitle": "Your college updated its privacy policy and terms",
@@ -4256,7 +4256,8 @@
     "publishTitle": "Publish the new legal details?",
     "publishBody": "Every member will be asked to read and agree to the updated privacy policy and terms on their next visit.",
     "publishNote": "Check the names, email and address carefully: they are shown to every member and on the public policy page.",
-    "published": "Published. Members will be asked to agree on their next visit."
+    "published": "Published. Members will be asked to agree on their next visit.",
+    "translatedNote": "This is a translation. The English version is the legal reference; if they differ, the English one applies."
   },
   "help": {
     "title": "Help",

@@ -43,3 +43,7 @@ Accepting a notice, browser error reports, and reporting a problem (create, repl
 - `test/observability.test.ts`: metrics token and host, route patterns only, no personal data in labels, client error relay, scrubbing, the Sentry envelope, a reporter that cannot send.
 - `test/privacy.test.ts`: reports are exported and erased with the member.
 - `e2e/help.spec.ts`: a guide, a report answered by the college, the public policy and the grievance officer.
+
+## Translated legal texts (prompt 1b, R13)
+
+The privacy policy and terms have Telugu and Hindi versions in `apps/api/src/modules/tenants/legal-translations.ts`, each a version of its own with the same placeholders and sections as English (a test checks). A translation is served only once `reviewed` names its native-speaker review (O7); until then members who use the language read English, and the page says so. `GET /legal/:doc?lang=te` returns the member's language when published (`language`, `translated`), and the page then says the English version is the legal reference. Every language accepts the same notice version, so the notice gate works the same in each. Publishing a translation, or changing any published text, must bump `PRIVACY_NOTICE_VERSION`: `test/legal.test.ts` pins a fingerprint of every published text to the version and fails otherwise.
