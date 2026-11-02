@@ -520,3 +520,25 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 **Shipped.** `e2e/audit/b12-b14.audit.ts`: 15 screens and states at 360 px and 1440 px, in both themes, with reduced motion: axe, 44 px targets, sideways scroll and keyboard-only reach (60 checks). No axe violations, no sideways scroll, every control reachable by keyboard. Fixed: the standalone legal links and the grievance email (19 px tall → 44 px) and the narrowest `Segmented` option (41 px wide → at least 44 px). Left: Home's member-name links (24 to 26 px; recorded in the earlier audit, WCAG 2.5.8 compliant, not a B12 to B14 screen). Results in `docs/accessibility.md` and `docs/design/revamp/data-after/b12-b14.json`. The offline cold start stays covered by `e2e/offline.spec.ts`.
 
 **How it ran on Windows:** the API and `vite preview` were started by hand (Playwright's `VAR=value` server commands do not run in `cmd`) and reused, with the installed Chrome (`PW_CHROMIUM_PATH`).
+
+## Prompt 2 · Habit, growth and the moat
+
+[`master-prompt-2.md`](master-prompt-2.md). A new session resumes from the first phase that is not **Done**.
+
+**Baseline.** Prompt 1 (B1 to B15) is Done. Prompt 2 starts from `feat/prompt-1b-remaining` at `434b22c` (prompt 1b, not yet merged into `main`; CI green up to `9b261b8`), on the branch `feat/prompt-2`, as the owner asked to continue in this session. Facts checked and corrected in [`facts.md`](facts.md) (locales, ADR numbering: the network ADR becomes **0014**, the notice version, platform models).
+
+| Phase | Name                                                           | Status      |
+| ----- | -------------------------------------------------------------- | ----------- |
+| G1    | AiTasksService: the shared AI layer                            | Not started |
+| G2    | Resume builder, ATS check and alumni review                    | Not started |
+| G3    | AI mock interviews (text and voice) with human follow-up       | Not started |
+| G4    | Aptitude and coding practice                                   | Not started |
+| G5    | Readiness score and the TPO readiness board                    | Not started |
+| G6    | Alumni engagement                                              | Not started |
+| G7    | Habit loops                                                    | Not started |
+| G8    | Growth loops                                                   | Not started |
+| G9    | Reach: Android app, single sign-on, calendar feed, roster sync | Not started |
+| G10   | The moat data                                                  | Not started |
+| G11   | Career Copilot                                                 | Not started |
+| G12   | The network (ADR 0014 first; stop for approval)                | Not started |
+| G13   | Re-audit, YC metrics pack and final report                     | Not started |
