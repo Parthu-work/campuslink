@@ -1,6 +1,6 @@
 # MASTER PROMPT 1b: CampusLink — finish what prompt 1 left open
 
-You are the principal engineer on the CampusLink monorepo. Master prompt 1 ([`master-prompt-1.md`](master-prompt-1.md), builds B1 to B15) is implemented on branch `claude/vigilant-cray-oelucl` and goes to `main` through pull request [Parthu-work/campuslink#1](https://github.com/Parthu-work/campuslink/pull/1). This prompt closes the items it left open: one small bug, the checks that were never run, the parts of the decisions that were built narrower than asked, and the owner's own registrations and reviews. It does **not** start Prompt 2 (`master-prompt-2-habit-growth-moat.md`); the reserved `peerMentors` switch and the deep-model features belong there.
+You are the principal engineer on the CampusLink monorepo. Master prompt 1 ([`master-prompt-1.md`](master-prompt-1.md), builds B1 to B15) is implemented and merged into `main` (pull request [Parthu-work/campuslink#1](https://github.com/Parthu-work/campuslink/pull/1), merge commit `1d527a1`, 2 November 2026). This prompt closes everything it left open: one small bug, an intermittent test, the checks that were never run, the parts of the decisions that were built narrower than asked, the report definitions still marked for review, and the owner's own registrations and reviews. §6 lists what prompt 1 hands to Prompt 2, so nothing is lost between the two. It does **not** start Prompt 2 (`master-prompt-2-habit-growth-moat.md`); the reserved `peerMentors` switch and the deep-model features belong there.
 
 Read first, once: `CLAUDE.md` (authoritative for conventions), [`implementation-status.md`](implementation-status.md) (one-page status), [`report-1.md`](report-1.md) (decisions, env vars, gaps) and [`progress.md`](progress.md) (per-build record). Do not re-audit the codebase; open only the files each item lists under **Touches**.
 
@@ -8,9 +8,9 @@ Read first, once: `CLAUDE.md` (authoritative for conventions), [`implementation-
 
 ## Step 0: Set up
 
-1. **Baseline.** If PR #1 is merged, work from `main`; otherwise work on top of `claude/vigilant-cray-oelucl`. If your session imposes a branch rule, follow it and record it in the progress log. Run `git log -1 --format=%h` and record it.
+1. **Baseline.** Work from `main` (at or after `1d527a1`). If your session imposes a branch rule, follow it and record it in the progress log. Run `git log -1 --format=%h` and record it, and confirm that the GitHub Actions run on that commit is green (verify, e2e, adapters, security).
 2. **Gate first.** Run the full gate (§2). If anything is red on the baseline, fix that before any item below and record it.
-3. **Progress log.** Add a section **"Prompt 1b"** to [`progress.md`](progress.md) with every item in §3 (R1 to R10) and a status. After each item, record what shipped, decisions, deviations and what comes next. A new session resumes from the first item that is not **Done**.
+3. **Progress log.** Add a section **"Prompt 1b"** to [`progress.md`](progress.md) with every item in §3 (R1 to R13) and a status. After each item, record what shipped, decisions, deviations and what comes next. A new session resumes from the first item that is not **Done**.
 4. Save this prompt verbatim as `docs/build/master-prompt-1b-remaining.md` if it is not already there. Commit (`docs: add master prompt 1b and its progress section`) and push.
 
 ---
@@ -143,6 +143,42 @@ B12 kept invoices in English because `pdf-lib` cannot shape Devanagari. Only if 
 
 ---
 
+### R11. Find and fix the intermittent API test
+
+On 2 November one `pnpm test` run failed on a commit that changed only a Markdown file (`2f8f71f`); the pull-request run on the same commit and every run before and after it passed. Its output could not be read at the time (the MongoDB service log buried it). `verify` now starts MongoDB as a quiet step, so a recurrence is readable.
+
+**Touches:** whichever test it turns out to be.
+
+1. With the dev infrastructure up, run the API suite repeatedly (`for i in $(seq 1 10); do pnpm --filter @campuslink/api test || break; done`), and watch CI for a recurrence.
+2. When it fails, find the root cause. Suspects are anything that depends on the clock (day and week boundaries in insights, billing due dates in IST, OTP expiry), on test order or shared in-memory state (`eligibleCache`, `visitedToday`, the tenant cache), or on timing (rate limits, delayed jobs). Fix the code or make the test deterministic (inject the clock, isolate the state). Never skip, retry-wrap or quarantine it.
+3. If ten local runs and a week of CI show no recurrence, record that in the progress log with the runs, and close the item.
+
+**Done when:** the cause is fixed with a test that would have caught it, or the item is closed with the evidence above.
+
+### R12. Check the report definitions against the current manuals (B8)
+
+Every accreditation definition in `modules/reports/definitions/` is marked for review (`needsReview`) because nobody has checked it against the current NBA SAR, NAAC (SSR/DVV) and NIRF documents.
+
+**Touches:** `modules/reports/definitions/*.ts`, `test/reports.test.ts`, `docs/specs/outcomes-reports.md`.
+
+1. For each definition, find the current official manual or format (the accrediting body's own site), and record the document, its version or date and its URL in the definition's source note.
+2. Compare every figure, column and formula with the manual. Where they agree, clear `needsReview` for that figure. Where they differ, follow the manual and update the known-answer test. Where the manual is ambiguous or not available, leave `needsReview` with a note of what is unclear. Never add a figure the manual does not define.
+3. Record each check (document, date, what changed) in `docs/specs/outcomes-reports.md`.
+
+**Done when:** every definition cites its manual, and each remaining `needsReview` says why.
+
+### R13. Translated legal texts (after the lawyer's review)
+
+B14's privacy policy and terms are English templates; the app tells Telugu and Hindi readers so. Start only after O6 (the lawyer's review of the English texts) and with the owner's yes.
+
+**Touches:** `modules/tenants/legal-templates.ts`, `LegalService`, `features/legal/`, `docs/build/translation-review.md`.
+
+1. Add `te` and `hi` versions of each template as their own reviewed versions (the English one stays the legal reference, and the page says so). A member reads the version in their language when it exists.
+2. A change to any language's text bumps the notice version, so members accept again.
+3. Each translation goes through O7 (the native speaker's review) before it is published; until then it stays unpublished.
+
+**Done when:** both translations are published after review, and the notice gate works for each language.
+
 ## 4. Owner items (prepare, do not perform)
 
 For each, produce what is listed, put it in [`report-1.md`](report-1.md) › "What the owner must register or have reviewed", and stop:
@@ -162,4 +198,16 @@ For each, produce what is listed, put it in [`report-1.md`](report-1.md) › "Wh
 
 ## 5. Final report
 
-When R1 to R10 are each **Done**, **Not started: owner's call**, or **Blocked** with a reason, update [`implementation-status.md`](implementation-status.md) and add a "Prompt 1b" section to [`report-1.md`](report-1.md): what shipped, decisions and deviations, new env vars, the load test figures, and what is still the owner's.
+When R1 to R13 are each **Done**, **Not started: owner's call**, or **Blocked** with a reason, update [`implementation-status.md`](implementation-status.md) and add a "Prompt 1b" section to [`report-1.md`](report-1.md): what shipped, decisions and deviations, new env vars, the load test figures, and what is still the owner's.
+
+---
+
+## 6. Handed to Prompt 2 (do not build here)
+
+Prompt 1 deferred these to Prompt 2 (`master-prompt-2-habit-growth-moat.md`). They are listed so they are not lost; build them only from that prompt:
+
+- **Peer mentors:** the `peerMentors` feature switch is reserved (B1) and does nothing yet.
+- **Resume builder:** replaces the PDF résumé upload for drive registration (`placement_resume`, B7).
+- **One-tap code autofill on Android:** the WhatsApp authentication template's autofill needs an Android app package (B3).
+- **Alumni giving:** NAAC alumni engagement has no financial contribution yet (B8).
+- **Deep-model features:** `DEEP_CHAT_MODEL` / `deepModel` is wired (B11) but no feature uses it yet.
