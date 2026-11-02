@@ -530,7 +530,7 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 | Phase | Name                                                           | Status      |
 | ----- | -------------------------------------------------------------- | ----------- |
 | G1    | AiTasksService: the shared AI layer                            | Built       |
-| G2    | Resume builder, ATS check and alumni review                    | Not started |
+| G2    | Resume builder, ATS check and alumni review                    | Done        |
 | G3    | AI mock interviews (text and voice) with human follow-up       | Not started |
 | G4    | Aptitude and coding practice                                   | Not started |
 | G5    | Readiness score and the TPO readiness board                    | Not started |
@@ -548,3 +548,11 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 **Shipped.** `modules/ai-tasks/ai-tasks.service.ts`: `run(viewer, task, input)` and `stream(...)` over `AiSettingsService.runtime()` (consent, kill switch, allowance, budget and breaker already there), with the per-member daily limit per feature (`AI_FEATURE_LIMITS` in shared, applied only here), the model by tier, member text through `redactPersonal()` and documents through `neutraliseInstructions()` inside numbered `<source>` blocks, Zod parsing with one repair turn, usage recorded under the task's feature, and the task's fallback (or a reason) instead of any provider error. `AiUsageService.requestsTodayFor(userId, feature)`. Spec: `docs/specs/ai-tasks.md`. Tests: `test/ai-tasks.test.ts` (paths, delimiting, an injection suite with hostile resumes, job descriptions and answers, streaming).
 
 **Decisions.** The built-in demo responder cannot write JSON for every task, so each task supplies `mock(input)`, a deterministic demo result; the mock is still called so its injection trap still runs, and there is no repair turn on it. No new usage features were needed: `resume`, `interview` and `copilot` were reserved in B11, and Admin › AI and Billing already show usage by feature.
+
+### G2 · Resume builder, ATS check and alumni review (Done)
+
+**Shipped.** `modules/resumes/`: up to five résumés per member in a JSON Resume-compatible shape, prefilled from the profile, academic record and finished roadmaps; saves are versioned (a stale save is 409); a one-column ATS-friendly PDF (pdf-lib, self-hosted Noto Sans, real text) rendered by the worker on each save and stored as one `resume_pdf` file; the ATS check (parseability 60, keywords 40 against a pasted job description or a drive's role, gaps from `gapsTask` or the missing keywords); bullet rewrites (`rewriteTask`, deep tier, with rule-based fallback and a filter that drops any alternative adding a number); per-section review comments, moderatable, notifying the owner. Mentorship requests of type `resume_review` carry a `resumeId` and give the mentor read and comment access while pending or accepted; drive registration takes `resumeId` and attaches a copy of its current PDF. Web: `/resume` (list), `/resume/:id` (editor with Edit, Preview, Check and Comments tabs; a reviewer gets preview, download and comments), the résumé picker in the request form, "Open the résumé" on request cards, and "Use a résumé you built" in drive registration; en, te and hi. Events `resume_created`, `resume_reviewed`, `ats_checked`. Spec: `docs/specs/resumes.md`.
+
+**Tests.** `test/resumes.test.ts` (14): PDF round-trip with pdfjs-dist, the no-new-number property test, isolation, review access, moderation, attach to a drive, export with PDF and erasure. `word-diff.test.ts`; `e2e/resumes.spec.ts` with axe on each screen.
+
+**Decisions.** The résumé content is English only (validated): ATS read English and the PDF font is Latin; every screen around it is translated. A member who may not read a résumé gets 404, not 403. Rewrites run only on saved bullets, so the server reads the text it rewrites from the record, never from the request. "Ask an alumnus to review" opens the mentor list filtered to résumé reviews; the micro-ask route waits for G6.

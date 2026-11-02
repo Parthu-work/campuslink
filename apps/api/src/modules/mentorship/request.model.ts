@@ -26,6 +26,8 @@ const requestSchema = new Schema(
     rematchOfferedAt: { type: Date, default: null },
     /** Sent from a rematch offer: does not count against the college's weekly request limit. */
     rematchOf: { type: Schema.Types.ObjectId, default: null },
+    /** Prompt 2, G2: the mentee's résumé a résumé review is about (the mentor may read it). */
+    resumeId: { type: Schema.Types.ObjectId, default: null },
   },
   baseSchemaOptions,
 );

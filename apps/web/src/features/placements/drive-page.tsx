@@ -16,7 +16,7 @@ import { celebrate, firstSighting } from '../../lib/celebrate';
 import { formatDateTime, formatRelative, newIdempotencyKey } from '../../lib/format';
 import { useCan } from '../../lib/me';
 import { ctcRange, DRIVE_KEYS, isRegistered, reasonText } from '../../lib/placements';
-import { placementDrive } from '../../lib/queries';
+import { placementDrive, resumes } from '../../lib/queries';
 import { findCached, hasId } from '../../lib/query-seed';
 import { SCREEN } from '../../lib/query-client';
 import { toast } from '../../lib/toast';
@@ -87,6 +87,10 @@ function RegisterSheet({
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [files, setFiles] = useState<Record<number, Upload>>({});
   const [resume, setResume] = useState<Upload | null>(null);
+  // Prompt 2, G2: or one of the résumés built here (its PDF is copied for the placement cell).
+  const canResumes = useCan('resumes:manage');
+  const built = useQuery({ ...resumes(), enabled: canResumes && d.resumeRequired });
+  const [builtId, setBuiltId] = useState('');
   const [error, setError] = useState('');
   const send = useMutation({
     mutationFn: () =>
@@ -97,7 +101,7 @@ function RegisterSheet({
             const value = q.kind === 'file' ? files[i]?.id : answers[i]?.trim();
             return value ? [{ question: i, value }] : [];
           }),
-          ...(resume ? { resumeFileId: resume.id } : {}),
+          ...(builtId ? { resumeId: builtId } : resume ? { resumeFileId: resume.id } : {}),
         },
         key,
       ),
@@ -105,7 +109,7 @@ function RegisterSheet({
     onError: (e) => setError(e instanceof ApiError ? e.message : t('errors.generic')),
   });
   const ready =
-    (!d.resumeRequired || !!resume) &&
+    (!d.resumeRequired || !!resume || !!builtId) &&
     d.questions.every((q, i) => !q.required || (q.kind === 'file' ? !!files[i] : !!answers[i]?.trim()));
   return (
     <Sheet
@@ -138,7 +142,26 @@ function RegisterSheet({
           if (ready) send.mutate();
         }}
       >
-        {d.resumeRequired && (
+        {d.resumeRequired && !!built.data?.length && (
+          <Field label={t('placements.builtResume')} hint={t('placements.builtResumeHint')}>
+            {({ id, describedBy }) => (
+              <Select
+                id={id}
+                aria-describedby={describedBy}
+                value={builtId}
+                onChange={(e) => setBuiltId(e.target.value)}
+              >
+                <option value="">{t('placements.uploadInstead')}</option>
+                {built.data.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.title}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        )}
+        {d.resumeRequired && !builtId && (
           <PdfButton
             label={t('placements.resume')}
             value={resume}

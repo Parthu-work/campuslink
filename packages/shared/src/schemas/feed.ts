@@ -201,6 +201,8 @@ export const CONTENT_TARGETS = [
   'event',
   'event_question',
   'review',
+  // Prompt 2, G2: a reviewer's comment on a résumé.
+  'resume_comment',
 ] as const;
 export type ContentTarget = (typeof CONTENT_TARGETS)[number];
 export const REMOVAL_REASONS = [

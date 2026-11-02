@@ -96,7 +96,8 @@
     "traction": "Traction",
     "billing": "Billing",
     "help": "Help",
-    "platformSupport": "Support"
+    "platformSupport": "Support",
+    "resume": "Résumé"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -840,7 +841,12 @@
       "goal": "Goal",
       "background": "Background",
       "need": "What I need"
-    }
+    },
+    "resume": "Résumé to review",
+    "resumeHint": "{{name}} can open it and leave comments while the request is open or accepted.",
+    "noResume": "None: I will share it in the conversation",
+    "openResume": "Open the résumé",
+    "yourResume": "Your résumé"
   },
   "sessions": {
     "upcoming": "Upcoming",
@@ -1272,6 +1278,10 @@
     "account_inactive": {
       "title": "Your account will be deleted on {{time}}",
       "body": "You have not signed in for {{months}} months, so your college deletes your account on {{time}}. Sign in before then to keep it."
+    },
+    "resume_comment": {
+      "title": "{{name}} reviewed your résumé",
+      "body": "{{name}} left a comment on your résumé. Open it to read the review."
     }
   },
   "notifications": {
@@ -3805,7 +3815,10 @@
       "rejectReasonHint": "The member sees this, for example: the letter does not show the CTC",
       "offerVerified": "Offer verified",
       "offerRejected": "Offer rejected; the member was told why"
-    }
+    },
+    "builtResume": "Use a résumé you built",
+    "builtResumeHint": "We attach its latest PDF. The placement cell sees that copy.",
+    "uploadInstead": "No, upload a PDF instead"
   },
   "outcomes": {
     "intro": "What you did after college counts for your college's accreditation and helps juniors see what is possible. The placement cell checks each one before it counts.",
@@ -4353,6 +4366,165 @@
         "title": "Your privacy",
         "summary": "Who sees what, and how to download or delete your data."
       }
+    }
+  },
+  "resume": {
+    "intro": "Build a résumé from your profile, check how cleanly it reads, and ask an alumnus to review it. Keep up to five, one for each kind of role.",
+    "privacyNote": "Only you can see your résumés. A mentor sees one when you ask them to review it, and the placement cell sees the copy you attach to a drive.",
+    "new": "New résumé",
+    "newTitle": "New résumé",
+    "newBody": "We fill in a first draft from your profile, academic record and finished roadmaps. You can change everything.",
+    "create": "Create",
+    "name": "Name",
+    "nameHint": "For you only, for example \"Core IT\" or \"Analyst\".",
+    "nameNeeded": "Give the résumé a name.",
+    "template": "Layout",
+    "templates": {
+      "classic": "Classic",
+      "compact": "Compact"
+    },
+    "templateDetail": {
+      "classic": "Roomy, one column",
+      "compact": "Tighter, fits more on a page"
+    },
+    "full": "You have {{n}} résumés, the most you can keep. Delete one to start another.",
+    "emptyTitle": "No résumé yet",
+    "emptyBody": "Start one: we prefill it from your profile so you are not starting from a blank page.",
+    "edited": "edited {{when}}",
+    "scoreShort": "Check {{n}}/100",
+    "delete": "Delete",
+    "deleteNamed": "Delete {{title}}",
+    "deleteTitle": "Delete {{title}}?",
+    "deleteBody": "The résumé and its review comments are deleted. Copies already attached to drives stay with those drives.",
+    "download": "Download PDF",
+    "askReview": "Ask an alumnus to review",
+    "unsaved": "Unsaved changes",
+    "allSaved": "All changes saved",
+    "savedToast": "Résumé saved",
+    "tabs": "Résumé",
+    "tab": {
+      "edit": "Edit",
+      "preview": "Preview",
+      "check": "Check",
+      "comments": "Comments"
+    },
+    "english": "Write the résumé itself in English: applicant tracking systems read English, and the PDF is built for them.",
+    "remove": "Remove",
+    "removeEntry": "Remove {{section}} {{n}}",
+    "addTo": "Add to {{section}}",
+    "addBullet": "Add a point",
+    "bulletN": "Point {{n}}",
+    "removeBullet": "Remove point {{n}}",
+    "improve": "Improve",
+    "improveAfterSave": "Save your changes to get suggestions for a point.",
+    "reviewTitle": "{{name}}'s résumé",
+    "reviewIntro": "You were asked to review this résumé. Leave comments by section; only its owner can change it.",
+    "section": {
+      "basics": "Basics",
+      "profiles": "Links",
+      "education": "Education",
+      "work": "Experience",
+      "projects": "Projects",
+      "skills": "Skills",
+      "certificates": "Certificates",
+      "awards": "Awards",
+      "general": "Overall"
+    },
+    "f": {
+      "fullName": "Full name",
+      "headline": "Headline",
+      "headlineHint": "One line under your name, for example \"Final-year CSE student, backend\".",
+      "email": "Email",
+      "phone": "Phone",
+      "location": "City",
+      "summary": "Summary",
+      "summaryHint": "Two or three lines on what you do and what you are looking for.",
+      "network": "Site",
+      "url": "Link",
+      "institution": "College or school",
+      "studyType": "Degree",
+      "area": "Branch or subject",
+      "score": "Score",
+      "start": "From",
+      "end": "To",
+      "endHint": "YYYY or YYYY-MM. Leave empty if it is ongoing.",
+      "position": "Role",
+      "organisation": "Organisation",
+      "highlights": "What you did",
+      "projectName": "Project",
+      "description": "Description",
+      "skillGroup": "Group",
+      "keywords": "Skills",
+      "certificate": "Certificate",
+      "issuer": "Issued by",
+      "date": "Date",
+      "award": "Award",
+      "awarder": "Given by"
+    },
+    "ats": {
+      "title": "Check your résumé",
+      "intro": "How cleanly the PDF reads, and which words from a role it shows. A guide to a readable résumé, not a prediction of any employer’s system.",
+      "against": "Check against",
+      "none": "Just the résumé",
+      "pasted": "A job description",
+      "drive": "A placement drive",
+      "jd": "Job description",
+      "jdHint": "Paste the role’s description. It is used for this check only.",
+      "pickDrive": "Drive",
+      "run": "Run the check",
+      "saveFirst": "The check reads your last saved version.",
+      "score": "{{n}} out of 100",
+      "scoreLabel": "Check score {{n}} out of 100",
+      "checked": "Checked {{when}}",
+      "pages_one": "{{count}} page",
+      "pages_other": "{{count}} pages",
+      "stale": "From an older version",
+      "passed": "Passed",
+      "failed": "Needs work",
+      "check": {
+        "name": "Your name is at the top",
+        "contact": "An email or phone number to reach you",
+        "education": "An education entry",
+        "skills": "A skills section",
+        "experience": "Experience or projects",
+        "dates": "Dates in one style",
+        "length": "One or two pages",
+        "images": "Text only: no images or tables",
+        "bullets": "Points that start with what you did"
+      },
+      "keywordsPasted": "Words from the job description",
+      "keywordsDrive": "Words from the drive’s role",
+      "matched": "Your résumé shows",
+      "missing": "Not on your résumé yet",
+      "gaps": "Worth showing, if true",
+      "disclaimer": "Add a word only if it is true of you. Recruiters ask about everything on a résumé."
+    },
+    "rewrite": {
+      "title": "Improve this point",
+      "body": "Tighter versions that keep what you wrote. Nothing new is added: no numbers, tools or results you did not write.",
+      "yours": "Yours",
+      "options": "Suggestions",
+      "source": {
+        "ai": "AI",
+        "rules": "Writing tips"
+      },
+      "use": "Use this",
+      "none": "No changes to suggest: this point already reads well.",
+      "tips": "Tips",
+      "facts": "Check each suggestion is still true before you use it.",
+      "diffNote": "Highlighted words are new or changed."
+    },
+    "comments": {
+      "title": "Review comments",
+      "introOwner": "Comments from alumni you asked to review this résumé. You can reply here too.",
+      "introReviewer": "Comment by section. {{name}} is told when you leave one.",
+      "none": "No comments yet.",
+      "you": "You",
+      "removed": "Former member",
+      "older": "On an older version",
+      "about": "About",
+      "add": "Comment",
+      "send": "Post comment"
     }
   }
 }

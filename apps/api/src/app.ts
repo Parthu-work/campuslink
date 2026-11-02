@@ -47,6 +47,8 @@ import { channelRoutes } from './modules/notifications/channels/channel.routes.j
 import { OtpSender } from './modules/notifications/channels/otp-sender.js';
 import { InactivityService } from './modules/privacy/inactivity.service.js';
 import { AiTasksService } from './modules/ai-tasks/ai-tasks.service.js';
+import { RESUME_RENDER_JOB, ResumesService } from './modules/resumes/resumes.service.js';
+import { resumeRoutes } from './modules/resumes/resumes.routes.js';
 import { DIGEST_JOB, DigestService } from './modules/notifications/digest.service.js';
 import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
 import { OtpService } from './modules/verification/otp.service.js';
@@ -777,6 +779,23 @@ export function createApp({
         : null,
   }); // Prompt 2 (G1): the one AI layer every new AI feature goes through (E1).
   const aiTasksService = new AiTasksService({ ai: aiSettingsService, usage: aiUsageService, logger });
+  // ── Résumés (prompt 2, G2) ─────────────────────────────
+  const resumesService = new ResumesService({
+    files: filesService,
+    profiles: profilesService,
+    ai: aiTasksService,
+    jobs: queue,
+    notifications: notificationsService,
+    logger,
+    academics: async (userId) => (await academicsService.factsFor([userId])).get(userId) ?? null,
+    finishedRoadmaps: (userId) => roadmapsService.finishedFor(userId),
+    driveText: (viewer, driveId) => placementsService.roleText(viewer, driveId),
+    isReviewer: (viewer, resumeId) => requestsService.reviewsResume(viewer, resumeId),
+  });
+  queue.register(RESUME_RENDER_JOB, (data) => resumesService.onRender(data));
+  requestsService.resumeOwned = (userId, resumeId) => resumesService.owns(userId, resumeId);
+  placementsService.resumeCopy = (viewer, resumeId) => resumesService.copyForDrive(viewer, resumeId);
+  moderationService.register('resume_comment', resumesService.commentHandler);
 
   aiSettingsService.onAlert = async (type, data) => {
     for (const id of await usersService.activeIdsWithRole(Role.COLLEGE_ADMIN))
@@ -989,6 +1008,7 @@ export function createApp({
     placementsService,
     offersService,
     chatService,
+    resumesService,
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1047,6 +1067,7 @@ export function createApp({
   privacyService.register('studyChats', hook(chatService));
   privacyService.register('aiSettings', hook(aiSettingsService));
   privacyService.register('support', hook(supportService));
+  privacyService.register('resumes', hook(resumesService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -1229,6 +1250,7 @@ export function createApp({
   app.use(API_PREFIX, defineModule('analytics', analyticsRoutes(analyticsService), pipeline));
   app.use(API_PREFIX, defineModule('insights', insightsRoutes(productInsights, platformService), pipeline));
   app.use(API_PREFIX, defineModule('support', supportRoutes(supportService, filesService), pipeline));
+  app.use(API_PREFIX, defineModule('resumes', resumeRoutes(resumesService), pipeline));
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -1325,6 +1347,7 @@ export function createApp({
     events: eventsService,
     analytics: analyticsService,
     privacy: privacyService,
+    resumes: resumesService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,

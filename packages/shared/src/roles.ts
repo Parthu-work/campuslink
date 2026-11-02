@@ -95,6 +95,8 @@ export const ALL_PERMISSIONS = [
   // Help and support (B14)
   'support:create',
   'support:manage',
+  // Résumés (prompt 2, G2)
+  'resumes:manage',
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
   'platform:health',
@@ -172,6 +174,7 @@ export const PERMISSIONS: Record<Permission, string> = {
   'platform:billing': 'Plans, invoices and payments for every college',
   'platform:support': 'Answer problem reports members sent to the platform (bugs)',
   'support:create': 'Report a problem and follow its replies',
+  'resumes:manage': 'Build résumés, check them against a role and ask an alumnus to review one',
   'support:manage': 'Answer and close problem reports sent to the college',
   'placements:view': 'See placement drives and the eligibility rules',
   'placements:register': 'Register for placement drives one is eligible for',
@@ -209,6 +212,7 @@ const STUDENT: Permission[] = [
   'placements:register',
   'outcomes:report',
   'support:create',
+  'resumes:manage',
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
 const STUDENT_ONLY: readonly Permission[] = ['placements:view', 'placements:register'];
@@ -224,7 +228,7 @@ const ALUMNI: Permission[] = [
   'study:contribute',
 ];
 const STAFF: Permission[] = [
-  ...STUDENT.filter((p) => p !== 'placements:register' && p !== 'outcomes:report'),
+  ...STUDENT.filter((p) => p !== 'placements:register' && p !== 'outcomes:report' && p !== 'resumes:manage'),
   'feed:post',
   'qa:answer',
   'announcements:post',

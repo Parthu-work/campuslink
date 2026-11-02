@@ -15,6 +15,10 @@ export const PRODUCT_EVENTS = [
   'offer_verified',
   'study_question',
   'roadmap_step',
+  // Prompt 2, G2: résumés.
+  'resume_created',
+  'resume_reviewed',
+  'ats_checked',
 ] as const;
 export type ProductEventName = (typeof PRODUCT_EVENTS)[number];
 

@@ -49,6 +49,22 @@ export interface RequestsDeps {
 
 /** Structured mentorship requests. No cold DMs: messaging opens only when a mentor accepts. */
 export class RequestsService {
+  /** Set by the app: does this member own this résumé (prompt 2, G2)? */
+  resumeOwned: (userId: string, resumeId: string) => Promise<boolean> = async () => false;
+
+  /**
+   * The viewer is the mentor of a résumé review about this résumé that is pending or accepted:
+   * they may read it and comment (prompt 2, G2). Declined, withdrawn or expired requests end it.
+   */
+  async reviewsResume(viewer: AuthState, resumeId: string): Promise<boolean> {
+    return !!(await MentorshipRequestModel.exists({
+      resumeId: new Types.ObjectId(resumeId),
+      mentorId: new Types.ObjectId(viewer.userId),
+      sessionType: 'resume_review',
+      status: { $in: ['pending', 'accepted'] },
+    }));
+  }
+
   // ── Privacy ─────────────────────────────
   async exportFor(userId: string) {
     const u = new Types.ObjectId(userId);
@@ -86,6 +102,7 @@ export class RequestsService {
       background: r.background ?? null,
       need: r.need ?? null,
       slotStart: r.slotStart ? r.slotStart.toISOString() : null,
+      resumeId: r.resumeId ? String(r.resumeId) : null,
       mentor: ref(r.mentorId),
       mentee: ref(r.menteeId),
       declineTemplate: (r.declineTemplate ?? null) as DeclineTemplate | null,
@@ -110,6 +127,9 @@ export class RequestsService {
     rematchOf: Types.ObjectId | null = null,
   ): Promise<RequestView> {
     await this.d.mentors.assertRequestable(viewer, body.mentorId, body.sessionType);
+    // A résumé review may carry one of the mentee's own résumés (prompt 2, G2).
+    if (body.resumeId && !(await this.resumeOwned(viewer.userId, body.resumeId)))
+      throw badRequest('Pick one of your own résumés');
     const me = new Types.ObjectId(viewer.userId);
     const [pending, thisWeek] = await Promise.all([
       MentorshipRequestModel.countDocuments({ menteeId: me, status: 'pending' }),
@@ -147,6 +167,7 @@ export class RequestsService {
         slotStart,
         expiresAt: new Date(Date.now() + REQUEST_TTL_DAYS * DAY),
         rematchOf,
+        resumeId: body.resumeId ? new Types.ObjectId(body.resumeId) : null,
       });
     } catch (e) {
       if (isDuplicate(e)) throw conflict('You already have an open request with this mentor');

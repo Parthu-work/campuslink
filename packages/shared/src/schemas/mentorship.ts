@@ -143,6 +143,8 @@ const requestTarget = {
   mentorId: objectId,
   sessionType: z.enum(SESSION_TYPES),
   slotStart: slotStart.optional(),
+  /** Prompt 2, G2: the résumé a résumé review is about (the reviewer may read and comment on it). */
+  resumeId: objectId.optional(),
 };
 export const mentorshipRequestBody = z
   .union([requestMessage.extend(requestTarget), requestText.extend(requestTarget)])
@@ -153,6 +155,10 @@ export const mentorshipRequestBody = z
   .refine((b) => isBookable(b.sessionType) || !b.slotStart, {
     message: 'Quick chats have no time slot',
     path: ['slotStart'],
+  })
+  .refine((b) => !b.resumeId || b.sessionType === 'resume_review', {
+    message: 'Only a résumé review carries a résumé',
+    path: ['resumeId'],
   });
 export type MentorshipRequestBody = z.infer<typeof mentorshipRequestBody>;
 
@@ -275,6 +281,8 @@ export interface RequestView {
   expiresAt: string;
   /** B5: other mentors were suggested (48 hours without a reply); the mentee may rematch in one tap. */
   rematchOffered: boolean;
+  /** Prompt 2, G2: the résumé a résumé review is about (the mentor opens it at /resume/:id). */
+  resumeId: string | null;
 }
 export interface BookingView {
   id: string;

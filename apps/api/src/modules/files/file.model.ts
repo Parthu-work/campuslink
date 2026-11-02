@@ -20,6 +20,8 @@ export const FILE_PURPOSES = [
   'invoice',
   // Help and support (B14): a screenshot attached to a problem report.
   'support_screenshot',
+  // Résumés (prompt 2, G2): a résumé's rendered PDF, served only through the résumé routes.
+  'resume_pdf',
 ] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 

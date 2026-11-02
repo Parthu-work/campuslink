@@ -144,6 +144,8 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return '/home';
       case 'account_inactive':
         return '/settings/privacy';
+      case 'resume_comment':
+        return `/resume/${d.resumeId ?? ''}`;
       default:
         return '/sessions';
     }

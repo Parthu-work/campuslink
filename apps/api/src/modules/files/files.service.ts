@@ -509,6 +509,15 @@ export class FilesService {
   }
 
   /** An issued invoice's PDF (B10): the college's own file, served only by the billing routes. */
+  /**
+   * A résumé's rendered PDF (prompt 2, G2): our own output, scanned like any file, kept until the
+   * next render replaces it; served only through the résumé routes, never by /files.
+   */
+  async storeResumePdf(ownerId: string, data: Buffer) {
+    if (data.subarray(0, 5).toString('latin1') !== '%PDF-') throw unsupported('Not a PDF');
+    return this.store(ownerId, 'resume_pdf', data, 'application/pdf');
+  }
+
   async storeInvoice(data: Buffer) {
     if (data.subarray(0, 5).toString('latin1') !== '%PDF-') throw unsupported('Not a PDF');
     return this.store(null, 'invoice', data, 'application/pdf');

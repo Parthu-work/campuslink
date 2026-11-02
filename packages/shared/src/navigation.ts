@@ -17,6 +17,7 @@ export type NavId =
   | 'jobs'
   | 'placements'
   | 'outcomes'
+  | 'resume'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -174,6 +175,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   placements: d('placements', '/placements', 'explore', ['placements:view', 'placements:manage']),
   // Offers, higher studies, exams and ventures (B8): students and alumni report their own.
   outcomes: d('outcomes', '/outcomes', 'you', ['outcomes:report']),
+  // Résumé builder, ATS check and alumni review (prompt 2, G2).
+  resume: d('resume', '/resume', 'you', ['resumes:manage']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -289,6 +292,7 @@ const MENU_ORDER: readonly NavId[] = [
   'following',
   'leaderboard',
   'outcomes',
+  'resume',
   'progress',
   'rewards',
   'saved',

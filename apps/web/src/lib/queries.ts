@@ -66,6 +66,9 @@ import type {
   LegalSettingsView,
   SupportStatus,
   SupportTicketView,
+  ResumeCommentView,
+  ResumeSummaryView,
+  ResumeView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -717,4 +720,23 @@ export const adminLegal = () =>
   queryOptions({
     queryKey: ['admin-legal'],
     queryFn: ({ signal }) => api.get<LegalSettingsView>('/admin/legal', signal),
+  });
+
+// Résumés (prompt 2, G2).
+export const resumes = () =>
+  queryOptions({
+    queryKey: ['resumes'],
+    queryFn: ({ signal }) => api.get<ResumeSummaryView[]>('/resumes', signal),
+  });
+
+export const resume = (id: string) =>
+  queryOptions({
+    queryKey: ['resume', id],
+    queryFn: ({ signal }) => api.get<ResumeView>(`/resumes/${id}`, signal),
+  });
+
+export const resumeComments = (id: string) =>
+  queryOptions({
+    queryKey: ['resume-comments', id],
+    queryFn: ({ signal }) => api.get<ResumeCommentView[]>(`/resumes/${id}/comments`, signal),
   });

@@ -19,13 +19,15 @@ import type { z } from 'zod';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { ChoiceGroup } from '../../components/ui/choice-group';
-import { Field, Textarea } from '../../components/ui/field';
+import { Field, Select, Textarea } from '../../components/ui/field';
 import { EmptyState } from '../../components/ui/misc';
 import { Illustration } from '../../components/ui/illustration';
 import { SlotPicker } from '../../components/ui/slot-picker';
 import { Stepper } from '../../components/ui/stepper';
 import { FormError } from '../../components/layout/auth-layout';
 import { api } from '../../lib/api';
+import { useCan } from '../../lib/me';
+import { resumes } from '../../lib/queries';
 import { focusOnMount } from '../../lib/focus';
 import { applyApiError } from '../../lib/errors';
 import { formatDateTime, newIdempotencyKey } from '../../lib/format';
@@ -47,6 +49,11 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
   const [key, setKey] = useState(newIdempotencyKey);
   const box = useRef<HTMLTextAreaElement | null>(null);
   const bookable = isBookable(type);
+  // Prompt 2, G2: a résumé review can carry one of the mentee's résumés (the mentor opens it).
+  const canResumes = useCan('resumes:manage');
+  const myResumes = useQuery({ ...resumes(), enabled: canResumes && type === 'resume_review' });
+  const [resumeId, setResumeId] = useState<string | null>(null);
+  const chosenResume = type === 'resume_review' ? (resumeId ?? myResumes.data?.[0]?.id ?? '') : '';
   const slots = useQuery({
     queryKey: ['slots', mentor.userId, type],
     queryFn: () => api.get<SlotsView>(`/mentors/${mentor.userId}/slots?type=${type}&days=14`),
@@ -67,6 +74,7 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
           sessionType: type,
           ...text,
           ...(bookable && slot ? { slotStart: slot } : {}),
+          ...(chosenResume ? { resumeId: chosenResume } : {}),
         },
         key,
       ),
@@ -127,6 +135,25 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
             }}
           />
         </fieldset>
+        {type === 'resume_review' && !!myResumes.data?.length && (
+          <Field label={t('request.resume')} hint={t('request.resumeHint', { name: first })}>
+            {({ id, describedBy }) => (
+              <Select
+                id={id}
+                aria-describedby={describedBy}
+                value={chosenResume}
+                onChange={(e) => setResumeId(e.target.value)}
+              >
+                <option value="">{t('request.noResume')}</option>
+                {myResumes.data.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.title}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        )}
         {bookable && (
           <SlotPicker
             label={t('request.pickTime')}

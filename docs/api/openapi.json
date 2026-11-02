@@ -375,6 +375,7 @@
                               "rewards:redeem",
                               "support:create",
                               "support:manage",
+                              "resumes:manage",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -461,6 +462,7 @@
                               "rewards:redeem",
                               "support:create",
                               "support:manage",
+                              "resumes:manage",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -5543,6 +5545,10 @@
                         "type": "string",
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "resumeId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
                       }
                     },
                     "required": [
@@ -5587,6 +5593,10 @@
                         "type": "string",
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "resumeId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
                       }
                     },
                     "required": [
@@ -15649,6 +15659,10 @@
                   "resumeFileId": {
                     "type": "string",
                     "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "resumeId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
                   }
                 },
                 "additionalProperties": false
@@ -19020,6 +19034,1096 @@
           }
         },
         "x-permission": "platform:support"
+      }
+    },
+    "/api/v1/resumes": {
+      "get": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "My résumés",
+        "description": "Requires permission `resumes:manage` (Build résumés, check them against a role and ask an alumnus to review one). Host scope: college.",
+        "operationId": "resumes_get_resumes",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "resumes:manage"
+      },
+      "post": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "Create a résumé (prefilled unless content is given)",
+        "description": "Requires permission `resumes:manage` (Build résumés, check them against a role and ask an alumnus to review one). Host scope: college. Rate limit: posting.",
+        "operationId": "resumes_post_resumes",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "template": {
+                    "default": "classic",
+                    "type": "string",
+                    "enum": [
+                      "classic",
+                      "compact"
+                    ]
+                  },
+                  "content": {
+                    "type": "object",
+                    "properties": {
+                      "basics": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "maxLength": 80
+                          },
+                          "label": {
+                            "default": "",
+                            "type": "string",
+                            "maxLength": 80
+                          },
+                          "email": {
+                            "default": "",
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": ""
+                              },
+                              {
+                                "type": "string",
+                                "maxLength": 120,
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                              }
+                            ]
+                          },
+                          "phone": {
+                            "default": "",
+                            "type": "string",
+                            "maxLength": 30
+                          },
+                          "location": {
+                            "default": "",
+                            "type": "string",
+                            "maxLength": 80
+                          },
+                          "summary": {
+                            "default": "",
+                            "type": "string",
+                            "maxLength": 600
+                          },
+                          "profiles": {
+                            "default": [],
+                            "maxItems": 4,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "network": {
+                                  "type": "string",
+                                  "maxLength": 30
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "maxLength": 200,
+                                  "format": "uri"
+                                }
+                              },
+                              "required": [
+                                "network",
+                                "url"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "education": {
+                        "default": [],
+                        "maxItems": 5,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "institution": {
+                              "type": "string",
+                              "maxLength": 120
+                            },
+                            "area": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 80
+                            },
+                            "studyType": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 60
+                            },
+                            "startDate": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            },
+                            "endDate": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            },
+                            "score": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 30
+                            }
+                          },
+                          "required": [
+                            "institution"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "work": {
+                        "default": [],
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "maxLength": 100
+                            },
+                            "position": {
+                              "type": "string",
+                              "maxLength": 80
+                            },
+                            "startDate": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            },
+                            "endDate": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            },
+                            "highlights": {
+                              "default": [],
+                              "maxItems": 6,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 220
+                              }
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "position"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "projects": {
+                        "default": [],
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "maxLength": 100
+                            },
+                            "description": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 300
+                            },
+                            "url": {
+                              "default": "",
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "const": ""
+                                },
+                                {
+                                  "type": "string",
+                                  "maxLength": 200,
+                                  "format": "uri"
+                                }
+                              ]
+                            },
+                            "highlights": {
+                              "default": [],
+                              "maxItems": 6,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 220
+                              }
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "skills": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "maxLength": 60
+                            },
+                            "keywords": {
+                              "default": [],
+                              "maxItems": 15,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 40
+                              }
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "certificates": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "maxLength": 120
+                            },
+                            "issuer": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 80
+                            },
+                            "date": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "awards": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "title": {
+                              "type": "string",
+                              "maxLength": 120
+                            },
+                            "awarder": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 80
+                            },
+                            "date": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            }
+                          },
+                          "required": [
+                            "title"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "basics"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "title"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "resumes:manage"
+      }
+    },
+    "/api/v1/resumes/prefill": {
+      "get": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "A first draft from my profile, academic record and finished roadmaps",
+        "description": "Requires permission `resumes:manage` (Build résumés, check them against a role and ask an alumnus to review one). Host scope: college.",
+        "operationId": "resumes_get_resumes_prefill",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "resumes:manage"
+      }
+    },
+    "/api/v1/resumes/{id}": {
+      "get": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "A résumé (mine, or one I was asked to review)",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "resumes_get_resumes_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "put": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "Save a résumé (refused if it changed since the version I started from)",
+        "description": "Requires permission `resumes:manage` (Build résumés, check them against a role and ask an alumnus to review one). Host scope: college. Rate limit: posting.",
+        "operationId": "resumes_put_resumes_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "template": {
+                    "type": "string",
+                    "enum": [
+                      "classic",
+                      "compact"
+                    ]
+                  },
+                  "content": {
+                    "type": "object",
+                    "properties": {
+                      "basics": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "maxLength": 80
+                          },
+                          "label": {
+                            "default": "",
+                            "type": "string",
+                            "maxLength": 80
+                          },
+                          "email": {
+                            "default": "",
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": ""
+                              },
+                              {
+                                "type": "string",
+                                "maxLength": 120,
+                                "format": "email",
+                                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                              }
+                            ]
+                          },
+                          "phone": {
+                            "default": "",
+                            "type": "string",
+                            "maxLength": 30
+                          },
+                          "location": {
+                            "default": "",
+                            "type": "string",
+                            "maxLength": 80
+                          },
+                          "summary": {
+                            "default": "",
+                            "type": "string",
+                            "maxLength": 600
+                          },
+                          "profiles": {
+                            "default": [],
+                            "maxItems": 4,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "network": {
+                                  "type": "string",
+                                  "maxLength": 30
+                                },
+                                "url": {
+                                  "type": "string",
+                                  "maxLength": 200,
+                                  "format": "uri"
+                                }
+                              },
+                              "required": [
+                                "network",
+                                "url"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "education": {
+                        "default": [],
+                        "maxItems": 5,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "institution": {
+                              "type": "string",
+                              "maxLength": 120
+                            },
+                            "area": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 80
+                            },
+                            "studyType": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 60
+                            },
+                            "startDate": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            },
+                            "endDate": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            },
+                            "score": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 30
+                            }
+                          },
+                          "required": [
+                            "institution"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "work": {
+                        "default": [],
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "maxLength": 100
+                            },
+                            "position": {
+                              "type": "string",
+                              "maxLength": 80
+                            },
+                            "startDate": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            },
+                            "endDate": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            },
+                            "highlights": {
+                              "default": [],
+                              "maxItems": 6,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 220
+                              }
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "position"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "projects": {
+                        "default": [],
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "maxLength": 100
+                            },
+                            "description": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 300
+                            },
+                            "url": {
+                              "default": "",
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "const": ""
+                                },
+                                {
+                                  "type": "string",
+                                  "maxLength": 200,
+                                  "format": "uri"
+                                }
+                              ]
+                            },
+                            "highlights": {
+                              "default": [],
+                              "maxItems": 6,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 220
+                              }
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "skills": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "maxLength": 60
+                            },
+                            "keywords": {
+                              "default": [],
+                              "maxItems": 15,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "maxLength": 40
+                              }
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "certificates": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "maxLength": 120
+                            },
+                            "issuer": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 80
+                            },
+                            "date": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "awards": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "title": {
+                              "type": "string",
+                              "maxLength": 120
+                            },
+                            "awarder": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 80
+                            },
+                            "date": {
+                              "default": "",
+                              "type": "string",
+                              "pattern": "^(\\d{4}(-(0[1-9]|1[0-2]))?)?$"
+                            }
+                          },
+                          "required": [
+                            "title"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "basics"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "version"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "resumes:manage"
+      },
+      "delete": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "Delete one of my résumés",
+        "description": "Requires permission `resumes:manage` (Build résumés, check them against a role and ask an alumnus to review one). Host scope: college.",
+        "operationId": "resumes_delete_resumes_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "resumes:manage"
+      }
+    },
+    "/api/v1/resumes/{id}/pdf": {
+      "get": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "Download the résumé as an ATS-friendly PDF (mine, or one I review)",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "resumes_get_resumes_id_pdf",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/resumes/{id}/ats": {
+      "post": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "Check the résumé: parseability, and keywords against a pasted job description or a drive",
+        "description": "Requires permission `resumes:manage` (Build résumés, check them against a role and ask an alumnus to review one). Host scope: college. Rate limit: aiChat.",
+        "operationId": "resumes_post_resumes_id_ats",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "jobDescription": {
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "driveId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "resumes:manage"
+      }
+    },
+    "/api/v1/resumes/{id}/rewrite": {
+      "post": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "Three tighter versions of one bullet that keep its facts (AI when available, else rules)",
+        "description": "Requires permission `resumes:manage` (Build résumés, check them against a role and ask an alumnus to review one). Host scope: college. Rate limit: aiChat.",
+        "operationId": "resumes_post_resumes_id_rewrite",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "section": {
+                    "type": "string",
+                    "enum": [
+                      "work",
+                      "projects"
+                    ]
+                  },
+                  "entry": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "bullet": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 5
+                  }
+                },
+                "required": [
+                  "section",
+                  "entry",
+                  "bullet"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "resumes:manage"
+      }
+    },
+    "/api/v1/resumes/{id}/comments": {
+      "get": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "Review comments on a résumé (its owner and its reviewers)",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "resumes_get_resumes_id_comments",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "post": {
+        "tags": [
+          "Résumés"
+        ],
+        "summary": "Comment on a section of a résumé I review (or my own)",
+        "description": "Any signed-in user. Host scope: college. Rate limit: interact.",
+        "operationId": "resumes_post_resumes_id_comments",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "section": {
+                    "type": "string",
+                    "enum": [
+                      "basics",
+                      "education",
+                      "work",
+                      "projects",
+                      "skills",
+                      "certificates",
+                      "awards",
+                      "general"
+                    ]
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "section",
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
       }
     },
     "/api/v1/legal/{doc}": {
@@ -23642,7 +24746,8 @@
                       "roadmap_comment",
                       "event",
                       "event_question",
-                      "review"
+                      "review",
+                      "resume_comment"
                     ]
                   },
                   "targetId": {
@@ -23732,7 +24837,8 @@
                 "roadmap_comment",
                 "event",
                 "event_question",
-                "review"
+                "review",
+                "resume_comment"
               ]
             }
           },
@@ -24110,7 +25216,8 @@
                       "roadmap_comment",
                       "event",
                       "event_question",
-                      "review"
+                      "review",
+                      "resume_comment"
                     ]
                   },
                   "targetId": {

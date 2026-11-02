@@ -734,6 +734,31 @@ export class RoadmapsService {
   }
 
   // ── Progress ─────────────────────────────
+  /**
+   * Roadmaps a member finished (every step of the published version done), with when they finished:
+   * the "certificates" a résumé is prefilled with (prompt 2, G2).
+   */
+  async finishedFor(userId: string): Promise<{ title: string; at: Date }[]> {
+    const progress = await RoadmapProgressModel.find({ userId: oid(userId) }).lean<ProgressDoc[]>();
+    const out: { title: string; at: Date }[] = [];
+    for (const p of progress) {
+      const r = await RoadmapModel.findById(p.roadmapId).lean<RoadmapDoc>();
+      if (!r || r.publishedVersion === null || r.publishedVersion === undefined) continue;
+      const v = await RoadmapVersionModel.findOne({
+        roadmapId: r._id,
+        version: r.publishedVersion,
+      }).lean<VersionDoc>();
+      const ids = new Set(v?.content.nodes.map((n) => n.id) ?? []);
+      const done = p.done.filter((d) => !!d.nodeId && ids.has(d.nodeId));
+      if (ids.size && done.length >= ids.size)
+        out.push({
+          title: r.title,
+          at: new Date(Math.max(...done.map((d) => (d.at ? new Date(d.at).getTime() : 0)))),
+        });
+    }
+    return out;
+  }
+
   private async liveContent(id: string) {
     const r = await this.byId(id);
     if (!isLive(r) || r.publishedVersion === null) throw notFound('Roadmap');

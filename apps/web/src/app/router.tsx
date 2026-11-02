@@ -99,6 +99,8 @@ const load = {
   driveEditor: () => import('../features/admin/drive-editor'),
   driveManage: () => import('../features/admin/drive-manage'),
   outcomes: () => import('../features/outcomes/outcomes'),
+  resumes: () => import('../features/resume/resumes'),
+  resume: () => import('../features/resume/resume-page'),
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
@@ -469,6 +471,13 @@ function collegeRoutes(): RouteObject[] {
             inFeature('placements', 'outcomes:report'),
             at('/outcomes'),
             () => [qc.ensureQueryData(q.myOffers()), qc.ensureQueryData(q.myOutcomes())],
+          ),
+          // Résumés (prompt 2, G2): the owner edits; a reviewer opens one from a review request.
+          screen(load.resumes, 'ResumesPage', 'resumes:manage', at('/resume'), () => [
+            qc.ensureQueryData(q.resumes()),
+          ]),
+          screen(load.resume, 'ResumePage', undefined, at('/resume/:id'), ({ id }) =>
+            isId(id) ? [qc.ensureQueryData(q.resume(id))] : [],
           ),
           screen(
             load.drivePage,

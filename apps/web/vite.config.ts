@@ -9,7 +9,8 @@ import { pureShared } from './pure-shared';
 /** Same-origin API proxy. Sockets that close mid-flight (tab closed) are normal, not errors. */
 const apiProxy = {
   '/api': {
-    target: 'http://127.0.0.1:4000',
+    // E2E runs set it when a dev server already holds port 4000 (playwright.config.ts).
+    target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:4000',
     changeOrigin: false,
     ws: true,
     configure: (proxy: { on: (e: 'error', cb: (err: NodeJS.ErrnoException) => void) => void }) =>

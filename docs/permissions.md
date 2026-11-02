@@ -75,6 +75,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `platform:billing` Plans, invoices and payments for every college | ✅ | · | · | · | · | · |
 | `platform:support` Answer problem reports members sent to the platform (bugs) | ✅ | · | · | · | · | · |
 | `support:create` Report a problem and follow its replies | · | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `resumes:manage` Build résumés, check them against a role and ask an alumnus to review one | · | ✅ | · | · | ✅ | ✅ |
 | `support:manage` Answer and close problem reports sent to the college | · | ✅ | · | · | · | · |
 | `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ |
 | `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ |
@@ -405,6 +406,17 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/platform/support/tickets/:tenantId/:id/replies` | `platform:support` | platform | adminWrite | Answer a bug report (the member is told; audited) |
 | `PATCH /api/v1/platform/support/tickets/:tenantId/:id` | `platform:support` | platform | adminWrite | Close or reopen a bug report |
 | `GET /api/v1/platform/support/tickets/:tenantId/:id/screenshot` | `platform:support` | platform | — | The screenshot attached to a bug report |
+| `GET /api/v1/resumes` | `resumes:manage` | college | — | My résumés |
+| `GET /api/v1/resumes/prefill` | `resumes:manage` | college | — | A first draft from my profile, academic record and finished roadmaps |
+| `POST /api/v1/resumes` | `resumes:manage` | college | posting | Create a résumé (prefilled unless content is given) |
+| `GET /api/v1/resumes/:id` | any signed-in user | college | — | A résumé (mine, or one I was asked to review) |
+| `PUT /api/v1/resumes/:id` | `resumes:manage` | college | posting | Save a résumé (refused if it changed since the version I started from) |
+| `DELETE /api/v1/resumes/:id` | `resumes:manage` | college | — | Delete one of my résumés |
+| `GET /api/v1/resumes/:id/pdf` | any signed-in user | college | — | Download the résumé as an ATS-friendly PDF (mine, or one I review) |
+| `POST /api/v1/resumes/:id/ats` | `resumes:manage` | college | aiChat | Check the résumé: parseability, and keywords against a pasted job description or a drive |
+| `POST /api/v1/resumes/:id/rewrite` | `resumes:manage` | college | aiChat | Three tighter versions of one bullet that keep its facts (AI when available, else rules) |
+| `GET /api/v1/resumes/:id/comments` | any signed-in user | college | — | Review comments on a résumé (its owner and its reviewers) |
+| `POST /api/v1/resumes/:id/comments` | any signed-in user | college | interact | Comment on a section of a résumé I review (or my own) |
 | `GET /api/v1/legal/:doc` | public | college | — | The college’s privacy policy or terms, with its details filled in (public) |
 | `GET /api/v1/admin/legal` | `tenant:branding` | college | — | The college’s legal details (legal name, address, grievance officer) |
 | `GET /api/v1/admin/retention` | `tenant:settings` | college | — | Whether accounts unused for some months are deleted (and after how many) |

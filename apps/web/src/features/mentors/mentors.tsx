@@ -346,8 +346,9 @@ function MatchView() {
 
 function BrowseView() {
   const { t } = useTranslation();
+  const [search] = useSearchParams();
   const [q, setQ] = useState('');
-  const [type, setType] = useState('');
+  const [type, setType] = useState(() => search.get('type') ?? '');
   const dq = useDeferredValue(q.trim());
   const params = new URLSearchParams({ ...(dq ? { q: dq } : {}), ...(type ? { sessionType: type } : {}) });
   const list = useQuery({

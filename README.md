@@ -115,3 +115,4 @@ See `CLAUDE.md` for rules and conventions.
 
 - **Docker Hub rate limit (429):** pull through a mirror, e.g. `docker pull mirror.gcr.io/library/mongo:8.0 && docker tag mirror.gcr.io/library/mongo:8.0 mongo:8.0` (the same for `redis:7.4-alpine` and `axllent/mailpit:v1.27`), then `docker compose up -d --wait --pull never`.
 - **Playwright browser missing:** run `pnpm --filter @campuslink/web exec playwright install chromium`, or set `PW_CHROMIUM_PATH` to an existing Chromium.
+- **E2E beside `pnpm dev`:** Playwright reuses whatever answers on port 4000, so a running dev server (on the dev database) would serve the tests. Set `E2E_API_PORT` (for example `4010`) to give the test API its own port. On Windows the config's `VAR=value` server commands do not run in `cmd`: start the API (`API_PORT=4010` plus the variables in `playwright.config.ts`) and `API_PROXY_TARGET=http://127.0.0.1:4010 pnpm preview` from Git Bash first, and Playwright reuses them.

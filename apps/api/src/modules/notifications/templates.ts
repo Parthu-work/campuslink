@@ -209,6 +209,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'Your account will be deleted on {time}',
       body: 'You have not signed in for {months} months, so your college deletes your account on {time}. Sign in before then to keep it.',
     },
+    resume_comment: {
+      title: '{name} reviewed your résumé',
+      body: '{name} left a comment on your résumé. Open it to read the review.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -415,6 +419,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'మీ ఖాతా {time}న తొలగించబడుతుంది',
       body: 'మీరు {months} నెలలుగా సైన్ ఇన్ చేయలేదు, కాబట్టి మీ కాలేజీ {time}న మీ ఖాతాను తొలగిస్తుంది. దాన్ని ఉంచుకోవడానికి అంతకు ముందే సైన్ ఇన్ చేయండి.',
     },
+    resume_comment: {
+      title: '{name} మీ రెజ్యూమ్‌ను సమీక్షించారు',
+      body: '{name} మీ రెజ్యూమ్‌పై వ్యాఖ్య రాశారు. సమీక్ష చదవడానికి తెరవండి.',
+    },
   },
   hi: {
     request_received: { title: 'नया मेंटरशिप अनुरोध', body: '{name} ने आपसे {type} के लिए पूछा है।' },
@@ -605,6 +613,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     account_inactive: {
       title: 'आपका खाता {time} को हटा दिया जाएगा',
       body: 'आपने {months} महीनों से साइन इन नहीं किया है, इसलिए आपका कॉलेज {time} को आपका खाता हटा देगा। इसे रखने के लिए उससे पहले साइन इन करें।',
+    },
+    resume_comment: {
+      title: '{name} ने आपके रिज़्यूमे की समीक्षा की',
+      body: '{name} ने आपके रिज़्यूमे पर टिप्पणी की है। समीक्षा पढ़ने के लिए खोलें।',
     },
   },
 };
@@ -818,6 +830,8 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/home';
     case 'account_inactive':
       return '/settings/privacy';
+    case 'resume_comment':
+      return `/resume/${data.resumeId ?? ''}`;
     default:
       return '/sessions';
   }

@@ -128,6 +128,8 @@ export const NOTIFICATION_TYPES = [
   'weekly_digest',
   // An account unused for the college's set months will be deleted (prompt 1b, R7): two warnings.
   'account_inactive',
+  // Prompt 2, G2: a reviewer commented on your résumé.
+  'resume_comment',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -212,6 +214,7 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   support_ticket: 'requests',
   weekly_digest: 'reminders',
   account_inactive: 'reminders',
+  resume_comment: 'requests',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;

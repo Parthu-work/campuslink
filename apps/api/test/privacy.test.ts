@@ -444,6 +444,7 @@ describe('deletion', () => {
         'academics',
         'outcomes',
         'support',
+        'resumes',
       ]),
     );
   });

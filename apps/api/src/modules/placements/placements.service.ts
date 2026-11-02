@@ -103,6 +103,11 @@ const registrationOpen = (d: DriveDoc) => d.status === 'open' && d.registrationC
  * one-tap registration, overrides, exports for the company, round results and selections.
  */
 export class PlacementsService {
+  /** Set by the app: copies one of the member's résumés' PDF as a drive upload (prompt 2, G2). */
+  resumeCopy: (viewer: AuthState, resumeId: string) => Promise<string> = async () => {
+    throw badRequest('Résumés are not available');
+  };
+
   /** Product analytics (B9), set in app.ts. */
   track: Track = noTrack;
   constructor(private readonly d: PlacementsDeps) {}
@@ -362,6 +367,12 @@ export class PlacementsService {
     return scope === 'eligible' ? views.filter((v) => v.eligible || v.overridden) : views;
   }
 
+  /** A drive's title, description and roles as text, if the viewer may see it (prompt 2, G2 ATS). */
+  async roleText(viewer: AuthState, id: string): Promise<string | null> {
+    const v = await this.get(viewer, id).catch(() => null);
+    return v ? [v.title, v.description, ...v.roles.map((x) => x.title)].filter(Boolean).join('\n') : null;
+  }
+
   async get(viewer: AuthState, id: string): Promise<DriveView> {
     const d = await this.load(id);
     const staff = viewer.permissions.has('placements:manage');
@@ -397,8 +408,12 @@ export class PlacementsService {
     });
     for (const a of answers.keys())
       if (a >= d.questions.length) throw badRequest('Answer only the drive’s questions');
-    if (d.resumeRequired && !body.resumeFileId) throw badRequest('Attach your résumé (PDF)');
-    if (body.resumeFileId) files.push(body.resumeFileId);
+    // "Attach my résumé" (prompt 2, G2): a copy of one of their résumés' current PDF, as an upload.
+    if (body.resumeId && body.resumeFileId)
+      throw badRequest('Attach one résumé: upload a PDF or pick one of yours');
+    const resumeFileId = body.resumeId ? await this.resumeCopy(viewer, body.resumeId) : body.resumeFileId;
+    if (d.resumeRequired && !resumeFileId) throw badRequest('Attach your résumé (PDF)');
+    if (resumeFileId) files.push(resumeFileId);
     for (const f of files)
       if (!(await this.d.files.pending(f, viewer.userId, 'placement_resume')))
         throw badRequest('Upload the file again (it expired or is already used)');
@@ -411,7 +426,7 @@ export class PlacementsService {
     const cohort = (await this.d.profiles.cohortOf([viewer.userId])).get(viewer.userId);
     const fields = {
       answers: [...answers].map(([question, value]) => ({ question, value })),
-      resumeFileId: body.resumeFileId ? new Types.ObjectId(body.resumeFileId) : null,
+      resumeFileId: resumeFileId ? new Types.ObjectId(resumeFileId) : null,
       status: elig.eligible ? 'registered' : 'tpo_override',
       final: 'in_process',
       roundResults: [],

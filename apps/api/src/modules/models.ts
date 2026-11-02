@@ -100,3 +100,4 @@ export {
   PlatformSettingModel,
 } from './billing/billing.model.js';
 export { SupportTicketModel } from './support/support.model.js';
+export { ResumeModel, ResumeCommentModel } from './resumes/resume.model.js';

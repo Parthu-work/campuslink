@@ -7,8 +7,10 @@ import { defineConfig, devices } from '@playwright/test';
  */
 const chromium = process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {};
 const launchOptions = { ...chromium, args: ['--host-resolver-rules=MAP *.localhost 127.0.0.1'] };
+/** E2E_API_PORT runs the test API beside a dev server on 4000, instead of silently reusing it. */
+const apiPort = process.env.E2E_API_PORT ?? '4000';
 const mongo = process.env.MONGODB_URI ?? 'mongodb://127.0.0.1:27017/campuslink_e2e?directConnection=true';
-const apiEnv = `NODE_ENV=test LOG_LEVEL=warn MAIL_DRIVER=smtp INGESTION_ENABLED=false RATE_LIMIT_SCALE=50 HIBP_ENABLED=false SMS_PROVIDER=console WHATSAPP_PROVIDER=console PAYMENT_PROVIDER=stub MONGODB_URI='${mongo}' WEB_ORIGIN=http://localhost:4173 CORS_ALLOWED_ORIGINS='http://*.localhost:4173'`;
+const apiEnv = `NODE_ENV=test API_PORT=${apiPort} LOG_LEVEL=warn MAIL_DRIVER=smtp INGESTION_ENABLED=false RATE_LIMIT_SCALE=50 HIBP_ENABLED=false SMS_PROVIDER=console WHATSAPP_PROVIDER=console PAYMENT_PROVIDER=stub MONGODB_URI='${mongo}' WEB_ORIGIN=http://localhost:4173 CORS_ALLOWED_ORIGINS='http://*.localhost:4173'`;
 
 export default defineConfig({
   testDir: './e2e',
@@ -27,12 +29,12 @@ export default defineConfig({
   webServer: [
     {
       command: `${apiEnv} pnpm --filter @campuslink/api exec tsx src/server.ts`,
-      url: 'http://127.0.0.1:4000/api/v1/ready',
+      url: `http://127.0.0.1:${apiPort}/api/v1/ready`,
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
     },
     {
-      command: 'pnpm build && pnpm preview',
+      command: `pnpm build && API_PROXY_TARGET=http://127.0.0.1:${apiPort} pnpm preview`,
       url: 'http://127.0.0.1:4173',
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,

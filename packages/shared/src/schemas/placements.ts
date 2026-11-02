@@ -150,6 +150,8 @@ export const registerBody = z.strictObject({
     .max(10)
     .default([]),
   resumeFileId: objectId.optional(),
+  /** Prompt 2, G2: attach one of my résumés (its current PDF is copied to the registration). */
+  resumeId: objectId.optional(),
 });
 /** Let one ineligible student in: by member id or by the roll number the placement cell knows. */
 export const overrideBody = z
