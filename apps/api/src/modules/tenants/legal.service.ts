@@ -6,6 +6,8 @@ import {
   type LegalDocView,
   type LegalSettingsBody,
   type LegalSettingsView,
+  type RetentionBody,
+  type RetentionView,
 } from '@campuslink/shared';
 import { TenantModel } from './tenant.model.js';
 import { findTenantById, invalidateTenant, type TenantRecord } from './tenant.cache.js';
@@ -20,7 +22,7 @@ import { requireTenantId } from '../../lib/context.js';
  * The college's legal pages and notice versions (build B14). The privacy policy and terms are the
  * platform's templates (legal-templates.ts) filled with the college's details. The notice version
  * a member accepts is the platform's `PRIVACY_NOTICE_VERSION`, plus the college's own version once
- * it has published its details (`2026-11-draft+c2`); when either changes, members accept again on
+ * it has published its details (`2026-11b-draft+c2`); when either changes, members accept again on
  * their next sign-in. Acceptances are append-only consent records, kept on erasure.
  */
 export class LegalService {
@@ -83,6 +85,44 @@ export class LegalService {
     return tr?.reviewed ? { lang: lang as 'te' | 'hi', ...tr } : null;
   }
 
+  // ── Inactive accounts (prompt 1b, R7) ─────────────────────────────
+
+  retention(t: TenantRecord): RetentionView {
+    return {
+      inactiveAccountMonths: t.retention?.inactiveAccountMonths ?? null,
+      deletedAccountGraceDays: t.retention?.deletedAccountGraceDays ?? 30,
+    };
+  }
+
+  /**
+   * Turns the inactive-account purge on or off, or changes its months. The privacy policy states it,
+   * so a change is a new notice version that members accept on their next sign-in. Audited.
+   */
+  async updateRetention(t: TenantRecord, actorId: string, body: RetentionBody, meta: RequestMetaLite) {
+    const before = t.retention?.inactiveAccountMonths ?? null;
+    if (before === body.inactiveAccountMonths) return this.retention(t);
+    const fresh = await TenantModel.findOneAndUpdate(
+      { _id: t._id },
+      {
+        $set: { 'retention.inactiveAccountMonths': body.inactiveAccountMonths },
+        $inc: { 'legal.version': 1 },
+      },
+      { returnDocument: 'after' },
+    ).lean<TenantRecord>();
+    invalidateTenant(t.slug);
+    await audit.record(
+      {
+        action: 'tenant.retention_changed',
+        actorId,
+        targetType: 'tenant',
+        targetId: String(t._id),
+        meta: { inactiveMonthsBefore: before, inactiveMonthsAfter: body.inactiveAccountMonths },
+      },
+      meta,
+    );
+    return this.retention(fresh ?? t);
+  }
+
   doc(t: TenantRecord, doc: LegalDoc, lang?: string): LegalDocView {
     const tr = this.translation(lang);
     const labels = tr?.labels ?? {
@@ -91,6 +131,8 @@ export class LegalService {
       noOfficer:
         'The college has not named its grievance officer here yet. Write to the college office meanwhile.',
       noAddress: 'not published yet (ask the college office)',
+      inactivePurge:
+        ' If you do not sign in for {months} months, your account is deleted: we tell you 60 days before and again 14 days before, and signing in keeps it. Staff accounts, and accounts with a placement in progress or an open problem report, are not deleted this way.',
     };
     const l = t.legal;
     const officer = l?.grievanceOfficer ?? null;
@@ -102,6 +144,10 @@ export class LegalService {
       legalName,
       address: address ?? labels.noAddress,
       graceDays: String(t.retention?.deletedAccountGraceDays ?? 30),
+      // Stated only when the college turned the inactive-account purge on (prompt 1b, R7).
+      inactivePurge: t.retention?.inactiveAccountMonths
+        ? labels.inactivePurge.replace('{months}', String(t.retention.inactiveAccountMonths))
+        : '',
       version: this.noticeVersion(t),
       officer: officer
         ? `- **${officer.name}**, ${officer.designation}\n- ${labels.email}: ${officer.email}${officer.phone ? `\n- ${labels.phone}: ${officer.phone}` : ''}`

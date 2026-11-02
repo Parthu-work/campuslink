@@ -45,6 +45,7 @@ import {
 import { ChannelService } from './modules/notifications/channels/channel.service.js';
 import { channelRoutes } from './modules/notifications/channels/channel.routes.js';
 import { OtpSender } from './modules/notifications/channels/otp-sender.js';
+import { InactivityService } from './modules/privacy/inactivity.service.js';
 import { DIGEST_JOB, DigestService } from './modules/notifications/digest.service.js';
 import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
 import { OtpService } from './modules/verification/otp.service.js';
@@ -997,6 +998,14 @@ export function createApp({
 
   // ── Privacy rights (Phase 8) ─────────────────────────────
   const privacyService = new PrivacyService({ auth: authService, profiles: profilesService, logger });
+  // The inactive-account purge (prompt 1b, R7): only where a college turned it on.
+  const inactivityService = new InactivityService({
+    auth: authService,
+    privacy: privacyService,
+    notifications: notificationsService,
+    keep: async (ids) =>
+      new Set([...(await placementsService.inProgressFor(ids)), ...(await supportService.openFor(ids))]),
+  });
   const hook = (svc: { exportFor(u: string): Promise<unknown>; eraseFor(u: string): Promise<void> }) => ({
     exportFor: (u: string) => svc.exportFor(u),
     eraseFor: (u: string) => svc.eraseFor(u),
@@ -1313,6 +1322,7 @@ export function createApp({
     events: eventsService,
     analytics: analyticsService,
     privacy: privacyService,
+    inactivity: inactivityService,
     productInsights,
     subjects: subjectsService,
     aiSettings: aiSettingsService,

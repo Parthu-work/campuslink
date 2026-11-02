@@ -24,6 +24,7 @@ import { JobSourcesService } from './modules/job-sources/job-sources.service.js'
 import { JobsService } from './modules/jobs/jobs.service.js';
 import { RoadmapsService } from './modules/roadmaps/roadmaps.service.js';
 import { GuardianService } from './modules/verification/guardian.service.js';
+import type { InactivityService } from './modules/privacy/inactivity.service.js';
 
 const env = loadEnv();
 const logger = createLogger(env.LOG_LEVEL);
@@ -100,6 +101,7 @@ async function main() {
     realtime: RealtimeGateway;
     privacy: PrivacyService;
     productInsights: InsightsService;
+    inactivity: InactivityService;
   };
   // A worker serves only its health and readiness (for the container check), never the API.
   const server =
@@ -117,8 +119,8 @@ async function main() {
   else services.realtime.attach(server, createAdapter(ioPub, ioSub));
   const files = services.files;
   const retention = () =>
-    runRetention(files, logger, services.privacy, services.productInsights).catch((err: unknown) =>
-      logger.error({ err }, 'retention failed'),
+    runRetention(files, logger, services.privacy, services.productInsights, services.inactivity).catch(
+      (err: unknown) => logger.error({ err }, 'retention failed'),
     );
   // Timers that queue background work run where jobs run (an `api` process leaves them to workers).
   if (runsJobs) {

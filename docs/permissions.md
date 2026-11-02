@@ -407,6 +407,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/platform/support/tickets/:tenantId/:id/screenshot` | `platform:support` | platform | — | The screenshot attached to a bug report |
 | `GET /api/v1/legal/:doc` | public | college | — | The college’s privacy policy or terms, with its details filled in (public) |
 | `GET /api/v1/admin/legal` | `tenant:branding` | college | — | The college’s legal details (legal name, address, grievance officer) |
+| `GET /api/v1/admin/retention` | `tenant:settings` | college | — | Whether accounts unused for some months are deleted (and after how many) |
+| `PUT /api/v1/admin/retention` | `tenant:settings` | college | adminWrite | Turn the inactive-account purge on (24 to 120 months) or off; members accept the new notice |
 | `PUT /api/v1/admin/legal` | `tenant:branding` | college | adminWrite | Publish the college’s legal details (members accept the new notice on next sign-in) |
 | `POST /api/v1/me/notice` | any signed-in user | college | — | Accept the current privacy notice and terms |
 | `POST /api/v1/client-errors` | public | any | telemetry | A browser reports a broken screen or a failed chunk load (no personal data; rate-limited) |

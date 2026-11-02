@@ -50,6 +50,17 @@ export class SupportService {
     });
   }
 
+  /** The inactive-account purge (prompt 1b, R7) never takes a member with a report not closed. */
+  async openFor(userIds: string[]): Promise<Set<string>> {
+    const rows = await SupportTicketModel.find({
+      userId: { $in: userIds.map((u) => new Types.ObjectId(u)) },
+      status: { $ne: 'closed' },
+    })
+      .select('userId')
+      .lean();
+    return new Set(rows.map((r) => String(r.userId)));
+  }
+
   // ── Members ─────────────────────────────
 
   async create(

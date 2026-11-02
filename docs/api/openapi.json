@@ -19181,6 +19181,81 @@
         "x-permission": "tenant:branding"
       }
     },
+    "/api/v1/admin/retention": {
+      "get": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Whether accounts unused for some months are deleted (and after how many)",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college.",
+        "operationId": "legal_get_admin_retention",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      },
+      "put": {
+        "tags": [
+          "Legal"
+        ],
+        "summary": "Turn the inactive-account purge on (24 to 120 months) or off; members accept the new notice",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "legal_put_admin_retention",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "inactiveAccountMonths": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 24,
+                        "maximum": 120
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "inactiveAccountMonths"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
     "/api/v1/me/notice": {
       "post": {
         "tags": [

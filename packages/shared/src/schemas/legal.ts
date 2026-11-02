@@ -60,3 +60,23 @@ export interface LegalDocView {
   translated: boolean;
 }
 export const noticeAcceptBody = z.strictObject({ version: z.string().min(1).max(60) });
+
+// ── Inactive accounts (prompt 1b, R7) ───────────────────────────────
+
+/** A college may delete accounts unused this long; off unless it turns it on. */
+export const INACTIVE_MONTHS_MIN = 24;
+export const INACTIVE_MONTHS_MAX = 120;
+/** Warnings before an inactive account is scheduled for deletion, in days before the deadline. */
+export const INACTIVE_WARNING_DAYS = [60, 14] as const;
+
+export const retentionBody = z.strictObject({
+  /** Null turns it off. */
+  inactiveAccountMonths: z.number().int().min(INACTIVE_MONTHS_MIN).max(INACTIVE_MONTHS_MAX).nullable(),
+});
+export type RetentionBody = z.infer<typeof retentionBody>;
+
+export interface RetentionView {
+  inactiveAccountMonths: number | null;
+  /** Days between a scheduled deletion and the erasure (cancelled by signing in). */
+  deletedAccountGraceDays: number;
+}

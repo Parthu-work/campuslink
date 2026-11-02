@@ -56,6 +56,14 @@ const userSchema = new Schema(
     /** Bumped on password change, suspension or role change to invalidate outstanding access tokens. */
     tokenVersion: { type: Number, default: 0 },
     lastLoginAt: { type: Date, default: null },
+    /**
+     * The last inactivity warning sent (prompt 1b, R7): 60 or 14 days before the deadline. It counts
+     * only while no activity is newer than it, so signing in starts the clock again.
+     */
+    inactivityWarning: {
+      type: new Schema({ stage: Number, at: Date }, { _id: false, strict: 'throw' }),
+      default: null,
+    },
   },
   baseSchemaOptions,
 );

@@ -240,10 +240,23 @@ export const WHATSAPP_TEMPLATES: Partial<Record<NotificationType, WaTemplate>> =
       te: 'మీ అలర్ట్ “{{2}}”కి {{1}} కొత్త ఉద్యోగాలు సరిపోలాయి. చూడటానికి యాప్ తెరవండి.',
       hi: 'आपके अलर्ट “{{2}}” से {{1}} नई नौकरियां मेल खाती हैं। देखने के लिए ऐप खोलें।',
     },
-  } /**
+  },
+  /** An unused account will be deleted (prompt 1b, R7): the months and the date, nothing else. */
+  account_inactive: {
+    name: 'cl_account_inactive',
+    category: 'utility',
+    critical: true,
+    params: (d, c) => [d.months ?? '', when(d.start, c.lang, c.timezone)],
+    text: {
+      en: 'You have not signed in to your college app for {{1}} months, so your account will be deleted on {{2}}. Sign in before then to keep it.',
+      te: 'మీరు {{1}} నెలలుగా మీ కాలేజీ యాప్‌లో సైన్ ఇన్ చేయలేదు, కాబట్టి మీ ఖాతా {{2}}న తొలగించబడుతుంది. దాన్ని ఉంచుకోవడానికి అంతకు ముందే సైన్ ఇన్ చేయండి.',
+      hi: 'आपने {{1}} महीनों से अपने कॉलेज ऐप में साइन इन नहीं किया है, इसलिए आपका खाता {{2}} को हटा दिया जाएगा। इसे रखने के लिए उससे पहले साइन इन करें।',
+    },
+  },
+  /**
    * The weekly digest (prompt 1b, R8): the member's first name and three counts, never names of
    * others, companies or text. Not critical: the member's weekly cap and the allowance apply.
-   */,
+   */
   weekly_digest: {
     name: 'cl_weekly_digest',
     category: 'utility',

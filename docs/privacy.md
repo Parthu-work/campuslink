@@ -146,7 +146,7 @@
 | Product events                      | Rolled up into daily counts after 13 months, then deleted              |
 | Audit log                           | Kept                                                                   |
 
-File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable per tenant: inactive accounts (default 3 years) and deleted-account grace (default 30 days); those purges ship with the privacy release.
+File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable per tenant: the deleted-account grace (default 30 days). **Inactive accounts (prompt 1b, R7):** off unless a college turns it on (Admin › Branding › Legal details › Unused accounts, 24 to 120 months, `tenant:settings`, audited). When on, the daily retention run warns a member with no activity (sign-in or session refresh) for that long 60 days and again 14 days before the deadline, by the channels they have, then schedules their erasure through `PrivacyService` with the college's grace period; signing in at any point starts the clock again. Each step waits for the one before, so a college that turns it on gives long-inactive members both warnings and at least 60 days. Never deleted this way: staff and admins (college admin, TPO, faculty), and members with a registration on a drive not finished, an offer waiting for verification, or a problem report not closed. The privacy policy states it only while it is on, and changing it is a new notice version.
 
 ## Rights (implemented)
 

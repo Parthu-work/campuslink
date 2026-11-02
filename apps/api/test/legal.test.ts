@@ -167,7 +167,7 @@ describe('translated legal texts (prompt 1b, R13)', () => {
    * translation) without bumping PRIVACY_NOTICE_VERSION fails here, so members always accept again.
    * After a bump, record the new fingerprint printed by the failure.
    */
-  const FINGERPRINTS: Record<string, string> = { '2026-11-draft': '463347eef478c34e' };
+  const FINGERPRINTS: Record<string, string> = { '2026-11b-draft': 'e323244222b66889' };
   const fingerprint = () => {
     const published = Object.fromEntries(
       Object.entries(LEGAL_TRANSLATIONS)

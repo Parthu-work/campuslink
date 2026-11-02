@@ -4,6 +4,7 @@ import type {
   PlanView,
   PlatformBillingRow,
   PlatformAiPricesView,
+  RetentionView,
   PlatformCollegeBillingView,
   AdminOverviewView,
   AiUsageView,
@@ -705,6 +706,13 @@ export const legalDoc = (doc: LegalDoc, lang = 'en') =>
   });
 
 /** Admin › Branding › Legal details. */
+/** Whether the college deletes accounts unused for some months (prompt 1b, R7). */
+export const adminRetention = () =>
+  queryOptions({
+    queryKey: ['admin-retention'],
+    queryFn: ({ signal }) => api.get<RetentionView>('/admin/retention', signal),
+  });
+
 export const adminLegal = () =>
   queryOptions({
     queryKey: ['admin-legal'],

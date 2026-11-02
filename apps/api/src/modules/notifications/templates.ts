@@ -205,6 +205,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'Your week, {name}',
       body: '{drives} new drives you can register for, {requests} requests waiting for your reply, {sessions} sessions this week.',
     },
+    account_inactive: {
+      title: 'Your account will be deleted on {time}',
+      body: 'You have not signed in for {months} months, so your college deletes your account on {time}. Sign in before then to keep it.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -407,6 +411,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: '{name}, మీ వారం',
       body: 'మీరు నమోదు చేయగల కొత్త డ్రైవ్‌లు {drives}, మీ జవాబు కోసం ఎదురుచూస్తున్న అభ్యర్థనలు {requests}, ఈ వారం సెషన్‌లు {sessions}.',
     },
+    account_inactive: {
+      title: 'మీ ఖాతా {time}న తొలగించబడుతుంది',
+      body: 'మీరు {months} నెలలుగా సైన్ ఇన్ చేయలేదు, కాబట్టి మీ కాలేజీ {time}న మీ ఖాతాను తొలగిస్తుంది. దాన్ని ఉంచుకోవడానికి అంతకు ముందే సైన్ ఇన్ చేయండి.',
+    },
   },
   hi: {
     request_received: { title: 'नया मेंटरशिप अनुरोध', body: '{name} ने आपसे {type} के लिए पूछा है।' },
@@ -593,6 +601,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     weekly_digest: {
       title: '{name}, आपका हफ़्ता',
       body: 'आप जिनमें पंजीकरण कर सकते हैं ऐसी नई ड्राइव {drives}, आपके जवाब का इंतज़ार कर रहे अनुरोध {requests}, इस हफ़्ते के सत्र {sessions}।',
+    },
+    account_inactive: {
+      title: 'आपका खाता {time} को हटा दिया जाएगा',
+      body: 'आपने {months} महीनों से साइन इन नहीं किया है, इसलिए आपका कॉलेज {time} को आपका खाता हटा देगा। इसे रखने के लिए उससे पहले साइन इन करें।',
     },
   },
 };
@@ -804,6 +816,8 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return `/admin/support?report=${data.ticketId ?? ''}`;
     case 'weekly_digest':
       return '/home';
+    case 'account_inactive':
+      return '/settings/privacy';
     default:
       return '/sessions';
   }

@@ -119,6 +119,14 @@ Sent for: `job_alert`. Category: **utility**.
 - Telugu (te): `మీ అలర్ట్ “{{2}}”కి {{1}} కొత్త ఉద్యోగాలు సరిపోలాయి. చూడటానికి యాప్ తెరవండి.`
 - Hindi (hi): `आपके अलर्ट “{{2}}” से {{1}} नई नौकरियां मेल खाती हैं। देखने के लिए ऐप खोलें।`
 
+## `cl_account_inactive`
+
+Sent for: `account_inactive`. Category: **utility**. Critical (exempt from the weekly cap).
+
+- English (en): `You have not signed in to your college app for {{1}} months, so your account will be deleted on {{2}}. Sign in before then to keep it.`
+- Telugu (te): `మీరు {{1}} నెలలుగా మీ కాలేజీ యాప్‌లో సైన్ ఇన్ చేయలేదు, కాబట్టి మీ ఖాతా {{2}}న తొలగించబడుతుంది. దాన్ని ఉంచుకోవడానికి అంతకు ముందే సైన్ ఇన్ చేయండి.`
+- Hindi (hi): `आपने {{1}} महीनों से अपने कॉलेज ऐप में साइन इन नहीं किया है, इसलिए आपका खाता {{2}} को हटा दिया जाएगा। इसे रखने के लिए उससे पहले साइन इन करें।`
+
 ## `cl_weekly_digest`
 
 Sent for: `weekly_digest`. Category: **utility**.

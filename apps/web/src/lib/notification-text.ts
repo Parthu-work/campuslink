@@ -142,6 +142,8 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return `/admin/support?report=${d.ticketId ?? ''}`;
       case 'weekly_digest':
         return '/home';
+      case 'account_inactive':
+        return '/settings/privacy';
       default:
         return '/sessions';
     }

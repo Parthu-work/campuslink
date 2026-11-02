@@ -66,22 +66,44 @@ export class PrivacyService {
       throw badRequest('Your password is incorrect');
     if (await this.d.auth.deletionOf(viewer.userId))
       throw conflict('Your account is already scheduled for deletion');
+    const purgeAt = await this.scheduleDeletion(viewer.userId, tenant, 'requested', meta);
+    return { deletion: { requestedAt: new Date(), purgeAt } };
+  }
+
+  /**
+   * Schedules an erasure after the college's grace period: everyone is signed out and the profile
+   * is hidden; signing in during the grace period lets the member cancel it. Used by a member's own
+   * request and by the inactive-account purge (prompt 1b, R7).
+   */
+  async scheduleDeletion(
+    userId: string,
+    tenant: TenantRecord,
+    reason: 'requested' | 'inactive',
+    meta?: RequestMetaLite,
+  ): Promise<Date> {
     const days = tenant.retention?.deletedAccountGraceDays ?? 30;
     const purgeAt = new Date(Date.now() + days * DAY);
-    await this.d.auth.setDeletion(viewer.userId, purgeAt);
-    await this.d.auth.revokeAllSessions(viewer.userId, 'deletion_requested');
-    await this.d.profiles.sync(viewer.userId);
+    await this.d.auth.setDeletion(userId, purgeAt);
+    await this.d.auth.revokeAllSessions(userId, 'deletion_requested');
+    await this.d.profiles.sync(userId);
     await audit.record(
-      {
-        action: 'privacy.deletion_requested',
-        actorId: viewer.userId,
-        targetType: 'user',
-        targetId: viewer.userId,
-        meta: { graceDays: days },
-      },
+      reason === 'requested'
+        ? {
+            action: 'privacy.deletion_requested',
+            actorId: userId,
+            targetType: 'user',
+            targetId: userId,
+            meta: { graceDays: days },
+          }
+        : {
+            action: 'privacy.inactive_deletion_scheduled',
+            targetType: 'user',
+            targetId: userId,
+            meta: { graceDays: days },
+          },
       meta,
     );
-    return { deletion: { requestedAt: new Date(), purgeAt } };
+    return purgeAt;
   }
 
   async cancelDeletion(viewer: AuthState, meta: RequestMetaLite) {

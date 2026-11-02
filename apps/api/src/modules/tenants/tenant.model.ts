@@ -85,7 +85,10 @@ const tenantSchema = new Schema(
       updatedAt: { type: Date, default: null },
     },
     retention: {
+      /** Unused (an early placeholder); the purge reads inactiveAccountMonths. */
       inactiveAccountDays: { type: Number, default: 1095 },
+      /** Delete accounts with no sign-in for this many months (prompt 1b, R7); null: off. */
+      inactiveAccountMonths: { type: Number, default: null, min: 24, max: 120 },
       deletedAccountGraceDays: { type: Number, default: 30 },
     },
     suspendedAt: { type: Date, default: null },

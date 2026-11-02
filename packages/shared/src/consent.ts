@@ -12,8 +12,11 @@ export const CONSENT_PURPOSES = {
 } as const;
 export type ConsentPurpose = keyof typeof CONSENT_PURPOSES;
 export const CONSENT_PURPOSE_KEYS = Object.keys(CONSENT_PURPOSES) as ConsentPurpose[];
-/** Bumped when the policy text changes; members accept again (2026-11: SMS reminders, prompt 1b R4). */
-export const PRIVACY_NOTICE_VERSION = '2026-11-draft';
+/**
+ * Bumped when the policy text changes; members accept again. 2026-11: SMS reminders (prompt 1b,
+ * R4); 2026-11b: the inactive-account purge, stated when a college turns it on (R7).
+ */
+export const PRIVACY_NOTICE_VERSION = '2026-11b-draft';
 
 /**
  * A guardian's verifiable consent for a member under 18 (DPDP Rules 2025, Rule 10). Not a choice

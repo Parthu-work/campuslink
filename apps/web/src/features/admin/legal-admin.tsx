@@ -1,12 +1,19 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
-import type { LegalSettingsBody, LegalSettingsView } from '@campuslink/shared';
+import {
+  INACTIVE_MONTHS_MAX,
+  INACTIVE_MONTHS_MIN,
+  type LegalSettingsBody,
+  type LegalSettingsView,
+  type RetentionView,
+} from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Field, Input, Textarea } from '../../components/ui/field';
 import { Card, Skeleton } from '../../components/ui/misc';
+import { Switch } from '../../components/ui/switch';
 import { api, ApiError } from '../../lib/api';
 import { formatDay } from '../../lib/format';
 import * as q from '../../lib/queries';
@@ -20,7 +27,12 @@ export function LegalDetails() {
   const current = useQuery(q.adminLegal());
   if (current.isLoading || !current.data) return <Skeleton className="h-64 rounded-[var(--radius-lg)]" />;
   // Keyed by version, so a fresh form starts from what was just published.
-  return <LegalForm key={current.data.version} current={current.data} />;
+  return (
+    <>
+      <LegalForm key={current.data.version} current={current.data} />
+      <RetentionCard />
+    </>
+  );
 }
 
 const initial = (d: LegalSettingsView): LegalSettingsBody => ({
@@ -181,6 +193,80 @@ function LegalForm({ current }: { current: LegalSettingsView }) {
           <p className="text-body text-fg-2">{t('legal.publishNote')}</p>
         </Dialog>
       )}
+    </Card>
+  );
+}
+
+/**
+ * Prompt 1b, R7: delete accounts nobody has signed in to for some months. Off by default; members are
+ * warned 60 and 14 days ahead, staff and members with a placement in progress or an open report are
+ * never deleted this way, and the privacy policy states it (members accept the new version).
+ */
+function RetentionCard() {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const current = useQuery(q.adminRetention());
+  const [on, setOn] = useState<boolean | null>(null);
+  const [months, setMonths] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const save = useMutation({
+    mutationFn: (inactiveAccountMonths: number | null) =>
+      api.put<RetentionView>('/admin/retention', { inactiveAccountMonths }),
+    onSuccess: (data) => {
+      qc.setQueryData(q.adminRetention().queryKey, data);
+      void qc.invalidateQueries({ queryKey: ['admin-legal'] });
+      setOn(null);
+      setMonths(null);
+      toast.success(t('legal.retentionSaved'));
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
+  });
+  const d = current.data;
+  if (!d) return null;
+  const enabled = on ?? d.inactiveAccountMonths !== null;
+  const value = months ?? String(d.inactiveAccountMonths ?? 36);
+  const submit = () => {
+    if (!enabled) return save.mutate(null);
+    const n = Number(value);
+    if (!Number.isInteger(n) || n < INACTIVE_MONTHS_MIN || n > INACTIVE_MONTHS_MAX) {
+      setError(t('legal.retentionRange', { min: INACTIVE_MONTHS_MIN, max: INACTIVE_MONTHS_MAX }));
+      return;
+    }
+    setError('');
+    save.mutate(n);
+  };
+  return (
+    <Card className="grid gap-4 p-5">
+      <div className="grid gap-1">
+        <h2 className="text-title font-semibold">{t('legal.retentionTitle')}</h2>
+        <p className="text-meta text-fg-2">
+          {t('legal.retentionIntro', { days: d.deletedAccountGraceDays })}
+        </p>
+      </div>
+      <Switch checked={enabled} onChange={setOn} label={t('legal.retentionSwitch')} />
+      {enabled && (
+        <Field
+          label={t('legal.retentionMonths')}
+          hint={t('legal.retentionRange', { min: INACTIVE_MONTHS_MIN, max: INACTIVE_MONTHS_MAX })}
+          error={error || undefined}
+        >
+          {({ id, invalid, describedBy }) => (
+            <Input
+              id={id}
+              inputMode="numeric"
+              aria-invalid={invalid}
+              aria-describedby={describedBy}
+              value={value}
+              onChange={(e) => setMonths(e.target.value)}
+              className="max-w-40"
+            />
+          )}
+        </Field>
+      )}
+      <p className="text-caption text-fg-3">{t('legal.retentionNote')}</p>
+      <Button variant="primary" className="justify-self-start" loading={save.isPending} onClick={submit}>
+        {t('common.save')}
+      </Button>
     </Card>
   );
 }

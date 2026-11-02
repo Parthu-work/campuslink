@@ -15,15 +15,16 @@ All Hindi text was machine-assisted and has **not** been checked by a native spe
 
 ## 2. Messages sent outside the app (fixed once registered)
 
-| Where                                                                       | What                                                                                       |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `apps/api/src/modules/notifications/channels/sms-templates.ts` › `otp_hi`   | The Hindi code SMS. Once registered on DLT the text cannot change without re-registration. |
-| `apps/api/src/modules/notifications/channels/whatsapp-templates.ts` (`hi`)  | WhatsApp templates submitted to Meta (`docs/whatsapp-templates.md`)                        |
-| `apps/api/src/modules/notifications/templates.ts` (`hi`)                    | Email and push notifications                                                               |
-| `sms-templates.ts` › `session_reminder_hi`, `drive_reminder_hi` (and `_te`) | Reminder SMS (prompt 1b, R4), Hindi and Telugu. Fixed once registered on DLT.              |
-| `whatsapp-templates.ts` › `cl_weekly_digest` (`hi`, `te`)                   | The weekly digest template (prompt 1b, R8), submitted to Meta                              |
-| `hi.json` › `notifications.weeklyDigest*`, `notify.weekly_digest`           | The digest switch and its push and email text                                              |
-| `hi.json` › `notifications.smsReminders`, `notifications.smsRemindersBody`  | The SMS reminders switch (prompt 1b, R4)                                                   |
+| Where                                                                                                                                                                     | What                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `apps/api/src/modules/notifications/channels/sms-templates.ts` › `otp_hi`                                                                                                 | The Hindi code SMS. Once registered on DLT the text cannot change without re-registration.      |
+| `apps/api/src/modules/notifications/channels/whatsapp-templates.ts` (`hi`)                                                                                                | WhatsApp templates submitted to Meta (`docs/whatsapp-templates.md`)                             |
+| `apps/api/src/modules/notifications/templates.ts` (`hi`)                                                                                                                  | Email and push notifications                                                                    |
+| `sms-templates.ts` › `session_reminder_hi`, `drive_reminder_hi` (and `_te`)                                                                                               | Reminder SMS (prompt 1b, R4), Hindi and Telugu. Fixed once registered on DLT.                   |
+| `whatsapp-templates.ts` › `cl_weekly_digest` (`hi`, `te`)                                                                                                                 | The weekly digest template (prompt 1b, R8), submitted to Meta                                   |
+| `legal-translations.ts` › `labels.inactivePurge` (`te`, `hi`), `whatsapp-templates.ts` › `cl_account_inactive`, `hi.json` › `notify.account_inactive`, `legal.retention*` | The inactive-account purge (prompt 1b, R7): the policy sentence, the warning and the admin card |
+| `hi.json` › `notifications.weeklyDigest*`, `notify.weekly_digest`                                                                                                         | The digest switch and its push and email text                                                   |
+| `hi.json` › `notifications.smsReminders`, `notifications.smsRemindersBody`                                                                                                | The SMS reminders switch (prompt 1b, R4)                                                        |
 
 ## 3. High-traffic screens
 

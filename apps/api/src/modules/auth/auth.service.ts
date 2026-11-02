@@ -111,6 +111,47 @@ export class AuthService {
       : null;
   }
 
+  /**
+   * Inactive-account purge (prompt 1b, R7): active members, not staff, whose last activity (the
+   * later of their last sign-in, or the account's creation, and their sessions' last refresh) is
+   * before `cutoff`, with their last inactivity warning.
+   */
+  async inactiveSince(cutoff: Date) {
+    const users = await UserModel.find({
+      status: 'active',
+      roles: { $nin: ['COLLEGE_ADMIN', 'TPO', 'FACULTY', 'SUPER_ADMIN'] },
+      $or: [{ lastLoginAt: { $lt: cutoff } }, { lastLoginAt: null, createdAt: { $lt: cutoff } }],
+    })
+      .select('_id lastLoginAt createdAt inactivityWarning')
+      .limit(5000)
+      .lean<
+        {
+          _id: Types.ObjectId;
+          lastLoginAt: Date | null;
+          createdAt: Date;
+          inactivityWarning: { stage: number; at: Date } | null;
+        }[]
+      >();
+    if (!users.length) return [];
+    const refreshed = await SessionModel.aggregate<{ _id: Types.ObjectId; at: Date }>([
+      { $match: { userId: { $in: users.map((u) => u._id) } } },
+      { $group: { _id: '$userId', at: { $max: '$lastUsedAt' } } },
+    ]);
+    const lastRefresh = new Map(refreshed.map((r) => [String(r._id), r.at]));
+    return users.flatMap((u) => {
+      const signIn = u.lastLoginAt ?? u.createdAt;
+      const refresh = lastRefresh.get(String(u._id));
+      const last = refresh && refresh > signIn ? refresh : signIn;
+      if (last >= cutoff) return [];
+      const w = u.inactivityWarning;
+      return [{ userId: String(u._id), lastActivity: last, warning: w && w.at > last ? w : null }];
+    });
+  }
+
+  async setInactivityWarning(userId: string, stage: number, at: Date) {
+    await UserModel.updateOne({ _id: userId }, { $set: { inactivityWarning: { stage, at } } });
+  }
+
   async dueDeletions(now: Date) {
     return (
       await UserModel.find({ status: 'deleting', deletionPurgeAt: { $lte: now } })

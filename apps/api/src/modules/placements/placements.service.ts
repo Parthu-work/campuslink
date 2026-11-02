@@ -24,6 +24,7 @@ import {
 } from '@campuslink/shared';
 import {
   DriveRegistrationModel,
+  OfferModel,
   PlacementCompanyModel,
   PlacementDriveModel,
   type DriveDoc,
@@ -105,6 +106,30 @@ export class PlacementsService {
   /** Product analytics (B9), set in app.ts. */
   track: Track = noTrack;
   constructor(private readonly d: PlacementsDeps) {}
+
+  /**
+   * The inactive-account purge (prompt 1b, R7) never takes a member with a placement in progress: a
+   * registration on a drive that is not finished, or an offer waiting for verification.
+   */
+  async inProgressFor(userIds: string[]): Promise<Set<string>> {
+    const ids = userIds.map((u) => new Types.ObjectId(u));
+    const live = await PlacementDriveModel.find({ status: { $nin: ['completed', 'cancelled', 'draft'] } })
+      .select('_id')
+      .lean();
+    const [regs, offers] = await Promise.all([
+      DriveRegistrationModel.find({
+        userId: { $in: ids },
+        status: { $ne: 'withdrawn' },
+        driveId: { $in: live.map((d) => d._id) },
+      })
+        .select('userId')
+        .lean(),
+      OfferModel.find({ userId: { $in: ids }, status: 'reported' })
+        .select('userId')
+        .lean(),
+    ]);
+    return new Set([...regs, ...offers].map((r) => String(r.userId)));
+  }
 
   /**
    * The weekly digest (prompt 1b, R8): for each member, drives opened in the last seven days that

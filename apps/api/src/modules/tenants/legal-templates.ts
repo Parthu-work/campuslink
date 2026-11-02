@@ -49,7 +49,7 @@ If you are under 18, a parent or guardian confirms their consent with a code sen
 
 ## How long we keep it
 
-Your account is kept while you are a member. When you delete it, it is erased after {{graceDays}} days; what you shared with others stays as "Former member". Consent records and the security audit log are kept, without your details, because the law requires them. Placement and outcome records are kept by the college in anonymised form as its institutional record.
+Your account is kept while you are a member. When you delete it, it is erased after {{graceDays}} days; what you shared with others stays as "Former member". Consent records and the security audit log are kept, without your details, because the law requires them. Placement and outcome records are kept by the college in anonymised form as its institutional record.{{inactivePurge}}
 
 ## Your rights
 

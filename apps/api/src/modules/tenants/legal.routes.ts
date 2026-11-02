@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { LEGAL_DOCS, SUPPORTED_LOCALES, legalSettingsBody, noticeAcceptBody } from '@campuslink/shared';
+import {
+  LEGAL_DOCS,
+  SUPPORTED_LOCALES,
+  legalSettingsBody,
+  noticeAcceptBody,
+  retentionBody,
+} from '@campuslink/shared';
 import type { AnyRouteSpec } from '../../http/registry.js';
 import { authOf, tenantOf } from '../../http/request-context.js';
 import { requestMeta } from '../../lib/request-meta.js';
@@ -30,6 +36,27 @@ export function legalRoutes(s: LegalService): AnyRouteSpec[] {
       summary: 'The college’s legal details (legal name, address, grievance officer)',
       access: { kind: 'permission', permission: 'tenant:branding' },
       handler: async ({ req }) => ({ data: s.settings(tenantOf(req)) }),
+    },
+    // The inactive-account purge (prompt 1b, R7): off unless the college turns it on.
+    {
+      method: 'get',
+      path: '/admin/retention',
+      tag,
+      summary: 'Whether accounts unused for some months are deleted (and after how many)',
+      access: { kind: 'permission', permission: 'tenant:settings' },
+      handler: async ({ req }) => ({ data: s.retention(tenantOf(req)) }),
+    },
+    {
+      method: 'put',
+      path: '/admin/retention',
+      tag,
+      summary: 'Turn the inactive-account purge on (24 to 120 months) or off; members accept the new notice',
+      access: { kind: 'permission', permission: 'tenant:settings' },
+      limiter: 'adminWrite',
+      body: retentionBody,
+      handler: async ({ req, body }) => ({
+        data: await s.updateRetention(tenantOf(req), authOf(req).userId, body, requestMeta(req)),
+      }),
     },
     {
       method: 'put',
