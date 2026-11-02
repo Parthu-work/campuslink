@@ -18,7 +18,7 @@ export const naacPlacement: ReportDefinition = {
   title: 'Placement of outgoing students',
   version: '2026.1',
   sourceNote:
-    'NAAC self-study data on placement of outgoing students: year-wise list of students placed with the employer and package. Packages are shown as bands here; the evidence workbook lists each student. NAAC moved to binary accreditation in 2025, so check the metric number and format against the current manual.',
+    'NAAC self-study data on placement of outgoing students: year-wise list of students placed with the employer and package. Packages are shown as bands here; the evidence workbook lists each student. NAAC moved to binary accreditation in 2025, so check the metric number and format against the current manual. Not yet checked: on 2 November 2026 (prompt 1b, R12) naac.gov.in presented a revoked TLS certificate, so its manual could not be downloaded safely; see docs/specs/outcomes-reports.md.',
   needsReview: true,
   threeYears: false,
   async compute(data, p, count) {

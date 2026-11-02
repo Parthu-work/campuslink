@@ -3,17 +3,18 @@ import type { ReportDefinition } from '../report-data.js';
 import { col, distinct, inBranch, jobOffers, label, round, shown, yearCol } from './common.js';
 
 /**
- * NBA SAR criterion "placement, higher studies and entrepreneurship" per programme over three
- * batches. The scoring line follows the commonly published Tier-II format and stays marked for
- * review until someone checks it against the current SAR manual.
+ * NBA SAR criterion 4.6 "Placement, Higher Studies and Entrepreneurship" (30 marks) per programme
+ * over the last three graduating batches (LYG, LYGm1, LYGm2), as in NBA's Tier-II UG Engineering SAR
+ * format, GAPC v4.0, January 2025 (checked in prompt 1b, R12). Still marked for review for one rule
+ * the platform cannot apply: FS is at least the sanctioned intake plus lateral entry (N + N2).
  */
 export const nbaSarPlacement: ReportDefinition = {
   id: 'nba-sar-placement',
   framework: 'NBA',
   title: 'Placement, higher studies and entrepreneurship (SAR)',
-  version: '2026.1',
+  version: '2026.2',
   sourceNote:
-    'NBA Self Assessment Report (Tier-II UG engineering), placement, higher studies and entrepreneurship: x placed, y admitted to higher studies, z entrepreneurs, N final-year students; P = (x + y + z) / N per year, averaged over three years. The commonly published format assesses 30 × the average. Check against the current SAR manual before submitting.',
+    'NBA Self-Assessment Report format, UG Engineering, GAPC Version 4.0, Tier-II institution programs (January 2025), criterion 4.6 Placement, Higher Studies and Entrepreneurship (30), Table 4.6.1: FS final-year students, X placed, Y admitted to higher studies, Z taking up entrepreneurship; Placement Index P = ((X + Y + Z) / FS) × 100 for LYG, LYGm1 and LYGm2; points = 0.3 × the average P. https://www.nbaind.org/files/2-SAR-UG-EG-T2-14-1-2025_Format_20250115122255.pdf (checked 2 November 2026). Not applied: when FS is below the sanctioned intake plus lateral entry and leftover seats (N + N2), the SAR uses N + N2; the platform does not hold the sanctioned intake, so enter it in the SAR yourself.',
   needsReview: true,
   threeYears: true,
   async compute(data, p, count) {
@@ -31,21 +32,16 @@ export const nbaSarPlacement: ReportDefinition = {
       const of = <T extends { gradYear: number | null; branch: string | null }>(rs: T[]) =>
         inBranch(rs, p).filter((r) => r.gradYear === y);
       const x = distinct(jobOffers(of(offers)), (r) => r.subject);
-      const hs = of(higher);
-      const yCount = distinct(hs, (r) => r.subject);
-      const withExam = distinct(
-        hs.filter((r) => !!r.qualifyingExam),
-        (r) => r.subject,
-      );
+      const yCount = distinct(of(higher), (r) => r.subject);
       const z = distinct(of(ventures), (r) => r.subject);
-      const ratio = n > 0 && shown(n) && shown(x + yCount + z) ? round((x + yCount + z) / n) : null;
+      // The SAR's Placement Index is a percentage.
+      const ratio = n > 0 && shown(n) && shown(x + yCount + z) ? round(((x + yCount + z) / n) * 100) : null;
       ratios.push(ratio);
       return {
         year: label(y),
         finalYear: count(n),
         placed: count(x),
         higherStudies: count(yCount),
-        withExam: count(withExam),
         entrepreneurs: count(z),
         ratio,
       };
@@ -55,19 +51,19 @@ export const nbaSarPlacement: ReportDefinition = {
     return {
       columns: [
         yearCol,
-        col('finalYear', 'Final-year students (N)', 'count'),
-        col('placed', 'Placed (x)', 'count'),
-        col('higherStudies', 'Higher studies (y)', 'count'),
-        col('withExam', 'of which with a qualifying exam', 'count'),
-        col('entrepreneurs', 'Entrepreneurs (z)', 'count'),
-        col('ratio', 'P = (x + y + z) / N', 'number'),
+        col('finalYear', 'Final-year students (FS)', 'count'),
+        col('placed', 'Placed (X)', 'count'),
+        col('higherStudies', 'Higher studies (Y)', 'count'),
+        col('entrepreneurs', 'Entrepreneurship (Z)', 'count'),
+        col('ratio', 'P = ((X + Y + Z) / FS) × 100', 'number'),
       ],
       rows,
       totals: { year: 'Average of the three years', ratio: avg },
       notes: [
         avg === null
-          ? `The average and the assessment need every year's ratio; a ratio is left out when x + y + z is under ${SMALL_CELL} (see the evidence workbook).`
-          : `Assessment per the SAR format: 30 × ${avg} = ${round(30 * avg)} (check against the current NBA SAR manual).`,
+          ? `The average and the points need every year's index; an index is left out when X + Y + Z is under ${SMALL_CELL} (see the evidence workbook).`
+          : `Points per SAR criterion 4.6: 0.3 × ${avg} = ${round(0.3 * avg)} of 30.`,
+        'If FS is below the sanctioned intake plus lateral entry and leftover seats (N + N2), the SAR uses N + N2 instead; the platform does not hold the sanctioned intake.',
         'Placed counts students with at least one verified job offer (internships are not placements). Each student is counted once per column.',
         'Higher studies and ventures count only records the placement cell verified.',
       ],

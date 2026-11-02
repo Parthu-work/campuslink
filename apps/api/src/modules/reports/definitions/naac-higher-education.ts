@@ -8,7 +8,7 @@ export const naacHigherEducation: ReportDefinition = {
   title: 'Progression to higher education',
   version: '2026.1',
   sourceNote:
-    'NAAC self-study data on students progressing to higher education: the programme graduated from, the institution joined and the programme admitted to. Only records the placement cell verified are counted. Check the metric number and format against the current manual.',
+    'NAAC self-study data on students progressing to higher education: the programme graduated from, the institution joined and the programme admitted to. Only records the placement cell verified are counted. Check the metric number and format against the current manual. Not yet checked: on 2 November 2026 (prompt 1b, R12) naac.gov.in presented a revoked TLS certificate, so its manual could not be downloaded safely; see docs/specs/outcomes-reports.md.',
   needsReview: true,
   threeYears: false,
   async compute(data, p, count) {

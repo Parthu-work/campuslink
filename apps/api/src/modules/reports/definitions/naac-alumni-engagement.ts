@@ -14,7 +14,7 @@ export const naacAlumniEngagement: ReportDefinition = {
   title: 'Alumni engagement',
   version: '2026.1',
   sourceNote:
-    'NAAC self-study data on alumni engagement other than financial contribution: events alumni hosted, mentoring sessions alumni held and referrals alumni gave, in the academic year (June to May). Financial contribution is not recorded yet. Check the metric number and format against the current manual.',
+    'NAAC self-study data on alumni engagement other than financial contribution: events alumni hosted, mentoring sessions alumni held and referrals alumni gave, in the academic year (June to May). Financial contribution is not recorded yet. Check the metric number and format against the current manual. Not yet checked: on 2 November 2026 (prompt 1b, R12) naac.gov.in presented a revoked TLS certificate, so its manual could not be downloaded safely; see docs/specs/outcomes-reports.md.',
   needsReview: true,
   threeYears: false,
   async compute(data, p, count) {

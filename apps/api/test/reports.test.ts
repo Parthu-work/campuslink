@@ -235,7 +235,7 @@ describe('report definitions (B8)', () => {
     });
   });
 
-  it('NBA SAR: x, y, z and N per year, the ratio, the average and the assessment line', async () => {
+  it('NBA SAR: FS, X, Y and Z per year, the placement index, the average and the points', async () => {
     const r = await run('nba-sar-placement');
     expect(r.params.gradYears).toEqual([2024, 2025, 2026]);
     expect(r.rows).toEqual([
@@ -244,18 +244,16 @@ describe('report definitions (B8)', () => {
         finalYear: 10,
         placed: 6,
         higherStudies: '<5',
-        withExam: '<5',
         entrepreneurs: 0,
-        ratio: 0.7,
+        ratio: 70,
       },
       {
         year: '2024-25',
         finalYear: 10,
         placed: 5,
         higherStudies: '<5',
-        withExam: 0,
         entrepreneurs: 0,
-        ratio: 0.7,
+        ratio: 70,
       },
       // The erased member's two offers count once; the internship and the reported offer never.
       {
@@ -263,13 +261,13 @@ describe('report definitions (B8)', () => {
         finalYear: 10,
         placed: 7,
         higherStudies: 0,
-        withExam: 0,
         entrepreneurs: '<5',
-        ratio: 0.8,
+        ratio: 80,
       },
     ]);
-    expect(r.totals).toEqual({ year: 'Average of the three years', ratio: 0.73 });
-    expect(r.notes[0]).toContain('30 × 0.73 = 21.9');
+    // SAR criterion 4.6 (January 2025): P in percent, points = 0.3 × the average (prompt 1b, R12).
+    expect(r.totals).toEqual({ year: 'Average of the three years', ratio: 73.33 });
+    expect(r.notes[0]).toContain('0.3 × 73.33 = 22 of 30');
   });
 
   it('NAAC placement: employers per programme with the median band, suppressed under 5', async () => {

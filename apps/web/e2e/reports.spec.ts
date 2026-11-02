@@ -58,7 +58,7 @@ test('the principal’s reports: this batch at a glance, a report and its downlo
     page.getByRole('heading', { name: 'Placement, higher studies and entrepreneurship (SAR)' }),
   ).toBeVisible();
   await expect(page.getByText(/has not been checked against the framework/)).toBeVisible();
-  await expect(page.getByRole('columnheader', { name: 'P = (x + y + z) / N' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'P = ((X + Y + Z) / FS) × 100' })).toBeVisible();
   await expectNoA11yViolations(page);
   const [summary] = await Promise.all([
     page.waitForEvent('download'),

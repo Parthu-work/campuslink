@@ -23,7 +23,7 @@ export const nirfMedianSalary: ReportDefinition = {
   title: 'Median salary of placed graduates',
   version: '2026.1',
   sourceNote:
-    'NIRF graduation outcome data: median annual salary of graduates placed, per programme and year. One salary per student (their highest verified job offer). Check the format against the current NIRF data capture sheet before submitting.',
+    "NIRF India Rankings 2025, Methodology for Ranking of Academic Institutions, Ranking Metrics for Engineering, parameter 3C Median Salary (GMS, 25 marks): GMS = 25 × f(MS), MS = median salary of graduates (in UG/PG program) in the previous three years. https://www.nirfindia.org/nirfpdfcdn/2025/framework/Engineering.pdf (checked 2 November 2026). Agrees: the median (never the mean) of placed graduates over three years, one salary per student (their highest verified job offer). Unclear: whether MS pools the three years or is reported per year (the methodology refers to a prescribed format it does not include), and the unit the format asks for (shown here in lakh a year). f(MS) is NIRF's scaling across institutions and is not computed here.",
   needsReview: true,
   threeYears: true,
   async compute(data, p, count) {
