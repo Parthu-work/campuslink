@@ -4198,7 +4198,18 @@
     "creditDrafted": "Credit note drafted. Issue it to give it a number.",
     "creditIssued": "Credit note issued",
     "creditVoided": "Draft credit note voided",
-    "amountInvalid": "Enter an amount in rupees"
+    "amountInvalid": "Enter an amount in rupees",
+    "aiPrices": "AI prices",
+    "aiPricesEnv": "What the platform pays its AI provider per million tokens, from the deployment’s settings. Save here to change them without a deploy.",
+    "aiPricesSaved": "What the platform pays its AI provider per million tokens, as saved here.",
+    "aiPricesNote": "Used only for the cost estimate on each college’s page. Nothing is billed from these prices. Leave a price empty to leave it out.",
+    "aiPricesInvalid": "Enter each price as a number, or leave it empty",
+    "aiPrice": {
+      "input": "Input tokens",
+      "output": "Output tokens",
+      "embedding": "Embeddings",
+      "currency": "Currency"
+    }
   },
   "offline": {
     "updated": "Updated {{when}}",

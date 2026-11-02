@@ -3,6 +3,7 @@ import type {
   AdminBillingView,
   PlanView,
   PlatformBillingRow,
+  PlatformAiPricesView,
   PlatformCollegeBillingView,
   AdminOverviewView,
   AiUsageView,
@@ -647,6 +648,13 @@ export const platformCollegeBilling = (id: string) =>
   queryOptions({
     queryKey: ['platform-billing', id],
     queryFn: ({ signal }) => api.get<PlatformCollegeBillingView>(`/platform/billing/${id}`, signal),
+  });
+
+/** What the platform pays per million AI tokens (prompt 1b, R6). */
+export const platformAiPrices = () =>
+  queryOptions({
+    queryKey: ['platform-ai-prices'],
+    queryFn: ({ signal }) => api.get<PlatformAiPricesView>('/platform/ai-prices', signal),
   });
 
 export const platformPlans = () =>

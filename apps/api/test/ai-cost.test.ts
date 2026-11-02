@@ -17,6 +17,7 @@ import { TenantModel } from '../src/modules/tenants/tenant.model.js';
 import { clearTenantCache } from '../src/modules/tenants/tenant.cache.js';
 import { AiSettingsModel } from '../src/modules/study/ai-settings.model.js';
 import { AiUsageModel } from '../src/modules/study/ai-usage.model.js';
+import { AuditModel } from '../src/modules/audit/audit.model.js';
 import { budgetLimit, type AiSettingsService } from '../src/modules/study/ai-settings.service.js';
 import type { AiUsageService } from '../src/modules/study/ai-usage.service.js';
 
@@ -229,6 +230,75 @@ describe('usage by feature (B11)', () => {
       estimate: 4.02,
       currency: 'USD',
     });
+  });
+
+  it('the platform owner edits the prices in the console; the estimate follows without a deploy (prompt 1b, R6)', async () => {
+    const V = await makeTenant('aicost-prices');
+    const vAdmin = await makeUser(ctx, V, { roles: ['COLLEGE_ADMIN'], mfa: true });
+    await runInTenant(V._id, () =>
+      usage().record({
+        kind: 'chat',
+        model: 'mock:mock-chat-1',
+        platform: true,
+        userId: null,
+        inputTokens: 1_000_000,
+        outputTokens: 1_000_000,
+      }),
+    );
+    const asSa = () => api(ctx, P.host, sa.token);
+    const estimate = async () => (await asSa().get(`/platform/billing/${V._id}`)).body.data.aiCost;
+    // Env until saved: 1 M input at 1 and 1 M output at 5.
+    expect(await estimate()).toMatchObject({ estimate: 6, currency: 'USD' });
+    const before = (await asSa().get('/platform/ai-prices')).body.data;
+    expect(before).toMatchObject({
+      source: 'env',
+      input: 1,
+      output: 5,
+      embedding: 0.02,
+      currency: 'USD',
+      updatedAt: null,
+    });
+
+    // Only the platform's billing permission, only on the platform host.
+    const body = { input: 2, output: 10, embedding: 0.04, currency: 'INR' };
+    expect((await api(ctx, P.host).get('/platform/ai-prices')).status).toBe(401);
+    expect((await api(ctx, V.host, vAdmin.token).get('/platform/ai-prices')).status).toBe(404);
+    expect((await api(ctx, V.host, vAdmin.token).put('/platform/ai-prices').send(body)).status).toBe(404);
+    // Validation: no negative price, a currency from the list, every field present.
+    for (const bad of [
+      { ...body, input: -1 },
+      { ...body, currency: 'JPY' },
+      { input: 2, output: 10, currency: 'INR' },
+      { ...body, extra: 1 },
+    ])
+      expect((await asSa().put('/platform/ai-prices').send(bad)).status, JSON.stringify(bad)).toBe(400);
+
+    const saved = await asSa().put('/platform/ai-prices').send(body);
+    expect(saved.status, JSON.stringify(saved.body)).toBe(200);
+    expect(saved.body.data).toMatchObject({
+      ...body,
+      source: 'saved',
+      defaults: { input: 1, currency: 'USD' },
+    });
+    // 1 M input at 2 and 1 M output at 10, in rupees now.
+    expect(await estimate()).toMatchObject({ estimate: 12, currency: 'INR' });
+    // A price can be cleared (null): that class is then not counted.
+    await asSa()
+      .put('/platform/ai-prices')
+      .send({ ...body, output: null })
+      .expect(200);
+    expect(await estimate()).toMatchObject({ estimate: 2 });
+    const changes = await runInTenant(P._id, () =>
+      AuditModel.find({ action: 'platform.ai_prices_changed' }).sort({ _id: 1 }).lean(),
+    );
+    expect(changes).toHaveLength(2);
+    expect(changes[0]?.meta).toMatchObject({
+      inputBefore: 1,
+      inputAfter: 2,
+      currencyBefore: 'USD',
+      currencyAfter: 'INR',
+    });
+    expect(changes[1]?.meta).toMatchObject({ outputBefore: 10, outputAfter: null });
   });
 
   it('the migration names the feature of older counters (as the college’s own key)', async () => {

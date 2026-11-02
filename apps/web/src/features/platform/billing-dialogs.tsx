@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import {
@@ -8,11 +8,14 @@ import {
   GST_STATE_CODES,
   PLAN_IDS,
   PLAN_TERM_KEYS,
+  PRICE_CURRENCIES,
   type Feature,
   type InvoiceView,
   type PlanId,
   type PlanTermsPatch,
   type PlanView,
+  type PlatformAiPrices,
+  type PlatformAiPricesView,
   type PlatformCollegeBillingView,
 } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
@@ -23,7 +26,7 @@ import { Checkbox, Field, Input, Select } from '../../components/ui/field';
 import { Card } from '../../components/ui/misc';
 import { api } from '../../lib/api';
 import { paiseToInput, rupees, saveErrors, toPaise } from '../../lib/billing';
-import { platformPlans } from '../../lib/queries';
+import { platformAiPrices, platformPlans } from '../../lib/queries';
 import { toast } from '../../lib/toast';
 
 type Saved = (data: PlatformCollegeBillingView) => void;
@@ -832,5 +835,107 @@ export function CreditNoteDialog({
         </div>
       </form>
     </Dialog>
+  );
+}
+
+/**
+ * Prompt 1b, R6: what the platform pays its AI provider per million tokens, for the console's cost
+ * estimate. The deployment's env values stay the defaults until saved here; nothing is billed from
+ * them.
+ */
+export function AiPricesCard() {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const q = useQuery(platformAiPrices());
+  const [draft, setDraft] = useState<Record<'input' | 'output' | 'embedding', string> | null>(null);
+  const [currency, setCurrency] = useState<PlatformAiPrices['currency'] | null>(null);
+  const [errors, setErrors] = useState<Errors>(noErrors);
+  const [saving, setSaving] = useState(false);
+  const v = q.data;
+  if (!v) return null;
+  const fields = ['input', 'output', 'embedding'] as const;
+  const value = (k: (typeof fields)[number]) => draft?.[k] ?? (v[k] === null ? '' : String(v[k]));
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    const num = (k: (typeof fields)[number]) => {
+      const raw = value(k).replace(/[,s]/g, '');
+      return raw === '' ? null : Number(raw);
+    };
+    const body: PlatformAiPrices = {
+      input: num('input'),
+      output: num('output'),
+      embedding: num('embedding'),
+      currency: currency ?? v.currency,
+    };
+    if (fields.some((k) => Number.isNaN(body[k]))) {
+      setErrors({ root: t('pbilling.aiPricesInvalid'), fields: {} });
+      return;
+    }
+    setSaving(true);
+    setErrors(noErrors);
+    try {
+      qc.setQueryData(
+        platformAiPrices().queryKey,
+        await api.put<PlatformAiPricesView>('/platform/ai-prices', body),
+      );
+      void qc.invalidateQueries({ queryKey: ['platform-billing'] });
+      setDraft(null);
+      setCurrency(null);
+      toast.success(t('common.saved'));
+    } catch (err) {
+      setErrors(saveErrors(err, t('errors.generic')));
+    } finally {
+      setSaving(false);
+    }
+  };
+  return (
+    <Card className="grid gap-3 p-4">
+      <div className="grid gap-1">
+        <h2 className="text-heading font-semibold">{t('pbilling.aiPrices')}</h2>
+        <p className="text-meta text-fg-2">
+          {t(v.source === 'saved' ? 'pbilling.aiPricesSaved' : 'pbilling.aiPricesEnv')}
+        </p>
+      </div>
+      <form onSubmit={(e) => void onSubmit(e)} noValidate className="grid gap-3">
+        <FormError message={errors.root} />
+        <div className="grid gap-3 sm:grid-cols-4">
+          {fields.map((k) => (
+            <Field key={k} label={t(`pbilling.aiPrice.${k}`)} error={errors.fields[k]}>
+              {({ id, invalid }) => (
+                <Input
+                  id={id}
+                  inputMode="decimal"
+                  aria-invalid={invalid}
+                  value={value(k)}
+                  onChange={(e) =>
+                    setDraft({
+                      ...Object.fromEntries(fields.map((f) => [f, value(f)])),
+                      [k]: e.target.value,
+                    } as Record<(typeof fields)[number], string>)
+                  }
+                />
+              )}
+            </Field>
+          ))}
+          <Field label={t('pbilling.aiPrice.currency')} error={errors.fields.currency}>
+            {({ id }) => (
+              <Select
+                id={id}
+                value={currency ?? v.currency}
+                onChange={(e) => setCurrency(e.target.value as PlatformAiPrices['currency'])}
+              >
+                {PRICE_CURRENCIES.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        </div>
+        <p className="text-caption text-fg-3">{t('pbilling.aiPricesNote')}</p>
+        <Button type="submit" variant="primary" loading={saving} className="justify-self-start">
+          {t('common.save')}
+        </Button>
+      </form>
+    </Card>
   );
 }

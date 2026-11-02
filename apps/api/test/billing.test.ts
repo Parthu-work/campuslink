@@ -654,6 +654,7 @@ describe('who sees what (B10)', () => {
       'InvoiceCounter',
       'Migration',
       'PlanSetting',
+      'PlatformSetting',
       'Tenant',
       'WebhookReceipt',
     ]);

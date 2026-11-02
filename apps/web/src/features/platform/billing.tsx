@@ -20,6 +20,7 @@ import { SCREEN } from '../../lib/query-client';
 import { formatMoney } from '../../lib/numbers';
 import { toast } from '../../lib/toast';
 import {
+  AiPricesCard,
   CreditNoteDialog,
   InvoiceDialog,
   IssueDialog,
@@ -152,6 +153,7 @@ export function PlatformBilling() {
                 </Card>
               ))}
             </div>
+            <AiPricesCard />
           </div>
         )}
       </TabPanel>

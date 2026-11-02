@@ -16,6 +16,8 @@ import {
   rupeesInWords,
   CREDIT_NOTE_PREFIX,
   type AdminBillingView,
+  type PlatformAiPrices,
+  type PlatformAiPricesView,
   type CreditNoteView,
   type creditNoteDraftBody,
   type BillingUsageView,
@@ -54,6 +56,7 @@ import {
   type CreditNoteDoc,
   PaymentModel,
   PlanSettingModel,
+  PlatformSettingModel,
   type InvoiceDoc,
   type PaymentDoc,
 } from './billing.model.js';
@@ -92,8 +95,11 @@ export interface BillingDeps {
     byFeature: { feature: AiUsageFeature; platform: number; own: number }[];
     platform: { chatInput: number; chatOutput: number; embedding: number };
   }>;
-  /** What the platform pays per million tokens (cost estimate only); null when not set. */
-  aiPrices: { input: number | null; output: number | null; embedding: number | null; currency: string };
+  /**
+   * What the platform pays per million tokens from env (cost estimate only); null when not set.
+   * The defaults until the platform owner saves prices in the console (prompt 1b, R6).
+   */
+  aiPrices: PlatformAiPrices;
   tenantUrl: (tenant: TenantRecord, path: string) => string;
 }
 
@@ -105,6 +111,13 @@ const addDays = (day: string, n: number) =>
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / DAY_MS);
 const dayOrNull = (d: Date | null | undefined) => (d ? istDay(d) : null);
 const isDuplicate = (e: unknown) => (e as { code?: number }).code === 11000;
+/** Only the four price fields (a view or a body may carry more). */
+const pick = (p: PlatformAiPrices): PlatformAiPrices => ({
+  input: p.input,
+  output: p.output,
+  embedding: p.embedding,
+  currency: p.currency,
+});
 const OPEN = ['issued', 'overdue'] as const;
 /** What is still owed on an invoice: total − payments − credit notes (never below zero). */
 const owed = (r: Pick<InvoiceDoc, 'totalPaise' | 'paidPaise' | 'creditedPaise'>) =>
@@ -331,9 +344,51 @@ export class BillingService {
     return { periodStart: start, periodEnd: end, lines };
   }
 
+  // ── AI prices (prompt 1b, R6) ─────────────────────────────
+
+  /** The console's prices: the saved ones once the platform owner saved some, else env's. */
+  async aiPrices(): Promise<PlatformAiPricesView> {
+    const saved = await PlatformSettingModel.findOne({ key: 'ai_prices' }).lean<{
+      value: PlatformAiPrices;
+      updatedAt: Date;
+    }>();
+    const defaults = { ...this.d.aiPrices };
+    return saved
+      ? { ...pick(saved.value), source: 'saved', defaults, updatedAt: saved.updatedAt.toISOString() }
+      : { ...defaults, source: 'env', defaults, updatedAt: null };
+  }
+
+  /** Saves what the platform pays per million tokens; audited with the old and new values. */
+  async updateAiPrices(actorId: string, body: PlatformAiPrices, meta: RequestMetaLite) {
+    const old = pick(await this.aiPrices());
+    const value = pick(body);
+    await PlatformSettingModel.updateOne(
+      { key: 'ai_prices' },
+      { $set: { value, updatedBy: new Types.ObjectId(actorId) } },
+      { upsert: true },
+    );
+    await audit.record(
+      {
+        action: 'platform.ai_prices_changed',
+        actorId,
+        targetType: 'platform',
+        targetId: 'ai_prices',
+        // Flat values (the audit log keeps primitives): each price before and after.
+        meta: Object.fromEntries(
+          (Object.keys(value) as (keyof PlatformAiPrices)[]).flatMap((k) => [
+            [`${k}Before`, old[k]],
+            [`${k}After`, value[k]],
+          ]),
+        ),
+      },
+      meta,
+    );
+    return this.aiPrices();
+  }
+
   /** The platform's cost for a college's tokens on its provider, at the prices it set. */
-  private aiCost(p: { chatInput: number; chatOutput: number; embedding: number }) {
-    const { input, output, embedding, currency } = this.d.aiPrices;
+  private async aiCost(p: { chatInput: number; chatOutput: number; embedding: number }) {
+    const { input, output, embedding, currency } = await this.aiPrices();
     const priced = input !== null || output !== null || embedding !== null;
     const estimate = priced
       ? Math.round(
@@ -412,7 +467,7 @@ export class BillingService {
       custom: t.subscription?.terms ?? null,
       suggested: this.suggestedInvoice(t),
       warnings: this.warnings(t),
-      aiCost: this.aiCost((await this.d.aiUsage()).platform),
+      aiCost: await this.aiCost((await this.d.aiUsage()).platform),
     }));
   }
 

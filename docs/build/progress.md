@@ -414,7 +414,7 @@ A new session reads this file first and resumes from the first phase that is not
 | R3   | UI checks on the B12 to B14 screens                | Not started |
 | R4   | SMS for critical reminders                         | Done        |
 | R5   | Credit notes                                       | Done        |
-| R6   | Edit AI prices in the platform console             | Not started |
+| R6   | Edit AI prices in the platform console             | Done        |
 | R7   | Inactive-account purge                             | Not started |
 | R8   | WhatsApp digests (owner: yes)                      | Not started |
 | R9   | Hindi invoices (owner: evaluate)                   | Not started |
@@ -466,3 +466,9 @@ A new session reads this file first and resumes from the first phase that is not
 - **Void applies to drafts only.** An issued credit note is final; a second credit note or a new invoice corrects it.
 - **A settled invoice shows as `paid`** whether payments or credit notes settled it; the view shows `creditedPaise` beside `paidPaise`.
 - No new notification type for the college's admins: the credit note appears in Admin › Billing.
+
+### R6 · Edit AI prices in the platform console (Done)
+
+**Shipped.** `PlatformSetting` (a new platform collection, key `ai_prices`, on the `PLATFORM_MODELS` allowlist with its reason; the pinned list in `billing.test.ts` updated), following `PlanSetting`'s pattern. `GET`/`PUT /platform/ai-prices` (`platform:billing`, platform host): prices per million tokens for input, output and embeddings (each may be empty) and a currency from `PRICE_CURRENCIES`; audited as `platform.ai_prices_changed` with each value before and after. The per-college estimate reads the saved prices; env stays the default until a value is saved. Platform › Billing › Plans has an **AI prices** card (en, te, hi). Tests in `ai-cost.test.ts`: permission (401, and 404 on a college host), validation (negative, unknown currency, missing and extra fields), the estimate before and after a change and with a cleared price, and the audit entries. Spec: `docs/specs/ai-cost.md`.
+
+**Decision.** A new platform collection rather than reusing `PlanSetting` itself: its `plan` key is an enum of plan ids, and AI prices are not a plan's terms. The pattern (one document per key, `updatedBy`, upsert) is the same.

@@ -97,5 +97,6 @@ export {
   InvoiceModel,
   PaymentModel,
   CreditNoteModel,
+  PlatformSettingModel,
 } from './billing/billing.model.js';
 export { SupportTicketModel } from './support/support.model.js';

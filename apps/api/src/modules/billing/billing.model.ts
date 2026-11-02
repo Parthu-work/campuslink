@@ -236,3 +236,19 @@ creditNoteSchema.index(
 creditNoteSchema.index({ tenantId: 1, invoiceId: 1, status: 1 });
 creditNoteSchema.index({ tenantId: 1, createdAt: -1 });
 export const CreditNoteModel = defineTenantModel('CreditNote', creditNoteSchema);
+
+/**
+ * Settings the platform owner edits in the console, one document per key (prompt 1b, R6), like
+ * `PlanSetting`. Today only `ai_prices`: what the platform pays its AI provider (cost estimate only).
+ */
+export const PLATFORM_SETTING_KEYS = ['ai_prices'] as const;
+const platformSettingSchema = new Schema(
+  {
+    key: { type: String, enum: PLATFORM_SETTING_KEYS, required: true },
+    value: { type: Schema.Types.Mixed, required: true },
+    updatedBy: { type: Schema.Types.ObjectId, default: null },
+  },
+  baseSchemaOptions,
+);
+platformSettingSchema.index({ key: 1 }, { unique: true });
+export const PlatformSettingModel = definePlatformModel('PlatformSetting', platformSettingSchema);

@@ -417,6 +417,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `DELETE /api/v1/me/deletion` | any signed-in user | college | — | Cancel my account deletion during the grace period |
 | `GET /api/v1/platform/plans` | `platform:billing` | platform | — | The plans with their terms (defaults and the platform owner’s changes) |
 | `PATCH /api/v1/platform/plans/:plan` | `platform:billing` | platform | adminWrite | Change a plan’s price, minimum, features or allowances |
+| `GET /api/v1/platform/ai-prices` | `platform:billing` | platform | — | What the platform pays per million AI tokens (for the console’s cost estimate) |
+| `PUT /api/v1/platform/ai-prices` | `platform:billing` | platform | adminWrite | Change what the platform pays per million AI tokens (estimate only; nothing is billed from it) |
 | `GET /api/v1/platform/billing` | `platform:billing` | platform | — | Every college’s plan, seats and outstanding balance |
 | `GET /api/v1/platform/billing/:id` | `platform:billing` | platform | — | One college’s subscription, usage and invoices |
 | `PATCH /api/v1/platform/billing/:id` | `platform:billing` | platform | adminWrite | Set a college’s plan, seats, term, custom deal and invoice details |

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   ErrorCode,
+  aiPricesBody,
   creditNoteDraftBody,
   creditNoteParams,
   ownCreditNoteParams,
@@ -74,6 +75,30 @@ export function billingRoutes(svc: BillingService, payments: PaymentProvider): A
       body: planTermsPatch,
       handler: async ({ req, params, body }) => ({
         data: await svc.updatePlan(authOf(req).userId, params.plan, body, requestMeta(req)),
+      }),
+    },
+    // What the platform pays its AI provider (prompt 1b, R6): env until saved here.
+    {
+      method: 'get',
+      path: '/platform/ai-prices',
+      tag: 'Billing',
+      summary: 'What the platform pays per million AI tokens (for the console’s cost estimate)',
+      access: platform,
+      scope: 'platform',
+      handler: async () => ({ data: await svc.aiPrices() }),
+    },
+    {
+      method: 'put',
+      path: '/platform/ai-prices',
+      tag: 'Billing',
+      summary:
+        'Change what the platform pays per million AI tokens (estimate only; nothing is billed from it)',
+      access: platform,
+      scope: 'platform',
+      limiter: 'adminWrite',
+      body: aiPricesBody,
+      handler: async ({ req, body }) => ({
+        data: await svc.updateAiPrices(authOf(req).userId, body, requestMeta(req)),
       }),
     },
     {

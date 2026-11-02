@@ -12,6 +12,8 @@ export const PLATFORM_MODELS = new Set([
   // Billing (B10): the seller's plan settings and its invoice number sequence.
   'PlanSetting',
   'InvoiceCounter',
+  // Prompt 1b (R6): the platform owner's own settings (what it pays its AI provider), not any college's.
+  'PlatformSetting',
 ]);
 
 export function defineTenantModel<T>(name: string, schema: Schema<T>): Model<T> {

@@ -19527,6 +19527,117 @@
         "x-permission": "platform:billing"
       }
     },
+    "/api/v1/platform/ai-prices": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "What the platform pays per million AI tokens (for the console’s cost estimate)",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform.",
+        "operationId": "billing_get_platform_ai_prices",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      },
+      "put": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Change what the platform pays per million AI tokens (estimate only; nothing is billed from it)",
+        "description": "Requires permission `platform:billing` (Plans, invoices and payments for every college). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "billing_put_platform_ai_prices",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "output": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "embedding": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "USD",
+                      "INR",
+                      "EUR",
+                      "GBP"
+                    ]
+                  }
+                },
+                "required": [
+                  "input",
+                  "output",
+                  "embedding",
+                  "currency"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:billing"
+      }
+    },
     "/api/v1/platform/billing": {
       "get": {
         "tags": [

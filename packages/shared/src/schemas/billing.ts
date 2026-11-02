@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { FEATURE_KEYS } from '../features.js';
-import type { AiUsageFeature } from '../constants/study.js';
+import { PRICE_CURRENCIES, type AiUsageFeature } from '../constants/study.js';
 import {
   GST_STATE_CODES,
   GSTIN_PATTERN,
@@ -292,4 +292,24 @@ export interface CreditNoteView {
   totalInWords: string;
   reason: string;
   hasPdf: boolean;
+}
+
+// ── AI prices (prompt 1b, R6) ────────────────────────────────────────
+
+/** What the platform pays per million tokens, edited in the console (cost estimate only). */
+const pricePerMillion = z.number().min(0).max(10_000).nullable();
+export const aiPricesBody = z.strictObject({
+  input: pricePerMillion,
+  output: pricePerMillion,
+  embedding: pricePerMillion,
+  currency: z.enum(PRICE_CURRENCIES),
+});
+export type PlatformAiPrices = z.infer<typeof aiPricesBody>;
+
+export interface PlatformAiPricesView extends PlatformAiPrices {
+  /** `env` until the platform owner saves prices in the console. */
+  source: 'env' | 'saved';
+  /** The deployment's env values (the defaults). */
+  defaults: PlatformAiPrices;
+  updatedAt: string | null;
 }
