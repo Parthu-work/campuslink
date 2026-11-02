@@ -41,7 +41,7 @@ export function NoticeGate({ version }: { version: string }) {
             <Link
               to="/legal/privacy"
               target="_blank"
-              className="font-semibold text-brand-ink underline underline-offset-2"
+              className="inline-flex min-h-11 items-center font-semibold text-brand-ink underline underline-offset-2"
             >
               {t('legal.privacy')}
             </Link>
@@ -50,7 +50,7 @@ export function NoticeGate({ version }: { version: string }) {
             <Link
               to="/legal/terms"
               target="_blank"
-              className="font-semibold text-brand-ink underline underline-offset-2"
+              className="inline-flex min-h-11 items-center font-semibold text-brand-ink underline underline-offset-2"
             >
               {t('legal.terms')}
             </Link>

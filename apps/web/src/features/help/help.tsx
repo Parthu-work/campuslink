@@ -88,10 +88,16 @@ export function HelpPage() {
         )}
       </section>
       <p className="flex flex-wrap gap-4 text-meta">
-        <Link to="/legal/privacy" className="font-semibold text-brand-ink underline underline-offset-2">
+        <Link
+          to="/legal/privacy"
+          className="inline-flex min-h-11 items-center font-semibold text-brand-ink underline underline-offset-2"
+        >
           {t('legal.privacy')}
         </Link>
-        <Link to="/legal/terms" className="font-semibold text-brand-ink underline underline-offset-2">
+        <Link
+          to="/legal/terms"
+          className="inline-flex min-h-11 items-center font-semibold text-brand-ink underline underline-offset-2"
+        >
           {t('legal.terms')}
         </Link>
       </p>

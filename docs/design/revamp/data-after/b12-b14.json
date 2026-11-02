@@ -1,0 +1,642 @@
+[
+ {
+  "screen": "settings-preferences",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "help",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-privacy-grievance",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "legal-privacy",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "legal-terms",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "help-guide",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "report-a-problem",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "report-thread",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "offline-pill",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "home-hindi",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 26,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 26,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 26,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 26,
+    "exempt": false
+   }
+  ],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-preferences-hindi",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "admin-support",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "admin-branding-legal",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "platform-support",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-preferences",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "help",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-privacy-grievance",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "legal-privacy",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "legal-terms",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "help-guide",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "report-a-problem",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "report-thread",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "offline-pill",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 24,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 24,
+    "exempt": false
+   }
+  ],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "home-hindi",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [
+   {
+    "label": "Rahul Varma",
+    "w": 91,
+    "h": 26,
+    "exempt": false
+   },
+   {
+    "label": "Srinivas Murthy",
+    "w": 113,
+    "h": 26,
+    "exempt": false
+   },
+   {
+    "label": "Arjun Naidu",
+    "w": 83,
+    "h": 26,
+    "exempt": false
+   },
+   {
+    "label": "Fatima Begum",
+    "w": 103,
+    "h": 26,
+    "exempt": false
+   }
+  ],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-preferences-hindi",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "admin-support",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "admin-branding-legal",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "platform-support",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-preferences",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "help",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-privacy-grievance",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "legal-privacy",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "legal-terms",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "help-guide",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "report-a-problem",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "report-thread",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "offline-pill",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "home-hindi",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-preferences-hindi",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "admin-support",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "admin-branding-legal",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "platform-support",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-preferences",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "help",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-privacy-grievance",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "legal-privacy",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "legal-terms",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "help-guide",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "report-a-problem",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "report-thread",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "offline-pill",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "home-hindi",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "settings-preferences-hindi",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "admin-support",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "admin-branding-legal",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "platform-support",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "notice-gate",
+  "width": 360,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "notice-gate",
+  "width": 360,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "notice-gate",
+  "width": 1440,
+  "theme": "light",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ },
+ {
+  "screen": "notice-gate",
+  "width": 1440,
+  "theme": "dark",
+  "axe": [],
+  "under44": [],
+  "sideways": false,
+  "unreachable": []
+ }
+]

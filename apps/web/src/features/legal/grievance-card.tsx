@@ -20,7 +20,10 @@ export function GrievanceCard() {
           </dd>
           <dt className="sr-only">{t('common.email')}</dt>
           <dd>
-            <a href={`mailto:${officer.email}`} className="text-brand-ink underline underline-offset-2">
+            <a
+              href={`mailto:${officer.email}`}
+              className="inline-flex min-h-11 items-center break-all text-brand-ink underline underline-offset-2"
+            >
               {officer.email}
             </a>
           </dd>
@@ -36,10 +39,16 @@ export function GrievanceCard() {
       )}
       <p className="text-meta text-fg-2">{t('legal.officerBody')}</p>
       <div className="flex flex-wrap gap-4 text-meta">
-        <Link to="/legal/privacy" className="font-semibold text-brand-ink underline underline-offset-2">
+        <Link
+          to="/legal/privacy"
+          className="inline-flex min-h-11 items-center font-semibold text-brand-ink underline underline-offset-2"
+        >
           {t('legal.privacy')}
         </Link>
-        <Link to="/legal/terms" className="font-semibold text-brand-ink underline underline-offset-2">
+        <Link
+          to="/legal/terms"
+          className="inline-flex min-h-11 items-center font-semibold text-brand-ink underline underline-offset-2"
+        >
           {t('legal.terms')}
         </Link>
       </div>

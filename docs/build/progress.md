@@ -411,7 +411,7 @@ A new session reads this file first and resumes from the first phase that is not
 | ---- | -------------------------------------------------- | -------------------- |
 | R1   | Only sign-up and notice records count as accepting | Done                 |
 | R2   | Run the load test and record it                    | Done                 |
-| R3   | UI checks on the B12 to B14 screens                | Not started          |
+| R3   | UI checks on the B12 to B14 screens                | Done                 |
 | R4   | SMS for critical reminders                         | Done                 |
 | R5   | Credit notes                                       | Done                 |
 | R6   | Edit AI prices in the platform console             | Done                 |
@@ -514,3 +514,9 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 **Shipped.** `pnpm loadtest` run on 2 November 2026 (a 4-core laptop on Windows, MongoDB on tmpfs); the figures, the machine and the comparison with 16 October are in `docs/performance.md` › Results (prompt 1b). The drive burst stored exactly 500 and refused all 50 second taps; the reports stay under 2 s at p99 at 50 connections, so nothing needed profiling.
 
 **Fixed from the run (only in `loadtest.ts`):** the API child is started through Node and `tsx`'s CLI instead of `pnpm` (which does not spawn on Windows), and the burst records why a registration was not created, so a shortfall is explained. Two runs stored 473 and 470: the missing requests never got a response (connections failed when 500 opened at once on Windows), and stored equalled accepted, so the registration path did not lose writes; the third run stored 500. The first run's report errors were the disk-backed development MongoDB stalling, not the API.
+
+### R3 · UI checks on the B12 to B14 screens (Done)
+
+**Shipped.** `e2e/audit/b12-b14.audit.ts`: 15 screens and states at 360 px and 1440 px, in both themes, with reduced motion: axe, 44 px targets, sideways scroll and keyboard-only reach (60 checks). No axe violations, no sideways scroll, every control reachable by keyboard. Fixed: the standalone legal links and the grievance email (19 px tall → 44 px) and the narrowest `Segmented` option (41 px wide → at least 44 px). Left: Home's member-name links (24 to 26 px; recorded in the earlier audit, WCAG 2.5.8 compliant, not a B12 to B14 screen). Results in `docs/accessibility.md` and `docs/design/revamp/data-after/b12-b14.json`. The offline cold start stays covered by `e2e/offline.spec.ts`.
+
+**How it ran on Windows:** the API and `vite preview` were started by hand (Playwright's `VAR=value` server commands do not run in `cmd`) and reused, with the installed Chrome (`PW_CHROMIUM_PATH`).

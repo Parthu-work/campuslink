@@ -50,14 +50,14 @@ export function LegalPage() {
           <Link
             key={d}
             to={`/legal/${d}`}
-            className="font-semibold text-brand-ink underline underline-offset-2"
+            className="inline-flex min-h-11 items-center font-semibold text-brand-ink underline underline-offset-2"
           >
             {t(`legal.${d}`)}
           </Link>
         ))}
         <Link
           to={signedIn ? '/home' : '/'}
-          className="font-semibold text-brand-ink underline underline-offset-2"
+          className="inline-flex min-h-11 items-center font-semibold text-brand-ink underline underline-offset-2"
         >
           {t('errors.goHome')}
         </Link>

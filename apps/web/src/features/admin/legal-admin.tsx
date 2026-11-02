@@ -167,7 +167,7 @@ function LegalForm({ current }: { current: LegalSettingsView }) {
           </Button>
           <Link
             to="/legal/privacy"
-            className="text-meta font-semibold text-brand-ink underline underline-offset-2"
+            className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink underline underline-offset-2"
           >
             {t('legal.preview')}
           </Link>
