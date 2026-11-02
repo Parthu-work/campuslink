@@ -3,10 +3,12 @@ import { ZodError } from 'zod';
 import { ErrorCode, type ApiFailure } from '@campuslink/shared';
 import { AppError, notFound } from '../lib/errors.js';
 import type { Logger } from '../lib/logger.js';
+import type { ErrorReporter } from '../lib/error-reporter.js';
+import { routePattern } from '../lib/metrics.js';
 
 export const notFoundHandler: RequestHandler = (_req, _res, next) => next(notFound('Route'));
 
-export function errorHandler(logger: Logger): ErrorRequestHandler {
+export function errorHandler(logger: Logger, reporter?: ErrorReporter): ErrorRequestHandler {
   return (err, req, res, _next) => {
     const requestId = String(req.id ?? '');
     let status = 500;
@@ -36,7 +38,20 @@ export function errorHandler(logger: Logger): ErrorRequestHandler {
       body = { code: ErrorCode.VALIDATION_FAILED, message: 'Request body too large', requestId };
     }
 
-    if (status >= 500) logger.error({ err, requestId }, 'unhandled error');
+    if (status >= 500) {
+      logger.error({ err, requestId }, 'unhandled error');
+      // The request id, route pattern and college only (B14); never the body or the member.
+      void reporter
+        ?.report({
+          kind: 'api',
+          type: err instanceof Error ? err.name : 'Error',
+          message: err instanceof Error ? err.message : String(err),
+          requestId,
+          route: routePattern(req),
+          tenant: req.tenant?.slug,
+        })
+        .catch(() => undefined);
+    }
     // Never leak stack traces or internal messages to clients.
     res.status(status).json({ ok: false, error: body } satisfies ApiFailure);
   };

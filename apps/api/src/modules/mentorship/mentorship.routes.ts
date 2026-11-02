@@ -2,10 +2,12 @@ import { z } from 'zod';
 import {
   availabilityBody,
   menteePrefsBody,
+  mentorReviewBody,
   mentorSettingsBody,
   mentorsQuery,
   mentorshipRequestBody,
   objectId,
+  rematchBody,
   requestsQuery,
   respondBody,
   slotsQuery,
@@ -15,11 +17,13 @@ import { idParams } from '../../http/validation.js';
 import { authOf, tenantOf } from '../../http/request-context.js';
 import type { MentorsService } from './mentors.service.js';
 import type { RequestsService } from './requests.service.js';
+import type { ReviewsService } from './reviews.service.js';
 import type { SessionsService } from '../sessions/sessions.service.js';
 
 const MENTOR = { kind: 'permission', permission: 'mentorship:mentor' } as const;
 const REQUEST = { kind: 'permission', permission: 'mentorship:request' } as const;
 const OVERSEE = { kind: 'permission', permission: 'mentorship:oversee' } as const;
+const BOOK = { kind: 'permission', permission: 'sessions:book' } as const;
 const tag = 'Mentorship';
 const userParams = z.strictObject({ userId: objectId });
 const cursorQuery = z.strictObject({ cursor: objectId.optional() });
@@ -29,6 +33,7 @@ export function mentorshipRoutes(
   mentors: MentorsService,
   requests: RequestsService,
   sessions: SessionsService,
+  reviews: ReviewsService,
 ): AnyRouteSpec[] {
   return [
     // ── Mentor setup ─────────────────────────────
@@ -88,6 +93,7 @@ export function mentorshipRoutes(
     {
       method: 'get',
       path: '/me/match-preferences',
+      feature: 'alumniMatch',
       tag,
       summary: 'My private Alumni Match inputs (goals, target companies)',
       access: REQUEST,
@@ -96,6 +102,7 @@ export function mentorshipRoutes(
     {
       method: 'put',
       path: '/me/match-preferences',
+      feature: 'alumniMatch',
       tag,
       summary: 'Update my Alumni Match inputs',
       access: REQUEST,
@@ -119,6 +126,7 @@ export function mentorshipRoutes(
     {
       method: 'get',
       path: '/mentors/match',
+      feature: 'alumniMatch',
       tag,
       summary: 'Alumni Match: mentors ranked for me, with the reasons',
       access: REQUEST,
@@ -133,6 +141,35 @@ export function mentorshipRoutes(
       access: REQUEST,
       params: userParams,
       handler: async ({ req, params }) => ({ data: await mentors.get(authOf(req), params.userId) }),
+    },
+    {
+      method: 'get',
+      path: '/mentors/:userId/reviews',
+      tag,
+      summary: 'Published reviews of a mentor (first names only)',
+      access: REQUEST,
+      params: userParams,
+      query: cursorQuery,
+      handler: async ({ req, params, query }) => {
+        const r = await reviews.list(authOf(req), params.userId, query.cursor);
+        return { data: r.items, meta: { nextCursor: r.nextCursor } };
+      },
+    },
+    {
+      method: 'post',
+      path: '/bookings/:id/review',
+      tag,
+      summary: 'Publish a short review of a session I gave feedback on (mentee; moderated)',
+      access: BOOK,
+      limiter: 'posting',
+      bot: true,
+      idempotent: true,
+      params: idParams,
+      body: mentorReviewBody,
+      handler: async ({ req, params, body }) => ({
+        status: 201,
+        data: await reviews.create(authOf(req), params.id, body.text),
+      }),
     },
     {
       method: 'get',
@@ -216,6 +253,31 @@ export function mentorshipRoutes(
       access: REQUEST,
       params: idParams,
       handler: async ({ req, params }) => ({ data: await requests.withdraw(authOf(req), params.id) }),
+    },
+    {
+      method: 'get',
+      path: '/mentorship/requests/:id/alternatives',
+      tag,
+      summary: 'Three mentors likely to reply, for a request waiting two days (mentee)',
+      access: REQUEST,
+      limiter: 'search',
+      params: idParams,
+      handler: async ({ req, params }) => ({ data: await requests.alternatives(authOf(req), params.id) }),
+    },
+    {
+      method: 'post',
+      path: '/mentorship/requests/:id/rematch',
+      tag,
+      summary: 'Withdraw a waiting request and send the same message to another mentor',
+      access: REQUEST,
+      limiter: 'requests',
+      idempotent: true,
+      params: idParams,
+      body: rematchBody,
+      handler: async ({ req, params, body }) => ({
+        status: 201,
+        data: await requests.rematch(authOf(req), tenantOf(req), params.id, body.mentorId),
+      }),
     },
     // ── Oversight ─────────────────────────────
     {

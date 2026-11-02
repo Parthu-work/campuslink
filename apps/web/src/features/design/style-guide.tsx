@@ -1,5 +1,5 @@
 import { useId, useMemo, useState, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { Clock, Compass, Heart, Info, Sparkles } from 'lucide-react';
 import { contrastRatio, generatePalette, parseOklch, staticTokens, type Theme } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';

@@ -5,10 +5,15 @@ import {
   requiresMfa,
   resolvePermissions,
   effectiveOverrides,
+  isMinor,
+  SEAT_ALUMNI_ACTIVE_DAYS,
   type Capability,
   type MeResponse,
+  toLocale,
+  type Locale,
 } from '@campuslink/shared';
 import { UserModel } from '../auth/user.model.js';
+import { SessionModel } from '../auth/session.model.js';
 import { AppError, badRequest, forbidden, notFound } from '../../lib/errors.js';
 import { ErrorCode } from '@campuslink/shared';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
@@ -16,6 +21,8 @@ import type { AuthState } from '../../types.js';
 import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthService } from '../auth/auth.service.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
+import type { FieldCipher } from '../../lib/crypto.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const ADMIN_FIELDS =
@@ -86,30 +93,52 @@ export async function backgroundAuth(
 export class UsersService {
   /** Set by the app: closes a suspended member's live sockets. */
   onSuspended: ((userId: string) => void) | null = null;
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
+  /** The member's notice state (B14), set in app.ts from LegalService. */
+  notice: ((userId: string) => Promise<{ version: string; accepted: boolean }>) | null = null;
   constructor(
     private readonly auth: AuthService,
     private readonly profiles: ProfilesService,
+    private readonly cipher: FieldCipher,
   ) {}
 
+  /** An active adult member (B9: minors are never in product analytics). */
+  async isActiveAdult(userId: string) {
+    const u = await UserModel.findById(userId).select('status adultOn').lean();
+    return !!u && u.status === 'active' && !isMinor(u.adultOn);
+  }
+
   async me(auth: AuthState): Promise<MeResponse> {
-    const u = await UserModel.findById(auth.userId).select('name email locale deletionPurgeAt').lean();
+    // Weekly actives and retention (B9): one `visited` a day, deduplicated in memory and by index.
+    await this.track(auth.userId, 'visited');
+    const u = await UserModel.findById(auth.userId)
+      .select('name email locale deletionPurgeAt +phoneEnc +passwordHash status adultOn')
+      .lean();
     if (!u) throw notFound('User');
+    const cohort = (await this.profiles.cohortOf([auth.userId])).get(auth.userId);
     return {
       id: auth.userId,
       deletionPurgeAt: u.deletionPurgeAt ? u.deletionPurgeAt.toISOString() : null,
       name: u.name,
-      email: u.email,
+      email: u.email ?? null,
+      phone: u.phoneEnc ? this.cipher.decrypt(u.phoneEnc) : null,
+      hasPassword: !!u.passwordHash,
+      guardianPending: u.status === 'guardian_pending',
+      minor: isMinor(u.adultOn),
+      gradYear: cohort?.gradYear ?? null,
       roles: auth.roles,
       capabilities: auth.capabilities,
       verified: auth.verified,
       mfaEnabled: auth.mfaEnabled,
       mfaRequired: requiresMfa(auth.roles),
-      locale: u.locale as 'en' | 'te',
+      locale: toLocale(u.locale),
       permissions: [...auth.permissions].sort(),
+      ...(this.notice ? { notice: await this.notice(auth.userId) } : {}),
     };
   }
 
-  async updateMe(auth: AuthState, patch: { name?: string | undefined; locale?: 'en' | 'te' | undefined }) {
+  async updateMe(auth: AuthState, patch: { name?: string | undefined; locale?: Locale | undefined }) {
     const set = Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined));
     if (Object.keys(set).length) await UserModel.updateOne({ _id: auth.userId }, { $set: set });
     if (set.name) await this.profiles.sync(auth.userId);
@@ -149,6 +178,22 @@ export class UsersService {
       UserModel.countDocuments({ status: 'suspended' }),
     ]);
     return { active, unverified, suspended };
+  }
+
+  /**
+   * Seats in use (B10, D9): verified students, plus alumni active in the last 12 months (signed in,
+   * or kept a session going, in that time). A member is counted once.
+   */
+  async seatCount(now = new Date()): Promise<number> {
+    const since = new Date(now.getTime() - SEAT_ALUMNI_ACTIVE_DAYS * 86_400_000);
+    const recent = await SessionModel.distinct('userId', { lastUsedAt: { $gte: since } });
+    return UserModel.countDocuments({
+      status: 'active',
+      $or: [
+        { roles: Role.STUDENT, verified: true },
+        { roles: Role.ALUMNI, $or: [{ lastLoginAt: { $gte: since } }, { _id: { $in: recent } }] },
+      ],
+    });
   }
 
   /** Active members of the college with a role (for alerts to its admins). */

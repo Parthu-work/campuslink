@@ -33,6 +33,7 @@ export function gamificationRoutes(s: GamificationService): AnyRouteSpec[] {
     {
       method: 'put',
       path: '/me/progress/settings',
+      readOnlyOk: true,
       tag,
       summary: 'Opt in or out of leaderboards and the Wall of Mentors',
       access: SIGNED_IN,
@@ -42,6 +43,7 @@ export function gamificationRoutes(s: GamificationService): AnyRouteSpec[] {
     {
       method: 'get',
       path: '/leaderboard',
+      feature: 'leaderboards',
       tag,
       summary: 'This month’s XP among members who opted in',
       access: PEOPLE,

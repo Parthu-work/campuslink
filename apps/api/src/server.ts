@@ -7,10 +7,13 @@ import { createLogger } from './lib/logger.js';
 import { MemoryMailProvider, SmtpMailProvider } from './lib/mailer.js';
 import { BullJobQueue, InlineJobQueue } from './lib/jobs.js';
 import { runRetention } from './lib/maintenance.js';
+import { BillingService } from './modules/billing/billing.service.js';
+import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
 import { createApp } from './app.js';
 import { syncIndexes } from './db/connect.js';
+import { runMigrations } from './db/migrations.js';
 import { ClamdScanner } from './lib/clamav.js';
 import { storageFromEnv } from './lib/storage-factory.js';
 import type { FilesService } from './modules/files/files.service.js';
@@ -19,6 +22,7 @@ import { ContentSourcesService } from './modules/content-sources/sources.service
 import { JobSourcesService } from './modules/job-sources/job-sources.service.js';
 import { JobsService } from './modules/jobs/jobs.service.js';
 import { RoadmapsService } from './modules/roadmaps/roadmaps.service.js';
+import { GuardianService } from './modules/verification/guardian.service.js';
 
 const env = loadEnv();
 const logger = createLogger(env.LOG_LEVEL);
@@ -40,6 +44,7 @@ async function main() {
     ioSub.connect(),
   ]);
   await syncIndexes();
+  await runMigrations(logger);
   logger.info('connected to MongoDB and Redis');
 
   connectTenantCacheBus({
@@ -93,6 +98,7 @@ async function main() {
     files: FilesService;
     realtime: RealtimeGateway;
     privacy: PrivacyService;
+    productInsights: InsightsService;
   };
   // A worker serves only its health and readiness (for the container check), never the API.
   const server =
@@ -110,7 +116,7 @@ async function main() {
   else services.realtime.attach(server, createAdapter(ioPub, ioSub));
   const files = services.files;
   const retention = () =>
-    runRetention(files, logger, services.privacy).catch((err: unknown) =>
+    runRetention(files, logger, services.privacy, services.productInsights).catch((err: unknown) =>
       logger.error({ err }, 'retention failed'),
     );
   // Timers that queue background work run where jobs run (an `api` process leaves them to workers).
@@ -137,6 +143,22 @@ async function main() {
       logger.error({ err }, 'nudge tick failed'),
     );
   if (runsJobs) setInterval(nudgeTick, 5 * 60_000).unref();
+  // Members who turned 18 (B2): hourly, one run per college that has any (job ids dedupe per day).
+  const adultTick = () =>
+    GuardianService.enqueueDue(jobs).catch((err: unknown) => logger.error({ err }, 'adulthood tick failed'));
+  if (runsJobs) {
+    setTimeout(adultTick, 60_000).unref();
+    setInterval(adultTick, 3600_000).unref();
+  }
+
+  // Billing (B10): hourly, one daily run per college (job ids dedupe per day): seats, overdue
+  // invoices, reminders and read-only.
+  const billingTick = () =>
+    BillingService.enqueueDaily(jobs).catch((err: unknown) => logger.error({ err }, 'billing tick failed'));
+  if (runsJobs) {
+    setTimeout(billingTick, 90_000).unref();
+    setInterval(billingTick, 3600_000).unref();
+  }
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, 'shutting down');

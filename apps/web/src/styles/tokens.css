@@ -12,11 +12,14 @@
    tokens derived from it (aurora, overlays, depth) are recomputed there too. */
 :root,
 [data-palette] {
-  /* Type: a characterful display face, a legible UI face, matching Telugu (ADR 0008). */
+  /* Type: a characterful display face, a legible UI face, matching Telugu and Devanagari (ADR 0008). */
   --font-display:
-    'Bricolage Grotesque Variable', 'Anek Telugu Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Geist Variable', 'Anek Telugu Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'Geist Mono Variable', 'Anek Telugu Variable', ui-monospace, monospace;
+    'Bricolage Grotesque Variable', 'Anek Telugu Variable', 'Anek Devanagari Variable', ui-sans-serif,
+    system-ui, sans-serif;
+  --font-body:
+    'Geist Variable', 'Anek Telugu Variable', 'Anek Devanagari Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    'Geist Mono Variable', 'Anek Telugu Variable', 'Anek Devanagari Variable', ui-monospace, monospace;
 
   /* Fluid type scale, eight steps (px at 360 → 1280 wide). */
   --text-caption: 0.75rem; /* 12 */

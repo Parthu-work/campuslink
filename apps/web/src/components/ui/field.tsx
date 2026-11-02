@@ -8,7 +8,7 @@ import {
   type TextareaHTMLAttributes,
 } from 'react';
 import { Check, ChevronDown, Eye, EyeOff } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { cn } from '../../lib/cn';
 
 /** Text controls: 48px tall, a calm border that turns brand with a soft ring on focus. */

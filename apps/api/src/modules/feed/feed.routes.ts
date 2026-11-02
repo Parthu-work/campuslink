@@ -234,6 +234,7 @@ export function feedRoutes(s: {
     {
       method: 'post',
       path: '/media/videos',
+      feature: 'reels',
       tag,
       summary: `Upload a Tips reel video (MP4/MOV, up to ${REEL_MAX_SECONDS} s, metadata removed)`,
       access: POST,
@@ -251,6 +252,7 @@ export function feedRoutes(s: {
     {
       method: 'get',
       path: '/stories',
+      feature: 'stories',
       tag,
       summary: 'Live stories (24 hours)',
       access: READ,
@@ -259,6 +261,7 @@ export function feedRoutes(s: {
     {
       method: 'post',
       path: '/stories',
+      feature: 'stories',
       tag,
       summary: 'Post a 24-hour story',
       access: POST,
@@ -273,6 +276,7 @@ export function feedRoutes(s: {
     {
       method: 'delete',
       path: '/stories/:id',
+      feature: 'stories',
       tag,
       summary: 'Delete my story',
       access: READ,
@@ -315,6 +319,7 @@ export function feedRoutes(s: {
     {
       method: 'get',
       path: '/sources',
+      feature: 'contentSources',
       tag,
       summary: 'Content sources you can follow',
       access: FOLLOW,

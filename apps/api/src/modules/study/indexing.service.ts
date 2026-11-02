@@ -422,6 +422,7 @@ export class IndexingService {
       await this.d.usage.record({
         kind: 'embedding',
         model: emb.signature,
+        platform: emb.platform,
         userId: null,
         inputTokens: res.tokens,
       });
@@ -454,6 +455,7 @@ export class IndexingService {
         await this.d.usage.record({
           kind: 'embedding',
           model: emb.signature,
+          platform: emb.platform,
           userId: null,
           inputTokens: res.tokens,
         });

@@ -300,7 +300,6 @@ describe('AI settings', () => {
           externalVideos: false,
           ocr: true,
           transcription: true,
-          facultySeeChats: false,
         },
         killSwitch: false,
         ...patch,
@@ -320,7 +319,7 @@ describe('AI settings', () => {
     expect(r.body.data.providers.find((p: { id: string }) => p.id === 'anthropic')).toMatchObject({
       embeddings: false,
       needsKey: true,
-      defaultChatModel: 'claude-opus-5-5',
+      defaultChatModel: 'claude-haiku-5-5',
     });
     expect(await aiStatus()).toMatchObject({ answers: false, reason: 'chatbot_off' });
   });
@@ -350,7 +349,8 @@ describe('AI settings', () => {
       error: null,
     });
     expect(good.body.data.settings.keys.chat).toMatchObject({ status: 'valid', last4: '4444' });
-    expect(good.body.data.settings.chatModel).toBe('claude-opus-5-5');
+    // Answers default to Haiku (ADR 0009).
+    expect(good.body.data.settings.chatModel).toBe('claude-haiku-5-5');
     // External provider: answers wait for the admin to accept the notice.
     expect(await aiStatus()).toMatchObject({ answers: false, reason: 'consent_needed' });
     expect((await as(admin).post('/admin/ai/consent').send({ version: 'old', accept: true })).status).toBe(

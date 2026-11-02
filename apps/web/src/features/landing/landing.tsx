@@ -1,5 +1,6 @@
+import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@campuslink/shared';
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { ArrowRight, BriefcaseBusiness, Compass, Orbit, ShieldCheck } from 'lucide-react';
 import { Mesh } from '../../components/ui/mesh';
 import { Crest } from '../../components/ui/misc';
@@ -25,14 +26,19 @@ export function LandingPage() {
             <small className="block text-caption font-normal text-fg-2">{tenant.branding.city}</small>
           )}
         </div>
-        <button
-          type="button"
-          className="ml-auto min-h-11 rounded-full px-3 text-meta font-semibold text-fg-2 hover:bg-hover hover:text-fg"
-          onClick={() => setLanguage(i18n.language === 'te' ? 'en' : 'te')}
-          lang={i18n.language === 'te' ? 'en' : 'te'}
-        >
-          {i18n.language === 'te' ? 'English' : 'తెలుగు'}
-        </button>
+        <div className="ml-auto flex shrink-0 gap-1">
+          {SUPPORTED_LOCALES.filter((l) => l !== i18n.language).map((l) => (
+            <button
+              key={l}
+              type="button"
+              className="min-h-11 rounded-full px-3 text-meta font-semibold text-fg-2 hover:bg-hover hover:text-fg"
+              onClick={() => setLanguage(l)}
+              lang={l}
+            >
+              {LOCALE_NAMES[l]}
+            </button>
+          ))}
+        </div>
       </header>
       <main id="main" className="gutter screen-in grid max-w-[880px] gap-6 self-center py-10">
         <span className="hidden sm:block">

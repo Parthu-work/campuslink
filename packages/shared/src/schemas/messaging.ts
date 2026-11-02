@@ -99,6 +99,31 @@ export const NOTIFICATION_TYPES = [
   'ai_key_invalid',
   'ai_budget_warning',
   'ai_budget_reached',
+  'adult_now',
+  'guardian_number_approved',
+  'guardian_number_rejected',
+  'channel_budget_warning',
+  'channel_budget_reached',
+  'request_nudge',
+  'request_rematch',
+  'announcement',
+  'drive_open',
+  'drive_reminder',
+  'drive_round_result',
+  'drive_selected',
+  'offer_verified',
+  'offer_rejected',
+  'outcome_verified',
+  'outcome_rejected',
+  'invoice_issued',
+  'invoice_due_soon',
+  'invoice_due',
+  'invoice_overdue',
+  'college_read_only',
+  'payment_received',
+  // Help and support (B14): a reply to your report; a new report for the college's admins.
+  'support_reply',
+  'support_ticket',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -113,6 +138,7 @@ export const NOTIFICATION_CATEGORIES = [
   'achievements',
   'events',
   'study',
+  'placements',
 ] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
@@ -156,32 +182,74 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   ai_budget_reached: 'study',
   material_review: 'study',
   material_reviewed: 'study',
+  adult_now: 'reminders',
+  guardian_number_approved: 'reminders',
+  guardian_number_rejected: 'reminders',
+  channel_budget_warning: 'reminders',
+  channel_budget_reached: 'reminders',
+  request_nudge: 'requests',
+  request_rematch: 'requests',
+  announcement: 'community',
+  drive_open: 'placements',
+  drive_reminder: 'placements',
+  drive_round_result: 'placements',
+  drive_selected: 'placements',
+  offer_verified: 'placements',
+  offer_rejected: 'placements',
+  outcome_verified: 'placements',
+  outcome_rejected: 'placements',
+  invoice_issued: 'reminders',
+  invoice_due_soon: 'reminders',
+  invoice_due: 'reminders',
+  invoice_overdue: 'reminders',
+  college_read_only: 'reminders',
+  payment_received: 'reminders',
+  support_reply: 'requests',
+  support_ticket: 'requests',
 };
-export const CHANNELS = ['inApp', 'email', 'push'] as const;
+/** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
+export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;
+/** GET /me/whatsapp: the settings screen's WhatsApp card. */
+export interface WhatsAppStatus {
+  /** The deployment has WhatsApp and the college has it on. */
+  available: boolean;
+  /** The member opted in (`whatsapp_updates`). */
+  consented: boolean;
+  /** Where messages go, masked; null without a verified number. */
+  phone: string | null;
+}
 export type Channel = (typeof CHANNELS)[number];
 export type ChannelPrefs = Record<Channel, boolean>;
 export const DEFAULT_CHANNELS: Record<NotificationCategory, ChannelPrefs> = {
-  requests: { inApp: true, email: true, push: true },
-  sessions: { inApp: true, email: true, push: true },
-  reminders: { inApp: true, email: true, push: true },
+  requests: { inApp: true, email: true, push: true, whatsapp: true },
+  sessions: { inApp: true, email: true, push: true, whatsapp: true },
+  reminders: { inApp: true, email: true, push: true, whatsapp: true },
   // One email per conversation at most every 30 minutes, and only while you are offline.
-  messages: { inApp: true, email: false, push: true },
-  community: { inApp: true, email: false, push: true },
+  messages: { inApp: true, email: false, push: true, whatsapp: false },
+  community: { inApp: true, email: false, push: true, whatsapp: false },
   // Decisions about your content always reach you by email too (moderation transparency).
-  moderation: { inApp: true, email: true, push: false },
-  // Referral replies and daily job-alert matches.
-  jobs: { inApp: true, email: true, push: true },
+  moderation: { inApp: true, email: true, push: false, whatsapp: false },
+  // Referral replies and daily job-alert matches (only job alerts have a WhatsApp template).
+  jobs: { inApp: true, email: true, push: true, whatsapp: true },
   // Weekly goal nudges and review decisions: gentle, never by email unless you turn it on.
-  roadmaps: { inApp: true, email: false, push: true },
+  roadmaps: { inApp: true, email: false, push: true, whatsapp: false },
   // Badges and reward decisions: in the app only, unless you turn more on.
-  achievements: { inApp: true, email: false, push: false },
+  achievements: { inApp: true, email: false, push: false, whatsapp: false },
   // Reminders, changes and waitlist places for events you RSVP'd to.
-  events: { inApp: true, email: true, push: true },
+  events: { inApp: true, email: true, push: true, whatsapp: false },
   // Your uploads finished processing (or failed), and review decisions about them.
-  study: { inApp: true, email: false, push: true },
+  study: { inApp: true, email: false, push: true, whatsapp: false },
+  // Drives opening for you, closing soon, round results and offers (B7).
+  placements: { inApp: true, email: true, push: true, whatsapp: true },
 };
 
-const channelPrefs = z.strictObject({ inApp: z.boolean(), email: z.boolean(), push: z.boolean() });
+const channelPrefs = z.strictObject({
+  inApp: z.boolean(),
+  email: z.boolean(),
+  push: z.boolean(),
+  // Optional so clients from before B3 keep saving; missing means off.
+  whatsapp: z.boolean().default(false),
+});
 export const notificationPrefsBody = z.strictObject({
   channels: z.strictObject({
     requests: channelPrefs,
@@ -195,6 +263,8 @@ export const notificationPrefsBody = z.strictObject({
     achievements: channelPrefs,
     study: channelPrefs,
     events: channelPrefs,
+    // Added in B7: clients from before it leave it out and get the default.
+    placements: channelPrefs.default(DEFAULT_CHANNELS.placements),
   }),
   quietHours: z.strictObject({
     enabled: z.boolean(),
@@ -262,6 +332,7 @@ export const REPORT_TARGETS = [
   'roadmap_comment',
   'event',
   'event_question',
+  'review',
 ] as const;
 export const REPORT_REASONS = ['spam', 'harassment', 'inappropriate', 'impersonation', 'other'] as const;
 export const reportBody = z.strictObject({

@@ -1,14 +1,18 @@
 import type { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Activity,
   BadgeCheck,
+  Building2,
+  FileCheck2,
   BookOpenCheck,
   FileUp,
   Orbit,
   ShieldAlert,
   Sparkles,
+  MessageCircle,
+  UserPlus,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -89,6 +93,39 @@ export function AdminOverview() {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {v.onboarding && (
+              <QueueCard
+                to="/admin/onboarding"
+                icon={UserPlus}
+                title={t('admin.ov.onboarding')}
+                value={shown(v.onboarding.notJoined)}
+                waiting={v.onboarding.notJoined > 0}
+              >
+                {t('admin.ov.onboardingHint', { count: v.onboarding.notJoined })}
+              </QueueCard>
+            )}
+            {v.placements && (
+              <QueueCard
+                to="/admin/placements"
+                icon={Building2}
+                title={t('admin.ov.placements')}
+                value={shown(v.placements.closingSoon)}
+                waiting={v.placements.closingSoon > 0}
+              >
+                {t('admin.ov.placementsHint', { count: v.placements.closingSoon })}
+              </QueueCard>
+            )}
+            {v.offers && (
+              <QueueCard
+                to="/admin/offers"
+                icon={FileCheck2}
+                title={t('admin.ov.offers')}
+                value={shown(v.offers.pending)}
+                waiting={v.offers.pending > 0}
+              >
+                {t('admin.ov.offersHint')}
+              </QueueCard>
+            )}
             {v.verification && (
               <QueueCard
                 to="/admin/verification"
@@ -202,6 +239,17 @@ export function AdminOverview() {
                 {v.ai.budgetPercent === null
                   ? t('admin.ov.aiNoBudget')
                   : t('admin.ov.aiBudget', { percent: v.ai.budgetPercent })}
+              </QueueCard>
+            )}
+            {v.whatsapp && (
+              <QueueCard
+                to="/admin/features"
+                icon={MessageCircle}
+                title={t('admin.ov.whatsapp')}
+                value={String(v.whatsapp.sent)}
+                waiting={v.whatsapp.allowance > 0 && v.whatsapp.sent >= v.whatsapp.allowance * 0.8}
+              >
+                {t('admin.ov.whatsappHint', { allowance: v.whatsapp.allowance })}
               </QueueCard>
             )}
           </div>

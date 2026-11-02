@@ -1,6 +1,6 @@
 import { useDeferredValue, useState, type KeyboardEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   LazyMotion,
@@ -28,12 +28,14 @@ import { Segmented } from '../../components/ui/tab-nav';
 import { TagInput } from '../../components/ui/tag-input';
 import { api } from '../../lib/api';
 import { mentorMatch } from '../../lib/queries';
+import { useFeature } from '../../lib/tenant-context';
 import { coverOf } from '../../lib/accent';
 import { SCREEN } from '../../lib/query-client';
+import { MentorStatsLine } from './mentor-stats';
 
 /**
- * A mentor in a list (§8.4): a large face, what they do and where, their batch, a few topics and
- * the sessions they offer. Reply time and next free slot are not in the API, so they are not shown.
+ * A mentor in a list (§8.4): a large face, what they do and where, their batch, a few topics, their
+ * track record (reply time, sessions, rating; B5) and the sessions they offer.
  */
 export function MentorTile({ m }: { m: MentorCard }) {
   const { t } = useTranslation();
@@ -74,6 +76,7 @@ export function MentorTile({ m }: { m: MentorCard }) {
             )}
           </div>
           {m.headline && <p className="line-clamp-2 text-meta text-fg-2">{m.headline}</p>}
+          {m.stats && <MentorStatsLine stats={m.stats} />}
           {m.topics.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {m.topics.slice(0, 3).map((x) => (
@@ -116,8 +119,8 @@ function ReasonList({ reasons }: { reasons: MatchReason[] }) {
           <span>
             {r.kind === 'branch' || r.kind === 'company'
               ? t(`match.reason.${r.kind}`, { value: r.value })
-              : r.kind === 'available'
-                ? t('match.reason.available')
+              : r.kind === 'available' || r.kind === 'fast_reply'
+                ? t(`match.reason.${r.kind}`)
                 : t(`match.reason.${r.kind}`, { values: r.values.join(', ') })}
           </span>
         </li>
@@ -410,7 +413,9 @@ function BrowseView() {
 export function MentorsPage() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
-  const view = params.get('view') === 'browse' ? 'browse' : 'match';
+  // Without Alumni Match (Admin › Features) the page is the mentor list alone.
+  const matching = useFeature('alumniMatch');
+  const view = !matching || params.get('view') === 'browse' ? 'browse' : 'match';
   return (
     <>
       <PageHeader
@@ -423,15 +428,17 @@ export function MentorsPage() {
           </>
         }
       />
-      <Segmented
-        label={t('mentors.title')}
-        value={view}
-        options={[
-          ['match', t('mentors.match')],
-          ['browse', t('mentors.browse')],
-        ]}
-        onChange={(v) => setParams(v === 'browse' ? { view: 'browse' } : {}, { replace: true })}
-      />
+      {matching && (
+        <Segmented
+          label={t('mentors.title')}
+          value={view}
+          options={[
+            ['match', t('mentors.match')],
+            ['browse', t('mentors.browse')],
+          ]}
+          onChange={(v) => setParams(v === 'browse' ? { view: 'browse' } : {}, { replace: true })}
+        />
+      )}
       {view === 'match' ? <MatchView /> : <BrowseView />}
     </>
   );

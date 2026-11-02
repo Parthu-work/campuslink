@@ -261,7 +261,10 @@ export class GamificationService {
 
   /** This month's XP among members who opted in (optionally within my branch). */
   async leaderboard(viewer: AuthState, scope: 'college' | 'branch'): Promise<LeaderboardRow[]> {
-    const ids = await this.optedIn('showOnLeaderboard');
+    const opted = await this.optedIn('showOnLeaderboard');
+    // Members under 18 never appear on a leaderboard (B2), even if they opted in.
+    const minors = await this.d.profiles.minorsAmong(opted);
+    const ids = opted.filter((id) => !minors.has(String(id)));
     if (!ids.length) return [];
     const start = new Date();
     start.setUTCDate(1);

@@ -1,4 +1,4 @@
-import type { TFunction } from 'i18next';
+import type { TFunction } from '../i18n/core';
 import type { NotificationView } from '@campuslink/shared';
 import { formatDateTime } from './format';
 
@@ -20,6 +20,7 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     type: d.sessionType ? t(`session.type.${d.sessionType}`) : '',
     time: d.start ? formatDateTime(d.start) : '',
     percent: d.percent ?? '',
+    round: d.round ?? '',
   };
   const href = (() => {
     switch (n.type) {
@@ -91,6 +92,54 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       case 'ai_budget_warning':
       case 'ai_budget_reached':
         return '/admin/ai';
+      case 'adult_now':
+        return '/settings/privacy';
+      case 'guardian_number_approved':
+        return '/verify';
+      case 'guardian_number_rejected':
+        return '/verify';
+      case 'channel_budget_warning':
+        return '/admin';
+      case 'channel_budget_reached':
+        return '/admin';
+      case 'request_nudge':
+        return `/mentorship?box=received${d.requestId ? `&request=${d.requestId}` : ''}`;
+      case 'request_rematch':
+        return `/mentorship?box=sent${d.requestId ? `&request=${d.requestId}` : ''}`;
+      case 'announcement':
+        return `/posts/${d.postId}`;
+      case 'drive_open':
+        return `/placements/${d.driveId}`;
+      case 'drive_reminder':
+        return `/placements/${d.driveId}`;
+      case 'drive_round_result':
+        return `/placements/${d.driveId}`;
+      case 'drive_selected':
+        return '/placements?tab=offers';
+      case 'offer_verified':
+        return '/outcomes';
+      case 'offer_rejected':
+        return '/outcomes';
+      case 'outcome_verified':
+        return '/outcomes';
+      case 'outcome_rejected':
+        return '/outcomes';
+      case 'invoice_issued':
+        return '/admin/billing';
+      case 'invoice_due_soon':
+        return '/admin/billing';
+      case 'invoice_due':
+        return '/admin/billing';
+      case 'invoice_overdue':
+        return '/admin/billing';
+      case 'college_read_only':
+        return '/admin/billing';
+      case 'payment_received':
+        return '/admin/billing';
+      case 'support_reply':
+        return `/help/reports/${d.ticketId ?? ''}`;
+      case 'support_ticket':
+        return `/admin/support?report=${d.ticketId ?? ''}`;
       default:
         return '/sessions';
     }

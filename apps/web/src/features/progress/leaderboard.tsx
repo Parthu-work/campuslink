@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { Crown, Medal, Users } from 'lucide-react';
 import type { LeaderboardRow, MyProgressView, WallOfMentorsView } from '@campuslink/shared';

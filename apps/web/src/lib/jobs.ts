@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from './toast';
-import { useTranslation } from 'react-i18next';
-import i18n from 'i18next';
-import type { JobView, Salary, TrackStatus } from '@campuslink/shared';
+import { useTranslation } from '../i18n/react';
+import i18n from '../i18n/core';
+import { LOCALE_TAGS, toLocale, type JobView, type Salary, type TrackStatus } from '@campuslink/shared';
 import { api, ApiError } from './api';
+import { putOrQueue } from './offline-writes';
 
 /** Number formatters by locale and options; building an Intl formatter is slow and lists show many. */
 const numberFormats = new Map<string, Intl.NumberFormat>();
@@ -16,7 +17,7 @@ const numberFormat = (locale: string, options: Intl.NumberFormatOptions = {}) =>
 
 /** "₹4.5L–6L a year" / "₹30k–40k a month" (Indian lakh notation for INR). */
 export function formatSalary(s: Salary): string {
-  const locale = i18n.language === 'te' ? 'te-IN' : 'en-IN';
+  const locale = LOCALE_TAGS[toLocale(i18n.language)];
   const inr = s.currency === 'INR';
   const short = (n: number) => {
     if (inr && n >= 100_000)
@@ -57,13 +58,18 @@ export function useTrack(job: Pick<JobView, 'id'>) {
     return () => snaps.forEach(([k, d]) => qc.setQueryData(k, d));
   };
   return useMutation({
+    // Runs offline too (the default would pause it), so saving can wait in the outbox (B13).
+    networkMode: 'always',
     mutationFn: (v: { status: TrackStatus | null; note?: string }) =>
       v.status === null
         ? api.delete(`/jobs/${job.id}/track`)
-        : api.put(`/jobs/${job.id}/track`, {
-            status: v.status,
-            ...(v.note !== undefined ? { note: v.note } : {}),
-          }),
+        : // Saving and tracking wait in the outbox when offline (B13); unsaving needs a connection.
+          putOrQueue(
+            qc,
+            `/jobs/${job.id}/track`,
+            { status: v.status, ...(v.note !== undefined ? { note: v.note } : {}) },
+            [['job-tracker'], ['jobs'], ['job', job.id]],
+          ),
     onMutate: (v) => ({
       rollback: apply((j) => ({
         ...j,
@@ -77,7 +83,9 @@ export function useTrack(job: Pick<JobView, 'id'>) {
       c?.rollback();
       toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
     },
-    onSuccess: (_d, v) => {
+    onSuccess: (d, v) => {
+      // Queued offline: the change stays on screen and the outbox says it will be sent.
+      if (d === undefined && v.status !== null) return;
       if (v.status === 'saved') toast.success(t('jobs.savedToast'));
       void qc.invalidateQueries({ queryKey: ['job-tracker'] });
     },

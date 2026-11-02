@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { pinoHttp } from 'pino-http';
 import type { Redis } from 'ioredis';
-import { API_PREFIX, Role } from '@campuslink/shared';
+import { API_PREFIX, DEFAULT_CHAT_MODEL, Role } from '@campuslink/shared';
 import type { Env } from './config/env.js';
 import { httpLogSerializers, type Logger } from './lib/logger.js';
 import { requestId } from './middleware/request-id.js';
@@ -15,6 +15,7 @@ import { tenantResolver } from './http/tenant.middleware.js';
 import { createLimiters } from './http/rate-limit.js';
 import { authenticate, csrfProtection } from './http/auth.middleware.js';
 import { defineModule, type RouteRegistry, type PipelineDeps } from './http/registry.js';
+import { gatedJob, withFeature } from './modules/tenants/features.js';
 import { buildOpenApi } from './http/openapi.js';
 import { TokenService } from './lib/jwt.js';
 import { FieldCipher } from './lib/crypto.js';
@@ -25,6 +26,7 @@ import { UsersService } from './modules/users/users.service.js';
 import { meRoutes, adminUserRoutes } from './modules/users/users.routes.js';
 import { tenantRoutes } from './modules/tenants/tenants.routes.js';
 import { auditRoutes } from './modules/audit/audit.routes.js';
+import { audit } from './modules/audit/audit.service.js';
 import { PlatformService } from './modules/platform/platform.service.js';
 import { platformRoutes } from './modules/platform/platform.routes.js';
 import { uploader } from './http/upload.js';
@@ -33,7 +35,22 @@ import { requireTenantId } from './lib/context.js';
 import type { StorageProvider } from './lib/storage.js';
 import { storageFromEnv } from './lib/storage-factory.js';
 import { InlineJobQueue, type JobQueue } from './lib/jobs.js';
-import { DisabledSmsProvider } from './lib/sms.js';
+import { ConsoleSmsProvider, DisabledSmsProvider, Msg91SmsProvider, type SmsProvider } from './lib/sms.js';
+import {
+  CloudWhatsAppProvider,
+  ConsoleWhatsAppProvider,
+  DisabledWhatsAppProvider,
+  type WhatsAppProvider,
+} from './lib/whatsapp.js';
+import { ChannelService } from './modules/notifications/channels/channel.service.js';
+import { channelRoutes } from './modules/notifications/channels/channel.routes.js';
+import { OtpSender } from './modules/notifications/channels/otp-sender.js';
+import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
+import { OtpService } from './modules/verification/otp.service.js';
+import { ADULT_JOB, GuardianService } from './modules/verification/guardian.service.js';
+import { PhoneAuthService } from './modules/auth/phone.service.js';
+import { phoneRoutes } from './modules/auth/phone.routes.js';
+import { devRoutes } from './modules/notifications/channels/dev.routes.js';
 import { FilesService, noopScanner, type MalwareScanner } from './modules/files/files.service.js';
 import { ClamdScanner } from './lib/clamav.js';
 import { fileRoutes } from './modules/files/files.routes.js';
@@ -45,6 +62,8 @@ import { profileRoutes } from './modules/profiles/profiles.routes.js';
 import { InvitesService } from './modules/verification/invites.service.js';
 import { VerificationService } from './modules/verification/verification.service.js';
 import { verificationRoutes } from './modules/verification/verification.routes.js';
+import { onboardingRoutes } from './modules/verification/onboarding.routes.js';
+import { OnboardingService } from './modules/verification/onboarding.service.js';
 import { IdempotencyService } from './modules/idempotency/idempotency.service.js';
 import { botCheck } from './http/bot.middleware.js';
 import { disabledBotProtection, TurnstileBotProtection, type BotProtection } from './lib/bot.js';
@@ -60,11 +79,30 @@ import { messagingRoutes } from './modules/messaging/messaging.routes.js';
 import { COMPLETE_JOB, REMINDER_JOB, SessionsService } from './modules/sessions/sessions.service.js';
 import { sessionRoutes } from './modules/sessions/sessions.routes.js';
 import { MentorsService } from './modules/mentorship/mentors.service.js';
-import { EXPIRE_JOB, RequestsService } from './modules/mentorship/requests.service.js';
+import {
+  EXPIRE_JOB,
+  REMATCH_JOB,
+  REQUEST_NUDGE_JOB,
+  RequestsService,
+} from './modules/mentorship/requests.service.js';
+import { ReviewsService } from './modules/mentorship/reviews.service.js';
+import {
+  DRIVE_OPEN_JOB,
+  DRIVE_REMINDER_JOB,
+  PlacementsService,
+} from './modules/placements/placements.service.js';
+import { OffersService } from './modules/placements/offers.service.js';
+import { AcademicsService } from './modules/placements/academics.service.js';
+import { OutcomesService } from './modules/placements/outcomes.service.js';
+import { outcomeRoutes } from './modules/placements/outcomes.routes.js';
+import { ReportsService } from './modules/reports/reports.service.js';
+import { reportRoutes } from './modules/reports/reports.routes.js';
+import { findTenantById } from './modules/tenants/tenant.cache.js';
+import { placementRoutes } from './modules/placements/placements.routes.js';
 import { mentorshipRoutes } from './modules/mentorship/mentorship.routes.js';
 import { ModerationService } from './modules/moderation/moderation.service.js';
 import { queueRoutes } from './modules/moderation/queue.routes.js';
-import { PostsService } from './modules/feed/posts.service.js';
+import { ANNOUNCE_JOB, PostsService } from './modules/feed/posts.service.js';
 import { FeedService } from './modules/feed/feed.service.js';
 import { FollowsService, OneUsefulThingService, StoriesService } from './modules/feed/social.service.js';
 import { feedRoutes } from './modules/feed/feed.routes.js';
@@ -89,6 +127,16 @@ import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
 import { PrivacyService } from './modules/privacy/privacy.service.js';
 import { privacyRoutes } from './modules/privacy/privacy.routes.js';
 import { consentService } from './modules/consent/consent.service.js';
+import { InsightsService } from './modules/insights/insights.service.js';
+import { insightsRoutes } from './modules/insights/insights.routes.js';
+import { SupportService } from './modules/support/support.service.js';
+import { supportRoutes } from './modules/support/support.routes.js';
+import { LegalService } from './modules/tenants/legal.service.js';
+import { legalRoutes } from './modules/tenants/legal.routes.js';
+import { observabilityRoutes } from './modules/observability/observability.routes.js';
+import { createErrorReporter, scrub } from './lib/error-reporter.js';
+import { metrics, routePattern } from './lib/metrics.js';
+import { setJobFailureReporter } from './lib/jobs.js';
 import { SubjectsService } from './modules/study/subjects.service.js';
 import { AiSettingsService } from './modules/study/ai-settings.service.js';
 import { aiSettingsRoutes, studyRoutes } from './modules/study/study.routes.js';
@@ -109,6 +157,15 @@ import { CliMediaTools, noMediaTools, type MediaTools } from './modules/study/me
 import { noOcr, TesseractOcr, type OcrProvider } from './modules/study/media/ocr.js';
 import { WhisperServiceTranscriber, type TranscriptionProvider } from './modules/study/media/transcribe.js';
 import { createHmac } from 'node:crypto';
+import { BILLING_DAILY_JOB, BillingService } from './modules/billing/billing.service.js';
+import { billingRoutes, stubPayRoutes } from './modules/billing/billing.routes.js';
+import { EntitlementsService } from './modules/billing/entitlements.js';
+import {
+  DisabledPaymentProvider,
+  RazorpayPaymentProvider,
+  StubPaymentProvider,
+  type PaymentProvider,
+} from './lib/payments.js';
 
 export interface AppDeps {
   env: Env;
@@ -134,6 +191,54 @@ export interface AppDeps {
   whisper?: TranscriptionProvider | null;
   /** The passage vector store (tests inject one); otherwise from VECTOR_STORE and QDRANT_URL. */
   vectorStore?: VectorStore;
+  /** Phone channels (tests inject console providers); otherwise from SMS_PROVIDER and WHATSAPP_PROVIDER. */
+  sms?: SmsProvider;
+  whatsapp?: WhatsAppProvider;
+  /** Online invoice payment (tests inject a stub); otherwise from PAYMENT_PROVIDER. */
+  payments?: PaymentProvider;
+}
+
+function paymentsFromEnv(env: Env, fetcher: typeof safeFetch): PaymentProvider {
+  if (env.PAYMENT_PROVIDER === 'stub') return new StubPaymentProvider();
+  if (env.PAYMENT_PROVIDER === 'razorpay')
+    return new RazorpayPaymentProvider(
+      {
+        keyId: env.RAZORPAY_KEY_ID ?? '',
+        keySecret: env.RAZORPAY_KEY_SECRET ?? '',
+        webhookSecret: env.RAZORPAY_WEBHOOK_SECRET ?? '',
+      },
+      fetcher,
+    );
+  return new DisabledPaymentProvider();
+}
+
+function smsFromEnv(env: Env, fetcher: typeof safeFetch): SmsProvider {
+  if (env.SMS_PROVIDER === 'console') return new ConsoleSmsProvider();
+  if (env.SMS_PROVIDER === 'msg91')
+    return new Msg91SmsProvider(
+      {
+        authKey: env.SMS_API_KEY ?? '',
+        senderId: env.SMS_SENDER_ID ?? '',
+        dltEntityId: env.SMS_DLT_ENTITY_ID ?? '',
+      },
+      fetcher,
+    );
+  return new DisabledSmsProvider();
+}
+
+function whatsappFromEnv(env: Env, fetcher: typeof safeFetch): WhatsAppProvider {
+  if (env.WHATSAPP_PROVIDER === 'console') return new ConsoleWhatsAppProvider();
+  if (env.WHATSAPP_PROVIDER === 'cloud')
+    return new CloudWhatsAppProvider(
+      {
+        token: env.WHATSAPP_TOKEN ?? '',
+        phoneNumberId: env.WHATSAPP_PHONE_NUMBER_ID ?? '',
+        graphVersion: env.WHATSAPP_GRAPH_VERSION ?? '',
+        authTemplate: env.WHATSAPP_AUTH_TEMPLATE,
+      },
+      fetcher,
+    );
+  return new DisabledWhatsAppProvider();
 }
 
 export function createApp({
@@ -155,6 +260,9 @@ export function createApp({
   ocr,
   whisper,
   vectorStore,
+  sms = smsFromEnv(env, fetcher),
+  whatsapp = whatsappFromEnv(env, fetcher),
+  payments = paymentsFromEnv(env, fetcher),
 }: AppDeps) {
   const app = express();
   app.disable('x-powered-by');
@@ -202,6 +310,16 @@ export function createApp({
       fetcher,
     );
 
+  // One-time codes to phones: WhatsApp first, SMS fallback (B2, B3).
+  const dltIds = parseDltTemplateIds(env.SMS_DLT_TEMPLATE_IDS);
+  const otpSender = new OtpSender({
+    whatsapp,
+    sms,
+    smsTemplateId: (key) => dltIds[key] ?? key,
+    smsTemplateRegistered: (key) => !!dltIds[key],
+    logger,
+  });
+  const otpService = new OtpService(cipher, otpSender);
   const authService = new AuthService({
     tokens,
     mailer,
@@ -213,6 +331,7 @@ export function createApp({
     ...(fetchImpl ? { fetchImpl } : {}),
   });
   const store = storage ?? storageFromEnv(env).storage;
+  const entitlements = new EntitlementsService();
   const queue = jobs ?? new InlineJobQueue();
   const filesService = new FilesService(
     store,
@@ -222,13 +341,14 @@ export function createApp({
     createHmac('sha256', env.JWT_TICKET_SECRET).update('signed-files-v1').digest(),
   );
   const profilesService = new ProfilesService(cipher, filesService);
-  const usersService = new UsersService(authService, profilesService);
+  const usersService = new UsersService(authService, profilesService, cipher);
+  const phoneAuthService = new PhoneAuthService({ auth: authService, otp: otpService, cipher, tokens });
   const platformService = new PlatformService(authService);
   const invitesService = new InvitesService(cipher, mailer, authService);
   const verificationService = new VerificationService({
     cipher,
     mailer,
-    sms: new DisabledSmsProvider(),
+    otp: otpService,
     profiles: profilesService,
     files: filesService,
     invites: invitesService,
@@ -237,11 +357,32 @@ export function createApp({
   const whitelistService = new WhitelistService(cipher);
   authService.onEmailVerified = (userId, email, meta) =>
     verificationService.onEmailVerified(userId, email, meta);
+  phoneAuthService.onPhoneVerified = (userId, phone, meta) =>
+    verificationService.onPhoneVerified(userId, phone, meta);
+  const guardianService = new GuardianService({ cipher, otp: otpService, profiles: profilesService });
+  verificationService.guardian = guardianService;
   authService.onUserCreated = (userId) => profilesService.sync(userId);
   queue.register(IMPORT_JOB, (data, progress) => importsService.run(String(data.jobId), progress));
 
   // ── Mentorship (Phase 3) ─────────────────────────────
   const tenantUrl = authService.tenantUrl.bind(authService);
+  const channelService = new ChannelService({
+    whatsapp,
+    cipher,
+    logger,
+    // Quick-reply payloads: their own secret in production, derived from a server secret in dev.
+    actionSecret:
+      env.WHATSAPP_ACTION_SECRET ??
+      createHmac('sha256', env.JWT_TICKET_SECRET).update('whatsapp-actions-v1').digest('hex'),
+    appSecret: env.WHATSAPP_APP_SECRET ?? '',
+    // The plan's allowance (B10): per student per month, for the students the plan is sized for.
+    allowance: async (tenantId) => {
+      const t = await findTenantById(tenantId);
+      return t ? entitlements.limit(t, 'whatsapp') : 0;
+    },
+  });
+  otpService.onSent = (userId, channel, messageId) =>
+    channelService.record(userId, channel, 'auth_code', 'authentication', true, messageId);
   const notificationsService = new NotificationsService({
     mailer,
     logger,
@@ -250,7 +391,19 @@ export function createApp({
     realtime,
     jobs: queue,
     tenantUrl,
+    channels: channelService,
   });
+  const onboardingService = new OnboardingService({
+    cipher,
+    otp: otpService,
+    auth: authService,
+    verification: verificationService,
+    channels: channelService,
+  });
+  channelService.onAlert = async (type, data) => {
+    for (const id of await usersService.activeIdsWithRole(Role.COLLEGE_ADMIN))
+      await notificationsService.notify(id, type, data);
+  };
   const safetyService = new SafetyService(profilesService);
   const messagingService = new MessagingService({
     cipher,
@@ -296,9 +449,37 @@ export function createApp({
   realtime.hooks.typingTarget = (auth, conversationId) => messagingService.typingTarget(auth, conversationId);
   usersService.onSuspended = (userId) => realtime.disconnectUser(requireTenantId(), userId);
   queue.register(DELIVER_JOB, (data) => notificationsService.deliver(data));
+  guardianService.notify = async (userId, type, data) => {
+    await notificationsService.notify(userId, type, data);
+  };
+  queue.register(ADULT_JOB, () => guardianService.runAdulthood().then(() => undefined));
   queue.register(REMINDER_JOB, (data) => sessionsService.onReminder(data));
   queue.register(COMPLETE_JOB, (data) => sessionsService.onComplete(data));
   queue.register(EXPIRE_JOB, (data) => requestsService.onExpire(data));
+  queue.register(REQUEST_NUDGE_JOB, (data) => requestsService.onNudge(data));
+  queue.register(REMATCH_JOB, (data) => requestsService.onRematch(data));
+  const reviewsService = new ReviewsService({
+    sessions: sessionsService,
+    mentors: mentorsService,
+    profiles: profilesService,
+  });
+  sessionsService.reviewedOf = (ids) => reviewsService.reviewedOf(ids);
+  // WhatsApp quick replies (B3) act through the owning services, as the member, with current rights.
+  channelService.registerAction('request_accept', (viewer, id) =>
+    requestsService.respond(viewer, id, { action: 'accept' }),
+  );
+  channelService.registerAction('request_decline', (viewer, id) =>
+    requestsService.respond(viewer, id, { action: 'decline', template: 'try_later' }),
+  );
+  channelService.registerAction('booking_ack', async (viewer, id) => {
+    await sessionsService.get(viewer, id);
+    await audit.record({
+      action: 'session.attendance_confirmed',
+      actorId: viewer.userId,
+      targetType: 'booking',
+      targetId: id,
+    });
+  });
 
   // ── Feed and content (Phase 4) ─────────────────────────────
   const moderationService = new ModerationService({
@@ -327,6 +508,9 @@ export function createApp({
     moderation: moderationService,
     fetcher,
   });
+  postsService.onAnnounce = (postId) =>
+    queue.enqueue(ANNOUNCE_JOB, { tenantId: String(requireTenantId()), postId });
+  queue.register(ANNOUNCE_JOB, (data) => postsService.announce(String(data.postId)));
   const storiesService = new StoriesService({
     files: filesService,
     profiles: profilesService,
@@ -356,12 +540,19 @@ export function createApp({
   moderationService.register('question', qaService.questionHandler);
   moderationService.register('answer', qaService.answerHandler);
   moderationService.register('item', sourcesService.itemHandler);
+  moderationService.register('review', reviewsService.handler);
+  safetyService.registerTarget('review', (viewer, id) =>
+    moderationService.reportTarget('review', viewer, id),
+  );
   for (const type of ['post', 'comment', 'story', 'question', 'answer'] as const)
     safetyService.registerTarget(type, (viewer, id) => moderationService.reportTarget(type, viewer, id));
   filesService.registerAccess('post_media', (fileId, viewer) => postsService.mediaAccess(fileId, viewer));
   filesService.registerAccess('story_media', (fileId, viewer) => storiesService.mediaAccess(fileId, viewer));
   safetyService.onBlock((a, b) => followsService.onBlock(a, b));
-  queue.register(FETCH_JOB, (data) => sourcesService.runFetch(data));
+  queue.register(
+    FETCH_JOB,
+    gatedJob('contentSources', (data) => sourcesService.runFetch(data)),
+  );
 
   // ── Jobs and referrals (Phase 5) ─────────────────────────────
   const jobsService = new JobsService({
@@ -397,7 +588,10 @@ export function createApp({
     referralsService.resumeAccess(fileId, viewer),
   );
   safetyService.onBlock((a, b) => referralsService.onBlock(a, b));
-  queue.register(JOB_FETCH_JOB, (data) => jobSourcesService.runFetch(data));
+  queue.register(
+    JOB_FETCH_JOB,
+    gatedJob('jobsAggregation', (data) => jobSourcesService.runFetch(data)),
+  );
   queue.register(ALERT_JOB, (data) => jobsService.runAlert(data));
   queue.register(REFERRAL_EXPIRE_JOB, (data) => referralsService.onExpire(data));
 
@@ -438,6 +632,83 @@ export function createApp({
     eventsService,
   ])
     svc.award = gamificationService.award;
+  // ── Placements (B7) ─────────────────────────────
+  const academicsService = new AcademicsService({ whitelist: whitelistService });
+  const offersService = new OffersService({
+    files: filesService,
+    profiles: profilesService,
+    notifications: notificationsService,
+  });
+  const placementsService = new PlacementsService({
+    whitelist: whitelistService,
+    academics: academicsService,
+    offers: offersService,
+    profiles: profilesService,
+    notifications: notificationsService,
+    files: filesService,
+    jobs: queue,
+    events: eventsService,
+  });
+  queue.register(
+    DRIVE_OPEN_JOB,
+    gatedJob('placements', (data) => placementsService.onOpen(data)),
+  );
+  queue.register(
+    DRIVE_REMINDER_JOB,
+    gatedJob('placements', (data) => placementsService.onReminder(data)),
+  );
+  filesService.registerAccess('placement_resume', (fileId, viewer) =>
+    placementsService.resumeAccess(fileId, viewer),
+  );
+  filesService.registerAccess('offer_proof', (fileId, viewer) => offersService.proofAccess(fileId, viewer));
+  importsService.academics = academicsService;
+  // ── Outcomes and accreditation reports (B8) ─────────────────────────────
+  const outcomesService = new OutcomesService({
+    profiles: profilesService,
+    whitelist: whitelistService,
+    notifications: notificationsService,
+  });
+  const reportsService = new ReportsService(
+    {
+      roster: (gradYears) => whitelistService.countsByCohort(gradYears),
+      offers: (gradYears) => offersService.verifiedFor(gradYears),
+      seekers: (gradYears) => placementsService.seekersFor(gradYears),
+      higherStudies: (gradYears) => outcomesService.verified('higher_study', { gradYear: gradYears }),
+      exams: (years) => outcomesService.verified('exam', { year: years }),
+      ventures: (gradYears) => outcomesService.verified('venture', { gradYear: gradYears }),
+      people: async (ids) => {
+        const [cohort, rolls] = await Promise.all([
+          profilesService.cohortOf(ids),
+          whitelistService.recordsOf(ids),
+        ]);
+        return new Map(
+          ids.map((id) => [
+            id,
+            { name: cohort.get(id)?.name ?? '', rollNumber: rolls.get(id)?.rollNumber ?? null },
+          ]),
+        );
+      },
+      alumniEngagement: async (from, to) => {
+        const alumni = new Set(
+          (await profilesService.cohorts()).filter((p) => p.roles.includes(Role.ALUMNI)).map((p) => p.userId),
+        );
+        const [events, sessions, referrals] = await Promise.all([
+          eventsService.heldBetween(from, to),
+          sessionsService.completedSince(from),
+          referralsService.referredBetween(from, to),
+        ]);
+        return {
+          events: events.filter((e) => alumni.has(e.hostId)),
+          sessions: sessions.sessions.filter((x) => x.at < to && alumni.has(x.mentorId)),
+          referrals: referrals.filter((r) => alumni.has(r.referrerId)),
+        };
+      },
+    },
+    async () => (await findTenantById(requireTenantId()))?.branding.displayName ?? '',
+  );
+  channelService.registerAction('drive_register', (viewer, id) =>
+    placementsService.register(viewer, id, { answers: [] }, {}),
+  );
   moderationService.register('event', eventsService.handler);
   moderationService.register('event_question', eventsService.questionHandler);
   for (const type of ['event', 'event_question'] as const)
@@ -466,12 +737,18 @@ export function createApp({
     profiles: profilesService,
     usage: aiUsageService,
     privateEndpoints: env.AI_PRIVATE_ENDPOINTS,
+    // The platform's provider is every college's default (D6), metered against its plan (B11).
+    allowance: async () => {
+      const t = await findTenantById(requireTenantId());
+      return t ? entitlements.limit(t, 'aiTokens') : 0;
+    },
     platformDefault:
-      env.AI_DEFAULT_PROVIDER && env.AI_DEFAULT_CHAT_MODEL
+      env.AI_DEFAULT_PROVIDER && (env.AI_DEFAULT_CHAT_MODEL || DEFAULT_CHAT_MODEL[env.AI_DEFAULT_PROVIDER])
         ? {
             provider: env.AI_DEFAULT_PROVIDER,
             apiKey: env.AI_DEFAULT_API_KEY ?? null,
-            chatModel: env.AI_DEFAULT_CHAT_MODEL,
+            chatModel: env.AI_DEFAULT_CHAT_MODEL || DEFAULT_CHAT_MODEL[env.AI_DEFAULT_PROVIDER],
+            deepModel: env.AI_DEFAULT_DEEP_MODEL ?? null,
             baseUrl: env.AI_DEFAULT_BASE_URL ?? null,
             embeddingProvider: env.AI_DEFAULT_EMBEDDING_PROVIDER ?? null,
             embeddingApiKey: env.AI_DEFAULT_EMBEDDING_API_KEY ?? null,
@@ -523,7 +800,10 @@ export function createApp({
     materialsService.detachTopics(subjectId, topicIds);
   for (const purpose of ['study_material', 'study_thumbnail'] as const)
     filesService.registerAccess(purpose, (fileId, viewer) => materialsService.fileAccess(fileId, viewer));
-  queue.register(PROCESS_JOB, (data) => materialPipeline.run(data));
+  queue.register(
+    PROCESS_JOB,
+    gatedJob('study', (data) => materialPipeline.run(data)),
+  );
 
   // Embeddings, the vector index and hybrid retrieval (spec step 3).
   const vectorIndex = new VectorIndex(vectorStore ?? createVectorStore(env, fetcher));
@@ -547,7 +827,10 @@ export function createApp({
   materialsService.onVisibility = (id, visibility) => indexingService.materialVisibility(id, visibility);
   materialsService.onRemoved = (id) => indexingService.materialRemoved(id);
   aiSettingsService.onEmbeddingReady = () => indexingService.scheduleBackfill();
-  queue.register(EMBED_JOB, (data) => indexingService.runBackfill(data));
+  queue.register(
+    EMBED_JOB,
+    gatedJob('study', (data) => indexingService.runBackfill(data)),
+  );
   // The study assistant (spec step 4).
   const chatService = new ChatService({
     subjects: subjectsService,
@@ -568,6 +851,35 @@ export function createApp({
     indexing: indexingService,
   });
 
+  // ── Help, support, legal pages and error reporting (B14) ─────────────────────────────
+  const errorReporter = createErrorReporter(
+    { reporter: env.ERROR_REPORTER, dsn: env.ERROR_REPORTER_DSN, environment: env.NODE_ENV },
+    logger,
+  );
+  setJobFailureReporter((name, err) => {
+    void errorReporter
+      .report({
+        kind: 'job',
+        type: err instanceof Error ? err.name : 'Error',
+        message: `${name}: ${scrub(err instanceof Error ? err.message : String(err))}`,
+      })
+      .catch(() => undefined);
+  });
+  const legalService = new LegalService();
+  consentService.currentNotice = () => legalService.currentNoticeVersion();
+  usersService.notice = (userId) => legalService.noticeStateForCurrent(userId);
+  const supportService = new SupportService({
+    colleges: async () =>
+      (await platformService.listTenants()).map((t) => ({
+        id: String(t.id),
+        slug: t.slug,
+        name: t.branding.displayName,
+      })),
+    files: filesService,
+    notifications: notificationsService,
+    users: usersService,
+  });
+
   // Admin › Overview: what is waiting for staff and admins (revamp phase 10).
   const overviewService = new AdminOverviewService({
     users: usersService,
@@ -582,7 +894,89 @@ export function createApp({
     analytics: analyticsService,
     ai: aiSettingsService,
     usage: aiUsageService,
+    channels: channelService,
+    onboarding: onboardingService,
+    placements: placementsService,
+    offers: offersService,
+    outcomes: outcomesService,
+    support: supportService,
   });
+
+  // ── Plans, entitlements and billing (B10) ─────────────────────────────
+  const billingService = new BillingService({
+    seller: {
+      name: env.BILLING_SELLER_NAME,
+      address: env.BILLING_SELLER_ADDRESS,
+      gstin: env.BILLING_SELLER_GSTIN ?? null,
+      stateCode: env.BILLING_SELLER_STATE ?? null,
+      registered: env.BILLING_GST_REGISTERED,
+      gstRate: env.BILLING_GST_RATE,
+      sacCode: env.BILLING_SAC_CODE,
+      prefix: env.BILLING_INVOICE_PREFIX,
+      termsDays: env.BILLING_PAYMENT_TERMS_DAYS,
+      bankDetails: env.BILLING_BANK_DETAILS ?? null,
+    },
+    files: filesService,
+    notifications: notificationsService,
+    users: usersService,
+    payments,
+    entitlements,
+    logger,
+    whatsappUsed: async () => (await channelService.usage()).sent,
+    aiUsage: () => aiUsageService.monthBreakdown(),
+    aiPrices: {
+      input: env.AI_PLATFORM_PRICE_INPUT ?? null,
+      output: env.AI_PLATFORM_PRICE_OUTPUT ?? null,
+      embedding: env.AI_PLATFORM_PRICE_EMBEDDING ?? null,
+      currency: env.AI_PLATFORM_PRICE_CURRENCY,
+    },
+    tenantUrl,
+  });
+  queue.register(BILLING_DAILY_JOB, () => billingService.daily());
+
+  // ── Product analytics (B9) ─────────────────────────────
+  const productInsights = new InsightsService({
+    eligible: async (userId) => {
+      if (!(await usersService.isActiveAdult(userId))) return false;
+      return (await consentService.current(userId)).some(
+        (c) => c.purpose === 'analytics_aggregate' && c.granted,
+      );
+    },
+    roles: async () => new Map((await profilesService.cohorts()).map((p) => [p.userId, p.roles])),
+    invitedSince: (since) => onboardingService.invitedSince(since),
+    replyHoursSince: (since) => requestsService.replyHoursSince(since),
+    placement: async (gradYear) => {
+      const [roster, seekers, offers] = await Promise.all([
+        whitelistService.countsByCohort([gradYear]),
+        placementsService.seekersFor([gradYear]),
+        offersService.verifiedFor([gradYear]),
+      ]);
+      return {
+        finalYear: roster.reduce((n, r) => n + r.n, 0),
+        registered: new Set(seekers.map((r) => r.subject)).size,
+        jobOffers: offers.filter((o) => o.type !== 'internship').length,
+      };
+    },
+  });
+  for (const svc of [
+    usersService,
+    verificationService,
+    onboardingService,
+    requestsService,
+    sessionsService,
+    roadmapsService,
+    placementsService,
+    offersService,
+    chatService,
+  ])
+    svc.track = productInsights.track;
+  const afterUserCreated = authService.onUserCreated;
+  authService.onUserCreated = async (userId) => {
+    await afterUserCreated?.(userId);
+    await productInsights.track(userId, 'signed_up');
+  };
+  consentService.onChange = (userId, purpose, granted) =>
+    purpose === 'analytics_aggregate' ? productInsights.onConsent(userId, granted) : Promise.resolve();
 
   // ── Privacy rights (Phase 8) ─────────────────────────────
   const privacyService = new PrivacyService({ auth: authService, profiles: profilesService, logger });
@@ -594,7 +988,9 @@ export function createApp({
   privacyService.register('account', hook(authService));
   privacyService.register('profile', hook(profilesService));
   privacyService.register('consents', { exportFor: (u) => consentService.current(u) });
+  privacyService.register('guardianConsent', { exportFor: (u) => consentService.guardianFor(u) });
   privacyService.register('verification', hook(verificationService));
+  privacyService.register('onboarding', hook(onboardingService));
   privacyService.register('posts', hook(postsService));
   privacyService.register('stories', hook(storiesService));
   privacyService.register('follows', hook(followsService));
@@ -602,18 +998,26 @@ export function createApp({
   privacyService.register('messages', hook(messagingService));
   privacyService.register('mentorship', hook(mentorsService));
   privacyService.register('mentorshipRequests', hook(requestsService));
+  privacyService.register('mentorReviews', hook(reviewsService));
   privacyService.register('sessions', hook(sessionsService));
   privacyService.register('jobs', hook(jobsService));
   privacyService.register('referrals', hook(referralsService));
   privacyService.register('roadmaps', hook(roadmapsService));
   privacyService.register('points', hook(gamificationService));
   privacyService.register('events', hook(eventsService));
+  privacyService.register('placementRegistrations', hook(placementsService));
+  privacyService.register('offers', hook(offersService));
+  privacyService.register('academics', hook(academicsService));
+  privacyService.register('outcomes', hook(outcomesService));
+  privacyService.register('productEvents', hook(productInsights));
   privacyService.register('notifications', hook(notificationsService));
+  privacyService.register('channelMessages', hook(channelService));
   privacyService.register('subjects', hook(subjectsService));
   privacyService.register('materials', hook(materialsService));
   privacyService.register('aiUsage', hook(aiUsageService));
   privacyService.register('studyChats', hook(chatService));
   privacyService.register('aiSettings', hook(aiSettingsService));
+  privacyService.register('support', hook(supportService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -629,6 +1033,17 @@ export function createApp({
   };
 
   app.use(requestId);
+  // Requests by route pattern and status (B14); never the concrete path, which holds ids.
+  app.use((req, res, next) => {
+    res.on('finish', () =>
+      metrics.httpRequests.inc({
+        route: routePattern(req),
+        method: req.method,
+        status: String(res.statusCode),
+      }),
+    );
+    next();
+  });
   app.use(
     pinoHttp({
       logger,
@@ -648,7 +1063,16 @@ export function createApp({
     }),
   );
   app.use(corsMiddleware(env.CORS_ALLOWED_ORIGINS));
-  app.use(express.json({ limit: '100kb', strict: true }));
+  app.use(
+    express.json({
+      limit: '100kb',
+      strict: true,
+      // Provider webhooks are signed over the exact bytes: keep them for those paths only.
+      verify: (req, _res, buf) => {
+        if (req.url?.startsWith(`${API_PREFIX}/webhooks/`)) (req as { rawBody?: Buffer }).rawBody = buf;
+      },
+    }),
+  );
   app.use(rejectOperatorKeys);
   app.use(cookieParser());
   app.use((_req, res, next) => {
@@ -667,11 +1091,19 @@ export function createApp({
         env.BOT_PROTECTION === 'turnstile' && env.TURNSTILE_SITE_KEY
           ? { provider: 'turnstile', siteKey: env.TURNSTILE_SITE_KEY }
           : null,
+        otpSender.available,
       ),
       pipeline,
     ),
   );
   app.use(API_PREFIX, defineModule('auth', authRoutes(authService, cookie), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('phone', phoneRoutes(phoneAuthService, guardianService, cookie), pipeline),
+  );
+  // The console providers' outbox (codes and messages), for development and the e2e suite only.
+  if (env.NODE_ENV !== 'production')
+    app.use(API_PREFIX, defineModule('dev', devRoutes(sms, whatsapp), pipeline));
   app.use(
     API_PREFIX,
     defineModule('users', [...meRoutes(usersService), ...adminUserRoutes(usersService)], pipeline),
@@ -687,14 +1119,23 @@ export function createApp({
     API_PREFIX,
     defineModule('verification', verificationRoutes(verificationService, invitesService), pipeline),
   );
+  app.use(API_PREFIX, defineModule('onboarding', onboardingRoutes(onboardingService, cookie), pipeline));
   app.use(API_PREFIX, defineModule('profiles', profileRoutes(profilesService, extraSearch), pipeline));
   app.use(
     API_PREFIX,
-    defineModule('mentorship', mentorshipRoutes(mentorsService, requestsService, sessionsService), pipeline),
+    defineModule(
+      'mentorship',
+      mentorshipRoutes(mentorsService, requestsService, sessionsService, reviewsService),
+      pipeline,
+    ),
   );
   app.use(API_PREFIX, defineModule('sessions', sessionRoutes(sessionsService), pipeline));
   app.use(API_PREFIX, defineModule('messaging', messagingRoutes(messagingService), pipeline));
   app.use(API_PREFIX, defineModule('notifications', notificationRoutes(notificationsService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('channels', channelRoutes(channelService, env.WHATSAPP_VERIFY_TOKEN), pipeline),
+  );
   app.use(API_PREFIX, defineModule('moderation', moderationRoutes(safetyService), pipeline));
   app.use(
     API_PREFIX,
@@ -713,12 +1154,18 @@ export function createApp({
     ),
   );
   app.use(API_PREFIX, defineModule('qa', qaRoutes(qaService), pipeline));
-  app.use(API_PREFIX, defineModule('content-sources', sourceRoutes(sourcesService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('content-sources', withFeature('contentSources', sourceRoutes(sourcesService)), pipeline),
+  );
   app.use(
     API_PREFIX,
     defineModule('jobs', jobRoutes({ jobs: jobsService, referrals: referralsService }), pipeline),
   );
-  app.use(API_PREFIX, defineModule('job-sources', jobSourceRoutes(jobSourcesService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('job-sources', withFeature('jobsAggregation', jobSourceRoutes(jobSourcesService)), pipeline),
+  );
   app.use(
     API_PREFIX,
     defineModule('referrals', referralRoutes({ referrals: referralsService, files: filesService }), pipeline),
@@ -726,13 +1173,50 @@ export function createApp({
   app.use(API_PREFIX, defineModule('roadmaps', roadmapRoutes(roadmapsService), pipeline));
   app.use(API_PREFIX, defineModule('gamification', gamificationRoutes(gamificationService), pipeline));
   app.use(API_PREFIX, defineModule('events', eventRoutes(eventsService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule(
+      'placements',
+      withFeature(
+        'placements',
+        placementRoutes({
+          placements: placementsService,
+          offers: offersService,
+          academics: academicsService,
+          files: filesService,
+        }),
+      ),
+      pipeline,
+    ),
+  );
+  app.use(
+    API_PREFIX,
+    defineModule('outcomes', withFeature('placements', outcomeRoutes(outcomesService)), pipeline),
+  );
+  app.use(
+    API_PREFIX,
+    defineModule('reports', withFeature('placements', reportRoutes(reportsService)), pipeline),
+  );
   app.use(API_PREFIX, defineModule('analytics', analyticsRoutes(analyticsService), pipeline));
+  app.use(API_PREFIX, defineModule('insights', insightsRoutes(productInsights, platformService), pipeline));
+  app.use(API_PREFIX, defineModule('support', supportRoutes(supportService, filesService), pipeline));
+  app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('observability', observabilityRoutes(errorReporter, env.METRICS_TOKEN), pipeline),
+  );
   app.use(API_PREFIX, defineModule('privacy', privacyRoutes(privacyService), pipeline));
+  app.use(API_PREFIX, defineModule('billing', billingRoutes(billingService, payments), pipeline));
+  if (env.NODE_ENV !== 'production' && payments instanceof StubPaymentProvider)
+    app.use(API_PREFIX, defineModule('dev-payments', stubPayRoutes(billingService, payments), pipeline));
   app.use(
     API_PREFIX,
     defineModule(
       'study',
-      studyRoutes({ subjects: subjectsService, ai: aiSettingsService, insights: insightsService }),
+      withFeature(
+        'study',
+        studyRoutes({ subjects: subjectsService, ai: aiSettingsService, insights: insightsService }),
+      ),
       pipeline,
     ),
   );
@@ -740,15 +1224,22 @@ export function createApp({
     API_PREFIX,
     defineModule(
       'ai-settings',
-      aiSettingsRoutes(aiSettingsService, indexingService, insightsService),
+      withFeature('study', aiSettingsRoutes(aiSettingsService, indexingService, insightsService)),
       pipeline,
     ),
   );
   app.use(
     API_PREFIX,
-    defineModule('study-materials', materialRoutes(materialsService, retrievalService), pipeline),
+    defineModule(
+      'study-materials',
+      withFeature('study', materialRoutes(materialsService, retrievalService)),
+      pipeline,
+    ),
   );
-  app.use(API_PREFIX, defineModule('study-chat', chatRoutes(chatService, logger), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('study-chat', withFeature('study', chatRoutes(chatService, logger)), pipeline),
+  );
   app.use(API_PREFIX, defineModule('admin-overview', adminOverviewRoutes(overviewService), pipeline));
   app.use(
     API_PREFIX,
@@ -768,7 +1259,7 @@ export function createApp({
   app.get(`${API_PREFIX}/openapi.json`, (_req, res) => res.json(openapi));
 
   app.use(notFoundHandler);
-  app.use(errorHandler(logger));
+  app.use(errorHandler(logger, errorReporter));
   app.locals.registry = registry;
   app.locals.services = {
     auth: authService,
@@ -783,6 +1274,7 @@ export function createApp({
     queue,
     realtime,
     notifications: notificationsService,
+    channels: channelService,
     messaging: messagingService,
     sessions: sessionsService,
     mentors: mentorsService,
@@ -804,6 +1296,7 @@ export function createApp({
     events: eventsService,
     analytics: analyticsService,
     privacy: privacyService,
+    productInsights,
     subjects: subjectsService,
     aiSettings: aiSettingsService,
     materials: materialsService,
@@ -813,6 +1306,9 @@ export function createApp({
     aiUsage: aiUsageService,
     vectors: vectorIndex,
     chat: chatService,
+    billing: billingService,
+    entitlements,
+    payments,
   };
   return app;
 }

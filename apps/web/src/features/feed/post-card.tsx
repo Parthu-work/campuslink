@@ -1,6 +1,6 @@
 import { useId, type MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import {
@@ -10,6 +10,7 @@ import {
   HandHeart,
   Lightbulb,
   Megaphone,
+  Pin,
   MessageCircle,
   PartyPopper,
   Rss,
@@ -23,12 +24,14 @@ import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, ApiError } from '../../lib/api';
 import { useFileUrl, useStreamedFile } from '../../lib/files';
+import { useDataSaver } from '../../lib/data-saver';
 import { formatDateTime, formatRelative } from '../../lib/format';
 import { patchPost, usePostActions } from '../../lib/feed';
 import { useCan } from '../../lib/me';
 import { pop } from '../../lib/celebrate';
 import { cn } from '../../lib/cn';
 import { ContentMenu, RemovalNotice } from './content-menu';
+import { audienceLabel } from '../../lib/announcements';
 
 const STAFF = ['TPO', 'FACULTY', 'COLLEGE_ADMIN'];
 const REACTION_ICON: Record<Reaction, typeof Lightbulb> = {
@@ -95,7 +98,7 @@ function PostImage({
   single: boolean;
   onDoubleTap?: () => void;
 }) {
-  const url = useFileUrl(fileId);
+  const url = useFileUrl(fileId, 640);
   return (
     <div
       onDoubleClick={onDoubleTap}
@@ -130,6 +133,8 @@ export function ReelVideo({
 }) {
   const stream = useStreamedFile(fileId);
   const descId = useId();
+  // Data saver (B13): nothing of the video downloads until the member presses play.
+  const saver = useDataSaver();
   return (
     <figure className={cn('grid gap-1.5', className)}>
       <div className="overflow-hidden rounded-[var(--radius-sm)] bg-black">
@@ -141,7 +146,7 @@ export function ReelVideo({
             muted={autoPlay}
             autoPlay={autoPlay}
             loop={autoPlay}
-            preload="metadata"
+            preload={saver ? 'none' : 'metadata'}
             aria-describedby={descId}
             className="mx-auto max-h-[70vh] w-full object-contain"
           />
@@ -358,11 +363,19 @@ export function PostCard({
           />
         </AuthorLine>
         {(post.announcement || post.kind === 'reel') && (
-          <p className="flex gap-2">
+          <p className="flex flex-wrap gap-2">
             {post.announcement && (
               <Badge tone="brand">
                 <Megaphone className="size-3" aria-hidden /> {t('feed.announcement')}
               </Badge>
+            )}
+            {post.pinnedUntil && (
+              <Badge>
+                <Pin className="size-3" aria-hidden /> {t('announce.pinned')}
+              </Badge>
+            )}
+            {post.audience && (
+              <Badge>{t('announce.for', { who: audienceLabel(post.audience, (r) => t(`role.${r}`)) })}</Badge>
             )}
             {post.kind === 'reel' && <Badge tone="accent">{t('feed.tipsReel')}</Badge>}
           </p>

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { DATA_SAVER_MODES, type DataSaverMode, type Locale } from '@campuslink/shared';
 import { create } from 'zustand';
 import i18n, { loadLanguage } from '../i18n';
 import { prefs } from './storage';
@@ -14,7 +15,10 @@ interface PrefState {
   setTheme: (t: ThemePref) => void;
   setMotion: (m: MotionPref) => void;
   setHaptics: (on: boolean) => void;
-  setLanguage: (l: 'en' | 'te') => void;
+  setLanguage: (l: Locale) => void;
+  /** Data saver (B13): smaller images, no stories, no video preloading. `auto` follows the browser. */
+  dataSaver: DataSaverMode;
+  setDataSaver: (m: DataSaverMode) => void;
 }
 
 const root = document.documentElement;
@@ -48,6 +52,13 @@ export const usePreferences = create<PrefState>((set) => ({
   theme: initialTheme,
   motion: initialMotion,
   haptics: prefs.get('haptics') === '1',
+  dataSaver: (DATA_SAVER_MODES as readonly string[]).includes(prefs.get('dataSaver') ?? '')
+    ? (prefs.get('dataSaver') as DataSaverMode)
+    : 'auto',
+  setDataSaver: (dataSaver) => {
+    prefs.set('dataSaver', dataSaver);
+    set({ dataSaver });
+  },
   setTheme: (theme) => {
     applyTheme(theme);
     prefs.set('theme', theme);

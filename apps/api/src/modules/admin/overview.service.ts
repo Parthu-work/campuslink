@@ -13,6 +13,13 @@ import type { ImportsService } from '../imports/imports.service.js';
 import type { AnalyticsService } from '../analytics/analytics.service.js';
 import type { AiSettingsService } from '../study/ai-settings.service.js';
 import type { AiUsageService } from '../study/ai-usage.service.js';
+import { featureEnabled } from '../tenants/features.js';
+import type { ChannelService } from '../notifications/channels/channel.service.js';
+import type { OnboardingService } from '../verification/onboarding.service.js';
+import type { PlacementsService } from '../placements/placements.service.js';
+import type { OffersService } from '../placements/offers.service.js';
+import type { OutcomesService } from '../placements/outcomes.service.js';
+import type { SupportService } from '../support/support.service.js';
 
 export interface OverviewDeps {
   users: UsersService;
@@ -26,6 +33,12 @@ export interface OverviewDeps {
   imports: ImportsService;
   analytics: AnalyticsService;
   ai: AiSettingsService;
+  channels?: ChannelService;
+  onboarding?: OnboardingService;
+  placements?: PlacementsService;
+  offers?: OffersService;
+  outcomes?: OutcomesService;
+  support?: SupportService;
   usage: AiUsageService;
 }
 
@@ -40,6 +53,8 @@ export class AdminOverviewService {
     const can = (p: Permission) => viewer.permissions.has(p);
     if (!ADMIN_PERMISSIONS.some(can)) throw forbidden();
     const when = <T>(ok: boolean, fn: () => Promise<T>) => (ok ? fn() : Promise.resolve(null));
+    // Study queues stay out of the overview while the college has Study off (B1).
+    const study = await featureEnabled('study');
     const [members, activity, verification, moderation, roadmapReviews, materialReviews, imports, ai] =
       await Promise.all([
         when(can('users:read_admin'), async () => {
@@ -59,9 +74,11 @@ export class AdminOverviewService {
           heldItems: await this.d.sources.heldCount(),
         })),
         when(can('roadmaps:review'), async () => ({ pending: await this.d.roadmaps.reviewCount() })),
-        when(can('study:manage'), async () => ({ pending: await this.d.materials.reviewCount(viewer) })),
+        when(study && can('study:manage'), async () => ({
+          pending: await this.d.materials.reviewCount(viewer),
+        })),
         when(can('imports:manage'), () => this.d.imports.activityCounts()),
-        when(can('ai:settings'), async () => {
+        when(study && can('ai:settings'), async () => {
           const rt = await this.d.ai.runtime();
           const limit = rt.settings.monthlyTokenBudget;
           const used = limit > 0 ? await this.d.usage.monthTokens() : 0;
@@ -71,6 +88,43 @@ export class AdminOverviewService {
           };
         }),
       ]);
-    return { members, activity, verification, moderation, roadmapReviews, materialReviews, imports, ai };
+    const whatsapp =
+      this.d.channels && can('tenant:settings') && (await featureEnabled('whatsapp'))
+        ? await this.d.channels.usage().then((u) => ({ sent: u.sent, allowance: u.allowance }))
+        : null;
+    const onboarding =
+      this.d.onboarding && can('onboarding:manage')
+        ? { notJoined: await this.d.onboarding.notJoined() }
+        : null;
+    // B7: drives closing in 48 hours and offers waiting for verification (switched off: none).
+    const placementsOn = await featureEnabled('placements');
+    const placements =
+      placementsOn && this.d.placements && can('placements:manage')
+        ? { closingSoon: await this.d.placements.closingSoon() }
+        : null;
+    const offers =
+      placementsOn && this.d.offers && can('outcomes:verify')
+        ? {
+            // B8: higher studies, exams and ventures wait in the same queue.
+            pending: (await this.d.offers.pendingCount()) + ((await this.d.outcomes?.pendingCount()) ?? 0),
+          }
+        : null;
+    const support =
+      this.d.support && can('support:manage') ? { open: await this.d.support.openCount() } : null;
+    return {
+      onboarding,
+      placements,
+      offers,
+      support,
+      members,
+      activity,
+      verification,
+      moderation,
+      roadmapReviews,
+      materialReviews,
+      imports,
+      ai,
+      whatsapp,
+    };
   }
 }

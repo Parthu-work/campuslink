@@ -13,6 +13,13 @@ export const FILE_PURPOSES = [
   'study_thumbnail',
   'study_transcript',
   'branding',
+  // Placements (B7): a résumé attached to a drive registration, and proof of an offer.
+  'placement_resume',
+  'offer_proof',
+  // Billing (B10): an issued invoice's PDF, served only through the billing routes.
+  'invoice',
+  // Help and support (B14): a screenshot attached to a problem report.
+  'support_screenshot',
 ] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 

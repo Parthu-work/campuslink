@@ -14,9 +14,82 @@
 - Every grant or withdrawal is a new **append-only** record with the purpose version and privacy-notice version (`consents` collection). Current state is the latest record per purpose.
 - Users can change optional consents in Settings → Privacy, effective immediately. Withdrawing `account` means account deletion (self-service in the privacy release).
 
-## Age
+## Age and members under 18 (build B2) — needs legal review
 
-Sign-up requires an 18+ declaration. Under-18 users are blocked on the client and the server. **We do not collect minors' data:** a 17-year-old first-year is told to contact their college, and the admin invites them once they turn 18. Imported list records hold only what verification needs (roll number, name, branch, graduation year, email or phone); they do not create accounts. Rationale: DPDP's verifiable-parental-consent requirements for children are out of scope for now.
+> **Needs legal review** before a college enrols members under 18. The flow follows DPDP Act 2023 §9 and DPDP Rules 2025 Rule 10 as we read them; it is not legal advice.
+
+- **Age check.** Sign-up asks for the birth month (`YYYY-MM`). The birth month itself is never stored: an adult keeps no age data at all, and a member under 18 has only `adultOn`, the first day of the month after their eighteenth birthday month (the latest possible birthday, so nobody counts as an adult early). Members who declared they were 18 before B2 keep their declaration date (`ageCheckedAt`).
+- **Verifiable guardian consent.** A member under 18 starts in `guardian_pending` with no permissions: only verification and the guardian step work (plus their privacy rights: export and deletion). The college's admission record is the "reliable details" source: the code goes to the guardian's number on the roster (`guardianPhone`, imported with the student list, encrypted and blind-indexed). The guardian reads a short, versioned declaration (`guardian_consent` v1) in English or Telugu on the student's screen and confirms it with the code. The consent record keeps the roster record id, the language and the channel, not the guardian's number. Without a number on the roster, the student enters one and a TPO or admin checks it against the admission papers before any code is sent (`guardian_manual` in the verification queue; the number is deleted from the request once decided).
+- **While a member is under 18** (with consent): the For you feed is chronological (no personalised ranking); contact details are never shown to anyone else, whatever the visibility setting; they never appear on leaderboards; they are excluded from product analytics events (B9). Direct messages exist only inside accepted mentorships (no route opens any other conversation).
+- **Turning 18.** A daily job clears `adultOn`, opens a still-pending account, lifts the rules above and tells the member. The rules are computed from `adultOn` on every request, so they lift on the day itself.
+- **Not relied on:** the DPDP Fourth Schedule exemption for educational institutions covers only tracking and behavioural monitoring for educational activities or safety. We do not rely on it for any of the above.
+- Imported list records hold only what verification and guardian consent need (roll number, name, branch, graduation year, email or phone, guardian's phone); they do not create accounts.
+
+## Phone numbers (build B2)
+
+- Members may sign up and sign in with a mobile number and a one-time code; email becomes optional for students and alumni. Numbers are encrypted (`phoneEnc`) with a blind index for lookups, like every other contact detail.
+- Codes are sent by WhatsApp (Meta Cloud API) or SMS (MSG91) through `OtpSender` (B3 adds the real adapters). Only the number and the code leave the platform; no message text, names or other personal data are sent with a code.
+- Sign-in answers the same whether or not a number has an account, and a code to a number with no account is never sent.
+- One-time code challenges keep the number encrypted for at most 24 hours (sign-up needs it after the code) and are then deleted.
+
+## WhatsApp messages (build B3)
+
+- Sent only to members who opted in (`whatsapp_updates`, optional, versioned) and have a verified number, for the kinds of notification they leave switched on. Meta (WhatsApp) receives the number and the template's variables: names, times, session types, company names and counts, never message or request text.
+- What was sent is kept per member as the template name and delivery status for 90 days (`channel_messages`), exported with their data and erased with their account; daily counts per college carry no member ids.
+- Replies are not stored. A tap on a button runs that one action as the member; free text gets a fixed answer pointing to the app.
+
+## Placements (build B7)
+
+- **Academic records** (CGPA, backlogs, school percentages) are read only by the student and the placement cell (`placements:manage`). Students see their own record and every rule that stands between them and a drive; nobody else sees their figures.
+- **Eligibility rules are academic and cohort facts only.** There is no field for gender, caste, religion or any other protected attribute.
+- **Exact CTC** is visible only to the member and the placement cell. Statistics use bands and suppressed counts.
+- **Exports for companies** contain only the columns the cell ticks (phone numbers and marks are opt-in). Each export is audited with the columns, the format and the row count.
+- **Offer proof** (a PDF or a photo, rebuilt without metadata) is readable only by whoever verifies offers. It is deleted 30 days after the offer is verified.
+- **Erasure:** self-reported marks are deleted. Registrations are anonymised (answers and the résumé are deleted; branch, batch and results stay without the member), and overrides naming the member are removed. Offers are **anonymised**: the member and the exact CTC are removed and the proof is deleted. The company, CTC band, branch and batch stay, so the college's placement statistics do not change when someone leaves. College-imported marks stay on the college's list by roll number (they are the college's records, like the roster) and are unlinked from the account.
+
+## Outcomes and accreditation reports (build B8)
+
+- **Higher studies, exams and ventures** are reported by the member or imported from the college's own sheet, and count only once the placement cell verifies them. A score band is what the member chooses to say ("AIR under 2,000"), never a score sheet.
+- **Reports are aggregates.** Every count of people is suppressed under 5 on screen, on the dashboard and in summary downloads, and ratios are shown only when the counts behind them are not suppressed.
+- **Evidence workbooks name students** (the accreditation bodies ask for it). They need `reports:export` (placement cell and college admin) and every download is audited with the report, the parameters and the row count.
+- **Erasure:** unverified outcomes are deleted. Verified outcomes, offers and drive registrations stay in the college's record without the member: the member id is removed and one random key per collection lets reports count the person once without saying who they were.
+
+## Product analytics (build B9)
+
+- **First party only.** Product events are stored in the college's own database; there is no third-party tracker or analytics script.
+- **Only adults who allow it.** Events are recorded only for active members over 18 who hold the `analytics_aggregate` consent. Withdrawing it in Settings stops recording at once and detaches the member's past events (kept as anonymous counts).
+- **No text.** An event is a name from a closed list, a day, and ids or enum values (for example a request id or "accepted"). Nothing a member wrote is ever recorded.
+- **13 months.** Events are then rolled up into daily counts with no member in them, and deleted.
+- **Aggregates only.** Colleges see counts (under 5 suppressed); the platform sees per-college counts through a named, audit-logged path and never member rows.
+- **Erasure** detaches the member's events in the same way as withdrawal.
+
+## Billing (build B10)
+
+- **About the college, not its members.** Invoices and payments name the college (its legal name, address, optional GSTIN and state) and the platform's seller. No member's id, name or contact is stored with them; the platform admin who recorded a bank payment is kept as the recorder.
+- **Online payment sends no personal data.** A Razorpay Payment Link carries the invoice number, the amount, the college's legal name and two internal ids; Razorpay's own SMS and email notifications are off.
+- **Seat counts are counts.** The nightly seat count stores one number per college.
+- **Kept as tax records.** Invoices are not erased with a member (they hold no member data) and are never deleted for non-payment; a college that does not pay becomes read-only, with everything still readable and exportable.
+
+## The offline copy on the device (build B13)
+
+- To open on a bad connection, the app keeps a copy of a few of the member's **own** reads in the browser's IndexedDB on their phone: their profile, their sessions, their conversations and the last 50 messages of each, their job tracker, the roadmaps they follow, the drives they registered for, study material they opened and the first page of their feed. Nothing about other members beyond what those screens already show (names, photos, session types); contact fields (email, phone) are stripped from everything except the member's own profile, and other members' profiles are never kept.
+- The copy lives only on that device, is dropped after 7 days, and is **wiped when the member signs out**, when the session turns out to be gone (for example after "sign out everywhere"), and when a different member signs in on the same device (shared phones). It is never sent anywhere.
+- Offline, the app opens read-only from the copy only if the device already holds one for the member and the session could not be checked because the network is down; the session is checked again as soon as the connection returns, and a dead session wipes the copy.
+- Writes made offline are limited to an RSVP, saving or tracking a job and marking a roadmap step. They wait in the same database (with no message or request text) and are sent with their Idempotency-Key on reconnect, or wiped with the rest on sign-out.
+- Data saver changes nothing about what is stored; it asks the API for smaller copies of images the member may already see.
+
+## Help, legal pages and error reports (build B14)
+
+- **Problem reports** are seen by the member who sent them and the desk that answers: the college's admins for college matters, the platform owner for bugs (each platform read and reply is recorded in the college's audit log). Notifications about them carry an id and a category, never the text. A screenshot is re-encoded (no EXIF), visible to the same people and deleted after 180 days. Reports are exported with the member's data and erased with their account.
+- **Legal pages** show the college's legal name, address and grievance officer, which the college publishes for that purpose. Accepting a new notice is an append-only consent record, kept on erasure. The templates follow this document and **need legal review**.
+- **Error reports** carry the error type, a scrubbed message (emails, numbers, ids and tokens removed), the request id, the route pattern and the college's slug; from browsers, a one-way hash of the member's id instead of the id. No names, bodies or query strings. Browsers send them to the college's own API, never straight to a third party.
+- **Metrics** are counters by route pattern, job, channel and status, with no member or college in them.
+
+## Demo data (build B15)
+
+- `pnpm seed` creates two fictional colleges for development and demos only. Every person, company, drive, offer and report in it is invented and labelled DEMO, with `.example` email addresses and `+91 90000 …` numbers that belong to nobody.
+- The demo analytics cohort is 60 detached sign-ups (`anonKey` starting `demo-`) with no account behind them, so they never appear as people anywhere in the app.
+- The seed refuses to run with `NODE_ENV=production`, because it starts by dropping the whole database it is pointed at (`MONGODB_URI`).
 
 ## Data minimisation (implemented)
 
@@ -61,6 +134,8 @@ Sign-up requires an 18+ declaration. Under-18 users are blocked on the client an
 | Job listings                        | Deleted 60 days after they close or expire (TTL)                       |
 | Unattached résumé uploads           | Deleted after 24 hours                                                 |
 | Résumés on referral requests        | Deleted 60 days after the request                                      |
+| Offer proof files                   | Deleted 30 days after the offer is verified                            |
+| Product events                      | Rolled up into daily counts after 13 months, then deleted              |
 | Audit log                           | Kept                                                                   |
 
 File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable per tenant: inactive accounts (default 3 years) and deleted-account grace (default 30 days); those purges ship with the privacy release.
@@ -80,6 +155,7 @@ File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable pe
 
 ## AI study assistant (Phase 9)
 
+- **The platform's provider is every college's default** (build B11, ADR 0009), within its plan's allowance; a college may use its own key instead. Either way:
 - **Nothing is sent to an AI provider until the college accepts the data notice** (versioned, with who and when, and an audit entry). The notice says that passages of uploaded material and students' questions go to the chosen provider; names, emails, roll numbers and other profile data never do.
 - The built-in demo responder sends nothing anywhere and needs no notice.
 - **Subjects** record faculty owners and granted contributors by id; per-student overrides (included or excluded) are exportable and erased with the account. Erasure removes the member from owners and contributors; the subject stays (it belongs to the college).
@@ -88,8 +164,8 @@ File purges run in the API every 6 hours (`lib/maintenance.ts`). Configurable pe
 - **Video links** load nothing from YouTube or Vimeo until the member presses play, and then only the privacy-enhanced players; their title and length are fetched once by the server (oEmbed), not by members' browsers.
 - **Transcription and OCR** run on the server (Tesseract, a local Whisper service). A college that uses OpenAI may have video audio transcribed by OpenAI, only after it has accepted the data notice.
 - **Search by meaning** sends the member's search words to the college's embedding provider (only after the data notice is accepted); nothing identifying the member goes with them. Vectors are stored with the passages and deleted with them.
-- **AI usage counters** (`aiUsage`) record, per member and day, how many requests and tokens were used (no text). They are exported with the member's data; on erasure they fold into the college's anonymous counters, so the month's budget stays correct.
-- **Conversations with the study assistant** are private to the member: nobody else can open them, not faculty, not college admins, not the platform owner. They are deleted after the college's chat retention period (default 180 days; 0 keeps them until the member deletes them), and members can delete one conversation or all of them at any time. Export includes them; erasure deletes them with any kept flashcard decks.
+- **AI usage counters** (`aiUsage`) record, per member and day, how many requests and tokens were used, for what feature and on whose key (no text). They are exported with the member's data; on erasure they fold into the college's anonymous counters, so the month's budget stays correct.
+- **Conversations with the study assistant** are private to the member: nobody else can open them, not faculty, not college admins, not the platform owner. **Faculty never read students' study chats** (decision D7): the unused `facultySeeChats` setting that could have allowed it has been removed, and a one-off migration deleted it from every college's stored settings (build B11). They are deleted after the college's chat retention period (default 180 days; 0 keeps them until the member deletes them), and members can delete one conversation or all of them at any time. Export includes them; erasure deletes them with any kept flashcard decks.
 - **Questions sent to an AI provider** carry only the question (with email addresses, phone numbers and roll-number-like codes removed) and the passages of material it is answered from; never a name or any profile detail.
 - **Questions the material does not cover** are logged for the faculty's content gaps without the member's name and with personal details removed; faculty see them only as suppressed aggregates. The member's id is kept on the row only so that erasure can delete it.
 - **Faculty insights** are aggregates only: questions per topic and unit, distinct students per unit, feedback, and content gaps as topics (or as words at least 5 different students used), with every count under 5 shown as "<5". No question text, conversation or student is shown, and only the subject's owners and the college's admins see them.

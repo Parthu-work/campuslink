@@ -1,5 +1,13 @@
 import { z } from 'zod';
-import { AI_PROVIDERS, APP_NAME, EMBEDDING_PROVIDERS } from '@campuslink/shared';
+import {
+  AI_PROVIDERS,
+  APP_NAME,
+  DEFAULT_CHAT_MODEL,
+  PRICE_CURRENCIES,
+  EMBEDDING_PROVIDERS,
+  GST_STATE_CODES,
+  GSTIN_PATTERN,
+} from '@campuslink/shared';
 
 const bool = z
   .enum(['true', 'false'])
@@ -86,11 +94,56 @@ export const envSchema = z.object({
   S3_KMS_KEY_ID: z.string().min(1).optional(),
   S3_ACCESS_KEY_ID: z.string().min(1).optional(),
   S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
-  SMS_PROVIDER: z.enum(['disabled']).default('disabled'),
+  /** SMS for code fallback (D4). `console` keeps messages in memory (development and tests only). */
+  SMS_PROVIDER: z.enum(['disabled', 'console', 'msg91']).default('disabled'),
+  /** MSG91 (SMS_PROVIDER=msg91): the auth key, the DLT-approved header and the principal entity id. */
+  SMS_API_KEY: z.string().min(1).optional(),
+  SMS_SENDER_ID: z
+    .string()
+    .regex(/^[A-Z]{6}$/, 'six capital letters')
+    .optional(),
+  SMS_DLT_ENTITY_ID: z
+    .string()
+    .regex(/^\d{10,25}$/)
+    .optional(),
+  /** Registered DLT template ids, `otp=1107…,reminder=1107…` (docs/sms-templates.md). */
+  SMS_DLT_TEMPLATE_IDS: z.string().optional(),
+  /** WhatsApp channel (D3). `console` keeps messages in memory (development and tests only). */
+  WHATSAPP_PROVIDER: z.enum(['disabled', 'console', 'cloud']).default('disabled'),
+  /** Meta WhatsApp Cloud API (WHATSAPP_PROVIDER=cloud). */
+  WHATSAPP_TOKEN: z.string().min(1).optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z
+    .string()
+    .regex(/^\d{5,30}$/)
+    .optional(),
+  /** Meta signs webhook deliveries with it (X-Hub-Signature-256). */
+  WHATSAPP_APP_SECRET: z.string().min(1).optional(),
+  /** The token Meta echoes when it verifies the webhook URL. */
+  WHATSAPP_VERIFY_TOKEN: z.string().min(16).optional(),
+  /** Graph API version, as Meta names it (for example v21.0). */
+  WHATSAPP_GRAPH_VERSION: z
+    .string()
+    .regex(/^v\d+\.\d+$/)
+    .optional(),
+  /** The approved authentication template (copy-code button). */
+  WHATSAPP_AUTH_TEMPLATE: z
+    .string()
+    .regex(/^[a-z0-9_]{1,512}$/)
+    .default('auth_code'),
+  /** Signs quick-reply button payloads; derived from JWT_TICKET_SECRET when unset (development). */
+  WHATSAPP_ACTION_SECRET: z.string().min(32).optional(),
   /** Malware scanning of every stored file (ClamAV clamd). Required in production; fails closed. */
   MALWARE_SCANNER: z.enum(['none', 'clamav']).default('none'),
   /** clamd address: `host:port` or an absolute Unix socket path. */
   CLAMAV_ADDRESS: z.string().min(1).default('127.0.0.1:3310'),
+  /**
+   * Error reporting (B14): `disabled`, `console` (the log) or `sentry` (Sentry, self-hosted Sentry or
+   * GlitchTip, via ERROR_REPORTER_DSN). Reports carry no personal data (lib/error-reporter.ts).
+   */
+  ERROR_REPORTER: z.enum(['disabled', 'console', 'sentry']).default('disabled'),
+  ERROR_REPORTER_DSN: z.url({ protocol: /^https$/ }).optional(),
+  /** Bearer token for GET /metrics on the platform host (Prometheus). Unset: the route answers 404. */
+  METRICS_TOKEN: z.string().min(32).optional(),
   /** bullmq (Redis-backed, default) or inline (in-process; tests only). */
   JOBS_DRIVER: z.enum(['bullmq', 'inline']).default('bullmq'),
   /**
@@ -138,7 +191,18 @@ export const envSchema = z.object({
    */
   AI_DEFAULT_PROVIDER: z.enum(AI_PROVIDERS).optional(),
   AI_DEFAULT_API_KEY: z.string().min(8).max(500).optional(),
+  /** Optional for Anthropic (its default answer model, `claude-haiku-5-5`, is used); required otherwise. */
   AI_DEFAULT_CHAT_MODEL: z.string().min(1).max(120).optional(),
+  /** The "deep" model for heavy tasks (Prompt 2); Anthropic defaults to `claude-sonnet-5-5`. */
+  AI_DEFAULT_DEEP_MODEL: z.string().min(1).max(120).optional(),
+  /**
+   * What the platform pays its AI provider per million tokens, in AI_PLATFORM_PRICE_CURRENCY: the
+   * console's per-college cost estimate (B11). Unset: no estimate is shown.
+   */
+  AI_PLATFORM_PRICE_INPUT: z.coerce.number().min(0).max(10_000).optional(),
+  AI_PLATFORM_PRICE_OUTPUT: z.coerce.number().min(0).max(10_000).optional(),
+  AI_PLATFORM_PRICE_EMBEDDING: z.coerce.number().min(0).max(10_000).optional(),
+  AI_PLATFORM_PRICE_CURRENCY: z.enum(PRICE_CURRENCIES).default('USD'),
   AI_DEFAULT_BASE_URL: z.url({ protocol: /^https?$/ }).optional(),
   AI_DEFAULT_EMBEDDING_PROVIDER: z.enum(EMBEDDING_PROVIDERS).optional(),
   AI_DEFAULT_EMBEDDING_API_KEY: z.string().min(8).max(500).optional(),
@@ -179,6 +243,40 @@ export const envSchema = z.object({
     .string()
     .regex(/^(mailto:|https:\/\/)/)
     .default('mailto:no-reply@campuslink.localhost'),
+  /**
+   * Billing (B10): the seller on every invoice (the platform owner's business). Confirm the SAC
+   * code and the GST rate with a chartered accountant before issuing real invoices.
+   */
+  BILLING_SELLER_NAME: z.string().trim().min(3).max(160).default(`${APP_NAME} (demo seller)`),
+  /** One line, commas between parts; printed under the seller's name. */
+  BILLING_SELLER_ADDRESS: z.string().trim().min(5).max(400).default('Address not set'),
+  BILLING_SELLER_GSTIN: z.string().trim().toUpperCase().regex(GSTIN_PATTERN).optional(),
+  /** The seller's GST state code: same state as the college → CGST + SGST, otherwise IGST. */
+  BILLING_SELLER_STATE: z.enum(GST_STATE_CODES).optional(),
+  /** `false`: the seller is not registered for GST and invoices carry no tax. */
+  BILLING_GST_REGISTERED: bool,
+  BILLING_GST_RATE: z.coerce.number().min(0).max(28).default(18),
+  /** Services Accounting Code printed on invoices; empty shows a warning in the console. */
+  BILLING_SAC_CODE: z
+    .string()
+    .regex(/^(\d{4,8})?$/)
+    .default(''),
+  BILLING_INVOICE_PREFIX: z
+    .string()
+    .regex(/^[A-Z]{1,6}$/)
+    .default('CL'),
+  BILLING_PAYMENT_TERMS_DAYS: z.coerce.number().int().min(0).max(90).default(30),
+  /** Bank details printed on invoices for transfers (one line), e.g. `A/c 0000, IFSC ABCD0000000`. */
+  BILLING_BANK_DETAILS: z.string().trim().max(300).optional(),
+  /** Online payment (D5): `stub` (development and tests), `razorpay` (Payment Links), or off. */
+  PAYMENT_PROVIDER: z.enum(['disabled', 'stub', 'razorpay']).default('disabled'),
+  RAZORPAY_KEY_ID: z
+    .string()
+    .regex(/^rzp_(test|live)_[A-Za-z0-9]{6,40}$/)
+    .optional(),
+  RAZORPAY_KEY_SECRET: z.string().min(8).optional(),
+  /** Razorpay signs webhook deliveries with it (X-Razorpay-Signature, HMAC SHA256). */
+  RAZORPAY_WEBHOOK_SECRET: z.string().min(16).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -204,8 +302,40 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error('Set both S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY, or neither');
   if (!!env.VAPID_PUBLIC_KEY !== !!env.VAPID_PRIVATE_KEY)
     throw new Error('Set both VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY, or neither');
-  if (env.AI_DEFAULT_PROVIDER && !env.AI_DEFAULT_CHAT_MODEL)
-    throw new Error('AI_DEFAULT_PROVIDER needs AI_DEFAULT_CHAT_MODEL');
+  if (
+    env.WHATSAPP_PROVIDER === 'cloud' &&
+    !(
+      env.WHATSAPP_TOKEN &&
+      env.WHATSAPP_PHONE_NUMBER_ID &&
+      env.WHATSAPP_APP_SECRET &&
+      env.WHATSAPP_VERIFY_TOKEN &&
+      env.WHATSAPP_GRAPH_VERSION
+    )
+  )
+    throw new Error(
+      'WHATSAPP_PROVIDER=cloud needs WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_APP_SECRET, WHATSAPP_VERIFY_TOKEN and WHATSAPP_GRAPH_VERSION',
+    );
+  if (env.ERROR_REPORTER === 'sentry' && !env.ERROR_REPORTER_DSN)
+    throw new Error('ERROR_REPORTER=sentry needs ERROR_REPORTER_DSN');
+  if (env.SMS_PROVIDER === 'msg91' && !(env.SMS_API_KEY && env.SMS_SENDER_ID && env.SMS_DLT_ENTITY_ID))
+    throw new Error('SMS_PROVIDER=msg91 needs SMS_API_KEY, SMS_SENDER_ID and SMS_DLT_ENTITY_ID');
+  if (
+    env.PAYMENT_PROVIDER === 'razorpay' &&
+    !(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET && env.RAZORPAY_WEBHOOK_SECRET)
+  )
+    throw new Error(
+      'PAYMENT_PROVIDER=razorpay needs RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET',
+    );
+  if (env.BILLING_GST_REGISTERED && !(env.BILLING_SELLER_GSTIN && env.BILLING_SELLER_STATE))
+    throw new Error('BILLING_GST_REGISTERED=true needs BILLING_SELLER_GSTIN and BILLING_SELLER_STATE');
+  if (
+    env.BILLING_SELLER_GSTIN &&
+    env.BILLING_SELLER_STATE &&
+    !env.BILLING_SELLER_GSTIN.startsWith(env.BILLING_SELLER_STATE)
+  )
+    throw new Error('BILLING_SELLER_GSTIN must start with BILLING_SELLER_STATE');
+  if (env.AI_DEFAULT_PROVIDER && !env.AI_DEFAULT_CHAT_MODEL && !DEFAULT_CHAT_MODEL[env.AI_DEFAULT_PROVIDER])
+    throw new Error('AI_DEFAULT_PROVIDER needs AI_DEFAULT_CHAT_MODEL (only Anthropic has a default)');
   if (env.AI_DEFAULT_EMBEDDING_PROVIDER && !env.AI_DEFAULT_EMBEDDING_MODEL)
     throw new Error('AI_DEFAULT_EMBEDDING_PROVIDER needs AI_DEFAULT_EMBEDDING_MODEL');
   if (env.NODE_ENV === 'production') {
@@ -216,6 +346,12 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
       throw new Error(`Refusing to start in production with placeholder secrets: ${weak.join(', ')}`);
     if (env.RATE_LIMIT_SCALE > 2) throw new Error('RATE_LIMIT_SCALE above 2 is not allowed in production');
     if (env.MAIL_DRIVER === 'disabled') throw new Error('MAIL_DRIVER=disabled is not allowed in production');
+    if (env.WHATSAPP_PROVIDER === 'cloud' && !env.WHATSAPP_ACTION_SECRET)
+      throw new Error('WHATSAPP_ACTION_SECRET is required in production with WHATSAPP_PROVIDER=cloud');
+    if (env.PAYMENT_PROVIDER === 'stub')
+      throw new Error('PAYMENT_PROVIDER=stub is not allowed in production');
+    if (env.SMS_PROVIDER === 'console' || env.WHATSAPP_PROVIDER === 'console')
+      throw new Error('The console SMS and WhatsApp providers are not allowed in production');
     if (env.STORAGE_DRIVER === 's3' && env.S3_SSE === 'none')
       throw new Error('S3_SSE=none is not allowed in production (files must be encrypted at rest)');
     if (env.MALWARE_SCANNER === 'none')

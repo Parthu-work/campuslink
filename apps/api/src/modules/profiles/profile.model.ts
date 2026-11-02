@@ -14,6 +14,8 @@ const profileSchema = new Schema(
     name: { type: String, required: true },
     roles: { type: [String], default: [] },
     verified: { type: Boolean, default: false },
+    /** Synced from the user: under 18 until this date (contact details never shown, no leaderboards). */
+    minorUntil: { type: Date, default: null },
     headline: { type: String, default: '' },
     company: { type: String, default: '' },
     /** Comparable company name (lib/company.ts) for "alumni at this company". */

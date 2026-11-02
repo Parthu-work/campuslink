@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { Ban, CheckCircle2, ExternalLink, Gavel, Inbox, RotateCcw, ShieldCheck } from 'lucide-react';
@@ -60,7 +60,7 @@ interface AppealRow {
   createdAt: string;
 }
 
-const CONTENT = new Set(['post', 'comment', 'question', 'answer', 'story']);
+const CONTENT = new Set(['post', 'comment', 'question', 'answer', 'story', 'review']);
 const linkFor = (type: string, id: string, ctx: Record<string, string> = {}) =>
   type === 'post'
     ? `/posts/${id}`
@@ -70,7 +70,9 @@ const linkFor = (type: string, id: string, ctx: Record<string, string> = {}) =>
         ? `/posts/${ctx.postId}`
         : ctx.questionId
           ? `/questions/${ctx.questionId}`
-          : null;
+          : ctx.mentorId
+            ? `/mentors/${ctx.mentorId}`
+            : null;
 
 function useInvalidate() {
   const qc = useQueryClient();

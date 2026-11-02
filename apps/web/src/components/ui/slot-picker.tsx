@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { CalendarX } from 'lucide-react';
 import { formatDay, formatTime, localDateKey, viewerTimezone } from '../../lib/format';
 import { ChoiceGroup } from './choice-group';

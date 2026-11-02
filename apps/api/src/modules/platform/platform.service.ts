@@ -60,7 +60,8 @@ export class PlatformService {
       slug: body.slug,
       kind: 'college',
       branding: body.branding,
-      subscription: body.subscription,
+      // The term starts today (a pilot runs its days from here; B10).
+      subscription: { ...body.subscription, startedOn: new Date() },
     });
     const record = tenant.toObject() as unknown as TenantRecord;
     const admin = await runInTenant(tenant._id, async () => {
@@ -71,7 +72,7 @@ export class PlatformService {
         passwordHash: await hashPassword(randomToken(32)),
         roles: [Role.COLLEGE_ADMIN],
         verified: true,
-        ageDeclaredAt: new Date(),
+        ageCheckedAt: new Date(),
       });
       await audit.record(
         {

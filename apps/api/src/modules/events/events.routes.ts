@@ -85,6 +85,8 @@ export function eventRoutes(s: EventsService): AnyRouteSpec[] {
       limiter: 'interact',
       params: idParams,
       body: rsvpBody,
+      // Replayed from the offline outbox with its key (B13).
+      idempotent: true,
       handler: async ({ req, params, body }) => ({ data: await s.rsvp(authOf(req), params.id, body.going) }),
     },
     {

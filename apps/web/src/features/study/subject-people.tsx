@@ -1,5 +1,5 @@
 import { useDeferredValue, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Minus, Plus, UserMinus, UserPlus, X } from 'lucide-react';
 import type { EnrollmentView, PersonRef, PublicProfile, SubjectView } from '@campuslink/shared';

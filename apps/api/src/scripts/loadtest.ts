@@ -26,6 +26,17 @@ import { ProfileModel } from '../modules/profiles/profile.model.js';
 import { PostModel } from '../modules/feed/post.model.js';
 import { NotificationModel } from '../modules/notifications/notification.model.js';
 import { installLibraryRoadmaps } from '../modules/roadmaps/roadmaps.service.js';
+import { FieldCipher } from '../lib/crypto.js';
+import { WhitelistModel } from '../modules/imports/whitelist.model.js';
+import {
+  AcademicRecordModel,
+  DriveRegistrationModel,
+  OfferModel,
+  PlacementCompanyModel,
+  PlacementDriveModel,
+} from '../modules/placements/placements.model.js';
+import { companyKey } from '../lib/company.js';
+import { ctcBand } from '@campuslink/shared';
 
 const env = loadEnv();
 if (env.NODE_ENV === 'production') throw new Error('Refusing to load-test in production');
@@ -64,9 +75,18 @@ const COMPANIES = [
   'Ironleaf Motors (demo)',
 ];
 
-type Member = { id: Types.ObjectId; email: string; roles: Role[] };
+type Member = { id: Types.ObjectId; email: string; roles: Role[]; phone: string | null };
 
-async function seed(): Promise<{ members: Member[] }> {
+/** Members who sign in by phone in the load test (fictional numbers, console SMS provider only). */
+const PHONE_MEMBERS = 100;
+const phoneOf = (i: number) => `+9197000${String(i).padStart(5, '0')}`;
+/** Students who register for one drive at the same moment (B15). */
+const DRIVE_BURST = 500;
+/** Report history: three graduating batches of this many students each (B15). */
+const REPORT_BATCH = 1000;
+const cipher = new FieldCipher(env.FIELD_ENCRYPTION_KEY, env.FIELD_ENCRYPTION_KEYS_PREVIOUS);
+
+async function seed(): Promise<{ members: Member[]; tenantId: Types.ObjectId; driveId: Types.ObjectId }> {
   await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
   if (mongoose.connection.name !== DB) throw new Error(`Refusing to drop ${mongoose.connection.name}`);
   await mongoose.connection.dropDatabase();
@@ -82,14 +102,19 @@ async function seed(): Promise<{ members: Member[] }> {
       accent: '#f2b705',
       monogram: 'LT',
     },
-    subscription: { plan: 'trial', seatLimit: 2000, renewalDate: null },
+    subscription: { plan: 'pilot', seats: 2000, renewalDate: null },
   });
   const year = new Date().getFullYear();
   const members: Member[] = [];
+  let tenantId = tenant._id;
+  let driveId = new Types.ObjectId();
   await runInTenant(tenant._id, async () => {
     // 60% students, 37% alumni, 3% faculty: roughly the mix of an engineering college.
     const users = Array.from({ length: MEMBERS }, (_, i) => {
-      const roles: Role[] = i < 30 ? ['FACULTY'] : i < 400 ? ['ALUMNI'] : ['STUDENT'];
+      // Member 0 runs placements (reports, the drive); 1–29 are faculty.
+      const roles: Role[] = i === 0 ? ['TPO'] : i < 30 ? ['FACULTY'] : i < 400 ? ['ALUMNI'] : ['STUDENT'];
+      // The first students sign in by phone too (B15).
+      const phone = i >= 400 && i < 400 + PHONE_MEMBERS ? phoneOf(i) : null;
       return {
         _id: new Types.ObjectId(),
         email: `member${i}@loadtest.example`,
@@ -98,7 +123,14 @@ async function seed(): Promise<{ members: Member[] }> {
         roles,
         verified: true,
         emailVerifiedAt: new Date(),
-        ageDeclaredAt: new Date(),
+        ageCheckedAt: new Date(),
+        ...(phone
+          ? {
+              phoneEnc: cipher.encrypt(phone),
+              phoneIndex: cipher.blindIndex(phone),
+              phoneVerifiedAt: new Date(),
+            }
+          : {}),
       };
     });
     await UserModel.insertMany(users);
@@ -161,10 +193,99 @@ async function seed(): Promise<{ members: Member[] }> {
       ),
     );
     await installLibraryRoadmaps();
-    for (const u of users) members.push({ id: u._id, email: u.email, roles: u.roles });
+    // Placements (B15): every student has a verified record; one open drive anyone may join.
+    const students = users.filter((u) => u.roles.includes('STUDENT'));
+    await AcademicRecordModel.insertMany(
+      students.map((u, i) => ({
+        rollNumber: `LT${String(i).padStart(5, '0')}`,
+        userId: u._id,
+        cgpa: 6 + (i % 40) / 10,
+        activeBacklogs: 0,
+        historyBacklogs: i % 5 === 0 ? 1 : 0,
+        source: 'import',
+        verifiedAt: new Date(),
+      })),
+    );
+    const company = await PlacementCompanyModel.create({
+      name: 'Loadtest Systems (demo)',
+      companyKey: companyKey('Loadtest Systems (demo)'),
+    });
+    const staff = users[0]?._id ?? new Types.ObjectId();
+    const drive = await PlacementDriveModel.create({
+      companyId: company._id,
+      title: 'Load test drive (DEMO)',
+      roles: [{ title: 'Engineer', ctcMinLpa: 5, ctcMaxLpa: 7, location: 'Hyderabad', type: 'full_time' }],
+      mode: 'virtual',
+      driveDate: new Date(Date.now() + 10 * 86_400_000),
+      registrationCloseAt: new Date(Date.now() + 5 * 86_400_000),
+      eligibility: { branches: [], gradYears: [] },
+      rounds: [{ name: 'Interview', kind: 'technical', at: null }],
+      resumeRequired: false,
+      status: 'open',
+      openedAt: new Date(),
+      createdBy: staff,
+    });
+    // Report history: three graduating batches on the college's list, with registrations and offers
+    // for most of each (anonymised rows: the institutional record, no member behind them).
+    const companies = COMPANIES.map((c) => ({ name: c, key: companyKey(c) }));
+    for (const back of [1, 2, 3]) {
+      const gradYear = year - back;
+      await WhitelistModel.insertMany(
+        Array.from({ length: REPORT_BATCH }, (_, i) => ({
+          rollNumber: `LT${gradYear}${String(i).padStart(4, '0')}`,
+          name: `Demo Graduate ${gradYear}-${i}`,
+          branch: pick<Branch>(BRANCHES, i),
+          gradYear,
+          kind: 'alumni',
+          source: 'import',
+        })),
+      );
+      await DriveRegistrationModel.insertMany(
+        Array.from({ length: Math.round(REPORT_BATCH * 0.8) }, (_, i) => ({
+          driveId: drive._id,
+          userId: null,
+          anonKey: `lt-${gradYear}-${i}`,
+          status: 'registered',
+          final: i % 4 === 3 ? 'not_selected' : 'selected',
+          branch: pick<Branch>(BRANCHES, i),
+          gradYear,
+        })),
+      );
+      await OfferModel.insertMany(
+        Array.from({ length: Math.round(REPORT_BATCH * 0.6) }, (_, i) => {
+          const ctc = 3 + (i % 90) / 10;
+          const c = pick(companies, i);
+          return {
+            userId: null,
+            anonKey: `lt-${gradYear}-${i}`,
+            companyKey: c.key,
+            companyName: c.name,
+            role: 'Engineer',
+            ctcLpa: ctc,
+            ctcBand: ctcBand(ctc),
+            offerDate: new Date(`${gradYear}-03-01`),
+            type: 'full_time',
+            source: 'drive',
+            status: 'verified',
+            verifiedAt: new Date(`${gradYear}-03-10`),
+            branch: pick<Branch>(BRANCHES, i),
+            gradYear,
+          };
+        }),
+      );
+    }
+    for (const u of users)
+      members.push({
+        id: u._id,
+        email: u.email,
+        roles: u.roles,
+        phone: 'phoneEnc' in u ? phoneOf(users.indexOf(u)) : null,
+      });
+    tenantId = tenant._id;
+    driveId = drive._id;
   });
   await mongoose.disconnect();
-  return { members };
+  return { members, tenantId, driveId };
 }
 
 function startApi(): ChildProcess {
@@ -179,6 +300,9 @@ function startApi(): ChildProcess {
       RATE_LIMIT_SCALE: '1000',
       INGESTION_ENABLED: 'false',
       HIBP_ENABLED: 'false',
+      // Codes go to the in-memory console outbox, read back through /dev/outbox (B15).
+      SMS_PROVIDER: 'console',
+      WHATSAPP_PROVIDER: 'disabled',
     },
     stdio: ['ignore', 'inherit', 'inherit'],
   });
@@ -198,20 +322,36 @@ async function waitReady() {
 }
 
 /** fetch() drops a custom Host header, and the tenant comes from the Host, so use node:http. */
-function postJson(path: string, payload: unknown): Promise<{ status: number; body: unknown }> {
-  const data = JSON.stringify(payload);
+function postJson(
+  path: string,
+  payload: unknown,
+  extra: Record<string, string> = {},
+): Promise<{ status: number; body: unknown }> {
+  return send('POST', path, payload, extra);
+}
+const getJson = (path: string, extra: Record<string, string> = {}) => send('GET', path, undefined, extra);
+
+function send(
+  method: 'GET' | 'POST',
+  path: string,
+  payload: unknown,
+  extra: Record<string, string>,
+): Promise<{ status: number; body: unknown }> {
+  const data = payload === undefined ? '' : JSON.stringify(payload);
   return new Promise((resolve, reject) => {
     const req = request(
       {
         host: '127.0.0.1',
         port: PORT,
-        method: 'POST',
+        method,
         path: `/api/v1${path}`,
         headers: {
           host: HOST,
           origin: `http://${HOST}`,
-          'content-type': 'application/json',
-          'content-length': Buffer.byteLength(data),
+          ...(data
+            ? { 'content-type': 'application/json', 'content-length': String(Buffer.byteLength(data)) }
+            : {}),
+          ...extra,
         },
       },
       (res) => {
@@ -237,6 +377,43 @@ async function signIn(email: string): Promise<string> {
   const token = (r.body as { data?: { session?: { accessToken?: string } } }).data?.session?.accessToken;
   if (!token) throw new Error(`login failed for ${email}: ${r.status} ${JSON.stringify(r.body)}`);
   return token;
+}
+
+/** Runs `count` tasks, `concurrency` at a time, and reports their latency like a scenario row. */
+async function burst(
+  name: string,
+  count: number,
+  concurrency: number,
+  task: (i: number) => Promise<boolean>,
+): Promise<Row> {
+  const times: number[] = [];
+  let failed = 0;
+  let next = 0;
+  const started = Date.now();
+  await Promise.all(
+    Array.from({ length: concurrency }, async () => {
+      while (next < count) {
+        const i = next++;
+        const t = Date.now();
+        const ok = await task(i).catch(() => false);
+        times.push(Date.now() - t);
+        if (!ok) failed++;
+      }
+    }),
+  );
+  times.sort((a, b) => a - b);
+  const q = (p: number) => times[Math.min(times.length - 1, Math.floor(p * times.length))] ?? 0;
+  return {
+    name,
+    rps: Math.round(count / ((Date.now() - started) / 1000)),
+    p50: q(0.5),
+    p90: q(0.9),
+    p99: q(0.99),
+    max: times.at(-1) ?? 0,
+    requests: count,
+    non2xx: failed,
+    errors: 0,
+  };
 }
 
 type Scenario = {
@@ -300,7 +477,7 @@ async function run(s: Scenario): Promise<Row> {
 
 async function main() {
   const t0 = Date.now();
-  const { members } = await seed();
+  const { members, tenantId, driveId } = await seed();
   console.warn(`Seeded ${members.length} demo members in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
   const api = startApi();
   try {
@@ -342,7 +519,79 @@ async function main() {
         body: (i) => ({ email: pick(members, i).email, password: PASSWORD }),
       },
     ];
+    // Reports over three batches of 1,000 graduates (B15), read by the placement cell.
+    const tpo = await signIn(members[0]?.email ?? '');
+    const lastBatch = new Date().getFullYear() - 1;
+    scenarios.push(
+      {
+        name: 'GET NBA SAR placement report (3 × 1,000 graduates)',
+        path: `/admin/outcome-reports/nba-sar-placement?gradYear=${lastBatch}`,
+        tokens: [tpo],
+        connections: 10,
+      },
+      {
+        name: 'GET NIRF median salary report',
+        path: `/admin/outcome-reports/nirf-median-salary?gradYear=${lastBatch}`,
+        tokens: [tpo],
+        connections: 10,
+      },
+      {
+        name: 'GET reports dashboard',
+        path: `/admin/outcome-reports/dashboard?gradYear=${lastBatch}`,
+        tokens: [tpo],
+        connections: 10,
+      },
+    );
     const rows: Row[] = [];
+    // Phone sign-in (B15): code sent by SMS (console), read back, verified; ten at a time.
+    const phones = members.filter((m) => m.phone).map((m) => m.phone as string);
+    rows.push(
+      await burst('Phone sign-in: start + verify (console SMS)', phones.length, 10, async (i) => {
+        const phone = phones[i] as string;
+        const start = await postJson('/auth/phone/start', { phone, purpose: 'login', channel: 'sms' });
+        const challengeId = (start.body as { data?: { challengeId?: string } }).data?.challengeId;
+        const out = await getJson(`/dev/outbox?to=${encodeURIComponent(phone)}`);
+        const code = (out.body as { data?: { params: string[] }[] }).data?.[0]?.params[0];
+        if (!challengeId || !code) return false;
+        const v = await postJson('/auth/phone/verify', { challengeId, code });
+        return v.status === 200;
+      }),
+    );
+    // 500 students register for one drive at the same moment (B15): each once, none lost.
+    const burstStudents = members.filter((m) => m.roles.includes('STUDENT')).slice(0, DRIVE_BURST);
+    const burstTokens: string[] = [];
+    await burst('(sign-in for the drive burst)', burstStudents.length, 20, async (i) => {
+      burstTokens[i] = await signIn((burstStudents[i] as Member).email);
+      return true;
+    });
+    rows.push(
+      await burst(`Drive registration: ${DRIVE_BURST} at once`, DRIVE_BURST, DRIVE_BURST, async (i) => {
+        const r = await postJson(
+          `/placements/drives/${String(driveId)}/register`,
+          {},
+          { authorization: `Bearer ${burstTokens[i] ?? ''}`, 'idempotency-key': `burst-${i}-${Date.now()}` },
+        );
+        return r.status === 201;
+      }),
+    );
+    // A second tap from the same students changes nothing (the unique index holds).
+    rows.push(
+      await burst('Drive registration: the same 50 again (refused)', 50, 50, async (i) => {
+        const r = await postJson(
+          `/placements/drives/${String(driveId)}/register`,
+          {},
+          { authorization: `Bearer ${burstTokens[i] ?? ''}`, 'idempotency-key': `again-${i}-${Date.now()}` },
+        );
+        return r.status === 409;
+      }),
+    );
+    await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+    const registered = await runInTenant(tenantId, () =>
+      DriveRegistrationModel.countDocuments({ driveId, userId: { $ne: null } }),
+    );
+    await mongoose.disconnect();
+    console.warn(`Drive registrations stored: ${registered} (expected ${DRIVE_BURST})`);
+    if (registered !== DRIVE_BURST) process.exitCode = 1;
     for (const s of scenarios) {
       const row = await run(s);
       rows.push(row);
@@ -351,7 +600,7 @@ async function main() {
       );
     }
     const out = [
-      `Load test: ${MEMBERS} demo members, 5,000 posts, 20,000 notifications; ${CONNECTIONS} connections unless stated (login: 10), ${DURATION}s per scenario, one API instance.`,
+      `Load test: ${MEMBERS} demo members, 5,000 posts, 20,000 notifications, three batches of ${REPORT_BATCH} graduates; ${CONNECTIONS} connections unless stated (login: 10), ${DURATION}s per scenario, one API instance. Bursts (phone sign-in, drive registration) run a fixed number of requests.`,
       '',
       '| Scenario | Req/s | p50 ms | p90 ms | p99 ms | Max ms | Requests | Non-2xx | Errors |',
       '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',

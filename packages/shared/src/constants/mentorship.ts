@@ -27,6 +27,19 @@ export const NO_SHOW_WINDOW_HOURS = 48;
 export const FEEDBACK_WINDOW_DAYS = 14;
 export const REQUEST_TTL_DAYS = 7;
 export const MAX_PENDING_REQUESTS = 3;
+/** B5: a pending request nudges the mentor after a day and offers the mentee other mentors after two. */
+export const NUDGE_AFTER_HOURS = 24;
+export const REMATCH_AFTER_HOURS = 48;
+/** Mentors whose median reply is slower than this are not suggested in a rematch. */
+export const SLOW_REPLY_HOURS = 72;
+export const REMATCH_SUGGESTIONS = 3;
+/** Mentor stats look back this far, and show only from these counts (small numbers mislead). */
+export const STATS_WINDOW_DAYS = 90;
+export const STATS_MIN_REQUESTS = 3;
+export const STATS_MIN_REVIEWS = 3;
+export const REVIEW_MAX_LENGTH = 280;
+export const REPLY_BANDS = ['high', 'medium', 'low'] as const;
+export type ReplyBand = (typeof REPLY_BANDS)[number];
 export const REQUEST_STATUSES = ['pending', 'accepted', 'declined', 'withdrawn', 'expired'] as const;
 export type RequestStatus = (typeof REQUEST_STATUSES)[number];
 /** Kind decline replies; the text is localised on the client, the key is stored. */

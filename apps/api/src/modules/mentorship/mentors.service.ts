@@ -3,8 +3,14 @@ import type { z } from 'zod';
 import {
   DEFAULT_DURATIONS,
   DEFAULT_TIMEZONE,
+  REMATCH_SUGGESTIONS,
   SESSION_TYPES,
+  SLOW_REPLY_HOURS,
+  STATS_MIN_REQUESTS,
+  STATS_MIN_REVIEWS,
+  STATS_WINDOW_DAYS,
   isBookable,
+  type ReplyBand,
   type AvailabilityBody,
   type MatchReason,
   type MenteeAudience,
@@ -12,6 +18,7 @@ import {
   type MentorMatch,
   type MentorSettingsBody,
   type MentorSettingsView,
+  type MentorStats,
   type PublicProfile,
   type Role,
   type SessionType,
@@ -21,6 +28,8 @@ import {
 } from '@campuslink/shared';
 import { MentorProfileModel, MenteePrefsModel, type MentorDoc } from './mentor.model.js';
 import { MentorshipRequestModel } from './request.model.js';
+import { MentorReviewModel } from './review.model.js';
+import { requireTenantId } from '../../lib/context.js';
 import { computeSlots, type AvailabilityRules } from './slots.js';
 import { badRequest, conflict, notFound } from '../../lib/errors.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
@@ -48,6 +57,37 @@ export const normaliseCompany = (s: string) =>
     .trim();
 const norm = (s: string) => s.toLowerCase().trim();
 
+/** Mentor stats without the viewer-specific next slot; cached an hour per college and mentor. */
+type BaseStats = Omit<MentorStats, 'nextFreeSlot'>;
+const STATS_TTL_MS = 3600_000;
+const statsCache = new Map<string, { at: number; value: BaseStats }>();
+/** Tests (and nothing else) start from an empty cache. */
+export const resetMentorStatsCache = () => statsCache.clear();
+
+const median = (xs: number[]) => {
+  const s = [...xs].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? (s[mid] ?? 0) : ((s[mid - 1] ?? 0) + (s[mid] ?? 0)) / 2;
+};
+
+/**
+ * Reply time and reply rate from a mentor's requests (90 days). Answered = accepted or declined;
+ * the rate also counts requests that expired unanswered. Both stay null under three requests.
+ */
+export function replyStats(rows: { status: string; createdAt: Date; respondedAt?: Date | null }[]): {
+  medianReplyHours: number | null;
+  replyBand: ReplyBand | null;
+} {
+  const answered = rows.filter((r) => (r.status === 'accepted' || r.status === 'declined') && r.respondedAt);
+  const hours = answered.map((r) => ((r.respondedAt as Date).getTime() - r.createdAt.getTime()) / 3600_000);
+  const decided = answered.length + rows.filter((r) => r.status === 'expired').length;
+  const rate = decided ? answered.length / decided : 0;
+  return {
+    medianReplyHours: answered.length >= STATS_MIN_REQUESTS ? Math.round(median(hours) * 10) / 10 : null,
+    replyBand: decided >= STATS_MIN_REQUESTS ? (rate >= 0.8 ? 'high' : rate >= 0.5 ? 'medium' : 'low') : null,
+  };
+}
+
 export function audienceAllows(audience: MenteeAudience, roles: Role[]): boolean {
   if (audience === 'students') return roles.includes('STUDENT');
   if (audience === 'alumni') return roles.includes('ALUMNI');
@@ -64,6 +104,8 @@ export function scoreMatch(
     languages: string[];
   },
   mentor: PublicProfile,
+  /** B5: how fast the mentor replies and how loaded they are (bounded terms; absent = neutral). */
+  signals?: { medianReplyHours: number | null; pending: number; weeklyCap: number },
 ): { score: number; reasons: MatchReason[] } {
   const f = mentor.fields;
   const reasons: MatchReason[] = [];
@@ -97,7 +139,21 @@ export function scoreMatch(
     score += 5;
     reasons.push({ kind: 'languages', values: langs });
   }
-  return { score: Math.min(100, score), reasons };
+  if (signals) {
+    // Reply speed: +10 within a day ("Replies within a day"), +5 within two, +2 within three.
+    const h = signals.medianReplyHours;
+    if (h !== null) {
+      if (h <= 24) {
+        score += 10;
+        reasons.push({ kind: 'fast_reply' });
+      } else if (h <= 48) score += 5;
+      else if (h <= SLOW_REPLY_HOURS) score += 2;
+    }
+    // Load: -10 once pending requests reach the weekly cap, -5 more per extra one, at most -15.
+    if (signals.pending >= signals.weeklyCap)
+      score -= Math.min(15, 10 + (signals.pending - signals.weeklyCap) * 5);
+  }
+  return { score: Math.max(0, Math.min(100, score)), reasons };
 }
 
 export class MentorsService {
@@ -206,7 +262,7 @@ export class MentorsService {
     return new Map(rows.map((r) => [String(r._id), r.n]));
   }
 
-  private card(p: PublicProfile, m: MentorDoc, received: number): MentorCard {
+  private card(p: PublicProfile, m: MentorDoc, received: number, stats?: MentorStats): MentorCard {
     const settings = this.settingsOf(m);
     return {
       userId: p.userId,
@@ -225,7 +281,91 @@ export class MentorsService {
         .map((t) => ({ type: t.type, durationMin: t.durationMin })),
       open: settings.accepting && received < settings.weeklyCap,
       companyVerified: !!p.companyVerified,
+      ...(stats ? { stats } : {}),
     };
+  }
+
+  // ── Stats (B5) ─────────────────────────────
+  /** Drops a mentor's cached stats (a new or removed review). */
+  forgetStats(mentorId: string) {
+    statsCache.delete(`${String(requireTenantId())}:${mentorId}`);
+  }
+
+  /** Reply time and rate, completed sessions and review rating per mentor (cached an hour). */
+  async baseStats(mentorIds: Types.ObjectId[]): Promise<Map<string, BaseStats>> {
+    const tenant = String(requireTenantId());
+    const out = new Map<string, BaseStats>();
+    const missing: Types.ObjectId[] = [];
+    for (const id of mentorIds) {
+      const hit = statsCache.get(`${tenant}:${String(id)}`);
+      if (hit && Date.now() - hit.at < STATS_TTL_MS) out.set(String(id), hit.value);
+      else missing.push(id);
+    }
+    if (!missing.length) return out;
+    const since = new Date(Date.now() - STATS_WINDOW_DAYS * 24 * 3600_000);
+    const [requests, sessions, reviews] = await Promise.all([
+      MentorshipRequestModel.find({
+        mentorId: { $in: missing },
+        createdAt: { $gte: since },
+        status: { $in: ['accepted', 'declined', 'expired'] },
+      })
+        .select('mentorId status createdAt respondedAt')
+        .limit(20_000)
+        .lean<{ mentorId: Types.ObjectId; status: string; createdAt: Date; respondedAt: Date | null }[]>(),
+      this.d.sessions.completedCounts(missing),
+      MentorReviewModel.aggregate<{ _id: Types.ObjectId; avg: number; n: number }>([
+        { $match: { mentorId: { $in: missing }, status: 'published' } },
+        { $group: { _id: '$mentorId', avg: { $avg: '$rating' }, n: { $sum: 1 } } },
+      ]),
+    ]);
+    const byMentor = new Map<string, typeof requests>();
+    for (const r of requests)
+      byMentor.set(String(r.mentorId), [...(byMentor.get(String(r.mentorId)) ?? []), r]);
+    const rated = new Map(reviews.map((r) => [String(r._id), r]));
+    for (const id of missing) {
+      const key = String(id);
+      const rv = rated.get(key);
+      const value: BaseStats = {
+        ...replyStats(byMentor.get(key) ?? []),
+        sessionsCompleted: sessions.get(key) ?? 0,
+        reviewCount: rv?.n ?? 0,
+        rating: rv && rv.n >= STATS_MIN_REVIEWS ? Math.round(rv.avg * 10) / 10 : null,
+      };
+      statsCache.set(`${tenant}:${key}`, { at: Date.now(), value });
+      out.set(key, value);
+    }
+    return out;
+  }
+
+  /** The next start the viewer could book with this mentor in the next 14 days, if any. */
+  private async nextSlot(m: MentorDoc, viewerId: string): Promise<string | null> {
+    const type = m.sessionTypes.find((t) => t.enabled && isBookable(t.type as SessionType))?.type;
+    if (!type) return null;
+    const free = await this.freeSlots(m, viewerId, type as SessionType, new Date(), 14).catch(() => ({
+      slots: [] as string[],
+    }));
+    return free.slots[0] ?? null;
+  }
+
+  private async withStats(
+    viewerId: string,
+    items: { profile: PublicProfile; mentor: MentorDoc; card: MentorCard }[],
+  ) {
+    const base = await this.baseStats(items.map((i) => i.mentor.userId));
+    for (const i of items) {
+      const b = base.get(String(i.mentor.userId));
+      if (b) i.card.stats = { ...b, nextFreeSlot: await this.nextSlot(i.mentor, viewerId) };
+    }
+    return items;
+  }
+
+  /** Pending requests per mentor (the match load penalty). */
+  private async pendingCounts(mentorIds: Types.ObjectId[]): Promise<Map<string, number>> {
+    const rows = await MentorshipRequestModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+      { $match: { mentorId: { $in: mentorIds }, status: 'pending' } },
+      { $group: { _id: '$mentorId', n: { $sum: 1 } } },
+    ]);
+    return new Map(rows.map((r) => [String(r._id), r.n]));
   }
 
   /** Mentors the viewer may approach: accepting, verified, audience fits, nobody blocked anybody. */
@@ -267,7 +407,7 @@ export class MentorsService {
       all = all.filter(({ card }) => [...card.topics, ...card.skills].some((v) => norm(v) === t));
     }
     const start = q.cursor ? all.findIndex((c) => c.card.userId === q.cursor) + 1 : 0;
-    const page = all.slice(start, start + q.limit);
+    const page = await this.withStats(viewer.userId, all.slice(start, start + q.limit));
     return {
       items: page.map((c) => c.card),
       nextCursor: start + q.limit < all.length ? (page.at(-1)?.card.userId ?? null) : null,
@@ -289,8 +429,11 @@ export class MentorsService {
     const [p] = await this.d.profiles.viewsFor(viewer, [m.userId]);
     if (!p) throw notFound('Mentor');
     const counts = await this.receivedCounts([m.userId]);
+    const [withStats] = await this.withStats(viewer.userId, [
+      { profile: p, mentor: m, card: this.card(p, m, counts.get(mentorId) ?? 0) },
+    ]);
     return {
-      ...this.card(p, m, counts.get(mentorId) ?? 0),
+      ...(withStats as { card: MentorCard }).card,
       audience: m.audience as MenteeAudience,
       timezone: m.timezone,
     };
@@ -406,18 +549,29 @@ export class MentorsService {
   async match(viewer: AuthState): Promise<MentorMatch[]> {
     const [prefs, own] = await Promise.all([this.prefs(viewer), this.d.profiles.own(viewer.userId)]);
     const mentee = { ...prefs, branch: own.branch, skills: own.skills, languages: own.languages };
-    const scored = (await this.candidates(viewer))
-      .filter((c) => c.card.open)
-      .map((c) => ({ ...c, ...scoreMatch(mentee, c.profile) }))
+    const open = (await this.candidates(viewer)).filter((c) => c.card.open);
+    const ids = open.map((c) => c.mentor.userId);
+    const [base, pending] = await Promise.all([this.baseStats(ids), this.pendingCounts(ids)]);
+    const scored = open
+      .map((c) => {
+        const b = base.get(c.profile.userId);
+        return {
+          ...c,
+          base: b,
+          ...scoreMatch(mentee, c.profile, {
+            medianReplyHours: b?.medianReplyHours ?? null,
+            pending: pending.get(c.profile.userId) ?? 0,
+            weeklyCap: c.mentor.weeklyCap,
+          }),
+        };
+      })
       .sort((a, b) => b.score - a.score || a.card.name.localeCompare(b.card.name))
       .slice(0, 20);
     // Availability bonus for the shortlist only (slot computation is the expensive part).
-    const now = new Date();
     for (const s of scored) {
-      const type = s.card.sessionTypes.find((t) => isBookable(t.type))?.type;
-      if (!type) continue;
-      const free = await this.freeSlots(s.mentor, viewer.userId, type, now, 14).catch(() => ({ slots: [] }));
-      if (free.slots.length) {
+      const next = await this.nextSlot(s.mentor, viewer.userId);
+      if (s.base) s.card.stats = { ...s.base, nextFreeSlot: next };
+      if (next) {
         s.score = Math.min(100, s.score + 5);
         s.reasons.push({ kind: 'available' });
       }
@@ -425,6 +579,20 @@ export class MentorsService {
     return scored
       .sort((a, b) => b.score - a.score || a.card.name.localeCompare(b.card.name))
       .map((s) => ({ mentor: s.card, score: s.score, reasons: s.reasons }));
+  }
+
+  /**
+   * B5 rematch: three mentors likely to reply, from the viewer's matches without the mentor they
+   * are waiting on, anyone at their weekly cap (matches are open mentors only) and anyone whose
+   * median reply is over SLOW_REPLY_HOURS.
+   */
+  async alternatives(viewer: AuthState, excludeMentorId: string): Promise<MentorMatch[]> {
+    return (await this.match(viewer))
+      .filter(
+        (m) =>
+          m.mentor.userId !== excludeMentorId && (m.mentor.stats?.medianReplyHours ?? 0) <= SLOW_REPLY_HOURS,
+      )
+      .slice(0, REMATCH_SUGGESTIONS);
   }
 
   async timezoneOf(userId: string) {

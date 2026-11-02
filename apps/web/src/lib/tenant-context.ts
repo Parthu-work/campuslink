@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { generatePalette, themeCss, type PublicTenant } from '@campuslink/shared';
+import { generatePalette, themeCss, type Feature, type PublicTenant } from '@campuslink/shared';
 import { tenant as tenantQuery } from './queries';
 import { setChromeColours } from './preferences';
 
@@ -31,4 +31,9 @@ export function useTenant(): PublicTenant {
   const t = useContext(TenantContext);
   if (!t) throw new Error('useTenant outside TenantProvider');
   return t;
+}
+
+/** Whether the college has a feature switched on (Admin › Features; the API enforces it). */
+export function useFeature(feature: Feature): boolean {
+  return useTenant().features?.[feature] !== false;
 }

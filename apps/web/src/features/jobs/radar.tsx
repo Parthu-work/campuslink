@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import {
   keepPreviousData,
   useInfiniteQuery,

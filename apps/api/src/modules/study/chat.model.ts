@@ -1,5 +1,5 @@
 import { Schema, type InferSchemaType, type Types } from 'mongoose';
-import { ANSWER_MODES, CHAT_FEEDBACK_REASONS, SERVER_COMMANDS } from '@campuslink/shared';
+import { ANSWER_MODES, CHAT_FEEDBACK_REASONS, SERVER_COMMANDS, SUPPORTED_LOCALES } from '@campuslink/shared';
 import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
 
 /**
@@ -99,7 +99,7 @@ const unansweredSchema = new Schema(
     subjectId: { type: Schema.Types.ObjectId, default: null },
     userId: { type: Schema.Types.ObjectId, required: true },
     text: { type: String, required: true, maxlength: 300 },
-    language: { type: String, enum: ['en', 'te'], default: 'en' },
+    language: { type: String, enum: SUPPORTED_LOCALES, default: 'en' },
     /** Syllabus topics the question is near (by words), for grouping. */
     topicIds: { type: [Schema.Types.ObjectId], default: [] },
   },

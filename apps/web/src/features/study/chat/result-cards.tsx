@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../../i18n/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, ChevronLeft, ChevronRight, ExternalLink, Layers, RotateCw, X } from 'lucide-react';
 import {

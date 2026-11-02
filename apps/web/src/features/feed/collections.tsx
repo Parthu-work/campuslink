@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query';
 import { Bookmark, Film, MessageCircle, Rss } from 'lucide-react';
 import { TOPICS, type FollowState, type PostView, type PublicProfile, type Topic } from '@campuslink/shared';

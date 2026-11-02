@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { useParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BarChart3, ChevronDown, ListTree, Pencil, Users } from 'lucide-react';
 import type { SubjectView, SyllabusUnitView } from '@campuslink/shared';

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { toast } from './toast';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../i18n/react';
 import type { PostView, Reaction } from '@campuslink/shared';
 import { api, ApiError } from './api';
 

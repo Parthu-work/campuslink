@@ -1,14 +1,22 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Outlet } from 'react-router';
 import { TabNav } from '../../components/ui/tab-nav';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { Laptop, Smartphone } from 'lucide-react';
-import { password as passwordSchema, SUPPORTED_LOCALES } from '@campuslink/shared';
+import {
+  password as passwordSchema,
+  SUPPORTED_LOCALES,
+  LOCALE_NAMES,
+  toLocale,
+  type Locale,
+  DATA_SAVER_MODES,
+  type DataSaverMode,
+} from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Field, PasswordInput } from '../../components/ui/field';
 import { Badge, Card, Skeleton } from '../../components/ui/misc';
@@ -24,6 +32,14 @@ import { useNav } from '../../lib/nav';
 import { useSession } from '../../lib/session';
 import { usePreferences, type MotionPref, type ThemePref } from '../../lib/preferences';
 import { applyApiError } from '../../lib/errors';
+import { lazyPart } from '../../lib/lazy-part';
+import { useTenant } from '../../lib/tenant-context';
+
+const GrievanceCard = lazy(() =>
+  import('../legal/grievance-card').then((m) => ({ default: m.GrievanceCard })),
+);
+// Its code (the phone and code fields) loads only on the Security tab, after it renders.
+const PhoneSettings = lazyPart(() => import('./phone-settings').then((m) => m.PhoneSettings));
 
 export function SettingsLayout() {
   const { t } = useTranslation();
@@ -50,6 +66,7 @@ export function SecuritySettings() {
   const qc = useQueryClient();
   const { data: me } = useMe();
   const [mfaOpen, setMfaOpen] = useState(false);
+  const tenant = useTenant();
   const sessions = useQuery({
     queryKey: ['sessions'],
     queryFn: () =>
@@ -86,6 +103,8 @@ export function SecuritySettings() {
           {mfaOpen && <MfaSetup onDone={() => setMfaOpen(false)} />}
         </Dialog>
       </Card>
+
+      {tenant.phoneSignIn && tenant.kind === 'college' && <PhoneSettings fallback={null} />}
 
       <Card className="grid gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -213,52 +232,59 @@ export function PrivacySettings() {
     onError: (e: Error) => toast.error(e.message),
   });
   return (
-    <Card className="grid gap-4 p-5">
-      <div>
-        <h2 className="text-title font-semibold">{t('settings.consentsTitle')}</h2>
-        <p className="text-meta text-fg-2">{t('settings.consentsBody')}</p>
-      </div>
-      {consents.isLoading && <Skeleton className="h-40" />}
-      <ul className="grid gap-2">
-        {consents.data?.map((c) => (
-          <li key={c.purpose} className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-2">
-            {c.required ? (
-              <div className="flex items-start gap-3 py-1">
-                <div className="min-w-0 flex-1">
-                  <p className="text-body font-medium">{t(`auth.consent.${c.purpose}`)}</p>
-                  {c.updatedAt && (
-                    <p className="mt-1 font-mono text-caption text-fg-3">
-                      {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
-                    </p>
-                  )}
+    <div className="grid gap-4">
+      <Card className="grid gap-4 p-5">
+        <div>
+          <h2 className="text-title font-semibold">{t('settings.consentsTitle')}</h2>
+          <p className="text-meta text-fg-2">{t('settings.consentsBody')}</p>
+        </div>
+        {consents.isLoading && <Skeleton className="h-40" />}
+        <ul className="grid gap-2">
+          {consents.data?.map((c) => (
+            <li key={c.purpose} className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-2">
+              {c.required ? (
+                <div className="flex items-start gap-3 py-1">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-body font-medium">{t(`auth.consent.${c.purpose}`)}</p>
+                    {c.updatedAt && (
+                      <p className="mt-1 font-mono text-caption text-fg-3">
+                        {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
+                      </p>
+                    )}
+                  </div>
+                  <Badge>{t('settings.required')}</Badge>
                 </div>
-                <Badge>{t('settings.required')}</Badge>
-              </div>
-            ) : (
-              <Switch
-                label={t(`auth.consent.${c.purpose}`)}
-                description={
-                  c.updatedAt && (
-                    <span className="font-mono text-caption text-fg-3">
-                      {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
-                    </span>
-                  )
-                }
-                checked={c.granted}
-                onChange={(on) => set.mutate({ purpose: c.purpose, granted: on })}
-              />
-            )}
-          </li>
-        ))}
-      </ul>
-      <p className="text-caption text-fg-3">{t('settings.rights')}</p>
-    </Card>
+              ) : (
+                <Switch
+                  label={t(`auth.consent.${c.purpose}`)}
+                  description={
+                    c.updatedAt && (
+                      <span className="font-mono text-caption text-fg-3">
+                        {new Date(c.updatedAt).toLocaleDateString(i18n.language)}
+                      </span>
+                    )
+                  }
+                  checked={c.granted}
+                  onChange={(on) => set.mutate({ purpose: c.purpose, granted: on })}
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+        <p className="text-caption text-fg-3">{t('settings.rights')}</p>
+      </Card>
+      {/* The college's grievance officer and legal pages (B14), loaded after the consents. */}
+      <Suspense fallback={null}>
+        <GrievanceCard />
+      </Suspense>
+    </div>
   );
 }
 
 export function PreferenceSettings() {
   const { t, i18n } = useTranslation();
-  const { theme, motion, haptics, setTheme, setMotion, setHaptics, setLanguage } = usePreferences();
+  const { theme, motion, haptics, dataSaver, setTheme, setMotion, setHaptics, setLanguage, setDataSaver } =
+    usePreferences();
   return (
     <Card className="grid gap-6 p-5">
       <fieldset className="grid gap-2">
@@ -277,15 +303,15 @@ export function PreferenceSettings() {
       </fieldset>
       <fieldset className="grid gap-2">
         <legend className="mb-1 text-meta font-semibold">{t('settings.language')}</legend>
-        <ChoiceGroup<'en' | 'te'>
+        <ChoiceGroup<Locale>
           variant="chip"
           label={t('settings.language')}
-          value={i18n.language as 'en' | 'te'}
+          value={toLocale(i18n.language)}
           onChange={(l) => {
             setLanguage(l);
             void api.patch('/me', { locale: l }).catch(() => undefined);
           }}
-          options={SUPPORTED_LOCALES.map((l) => ({ value: l, label: l === 'en' ? 'English' : 'తెలుగు' }))}
+          options={SUPPORTED_LOCALES.map((l) => ({ value: l, label: LOCALE_NAMES[l] }))}
         />
       </fieldset>
       <fieldset className="grid gap-2">
@@ -308,6 +334,17 @@ export function PreferenceSettings() {
         checked={haptics}
         onChange={setHaptics}
       />
+      <fieldset className="grid gap-2">
+        <legend className="mb-1 text-meta font-semibold">{t('offline.dataSaver')}</legend>
+        <ChoiceGroup<DataSaverMode>
+          variant="chip"
+          label={t('offline.dataSaver')}
+          value={dataSaver}
+          onChange={setDataSaver}
+          options={DATA_SAVER_MODES.map((m) => ({ value: m, label: t(`offline.dataSaverMode.${m}`) }))}
+        />
+        <p className="text-caption text-fg-3">{t('offline.dataSaverHint')}</p>
+      </fieldset>
     </Card>
   );
 }

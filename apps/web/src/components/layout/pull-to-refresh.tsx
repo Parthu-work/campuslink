@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMatches } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { ArrowDown, RefreshCw } from 'lucide-react';
 
 /** Travel (after resistance) that refreshes on release, and the most the indicator moves. */

@@ -146,7 +146,7 @@ describe('verification requests and invites', () => {
         email: 'crossinvite@example.org',
         password: 'quiet-river-lantern-91',
         intent: 'STUDENT',
-        isAdult: true,
+        birthMonth: '2000-01',
         consents: ['account'],
       });
     const token = /token=([A-Za-z0-9_-]+)/.exec(ctx.mailer.lastTo('crossinvite@example.org')!.text)![1];

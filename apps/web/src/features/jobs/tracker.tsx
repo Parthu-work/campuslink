@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { BellRing, Trash2 } from 'lucide-react';
@@ -15,11 +15,17 @@ import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
 import { useTrack } from '../../lib/jobs';
 import { SCREEN } from '../../lib/query-client';
+import { useCan } from '../../lib/me';
+import { useFeature } from '../../lib/tenant-context';
 
 /** One application on the board; the status select moves it between columns (keyboard friendly). */
 function TrackedRow({ row }: { row: TrackedJobView }) {
   const { t } = useTranslation();
   const track = useTrack({ id: row.jobId });
+  // An offer from a listing counts on the college's record once the placement cell verifies it.
+  const mayReport = useCan('outcomes:report');
+  const placements = useFeature('placements');
+  const canReport = mayReport && placements;
   return (
     <li>
       <Card variant="raised" className="grid gap-2.5 p-3.5">
@@ -44,6 +50,11 @@ function TrackedRow({ row }: { row: TrackedJobView }) {
           </Badge>
         )}
         {row.note && <p className="text-meta text-fg-2">“{row.note}”</p>}
+        {row.status === 'offer' && canReport && (
+          <Link to="/outcomes" className="text-meta font-semibold text-brand-ink hover:underline">
+            {t('placements.reportToCell')}
+          </Link>
+        )}
         <div className="flex items-center justify-between gap-2">
           <span className="text-caption text-fg-3">
             {t('jobs.updated', { when: formatRelative(row.updatedAt) })}

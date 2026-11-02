@@ -27,6 +27,7 @@ import type { TenantRecord } from '../tenants/tenant.cache.js';
 import type { AuthState } from '../../types.js';
 import { zonedParts, zonedToUtc } from '../../lib/timezone.js';
 import { noAward, type Award } from '../../lib/awards.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 export const REMINDER_JOB = 'sessions.reminder';
 export const COMPLETE_JOB = 'sessions.complete';
@@ -62,6 +63,9 @@ export type SlotList = (
 ) => Promise<{ timezone: string; durationMin: number; slots: string[] }>;
 
 export class SessionsService {
+  /** Set by the app (B5 reviews live in the mentorship module): which bookings have a review. */
+  reviewedOf: ((bookingIds: Types.ObjectId[]) => Promise<Set<string>>) | null = null;
+
   // ── Privacy ─────────────────────────────
   async exportFor(userId: string) {
     const u = new Types.ObjectId(userId);
@@ -88,6 +92,8 @@ export class SessionsService {
   award: Award = noAward;
   slotCheck: SlotCheck | null = null;
   slotList: SlotList | null = null;
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(private readonly d: SessionsDeps) {}
 
   /** Busy holds of these people overlapping [from, to) (scheduled bookings only). */
@@ -198,6 +204,7 @@ export class SessionsService {
           .lean()
       ).map((f) => String(f.bookingId)),
     );
+    const reviewed = (await this.reviewedOf?.(rows.map((b) => b._id))) ?? new Set<string>();
     return rows.map((b) => ({
       id: String(b._id),
       status: b.status as BookingView['status'],
@@ -214,6 +221,7 @@ export class SessionsService {
       lateCancel: b.lateCancel,
       noShowBy: (b.noShowBy ?? null) as BookingView['noShowBy'],
       feedbackGiven: given.has(String(b._id)),
+      reviewGiven: reviewed.has(String(b._id)),
       conversationId: b.conversationId ? String(b.conversationId) : null,
     }));
   }
@@ -546,12 +554,33 @@ export class SessionsService {
       bookingId: String(b._id),
     });
     await this.award(b.menteeId, 'session_completed', String(b._id), { from: b.mentorId });
+    await this.track(b.menteeId, 'session_completed', {
+      requestId: String(b.requestId),
+      bookingId: String(b._id),
+    });
     await this.award(b.mentorId, 'session_mentored', String(b._id), { from: b.menteeId });
     // Once per mentee: the dedupe key includes the mentor.
     await this.award(b.mentorId, 'new_mentee', String(b.menteeId), { from: b.menteeId });
   }
 
   /** Analytics: completed sessions since a date (who and when only) and the average rating. */
+  /** B5 mentor stats: completed sessions per mentor. */
+  async completedCounts(mentorIds: Types.ObjectId[]): Promise<Map<string, number>> {
+    const rows = await BookingModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+      { $match: { mentorId: { $in: mentorIds }, status: 'completed' } },
+      { $group: { _id: '$mentorId', n: { $sum: 1 } } },
+    ]);
+    return new Map(rows.map((r) => [String(r._id), r.n]));
+  }
+
+  /** B5 reviews: the mentee's own feedback on a completed session (the review carries its rating). */
+  async feedbackOf(viewer: AuthState, bookingId: string) {
+    const b = await this.mine(viewer, bookingId);
+    if (String(b.menteeId) !== viewer.userId) throw notFound('Session');
+    const f = await FeedbackModel.findOne({ bookingId: b._id }).select('rating').lean();
+    return f ? { rating: f.rating, mentorId: b.mentorId, sessionType: b.sessionType as SessionType } : null;
+  }
+
   async completedSince(since: Date) {
     const [rows, rating] = await Promise.all([
       BookingModel.find({ status: 'completed', completedAt: { $gte: since } })

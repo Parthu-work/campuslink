@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import {
   PROFILE_FIELDS,
+  isMinor,
   type Audience,
   type ProfileBody,
   type ProfileField,
@@ -57,12 +58,13 @@ export class ProfilesService {
     userId: string | Types.ObjectId,
     seed: { branch?: string | null; gradYear?: number | null } = {},
   ): Promise<void> {
-    const u = await UserModel.findById(userId).select('name roles verified status').lean();
+    const u = await UserModel.findById(userId).select('name roles verified status adultOn').lean();
     if (!u) return;
     const set: Record<string, unknown> = {
       name: u.name,
       roles: u.roles,
       verified: !!u.verified && u.status === 'active',
+      minorUntil: isMinor(u.adultOn) ? u.adultOn : null,
     };
     if (seed.branch !== undefined) set.branch = seed.branch;
     if (seed.gradYear !== undefined) set.gradYear = seed.gradYear;
@@ -98,8 +100,11 @@ export class ProfilesService {
       gradYear: p.gradYear ?? undefined,
     };
     const fields: PublicProfile['fields'] = {};
+    // A member under 18 never shows contact details to anyone else (B2), whatever they chose.
+    const minor = isMinor(p.minorUntil);
     for (const f of PROFILE_FIELDS) {
       if (values[f] === undefined) continue;
+      if (minor && !isSelf && (f === 'email' || f === 'phone')) continue;
       if (canSee(vis[f] ?? 'members', viewer.roles, isSelf))
         (fields as Record<string, unknown>)[f] = values[f];
     }
@@ -277,6 +282,15 @@ export class ProfilesService {
     return rows.map((r) => String(r.userId));
   }
 
+  /** Members under 18 among `userIds` (kept off leaderboards and similar public rankings). */
+  async minorsAmong(userIds: (string | Types.ObjectId)[]): Promise<Set<string>> {
+    if (!userIds.length) return new Set();
+    const rows = await ProfileModel.find({ userId: { $in: userIds }, minorUntil: { $gt: new Date() } })
+      .select('userId')
+      .lean();
+    return new Set(rows.map((r) => String(r.userId)));
+  }
+
   /** What `viewer` may see of each verified, active member in `userIds` (visibility applied). */
   async viewsFor(viewer: AuthState, userIds: (string | Types.ObjectId)[]): Promise<PublicProfile[]> {
     if (!userIds.length) return [];
@@ -353,6 +367,33 @@ export class ProfilesService {
   async ownCompany(userId: string) {
     const p = await this.load(userId);
     return { company: p.company ?? '', companyKey: p.companyKey ?? '' };
+  }
+
+  /** B7 placements: branch and batch per member (eligibility, the institutional record). */
+  async cohortOf(userIds: (string | Types.ObjectId)[]) {
+    const rows = await ProfileModel.find({ userId: { $in: userIds.map(String) } })
+      .select('userId name branch gradYear')
+      .lean();
+    return new Map(
+      rows.map((r) => [
+        String(r.userId),
+        { name: r.name, branch: r.branch ?? null, gradYear: r.gradYear ?? null },
+      ]),
+    );
+  }
+
+  /** B6 announcements: verified members an audience covers (empty lists mean everyone). */
+  async idsForAudience(a: { branches: string[]; gradYears: number[]; roles: string[] }): Promise<string[]> {
+    const rows = await ProfileModel.find({
+      verified: true,
+      ...(a.branches.length ? { branch: { $in: a.branches } } : {}),
+      ...(a.gradYears.length ? { gradYear: { $in: a.gradYears } } : {}),
+      ...(a.roles.length ? { roles: { $in: a.roles } } : {}),
+    })
+      .select('userId')
+      .limit(50_000)
+      .lean<{ userId: Types.ObjectId }[]>();
+    return rows.map((r) => String(r.userId));
   }
 
   async isActiveMember(userId: string): Promise<boolean> {

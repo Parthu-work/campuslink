@@ -1,5 +1,5 @@
 import { Fragment, lazy, Suspense, useMemo, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../../i18n/react';
 import type { ChatCitation } from '@campuslink/shared';
 import { IntentLink } from '../../../components/ui/intent-link';
 import { parseAnswer, type AInline, type ABlock } from '../../../lib/answer-markdown';

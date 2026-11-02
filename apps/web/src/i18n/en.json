@@ -90,7 +90,13 @@
       "roadmap": "Draft a roadmap",
       "roadmapHint": "Step-by-step guidance, with sources"
     },
-    "assistant": "Study assistant"
+    "assistant": "Study assistant",
+    "placements": "Placements",
+    "outcomes": "Your outcomes",
+    "traction": "Traction",
+    "billing": "Billing",
+    "help": "Help",
+    "platformSupport": "Support"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -138,7 +144,8 @@
       "account": "Run my account: sign-in, security and showing my profile to verified members of my college. Required.",
       "mentorship_matching": "Use my branch, interests and goals to suggest mentors and mentees.",
       "email_digests": "Send me a weekly email with openings and guidance from my college.",
-      "analytics_aggregate": "Count my activity in anonymous, college-level statistics."
+      "analytics_aggregate": "Count my activity in anonymous, college-level statistics.",
+      "whatsapp_updates": "Send me requests, session reminders and job alerts on WhatsApp (at most two a week, plus reminders)."
     },
     "privacyNote": "You can change these any time in Settings → Privacy. We never sell or share your data.",
     "signUpCta": "Create account",
@@ -285,6 +292,7 @@
     "allowedDomainsHint": "Comma-separated, e.g. dpit.ac.in. Leave empty to allow any email.",
     "imports": "Imports",
     "list": "College list",
+    "onboarding": "Onboarding",
     "verification": "Verification",
     "source": "Where is your list?",
     "upload": "Upload CSV or Excel",
@@ -307,7 +315,13 @@
       "gradYear": "Graduation year",
       "email": "Email",
       "phone": "Mobile",
-      "kind": "Student or alumni"
+      "kind": "Student or alumni",
+      "cgpa": "CGPA",
+      "activeBacklogs": "Active backlogs",
+      "historyBacklogs": "Backlog history",
+      "tenthPct": "10th %",
+      "twelfthPct": "12th %",
+      "diplomaPct": "Diploma %"
     },
     "notMapped": "— not in the file —",
     "kindLabel": "Student or alumni?",
@@ -394,7 +408,8 @@
       "people": "People",
       "community": "Community",
       "insights": "Insights",
-      "college": "College"
+      "college": "College",
+      "placements": "Placements"
     },
     "ov": {
       "title": "What’s waiting",
@@ -416,7 +431,17 @@
       "activityHint": "{{last30}} in the last 30 days",
       "ai": "AI study assistant",
       "aiBudget": "{{percent}}% of this month’s token budget used",
-      "aiNoBudget": "No monthly budget set"
+      "aiNoBudget": "No monthly budget set",
+      "whatsapp": "WhatsApp this month",
+      "whatsappHint": "messages of {{allowance}} included",
+      "onboarding": "Not joined yet",
+      "onboardingHint_one": "{{count}} student on your list hasn’t joined. Invite them in one tap.",
+      "onboardingHint_other": "{{count}} students on your list haven’t joined. Invite them in one tap.",
+      "placements": "Drives closing soon",
+      "placementsHint_one": "{{count}} drive closes registration in the next 48 hours",
+      "placementsHint_other": "{{count}} drives close registration in the next 48 hours",
+      "offers": "Outcomes to verify",
+      "offersHint": "Offers, higher studies, exams and ventures members reported"
     },
     "logo": {
       "label": "Logo",
@@ -432,7 +457,29 @@
     "suspendTitle": "Suspend {{name}}?",
     "suspendBody": "They are signed out everywhere and cannot sign in until you reactivate them. Their posts and messages stay.",
     "unverifyTitle": "Revoke verification for {{name}}?",
-    "unverifyBody": "Their account becomes read-only until they verify again. This is recorded in the audit log."
+    "unverifyBody": "Their account becomes read-only until they verify again. This is recorded in the audit log.",
+    "selectAll": "Select all",
+    "selectRequest": "Select {{name}}",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected",
+    "approveSelected": "Approve selected",
+    "rejectSelected": "Reject selected",
+    "rejectSelectedTitle_one": "Reject {{count}} request",
+    "rejectSelectedTitle_other": "Reject {{count}} requests",
+    "rejectSelectedBody": "Each person sees this reason, so they know what to fix.",
+    "bulkDone_one": "{{count}} request decided.",
+    "bulkDone_other": "{{count}} requests decided.",
+    "bulkPartial": "{{ok}} decided; {{failed}} could not be (already decided or changed). Refresh to see them.",
+    "placements": "Placement drives",
+    "offers": "Offers and outcomes",
+    "importType": "What this file holds",
+    "importRoster": "College list",
+    "importAcademics": "Academic records",
+    "mapIntroAcademics": "Match each figure to a column. Rows are matched to students by roll number; figures already on record are replaced. Academic imports cannot be rolled back, so try a dry run first.",
+    "reports": "Reports",
+    "billing": "Billing",
+    "notInPlan": "Not in your college’s plan. Talk to us to add it.",
+    "support": "Support"
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -444,10 +491,16 @@
   },
   "feature": {
     "studentPosting": "Students can publish feed posts",
-    "stories": "Stories and Tips reels",
-    "leaderboards": "Opt-in leaderboards",
-    "alumniMatch": "Swipe-style Alumni Match",
-    "jobsAggregation": "Automated job sources"
+    "stories": "Stories",
+    "leaderboards": "Leaderboards",
+    "alumniMatch": "Alumni Match",
+    "jobsAggregation": "Automatic job sources",
+    "reels": "Reels",
+    "contentSources": "News and articles",
+    "study": "Study",
+    "placements": "Placements",
+    "whatsapp": "WhatsApp",
+    "peerMentors": "Peer mentors"
   },
   "platform": {
     "title": "Colleges",
@@ -508,7 +561,9 @@
     "verifyFirstBody": "Your college confirms students and alumni by roll number. It takes about a minute, and then mentors, messages and posting open up.",
     "loadFailed": "This didn’t load. It’s usually a moment’s hiccup; try again.",
     "loadFailedTitle": "Couldn’t load this",
-    "offlineShort": "You’re offline. This will load when you reconnect."
+    "offlineShort": "You’re offline. This will load when you reconnect.",
+    "featureOffTitle": "Your college has switched this off",
+    "featureOffBody": "This part of the app isn’t in use at your college right now. Everything you can use is in your menu."
   },
   "verify": {
     "title": "Verify you’re from {{college}}",
@@ -634,7 +689,7 @@
     "prefs": "Preferences",
     "noResults": "No results. Try a name, company or skill.",
     "toggleTheme": "Switch light / dark",
-    "switchLang": "Switch language · తెలుగు / English",
+    "switchLang": "Switch language · English / తెలుగు / हिन्दी",
     "open": "Search",
     "label": "Command palette",
     "posts": "Posts",
@@ -696,7 +751,8 @@
       "goals": "Guides on your goals: {{values}}",
       "skills": "Shares your skills: {{values}}",
       "languages": "Speaks {{values}}",
-      "available": "Has free time in the next two weeks"
+      "available": "Has free time in the next two weeks",
+      "fast_reply": "Replies within a day"
     },
     "score": "Match score {{score}} out of 100",
     "deck": "mentor suggestions",
@@ -857,7 +913,15 @@
     "noShowConfirm": "Report no-show",
     "openNow": "The room is open",
     "startsInHM": "Starts in {{h}} h {{m}} min",
-    "startsInM": "Starts in {{m}} min"
+    "startsInM": "Starts in {{m}} min",
+    "writeReview": "Write a public review",
+    "reviewTitle": "Review your session with {{name}}",
+    "reviewPublic": "Members of your college see it on the mentor’s page with your first name and your rating. Your private feedback stays private.",
+    "reviewLabel": "Your review",
+    "reviewHint_one": "{{count}} character left",
+    "reviewHint_other": "{{count}} characters left",
+    "reviewPublish": "Publish review",
+    "reviewThanks": "Thanks. Your review helps other students choose."
   },
   "messages": {
     "intro": "Chats open when a mentor accepts a request.",
@@ -1104,6 +1168,102 @@
     "ai_budget_reached": {
       "title": "AI budget used up",
       "body": "This month’s token budget is used. Students see passages from the material instead of answers until the 1st, or until you raise the budget."
+    },
+    "adult_now": {
+      "title": "You’re 18 now",
+      "body": "Your account works like every adult member’s. You can now choose who sees your contact details."
+    },
+    "guardian_number_approved": {
+      "title": "Your college checked the number",
+      "body": "Your guardian’s number is on your college record now. Send them the code to finish."
+    },
+    "guardian_number_rejected": {
+      "title": "Your college couldn’t use that number",
+      "body": "Your college couldn’t confirm the guardian number you entered. Check it with your college office, or enter another."
+    },
+    "channel_budget_warning": {
+      "title": "WhatsApp messages 80% used",
+      "body": "This month’s WhatsApp allowance is {{percent}}% used. Members get push or email instead once it runs out."
+    },
+    "channel_budget_reached": {
+      "title": "WhatsApp allowance used up",
+      "body": "This month’s WhatsApp allowance is used. Until the 1st, members get push or email instead (codes and session reminders still go out)."
+    },
+    "request_nudge": {
+      "title": "{{name}} is waiting for your reply",
+      "body": "{{name}} asked you for a session a day ago. Accept or decline so they can plan."
+    },
+    "request_rematch": {
+      "title": "Mentors likely to reply soon",
+      "body": "{{name}} hasn’t replied yet. We found mentors who usually reply quickly; send them the same message in one tap."
+    },
+    "announcement": {
+      "title": "From your college: {{title}}",
+      "body": "Your college posted an announcement for you. Open it to read the details."
+    },
+    "drive_open": {
+      "title": "{{company}} is hiring: register by {{time}}",
+      "body": "A new placement drive is open and you are eligible. Register in one tap before it closes."
+    },
+    "drive_reminder": {
+      "title": "Last day to register for {{company}}",
+      "body": "Registration for the {{company}} drive closes at {{time}}. You are eligible and not registered yet."
+    },
+    "drive_round_result": {
+      "title": "{{company}}: {{round}} result is out",
+      "body": "Your result for the {{round}} round is in. Open the drive to see it and what comes next."
+    },
+    "drive_selected": {
+      "title": "Congratulations: {{company}} selected you",
+      "body": "You have an offer from {{company}}. It is on your placement record; open it to see the details."
+    },
+    "offer_verified": {
+      "title": "Your {{company}} offer is verified",
+      "body": "The placement cell verified the offer you reported. It now counts on your placement record."
+    },
+    "offer_rejected": {
+      "title": "Your {{company}} offer needs another look",
+      "body": "The placement cell could not verify the offer you reported. Open it to see why and report it again."
+    },
+    "outcome_verified": {
+      "title": "Your outcome is verified: {{title}}",
+      "body": "The placement cell verified what you reported. It now counts on the college's record."
+    },
+    "outcome_rejected": {
+      "title": "Your outcome needs another look: {{title}}",
+      "body": "The placement cell could not verify what you reported. Open it to see why."
+    },
+    "invoice_issued": {
+      "title": "New invoice {{number}}",
+      "body": "Invoice {{number}} for {{amount}} is due on {{due}}. Download it in Admin › Billing."
+    },
+    "invoice_due_soon": {
+      "title": "Invoice {{number}} is due on {{due}}",
+      "body": "{{amount}} is due on {{due}}. Pay by bank transfer quoting {{number}}, or online in Admin › Billing."
+    },
+    "invoice_due": {
+      "title": "Invoice {{number}} is due today",
+      "body": "{{amount}} is due today. The bank details and the online option are in Admin › Billing."
+    },
+    "invoice_overdue": {
+      "title": "Invoice {{number}} is overdue",
+      "body": "{{amount}} was due on {{due}}. If it is still unpaid 30 days after that, your college becomes read-only until it is paid. Nothing is deleted."
+    },
+    "college_read_only": {
+      "title": "Your college is read-only",
+      "body": "Invoice {{number}} is 30 days overdue. Members can still read and export everything, but nothing new can be added. Paying it restores everything at once."
+    },
+    "payment_received": {
+      "title": "Payment received for {{number}}",
+      "body": "We received {{amount}} for invoice {{number}}. Thank you."
+    },
+    "support_reply": {
+      "title": "A reply to your problem report",
+      "body": "Your college or the {{app}} team replied to a problem you reported. Open it to read the reply."
+    },
+    "support_ticket": {
+      "title": "New problem report",
+      "body": "A member reported a problem for the college to answer. Open Admin › Support to read it."
     }
   },
   "notifications": {
@@ -1123,7 +1283,8 @@
     "channel": {
       "inApp": "In app",
       "email": "Email",
-      "push": "Push"
+      "push": "Push",
+      "whatsapp": "WhatsApp"
     },
     "cat": {
       "requests": "Requests",
@@ -1136,7 +1297,8 @@
       "roadmaps": "Roadmaps",
       "achievements": "Badges and rewards",
       "events": "Events",
-      "study": "Study"
+      "study": "Study",
+      "placements": "Placements"
     },
     "catHint": {
       "requests": "New requests, replies, expiries",
@@ -1149,7 +1311,8 @@
       "roadmaps": "Weekly goal nudges and review decisions",
       "achievements": "New badges and reward decisions",
       "events": "Reminders, changes, cancellations and waitlist places",
-      "study": "Your uploads finished processing, and review decisions"
+      "study": "Your uploads finished processing, and review decisions",
+      "placements": "New drives you are eligible for, last-day reminders, round results, offers and outcome decisions"
     },
     "toggle": "{{channel}} for {{category}}",
     "quiet": "Quiet hours",
@@ -1158,7 +1321,13 @@
     "quietTo": "Until",
     "quietNote": "Session reminders still arrive on time.",
     "emptyBody": "Requests, replies, sessions and badges will appear here as they happen.",
-    "emptyAction": "See what's new at home"
+    "emptyAction": "See what's new at home",
+    "whatsapp": "WhatsApp",
+    "whatsappNoPhone": "Add a mobile number to get requests, session reminders and job alerts on WhatsApp.",
+    "whatsappBody": "Get requests, session reminders and job alerts on WhatsApp at {{phone}}. At most two a week, plus reminders.",
+    "whatsappOn": "On. Messages go to {{phone}}. Choose below which ones.",
+    "whatsappEnable": "Turn on",
+    "whatsappDisable": "Turn off"
   },
   "safety": {
     "menu": "Safety options for {{name}}",
@@ -1234,7 +1403,8 @@
     "roadmap": "roadmap",
     "roadmap_comment": "roadmap comment",
     "event": "event",
-    "event_question": "event question"
+    "event_question": "event question",
+    "review": "review"
   },
   "feed": {
     "tabs": "Feed view",
@@ -2628,6 +2798,7 @@
     "language": {
       "en": "English",
       "te": "Telugu",
+      "hi": "Hindi",
       "other": "Another language"
     },
     "provider": {
@@ -2975,9 +3146,7 @@
       "ocr": "Read scanned pages (OCR)",
       "ocrDetail": "Text is recognised on this server; nothing is sent out",
       "transcription": "Transcribe videos",
-      "transcriptionDetail": "So /videos can jump to where a topic is discussed",
-      "facultySeeChats": "Faculty may read chats",
-      "facultySeeChatsDetail": "Off by default: faculty see only anonymous totals. If on, students are told."
+      "transcriptionDetail": "So /videos can jump to where a topic is discussed"
     },
     "killSwitch": "Stop all AI now",
     "killSwitchDetail": "No request reaches any provider; search and the library keep working",
@@ -3075,6 +3244,1063 @@
       "chatInput": "Answers: input, per 1M tokens",
       "chatOutput": "Answers: output, per 1M tokens",
       "embedding": "Embeddings, per 1M tokens"
+    },
+    "monthlyBudgetPlan": "Your plan includes {{allowance}} tokens a month on the platform’s provider. Set a lower budget, or 0 to use all of it."
+  },
+  "featureHint": {
+    "studentPosting": "Students can post in the feed, not only comment. Posts are moderated like everyone else’s.",
+    "stories": "Photos and short notes at the top of Home that disappear after a day.",
+    "reels": "Short videos of up to a minute in the feed and on the Reels page.",
+    "leaderboards": "Members who opt in can appear in a ranking by points.",
+    "alumniMatch": "Students swipe through suggested alumni mentors, with the reasons for each match.",
+    "jobsAggregation": "Openings fetched automatically from public job boards you add. Openings members post stay either way.",
+    "contentSources": "Headlines from RSS and Atom feeds in the feed, with a link to the original.",
+    "study": "Subjects, notes and videos, and the study assistant.",
+    "placements": "Placement drives, registrations, round results and offers.",
+    "whatsapp": "Codes and important updates on WhatsApp, for members who agree to it.",
+    "peerMentors": "Seniors guiding juniors. Coming soon."
+  },
+  "phone": {
+    "numberHint": "Your 10-digit mobile number.",
+    "birthMonth": "When were you born?",
+    "month": "Month",
+    "year": "Year",
+    "birthMonthHint": "Only whether you are 18 yet is kept, never this month. Under 18? A parent or guardian confirms with a code.",
+    "sentWhatsApp": "We sent a 6-digit code on WhatsApp to {{phone}}.",
+    "sentSms": "We sent a 6-digit code by SMS to {{phone}}.",
+    "sentEmail": "We sent a 6-digit code by email to {{phone}}.",
+    "code": "6-digit code",
+    "confirm": "Confirm",
+    "changeNumber": "Change number",
+    "smsInstead": "Send by SMS instead",
+    "resendIn": "Send again in {{seconds}} s",
+    "resend": "Send again",
+    "codeTitle": "Enter the code",
+    "codeSub": "It works for 10 minutes. Your account is created when it’s confirmed.",
+    "signInCodeSub": "If this number has an account, the code is on its way. It works for 10 minutes.",
+    "signUpSub": "Takes a minute with your mobile number. College verification comes next.",
+    "method": "How you sign in",
+    "withPhone": "Mobile number",
+    "withEmail": "Email",
+    "number": "Mobile number",
+    "sendCode": "Send code",
+    "noAccountYet": "No code? The number may not have an account yet.",
+    "invalid": "Enter a 10-digit mobile number.",
+    "settingsTitle": "Mobile number",
+    "none": "No number yet. Add one to sign in with a code.",
+    "change": "Change number",
+    "add": "Add a number",
+    "changed": "Number changed. Other devices were signed out.",
+    "changeHint": "We’ll send a code to your current number first, then one to the new number.",
+    "addHint": "Enter your password, then the code we send to the number.",
+    "newNumber": "New mobile number"
+  },
+  "guardian": {
+    "title": "Your guardian’s consent",
+    "intro": "You’re under 18, so a parent or guardian agrees before you start.",
+    "why": "The law asks for it (DPDP Act 2023). The code goes to the number your college has for your guardian.",
+    "verifyFirstTitle": "First, confirm your college record",
+    "verifyFirstBody": "Your guardian’s number comes from your admission record, so we need to find it with your roll number.",
+    "checkingTitle": "Your college is checking the number",
+    "checkingBody": "We’ll tell you when it’s done. Then your guardian gets the code.",
+    "noNumberBody": "Your college has no guardian number for you yet. Enter one; the college checks it against your admission papers first.",
+    "number": "Parent or guardian’s mobile number",
+    "askCollege": "Send to my college to check",
+    "declarationTitle": "For your parent or guardian to read",
+    "language": "Language of the declaration",
+    "version": "Declaration version {{version}}",
+    "sendCode": "Send the code to {{phone}}",
+    "adminLabel": "Guardian number to check",
+    "adminHint": "Approve only if it matches the admission record."
+  },
+  "join": {
+    "inviteLoading": "Opening your invite…",
+    "inviteTitle": "Hi {{name}}, join {{college}}",
+    "inviteStudent": "Your college added you to its private student network.",
+    "inviteAlumni": "Your college invites you to its alumni network, to guide current students.",
+    "rollOnRecord": "Your college record:",
+    "codeToPhone": "We’ll send a code to the mobile number your college has for you.",
+    "codeToEmail": "We’ll send a code to the email your college has for you.",
+    "codeSub": "It works for 10 minutes. You’re in, already verified, when it’s confirmed.",
+    "sendCode": "Send my code",
+    "noContact": "Your college has no number or email for you",
+    "noContactBody": "Ask your placement cell or class coordinator to add your mobile number to your record, then open this link again.",
+    "inviteGone": "This invite no longer works",
+    "inviteGoneBody": "It was already used or it expired. Ask your college for a new one, or sign up and confirm your roll number.",
+    "codeGone": "This class code no longer works",
+    "codeGoneBody": "It expired or was stopped. Ask your class coordinator for the current one, or sign up and confirm your roll number.",
+    "signUpInstead": "Sign up instead",
+    "codeTitle": "Join {{college}}",
+    "codeForStudents": "Class code for students of {{class}}. Enter your roll number and we’ll send a code to the contact on your college record.",
+    "codeForAlumni": "Class code for alumni of {{class}}. Enter your roll number and we’ll send a code to the contact on your college record.",
+    "rollNumber": "Roll number",
+    "rollHint": "As it appears on your ID card, for example 21DP1A0501.",
+    "alumniTitle": "Welcome back",
+    "alumniSub": "Three quick answers help students find you. All of them are optional.",
+    "company": "Where you work",
+    "jobTitle": "Your role",
+    "topics": "Topics you can help with",
+    "mentorAsk": "Can you give 30 minutes a month to a student?",
+    "mentorAskHint": "Students can ask you for one session a week at most. Change it any time under Mentor settings.",
+    "alumniSave": "Save and continue",
+    "skip": "Skip for now"
+  },
+  "onboarding": {
+    "notJoined": "Not joined yet",
+    "intro": "People on your college’s list who haven’t joined. Send each one a personal link: one tap, a code to the number on record, and they’re in, already verified.",
+    "anyBranch": "Any branch",
+    "anyKind": "Everyone",
+    "sendWhatsApp": "Send invites on WhatsApp",
+    "downloadCsv": "Download links (CSV)",
+    "resendRule": "Links work for 14 days and once. Someone invited in the last 72 hours is skipped.",
+    "allJoined": "Everyone in this view has joined",
+    "class": "Class",
+    "contact": "College has",
+    "phone": "Mobile",
+    "noContact": "Nothing",
+    "lastInvited": "Last invited",
+    "link": "Invite link",
+    "csvDone_one": "{{count}} link ready ({{skipped}} skipped). Share each link only with its person.",
+    "csvDone_other": "{{count}} links ready ({{skipped}} skipped). Share each link only with its person.",
+    "sendIntro": "Each person gets a WhatsApp message with their own link, in English.",
+    "attest": "These people agreed to hear from the college on WhatsApp (for example, on the admission form).",
+    "sendCost": "Each invite counts against the college’s monthly WhatsApp allowance. People without a mobile number are skipped.",
+    "sendNow": "Send invites",
+    "sentDone": "{{count}} sent, {{skipped}} skipped, {{failed}} not sent.",
+    "codesTitle": "Class join codes",
+    "codesIntro": "For a poster or the class WhatsApp group: students enter the code and their roll number, and the code goes to the contact on their record.",
+    "newCode": "New join code",
+    "newCodeIntro": "Limit it to one branch and year so only that class can use it.",
+    "createCode": "Create code",
+    "codeCreated": "Join code {{code}} is ready.",
+    "days": "Works for (days)",
+    "daysHint": "1 to 60 days.",
+    "noCodes": "No join codes yet",
+    "code": "Code",
+    "uses": "Joined",
+    "expires": "Works until",
+    "stopped": "Stopped",
+    "actions": "Actions",
+    "poster": "Poster",
+    "stop": "Stop",
+    "print": "Print poster",
+    "posterTitle": "Join {{college}} on your phone",
+    "posterScan": "Scan with your phone camera, or open the link and enter the code.",
+    "qrAlt": "QR code of the join link",
+    "posterValid": "Works until {{date}}. Your roll number finds your college record.",
+    "progressTitle": "Progress by class",
+    "progressIntro": "From your list to active members, per branch and batch. Small active counts show as “<5”.",
+    "onList": "On the list",
+    "invited": "Invited",
+    "joined": "Joined",
+    "verified": "Verified",
+    "active7d": "Active this week",
+    "nudge": "Nudge",
+    "nudgeTitle": "Invite everyone not yet joined in {{class}}"
+  },
+  "mentorStats": {
+    "label": "Track record",
+    "replyHours_one": "Usually replies in {{count}} hour",
+    "replyHours_other": "Usually replies in {{count}} hours",
+    "replyDays_one": "Usually replies in {{count}} day",
+    "replyDays_other": "Usually replies in {{count}} days",
+    "band": {
+      "high": "Replies to almost every request",
+      "medium": "Replies to most requests",
+      "low": "Replies to some requests"
+    },
+    "sessions_one": "{{count}} session done",
+    "sessions_other": "{{count}} sessions done",
+    "rating_one": "{{rating}} out of 5 · {{count}} review",
+    "rating_other": "{{rating}} out of 5 · {{count}} reviews",
+    "nextSlot": "Next free: {{when}}",
+    "reviews": "What mentees say",
+    "stars_one": "{{count}} star out of 5",
+    "stars_other": "{{count}} stars out of 5"
+  },
+  "rematch": {
+    "offer": "{{name}} hasn’t replied in two days. Some mentors usually reply quickly; you can send them the same message.",
+    "cta": "See mentors likely to reply",
+    "title": "Mentors likely to reply",
+    "intro": "Sending to one of them withdraws your request to {{name}}. It doesn’t count against your weekly requests.",
+    "send": "Send my message to {{name}}",
+    "sent": "Sent to {{name}}.",
+    "none": "No other mentors are free right now",
+    "noneBody": "Your request stays with your mentor until it expires. You can also browse mentors yourself."
+  },
+  "announce": {
+    "title": "Who it’s for and how it goes out",
+    "branches": "Branches",
+    "years": "Batches (graduation years)",
+    "yearsHint": "For example 2026, 2027.",
+    "roles": "People",
+    "everyoneHint": "Pick nothing to reach everyone. Picking narrows it: only members who match every choice see it.",
+    "pin": "Pin to the top of For you",
+    "noPin": "Don’t pin",
+    "pinDays_one": "For {{count}} day",
+    "pinDays_other": "For {{count}} days",
+    "whatsapp": "Also send on WhatsApp",
+    "whatsappHint": "Members who chose WhatsApp updates get the title; others get a push or email. It counts against the college’s WhatsApp allowance.",
+    "urgent": "Urgent",
+    "urgentHint": "Reaches members even past their weekly WhatsApp limit. {{count}} a month per college.",
+    "pinned": "Pinned",
+    "for": "For {{who}}"
+  },
+  "placements": {
+    "intro": "Drives from your placement cell. Register in one tap; your record decides who is eligible, and you always see why.",
+    "tabsLabel": "Drives and offers",
+    "tab": {
+      "eligible": "For you",
+      "all": "All drives",
+      "registered": "Registered",
+      "offers": "Offers"
+    },
+    "empty": {
+      "eligible": "No open drives for you right now",
+      "all": "No drives yet",
+      "registered": "You have not registered for a drive"
+    },
+    "emptyBody": {
+      "eligible": "You will be told the moment one opens. All drives shows every drive and why you can or cannot register.",
+      "all": "Drives your placement cell opens appear here.",
+      "registered": "Drives you register for, with round results, stay here."
+    },
+    "registered": "Registered",
+    "notEligible": "Not eligible",
+    "closes": "Closes {{when}}",
+    "lpa": "₹{{range}} LPA",
+    "privacyNote": "Your exact CTC is seen only by you and the placement cell. Others only ever see bands and totals.",
+    "mode": {
+      "on_campus": "On campus",
+      "off_campus": "Off campus",
+      "pool": "Pool drive",
+      "virtual": "Online"
+    },
+    "status": {
+      "draft": "Draft",
+      "open": "Open",
+      "closed": "Registration closed",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "roleType": {
+      "full_time": "Full time",
+      "internship": "Internship",
+      "ppo": "Internship with PPO"
+    },
+    "roundKind": {
+      "aptitude": "Aptitude test",
+      "coding": "Coding test",
+      "technical": "Technical interview",
+      "hr": "HR interview",
+      "group_discussion": "Group discussion",
+      "other": "Other"
+    },
+    "result": {
+      "pending": "Awaiting result",
+      "cleared": "Cleared",
+      "not_cleared": "Not cleared",
+      "absent": "Absent"
+    },
+    "final": {
+      "in_process": "In process",
+      "selected": "Selected",
+      "not_selected": "Not selected this time",
+      "withdrawn": "Withdrawn"
+    },
+    "offerStatus": {
+      "reported": "Waiting for verification",
+      "verified": "Verified",
+      "rejected": "Not verified",
+      "declined_by_student": "Declined"
+    },
+    "source": {
+      "drive": "Campus drive",
+      "off_campus": "Off campus",
+      "ppo": "Pre-placement offer",
+      "internship_conversion": "Internship conversion"
+    },
+    "record": "Your academic record",
+    "recordFromCollege": "From the college",
+    "recordVerified": "Verified",
+    "recordPending": "Waiting for the placement cell",
+    "recordNone": "The college has not shared your marks yet. Drives with CGPA or backlog rules need them; add yours and the placement cell will check them.",
+    "recordAdd": "Add your marks",
+    "recordEdit": "Update your marks",
+    "recordCorrections": "Something wrong? Ask the placement cell to correct it.",
+    "recordTitle": "Your marks",
+    "recordBody": "These count for eligibility once the placement cell checks them against the college’s records.",
+    "recordSent": "Sent to the placement cell to verify",
+    "field": {
+      "cgpa": "CGPA",
+      "activeBacklogs": "Active backlogs",
+      "historyBacklogs": "Backlogs ever",
+      "tenthPct": "10th %",
+      "twelfthPct": "12th %",
+      "diplomaPct": "Diploma %",
+      "company": "Company",
+      "role": "Role",
+      "ctc": "CTC (lakh a year)",
+      "ctcHint": "As on the offer letter, for example 6.5",
+      "offerDate": "Offer date",
+      "roleType": "Type",
+      "source": "How you got it"
+    },
+    "offersIntro": "Offers from campus drives appear here on their own. Report any other offer with proof and the placement cell will verify it.",
+    "reportOffer": "Report an offer",
+    "reportOfferBody": "An off-campus offer, a PPO or an internship that turned into a job.",
+    "noOffers": "No offers yet",
+    "noOffersBody": "When a drive selects you, the offer appears here.",
+    "declineOffer": "I declined this offer",
+    "rejectedBecause": "The placement cell could not verify it: {{reason}}",
+    "sendForVerification": "Send for verification",
+    "addProof": "Add the offer letter",
+    "replaceProof": "Replace the file",
+    "proofHint": "A PDF or a photo, up to 5 MB",
+    "proofPrivacy": "Only the placement cell sees the file. It is deleted 30 days after the offer is verified.",
+    "offerReported": "Sent. The placement cell will verify it.",
+    "reportToCell": "Report this offer to your placement cell",
+    "back": "Placements",
+    "roles": "Roles",
+    "about": "About the drive",
+    "criteria": "Who can apply",
+    "critOpen": "Open to every student in the college.",
+    "crit": {
+      "branches": "Branches: {{list}}",
+      "gradYears": "Graduating in {{list}}",
+      "cgpa": "CGPA {{n}} or more",
+      "activeBacklogs_one": "At most {{count}} active backlog",
+      "activeBacklogs_other": "At most {{count}} active backlogs",
+      "historyBacklogs_one": "At most {{count}} backlog ever",
+      "historyBacklogs_other": "At most {{count}} backlogs ever",
+      "tenth": "10th: {{n}}% or more",
+      "twelfth": "12th or diploma: {{n}}% or more"
+    },
+    "rounds": "Rounds",
+    "seeEvent": "See it in Events (calendar and RSVP)",
+    "reason": {
+      "branch": "Open to {{need}} only",
+      "gradYear": "For students graduating in {{need}}",
+      "cgpa": "Needs a CGPA of {{need}}; yours is {{have}}",
+      "cgpaMissing": "Needs a CGPA of {{need}}; the college has no CGPA for you",
+      "activeBacklogs_one": "Allows at most {{count}} active backlog; you have {{have}}",
+      "activeBacklogs_other": "Allows at most {{count}} active backlogs; you have {{have}}",
+      "historyBacklogs_one": "Allows at most {{count}} backlog ever; you have had {{have}}",
+      "historyBacklogs_other": "Allows at most {{count}} backlogs ever; you have had {{have}}",
+      "tenthPct": "Needs {{need}}% in 10th; yours is {{have}}",
+      "twelfthPct": "Needs {{need}}% in 12th or diploma; yours is {{have}}",
+      "noRecord": "The college has no academic record for you yet",
+      "unverifiedRecord": "Your marks are waiting for the placement cell to verify them"
+    },
+    "notEligibleTitle": "You can’t register for this one",
+    "notEligibleHelp": "If you think this is wrong, the placement cell can check your record or let you in.",
+    "youAreEligible": "You are eligible",
+    "letInCanRegister": "The placement cell let you in",
+    "closesAt": "Registration closes {{when}}",
+    "register": "Register",
+    "registerOneTap": "Register in one tap",
+    "registerFor": "Register for {{company}}",
+    "registerBody": "The company asks for these. You can withdraw until registration closes.",
+    "sharedWith": "Your answers and résumé go to the placement cell, which shares only what the company needs.",
+    "resume": "Résumé (PDF)",
+    "addPdf": "Add a PDF",
+    "replacePdf": "Replace the PDF",
+    "pdfHint": "PDF, up to 5 MB",
+    "choose": "Choose one",
+    "registeredToast": "Registered for {{company}}",
+    "youAreRegistered": "You are registered",
+    "youWereSelected": "You were selected",
+    "letIn": "The placement cell let you in to this drive.",
+    "seeOffer": "See your offer",
+    "withdraw": "Withdraw",
+    "withdrawTitle": "Withdraw your registration?",
+    "withdrawBody": "You will not be part of the {{company}} drive. You can register again while registration is open.",
+    "registrationClosed": "Registration for this drive has closed.",
+    "cancelledNote": "This drive was cancelled.",
+    "admin": {
+      "intro": "Create drives, open them to eligible students, record round results and verify offers. Every export and override is audited.",
+      "sections": "Placement cell",
+      "drives": "Drives",
+      "pendingRecords": "Marks to verify",
+      "companies": "Companies",
+      "statusFilter": "Filter by status",
+      "allStatuses": "All",
+      "newDrive": "New drive",
+      "noDrives": "No drives yet",
+      "noDrivesBody": "Create a drive as a draft, check it, then open it: eligible students are told at once.",
+      "status": "Status",
+      "closes": "Registration closes",
+      "registered": "Registered",
+      "closingSoon": "Closing soon",
+      "backlogs": "Backlogs (active / ever)",
+      "schooling": "10th · 12th",
+      "decision": "Decision",
+      "verify": "Verify",
+      "reject": "Reject",
+      "recordDecided": "Decision saved",
+      "noPendingRecords": "No marks waiting for verification",
+      "addCompany": "Add a company",
+      "companyBody": "Companies are matched on their name, so the same company is never listed twice.",
+      "website": "Website",
+      "sector": "Sector",
+      "notes": "Placement cell notes",
+      "notesHint": "Contacts, past visits, what they look for. Students never see these.",
+      "companySaved": "Company saved",
+      "noCompanies": "Companies appear here as you create drives",
+      "edit": "Edit",
+      "save": "Save",
+      "backToDrives": "All drives",
+      "backToDrive": "Back to the drive",
+      "newTitle": "New drive",
+      "editTitle": "Edit drive",
+      "companyHint": "Pick an existing company or type a new one",
+      "driveTitle": "Drive title",
+      "mode": "Mode",
+      "venue": "Venue",
+      "driveDate": "Drive date",
+      "closeAt": "Registration closes",
+      "ctcMin": "CTC from (lakh a year)",
+      "ctcMax": "CTC up to (lakh a year)",
+      "location": "Location",
+      "addRole": "Add a role",
+      "removeRole": "Remove role",
+      "criteriaIntro": "Leave a rule empty to skip it. Only academic and batch rules exist: nothing else may decide who applies.",
+      "branches": "Branches (none ticked: every branch)",
+      "gradYears": "Graduating in (none ticked: every batch)",
+      "crit": {
+        "minCgpa": "Minimum CGPA",
+        "maxActiveBacklogs": "Most active backlogs",
+        "maxHistoryBacklogs": "Most backlogs ever",
+        "minTenthPct": "Minimum 10th %",
+        "minTwelfthPct": "Minimum 12th or diploma %"
+      },
+      "questions": "What students submit",
+      "resumeRequired": "Ask for a résumé",
+      "resumeRequiredHint": "Without a résumé or questions, students register in one tap",
+      "question": "Question",
+      "questionKind": "Answer",
+      "kind": {
+        "text": "Text",
+        "choice": "One of a few options",
+        "file": "A PDF"
+      },
+      "options": "Options",
+      "optionsHint": "Separate them with commas",
+      "required": "Required",
+      "addQuestion": "Add a question",
+      "removeQuestion": "Remove question",
+      "roundName": "Round",
+      "roundKind": "Kind",
+      "roundAt": "When",
+      "addRound": "Add a round",
+      "removeRound": "Remove round",
+      "createEvent": "Also add it to Events",
+      "createEventHint": "A placement drive event with calendar and RSVP, linked to this drive",
+      "createDraft": "Create draft",
+      "created": "Drive created as a draft",
+      "saved": "Drive saved",
+      "to": {
+        "open": "Open registration",
+        "reopen": "Reopen registration",
+        "closed": "Close registration",
+        "in_progress": "Start the drive",
+        "completed": "Mark completed",
+        "cancelled": "Cancel the drive"
+      },
+      "statusDone": {
+        "open": "Registration is open; eligible students are being told",
+        "closed": "Registration closed",
+        "in_progress": "The drive has started",
+        "completed": "Drive completed",
+        "cancelled": "Drive cancelled",
+        "draft": "Saved as draft"
+      },
+      "openTitle": "Open registration?",
+      "openBody": "Every eligible student is told now (in the app, and on WhatsApp where they agreed), and reminded a day before registration closes.",
+      "cancelTitle": "Cancel this drive?",
+      "cancelBody": "Registrations are kept, but nothing more can happen in this drive. This cannot be undone.",
+      "registrants": "Registrants",
+      "letInStudent": "Let a student in",
+      "export": "Export for the company",
+      "noRegistrants": "No registrations yet",
+      "noRegistrantsDraft": "Open registration and eligible students will be told.",
+      "noRegistrantsBody": "Students who register appear here.",
+      "round": "Round",
+      "saveRound_one": "Save {{count}} result",
+      "saveRound_other": "Save {{count}} results",
+      "roundSaved": "Results saved; each student is told theirs",
+      "importRound": "Results from a sheet",
+      "imported": "{{updated}} results changed, {{unchanged}} unchanged.",
+      "importUnknown": "Not registered for this drive (skipped): {{list}}",
+      "importRowError": "Row {{row}}: {{message}}",
+      "class": "Class",
+      "final": "Final result",
+      "formerMember": "Former member",
+      "letInBadge": "Let in",
+      "withdrawnBadge": "Withdrew",
+      "resumeOf": "Download {{name}}’s résumé",
+      "resultFor": "{{round}} result for {{name}}",
+      "finalFor": "Final result for {{name}}",
+      "selectTitle": "Record {{name}}’s offer",
+      "selectBody": "A selection adds a verified offer to the student’s record and congratulates them. Check the role and CTC.",
+      "recordSelection": "Record selection",
+      "selectedDone": "{{name}} selected; the offer is on their record",
+      "overrideTitle": "Let a student in",
+      "overrideBody": "For a student the rules leave out whom the company agreed to see. They can then register themselves. This is audited.",
+      "overrideReason": "Reason",
+      "overrideReasonHint": "For example: company approved by email on 3 Nov",
+      "letIn": "Let them in",
+      "overrideDone": "{{roll}} can now register",
+      "exportTitle": "Export registrants",
+      "exportBody": "Tick only what the company needs. Phone numbers and marks are personal data.",
+      "format": "File format",
+      "excel": "Excel",
+      "columns": "Columns",
+      "exportAudit": "The export is recorded in the audit log with the columns you chose.",
+      "download": "Download",
+      "col": {
+        "rollNumber": "Roll number",
+        "name": "Name",
+        "branch": "Branch",
+        "gradYear": "Graduation year",
+        "email": "Email",
+        "phone": "Phone",
+        "cgpa": "CGPA",
+        "activeBacklogs": "Active backlogs",
+        "historyBacklogs": "Backlog history",
+        "tenthPct": "10th %",
+        "twelfthPct": "12th %",
+        "diplomaPct": "Diploma %",
+        "answers": "Answers to the drive’s questions",
+        "status": "Registration status",
+        "final": "Final result"
+      },
+      "offersIntro": "Offers members reported themselves, with proof. Drive selections are verified when you record them.",
+      "offersBy": "Offers by status",
+      "offers": "Offers",
+      "reported": "Reported",
+      "review": "Review",
+      "noOffers": {
+        "reported": "No offers waiting for verification",
+        "verified": "No verified offers yet",
+        "rejected": "No rejected offers"
+      },
+      "offerTitle": "Offer from {{company}}",
+      "offerBody": "Check the letter against what was reported. The member sees your reason if you reject it.",
+      "openProof": "Download the proof",
+      "rejectReason": "Reason, if you reject it",
+      "rejectReasonHint": "The member sees this, for example: the letter does not show the CTC",
+      "offerVerified": "Offer verified",
+      "offerRejected": "Offer rejected; the member was told why"
+    }
+  },
+  "outcomes": {
+    "intro": "What you did after college counts for your college's accreditation and helps juniors see what is possible. The placement cell checks each one before it counts.",
+    "offers": "Offers",
+    "otherTitle": "Higher studies, exams and ventures",
+    "otherIntro": "An admission, a qualified exam such as GATE or GRE, or a company you started.",
+    "add": {
+      "higher_study": "Add higher studies",
+      "exam": "Add an exam",
+      "venture": "Add a venture"
+    },
+    "none": "Nothing reported yet.",
+    "kind": {
+      "higher_study": "Higher studies",
+      "exam": "Exams",
+      "venture": "Ventures"
+    },
+    "status": {
+      "reported": "Waiting for verification",
+      "verified": "Verified",
+      "rejected": "Not verified"
+    },
+    "source": {
+      "self": "Reported by the member",
+      "tpo": "Placement cell",
+      "import": "College sheet"
+    },
+    "remove": "Remove",
+    "removeNamed": "Remove {{title}}",
+    "hsTitle": "{{program}}, {{institution}}",
+    "examTitle": "{{exam}} {{year}}",
+    "registered": "Registered",
+    "notRegistered": "Not registered yet",
+    "dialogBody": "The placement cell checks it before it counts on the college's record.",
+    "sent": "Sent. The placement cell will verify it.",
+    "noExam": "None",
+    "field": {
+      "institution": "Institution",
+      "program": "Programme",
+      "programHint": "For example M.Tech CSE or MS in Data Science",
+      "country": "Country",
+      "admitYear": "Year admitted",
+      "qualifyingExam": "Admitted through",
+      "exam": "Exam",
+      "examYear": "Year qualified",
+      "examName": "Name of the exam",
+      "level": "Level",
+      "scoreBand": "Score or rank",
+      "scoreBandHint": "As you would say it, for example AIR under 2,000",
+      "ventureName": "Venture name",
+      "ventureYear": "Year started",
+      "registered": "Registered as a company, LLP or firm",
+      "registeredHint": "Leave it off if it is still an idea or a side project"
+    },
+    "exam": {
+      "GATE": "GATE",
+      "CAT": "CAT",
+      "GRE": "GRE",
+      "GMAT": "GMAT",
+      "IELTS": "IELTS",
+      "TOEFL": "TOEFL",
+      "UPSC": "UPSC civil services",
+      "STATE_PSC": "State public service commission",
+      "NET": "UGC NET",
+      "OTHER": "Another exam"
+    },
+    "level": {
+      "state": "State",
+      "national": "National",
+      "international": "International"
+    },
+    "admin": {
+      "kinds": "What to verify",
+      "byStatus": "By status",
+      "intro": {
+        "higher_study": "Admissions to higher studies that members reported, or that came from the college's sheet.",
+        "exam": "Exams members qualified (GATE, CAT, GRE and others).",
+        "venture": "Ventures members started."
+      },
+      "columns": {
+        "higher_study": "Sheet columns: roll number, institution, programme, country, admission year, qualifying exam.",
+        "exam": "Sheet columns: roll number, exam, year, score or rank.",
+        "venture": "Sheet columns: roll number, venture name, registered (yes or no), year."
+      },
+      "import": "From the college's sheet",
+      "imported": "{{created}} added and {{updated}} updated, as verified.",
+      "unknown": "Not members yet (skipped): {{list}}",
+      "none": {
+        "reported": "Nothing waiting for verification",
+        "verified": "Nothing verified yet",
+        "rejected": "Nothing rejected"
+      },
+      "outcome": "Outcome",
+      "source": "From",
+      "details": "Details",
+      "reviewBody": "Check it against what you know (an admission letter, a score card). The member sees your reason if you reject it.",
+      "rejectHint": "The member sees this, for example: please share the admission letter with the cell",
+      "verified": "Verified",
+      "rejected": "Rejected; the member was told why"
+    }
+  },
+  "reports": {
+    "intro": "Placement and progression figures from verified records, for this batch and the accreditation formats. Counts under 5 show as <5; the evidence workbook has the exact figures.",
+    "batch": "Batch",
+    "batchLabel": "Graduating {{year}}",
+    "programme": "Programme",
+    "allProgrammes": "All programmes",
+    "placementPct": "Placement %",
+    "placementPctHint": "Placed out of those seeking placement",
+    "placed": "Placed",
+    "seeking": "Seeking placement",
+    "finalYear": "Final-year students",
+    "medianBand": "Median package",
+    "higherStudies": "Higher studies",
+    "trend": "Placement % over five batches",
+    "trendHint": "A batch with counts under 5 shows no figure",
+    "topRecruiters": "Top recruiters",
+    "studentsN": "{{n}} students",
+    "noRecruiters": "No verified offers for this batch yet.",
+    "all": "Reports",
+    "needsReview": "Check the format",
+    "needsReviewBody": "This report follows the commonly published format but has not been checked against the framework's current manual. Check the metric and any scoring before you submit it.",
+    "threeYears": "Three batches",
+    "version": "Version {{version}}",
+    "back": "All reports",
+    "empty": "No verified records for this choice yet.",
+    "source": "Source and method",
+    "downloadExcel": "Download Excel",
+    "downloadCsv": "Download CSV",
+    "evidence": "Evidence workbook",
+    "evidenceHint": "The evidence workbook has exact counts and every student behind them. Downloads are recorded in the audit log.",
+    "framework": {
+      "NBA": "NBA",
+      "NAAC": "NAAC",
+      "NIRF": "NIRF",
+      "internal": "Internal"
+    },
+    "band": {
+      "under_3": "Under ₹3 LPA",
+      "3_5": "₹3–5 LPA",
+      "5_8": "₹5–8 LPA",
+      "8_12": "₹8–12 LPA",
+      "12_20": "₹12–20 LPA",
+      "20_plus": "₹20 LPA and above"
+    }
+  },
+  "insights": {
+    "tabsLabel": "Analytics",
+    "tab": {
+      "overview": "Overview",
+      "activation": "Activation",
+      "retention": "Retention",
+      "mentorship": "Mentorship",
+      "placements": "Placements"
+    },
+    "window": "From the week of {{since}}",
+    "invited": "Invited",
+    "signedUp": "Signed up",
+    "verified": "Verified",
+    "activated": "Active in their first week",
+    "activatedHint": "Of {{matured}} who joined at least a week ago",
+    "activationPct": "Activation",
+    "activationNote": "Active means a mentorship request or reply, a session, a drive registration, a study question or a roadmap step within 7 days of joining. Members under 18 and members who have not allowed aggregate analytics are not counted.",
+    "weeklyActive": "Members active each week",
+    "weeklyActiveHint": "Members who opened the app or did something that week",
+    "week": "Week",
+    "members": "Members",
+    "byRole": "Students {{students}} · Alumni {{alumni}} · Staff {{staff}}",
+    "retention": "Retention by signup week",
+    "retentionIntro": "Of the members who joined in a week, the share who came back 1, 2, 3 … weeks later. Weeks with fewer than 5 sign-ups show no percentages.",
+    "signupWeek": "Joined the week of",
+    "cohort": "Joined",
+    "weekN": "Week {{n}}",
+    "requests": "Requests sent",
+    "converted": "Led to a session",
+    "conversionPct": "Request to session",
+    "medianReply": "Median reply time",
+    "hours": "{{n}} h",
+    "mentorshipNote": "Quick chats have no session, so only bookable requests can convert. Reply time counts requests answered in the period.",
+    "batch": "Graduating batch {{year}}",
+    "registrationPct": "Registered for a drive",
+    "registrationHint": "{{registered}} of {{total}} on the college list",
+    "offersPer100": "Offers per 100 final-years",
+    "questionsPerStudent": "Study questions per active student",
+    "questionsHint": "{{questions}} questions from {{students}} students"
+  },
+  "traction": {
+    "title": "Traction",
+    "intro": "Every college's product metrics side by side, from per-college counts only. Opening this page is recorded in the audit log.",
+    "window": "The last {{weeks}} weeks. Counts under 5 show as <5.",
+    "college": "College",
+    "col": {
+      "active7d": "Active, 7 days",
+      "active28d": "Active, 28 days",
+      "signUps": "Sign-ups",
+      "requests": "Requests",
+      "sessions": "Sessions",
+      "driveRegistrations": "Drive registrations",
+      "offersVerified": "Offers verified",
+      "studyQuestions": "Study questions"
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "intro": "Your plan, what you use against it, and your invoices. Students and alumni never pay.",
+    "plan": {
+      "pilot": "Pilot",
+      "connect": "Connect",
+      "placement": "Placement"
+    },
+    "customDeal": "Custom terms",
+    "pricePerStudent": "{{price}} per student per year",
+    "minimum": "annual minimum {{amount}}",
+    "annual": "This year: {{amount}} before GST",
+    "renews": "Renews on {{date}}",
+    "pilotEnds": "The pilot ends on {{date}}",
+    "seats": "Seats in use",
+    "seatsHint": "Verified students, and alumni active in the last 12 months. Counted every night.",
+    "notCounted": "Not counted yet",
+    "whatsapp": "WhatsApp messages this month",
+    "aiTokens": "Study assistant tokens this month",
+    "usedOf": "{{used}} of {{allowance}}",
+    "invoices": "Invoices",
+    "noInvoices": "No invoices yet",
+    "noInvoicesBody": "Invoices from us appear here, to download and pay.",
+    "col": {
+      "number": "Invoice",
+      "due": "Due",
+      "total": "Total",
+      "balance": "Balance",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "draft": "Draft",
+      "issued": "Issued",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "void": "Void"
+    },
+    "downloadNamed": "Download invoice {{number}}",
+    "payOnline": "Pay online",
+    "payNamed": "Pay invoice {{number}} online",
+    "payHint": "You can also pay by bank transfer to the account on the invoice, quoting its number.",
+    "paidReturn": "Thank you. The payment shows here as soon as it is confirmed.",
+    "billedTo": "Invoices are addressed to",
+    "billedToMissing": "We don’t have your college’s legal name and address yet. Write to us and we’ll add them before the first invoice.",
+    "readOnly": {
+      "title": "Your college is read-only",
+      "body": "An invoice is more than 30 days overdue. Everyone can still read and export everything, but nothing new can be added until it is paid. Nothing has been deleted."
+    },
+    "memberReadOnly": "Your college’s account is read-only for now. You can read and export everything; posting and other changes are paused.",
+    "banner": {
+      "readOnly": "The college is read-only until an overdue invoice is paid.",
+      "overdue_one": "An invoice is overdue.",
+      "overdue_other": "{{count}} invoices are overdue.",
+      "overSeats": "{{used}} seats are in use; your plan covers {{seats}}. Nobody is blocked; we’ll settle it at renewal.",
+      "pilot": "Your pilot ends on {{date}}.",
+      "open": "Billing"
+    },
+    "ofContracted": "of {{seats}} contracted",
+    "ofAllowance": "of {{allowance}} this month",
+    "issuedOn": "Issued {{date}}",
+    "toPay": "{{amount}} to pay by {{date}}",
+    "dueOn": "due {{date}}",
+    "ownKey": "plus {{tokens}} on your own provider key",
+    "aiByFeature": "AI tokens this month by feature",
+    "aiFeature": "Used for",
+    "aiPlatform": "Platform provider",
+    "aiOwn": "Your own key",
+    "feature": {
+      "study_chat": "Study assistant answers",
+      "embedding": "Indexing material for search",
+      "transcription": "Transcripts",
+      "rerank": "Ranking passages",
+      "resume": "Résumé help",
+      "interview": "Mock interviews",
+      "copilot": "Copilot"
+    }
+  },
+  "pbilling": {
+    "title": "Billing",
+    "intro": "Plans, subscriptions, invoices and payments for every college.",
+    "tabs": {
+      "colleges": "Colleges",
+      "plans": "Plans"
+    },
+    "col": {
+      "college": "College",
+      "plan": "Plan",
+      "seats": "Seats used / contracted",
+      "renewal": "Renewal",
+      "outstanding": "Outstanding",
+      "status": "Status"
+    },
+    "overdue_one": "{{count}} overdue",
+    "overdue_other": "{{count}} overdue",
+    "readOnly": "Read-only",
+    "readOnlySince": "Read-only since {{date}}",
+    "overSeats": "Over seats",
+    "plans": {
+      "intro": "Defaults for every college on the plan. A college’s custom terms override them."
+    },
+    "terms": {
+      "pricePerStudentPaise": "Price per student per year",
+      "annualMinimumPaise": "Annual minimum",
+      "whatsappPerStudentMonthly": "WhatsApp messages per student per month",
+      "aiTokensPerStudentMonthly": "AI tokens per student per month",
+      "days": "Length in days",
+      "features": "Features included"
+    },
+    "yearly": "Yearly",
+    "changed": "Changed",
+    "featureCount": "{{count}} of {{total}} features",
+    "edit": "Edit {{plan}}",
+    "rupeesHint": "In rupees",
+    "invalidNumber": "Enter a number for “{{field}}”.",
+    "back": "All colleges",
+    "collegeIntro": "{{slug}} · {{plan}} plan",
+    "annualPrice": "Price this year",
+    "subscription": "Subscription",
+    "seats": "Contracted seats",
+    "startedOn": "Started on",
+    "renewalDate": "Renews or ends on",
+    "buyer": "Invoice details",
+    "legalName": "Legal name",
+    "address": "Address",
+    "gstin": "GSTIN (optional)",
+    "state": "State (place of supply)",
+    "custom": "Custom terms",
+    "customHint": "Leave a box empty to use the plan’s terms.",
+    "customFeatures": "Different features from the plan",
+    "planValue": "Plan: {{value}}",
+    "warnings": {
+      "no_sac_code": "No SAC code is set (BILLING_SAC_CODE). Confirm it with a chartered accountant before issuing invoices.",
+      "no_buyer": "Add the college’s legal name, address and state before issuing.",
+      "seller_unregistered": "The seller is not registered for GST, so invoices carry no tax."
+    },
+    "newInvoice": "New invoice",
+    "newInvoiceHint": "Saved as a draft. It gets its number, tax and PDF when you issue it.",
+    "periodStart": "Period from",
+    "periodEnd": "Period to",
+    "dueDays": "Days to pay",
+    "dueDaysHint": "Empty: the usual payment terms",
+    "lines": "Lines",
+    "description": "Description",
+    "quantity": "Quantity",
+    "unit": "Unit price (₹)",
+    "addLine": "Add a line",
+    "removeLine": "Remove line {{n}}",
+    "invalidLines": "Each line needs a whole quantity and a price in rupees.",
+    "notes": "Note on the invoice (optional)",
+    "createDraft": "Save draft",
+    "drafted": "Draft saved",
+    "draft": "Draft",
+    "issue": "Issue",
+    "issueTitle": "Issue this invoice for {{amount}}?",
+    "issueConfirm": "It gets the next number, today’s date and tax, and the college’s admins are told. It can’t be edited afterwards.",
+    "issued": "Invoice issued",
+    "discard": "Discard",
+    "discarded": "Draft discarded",
+    "void": "Void",
+    "voidTitle": "Void invoice {{number}}?",
+    "voidReason": "Why it is void",
+    "voided": "Invoice voided",
+    "recordPayment": "Record payment",
+    "recordPaymentFor": "Record a payment for {{number}}",
+    "balance": "Balance {{amount}}",
+    "amount": "Amount (₹)",
+    "paidOn": "Received on",
+    "utr": "UTR or bank reference",
+    "utrHint": "As the bank statement shows it",
+    "paymentNote": "Note (optional)",
+    "paymentRecorded": "Payment recorded",
+    "payments": "Payments",
+    "methodLabel": "How",
+    "reference": "Reference",
+    "method": {
+      "bank": "Bank transfer",
+      "online": "Online"
+    },
+    "aiCost": "AI this month: about {{amount}}"
+  },
+  "offline": {
+    "updated": "Updated {{when}}",
+    "offlineSaved": "You’re offline · saved {{when}}",
+    "queued": "Saved on this phone. It will be sent when you’re back online.",
+    "replayed_one": "{{count}} change you made offline was saved.",
+    "replayed_other": "{{count}} changes you made offline were saved.",
+    "replayFailed": "A change you made offline couldn’t be saved. Check it and try again.",
+    "dataSaver": "Data saver",
+    "dataSaverMode": {
+      "auto": "Automatic",
+      "on": "On",
+      "off": "Off"
+    },
+    "dataSaverHint": "Smaller images, no stories, and videos that load only when you press play. Automatic turns it on when your phone asks to save data or the connection is 2G."
+  },
+  "legal": {
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "intro": "How your college and {{app}} handle your data, and the rules for using it.",
+    "englishOnly": "This page is in English for now. A translation will be checked by a lawyer before it replaces it.",
+    "incomplete": "Your college has not filled in all its legal details yet; the parts it has not filled say so.",
+    "other": "Other legal pages",
+    "gateTitle": "Your college updated its privacy policy and terms",
+    "gateBody": "Please read what changed. You need to agree to the new version to keep using the app.",
+    "agree": "I have read them and agree",
+    "officerTitle": "Grievance officer",
+    "officerName": "Name",
+    "officerDesignation": "Designation",
+    "officerPhone": "Office phone (optional)",
+    "officerMissing": "Your college has not named its grievance officer here yet. Write to the college office meanwhile.",
+    "officerBody": "For a complaint about how your data is handled. If you are not satisfied with the answer, you may complain to the Data Protection Board of India.",
+    "detailsTitle": "Legal details",
+    "detailsIntro": "Your college's legal name, address and grievance officer appear in the privacy policy and terms members read. Members are asked to agree again each time you publish.",
+    "detailsVersion": "Version {{version}}, published {{date}}",
+    "publish": "Publish",
+    "preview": "Preview the privacy policy",
+    "publishTitle": "Publish the new legal details?",
+    "publishBody": "Every member will be asked to read and agree to the updated privacy policy and terms on their next visit.",
+    "publishNote": "Check the names, email and address carefully: they are shown to every member and on the public policy page.",
+    "published": "Published. Members will be asked to agree on their next visit."
+  },
+  "help": {
+    "title": "Help",
+    "intro": "Short guides to the app, and a way to tell your college or the {{app}} team when something is wrong.",
+    "guides": "Guides",
+    "reports": "Your problem reports",
+    "reportsIntro": "Your college answers questions about your account and its features; problems with the app itself go to the {{app}} team.",
+    "report": "Report a problem",
+    "noReports": "You have not reported a problem.",
+    "reportTitle": "Report a problem",
+    "categoryLabel": "What is it about?",
+    "subject": "In a few words",
+    "description": "What happened",
+    "descriptionHint": "What you did, what you expected and what you saw. Don’t include passwords or codes.",
+    "screenshot": "Screenshot (optional)",
+    "screenshotHint": "A PNG, JPEG or WebP image, up to {{mb}} MB. Check it shows nothing private.",
+    "send": "Send",
+    "sent": "Sent. You’ll be told when someone replies.",
+    "goesTo": {
+      "college": "This goes to your college’s admins.",
+      "platform": "This goes to the {{app}} team."
+    },
+    "category": {
+      "account": "My account or sign-in",
+      "verification": "Verification",
+      "mentorship": "Mentorship",
+      "placements": "Placements",
+      "study": "Study material",
+      "bug": "Something in the app is broken",
+      "other": "Something else"
+    },
+    "status": {
+      "open": "Waiting for a reply",
+      "answered": "Answered",
+      "closed": "Closed"
+    },
+    "desk": {
+      "college": "Your college",
+      "platform": "{{app}} team"
+    },
+    "from": {
+      "college": "{{name}}, your college",
+      "platform": "{{name}}, {{app}} team"
+    },
+    "replies": "Replies",
+    "reply": "Your reply",
+    "sendReply": "Send reply",
+    "reopen": "Reopen",
+    "close": "Close",
+    "screenshotAlt": "The screenshot sent with this report",
+    "adminIntro": "Problems members reported to the college. Bugs in the app go to the {{app}} team instead.",
+    "platformIntro": "Bugs members reported from every college. Opening a report is recorded in that college's audit log.",
+    "filter": "Show",
+    "all": "All",
+    "queueEmpty": "No reports here",
+    "article": {
+      "getting-started": {
+        "title": "Getting started",
+        "summary": "Sign in, verify, and find your way around."
+      },
+      "verification": {
+        "title": "Verifying your account",
+        "summary": "Why your college checks your roll number, and what to do if it fails."
+      },
+      "mentorship": {
+        "title": "Asking for mentorship",
+        "summary": "How to write a request a mentor says yes to."
+      },
+      "placements": {
+        "title": "Placement drives",
+        "summary": "Eligibility, registering, rounds and offers."
+      },
+      "study-assistant": {
+        "title": "The study assistant",
+        "summary": "Asking about your course material, and its limits."
+      },
+      "offline": {
+        "title": "Using the app on a weak connection",
+        "summary": "What works offline, and data saver."
+      },
+      "privacy": {
+        "title": "Your privacy",
+        "summary": "Who sees what, and how to download or delete your data."
+      }
     }
   }
 }

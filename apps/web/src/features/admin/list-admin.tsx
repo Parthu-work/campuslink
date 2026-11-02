@@ -1,9 +1,9 @@
 import { useDeferredValue, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { Check, MailPlus, Plus, Search, Trash2, X } from 'lucide-react';
-import { BRANCHES } from '@campuslink/shared';
+import { BRANCHES, type BulkDecisionResult } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { ErrorState } from '../../components/ui/error-state';
@@ -355,29 +355,93 @@ interface Request {
   rollNumber: string;
   gradYear: number | null;
   note: string;
-  fileId: string;
+  /** `guardian_manual`: a minor's guardian number to check against admission records (no photo). */
+  method: 'id_card' | 'guardian_manual';
+  fileId: string | null;
+  guardianPhone: string | null;
   createdAt: string;
   reason: string | null;
-  user: { id: string; name: string; email: string; roles: string[] } | null;
+  user: { id: string; name: string; email: string | null; roles: string[] } | null;
   listMatch: { name: string; gradYear: number | null; kind: string; status: string } | null;
 }
 
 export function VerificationAdmin() {
   const { t } = useTranslation();
+  const qc = useQueryClient();
   const [status, setStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
+  const [selected, setSelected] = useState<string[]>([]);
+  const [rejecting, setRejecting] = useState(false);
+  const [reason, setReason] = useState('');
   const q = useQuery({
     queryKey: ['verification-queue', status],
     queryFn: () => api.get<Request[]>(`/admin/verification?status=${status}`),
   });
+  // B6: decide many at once; each is decided and audited on its own, and failures are listed.
+  const bulk = useMutation({
+    mutationFn: (decision: 'approve' | 'reject') =>
+      api.post<BulkDecisionResult[]>('/admin/verification/bulk-decision', {
+        ids: selected,
+        decision,
+        ...(decision === 'reject' ? { reason } : {}),
+      }),
+    onSuccess: (rows) => {
+      const failed = rows.filter((r) => !r.ok).length;
+      if (failed) toast.error(t('admin.bulkPartial', { ok: rows.length - failed, failed }));
+      else toast.success(t('admin.bulkDone', { count: rows.length }));
+      setSelected([]);
+      setRejecting(false);
+      setReason('');
+      void qc.invalidateQueries({ queryKey: ['verification-queue'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const pending = status === 'pending' ? (q.data ?? []) : [];
+  const toggle = (id: string, on: boolean) =>
+    setSelected((s) => (on ? [...new Set([...s, id])] : s.filter((x) => x !== id)));
   return (
     <div className="grid gap-4">
       <div role="group" aria-label={t('admin.status')} className="flex flex-wrap gap-2">
         {(['pending', 'approved', 'rejected'] as const).map((s) => (
-          <Chip key={s} pressed={status === s} onClick={() => setStatus(s)}>
+          <Chip
+            key={s}
+            pressed={status === s}
+            onClick={() => {
+              setStatus(s);
+              setSelected([]);
+            }}
+          >
             {t(`admin.${s}`)}
           </Chip>
         ))}
       </div>
+      {pending.length > 1 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-[var(--radius-md)] bg-surface-2 p-3">
+          <Checkbox
+            id="select-all-requests"
+            checked={selected.length === pending.length}
+            onChange={(on) => setSelected(on ? pending.slice(0, 100).map((r) => r.id) : [])}
+          >
+            {t('admin.selectAll')}
+          </Checkbox>
+          <span className="text-meta text-fg-2" role="status">
+            {t('admin.selectedCount', { count: selected.length })}
+          </span>
+          <div className="ml-auto flex flex-wrap gap-2">
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!selected.length}
+              loading={bulk.isPending && !rejecting}
+              onClick={() => bulk.mutate('approve')}
+            >
+              {t('admin.approveSelected')}
+            </Button>
+            <Button size="sm" disabled={!selected.length} onClick={() => setRejecting(true)}>
+              {t('admin.rejectSelected')}
+            </Button>
+          </div>
+        </div>
+      )}
       {q.isLoading && <Skeleton className="h-48" />}
       {q.isError && <ErrorState error={q.error} onRetry={() => void q.refetch()} />}
       {q.isSuccess && !q.data.length && (
@@ -386,18 +450,54 @@ export function VerificationAdmin() {
       <ul className="grid gap-3">
         {q.data?.map((r) => (
           <li key={r.id}>
-            <RequestCard r={r} />
+            <RequestCard
+              r={r}
+              {...(status === 'pending' && pending.length > 1
+                ? { selected: selected.includes(r.id), onSelect: (on: boolean) => toggle(r.id, on) }
+                : {})}
+            />
           </li>
         ))}
       </ul>
+      <Dialog
+        open={rejecting}
+        onOpenChange={setRejecting}
+        title={t('admin.rejectSelectedTitle', { count: selected.length })}
+        description={t('admin.rejectSelectedBody')}
+        footer={
+          <Button
+            variant="danger"
+            disabled={reason.trim().length < 3}
+            loading={bulk.isPending}
+            onClick={() => bulk.mutate('reject')}
+          >
+            {t('admin.rejectSelected')}
+          </Button>
+        }
+      >
+        <Field label={t('admin.rejectReason')}>
+          {({ id }) => (
+            <Textarea id={id} maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} />
+          )}
+        </Field>
+      </Dialog>
     </div>
   );
 }
 
-function RequestCard({ r }: { r: Request }) {
+function RequestCard({
+  r,
+  selected,
+  onSelect,
+}: {
+  r: Request;
+  /** B6 bulk decisions: present only in the pending list. */
+  selected?: boolean;
+  onSelect?: (on: boolean) => void;
+}) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
-  const img = useFileUrl(r.fileId);
+  const img = useFileUrl(r.fileId ?? undefined);
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState('');
   const decide = useMutation({
@@ -416,7 +516,13 @@ function RequestCard({ r }: { r: Request }) {
   return (
     <Card className="grid gap-4 p-4 sm:grid-cols-[200px_minmax(0,1fr)]">
       <div className="overflow-hidden rounded-[var(--radius-sm)] bg-surface-2">
-        {img ? (
+        {r.method === 'guardian_manual' ? (
+          <div className="grid aspect-[4/3] w-full content-center gap-1 p-4 text-center">
+            <p className="eyebrow">{t('guardian.adminLabel')}</p>
+            <p className="font-mono text-title font-semibold">{r.guardianPhone}</p>
+            <p className="text-caption text-fg-2">{t('guardian.adminHint')}</p>
+          </div>
+        ) : img ? (
           <img
             src={img}
             alt={`${t('admin.idPhoto')}: ${r.user?.name ?? ''}`}
@@ -427,6 +533,11 @@ function RequestCard({ r }: { r: Request }) {
         )}
       </div>
       <div className="grid content-start gap-2">
+        {onSelect && (
+          <Checkbox id={`select-${r.id}`} checked={!!selected} onChange={onSelect}>
+            {t('admin.selectRequest', { name: r.user?.name ?? '' })}
+          </Checkbox>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <b>{r.user?.name}</b>
           <span className="text-meta text-fg-2">{r.user?.email}</span>

@@ -1,9 +1,10 @@
 import { Router, type Request, type Response, type RequestHandler } from 'express';
 import type { z } from 'zod';
 import { type ZodType } from 'zod';
-import { APP_NAME, ErrorCode, type Permission, type ApiSuccess } from '@campuslink/shared';
+import { APP_NAME, ErrorCode, type Feature, type Permission, type ApiSuccess } from '@campuslink/shared';
 import { AppError } from '../lib/errors.js';
 import type { LimiterName } from './rate-limit.js';
+import { featureGate, readOnlyGate } from '../modules/tenants/features.js';
 import type { IdempotencyService } from '../modules/idempotency/idempotency.service.js';
 
 export type Access =
@@ -39,6 +40,8 @@ export interface RouteSpec<
   access: Access;
   /** Which kind of tenant host serves this route. Default: college. */
   scope?: 'college' | 'platform' | 'any';
+  /** The feature switch this route belongs to: 403 FEATURE_DISABLED while the college has it off. */
+  feature?: Feature;
   body?: B;
   query?: Q;
   params?: P;
@@ -53,6 +56,12 @@ export interface RouteSpec<
   bot?: boolean;
   /** Answers with server-sent events written by the handler (errors before it starts stay JSON). */
   stream?: boolean;
+  /**
+   * A write that still works while the college is read-only for non-payment (B10): signing in and
+   * out, a member's own account, consents and privacy rights, and paying. Every other write is
+   * refused with `READ_ONLY`; reads never are.
+   */
+  readOnlyOk?: boolean;
   handler: (ctx: {
     req: Request;
     res: Response;
@@ -83,8 +92,8 @@ const parse = <T extends ZodType>(schema: T | undefined, value: unknown): unknow
 
 /**
  * Builds a module router. Order per route:
- * rate limit → tenant scope → CSRF → authenticate → authorize → validate → handler.
- * (Authorization runs before validation so unauthorised callers learn nothing about payload shape;
+ * rate limit → tenant scope → feature switch → read-only (writes) → CSRF → authenticate → authorize →
+ * validate → handler. (Authorization runs before validation so unauthorised callers learn nothing about payload shape;
  * see ADR 0006.)
  */
 export function defineModule(module: string, specs: AnyRouteSpec[], deps: PipelineDeps): Router {
@@ -94,6 +103,8 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
     const chain: RequestHandler[] = [];
     if (spec.limiter) chain.push(deps.limiters[spec.limiter]);
     chain.push(requireScope(spec.scope ?? 'college'));
+    if (spec.feature) chain.push(featureGate(spec.feature));
+    if (spec.method !== 'get' && !spec.readOnlyOk) chain.push(readOnlyGate);
     if (spec.csrf) chain.push(deps.csrf);
     if (spec.access.kind !== 'public') chain.push(deps.authenticate);
     if (spec.access.kind === 'permission') chain.push(authorize(spec.access.permission));

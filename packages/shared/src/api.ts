@@ -19,6 +19,14 @@ export const ErrorCode = {
   CSRF_FAILED: 'CSRF_FAILED',
   WEAK_PASSWORD: 'WEAK_PASSWORD',
   BOT_CHECK_FAILED: 'BOT_CHECK_FAILED',
+  /** The college has switched this feature off (Admin › Features). */
+  FEATURE_DISABLED: 'FEATURE_DISABLED',
+  /** Administrators sign in with a password and two-factor code, never a phone code. */
+  USE_PASSWORD_AND_2FA: 'USE_PASSWORD_AND_2FA',
+  /** No channel (WhatsApp or SMS) can deliver codes at this deployment. */
+  CHANNEL_UNAVAILABLE: 'CHANNEL_UNAVAILABLE',
+  /** The college is read-only: an invoice is over 30 days overdue (B10). Reading and exporting still work. */
+  READ_ONLY: 'READ_ONLY',
   INTERNAL: 'INTERNAL',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

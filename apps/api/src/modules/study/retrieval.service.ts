@@ -177,6 +177,7 @@ export class RetrievalService {
         await this.d.usage.record({
           kind: 'embedding',
           model: rt.embedding.signature,
+          platform: rt.embedding.platform,
           userId: viewer.userId,
           inputTokens: res.tokens,
         });
@@ -278,6 +279,7 @@ export class RetrievalService {
         await this.d.usage.record({
           kind: 'rerank',
           model: `${rt.chat.provider.id}:${rt.chat.model}`,
+          platform: rt.chat.platform,
           userId: viewer.userId,
           inputTokens: r.tokens,
         });

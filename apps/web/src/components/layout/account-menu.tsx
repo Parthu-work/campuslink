@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { DropdownMenu } from 'radix-ui';
 import { ChevronsUpDown, LogOut, Settings, User } from 'lucide-react';
 import { useMe } from '../../lib/me';

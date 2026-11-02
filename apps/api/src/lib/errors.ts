@@ -21,3 +21,5 @@ export const tooMany = (message = 'Too many attempts. Please wait a few minutes 
 export const badRequest = (message: string, details?: unknown) =>
   new AppError(400, ErrorCode.VALIDATION_FAILED, message, details);
 export const conflict = (message: string) => new AppError(409, ErrorCode.CONFLICT, message);
+export const featureDisabled = (feature: string) =>
+  new AppError(403, ErrorCode.FEATURE_DISABLED, 'Your college has switched this feature off', { feature });

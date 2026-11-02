@@ -34,7 +34,7 @@ describe('storage providers', () => {
   it('SMS is explicitly unavailable', async () => {
     const sms = new DisabledSmsProvider();
     expect(sms.available).toBe(false);
-    await expect(sms.send()).rejects.toThrow(/not configured/);
+    await expect(sms.sendTemplate()).rejects.toThrow(/not configured/);
   });
 });
 

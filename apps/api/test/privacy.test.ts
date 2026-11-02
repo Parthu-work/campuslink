@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { Types } from 'mongoose';
 import { api, makeTenant, makeUser, PASSWORD, testApp, type TestTenant, type TestUser } from './helpers.js';
 import { postJob } from './jobs-fixtures.js';
+import { InvoiceModel, PaymentModel } from '../src/modules/billing/billing.model.js';
 import { runInTenant } from '../src/lib/context.js';
 import type { PrivacyService } from '../src/modules/privacy/privacy.service.js';
 import type { GamificationService } from '../src/modules/gamification/gamification.service.js';
@@ -23,6 +24,16 @@ import {
   UnansweredQuestionModel,
 } from '../src/modules/study/chat.model.js';
 import { FileModel } from '../src/modules/files/file.model.js';
+import { ChannelMessageModel } from '../src/modules/notifications/channels/channel.model.js';
+import { InviteLinkModel } from '../src/modules/verification/onboarding.model.js';
+import { MentorReviewModel } from '../src/modules/mentorship/review.model.js';
+import { SupportTicketModel } from '../src/modules/support/support.model.js';
+import {
+  AcademicRecordModel,
+  DriveRegistrationModel,
+  OfferModel,
+} from '../src/modules/placements/placements.model.js';
+import { HigherStudyModel, VentureModel } from '../src/modules/placements/outcomes.model.js';
 
 const ctx = testApp();
 const services = ctx.app.locals.services as {
@@ -101,13 +112,133 @@ beforeAll(async () => {
         day,
         userId: new Types.ObjectId(alum.id),
         kind: 'embedding',
+        feature: 'embedding',
         model: 'mock:m',
         requests: 2,
         inputTokens: 30,
       },
-      { day, userId: null, kind: 'embedding', model: 'mock:m', requests: 1, inputTokens: 100 },
+      {
+        day,
+        userId: null,
+        kind: 'embedding',
+        feature: 'embedding',
+        model: 'mock:m',
+        requests: 1,
+        inputTokens: 100,
+      },
     ]);
     await services.gamification.award(alum.id, 'event_attended', 'privacy-event', { from: staff.id });
+    // A WhatsApp message record (B3): template and status only.
+    await ChannelMessageModel.create({
+      userId: new Types.ObjectId(alum.id),
+      channel: 'whatsapp',
+      template: 'cl_request_accepted',
+      category: 'requests',
+      providerMessageId: 'wamid.privacy-demo',
+      expiresAt: new Date(Date.now() + 86_400_000),
+    });
+    // Public mentor reviews (B5): one they wrote and one about them.
+    await MentorReviewModel.create([
+      {
+        bookingId: new Types.ObjectId(),
+        mentorId: new Types.ObjectId(other.id),
+        menteeId: new Types.ObjectId(alum.id),
+        sessionType: 'quick_chat',
+        rating: 5,
+        text: 'A review the member wrote.',
+      },
+      {
+        bookingId: new Types.ObjectId(),
+        mentorId: new Types.ObjectId(alum.id),
+        menteeId: new Types.ObjectId(other.id),
+        sessionType: 'quick_chat',
+        rating: 4,
+        text: 'A review about the member.',
+      },
+    ]);
+    // A problem report (B14): about the member's own problem, so it goes with them.
+    await SupportTicketModel.create({
+      userId: new Types.ObjectId(alum.id),
+      category: 'account',
+      desk: 'college',
+      subject: 'Demo problem report',
+      body: 'Demo: I cannot change my phone number.',
+      status: 'answered',
+      replies: [
+        {
+          from: 'college',
+          authorId: new Types.ObjectId(staff.id),
+          authorName: 'Demo staff',
+          body: 'Demo reply from the college.',
+          at: new Date(),
+        },
+      ],
+      lastActivityAt: new Date(),
+    });
+    // Placements (B7): a registration and an offer with proof, kept anonymised after erasure.
+    const proof = await FileModel.create({
+      ownerId: new Types.ObjectId(alum.id),
+      purpose: 'offer_proof',
+      mime: 'application/pdf',
+      size: 10,
+      storageKey: 'privacy/offer-proof',
+      sha256: 'privacy-offer-proof',
+    });
+    await DriveRegistrationModel.create({
+      driveId: new Types.ObjectId(),
+      userId: new Types.ObjectId(alum.id),
+      answers: [{ question: 0, value: 'A private answer' }],
+      branch: 'CSE',
+      gradYear: 2022,
+    });
+    await OfferModel.create({
+      userId: new Types.ObjectId(alum.id),
+      companyKey: 'privacy demo co',
+      companyName: 'Privacy Demo Co',
+      role: 'Engineer',
+      ctcLpa: 9.25,
+      ctcBand: '8_12',
+      offerDate: new Date(),
+      type: 'full_time',
+      source: 'off_campus',
+      proofFileId: proof._id,
+      branch: 'CSE',
+      gradYear: 2022,
+    });
+    // Academic records: their own (self-reported) figures go; the college's imported ones stay, unlinked.
+    await AcademicRecordModel.create([
+      { rollNumber: 'PRIVSELF01', userId: new Types.ObjectId(alum.id), cgpa: 7, source: 'self' },
+      { rollNumber: 'PRIVCOLL01', userId: new Types.ObjectId(alum.id), cgpa: 8, source: 'import' },
+    ]);
+    // Outcomes (B8): a verified one stays anonymised, an unverified one goes.
+    await HigherStudyModel.create({
+      userId: new Types.ObjectId(alum.id),
+      status: 'verified',
+      source: 'tpo',
+      branch: 'CSE',
+      gradYear: 2022,
+      institution: 'Privacy Demo University',
+      program: 'MS',
+      admitYear: 2022,
+    });
+    await VentureModel.create({
+      userId: new Types.ObjectId(alum.id),
+      status: 'reported',
+      source: 'self',
+      name: 'Privacy Demo Venture',
+      registered: false,
+      year: 2023,
+    });
+    // The invite link they joined with (B4): only the record id and who used it.
+    await InviteLinkModel.create({
+      whitelistId: new Types.ObjectId(),
+      tokenHash: 'privacy-demo-hash',
+      createdBy: new Types.ObjectId(staff.id),
+      channel: 'csv',
+      expiresAt: new Date(Date.now() + 86_400_000),
+      usedAt: new Date(),
+      usedBy: new Types.ObjectId(alum.id),
+    });
     const conv = await ConversationModel.create({
       participants: [new Types.ObjectId(alum.id), new Types.ObjectId(other.id)],
       pairKey: [alum.id, other.id].sort().join('|'),
@@ -152,6 +283,12 @@ describe('export', () => {
     ]);
     expect(d.subjects.enrollmentOverrides).toEqual([expect.objectContaining({ kind: 'include' })]);
     expect(d.aiSettings).toEqual([]);
+    expect(d.offers).toEqual([expect.objectContaining({ companyName: 'Privacy Demo Co', ctcLpa: 9.25 })]);
+    expect(d.placementRegistrations).toEqual([expect.objectContaining({ status: 'registered' })]);
+    expect(d.support).toEqual([expect.objectContaining({ subject: 'Demo problem report', desk: 'college' })]);
+    expect(d.mentorReviews).toEqual([
+      expect.objectContaining({ text: 'A review the member wrote.', rating: 5 }),
+    ]);
     expect(d.studyChats.conversations[0]).toMatchObject({ title: 'Demo pumping lemma question' });
     expect(d.studyChats.conversations[0].messages[0].text).toBe('Demo: what is the pumping lemma?');
     expect(d.studyChats.decks).toEqual([{ title: 'Demo deck', cards: [] }]);
@@ -214,6 +351,36 @@ describe('deletion', () => {
       expect(await SubjectModel.countDocuments({ contributorIds: alum.id })).toBe(0);
       expect(await SubjectModel.countDocuments({ code: 'PRV101' })).toBe(1);
       expect(await SubjectEnrollmentModel.countDocuments({ userId: alum.id })).toBe(0);
+      expect(await ChannelMessageModel.countDocuments({ userId: alum.id })).toBe(0);
+      expect(await InviteLinkModel.countDocuments({ usedBy: alum.id })).toBe(0);
+      expect(await SupportTicketModel.countDocuments({ userId: alum.id })).toBe(0);
+      // Placements are the college's record: anonymised, not deleted.
+      const reg = await DriveRegistrationModel.findOne({ branch: 'CSE', gradYear: 2022 }).lean();
+      expect(reg).toMatchObject({ userId: null, answers: [] });
+      const offer = await OfferModel.findOne({ companyKey: 'privacy demo co' }).lean();
+      expect(offer).toMatchObject({
+        userId: null,
+        ctcLpa: null,
+        ctcBand: '8_12',
+        branch: 'CSE',
+        proofFileId: null,
+      });
+      expect(await FileModel.countDocuments({ sha256: 'privacy-offer-proof' })).toBe(0);
+      expect(await AcademicRecordModel.countDocuments({ rollNumber: 'PRIVSELF01' })).toBe(0);
+      const hs = await HigherStudyModel.findOne({ institution: 'Privacy Demo University' }).lean();
+      expect(hs).toMatchObject({ userId: null, branch: 'CSE', gradYear: 2022 });
+      expect(hs?.anonKey).toMatch(/^[0-9a-f-]{36}$/);
+      expect(await VentureModel.countDocuments({ name: 'Privacy Demo Venture' })).toBe(0);
+      const offerAnon = await OfferModel.findOne({ companyKey: 'privacy demo co' }).lean();
+      expect(offerAnon?.anonKey).toMatch(/^[0-9a-f-]{36}$/);
+      expect(await AcademicRecordModel.findOne({ rollNumber: 'PRIVCOLL01' }).lean()).toMatchObject({
+        userId: null,
+        cgpa: 8,
+      });
+      expect(
+        await MentorReviewModel.countDocuments({ $or: [{ menteeId: alum.id }, { mentorId: alum.id }] }),
+      ).toBe(0);
+      expect(await InviteLinkModel.countDocuments({ tokenHash: 'privacy-demo-hash' })).toBe(1);
       for (const m of [ChatSessionModel, ChatMessageModel, FlashcardDeckModel, UnansweredQuestionModel])
         expect(await (m as typeof ChatSessionModel).countDocuments({ userId: alum.id })).toBe(0);
       // Usage counters fold into the college's anonymous ones, so the month's budget stays true.
@@ -242,6 +409,14 @@ describe('deletion', () => {
     expect((await as(other).get(`/profiles/${alum.id}`)).status).toBe(404);
   });
 
+  it('billing holds no member data (B10): invoices and payments are the college’s, about the college', () => {
+    for (const model of [InvoiceModel, PaymentModel])
+      expect(
+        Object.keys(model.schema.paths).filter((p) => /userId|ownerId|email|phone|anonKey/i.test(p)),
+        model.modelName,
+      ).toEqual([]);
+  });
+
   it('every module with personal data registers an exporter', () => {
     expect(services.privacy.modules).toEqual(
       expect.arrayContaining([
@@ -260,6 +435,15 @@ describe('deletion', () => {
         'materials',
         'aiUsage',
         'studyChats',
+        'channelMessages',
+        'guardianConsent',
+        'onboarding',
+        'mentorReviews',
+        'placementRegistrations',
+        'offers',
+        'academics',
+        'outcomes',
+        'support',
       ]),
     );
   });

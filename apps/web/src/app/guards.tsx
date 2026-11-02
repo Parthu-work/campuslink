@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { Link, Navigate, useLocation } from 'react-router';
-import { useTranslation } from 'react-i18next';
-import { BadgeCheck, CloudOff, Loader2, ShieldAlert } from 'lucide-react';
-import { ROLE_PERMISSIONS, safeReturnPath, type Permission } from '@campuslink/shared';
+import { useTranslation } from '../i18n/react';
+import { BadgeCheck, CloudOff, Loader2, ShieldAlert, ToggleLeft } from 'lucide-react';
+import { ROLE_PERMISSIONS, safeReturnPath, type Feature, type Permission } from '@campuslink/shared';
 import { useSession } from '../lib/session';
 import { refreshSession } from '../lib/api';
 import { useMe } from '../lib/me';
@@ -15,6 +15,13 @@ import { useOnline } from '../lib/pwa';
 
 // Only admins ever see it, once: not part of the first load.
 const MfaGate = lazy(() => import('../features/auth/mfa-gate').then((m) => ({ default: m.MfaGate })));
+// Only members under 18 waiting for a guardian see it.
+const GuardianGate = lazy(() =>
+  import('../features/guardian/guardian-gate').then((m) => ({ default: m.GuardianGate })),
+);
+const NoticeGate = lazy(() =>
+  import('../features/legal/notice-gate').then((m) => ({ default: m.NoticeGate })),
+);
 
 /**
  * Boot only (college lookup, session): the launch mark index.html painted, so the hand-over is
@@ -55,7 +62,8 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const { data: me, isLoading, isError, refetch } = useMe();
   const online = useOnline();
   const { t } = useTranslation();
-  if (status !== 'signed-in')
+  // `offline`: the saved copy on this device (B13), read-only until the session is checked again.
+  if (status !== 'signed-in' && status !== 'offline')
     return (
       <Navigate
         to="/sign-in"
@@ -88,6 +96,22 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       </Suspense>
     );
   }
+  // A new privacy notice or terms (B14): accepted before anything else; the documents stay readable.
+  if (me.notice && !me.notice.accepted && !location.pathname.startsWith('/legal/')) {
+    return (
+      <Suspense fallback={<Splash />}>
+        <NoticeGate version={me.notice.version} />
+      </Suspense>
+    );
+  }
+  // Under 18 and waiting for a guardian: only verification (in the app) and the guardian step.
+  if (me.guardianPending && location.pathname !== '/verify') {
+    return (
+      <Suspense fallback={<Splash />}>
+        <GuardianGate />
+      </Suspense>
+    );
+  }
   return <>{children}</>;
 }
 
@@ -95,23 +119,42 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 export function PublicOnly({ children, home }: { children: ReactNode; home: string }) {
   const status = useSession((s) => s.status);
   const location = useLocation();
-  if (status !== 'signed-in') return <>{children}</>;
+  if (status !== 'signed-in' && status !== 'offline') return <>{children}</>;
   const from = safeReturnPath((location.state as { from?: unknown } | null)?.from);
   return <Navigate to={from ?? home} replace />;
 }
 
-/** UX mirror of the API's authorization: any one of the permissions opens the page. */
+/**
+ * UX mirror of the API's authorization: any one of the permissions opens the page, and a page of a
+ * feature the college has switched off (Admin › Features) says so, even from a saved link.
+ */
 export function RequirePermission({
   permission,
+  feature,
   children,
 }: {
   permission: Permission | Permission[];
+  feature?: Feature | undefined;
   children: ReactNode;
 }) {
   const { data: me } = useMe();
   const { t } = useTranslation();
   const tenant = useTenant();
   const wanted = Array.isArray(permission) ? permission : [permission];
+  const home = (
+    <Link
+      to={tenant.kind === 'platform' ? '/platform' : '/home'}
+      className={buttonVariants({ variant: 'ghost' })}
+    >
+      {t('errors.goHome')}
+    </Link>
+  );
+  if (feature && tenant.features?.[feature] === false)
+    return (
+      <EmptyState icon={<ToggleLeft className="size-6" />} title={t('errors.featureOffTitle')} action={home}>
+        {t('errors.featureOffBody')}
+      </EmptyState>
+    );
   if (wanted.some((p) => me?.permissions.includes(p))) return <>{children}</>;
   // Unverified members get the reason and the way forward, not a dead end (audit IA-7).
   // Only when verifying would actually open it (an unverified student is never sent to verify for
@@ -131,18 +174,7 @@ export function RequirePermission({
       {t('errors.verifyFirstBody')}
     </EmptyState>
   ) : (
-    <EmptyState
-      icon={<ShieldAlert className="size-6" />}
-      title={t('errors.forbidden')}
-      action={
-        <Link
-          to={tenant.kind === 'platform' ? '/platform' : '/home'}
-          className={buttonVariants({ variant: 'ghost' })}
-        >
-          {t('errors.goHome')}
-        </Link>
-      }
-    >
+    <EmptyState icon={<ShieldAlert className="size-6" />} title={t('errors.forbidden')} action={home}>
       {t('errors.forbiddenBody')}
     </EmptyState>
   );

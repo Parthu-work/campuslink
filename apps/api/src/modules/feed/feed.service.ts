@@ -3,13 +3,14 @@ import type { z } from 'zod';
 import type { FeedEntry, feedQuery } from '@campuslink/shared';
 import type { PostDoc } from './post.model.js';
 import type { ItemDoc } from '../content-sources/source.model.js';
-import type { PostRankFields, PostsService } from './posts.service.js';
+import { withCondition, type PostRankFields, type PostsService } from './posts.service.js';
 import type { FollowsService } from './social.service.js';
 import type { ContentSourcesService } from '../content-sources/sources.service.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
 import type { SafetyService } from '../moderation/safety.service.js';
 import { badRequest } from '../../lib/errors.js';
 import type { AuthState } from '../../types.js';
+import { featureEnabled } from '../tenants/features.js';
 
 const HOUR = 3600_000;
 const POST_WINDOW = 14 * 24 * HOUR;
@@ -72,6 +73,12 @@ type Ranked =
   | { kind: 'post'; doc: PostRankFields; at: Date; score: number }
   | { kind: 'item'; doc: ItemDoc; at: Date; score: number };
 
+/** Feature switches that shape the feed (B1): reels and outside content leave it while off. */
+async function switches() {
+  const [reels, outside] = await Promise.all([featureEnabled('reels'), featureEnabled('contentSources')]);
+  return { postFilter: reels ? {} : { kind: { $ne: 'reel' } }, outside };
+}
+
 export class FeedService {
   constructor(
     private readonly d: {
@@ -122,31 +129,47 @@ export class FeedService {
       this.d.profiles.own(viewer.userId),
       this.d.safety.hiddenFor(viewer.userId),
     ]);
+    // Members under 18 get a chronological For you: no personalised ranking (B2).
+    const rank: typeof rankScore = viewer.minor ? () => 0 : rankScore;
     const followedUsers = new Set(follows.users);
     const followedSources = new Set(follows.sources);
     const interests = new Set<string>([...follows.topics]);
+    const { postFilter, outside } = await switches();
+    const audience = await this.d.posts.audienceCondition(viewer);
+    // Pinned announcements (B6) lead the first page and are left out of the ranking.
+    const pinned = (await this.d.posts.pinnedFor(viewer, postFilter)).filter(
+      (p) => !hidden.has(String(p.authorId)),
+    );
+    const pinnedIds = new Set(pinned.map((p) => String(p._id)));
     const [posts, items] = await Promise.all([
-      this.d.posts.rankingCandidates(new Date(asOf.getTime() - POST_WINDOW), asOf, 400),
-      this.d.sources.recentItems({
-        since: new Date(asOf.getTime() - ITEM_WINDOW),
-        until: asOf,
-        limit: 300,
-        // No follows yet: sample every active source so the feed is never empty.
-        ...(follows.sources.length || follows.topics.length
-          ? { sourceIds: follows.sources, topics: follows.topics }
-          : {}),
-      }),
+      this.d.posts.rankingCandidates(
+        new Date(asOf.getTime() - POST_WINDOW),
+        asOf,
+        400,
+        withCondition(postFilter, audience),
+      ),
+      !outside
+        ? Promise.resolve([] as ItemDoc[])
+        : this.d.sources.recentItems({
+            since: new Date(asOf.getTime() - ITEM_WINDOW),
+            until: asOf,
+            limit: 300,
+            // No follows yet: sample every active source so the feed is never empty.
+            ...(follows.sources.length || follows.topics.length
+              ? { sourceIds: follows.sources, topics: follows.topics }
+              : {}),
+          }),
     ]);
     const candidates: Ranked[] = [
       ...posts
-        .filter((p) => !hidden.has(String(p.authorId)))
+        .filter((p) => !hidden.has(String(p.authorId)) && !pinnedIds.has(String(p._id)))
         .map((p): Ranked => {
           const counts = p.counts ?? { helpful: 0, insightful: 0, celebrate: 0, comments: 0, saves: 0 };
           return {
             kind: 'post',
             doc: p,
             at: p.createdAt,
-            score: rankScore(
+            score: rank(
               {
                 createdAt: p.createdAt,
                 followedAuthor: followedUsers.has(String(p.authorId)),
@@ -170,7 +193,7 @@ export class FeedService {
         kind: 'item',
         doc: i,
         at: i.publishedAt,
-        score: rankScore(
+        score: rank(
           {
             createdAt: i.publishedAt,
             followedAuthor: false,
@@ -200,11 +223,16 @@ export class FeedService {
         (p) => [String(p._id), p],
       ),
     );
-    const page = ranked.flatMap((r): Candidate[] => {
-      if (r.kind === 'item') return [r];
-      const doc = full.get(String(r.doc._id));
-      return doc ? [{ ...r, doc }] : [];
-    });
+    const page = [
+      ...(offset === 0
+        ? pinned.map((doc): Candidate => ({ kind: 'post', doc, at: doc.createdAt, score: 0 }))
+        : []),
+      ...ranked.flatMap((r): Candidate[] => {
+        if (r.kind === 'item') return [r];
+        const doc = full.get(String(r.doc._id));
+        return doc ? [{ ...r, doc }] : [];
+      }),
+    ];
     return { items: await this.hydrate(viewer, page), nextCursor: next };
   }
 
@@ -220,9 +248,15 @@ export class FeedService {
     const or: Record<string, unknown>[] = [{ authorId: { $in: authors } }];
     if (follows.topics.length) or.push({ topics: { $in: follows.topics } });
     const until = new Date(before.getTime() - 1);
+    const { postFilter, outside } = await switches();
     const [posts, items] = await Promise.all([
-      this.d.posts.recent(new Date(0), until, limit + 1, { $or: or }),
-      follows.sources.length || follows.topics.length
+      this.d.posts.recent(
+        new Date(0),
+        until,
+        limit + 1,
+        withCondition({ $or: or, ...postFilter }, await this.d.posts.audienceCondition(viewer)),
+      ),
+      outside && (follows.sources.length || follows.topics.length)
         ? this.d.sources.recentItems({
             since: new Date(0),
             until,

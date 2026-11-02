@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { History, MessageSquarePlus, Trash2 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';

@@ -1,6 +1,6 @@
 import { useId, useState, type DragEvent } from 'react';
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Camera, Check, CircleAlert, Link2, Trash2, Upload } from 'lucide-react';
 import {

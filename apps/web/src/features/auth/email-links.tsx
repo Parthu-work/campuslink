@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { CheckCircle2, Loader2, MailCheck } from 'lucide-react';
 import { email, password } from '@campuslink/shared';
 import { AuthLayout, FormError } from '../../components/layout/auth-layout';

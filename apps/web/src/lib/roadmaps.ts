@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from './toast';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../i18n/react';
 import type { RoadmapContent, RoadmapNode, RoadmapSummaryView, RoadmapView } from '@campuslink/shared';
 import { api, ApiError } from './api';
+import { putOrQueue } from './offline-writes';
 
 // ── Graph layout ─────────────────────────────
 export interface PlacedNode {
@@ -216,8 +217,14 @@ export function useRoadmapProgress(roadmap: Pick<RoadmapView, 'id' | 'slug'>) {
   };
   const onError = (e: unknown) => toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
   const toggle = useMutation({
+    // Runs offline too (the default would pause it), so it can wait in the outbox (B13).
+    networkMode: 'always',
     mutationFn: (v: { nodeId: string; done: boolean }) =>
-      api.put<RoadmapView['myProgress']>(`/roadmaps/${roadmap.id}/progress`, v),
+      // Waits in the outbox when offline (B13); the step stays ticked meanwhile.
+      putOrQueue<RoadmapView['myProgress']>(qc, `/roadmaps/${roadmap.id}/progress`, v, [
+        ['roadmap', roadmap.slug],
+        ['roadmaps'],
+      ]),
     // Optimistic: the step ticks at once and unticks if saving fails (audit ST-4).
     onMutate: ({ nodeId, done }) => {
       const before = qc.getQueryData<RoadmapView>(['roadmap', roadmap.slug]);
@@ -234,7 +241,9 @@ export function useRoadmapProgress(roadmap: Pick<RoadmapView, 'id' | 'slug'>) {
       }
       return { before };
     },
-    onSuccess: patch,
+    onSuccess: (p) => {
+      if (p !== undefined) patch(p);
+    },
     onError: (e, _v, ctx) => {
       if (ctx?.before) qc.setQueryData(['roadmap', roadmap.slug], ctx.before);
       onError(e);

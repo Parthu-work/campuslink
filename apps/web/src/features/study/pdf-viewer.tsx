@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Search, Sparkles, ZoomIn, ZoomOut } from 'lucide-react';
 import { getDocument, GlobalWorkerOptions, Util, type PDFDocumentProxy } from 'pdfjs-dist';

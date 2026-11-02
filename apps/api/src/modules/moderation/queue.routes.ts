@@ -45,6 +45,7 @@ export function queueRoutes(s: {
     {
       method: 'post',
       path: '/admin/moderation/actions',
+      readOnlyOk: true,
       tag,
       summary: 'Remove or restore content (the author sees the reason and can appeal)',
       access: ACT,
@@ -80,6 +81,7 @@ export function queueRoutes(s: {
     {
       method: 'post',
       path: '/admin/moderation/items/:id/decision',
+      readOnlyOk: true,
       tag,
       summary: 'Publish or reject a held item',
       access: ACT,
@@ -116,6 +118,7 @@ export function queueRoutes(s: {
     {
       method: 'post',
       path: '/admin/moderation/questions/:id/decision',
+      readOnlyOk: true,
       tag,
       summary: 'Approve or reject a question (the asker is told why)',
       access: ACT,
@@ -144,6 +147,7 @@ export function queueRoutes(s: {
     {
       method: 'post',
       path: '/admin/moderation/appeals/:id/decision',
+      readOnlyOk: true,
       tag,
       summary: 'Uphold or reverse a removal (a different moderator must uphold)',
       access: ACT,
@@ -157,6 +161,7 @@ export function queueRoutes(s: {
     {
       method: 'post',
       path: '/appeals',
+      readOnlyOk: true,
       tag,
       summary: 'Appeal the removal of my content (once)',
       access: { kind: 'permission', permission: 'feed:read' },

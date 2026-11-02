@@ -223,7 +223,6 @@ export const aiSettingsBody = z.strictObject({
     externalVideos: z.boolean(),
     ocr: z.boolean(),
     transcription: z.boolean(),
-    facultySeeChats: z.boolean(),
   }),
   /** Stops every AI call at once (keyword-only mode stays). */
   killSwitch: z.boolean().default(false),
@@ -394,6 +393,11 @@ export interface AiSettingsView {
   consentVersion: string;
   /** The platform owner configured a default provider this college can fall back to. */
   platformDefault: { provider: AiProvider; embeddingProvider: EmbeddingProvider | null } | null;
+  /**
+   * Tokens a month the college's plan includes on the platform's provider, when it answers on it
+   * (B11): the budget can be set lower, never higher. Null when the college uses its own provider.
+   */
+  planAllowance: number | null;
   status: AiStatusView;
   providers: AiProviderInfo[];
 }

@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { PASSWORD, signIn } from './helpers';
+import { PASSWORD, signIn, chooseEmailSignIn } from './helpers';
 import { adminSignIn } from './admin';
 
 /**
@@ -10,6 +10,7 @@ const BASE = 'http://dpit.localhost:4173';
 
 async function signInAs(page: Page, email: string) {
   await page.goto(`${BASE}/sign-in`);
+  await chooseEmailSignIn(page);
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -54,6 +55,7 @@ test.describe('landing route after sign-in', () => {
   test('a deep link survives sign-in (IA-8)', async ({ page }) => {
     await page.goto(`${BASE}/jobs?type=internship`);
     await page.waitForURL(/\/sign-in$/);
+    await chooseEmailSignIn(page);
     await page.getByLabel('Email', { exact: true }).fill('ananya@dpit.example');
     await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -65,8 +67,9 @@ test.describe('role-aware bottom tabs (phones)', () => {
   test.skip(({ isMobile }) => !isMobile, 'Bottom tabs are a phone surface');
 
   test('students and alumni get their own tabs with Create in the middle', async ({ page }) => {
+    // Ananya graduates next year: Placements takes the last tab (B7); Jobs is in the menu.
     await signIn(page, 'ananya@dpit.example');
-    expect(await bottomTabs(page)).toEqual(['Home', 'Study', 'Create', 'Mentors', 'Jobs']);
+    expect(await bottomTabs(page)).toEqual(['Home', 'Study', 'Create', 'Mentors', 'Placements']);
     await page.context().clearCookies();
 
     await signIn(page, 'rahul@dpit.example');

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../i18n/react';
 import {
   Activity,
   BadgeCheck,
@@ -9,6 +9,7 @@ import {
   BriefcaseBusiness,
   Building2,
   CalendarClock,
+  GraduationCap,
   CalendarDays,
   ClipboardCheck,
   Compass,
@@ -18,6 +19,9 @@ import {
   HeartHandshake,
   Home,
   Inbox,
+  LifeBuoy,
+  TrendingUp,
+  ReceiptIndianRupee,
   Library,
   Medal,
   MessageCircleQuestion,
@@ -35,6 +39,7 @@ import {
 } from 'lucide-react';
 import {
   buildNav,
+  featureShipped,
   type AdminGroup,
   type AdminSectionId,
   type SettingsSectionId,
@@ -56,6 +61,8 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   create: Plus,
   mentors: Compass,
   jobs: BriefcaseBusiness,
+  placements: Building2,
+  outcomes: GraduationCap,
   requests: Inbox,
   review: ClipboardCheck,
   roadmaps: Orbit,
@@ -78,7 +85,11 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   admin: Shield,
   verify: BadgeCheck,
   platform: Building2,
+  traction: TrendingUp,
+  billing: ReceiptIndianRupee,
   health: Activity,
+  help: LifeBuoy,
+  platformSupport: LifeBuoy,
 };
 
 /** i18n keys under `nav.` (a few ids reuse older keys). */
@@ -92,6 +103,8 @@ const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'subjects',
   'mentors',
   'jobs',
+  'placements',
+  'outcomes',
   'requests',
   'roadmaps',
   'events',
@@ -112,8 +125,16 @@ const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'settings',
   'admin',
   'verify',
+  'help',
 ]);
-const PLATFORM_SHIPPED: ReadonlySet<NavId> = new Set<NavId>(['platform', 'health', 'settings']);
+const PLATFORM_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
+  'platform',
+  'billing',
+  'traction',
+  'health',
+  'platformSupport',
+  'settings',
+]);
 
 export interface NavEntry {
   id: NavId;
@@ -157,8 +178,10 @@ export function useNav() {
         roles: (me?.roles ?? []) as Role[],
         permissions: permissions as never[],
         verified: platform || !!me?.verified,
+        features: tenant.features,
+        gradYear: me?.gradYear ?? null,
       },
-      platform ? PLATFORM_SHIPPED : COLLEGE_SHIPPED,
+      platform ? PLATFORM_SHIPPED : featureShipped(COLLEGE_SHIPPED, tenant.features),
     );
     const badges: Partial<Record<NavId, number>> = {
       messages: unreadMessages,
@@ -192,7 +215,7 @@ export function useNav() {
       unreadNotifications,
       canMessage: permissions.includes('messages:send'),
     };
-  }, [me, platform, t, unreadMessages, unreadNotifications]);
+  }, [me, platform, tenant.features, t, unreadMessages, unreadNotifications]);
 }
 
 /** Platform-aware shortcut hint for the command palette (⌘K on Apple devices). */

@@ -25,6 +25,7 @@ export function profileRoutes(svc: ProfilesService, extraSearch?: ExtraSearch): 
     {
       method: 'put',
       path: '/me/profile',
+      readOnlyOk: true,
       tag: 'Profiles',
       summary: 'Update my profile and who can see each field',
       access: { kind: 'authenticated' },

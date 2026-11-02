@@ -1,6 +1,6 @@
 import { lazy, Suspense, useDeferredValue, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { ClipboardCheck, Map as MapIcon, Orbit, Plus, Search, Sparkles } from 'lucide-react';
 import { BRANCHES, ROADMAP_CATEGORIES, type RoadmapSummaryView } from '@campuslink/shared';

@@ -2,10 +2,11 @@ import { Types } from 'mongoose';
 import {
   CONSENT_PURPOSES,
   CONSENT_PURPOSE_KEYS,
+  GUARDIAN_CONSENT,
   PRIVACY_NOTICE_VERSION,
   type ConsentPurpose,
 } from '@campuslink/shared';
-import { ConsentModel } from './consent.model.js';
+import { ConsentModel, NOTICE_PURPOSE } from './consent.model.js';
 import { badRequest } from '../../lib/errors.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 
@@ -19,21 +20,75 @@ export interface ConsentState {
 }
 
 export const consentService = {
+  /** Set by the app: a member changed a consent in Settings (B9 stops and detaches analytics). */
+  onChange: null as ((userId: string, purpose: ConsentPurpose, granted: boolean) => Promise<void>) | null,
+
+  /** Set by the app: the notice version of the current college (B14; the platform's alone until then). */
+  currentNotice: async (): Promise<string> => PRIVACY_NOTICE_VERSION,
+
+  /** The member accepted a new notice (B14). Append-only, kept on erasure. */
+  async recordNotice(userId: string, noticeVersion: string): Promise<void> {
+    await ConsentModel.create({
+      userId: new Types.ObjectId(userId),
+      purpose: NOTICE_PURPOSE,
+      version: 1,
+      noticeVersion,
+      granted: true,
+      source: 'notice',
+    });
+  },
+
+  /** The notice version the member last agreed to (at sign-up or since), or null without records. */
+  async latestNoticeVersion(userId: string): Promise<string | null> {
+    const r = await ConsentModel.findOne({
+      userId: new Types.ObjectId(userId),
+      purpose: { $in: ['account', NOTICE_PURPOSE] },
+    })
+      .sort({ _id: -1 })
+      .select('noticeVersion')
+      .lean();
+    return r?.noticeVersion ?? null;
+  },
+
   async recordMany(
     userId: Types.ObjectId,
     granted: ConsentPurpose[],
     source: 'signup' | 'settings',
   ): Promise<void> {
+    const noticeVersion = await this.currentNotice();
     await ConsentModel.insertMany(
       CONSENT_PURPOSE_KEYS.map((purpose) => ({
         userId,
         purpose,
         version: CONSENT_PURPOSES[purpose].version,
-        noticeVersion: PRIVACY_NOTICE_VERSION,
+        noticeVersion,
         granted: granted.includes(purpose),
         source,
       })),
     );
+  },
+
+  /** A guardian confirmed the declaration for a member under 18 (append-only, kept on erasure). */
+  async recordGuardian(
+    userId: Types.ObjectId | string,
+    evidence: { whitelistId: Types.ObjectId; language: string; channel: string },
+  ): Promise<void> {
+    await ConsentModel.create({
+      userId: new Types.ObjectId(String(userId)),
+      purpose: GUARDIAN_CONSENT.purpose,
+      version: GUARDIAN_CONSENT.version,
+      noticeVersion: PRIVACY_NOTICE_VERSION,
+      granted: true,
+      source: 'guardian',
+      evidence,
+    });
+  },
+
+  /** Guardian consent records for a member (data export). */
+  async guardianFor(userId: string) {
+    return ConsentModel.find({ userId: new Types.ObjectId(userId), purpose: GUARDIAN_CONSENT.purpose })
+      .select('version noticeVersion createdAt evidence.language evidence.channel')
+      .lean();
   },
 
   async current(userId: string): Promise<ConsentState[]> {
@@ -96,6 +151,7 @@ export const consentService = {
       },
       req,
     );
+    await this.onChange?.(userId, purpose, granted);
     return this.current(userId);
   },
 };

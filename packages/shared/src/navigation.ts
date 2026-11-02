@@ -1,4 +1,6 @@
 import { Role, type Permission } from './roles.js';
+import type { Feature } from './features.js';
+import { inFinalYears } from './constants/placements.js';
 
 /**
  * One navigation model for every surface (bottom tabs, desktop rail, avatar menu, Create sheet,
@@ -13,6 +15,8 @@ export type NavId =
   | 'create'
   | 'mentors'
   | 'jobs'
+  | 'placements'
+  | 'outcomes'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -35,7 +39,11 @@ export type NavId =
   | 'admin'
   | 'verify'
   | 'platform'
-  | 'health';
+  | 'traction'
+  | 'billing'
+  | 'health'
+  | 'help'
+  | 'platformSupport';
 
 export type NavGroup = 'main' | 'explore' | 'community' | 'you' | 'manage' | 'platform';
 
@@ -57,20 +65,28 @@ export const ADMIN_PERMISSIONS: readonly Permission[] = [
   'analytics:cohort',
   'rewards:manage',
   'imports:manage',
+  'onboarding:manage',
   'verification:review',
   'tenant:branding',
   'tenant:settings',
   'ai:settings',
   'audit:read',
+  'placements:manage',
+  'outcomes:verify',
+  'support:manage',
 ];
 
 /** The admin area's sections, grouped (desktop side menu, phone overview). Each needs one permission. */
-export type AdminGroup = 'people' | 'community' | 'insights' | 'college';
+export type AdminGroup = 'people' | 'placements' | 'community' | 'insights' | 'college';
 export type AdminSectionId =
   | 'users'
   | 'verification'
   | 'imports'
   | 'list'
+  | 'onboarding'
+  | 'placements'
+  | 'offers'
+  | 'reports'
   | 'moderation'
   | 'mentorship'
   | 'sources'
@@ -80,6 +96,8 @@ export type AdminSectionId =
   | 'branding'
   | 'features'
   | 'ai'
+  | 'billing'
+  | 'support'
   | 'audit';
 export interface AdminSection {
   id: AdminSectionId;
@@ -103,18 +121,26 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('verification', '/admin/verification', 'verification:review', 'people'),
   section('imports', '/admin/imports', 'imports:manage', 'people'),
   section('list', '/admin/list', 'imports:manage', 'people'),
+  section('onboarding', '/admin/onboarding', 'onboarding:manage', 'people'),
+  section('placements', '/admin/placements', 'placements:manage', 'placements'),
+  section('offers', '/admin/offers', 'outcomes:verify', 'placements'),
   section('moderation', '/admin/moderation', 'moderation:act', 'community'),
   section('mentorship', '/admin/mentorship', 'mentorship:oversee', 'community'),
   section('sources', '/admin/sources', 'sources:manage', 'community'),
   section('jobSources', '/admin/job-sources', 'jobs:sources', 'community'),
   section('rewards', '/admin/rewards', 'rewards:manage', 'community'),
   section('analytics', '/admin/analytics', 'analytics:cohort', 'insights'),
+  section('reports', '/admin/reports', 'analytics:tenant', 'insights'),
   section('branding', '/admin/branding', 'tenant:branding', 'college'),
   section('features', '/admin/features', 'tenant:settings', 'college'),
   section('ai', '/admin/ai', 'ai:settings', 'college'),
+  // Plan, seats, usage against allowances and invoices (B10).
+  section('billing', '/admin/billing', 'tenant:settings', 'college'),
+  // Problem reports members sent to the college (B14).
+  section('support', '/admin/support', 'support:manage', 'college'),
   section('audit', '/admin/audit', 'audit:read', 'college'),
 ];
-const ADMIN_GROUPS: readonly AdminGroup[] = ['people', 'community', 'insights', 'college'];
+const ADMIN_GROUPS: readonly AdminGroup[] = ['people', 'placements', 'community', 'insights', 'college'];
 
 /** The settings area's sections: the same for every member (its tab row). */
 export type SettingsSectionId = 'security' | 'privacy' | 'preferences' | 'notifications' | 'data';
@@ -145,6 +171,9 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   create: d('create', '', 'main'),
   mentors: d('mentors', '/mentors', 'main', ['mentorship:request']),
   jobs: d('jobs', '/jobs', 'main', ['jobs:read']),
+  placements: d('placements', '/placements', 'explore', ['placements:view', 'placements:manage']),
+  // Offers, higher studies, exams and ventures (B8): students and alumni report their own.
+  outcomes: d('outcomes', '/outcomes', 'you', ['outcomes:report']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -167,8 +196,52 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   verify: d('verify', '/verify', 'you'),
   admin: d('admin', '/admin', 'manage', ADMIN_PERMISSIONS),
   platform: d('platform', '/platform', 'platform', ['platform:tenants']),
+  // The cross-college traction view (B9): per-college aggregates only.
+  traction: d('traction', '/platform/traction', 'platform', ['platform:tenants']),
+  // Plans, subscriptions, invoices and payments (B10).
+  billing: d('billing', '/platform/billing', 'platform', ['platform:billing']),
   health: d('health', '/platform/health', 'platform', ['platform:health']),
+  // Help centre and problem reports (B14): every member, verified or not.
+  help: d('help', '/help', 'you'),
+  // Bug reports members sent to the platform (B14).
+  platformSupport: d('platformSupport', '/platform/support', 'platform', ['platform:support']),
 };
+
+/** Destinations that belong to a feature switch: hidden while the college has it off. */
+export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
+  study: 'study',
+  assistant: 'study',
+  subjects: 'study',
+  reels: 'reels',
+  following: 'contentSources',
+  leaderboard: 'leaderboards',
+  placements: 'placements',
+  outcomes: 'placements',
+};
+
+/** Admin sections that belong to a feature switch. */
+export const ADMIN_SECTION_FEATURE: Partial<Record<AdminSectionId, Feature>> = {
+  sources: 'contentSources',
+  jobSources: 'jobsAggregation',
+  ai: 'study',
+  placements: 'placements',
+  offers: 'placements',
+  reports: 'placements',
+};
+
+/** The shipped destinations minus those whose feature the college has switched off. */
+export function featureShipped(
+  shipped: ReadonlySet<NavId>,
+  features: Partial<Record<Feature, boolean>> | undefined,
+): ReadonlySet<NavId> {
+  if (!features) return shipped;
+  return new Set(
+    [...shipped].filter((id) => {
+      const f = NAV_FEATURE[id];
+      return !f || features[f] !== false;
+    }),
+  );
+}
 
 /** Which bottom-tab set a member gets. Picked by their most senior role. */
 export type NavPersona = 'student' | 'alumni' | 'staff' | 'admin' | 'platform';
@@ -187,16 +260,19 @@ export function navPersona(roles: readonly Role[]): NavPersona {
  * leaves a dead tab.
  */
 export const PERSONA_TABS: Record<NavPersona, readonly (readonly NavId[])[]> = {
-  student: [['home'], ['study', 'roadmaps'], ['create'], ['mentors', 'verify'], ['jobs']],
+  // Placements takes the last tab for students in their final two years (then Jobs is in the menu).
+  student: [['home'], ['study', 'roadmaps'], ['create'], ['mentors', 'verify'], ['placements', 'jobs']],
   alumni: [['home'], ['requests', 'mentoring'], ['create'], ['mentors'], ['jobs']],
   staff: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
   admin: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
-  platform: [['platform'], ['health'], ['settings']],
+  platform: [['platform'], ['billing'], ['traction'], ['health'], ['settings']],
 };
 
 /** The avatar menu: everything that is not a tab, grouped, in this order. */
 const MENU_ORDER: readonly NavId[] = [
   'verify',
+  'placements',
+  'jobs',
   'roadmaps',
   'events',
   'questions',
@@ -212,6 +288,7 @@ const MENU_ORDER: readonly NavId[] = [
   'reels',
   'following',
   'leaderboard',
+  'outcomes',
   'progress',
   'rewards',
   'saved',
@@ -219,6 +296,8 @@ const MENU_ORDER: readonly NavId[] = [
   'notifications',
   'admin',
   'profile',
+  'help',
+  'platformSupport',
   'settings',
 ];
 
@@ -236,6 +315,10 @@ export interface NavSubject {
   permissions: readonly Permission[];
   /** Verified members never see the "Verify" entry. */
   verified: boolean;
+  /** The college's feature switches: admin sections of a switched-off feature are hidden. */
+  features?: Partial<Record<Feature, boolean>>;
+  /** Students in their final two years get Placements as a main tab (B7). */
+  gradYear?: number | null;
 }
 
 export interface NavModel {
@@ -265,9 +348,12 @@ export function buildNav(subject: NavSubject, shipped: ReadonlySet<NavId>): NavM
     const dest = NAV_DESTINATIONS[id];
     return shipped.has(id) && may(subject.permissions, dest.permissions);
   };
+  // Placements is a tab only for students close to graduating; others find it in the menu.
+  const tabUsable = (id: NavId) =>
+    usable(id) && (id !== 'placements' || (persona === 'student' && inFinalYears(subject.gradYear)));
   const tabIds: NavId[] = [];
   for (const slot of PERSONA_TABS[persona]) {
-    const pick = slot.find((id) => usable(id) && !tabIds.includes(id));
+    const pick = slot.find((id) => tabUsable(id) && !tabIds.includes(id));
     if (pick) tabIds.push(pick);
   }
   const tabs = tabIds.map((id) => NAV_DESTINATIONS[id]);
@@ -280,12 +366,22 @@ export function buildNav(subject: NavSubject, shipped: ReadonlySet<NavId>): NavM
   const menu = groups
     .map((group) => ({
       group,
-      items: deduped.map((id) => NAV_DESTINATIONS[id]).filter((x) => x.group === group),
+      // Main destinations that are not a tab (Jobs for final-year students) sit under Explore.
+      items: deduped
+        .map((id) => NAV_DESTINATIONS[id])
+        .filter((x) => x.group === group || (x.group === 'main' && group === 'explore')),
     }))
     .filter((g) => g.items.length > 0);
   const admin = ADMIN_GROUPS.map((group) => ({
     group,
-    items: ADMIN_SECTIONS.filter((x) => x.group === group && subject.permissions.includes(x.permission)),
+    items: ADMIN_SECTIONS.filter(
+      (x) =>
+        x.group === group &&
+        subject.permissions.includes(x.permission) &&
+        !(
+          ADMIN_SECTION_FEATURE[x.id] && subject.features?.[ADMIN_SECTION_FEATURE[x.id] as Feature] === false
+        ),
+    ),
   })).filter((g) => g.items.length > 0);
   return { persona, tabs, menu, create, admin, settings: SETTINGS_SECTIONS };
 }

@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { BadgeCheck, Compass, ExternalLink, Eye, Lock, MapPin } from 'lucide-react';
 import type { MentorCard, PublicProfile } from '@campuslink/shared';

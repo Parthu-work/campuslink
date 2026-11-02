@@ -1,5 +1,9 @@
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import type {
+  AdminBillingView,
+  PlanView,
+  PlatformBillingRow,
+  PlatformCollegeBillingView,
   AdminOverviewView,
   AiUsageView,
   AnalyticsView,
@@ -36,6 +40,30 @@ import type {
   MaterialView,
   SignedFileView,
   StudySearchHit,
+  InviteView,
+  JoinCodeInfo,
+  JoinCodeView,
+  OnboardingRecordView,
+  OnboardingProgressRow,
+  MentorReviewView,
+  MentorMatch as MentorMatchView,
+  AcademicRecordView,
+  DriveView,
+  OfferView,
+  PlacementCompanyView,
+  RegistrantView,
+  OutcomeKind,
+  OutcomeView,
+  ReportDefinitionView,
+  ReportResultView,
+  ReportsDashboardView,
+  InsightsView,
+  PlatformInsightsView,
+  LegalDoc,
+  LegalDocView,
+  LegalSettingsView,
+  SupportStatus,
+  SupportTicketView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -399,4 +427,277 @@ export const studySearch = (q: string, subjectId?: string) =>
         signal,
       ),
     enabled: q.trim().length >= 2,
+  });
+
+// ── Onboarding (B4) ─────────────────────────────
+/** A personal invite link; a 404 (used or expired) is an answer, not a failure to retry. */
+export const invite = (token: string) =>
+  queryOptions({
+    queryKey: ['invite', token],
+    queryFn: ({ signal }) => api.get<InviteView>(`/invite/${token}`, signal),
+    retry: (n, err) => !(err instanceof ApiError && err.status < 500) && n < 2,
+  });
+
+export const joinCode = (code: string) =>
+  queryOptions({
+    queryKey: ['join-code', code],
+    queryFn: ({ signal }) => api.get<JoinCodeInfo>(`/join/${encodeURIComponent(code)}`, signal),
+    retry: (n, err) => !(err instanceof ApiError && err.status < 500) && n < 2,
+  });
+
+export const onboardingRecords = (qs: string) =>
+  infiniteQueryOptions({
+    queryKey: ['onboarding-records', qs],
+    initialPageParam: '',
+    queryFn: ({ pageParam }) =>
+      apiRequest<OnboardingRecordView[]>(
+        `/admin/onboarding/records?${qs}${pageParam ? `${qs ? '&' : ''}cursor=${pageParam}` : ''}`,
+      ),
+    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+export const onboardingProgress = () =>
+  queryOptions({
+    queryKey: ['onboarding-progress'],
+    queryFn: ({ signal }) => api.get<OnboardingProgressRow[]>('/admin/onboarding', signal),
+  });
+
+export const joinCodes = () =>
+  queryOptions({
+    queryKey: ['join-codes'],
+    queryFn: ({ signal }) => api.get<JoinCodeView[]>('/admin/join-codes', signal),
+  });
+
+export type JoinCodePoster = JoinCodeView & { college: string; url: string; qrSvg: string; app: string };
+export const joinCodePoster = (id: string) =>
+  queryOptions({
+    queryKey: ['join-code-poster', id],
+    queryFn: ({ signal }) => api.get<JoinCodePoster>(`/admin/join-codes/${id}/poster`, signal),
+  });
+
+// ── Mentorship loop (B5) ─────────────────────────────
+export const mentorReviews = (mentorId: string) =>
+  infiniteQueryOptions({
+    queryKey: ['mentor-reviews', mentorId],
+    initialPageParam: '',
+    queryFn: ({ pageParam }) =>
+      apiRequest<MentorReviewView[]>(
+        `/mentors/${mentorId}/reviews${pageParam ? `?cursor=${pageParam}` : ''}`,
+      ),
+    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+/** Three mentors likely to reply, for a request waiting two days. */
+export const requestAlternatives = (requestId: string) =>
+  queryOptions({
+    queryKey: ['request-alternatives', requestId],
+    queryFn: ({ signal }) =>
+      api.get<MentorMatchView[]>(`/mentorship/requests/${requestId}/alternatives`, signal),
+  });
+
+// ── Placements (B7) ─────────────────────────────
+export type DriveScope = 'eligible' | 'all' | 'registered';
+export const placementDrives = (scope: DriveScope) =>
+  queryOptions({
+    queryKey: ['placement-drives', scope],
+    queryFn: ({ signal }) => api.get<DriveView[]>(`/placements/drives?scope=${scope}`, signal),
+  });
+
+export const placementDrive = (id: string) =>
+  queryOptions({
+    queryKey: ['placement-drive', id],
+    queryFn: ({ signal }) => api.get<DriveView>(`/placements/drives/${id}`, signal),
+  });
+
+export const myAcademics = () =>
+  queryOptions({
+    queryKey: ['my-academics'],
+    queryFn: ({ signal }) => api.get<AcademicRecordView | null>('/me/academics', signal),
+  });
+
+export const myOffers = () =>
+  queryOptions({
+    queryKey: ['my-offers'],
+    queryFn: ({ signal }) => api.get<OfferView[]>('/placements/offers', signal),
+  });
+
+export const adminDrives = (status: string) =>
+  infiniteQueryOptions({
+    queryKey: ['admin-drives', status],
+    initialPageParam: '',
+    queryFn: ({ pageParam }) =>
+      apiRequest<DriveView[]>(
+        `/admin/placements/drives?${status ? `status=${status}` : ''}${pageParam ? `${status ? '&' : ''}cursor=${pageParam}` : ''}`,
+      ),
+    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+export const driveRegistrants = (id: string) =>
+  queryOptions({
+    queryKey: ['drive-registrants', id],
+    queryFn: ({ signal }) => api.get<RegistrantView[]>(`/admin/placements/drives/${id}/registrants`, signal),
+  });
+
+export const placementCompanies = () =>
+  queryOptions({
+    queryKey: ['placement-companies'],
+    queryFn: ({ signal }) => api.get<PlacementCompanyView[]>('/admin/placements/companies', signal),
+    staleTime: 5 * 60_000,
+  });
+
+export type PendingAcademicRecord = AcademicRecordView & { id: string; rollNumber: string };
+export const pendingAcademics = () =>
+  queryOptions({
+    queryKey: ['pending-academics'],
+    queryFn: ({ signal }) => api.get<PendingAcademicRecord[]>('/admin/placements/academics/pending', signal),
+  });
+
+export const offersQueue = (status: string) =>
+  infiniteQueryOptions({
+    queryKey: ['offers-queue', status],
+    initialPageParam: '',
+    queryFn: ({ pageParam }) =>
+      apiRequest<OfferView[]>(`/admin/offers?status=${status}${pageParam ? `&cursor=${pageParam}` : ''}`),
+    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+// ── Outcomes and reports (B8) ─────────────────────────────
+export const myOutcomes = () =>
+  queryOptions({
+    queryKey: ['my-outcomes'],
+    queryFn: ({ signal }) => api.get<OutcomeView[]>('/me/outcomes', signal),
+  });
+
+export const outcomesQueue = (kind: OutcomeKind, status: string) =>
+  infiniteQueryOptions({
+    queryKey: ['outcomes-queue', kind, status],
+    initialPageParam: '',
+    queryFn: ({ pageParam }) =>
+      apiRequest<OutcomeView[]>(
+        `/admin/outcomes/${kind}?status=${status}${pageParam ? `&cursor=${pageParam}` : ''}`,
+      ),
+    getNextPageParam: (last) => last.meta?.nextCursor ?? undefined,
+  });
+
+export const reportDefinitions = () =>
+  queryOptions({
+    queryKey: ['report-definitions'],
+    queryFn: ({ signal }) => api.get<ReportDefinitionView[]>('/admin/outcome-reports', signal),
+    staleTime: 10 * 60_000,
+  });
+
+/** `qs` is `gradYear=2026&branch=CSE` (either may be missing). */
+export const reportsDashboard = (qs: string) =>
+  queryOptions({
+    queryKey: ['reports-dashboard', qs],
+    queryFn: ({ signal }) => api.get<ReportsDashboardView>(`/admin/outcome-reports/dashboard?${qs}`, signal),
+  });
+
+export const outcomeReport = (id: string, qs: string) =>
+  queryOptions({
+    queryKey: ['outcome-report', id, qs],
+    queryFn: ({ signal }) => api.get<ReportResultView>(`/admin/outcome-reports/${id}?${qs}`, signal),
+  });
+
+// ── Product analytics (B9) ─────────────────────────────
+export const insights = () =>
+  queryOptions({
+    queryKey: ['insights'],
+    queryFn: ({ signal }) => api.get<InsightsView>('/admin/insights', signal),
+    staleTime: 5 * 60_000,
+  });
+
+export const platformInsights = () =>
+  queryOptions({
+    queryKey: ['platform-insights'],
+    queryFn: ({ signal }) => api.get<PlatformInsightsView>('/platform/insights', signal),
+    staleTime: 5 * 60_000,
+  });
+
+// ── Billing (B10) ─────────────────────────────
+export const adminBilling = () =>
+  queryOptions({
+    queryKey: ['admin-billing'],
+    queryFn: ({ signal }) => api.get<AdminBillingView>('/admin/billing', signal),
+  });
+
+export interface BillingNotice {
+  readOnly: boolean;
+  overdue: number;
+  overSeats: boolean;
+  seatsUsed: number | null;
+  seats: number;
+  pilotEndsOn: string | null;
+}
+/** The admin screens' billing banner (seats, pilot end, overdue, read-only). */
+export const billingNotice = () =>
+  queryOptions({
+    queryKey: ['admin-billing', 'notice'],
+    queryFn: ({ signal }) => api.get<BillingNotice>('/admin/billing/notice', signal),
+    staleTime: 10 * 60_000,
+  });
+
+export const platformBilling = () =>
+  queryOptions({
+    queryKey: ['platform-billing'],
+    queryFn: ({ signal }) => api.get<PlatformBillingRow[]>('/platform/billing', signal),
+  });
+
+export const platformCollegeBilling = (id: string) =>
+  queryOptions({
+    queryKey: ['platform-billing', id],
+    queryFn: ({ signal }) => api.get<PlatformCollegeBillingView>(`/platform/billing/${id}`, signal),
+  });
+
+export const platformPlans = () =>
+  queryOptions({
+    queryKey: ['platform-plans'],
+    queryFn: ({ signal }) => api.get<PlanView[]>('/platform/plans', signal),
+  });
+
+// ── Help, support and legal pages (B14) ─────────────────────────────
+
+/** My problem reports. */
+export const supportTickets = () =>
+  queryOptions({
+    queryKey: ['support-tickets'],
+    queryFn: ({ signal }) => api.get<SupportTicketView[]>('/support/tickets', signal),
+  });
+
+/** One report (the reporter's, or the college desk's). */
+export const supportTicket = (id: string) =>
+  queryOptions({
+    queryKey: ['support-ticket', id],
+    queryFn: ({ signal }) => api.get<SupportTicketView>(`/support/tickets/${id}`, signal),
+  });
+
+/** Admin › Support: reports sent to the college. */
+export const adminSupport = (status: SupportStatus | '') =>
+  queryOptions({
+    queryKey: ['admin-support', status],
+    queryFn: ({ signal }) =>
+      api.get<SupportTicketView[]>(`/admin/support/tickets${status ? `?status=${status}` : ''}`, signal),
+  });
+
+/** Platform › Support: bug reports from every college. */
+export const platformSupport = (status: SupportStatus | '') =>
+  queryOptions({
+    queryKey: ['platform-support', status],
+    queryFn: ({ signal }) =>
+      api.get<SupportTicketView[]>(`/platform/support/tickets${status ? `?status=${status}` : ''}`, signal),
+  });
+
+/** The college's privacy policy or terms (public). */
+export const legalDoc = (doc: LegalDoc) =>
+  queryOptions({
+    queryKey: ['legal', doc],
+    queryFn: ({ signal }) => api.get<LegalDocView>(`/legal/${doc}`, signal),
+    staleTime: 10 * 60_000,
+  });
+
+/** Admin › Branding › Legal details. */
+export const adminLegal = () =>
+  queryOptions({
+    queryKey: ['admin-legal'],
+    queryFn: ({ signal }) => api.get<LegalSettingsView>('/admin/legal', signal),
   });

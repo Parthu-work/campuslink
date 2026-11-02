@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronRight, Compass, IdCard, Orbit, UserRound } from 'lucide-react';
 import { TOPICS, type FollowState } from '@campuslink/shared';

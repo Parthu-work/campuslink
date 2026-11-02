@@ -1,5 +1,5 @@
 import { useId, useState, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { labelEvery, niceTicks } from '../../lib/chart';
 import { useWidth } from '../../lib/use-width';
 import { formatCompact, formatNumber } from '../../lib/numbers';

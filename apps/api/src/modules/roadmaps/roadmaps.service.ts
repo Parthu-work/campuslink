@@ -43,6 +43,7 @@ import type { ProfilesService } from '../profiles/profiles.service.js';
 import type { NotificationsService } from '../notifications/notifications.service.js';
 import type { AuthState } from '../../types.js';
 import { noAward, type Award } from '../../lib/awards.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 
 export const NUDGE_JOB = 'roadmaps.nudge';
 const DAY = 86_400_000;
@@ -175,6 +176,8 @@ export class RoadmapsService {
 
   /** Points for actions this module confirms (wired in app.ts). */
   award: Award = noAward;
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(private readonly d: RoadmapsDeps) {}
 
   // ── Loading and access ─────────────────────────────
@@ -759,6 +762,7 @@ export class RoadmapsService {
         { $push: { done: { nodeId: body.nodeId, at: new Date() } } },
       );
       await this.award(viewer.userId, 'roadmap_step', `${String(r._id)}:${body.nodeId}`);
+      await this.track(viewer.userId, 'roadmap_step', { roadmapId: String(r._id) });
     } else await RoadmapProgressModel.updateOne(key, { $pull: { done: { nodeId: body.nodeId } } });
     const p = await RoadmapProgressModel.findOne(key).lean<ProgressDoc>();
     const mine = this.myProgress(p, content);

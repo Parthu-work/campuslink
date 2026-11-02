@@ -22,16 +22,33 @@ export interface MalwareScanner {
 export const noopScanner: MalwareScanner = { scan: async () => 'skipped' };
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-type ImagePurpose = 'avatar' | 'id_card' | 'message_attachment' | 'post_media' | 'story_media';
+type ImagePurpose =
+  | 'avatar'
+  | 'id_card'
+  | 'message_attachment'
+  | 'post_media'
+  | 'story_media'
+  | 'offer_proof'
+  | 'support_screenshot';
 const IMAGE_RULES: Record<ImagePurpose, { maxEdge: number }> = {
   avatar: { maxEdge: 512 },
   id_card: { maxEdge: 2000 },
   message_attachment: { maxEdge: 2000 },
   post_media: { maxEdge: 1600 },
   story_media: { maxEdge: 1440 },
+  offer_proof: { maxEdge: 2000 },
+  support_screenshot: { maxEdge: 2000 },
 };
 const VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime']);
-type ClaimablePurpose = 'post_media' | 'story_media' | 'referral_resume';
+/** Data-saver variants kept in memory (each is a small WebP, typically 5–40 KB). */
+const VARIANT_CACHE_SIZE = 300;
+type ClaimablePurpose =
+  | 'post_media'
+  | 'story_media'
+  | 'referral_resume'
+  | 'placement_resume'
+  | 'offer_proof'
+  | 'support_screenshot';
 const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const PPTX = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 const AUDIO_TYPES = new Set([
@@ -136,6 +153,8 @@ export class FilesService {
   }
 
   private readonly resolvers = new Map<FilePurpose, FileAccessResolver>();
+  /** Data-saver image variants (`readResized`), bounded to VARIANT_CACHE_SIZE entries. */
+  private readonly variants = new Map<string, Buffer>();
   constructor(
     private readonly storage: StorageProvider,
     private readonly scanner: MalwareScanner = noopScanner,
@@ -169,7 +188,11 @@ export class FilesService {
     } catch {
       throw unsupported('That image could not be read');
     }
-    const pending = purpose === 'post_media' || purpose === 'story_media';
+    const pending =
+      purpose === 'post_media' ||
+      purpose === 'story_media' ||
+      purpose === 'offer_proof' ||
+      purpose === 'support_screenshot';
     return this.store(
       ownerId,
       purpose,
@@ -286,7 +309,11 @@ export class FilesService {
   }
 
   /** Résumé for a referral request: PDF only, rebuilt like chat PDFs; purged unless a request claims it. */
-  async storeResume(ownerId: string, data: Buffer) {
+  async storeResume(
+    ownerId: string,
+    data: Buffer,
+    purpose: 'referral_resume' | 'placement_resume' = 'referral_resume',
+  ) {
     const type = await fileTypeFromBuffer(data);
     if (type?.mime !== 'application/pdf') throw unsupported('Upload your résumé as a PDF');
     let out: Uint8Array;
@@ -297,11 +324,39 @@ export class FilesService {
     }
     return this.store(
       ownerId,
-      'referral_resume',
+      purpose,
       Buffer.from(out),
       'application/pdf',
       new Date(Date.now() + UNATTACHED_TTL_MS),
     );
+  }
+
+  /**
+   * Proof of an offer (B7): an image (re-encoded) or a PDF (rebuilt). Purged unless an offer report
+   * claims it; the offer schedules deletion 30 days after it is verified.
+   */
+  async storeOfferProof(ownerId: string, data: Buffer) {
+    const type = await fileTypeFromBuffer(data);
+    if (type && IMAGE_TYPES.has(type.mime)) return this.storeImage(ownerId, 'offer_proof', data);
+    if (type?.mime !== 'application/pdf') throw unsupported('Upload the offer letter as a PDF or an image');
+    let out: Uint8Array;
+    try {
+      out = await sanitisePdf(data);
+    } catch {
+      throw unsupported('That PDF could not be read (password-protected PDFs are not supported)');
+    }
+    return this.store(
+      ownerId,
+      'offer_proof',
+      Buffer.from(out),
+      'application/pdf',
+      new Date(Date.now() + UNATTACHED_TTL_MS),
+    );
+  }
+
+  /** Retention for an attached file (offer proof after verification). */
+  async deleteAfter(fileId: string | Types.ObjectId, at: Date): Promise<void> {
+    await FileModel.updateOne({ _id: fileId }, { $set: { deleteAfter: at } });
   }
 
   /** Raw spreadsheet or CSV for an import: kept only until the import job has read it. */
@@ -453,6 +508,12 @@ export class FilesService {
     }
   }
 
+  /** An issued invoice's PDF (B10): the college's own file, served only by the billing routes. */
+  async storeInvoice(data: Buffer) {
+    if (data.subarray(0, 5).toString('latin1') !== '%PDF-') throw unsupported('Not a PDF');
+    return this.store(null, 'invoice', data, 'application/pdf');
+  }
+
   /** `ownerId` null: the college's own file (its logo). */
   private async store(
     ownerId: string | null,
@@ -508,6 +569,33 @@ export class FilesService {
     return { data, mime: f.mime, purpose: f.purpose, name: f.grantName };
   }
 
+  /**
+   * Data saver (build B13): a smaller WebP of an image the viewer may see, at one of
+   * DATA_SAVER_WIDTHS. Access is checked exactly as for the original; anything that is not an
+   * image is returned unchanged. Variants are kept in a small in-process cache (by file and width).
+   */
+  async readResized(fileId: string, viewer: AuthState, width: number) {
+    const f = await this.readForViewer(fileId, viewer);
+    if (!IMAGE_TYPES.has(f.mime)) return f;
+    const key = `${fileId}:${width}`;
+    let data = this.variants.get(key);
+    if (data) {
+      // Most recently used last, so the oldest entry is the first one evicted.
+      this.variants.delete(key);
+    } else {
+      data = await sharp(f.data, { limitInputPixels: 40_000_000, failOn: 'error' })
+        .resize({ width, withoutEnlargement: true })
+        .webp({ quality: 55 })
+        .toBuffer();
+      if (this.variants.size >= VARIANT_CACHE_SIZE) {
+        const oldest = this.variants.keys().next().value;
+        if (oldest !== undefined) this.variants.delete(oldest);
+      }
+    }
+    this.variants.set(key, data);
+    return { ...f, data, mime: 'image/webp' };
+  }
+
   /** The file record if `viewer` may read it (404 otherwise, like a missing file). */
   private async authorise(fileId: string, viewer: AuthState) {
     const f = await FileModel.findById(fileId).lean();
@@ -519,7 +607,12 @@ export class FilesService {
       f.purpose === 'avatar' ||
       (f.purpose === 'id_card' && (isOwner || can('verification:review'))) ||
       // The uploader previews their own media before posting.
-      ((f.purpose === 'post_media' || f.purpose === 'story_media' || f.purpose === 'referral_resume') &&
+      ((f.purpose === 'post_media' ||
+        f.purpose === 'story_media' ||
+        f.purpose === 'referral_resume' ||
+        f.purpose === 'placement_resume' ||
+        f.purpose === 'offer_proof' ||
+        f.purpose === 'support_screenshot') &&
         isOwner);
     const resolver = this.resolvers.get(f.purpose);
     if (!allowed && resolver) {

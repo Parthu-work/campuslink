@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
 import { CalendarDays, MapPin, Plus, Users, Video } from 'lucide-react';

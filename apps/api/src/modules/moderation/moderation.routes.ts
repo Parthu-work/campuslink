@@ -21,6 +21,7 @@ export function moderationRoutes(svc: SafetyService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/me/blocks',
+      readOnlyOk: true,
       tag,
       summary: 'Block someone (closes chat, withdraws requests, cancels future sessions)',
       access: { kind: 'authenticated' },
@@ -31,6 +32,7 @@ export function moderationRoutes(svc: SafetyService): AnyRouteSpec[] {
     {
       method: 'delete',
       path: '/me/blocks/:userId',
+      readOnlyOk: true,
       tag,
       summary: 'Unblock someone',
       access: { kind: 'authenticated' },
@@ -40,6 +42,7 @@ export function moderationRoutes(svc: SafetyService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/reports',
+      readOnlyOk: true,
       tag,
       summary: 'Report a person, message or request',
       access: { kind: 'permission', permission: 'content:report' },
@@ -62,6 +65,7 @@ export function moderationRoutes(svc: SafetyService): AnyRouteSpec[] {
     {
       method: 'post',
       path: '/admin/reports/:id/resolve',
+      readOnlyOk: true,
       tag,
       summary: 'Resolve a report (audited)',
       access: { kind: 'permission', permission: 'moderation:act' },

@@ -36,6 +36,21 @@ const postSchema = new Schema(
       default: null,
     },
     announcement: { type: Boolean, default: false },
+    /** B6: who an announcement is for (null = everyone; empty lists inside mean any). */
+    audience: {
+      type: new Schema(
+        {
+          branches: { type: [{ type: String, enum: BRANCHES }], default: [] },
+          gradYears: { type: [Number], default: [] },
+          roles: { type: [String], default: [] },
+        },
+        { _id: false, strict: 'throw' },
+      ),
+      default: null,
+    },
+    pinnedUntil: { type: Date, default: null },
+    /** Sent on WhatsApp as critical (counted against the college's monthly urgent cap). */
+    urgent: { type: Boolean, default: false },
     /** Denormalised author facts for ranking. */
     authorAlumni: { type: Boolean, default: false },
     authorBranch: { type: String, enum: [...BRANCHES, null], default: null },
@@ -53,6 +68,7 @@ const postSchema = new Schema(
   baseSchemaOptions,
 );
 postSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
+postSchema.index({ tenantId: 1, announcement: 1, pinnedUntil: -1 });
 postSchema.index({ tenantId: 1, authorId: 1, createdAt: -1 });
 postSchema.index({ tenantId: 1, kind: 1, status: 1, createdAt: -1 });
 postSchema.index({ tenantId: 1, topics: 1, createdAt: -1 });

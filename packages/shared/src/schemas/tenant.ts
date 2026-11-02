@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { HEX_COLOR } from '../color.js';
 import { tenantSlug, email, personName } from './common.js';
 import { ALL_PERMISSIONS, PLATFORM_PERMISSIONS, TENANT_ROLES } from '../roles.js';
+import { FEATURE_KEYS, type Feature } from '../features.js';
+import { PLAN_IDS } from '../constants/plan-ids.js';
 
 const hex = z
   .string()
@@ -29,15 +31,7 @@ export type Branding = z.infer<typeof brandingSchema>;
 export const LOGO_MAX_BYTES = 512 * 1024;
 export const LOGO_TYPES = ['image/png', 'image/webp'] as const;
 
-export const FEATURES = {
-  studentPosting: 'Students can publish feed posts',
-  stories: 'Stories and Tips reels',
-  leaderboards: 'Opt-in leaderboards',
-  alumniMatch: 'Swipe-style Alumni Match',
-  jobsAggregation: 'Automated job sources',
-} as const;
-export type Feature = keyof typeof FEATURES;
-const featureKeys = Object.keys(FEATURES) as [Feature, ...Feature[]];
+const featureKeys = FEATURE_KEYS;
 
 const grantablePermission = z
   .enum(ALL_PERMISSIONS)
@@ -72,9 +66,11 @@ export const tenantSettingsBody = z.strictObject({
   permissionOverrides: z.strictObject({ grant: roleMap.optional(), revoke: roleMap.optional() }).optional(),
 });
 
+/** A new college's plan (B10): the platform console sets the rest in Billing. */
 export const subscriptionSchema = z.strictObject({
-  plan: z.enum(['trial', 'standard', 'premium']),
-  seatLimit: z.number().int().min(10).max(100_000),
+  plan: z.enum(PLAN_IDS),
+  /** Contracted seats: the enrolled students the college is quoted for. */
+  seats: z.number().int().min(10).max(100_000),
   renewalDate: z.iso.date().nullable(),
 });
 
@@ -105,4 +101,8 @@ export interface PublicTenant {
   logoUrl: string | null;
   features: Record<Feature, boolean>;
   botCheck: PublicBotCheck | null;
+  /** Phone sign-up and sign-in work (a WhatsApp or SMS channel can deliver codes). */
+  phoneSignIn: boolean;
+  /** Read-only for non-payment (B10): everything reads and exports; nothing new is written. */
+  readOnly: boolean;
 }

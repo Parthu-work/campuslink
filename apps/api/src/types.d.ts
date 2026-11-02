@@ -10,6 +10,10 @@ export interface AuthState {
   verified: boolean;
   mfaEnabled: boolean;
   mfaPending: boolean;
+  /** Under 18 and waiting for a guardian's consent: no permissions at all (B2). */
+  guardianPending?: boolean;
+  /** Under 18 (with consent): ranking, contact details and leaderboards work differently (B2). */
+  minor?: boolean;
   permissions: Set<Permission>;
 }
 

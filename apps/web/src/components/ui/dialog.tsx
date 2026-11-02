@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Dialog as D } from 'radix-ui';
 import { X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { cn } from '../../lib/cn';
 import { useDialogHistory } from '../../lib/use-dialog-history';
 import { useDragDismiss } from '../../lib/use-drag-dismiss';

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DATA_SAVER_WIDTHS } from '@campuslink/shared';
 import type { AnyRouteSpec } from '../../http/registry.js';
 import { idParams } from '../../http/validation.js';
 import { authOf, tenantOf } from '../../http/request-context.js';
@@ -83,8 +84,18 @@ export function fileRoutes(svc: FilesService): AnyRouteSpec[] {
         'Download a file you are allowed to see (avatars, your own or reviewable ID cards, chat attachments)',
       access: { kind: 'authenticated' },
       params: idParams,
-      handler: async ({ req, params }) => {
-        const f = await svc.readForViewer(params.id, authOf(req));
+      // Data saver (B13): `?w=` asks for a smaller copy of an image (only DATA_SAVER_WIDTHS).
+      query: z.strictObject({
+        w: z.coerce
+          .number()
+          .int()
+          .refine((n) => (DATA_SAVER_WIDTHS as readonly number[]).includes(n), 'Unsupported width')
+          .optional(),
+      }),
+      handler: async ({ req, params, query }) => {
+        const f = query.w
+          ? await svc.readResized(params.id, authOf(req), query.w)
+          : await svc.readForViewer(params.id, authOf(req));
         return {
           data: null,
           raw: {

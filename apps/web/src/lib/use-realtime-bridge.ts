@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../i18n/react';
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { useMaterialProgress } from './material-progress';
 import { toast } from './toast';

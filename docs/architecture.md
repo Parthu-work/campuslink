@@ -1,6 +1,6 @@
 # Architecture
 
-Grows with each phase (now through Phase 5).
+Grows with each phase (now through master prompt 1, builds B1 to B15).
 
 ```mermaid
 flowchart LR
@@ -8,10 +8,10 @@ flowchart LR
     PWA[React PWA<br/>service worker, i18n]
   end
   subgraph API[apps/api: modular monolith]
-    MW[request-id → helmet → cors → rate-limit → tenant → auth] --> MOD[modules: auth · tenants · feed · mentorship · jobs · roadmaps …]
+    MW[request-id → helmet → cors → rate-limit → tenant → auth] --> MOD[modules: auth · tenants · feed · mentorship · jobs · roadmaps · placements · reports · billing · support …]
     MOD --> REPO[repositories<br/>tenant plugin]
   end
-  W[BullMQ workers<br/>imports · ingestion · reminders]
+  W[BullMQ workers<br/>imports · ingestion · reminders · billing run]
   PWA -- HTTPS /api/v1 --> MW
   PWA -- Socket.io --> MOD
   REPO --> M[(MongoDB)]
@@ -19,11 +19,13 @@ flowchart LR
   W --> M
   W --> R
   MOD --> SMTP[Mailpit / SMTP]
+  MOD --> CH[WhatsApp Cloud API · MSG91 SMS]
+  MOD --> PAY[Razorpay]
 ```
 
 ## Request pipeline
 
-`rate limit → tenant scope → CSRF (cookie routes) → authenticate → authorize → bot check (where declared) → upload (where declared) → validate (Zod) → idempotency (where declared) → handler → service` (ADR 0006: authorization before validation). Route specs live in `modules/<name>/<name>.routes.ts` and feed OpenAPI, `docs/permissions.md` and the permission test.
+`rate limit → tenant scope → feature switch (B1) → read-only (writes, B10) → CSRF (cookie routes) → authenticate → authorize → bot check (where declared) → upload (where declared) → validate (Zod) → idempotency (where declared) → handler → service` (ADR 0006: authorization before validation). Route specs live in `modules/<name>/<name>.routes.ts` and feed OpenAPI, `docs/permissions.md` and the permission test.
 
 ## Realtime
 
@@ -79,6 +81,21 @@ Socket.io at `/api/v1/realtime` (`http/realtime.ts`), with the Redis adapter for
   - consent records and the audit log are kept, keyed by id only.
 - **Schedule:** the daily retention run calls `purgeDue()` in each college.
 
+## Master prompt 1 (builds B1 to B14)
+
+- **Feature switches (B1):** `packages/shared/src/features.ts`; a route declares `feature` (or its module is wrapped in `withFeature`) and answers `403 FEATURE_DISABLED`; jobs go through `gatedJob` and no-op when the switch is off. Since B10 a switch is the plan ∧ the college's choice, resolved in the tenant cache. Data migrations run once per database at boot (`db/migrations.ts`, the `Migration` record is the lock).
+- **Phone-first identity and minors (B2, ADR 0010):** one `OtpService` for every code (hashed, 10 minutes, 5 attempts, daily caps per member and per number, the `otp` IP limiter); `OtpSender` tries WhatsApp, then SMS. Minors are `guardian_pending` with no permissions until the guardian's code, sent to the number on the college's record, is confirmed; an hourly tick (`auth.adulthood`) clears `adultOn` at 18.
+- **Channels (B3, ADR 0011):** `ChannelService` meters every WhatsApp and SMS message (`ChannelMessage`, `ChannelUsage`), applies the member's weekly cap and the college's monthly allowance (from the plan), falls back to push and email, and signs quick-reply actions. The webhook (`/webhooks/whatsapp`) lives on the platform host, checks Meta's signature over the raw body and is deduplicated in `WebhookReceipt`.
+- **Onboarding (B4, B6):** `OnboardingService` issues invite links (hashed tokens) and class join codes; both end with a code to the contact on the college's record. The TPO console adds bulk verification, class progress (through `suppress()`) and targeted, pinned announcements.
+- **Mentorship loop (B5):** delayed `mentorship.nudge` (24 h) and `mentorship.rematch` (48 h) jobs carry the request `version`; mentor stats are cached an hour.
+- **Placements and reports (B7, B8):** module `placements` (companies, drives, registrations, offers, academic records, outcomes) and module `reports` (seven versioned definitions with a `compute` through `suppress()` and an audited student-level `evidence`). Drive reminders are delayed jobs carrying the drive `version`. The unique index on registrations makes a burst of taps register each student once (B15 load test: 500 at once).
+- **Product analytics (B9):** services call a `track` callback after confirmed writes; `InsightsService` computes aggregates only; the platform's cross-college view runs through `withPlatformScope('insights:platform-aggregates', …)` and is audited.
+- **Plans and billing (B10, ADR 0013):** plan terms from `PLANS` ← `PlanSetting` ← the college's deal (`mergeTerms()`); limits from `EntitlementsService`; invoices numbered on issue from `InvoiceCounter`; payments through `BillingService` (bank transfers by the platform, Razorpay Payment Links with an HMAC-checked webhook). A daily billing run per college marks overdue invoices, sends reminders and sets read-only from 30 days overdue; read-only refuses writes in the pipeline except an allowlist, and nothing is deleted.
+- **AI cost (B11, ADR 0009):** answers default to the Haiku tier; the platform's provider is metered against the plan's allowance in `AiSettingsService.runtime()`.
+- **Languages (B12):** `SUPPORTED_LOCALES` (en, te, hi) drives schemas, enums, formatters, pickers and the parity test; adding a language is `docs/adding-a-language.md`.
+- **Offline (B13):** the web app keeps the member's own reads in IndexedDB (`lib/offline-cache.ts`, its own chunk), wipes them on sign-out, and replays three idempotent PUTs from an outbox. Image variants for data saver come from `GET /files/:id?w=`.
+- **Help, legal and observability (B14):** `SupportService` (college desk and platform desk), `LegalService` (templates filled with the college's details; a published version asks members to accept again), `ErrorReporter` (disabled, console, Sentry envelope over `safeFetch`) for API errors, failed jobs and browser reports, and `GET /metrics` (platform host, bearer token) with counters labelled by route pattern, job, channel or status only.
+
 ## Production
 
 - **Images:**
@@ -93,7 +110,11 @@ Socket.io at `/api/v1/realtime` (`http/realtime.ts`), with the Redis adapter for
 | ------------------- | ---------------------------------------------- | ---------------------------------------------------------------- |
 | `StorageProvider`   | local disk                                     | S3 (SSE-KMS) and S3-compatible stores (`lib/s3-storage.ts`)      |
 | `MailProvider`      | SMTP → Mailpit                                 | any SMTP                                                         |
-| `SmsProvider`       | disabled                                       | (deployment adapter)                                             |
+| `SmsProvider`       | disabled, console (dev outbox)                 | MSG91 Flow API with DLT templates (`lib/sms.ts`)                 |
+| `WhatsAppProvider`  | disabled, console (dev outbox)                 | Meta Cloud API (`lib/whatsapp.ts`)                               |
+| `PaymentProvider`   | disabled, stub (refused in production)         | Razorpay Payment Links (`lib/payments.ts`)                       |
+| `ErrorReporter`     | disabled, console                              | Sentry or GlitchTip through the envelope protocol                |
+| `LLMProvider`       | none until configured                          | Anthropic and others (`modules/study/ai/`)                       |
 | `VideoProvider`     | Jitsi (`meet.jit.si`, link-out)                | self-hosted Jitsi + JWT, 100ms and Daily stubs (`docs/video.md`) |
 | `BotProtection`     | disabled                                       | Turnstile (server check plus the web widget, `lib/bot-check.ts`) |
 | `MalwareScanner`    | skipped (never "clean")                        | ClamAV `clamd`, fail closed (`lib/clamav.ts`)                    |
@@ -103,6 +124,6 @@ Socket.io at `/api/v1/realtime` (`http/realtime.ts`), with the Redis adapter for
 
 ## Phases
 
-0 Foundation · 1 Secure core · 2 People · 3 Mentorship · 4 Feed and content · 5 Jobs and referrals · 6 Roadmaps and Career Galaxy · 7 Gamification, events, analytics · 8 Hardening and launch.
+0 Foundation · 1 Secure core · 2 People · 3 Mentorship · 4 Feed and content · 5 Jobs and referrals · 6 Roadmaps and Career Galaxy · 7 Gamification, events, analytics · 8 Hardening and launch · 9 Study and the AI assistant · 10 to 13 the revamp · master prompt 1 (B1 to B15): feature switches, phone identity and minors, WhatsApp and SMS, invites, the mentorship loop, the TPO console, placement drives, outcomes and accreditation reports, product analytics, plans and billing, AI cost, Hindi, offline, help and legal, hardening. The record of each build is `docs/build/progress.md`; the summary is `docs/build/report-1.md`.
 
 See `docs/adr/` for decisions.

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { CAPABILITIES, TENANT_ROLES, type Capability, type Role } from '../roles.js';
 import { CONSENT_PURPOSE_KEYS, type ConsentPurpose } from '../consent.js';
 import { personName } from './common.js';
+import { SUPPORTED_LOCALES, type Locale } from '../locales.js';
 
 export const updateRolesBody = z.strictObject({
   roles: z
@@ -15,7 +16,7 @@ export const updateCapabilitiesBody = z.strictObject({
 export const updateStatusBody = z.strictObject({ status: z.enum(['active', 'suspended']) });
 export const updateMeBody = z.strictObject({
   name: personName.optional(),
-  locale: z.enum(['en', 'te']).optional(),
+  locale: z.enum(SUPPORTED_LOCALES).optional(),
 });
 export const consentBody = z.strictObject({
   purpose: z.enum(CONSENT_PURPOSE_KEYS as [ConsentPurpose, ...ConsentPurpose[]]),
@@ -36,12 +37,28 @@ export interface MeResponse {
   /** Set while the member's account deletion is pending (they keep no permissions). */
   deletionPurgeAt?: string | null;
   name: string;
-  email: string;
+  /** Optional since phone sign-up (B2). */
+  email: string | null;
+  /** The member's own number (E.164), when they have one. */
+  phone: string | null;
+  /** False for members who signed up by phone (they sign in with codes). */
+  hasPassword: boolean;
+  /** Under 18 and waiting for a guardian's consent: only verification and the guardian step work. */
+  guardianPending: boolean;
+  /** Under 18 (with consent): some features work differently (docs/specs/phone-identity.md). */
+  minor: boolean;
+  /** Graduation year from the member's profile (the Placements tab for final-year students, B7). */
+  gradYear: number | null;
   roles: Role[];
   capabilities: Capability[];
   verified: boolean;
   mfaEnabled: boolean;
   mfaRequired: boolean;
-  locale: 'en' | 'te';
+  locale: Locale;
   permissions: string[];
+  /**
+   * The privacy notice and terms this member must have accepted (B14): when `accepted` is false the
+   * app asks again before anything else. Absent from older API responses.
+   */
+  notice?: { version: string; accepted: boolean };
 }

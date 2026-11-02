@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CircleAlert, Download, Loader, Pencil, RotateCcw, Sparkles } from 'lucide-react';
 import type { MaterialDetailView, MaterialView } from '@campuslink/shared';

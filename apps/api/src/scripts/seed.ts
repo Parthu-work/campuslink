@@ -10,17 +10,22 @@ import {
   type Capability,
   type Branding,
   type Branch,
+  LEGACY_FEATURES,
 } from '@campuslink/shared';
 import { loadEnv } from '../config/env.js';
 import { syncIndexes } from '../db/connect.js';
 import { runInTenant } from '../lib/context.js';
 import { hashPassword } from '../lib/passwords.js';
 import { TenantModel } from '../modules/tenants/tenant.model.js';
+import { ProductEventModel } from '../modules/insights/insights.model.js';
+import { SupportTicketModel } from '../modules/support/support.model.js';
 import { UserModel } from '../modules/auth/user.model.js';
 import { ConsentModel } from '../modules/consent/consent.model.js';
 import { AuditModel } from '../modules/audit/audit.model.js';
 import { ProfileModel } from '../modules/profiles/profile.model.js';
+import { ChannelMessageModel, ChannelUsageModel } from '../modules/notifications/channels/channel.model.js';
 import { WhitelistModel } from '../modules/imports/whitelist.model.js';
+import { MentorReviewModel } from '../modules/mentorship/review.model.js';
 import { FieldCipher } from '../lib/crypto.js';
 import { MentorProfileModel } from '../modules/mentorship/mentor.model.js';
 import { MentorshipRequestModel } from '../modules/mentorship/request.model.js';
@@ -43,13 +48,24 @@ import {
   XpEventModel,
 } from '../modules/gamification/gamification.model.js';
 import { EventModel, EventRsvpModel } from '../modules/events/event.model.js';
-import { XP_RULES, type XpKind } from '@campuslink/shared';
+import {
+  AcademicRecordModel,
+  DriveRegistrationModel,
+  OfferModel,
+  PlacementCompanyModel,
+  PlacementDriveModel,
+} from '../modules/placements/placements.model.js';
+import { ExamQualificationModel, HigherStudyModel } from '../modules/placements/outcomes.model.js';
+import { ctcBand, PRIVACY_NOTICE_VERSION } from '@campuslink/shared';
+import { XP_RULES, type ProductEventName, type XpKind } from '@campuslink/shared';
 import {
   RoadmapModel,
   RoadmapProgressModel,
   RoadmapVersionModel,
 } from '../modules/roadmaps/roadmap.model.js';
 import { studySeeder } from './seed-study.js';
+import { InvoiceCounterModel, InvoiceModel, PaymentModel } from '../modules/billing/billing.model.js';
+import { financialYearOf, gstSplit, invoiceNumber, istDay } from '@campuslink/shared';
 
 const env = loadEnv();
 if (env.NODE_ENV === 'production') throw new Error('Refusing to seed a production database');
@@ -193,6 +209,17 @@ const PEOPLE: SeedUser[] = [
   { local: 'newbie', name: 'Sai Teja', roles: ['STUDENT'], verified: false },
 ];
 
+/** Fictional numbers for the demo minor and their guardian (development console providers only). */
+const DEMO_MINOR_PHONE = '+919000000016';
+const DEMO_GUARDIAN_PHONE = '+919000000061';
+/**
+ * DEMO (B4): two people on each college's list with a mobile number and no account yet, for the
+ * one-tap invite link and the class join code. Numbers differ per college (console outbox).
+ */
+const demoInvitePhones = (i: number) => ({ link: `+9190000001${i}7`, code: `+9190000001${i}8` });
+/** DEMO (B15): a minor who has joined and is waiting for their guardian's consent. */
+const demoPendingMinorPhones = (i: number) => ({ minor: `+9190000001${i}9`, guardian: `+9190000002${i}9` });
+
 /** Unclaimed list records: `newbie` can verify with the first one (code goes to Mailpit). */
 const UNCLAIMED: { no: string; name: string; gradYear: number; branch: Branch; localEmail: string }[] = [
   { no: '24XX1A0577', name: 'Sai Teja', gradYear: 2028, branch: 'CSE', localEmail: 'sai.teja.records' },
@@ -215,14 +242,15 @@ async function addUser(
     capabilities: extra.capabilities ?? [],
     verified: extra.verified ?? true,
     emailVerifiedAt: new Date(),
-    ageDeclaredAt: new Date(),
+    ageCheckedAt: new Date(),
   });
   await ConsentModel.insertMany(
     CONSENT_PURPOSE_KEYS.map((purpose) => ({
       userId: u._id,
       purpose,
       version: 1,
-      noticeVersion: 'seed',
+      // The current notice (B14): demo members have accepted it, so no notice gate on first sign-in.
+      noticeVersion: PRIVACY_NOTICE_VERSION,
       granted: true,
       source: 'signup',
     })),
@@ -348,6 +376,15 @@ async function seedMentorship(ids: Map<string, Types.ObjectId>) {
     rating: 5,
     tags: ['clear_advice', 'actionable'],
     comment: 'DEMO: very practical resume feedback.',
+  });
+  // DEMO (B5): the public review that goes with it (first name and rating on Rahul's page).
+  await MentorReviewModel.create({
+    bookingId: pastBooking._id,
+    mentorId: id('rahul'),
+    menteeId: id('vikram'),
+    sessionType: 'resume_review',
+    rating: 5,
+    text: 'DEMO: Specific, practical resume feedback in thirty minutes.',
   });
   await ConversationModel.create({
     participants: [id('rahul'), id('vikram')],
@@ -784,6 +821,466 @@ async function seedJobs(ids: Map<string, Types.ObjectId>) {
   });
 }
 
+/**
+ * DEMO placement drives (B7) at fictional companies: one Ananya is eligible for, one she is not
+ * (branch rule), and a completed one that selected Vikram. Marks are fictional and labelled demo.
+ */
+/**
+ * Billing (B10): DPIT's year invoice, paid by a demo bank transfer, and an open add-on invoice to
+ * try "Pay online" with the stub provider. Numbers come from the real sequence; the seller is the
+ * env's demo seller, and every name and reference is marked demo.
+ */
+async function seedBilling(college: string) {
+  const seller = {
+    name: env.BILLING_SELLER_NAME,
+    address: env.BILLING_SELLER_ADDRESS,
+    gstin: env.BILLING_SELLER_GSTIN ?? null,
+    stateCode: env.BILLING_SELLER_STATE ?? null,
+  };
+  const buyer = {
+    name: 'DPIT Demo Educational Society (demo)',
+    address: '1 Demo Road, Hyderabad, Telangana 500001 (fictional)',
+    gstin: null,
+    stateCode: '36',
+  };
+  const invoice = async (
+    lines: { description: string; quantity: number; unitPaise: number }[],
+    issuedOn: string,
+    dueOn: string,
+  ) => {
+    const c = await InvoiceCounterModel.findOneAndUpdate(
+      { prefix: env.BILLING_INVOICE_PREFIX, fy: financialYearOf(new Date(`${issuedOn}T12:00:00+05:30`)) },
+      { $inc: { seq: 1 } },
+      { upsert: true, returnDocument: 'after' },
+    ).lean();
+    const taxablePaise = lines.reduce((sum, l) => sum + l.quantity * l.unitPaise, 0);
+    const gst = gstSplit({
+      taxablePaise,
+      ratePercent: env.BILLING_GST_RATE,
+      registered: env.BILLING_GST_REGISTERED,
+      sellerState: seller.stateCode ?? '',
+      placeOfSupply: buyer.stateCode,
+    });
+    return InvoiceModel.create({
+      number: invoiceNumber(env.BILLING_INVOICE_PREFIX, c?.fy ?? '2026-27', c?.seq ?? 1),
+      fy: c?.fy,
+      status: 'issued',
+      periodStart: '2026-04-01',
+      periodEnd: '2027-03-31',
+      dueDays: 30,
+      issuedOn,
+      dueOn,
+      lines: lines.map((l) => ({ ...l, amountPaise: l.quantity * l.unitPaise })),
+      taxablePaise,
+      gst,
+      totalPaise: taxablePaise + gst.taxPaise,
+      sacCode: env.BILLING_SAC_CODE,
+      seller,
+      buyer,
+      notes: `Demo invoice for ${college}.`,
+    });
+  };
+  const year = await invoice(
+    [
+      {
+        description: 'Placement plan (demo): 1,800 students at ₹75.00 per student per year',
+        quantity: 1800,
+        unitPaise: 75_00,
+      },
+    ],
+    '2026-04-06',
+    '2026-05-06',
+  );
+  await PaymentModel.create({
+    invoiceId: year._id,
+    amountPaise: year.totalPaise,
+    method: 'bank',
+    paidOn: '2026-04-28',
+    reference: 'DEMOUTR0000001',
+    note: 'Demo bank transfer',
+  });
+  await InvoiceModel.updateOne(
+    { _id: year._id },
+    { $set: { status: 'paid', paidPaise: year.totalPaise, paidAt: new Date('2026-04-28T11:00:00+05:30') } },
+  );
+  // Open, and due in 20 days whenever the seed runs (so the demo never turns read-only).
+  await invoice(
+    [
+      {
+        description: 'Additional seats (demo): 200 students at ₹75.00 per student per year',
+        quantity: 200,
+        unitPaise: 75_00,
+      },
+    ],
+    istDay(new Date(Date.now() - 10 * 86_400_000)),
+    istDay(new Date(Date.now() + 20 * 86_400_000)),
+  );
+}
+
+async function seedPlacements(ids: Map<string, Types.ObjectId>, prefix: string) {
+  const id = (local: string) => {
+    const v = ids.get(local);
+    if (!v) throw new Error(`seed: missing ${local}`);
+    return v;
+  };
+  const now = Date.now();
+  // The demo students' batches (PEOPLE): Vikram graduates in 2026, Ananya in 2027.
+  const [vikramYear, ananyaYear] = [2026, 2027];
+  await AcademicRecordModel.create([
+    {
+      rollNumber: `23${prefix}1A0542`,
+      userId: id('ananya'),
+      cgpa: 8.2,
+      activeBacklogs: 0,
+      historyBacklogs: 0,
+      tenthPct: 91,
+      twelfthPct: 88,
+      source: 'import',
+      verifiedBy: id('tpo'),
+      verifiedAt: new Date(),
+    },
+    {
+      rollNumber: `22${prefix}1A0519`,
+      userId: id('vikram'),
+      cgpa: 7.4,
+      activeBacklogs: 0,
+      historyBacklogs: 1,
+      tenthPct: 84,
+      twelfthPct: 79,
+      source: 'import',
+      verifiedBy: id('tpo'),
+      verifiedAt: new Date(),
+    },
+  ]);
+  const company = (name: string, sector: string, notes: string) =>
+    PlacementCompanyModel.create({ name, companyKey: companyKey(name), sector, notes });
+  const nimbus = await company('Nimbus Labs (demo)', 'Software', 'DEMO: fictional company for the demo.');
+  const ironleaf = await company('Ironleaf Motors (demo)', 'Automotive', 'DEMO: fictional company.');
+  const kestrel = await company('Kestrel Analytics (demo)', 'Analytics', 'DEMO: fictional company.');
+  const rounds = (at: number) => [
+    { name: 'Online assessment', kind: 'aptitude', at: new Date(at) },
+    { name: 'Technical interview', kind: 'technical', at: new Date(at + 3 * 3600_000) },
+    { name: 'HR interview', kind: 'hr', at: new Date(at + 5 * 3600_000) },
+  ];
+  await PlacementDriveModel.create([
+    {
+      companyId: nimbus._id,
+      title: 'Software engineer campus drive (DEMO)',
+      description:
+        'DEMO drive at a fictional company. Online assessment, then two interviews on the same day.',
+      roles: [
+        {
+          title: 'Software Engineer',
+          ctcMinLpa: 6,
+          ctcMaxLpa: 8.5,
+          location: 'Hyderabad',
+          type: 'full_time',
+        },
+      ],
+      mode: 'on_campus',
+      venue: 'Seminar hall, block B',
+      driveDate: new Date(now + 10 * DAY),
+      registrationCloseAt: new Date(now + 5 * DAY),
+      eligibility: {
+        branches: ['CSE', 'IT', 'ECE'],
+        gradYears: [vikramYear, ananyaYear],
+        minCgpa: 7,
+        maxActiveBacklogs: 0,
+      },
+      questions: [
+        { label: 'Preferred location', kind: 'choice', options: ['Hyderabad', 'Bengaluru'], required: true },
+      ],
+      rounds: rounds(now + 10 * DAY),
+      resumeRequired: false,
+      status: 'open',
+      openedAt: new Date(),
+      createdBy: id('tpo'),
+    },
+    {
+      companyId: ironleaf._id,
+      title: 'Graduate engineer trainee (DEMO)',
+      description: 'DEMO drive at a fictional company for core branches.',
+      roles: [
+        {
+          title: 'Graduate Engineer Trainee',
+          ctcMinLpa: 4.5,
+          ctcMaxLpa: 4.5,
+          location: 'Chennai',
+          type: 'full_time',
+        },
+      ],
+      mode: 'virtual',
+      driveDate: new Date(now + 14 * DAY),
+      registrationCloseAt: new Date(now + 7 * DAY),
+      eligibility: { branches: ['MECH', 'EEE'], gradYears: [vikramYear, ananyaYear], minCgpa: 6.5 },
+      rounds: [{ name: 'Technical interview', kind: 'technical', at: null }],
+      resumeRequired: true,
+      status: 'open',
+      openedAt: new Date(),
+      createdBy: id('tpo'),
+    },
+  ]);
+  const done = await PlacementDriveModel.create({
+    companyId: kestrel._id,
+    title: 'Data analyst drive (DEMO)',
+    description: 'DEMO drive at a fictional company; results are in.',
+    roles: [{ title: 'Data Analyst', ctcMinLpa: 7, ctcMaxLpa: 7, location: 'Bengaluru', type: 'full_time' }],
+    mode: 'on_campus',
+    driveDate: new Date(now - 20 * DAY),
+    registrationCloseAt: new Date(now - 25 * DAY),
+    eligibility: { branches: [], gradYears: [vikramYear], minCgpa: 7 },
+    rounds: rounds(now - 20 * DAY),
+    resumeRequired: false,
+    status: 'completed',
+    openedAt: new Date(now - 30 * DAY),
+    createdBy: id('tpo'),
+  });
+  await DriveRegistrationModel.create({
+    driveId: done._id,
+    userId: id('vikram'),
+    status: 'registered',
+    final: 'selected',
+    roundResults: [0, 1, 2].map((round) => ({ round, result: 'cleared' })),
+    branch: 'CSE',
+    gradYear: vikramYear,
+  });
+  await OfferModel.create({
+    userId: id('vikram'),
+    companyKey: companyKey(kestrel.name),
+    companyName: kestrel.name,
+    role: 'Data Analyst',
+    ctcLpa: 7,
+    ctcBand: ctcBand(7),
+    offerDate: new Date(now - 18 * DAY),
+    type: 'full_time',
+    source: 'drive',
+    driveId: done._id,
+    status: 'verified',
+    verifiedBy: id('tpo'),
+    verifiedAt: new Date(now - 18 * DAY),
+    branch: 'CSE',
+    gradYear: vikramYear,
+  });
+  // A drive in progress (B15): the first round is in, the interview results are not yet.
+  const brightwave = await company('Brightwave Systems (demo)', 'Software', 'DEMO: fictional company.');
+  const live = await PlacementDriveModel.create({
+    companyId: brightwave._id,
+    title: 'Associate engineer drive (DEMO)',
+    description: 'DEMO drive at a fictional company; the assessment is done, interviews are under way.',
+    roles: [
+      { title: 'Associate Engineer', ctcMinLpa: 5, ctcMaxLpa: 6, location: 'Hyderabad', type: 'full_time' },
+    ],
+    mode: 'virtual',
+    driveDate: new Date(now - 2 * DAY),
+    registrationCloseAt: new Date(now - 6 * DAY),
+    eligibility: { branches: [], gradYears: [vikramYear], minCgpa: 6.5 },
+    rounds: rounds(now - 2 * DAY),
+    resumeRequired: false,
+    status: 'in_progress',
+    openedAt: new Date(now - 12 * DAY),
+    createdBy: id('tpo'),
+  });
+  await DriveRegistrationModel.create({
+    driveId: live._id,
+    userId: id('vikram'),
+    status: 'registered',
+    final: 'in_process',
+    roundResults: [
+      { round: 0, result: 'cleared' },
+      { round: 1, result: 'pending' },
+      { round: 2, result: 'pending' },
+    ],
+    branch: 'CSE',
+    gradYear: vikramYear,
+  });
+}
+
+/**
+ * DEMO (B15): six weeks of product events, so Admin › Analytics has something to show. Sixty
+ * fictional sign-ups (ten a week) stand in as detached members: an `anonKey` starting `demo-` and
+ * no account, so nobody fictional appears in the directory. The demo accounts add their own visits.
+ * Every sign-up is labelled `source: demo`. The shape is chosen, not measured: 80% verify, 80% take
+ * a first step within a week, and 70%, 50%, 40% and 30% come back one to four weeks later.
+ */
+const DEMO_COHORT = { perWeek: 10, weeks: 6, comeBack: [70, 50, 40, 30, 30] } as const;
+
+async function seedCohort(ids: Map<string, Types.ObjectId>, prefix: string) {
+  const day = (d: number) => new Date(Date.now() - d * DAY).toISOString().slice(0, 10);
+  type Row = {
+    day: string;
+    userId: Types.ObjectId | null;
+    anonKey: string | null;
+    name: ProductEventName;
+    props: Record<string, string>;
+  };
+  const rows: Row[] = [];
+  const total = DEMO_COHORT.perWeek * DEMO_COHORT.weeks;
+  for (let n = 0; n < total; n++) {
+    const who = { userId: null, anonKey: `demo-${prefix}-${n}` };
+    const add = (daysAgo: number, name: ProductEventName, props: Record<string, string> = {}) => {
+      if (daysAgo >= 0) rows.push({ ...who, day: day(daysAgo), name, props });
+    };
+    const weeksAgo = DEMO_COHORT.weeks - 1 - (n % DEMO_COHORT.weeks);
+    const joined = weeksAgo * 7 + (n % 3);
+    add(joined, 'signed_up', { source: 'demo' });
+    add(joined, 'visited');
+    if (n % 5 !== 4) add(joined, 'verified');
+    // A first step: a mentorship request (half end in a session), or a roadmap step.
+    if (n % 5 < 3) {
+      const requestId = String(new mongoose.Types.ObjectId());
+      add(joined - 1, 'request_sent', { requestId });
+      if (n % 2 === 0) add(joined - 4, 'session_completed', { requestId });
+    } else if (n % 5 === 3) add(joined - 2, 'roadmap_step');
+    if (n % 4 === 0) add(joined - 3, 'study_question');
+    // Coming back k weeks later: the share in DEMO_COHORT.comeBack.
+    DEMO_COHORT.comeBack.forEach((pct, k) => {
+      if ((n % 10) * 10 < pct) add(joined - 7 * (k + 1), 'visited');
+    });
+  }
+  // The demo accounts were active the last three weeks (never today: a real visit takes today).
+  for (const userId of new Set(ids.values()))
+    for (const d of [1, 8, 15]) rows.push({ day: day(d), userId, anonKey: null, name: 'visited', props: {} });
+  await ProductEventModel.insertMany(rows);
+}
+
+/**
+ * DEMO (B15): the WhatsApp message log an admin sees under Admin › Messaging usage. Like the real log
+ * it holds template names, statuses and ids only, never text. (What the console provider "sent"
+ * lives in memory and is read through GET /dev/outbox.)
+ */
+async function seedWhatsAppLog(ids: Map<string, Types.ObjectId>, prefix: string) {
+  const rows: [string, string, 'requests' | 'sessions' | 'placements' | 'authentication', boolean, string][] =
+    [
+      ['rahul', 'cl_request_received', 'requests', false, 'read'],
+      ['ananya', 'cl_request_accepted', 'requests', false, 'read'],
+      ['ananya', 'cl_session_reminder', 'sessions', true, 'delivered'],
+      ['ananya', 'cl_drive_open', 'placements', false, 'delivered'],
+      ['vikram', 'cl_drive_round', 'placements', true, 'read'],
+      ['vikram', 'cl_drive_selected', 'placements', true, 'read'],
+      ['ananya', 'auth_code', 'authentication', true, 'delivered'],
+      ['rahul', 'cl_session_reminder', 'sessions', true, 'failed'],
+    ];
+  const day = 3600_000 * 24;
+  const docs = rows.flatMap(([who, template, category, critical, status], i) => {
+    const userId = ids.get(who);
+    if (!userId) return [];
+    const at = new Date(Date.now() - (rows.length - i) * 5 * 3600_000);
+    return [
+      {
+        userId,
+        channel: 'whatsapp' as const,
+        template,
+        category,
+        critical,
+        providerMessageId: `demo-wamid-${prefix}-${i}`,
+        status,
+        statusAt: at,
+        expiresAt: new Date(at.getTime() + 90 * day),
+        createdAt: at,
+      },
+    ];
+  });
+  await ChannelMessageModel.insertMany(docs);
+  const counts = new Map<string, number>();
+  for (const d of docs) {
+    const key = `${d.createdAt.toISOString().slice(0, 10)}|${d.category}`;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  for (const [key, count] of counts) {
+    const [dayKey, category] = key.split('|') as [string, string];
+    await ChannelUsageModel.updateOne(
+      { day: dayKey, channel: 'whatsapp', category },
+      { $inc: { count } },
+      { upsert: true },
+    );
+  }
+}
+
+/** DEMO help and legal (B14): a problem report the college answered, and the college's legal details. */
+async function seedSupport(ids: Map<string, Types.ObjectId>, tenantId: Types.ObjectId, college: string) {
+  const ananya = ids.get('ananya');
+  const admin = ids.get('admin');
+  if (ananya && admin)
+    await SupportTicketModel.create({
+      userId: ananya,
+      category: 'account',
+      desk: 'college',
+      subject: 'DEMO: my phone number changed',
+      body: 'DEMO report: I have a new SIM and cannot receive codes on my old number.',
+      status: 'answered',
+      replies: [
+        {
+          from: 'college',
+          authorId: admin,
+          authorName: 'Demo College Admin',
+          body: 'DEMO reply: use Settings › Security › Change number with your password, then the new number gets a code.',
+          at: new Date(),
+        },
+      ],
+      lastActivityAt: new Date(),
+    });
+  // Filled for the demo without publishing a new version, so demo members meet no notice gate.
+  await TenantModel.updateOne(
+    { _id: tenantId },
+    {
+      $set: {
+        'legal.legalName': `${college} Demo Educational Society (demo)`,
+        'legal.address': '1 Demo Road, Hyderabad, Telangana 500001 (fictional)',
+        'legal.grievanceOfficer': {
+          name: 'Demo Grievance Officer',
+          designation: 'Grievance officer (demo)',
+          email: 'grievance@demo.example',
+          phone: null,
+        },
+        'legal.updatedAt': new Date(),
+      },
+    },
+  );
+}
+
+/** DEMO outcomes (B8): an alumna's higher studies and an alumnus's GATE (verified), a student's GATE (waiting). */
+async function seedOutcomes(ids: Map<string, Types.ObjectId>) {
+  const id = (local: string) => {
+    const v = ids.get(local);
+    if (!v) throw new Error(`seed: missing ${local}`);
+    return v;
+  };
+  const verified = { status: 'verified', source: 'tpo', verifiedBy: id('tpo'), verifiedAt: new Date() };
+  await HigherStudyModel.create({
+    ...verified,
+    userId: id('fatima'),
+    branch: 'CSE',
+    gradYear: 2020,
+    institution: 'Demo Institute of Technology (demo)',
+    program: 'MS in Computer Science',
+    country: 'Germany',
+    admitYear: 2020,
+    qualifyingExam: 'GRE',
+  });
+  await ExamQualificationModel.create([
+    {
+      ...verified,
+      userId: id('arjun'),
+      branch: 'MECH',
+      gradYear: 2018,
+      exam: 'GATE',
+      year: 2018,
+      level: 'national',
+      scoreBand: 'DEMO score',
+    },
+    {
+      status: 'reported',
+      source: 'self',
+      userId: id('vikram'),
+      branch: 'CSE',
+      gradYear: 2026,
+      exam: 'GATE',
+      year: 2026,
+      level: 'national',
+    },
+  ]);
+}
+
 async function main() {
   await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
   await mongoose.connection.dropDatabase();
@@ -819,7 +1316,27 @@ async function main() {
     const t = await TenantModel.create({
       slug: c.slug,
       branding: c.branding,
-      subscription: { plan: 'trial', seatLimit: 1000, renewalDate: null },
+      // The demo shows every module (a new college starts with fewer; see NEW_TENANT_FEATURES).
+      features: { ...LEGACY_FEATURES },
+      // Billing (B10): DPIT is a paying Placement college, MRCE is on its pilot.
+      ...(c.slug === 'dpit'
+        ? {
+            subscription: {
+              plan: 'placement',
+              seats: 1800,
+              startedOn: new Date('2026-04-01T00:00:00+05:30'),
+              renewalDate: new Date('2027-03-31T00:00:00+05:30'),
+            },
+            billing: {
+              buyer: {
+                legalName: 'DPIT Demo Educational Society (demo)',
+                address: '1 Demo Road, Hyderabad, Telangana 500001 (fictional)',
+                gstin: null,
+                stateCode: '36',
+              },
+            },
+          }
+        : { subscription: { plan: 'pilot', seats: 1000, startedOn: new Date(), renewalDate: null } }),
     });
     await runInTenant(t._id, async () => {
       const ids = new Map<string, Types.ObjectId>();
@@ -883,11 +1400,105 @@ async function main() {
           emailIndex: cipher.blindIndex(recEmail),
         });
       }
+      // DEMO: a first-year under 18 whose admission record has a guardian's number (B2). They join
+      // by phone (+91 90000 00016); the guardian's code goes to +91 90000 00061 (console outbox).
+      await WhitelistModel.create({
+        rollNumber: `25${c.slug.slice(0, 2).toUpperCase()}1A0516`,
+        name: 'Demo Minor Student',
+        branch: 'CSE',
+        gradYear: new Date().getFullYear() + 4,
+        kind: 'student',
+        source: 'manual',
+        phoneEnc: cipher.encrypt(DEMO_MINOR_PHONE),
+        phoneIndex: cipher.blindIndex(DEMO_MINOR_PHONE),
+        guardianPhoneEnc: cipher.encrypt(DEMO_GUARDIAN_PHONE),
+        guardianPhoneIndex: cipher.blindIndex(DEMO_GUARDIAN_PHONE),
+      });
+      // DEMO (B15): a first-year under 18 who joined by phone and claimed their record, waiting for
+      // their guardian's consent (status guardian_pending: read-only until the guardian confirms).
+      {
+        const ph = demoPendingMinorPhones(COLLEGES.indexOf(c));
+        const adultOn = new Date();
+        adultOn.setMonth(adultOn.getMonth() + 10, 1);
+        const minor = await UserModel.create({
+          name: 'Demo Pending Minor',
+          roles: ['STUDENT'],
+          verified: true,
+          status: 'guardian_pending',
+          adultOn,
+          ageCheckedAt: new Date(),
+          phoneEnc: cipher.encrypt(ph.minor),
+          phoneIndex: cipher.blindIndex(ph.minor),
+          phoneVerifiedAt: new Date(),
+          otpChannel: 'sms',
+        });
+        await ConsentModel.insertMany(
+          CONSENT_PURPOSE_KEYS.map((purpose) => ({
+            userId: minor._id,
+            purpose,
+            version: 1,
+            noticeVersion: PRIVACY_NOTICE_VERSION,
+            granted: true,
+            source: 'signup',
+          })),
+        );
+        await WhitelistModel.create({
+          rollNumber: `25${c.slug.slice(0, 2).toUpperCase()}1A0519`,
+          name: 'Demo Pending Minor',
+          branch: 'CSE',
+          gradYear: new Date().getFullYear() + 4,
+          kind: 'student',
+          source: 'manual',
+          phoneEnc: cipher.encrypt(ph.minor),
+          phoneIndex: cipher.blindIndex(ph.minor),
+          guardianPhoneEnc: cipher.encrypt(ph.guardian),
+          guardianPhoneIndex: cipher.blindIndex(ph.guardian),
+          status: 'claimed',
+          claimedBy: minor._id,
+          claimedAt: new Date(),
+        });
+        await ProfileModel.create({
+          userId: minor._id,
+          name: 'Demo Pending Minor',
+          roles: ['STUDENT'],
+          verified: false,
+          minorUntil: adultOn,
+          branch: 'CSE',
+          gradYear: new Date().getFullYear() + 4,
+        });
+        rows.push([
+          `${c.slug}.localhost`,
+          `phone ${ph.minor}`,
+          'STUDENT',
+          `minor, guardian consent pending (guardian's code goes to ${ph.guardian})`,
+        ]);
+      }
+      const invitePhones = demoInvitePhones(COLLEGES.indexOf(c));
+      for (const [no, name, phone] of [
+        ['0521', 'Demo Invite Student', invitePhones.link],
+        ['0522', 'Demo Classcode Student', invitePhones.code],
+      ] as const)
+        await WhitelistModel.create({
+          rollNumber: `24${c.slug.slice(0, 2).toUpperCase()}1A${no}`,
+          name,
+          branch: 'ECE',
+          gradYear: new Date().getFullYear() + 2,
+          kind: 'student',
+          source: 'manual',
+          phoneEnc: cipher.encrypt(phone),
+          phoneIndex: cipher.blindIndex(phone),
+        });
       await seedMentorship(ids);
       await seedFeed(ids);
       await seedJobs(ids);
       await seedRoadmaps(ids);
       await seedPhase7(ids);
+      await seedPlacements(ids, c.slug.slice(0, 2).toUpperCase());
+      await seedOutcomes(ids);
+      if (c.slug === 'dpit') await seedBilling(t.branding.displayName);
+      await seedCohort(ids, c.slug);
+      await seedWhatsAppLog(ids, c.slug);
+      await seedSupport(ids, t._id, t.branding.displayName);
       await seedStudy(t._id, ids.get('faculty') as Types.ObjectId, { material: studyMaterial });
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
@@ -899,6 +1510,8 @@ async function main() {
   console.warn(['Host', 'Email', 'Role', 'Notes'].join(' | '));
   for (const r of rows) console.warn(r.join(' | '));
   console.warn(
+    '\nTry phone sign-up (SMS_PROVIDER or WHATSAPP_PROVIDER=console): join with +91 90000 00016 and a birth month under 18; the guardian step sends a code to +91 90000 00061. Codes: GET /api/v1/dev/outbox?to=%2B919000000016',
+    '\nTry invites (B4): sign in as tpo@dpit.example, open Admin › Onboarding, download the links (CSV) and open the one for Demo Invite Student; the code goes to +91 90000 00107. Class codes: Demo Classcode Student (roll 24DP1A0522, ECE) gets codes at +91 90000 00108.',
     '\nTry verification: sign in as newbie@dpit.example, open Verify, enter roll number 24DP1A0577; the code arrives in Mailpit (http://localhost:8025).',
   );
   console.warn('Try an import: Admin → Imports → upload docs/samples/sample-students.csv');
@@ -913,6 +1526,15 @@ async function main() {
   );
   console.warn(
     'Try events and progress: ananya@dpit.example opens Events (RSVP, add to calendar, ask in the AMA) and Progress (XP, badges, rewards); admin@dpit.example opens Admin → Analytics and Admin → Rewards.',
+  );
+  console.warn(
+    'Try billing: admin@dpit.example opens Admin › Billing (plan, seats, usage, a paid and an open invoice; Pay online with PAYMENT_PROVIDER=stub); superadmin@campuslink.example opens Platform › Billing to issue invoices and record bank payments.',
+  );
+  console.warn(
+    'Try placements: ananya@dpit.example opens Placements (a drive she can register for, one she cannot and why); tpo@dpit.example opens Admin → Placement drives to enter round results and export registrants; vikram@dpit.example has a verified DEMO offer.',
+  );
+  console.warn(
+    'Try reports: admin@dpit.example or tpo@dpit.example opens Admin → Reports (placement %, recruiters, NBA, NAAC and NIRF-style reports, evidence workbook); tpo@dpit.example verifies Vikram’s DEMO GATE result under Admin → Offers and outcomes.',
   );
   console.warn(
     'Try roadmaps: ananya@dpit.example opens Roadmaps (Career Galaxy) and marks steps done; faculty@dpit.example reviews Rahul’s DEMO draft under Roadmaps → Review.',

@@ -39,7 +39,6 @@ const aiSettingsSchema = new Schema(
       externalVideos: { type: Boolean, default: false },
       ocr: { type: Boolean, default: true },
       transcription: { type: Boolean, default: true },
-      facultySeeChats: { type: Boolean, default: false },
     },
     killSwitch: { type: Boolean, default: false },
     /** Provider prices per million tokens as the admin entered them (cost estimate only). */

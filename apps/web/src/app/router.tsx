@@ -10,9 +10,15 @@ import {
   type RouteObject,
 } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../i18n/react';
 import { Compass } from 'lucide-react';
-import { ADMIN_PERMISSIONS, type Permission } from '@campuslink/shared';
+import {
+  ADMIN_PERMISSIONS,
+  currentGradYear,
+  type Feature,
+  type Permission,
+  type PublicTenant,
+} from '@campuslink/shared';
 import { useTenant } from '../lib/tenant-context';
 import { importWithRetry, setPendingTargetResolver } from '../lib/chunk-reload';
 import { registerPreloadRoutes, registerRouteTables } from '../lib/preload';
@@ -36,6 +42,7 @@ const load = {
   signIn: () => import('../features/auth/sign-in'),
   signUp: () => import('../features/auth/sign-up'),
   emailLinks: () => import('../features/auth/email-links'),
+  join: () => import('../features/join/join'),
   home: () => import('../features/home/home'),
   settings: () => import('../features/settings/settings'),
   dataSettings: () => import('../features/settings/data-settings'),
@@ -43,6 +50,7 @@ const load = {
   admin: () => import('../features/admin/admin'),
   adminOverview: () => import('../features/admin/admin-overview'),
   imports: () => import('../features/admin/imports'),
+  onboardingAdmin: () => import('../features/admin/onboarding-admin'),
   listAdmin: () => import('../features/admin/list-admin'),
   mentorshipAdmin: () => import('../features/admin/mentorship-admin'),
   analyticsAdmin: () => import('../features/admin/analytics-admin'),
@@ -85,10 +93,26 @@ const load = {
   tracker: () => import('../features/jobs/tracker'),
   postJob: () => import('../features/jobs/post-job'),
   referrals: () => import('../features/referrals/referrals'),
+  placements: () => import('../features/placements/placements'),
+  drivePage: () => import('../features/placements/drive-page'),
+  placementsAdmin: () => import('../features/admin/placements-admin'),
+  driveEditor: () => import('../features/admin/drive-editor'),
+  driveManage: () => import('../features/admin/drive-manage'),
+  outcomes: () => import('../features/outcomes/outcomes'),
+  reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
+  traction: () => import('../features/platform/traction'),
+  platformBilling: () => import('../features/platform/billing'),
+  adminBilling: () => import('../features/admin/billing'),
+  help: () => import('../features/help/help'),
+  supportAdmin: () => import('../features/admin/support-admin'),
+  platformSupport: () => import('../features/platform/support'),
+  legal: () => import('../features/legal/legal-page'),
 };
 
-type Gate = Permission | readonly Permission[];
+type Gate = Permission | readonly Permission[] | { permission: Permission; feature: Feature };
+/** A screen of a feature the college can switch off (Admin › Features). */
+const inFeature = (feature: Feature, permission: Permission): Gate => ({ permission, feature });
 type Place = { path: string } | { index: true };
 
 /** A screen's first data, started by the route loader in parallel with its code (audit TR-2). */
@@ -97,6 +121,12 @@ type Data = (params: Params, url: URL) => Promise<unknown>[];
 const LOADER_WAIT_MS = 1500;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const isId = (v: string | undefined): v is string => !!v && /^[a-f0-9]{24}$/.test(v);
+/** Reports keep batch and programme in the URL; the loader asks for the same query the screen does. */
+const reportQs = (url: URL) => {
+  const g = Number(url.searchParams.get('gradYear')) || currentGradYear();
+  const b = url.searchParams.get('branch');
+  return new URLSearchParams({ gradYear: String(g), ...(b ? { branch: b } : {}) }).toString();
+};
 
 /**
  * Loaders never fail the navigation: a failed read shows the screen's own error state. They wait
@@ -123,9 +153,14 @@ function lazyScreen<M>(importer: () => Promise<M>, name: keyof M & string, gate?
       return { element: <RouteError error={error} /> };
     }
     const Screen = mod[name] as unknown as ComponentType;
+    const feature = gate && typeof gate === 'object' && 'feature' in gate ? gate.feature : undefined;
+    const permission = feature ? (gate as { permission: Permission }).permission : (gate as Permission);
     return {
       element: gate ? (
-        <RequirePermission permission={typeof gate === 'string' ? gate : [...gate]}>
+        <RequirePermission
+          permission={typeof permission === 'string' ? permission : [...(permission as Permission[])]}
+          feature={feature}
+        >
           <Screen />
         </RequirePermission>
       ) : (
@@ -267,6 +302,11 @@ function collegeRoutes(): RouteObject[] {
         // Lazy like every screen: signed-in members never download it (bundle budget).
         publicScreen(load.landing, 'LandingPage', '/', '/home'),
         publicScreen(load.signUp, 'SignUpPage', '/sign-up', '/home'),
+        // One-tap invites and class codes (B4): signed-in members are already in.
+        publicScreen(load.join, 'InvitePage', '/invite/:token', '/home'),
+        publicScreen(load.join, 'JoinPage', '/join/:code', '/home'),
+        // The college's privacy policy and terms (B14): readable before and after signing in.
+        publicScreen(load.legal, 'LegalPage', '/legal/:doc'),
         ...auth('/home'),
         // The living style guide (revamp phase 6): development builds only; production leaves it out.
         ...(import.meta.env.DEV
@@ -278,10 +318,13 @@ function collegeRoutes(): RouteObject[] {
               q.homeFeed(url.searchParams.get('tab') === 'following' ? 'following' : 'for_you'),
             ),
             qc.ensureQueryData(q.oneUsefulThing()),
-            qc.ensureQueryData(q.stories()),
+            // Stories only when the college has them on (Admin › Features).
+            ...(qc.getQueryData<PublicTenant>(q.tenant().queryKey)?.features.stories === false
+              ? []
+              : [qc.ensureQueryData(q.stories())]),
           ]),
           still(screen(load.verify, 'VerifyPage', undefined, at('/verify'))),
-          screen(load.study, 'StudyPage', 'study:read', at('/study'), () => [
+          screen(load.study, 'StudyPage', inFeature('study', 'study:read'), at('/study'), () => [
             qc
               .ensureQueryData(q.me())
               .then((me) =>
@@ -289,7 +332,7 @@ function collegeRoutes(): RouteObject[] {
               ),
             qc.ensureQueryData(q.aiStatus()),
           ]),
-          screen(load.subject, 'SubjectPage', 'study:read', at('/study/:id'), ({ id }) =>
+          screen(load.subject, 'SubjectPage', inFeature('study', 'study:read'), at('/study/:id'), ({ id }) =>
             isId(id)
               ? [
                   qc.ensureQueryData(q.subject(id)),
@@ -298,26 +341,39 @@ function collegeRoutes(): RouteObject[] {
                 ]
               : [],
           ),
-          screen(load.insights, 'InsightsPage', 'study:analytics', at('/study/:id/insights'), ({ id }) =>
-            isId(id) ? [qc.ensureQueryData(q.subject(id)), qc.ensureQueryData(q.studyInsights(id, 30))] : [],
+          screen(
+            load.insights,
+            'InsightsPage',
+            inFeature('study', 'study:analytics'),
+            at('/study/:id/insights'),
+            ({ id }) =>
+              isId(id)
+                ? [qc.ensureQueryData(q.subject(id)), qc.ensureQueryData(q.studyInsights(id, 30))]
+                : [],
           ),
           // Conversations with a composer (and a streaming answer) never refetch under a pull.
           still(
-            screen(load.chat, 'ChatPage', 'study:read', at('/study/chat'), () => [
+            screen(load.chat, 'ChatPage', inFeature('study', 'study:read'), at('/study/chat'), () => [
               qc.ensureQueryData(q.chatSessions()),
               qc.ensureQueryData(q.aiStatus()),
             ]),
           ),
           still(
-            screen(load.chat, 'ChatPage', 'study:read', at('/study/chat/:sessionId'), ({ sessionId }) => [
-              qc.ensureQueryData(q.chatSessions()),
-              ...(isId(sessionId) ? [qc.ensureQueryData(q.chatSession(sessionId))] : []),
-            ]),
+            screen(
+              load.chat,
+              'ChatPage',
+              inFeature('study', 'study:read'),
+              at('/study/chat/:sessionId'),
+              ({ sessionId }) => [
+                qc.ensureQueryData(q.chatSessions()),
+                ...(isId(sessionId) ? [qc.ensureQueryData(q.chatSession(sessionId))] : []),
+              ],
+            ),
           ),
           screen(
             load.material,
             'MaterialPage',
-            'study:read',
+            inFeature('study', 'study:read'),
             at('/study/:id/m/:materialId'),
             ({ id, materialId }) =>
               isId(id) && isId(materialId)
@@ -331,8 +387,13 @@ function collegeRoutes(): RouteObject[] {
             isId(postId) ? [qc.ensureQueryData(q.post(postId)), qc.ensureQueryData(q.comments(postId))] : [],
           ),
           screen(load.collections, 'SavedPage', 'feed:interact', at('/saved')),
-          screen(load.collections, 'ReelsPage', 'feed:read', at('/reels')),
-          screen(load.collections, 'FollowingPage', 'sources:follow', at('/following')),
+          screen(load.collections, 'ReelsPage', inFeature('reels', 'feed:read'), at('/reels')),
+          screen(
+            load.collections,
+            'FollowingPage',
+            inFeature('contentSources', 'sources:follow'),
+            at('/following'),
+          ),
           screen(load.questions, 'QuestionsPage', 'feed:read', at('/questions')),
           screen(load.questions, 'QuestionPage', 'feed:read', at('/questions/:questionId')),
           screen(load.galaxy, 'RoadmapsPage', 'roadmaps:read', at('/roadmaps'), (_, url) => [
@@ -359,7 +420,12 @@ function collegeRoutes(): RouteObject[] {
           screen(load.progress, 'ProgressPage', undefined, at('/progress'), () => [
             qc.ensureQueryData(q.progress()),
           ]),
-          screen(load.leaderboard, 'LeaderboardPage', 'directory:read', at('/leaderboard')),
+          screen(
+            load.leaderboard,
+            'LeaderboardPage',
+            inFeature('leaderboards', 'directory:read'),
+            at('/leaderboard'),
+          ),
           screen(load.leaderboard, 'WallOfMentorsPage', 'directory:read', at('/wall-of-mentors')),
           screen(load.rewards, 'RewardsPage', 'rewards:redeem', at('/rewards')),
           screen(load.events, 'EventsPage', 'events:rsvp', at('/events'), () => [
@@ -380,6 +446,37 @@ function collegeRoutes(): RouteObject[] {
             isId(jobId) ? [qc.ensureQueryData(q.job(jobId))] : [],
           ),
           screen(load.referrals, 'ReferralsPage', ['referrals:request', 'referrals:offer'], at('/referrals')),
+          screen(
+            load.placements,
+            'PlacementsPage',
+            inFeature('placements', 'placements:view'),
+            at('/placements'),
+            (_, url) => {
+              const tab = url.searchParams.get('tab');
+              return [
+                qc.ensureQueryData(q.myAcademics()),
+                tab === 'offers'
+                  ? qc.ensureQueryData(q.myOffers())
+                  : qc.ensureQueryData(
+                      q.placementDrives(tab === 'all' || tab === 'registered' ? tab : 'eligible'),
+                    ),
+              ];
+            },
+          ),
+          screen(
+            load.outcomes,
+            'OutcomesPage',
+            inFeature('placements', 'outcomes:report'),
+            at('/outcomes'),
+            () => [qc.ensureQueryData(q.myOffers()), qc.ensureQueryData(q.myOutcomes())],
+          ),
+          screen(
+            load.drivePage,
+            'DrivePage',
+            inFeature('placements', 'placements:view'),
+            at('/placements/:id'),
+            ({ id }) => (isId(id) ? [qc.ensureQueryData(q.placementDrive(id))] : []),
+          ),
           screen(load.mentors, 'MentorsPage', 'mentorship:request', at('/mentors'), (_, url) =>
             url.searchParams.get('view') === 'browse' ? [] : [qc.ensureQueryData(q.mentorMatch())],
           ),
@@ -407,6 +504,16 @@ function collegeRoutes(): RouteObject[] {
           screen(load.notifications, 'NotificationsPage', undefined, at('/notifications'), () => [
             qc.ensureQueryData(q.notifications()),
           ]),
+          // Help centre and problem reports (B14).
+          screen(load.help, 'HelpPage', undefined, at('/help'), () => [
+            qc.ensureQueryData(q.supportTickets()),
+          ]),
+          screen(load.help, 'HelpArticlePage', undefined, at('/help/articles/:id')),
+          still(
+            screen(load.help, 'ReportPage', 'support:create', at('/help/reports/:id'), ({ id }) =>
+              isId(id) ? [qc.ensureQueryData(q.supportTicket(id))] : [],
+            ),
+          ),
           settingsRoutes,
           layout(load.admin, 'AdminLayout', ADMIN_PERMISSIONS, 'admin', [
             screen(load.adminOverview, 'AdminOverview', undefined, index, () => [
@@ -415,18 +522,106 @@ function collegeRoutes(): RouteObject[] {
             screen(load.admin, 'UsersAdmin', 'users:read_admin', at('users')),
             screen(load.mentorshipAdmin, 'MentorshipAdmin', 'mentorship:oversee', at('mentorship')),
             screen(load.moderationAdmin, 'ModerationAdmin', 'moderation:act', at('moderation')),
-            screen(load.sourcesAdmin, 'SourcesAdmin', 'sources:manage', at('sources')),
-            screen(load.jobSourcesAdmin, 'JobSourcesAdmin', 'jobs:sources', at('job-sources')),
+            screen(
+              load.sourcesAdmin,
+              'SourcesAdmin',
+              inFeature('contentSources', 'sources:manage'),
+              at('sources'),
+            ),
+            screen(
+              load.jobSourcesAdmin,
+              'JobSourcesAdmin',
+              inFeature('jobsAggregation', 'jobs:sources'),
+              at('job-sources'),
+            ),
             screen(load.analyticsAdmin, 'AnalyticsAdmin', 'analytics:cohort', at('analytics'), () => [
               qc.ensureQueryData(q.analytics(q.ANALYTICS_DEFAULTS)),
             ]),
             screen(load.rewards, 'RewardsAdmin', 'rewards:manage', at('rewards')),
             screen(load.imports, 'ImportsAdmin', 'imports:manage', at('imports')),
+            screen(load.onboardingAdmin, 'OnboardingAdmin', 'onboarding:manage', at('onboarding'), () => [
+              qc.ensureQueryData(q.onboardingProgress()),
+              qc.ensureInfiniteQueryData(q.onboardingRecords('')),
+              qc.ensureQueryData(q.joinCodes()),
+            ]),
+            screen(
+              load.onboardingAdmin,
+              'JoinPosterPage',
+              'onboarding:manage',
+              at('onboarding/poster/:id'),
+              ({ id }) => (isId(id) ? [qc.ensureQueryData(q.joinCodePoster(id))] : []),
+            ),
+            screen(
+              load.placementsAdmin,
+              'DrivesAdmin',
+              inFeature('placements', 'placements:manage'),
+              at('placements'),
+              () => [qc.ensureInfiniteQueryData(q.adminDrives(''))],
+            ),
+            still(
+              screen(
+                load.driveEditor,
+                'DriveEditor',
+                inFeature('placements', 'placements:manage'),
+                at('placements/new'),
+              ),
+            ),
+            screen(
+              load.driveManage,
+              'DriveManage',
+              inFeature('placements', 'placements:manage'),
+              at('placements/:id'),
+              ({ id }) =>
+                isId(id)
+                  ? [qc.ensureQueryData(q.placementDrive(id)), qc.ensureQueryData(q.driveRegistrants(id))]
+                  : [],
+            ),
+            still(
+              screen(
+                load.driveEditor,
+                'DriveEditPage',
+                inFeature('placements', 'placements:manage'),
+                at('placements/:id/edit'),
+                ({ id }) => (isId(id) ? [qc.ensureQueryData(q.placementDrive(id))] : []),
+              ),
+            ),
+            screen(
+              load.placementsAdmin,
+              'OffersAdmin',
+              inFeature('placements', 'outcomes:verify'),
+              at('offers'),
+              () => [qc.ensureInfiniteQueryData(q.offersQueue('reported'))],
+            ),
+            screen(
+              load.reports,
+              'ReportsDashboard',
+              inFeature('placements', 'analytics:tenant'),
+              at('reports'),
+              (_, url) => [
+                qc.ensureQueryData(q.reportsDashboard(reportQs(url))),
+                qc.ensureQueryData(q.reportDefinitions()),
+              ],
+            ),
+            screen(
+              load.reports,
+              'ReportPage',
+              inFeature('placements', 'analytics:tenant'),
+              at('reports/:id'),
+              ({ id }, url) => (id ? [qc.ensureQueryData(q.outcomeReport(id, reportQs(url)))] : []),
+            ),
             screen(load.listAdmin, 'ListAdmin', 'imports:manage', at('list')),
             screen(load.listAdmin, 'VerificationAdmin', 'verification:review', at('verification')),
             still(screen(load.admin, 'BrandingAdmin', 'tenant:branding', at('branding'))),
             still(screen(load.admin, 'FeaturesAdmin', 'tenant:settings', at('features'))),
-            still(screen(load.aiAdmin, 'AiAdmin', 'ai:settings', at('ai'))),
+            still(screen(load.aiAdmin, 'AiAdmin', inFeature('study', 'ai:settings'), at('ai'))),
+            screen(load.adminBilling, 'AdminBilling', 'tenant:settings', at('billing'), () => [
+              qc.ensureQueryData(q.adminBilling()),
+            ]),
+            still(
+              screen(load.supportAdmin, 'SupportAdmin', 'support:manage', at('support'), () => [
+                qc.ensureQueryData(q.adminSupport('open')),
+              ]),
+            ),
             screen(load.admin, 'AuditAdmin', 'audit:read', at('audit')),
           ]),
         ]),
@@ -445,7 +640,31 @@ function platformRoutes(): RouteObject[] {
         ...auth('/platform'),
         shell(true, [
           screen(load.platform, 'PlatformTenants', 'platform:tenants', at('/platform')),
+          screen(load.traction, 'PlatformTraction', 'platform:tenants', at('/platform/traction'), () => [
+            qc.ensureQueryData(q.platformInsights()),
+          ]),
+          screen(load.platformBilling, 'PlatformBilling', 'platform:billing', at('/platform/billing'), () => [
+            qc.ensureQueryData(q.platformBilling()),
+          ]),
+          still(
+            screen(
+              load.platformBilling,
+              'PlatformCollegeBilling',
+              'platform:billing',
+              at('/platform/billing/:id'),
+              ({ id }) => (id ? [qc.ensureQueryData(q.platformCollegeBilling(id))] : []),
+            ),
+          ),
           screen(load.platform, 'PlatformHealth', 'platform:health', at('/platform/health')),
+          still(
+            screen(
+              load.platformSupport,
+              'PlatformSupport',
+              'platform:support',
+              at('/platform/support'),
+              () => [qc.ensureQueryData(q.platformSupport('open'))],
+            ),
+          ),
           settingsRoutes,
         ]),
       ],

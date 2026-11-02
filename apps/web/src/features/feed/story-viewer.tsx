@@ -1,6 +1,6 @@
 /* The full-screen story viewer, loaded when a ring is opened (Home's first paint needs only the rings). */
 import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog as D } from 'radix-ui';
 import { toast } from '../../lib/toast';
@@ -15,7 +15,7 @@ import { formatRelative } from '../../lib/format';
 import { markStorySeen, STORY_MS, storyBackground, type StoryGroup } from '../../lib/stories';
 
 function StoryFace({ story }: { story: StoryView }) {
-  const url = useFileUrl(story.fileId);
+  const url = useFileUrl(story.fileId, 640);
   if (story.kind === 'photo')
     return (
       <div className="relative grid size-full place-items-center bg-black">

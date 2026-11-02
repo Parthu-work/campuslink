@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { SUPPORTED_LOCALES } from '@campuslink/shared';
 import en from './en.json';
-import te from './te.json';
+
+/** Every language's strings file, by its locale code (`./hi.json` → `hi`). */
+const files = import.meta.glob<Record<string, unknown>>('./*.json', { eager: true, import: 'default' });
+const bundle = (l: string) => files[`./${l}.json`];
 
 /** Flattens nested strings to "a.b.c" → value. */
 const flat = (o: unknown, prefix = ''): Record<string, string> =>
@@ -13,24 +17,30 @@ const flat = (o: unknown, prefix = ''): Record<string, string> =>
 
 const vars = (s: string) => [...s.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1]).sort();
 
-describe('English and Telugu strings', () => {
+describe('every language', () => {
+  it('has a strings file for each supported locale, and no stray ones', () => {
+    expect(Object.keys(files).sort()).toEqual(SUPPORTED_LOCALES.map((l) => `./${l}.json`).sort());
+  });
+
   const e = flat(en);
-  const t = flat(te);
-
   // The app loads only the member's language and has no fallback bundle (i18n/index.ts).
-  it('have exactly the same keys', () => {
-    expect(Object.keys(t).sort()).toEqual(Object.keys(e).sort());
-  });
+  describe.each(SUPPORTED_LOCALES.filter((l) => l !== 'en'))('%s', (l) => {
+    const t = flat(bundle(l));
 
-  it('use the same interpolation variables', () => {
-    const mismatched = Object.keys(e).filter(
-      (k) => JSON.stringify(vars(e[k] ?? '')) !== JSON.stringify(vars(t[k] ?? '')),
-    );
-    expect(mismatched).toEqual([]);
-  });
+    it('has exactly the English keys', () => {
+      expect(Object.keys(t).sort()).toEqual(Object.keys(e).sort());
+    });
 
-  it('never leave a Telugu string empty', () => {
-    expect(Object.entries(t).filter(([, v]) => !v.trim())).toEqual([]);
+    it('uses the same interpolation variables', () => {
+      const mismatched = Object.keys(e).filter(
+        (k) => JSON.stringify(vars(e[k] ?? '')) !== JSON.stringify(vars(t[k] ?? '')),
+      );
+      expect(mismatched).toEqual([]);
+    });
+
+    it('never leaves a string empty', () => {
+      expect(Object.entries(t).filter(([, v]) => !v.trim())).toEqual([]);
+    });
   });
 });
 

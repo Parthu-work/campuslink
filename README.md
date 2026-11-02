@@ -2,7 +2,7 @@
 
 A private guidance network for a college community, connecting students with alumni from their own college. It is multi-tenant: each college gets its own branded, isolated space.
 
-> Status: **Phase 3 (mentorship)**: Alumni Match, structured mentorship requests, booking with timezone-aware availability, live chat, Jitsi video, feedback and notifications (in-app, email, push), on top of Phase 2 (imports, verification, profiles, directory) and the Phase 1 secure core. See `docs/phases/`.
+> CampusLink is a private alumni, mentorship and placement network for one college, run by the college itself. Build status: [`docs/build/progress.md`](docs/build/progress.md).
 
 ## Quick start (under 5 minutes)
 

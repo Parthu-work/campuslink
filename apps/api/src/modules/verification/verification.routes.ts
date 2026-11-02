@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  bulkDecisionBody,
   bulkInviteBody,
   companyEmailConfirmBody,
   companyEmailStartBody,
@@ -118,6 +119,26 @@ export function verificationRoutes(svc: VerificationService, invites: InvitesSer
         const r = await svc.queue(query.status, query.cursor);
         return { data: r.items, meta: { nextCursor: r.nextCursor } };
       },
+    },
+    {
+      method: 'post',
+      path: '/admin/verification/bulk-decision',
+      tag: 'Verification',
+      summary: 'Approve or reject up to 100 requests; each is decided and audited on its own',
+      access: REVIEW,
+      limiter: 'adminWrite',
+      idempotent: true,
+      body: bulkDecisionBody,
+      handler: async ({ req, body }) => ({
+        data: await svc.bulkDecide(
+          tenantOf(req),
+          authOf(req).userId,
+          body.ids,
+          body.decision,
+          body.reason,
+          requestMeta(req),
+        ),
+      }),
     },
     {
       method: 'post',

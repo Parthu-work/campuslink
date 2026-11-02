@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { buildNav, homePath, NAV_DESTINATIONS, safeReturnPath, type NavId } from './navigation.js';
+import {
+  buildNav,
+  featureShipped,
+  homePath,
+  NAV_DESTINATIONS,
+  NAV_FEATURE,
+  safeReturnPath,
+  type NavId,
+} from './navigation.js';
+import {
+  FEATURE_KEYS,
+  LEGACY_FEATURES,
+  NEW_TENANT_FEATURES,
+  resolveFeatures,
+  type Feature,
+} from './features.js';
 import { resolvePermissions, Role, UNVERIFIED_PERMISSIONS, type Permission } from './roles.js';
 
 const today = new Set<NavId>(
@@ -20,7 +35,7 @@ describe('role-aware navigation', () => {
     expect(tabs([Role.FACULTY], withStudy)).toEqual(['home', 'subjects', 'create', 'review', 'jobs']);
     expect(tabs([Role.TPO], withStudy)).toEqual(['home', 'subjects', 'create', 'review', 'jobs']);
     expect(tabs([Role.COLLEGE_ADMIN], withStudy)).toEqual(['home', 'subjects', 'create', 'review', 'jobs']);
-    expect(tabs([Role.SUPER_ADMIN])).toEqual(['platform', 'health', 'settings']);
+    expect(tabs([Role.SUPER_ADMIN])).toEqual(['platform', 'billing', 'traction', 'health', 'settings']);
   });
 
   it('groups the admin sections a member may open (none for students)', () => {
@@ -30,16 +45,39 @@ describe('role-aware navigation', () => {
         g.items.map((i) => i.id),
       ]);
     expect(admin([Role.COLLEGE_ADMIN])).toEqual([
-      ['people', ['users', 'verification', 'imports', 'list']],
+      ['people', ['users', 'verification', 'imports', 'list', 'onboarding']],
+      ['placements', ['placements', 'offers']],
       ['community', ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards']],
-      ['insights', ['analytics']],
-      ['college', ['branding', 'features', 'ai', 'audit']],
+      ['insights', ['analytics', 'reports']],
+      ['college', ['branding', 'features', 'ai', 'billing', 'support', 'audit']],
     ]);
     expect(admin([Role.FACULTY])).toEqual([
       ['community', ['moderation']],
       ['insights', ['analytics']],
     ]);
     expect(admin([Role.STUDENT])).toEqual([]);
+  });
+
+  it('gives students in their final two years a Placements tab; others find it in the menu (B7)', () => {
+    const now = new Date();
+    const nav = (roles: Role[], gradYear: number | null) =>
+      buildNav(
+        { roles, permissions: perms(roles), verified: true, gradYear },
+        new Set([...today, 'placements', 'jobs']),
+      );
+    const final = nav([Role.STUDENT], now.getUTCFullYear() + 1);
+    expect(final.tabs.map((t) => t.id)).toContain('placements');
+    expect(final.menu.flatMap((g) => g.items.map((i) => i.id))).toContain('jobs');
+    const first = nav([Role.STUDENT], now.getUTCFullYear() + 4);
+    expect(first.tabs.map((t) => t.id)).toContain('jobs');
+    expect(first.menu.flatMap((g) => g.items.map((i) => i.id))).toContain('placements');
+    const staff = nav([Role.TPO], null);
+    expect(staff.tabs.map((t) => t.id)).not.toContain('placements');
+    expect(staff.menu.flatMap((g) => g.items.map((i) => i.id))).toContain('placements');
+    // Alumni neither register nor see drives.
+    expect(nav([Role.ALUMNI], 2015).menu.flatMap((g) => g.items.map((i) => i.id))).not.toContain(
+      'placements',
+    );
   });
 
   it('gives every member the same settings sections', () => {
@@ -96,6 +134,60 @@ describe('role-aware navigation', () => {
     expect(homePath([Role.SUPER_ADMIN])).toBe('/platform');
     for (const r of [Role.STUDENT, Role.ALUMNI, Role.FACULTY, Role.TPO, Role.COLLEGE_ADMIN])
       expect(homePath([r])).toBe('/home');
+  });
+});
+
+describe('feature switches', () => {
+  const off = (f: Feature) => ({ ...LEGACY_FEATURES, [f]: false });
+  const nav = (roles: Role[], features: Partial<Record<Feature, boolean>>) =>
+    buildNav(
+      { roles, permissions: perms(roles), verified: true, features },
+      featureShipped(withStudy, features),
+    );
+  const everywhere = (n: ReturnType<typeof buildNav>) => [
+    ...n.tabs.map((t) => t.id),
+    ...n.menu.flatMap((g) => g.items.map((i) => i.id)),
+  ];
+
+  it('hides every destination of a switched-off feature, for every role', () => {
+    for (const [id, f] of Object.entries(NAV_FEATURE) as [NavId, Feature][])
+      for (const role of [Role.STUDENT, Role.ALUMNI, Role.FACULTY, Role.COLLEGE_ADMIN]) {
+        expect(everywhere(nav([role], off(f)))).not.toContain(id);
+      }
+  });
+
+  it('falls back to the next tab when Study is off', () => {
+    expect(nav([Role.STUDENT], off('study')).tabs.map((t) => t.id)).toEqual([
+      'home',
+      'roadmaps',
+      'create',
+      'mentors',
+      'jobs',
+    ]);
+  });
+
+  it('hides the admin sections of a switched-off feature', () => {
+    const sections = (f: Feature) =>
+      nav([Role.COLLEGE_ADMIN], off(f)).admin.flatMap((g) => g.items.map((i) => i.id));
+    expect(sections('study')).not.toContain('ai');
+    expect(sections('contentSources')).not.toContain('sources');
+    expect(sections('jobsAggregation')).not.toContain('jobSources');
+    expect(sections('stories')).toEqual(expect.arrayContaining(['ai', 'sources', 'jobSources']));
+  });
+
+  it('starts new colleges focused and keeps what older colleges had', () => {
+    expect(NEW_TENANT_FEATURES).toMatchObject({
+      stories: false,
+      reels: false,
+      contentSources: false,
+      leaderboards: false,
+    });
+    for (const f of FEATURE_KEYS)
+      if (!['stories', 'reels', 'contentSources', 'leaderboards', 'studentPosting'].includes(f))
+        expect(NEW_TENANT_FEATURES[f]).toBe(true);
+    expect(resolveFeatures({ stories: false })).toEqual({ ...LEGACY_FEATURES, stories: false });
+    expect(resolveFeatures(undefined)).toEqual(LEGACY_FEATURES);
+    expect(resolveFeatures({ reels: 'yes' })).toEqual(LEGACY_FEATURES);
   });
 });
 

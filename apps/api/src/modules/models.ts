@@ -1,5 +1,11 @@
 // Registers every model so index sync and the tenancy guard test see all of them.
 export { TenantModel } from './tenants/tenant.model.js';
+export { MigrationModel } from './platform/migration.model.js';
+export {
+  ChannelMessageModel,
+  ChannelUsageModel,
+  WebhookReceiptModel,
+} from './notifications/channels/channel.model.js';
 export { UserModel } from './auth/user.model.js';
 export { SessionModel } from './auth/session.model.js';
 export { AuthTokenModel } from './auth/auth-token.model.js';
@@ -14,9 +20,20 @@ export {
   VerificationRequestModel,
   InviteModel,
 } from './verification/verification.model.js';
+export { InviteLinkModel, JoinCodeModel } from './verification/onboarding.model.js';
 export { IdempotencyModel } from './idempotency/idempotency.model.js';
 export { MentorProfileModel, MenteePrefsModel } from './mentorship/mentor.model.js';
 export { MentorshipRequestModel } from './mentorship/request.model.js';
+export { MentorReviewModel } from './mentorship/review.model.js';
+export {
+  AcademicRecordModel,
+  DriveRegistrationModel,
+  OfferModel,
+  PlacementCompanyModel,
+  PlacementDriveModel,
+} from './placements/placements.model.js';
+export { ExamQualificationModel, HigherStudyModel, VentureModel } from './placements/outcomes.model.js';
+export { ProductEventDailyModel, ProductEventModel } from './insights/insights.model.js';
 export { BookingModel, FeedbackModel } from './sessions/booking.model.js';
 export { ConversationModel, MessageModel } from './messaging/conversation.model.js';
 export {
@@ -74,3 +91,10 @@ export {
   UnansweredQuestionModel,
   FlashcardDeckModel,
 } from './study/chat.model.js';
+export {
+  PlanSettingModel,
+  InvoiceCounterModel,
+  InvoiceModel,
+  PaymentModel,
+} from './billing/billing.model.js';
+export { SupportTicketModel } from './support/support.model.js';

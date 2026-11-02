@@ -57,7 +57,6 @@ const SETTINGS = {
     externalVideos: false,
     ocr: true,
     transcription: true,
-    facultySeeChats: false,
   },
   killSwitch: false,
 };

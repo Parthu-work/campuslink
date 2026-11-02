@@ -71,9 +71,16 @@ export const ALL_PERMISSIONS = [
   'analytics:cohort',
   'analytics:tenant',
   'reports:export',
+  // Placements (B7)
+  'placements:view',
+  'placements:register',
+  'placements:manage',
+  'outcomes:report',
+  'outcomes:verify',
   // Administration
   'users:invite',
   'users:approve',
+  'onboarding:manage',
   'users:read_admin',
   'users:manage',
   'roles:assign',
@@ -85,9 +92,14 @@ export const ALL_PERMISSIONS = [
   'audit:read',
   'rewards:manage',
   'rewards:redeem',
+  // Help and support (B14)
+  'support:create',
+  'support:manage',
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
   'platform:health',
+  'platform:billing',
+  'platform:support',
 ] as const;
 export type Permission = (typeof ALL_PERMISSIONS)[number];
 /** What each permission allows (docs/permissions.md and the OpenAPI document). */
@@ -142,6 +154,7 @@ export const PERMISSIONS: Record<Permission, string> = {
   // Administration
   'users:invite': 'Invite users',
   'users:approve': 'Approve pending users',
+  'onboarding:manage': 'Send invite links, run class join codes and follow onboarding',
   'users:read_admin': 'View the admin user list',
   'users:manage': 'Suspend or reactivate users',
   'roles:assign': 'Change user roles',
@@ -156,8 +169,22 @@ export const PERMISSIONS: Record<Permission, string> = {
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants': 'Create, suspend and configure colleges',
   'platform:health': 'View platform health',
+  'platform:billing': 'Plans, invoices and payments for every college',
+  'platform:support': 'Answer problem reports members sent to the platform (bugs)',
+  'support:create': 'Report a problem and follow its replies',
+  'support:manage': 'Answer and close problem reports sent to the college',
+  'placements:view': 'See placement drives and the eligibility rules',
+  'placements:register': 'Register for placement drives one is eligible for',
+  'placements:manage': 'Run placement drives: companies, eligibility, registrants, rounds, overrides',
+  'outcomes:report': 'Report one’s own offers (with proof) to the placement cell',
+  'outcomes:verify': 'Verify or reject reported offers',
 };
-export const PLATFORM_PERMISSIONS: readonly Permission[] = ['platform:tenants', 'platform:health'];
+export const PLATFORM_PERMISSIONS: readonly Permission[] = [
+  'platform:tenants',
+  'platform:health',
+  'platform:billing',
+  'platform:support',
+];
 
 const STUDENT: Permission[] = [
   'feed:read',
@@ -178,9 +205,15 @@ const STUDENT: Permission[] = [
   'events:rsvp',
   'rewards:redeem',
   'study:read',
+  'placements:view',
+  'placements:register',
+  'outcomes:report',
+  'support:create',
 ];
+/** Students only: alumni and staff do not register for drives (staff still see them). */
+const STUDENT_ONLY: readonly Permission[] = ['placements:view', 'placements:register'];
 const ALUMNI: Permission[] = [
-  ...STUDENT,
+  ...STUDENT.filter((p) => !STUDENT_ONLY.includes(p)),
   'feed:post',
   'qa:answer',
   'mentorship:mentor',
@@ -191,7 +224,7 @@ const ALUMNI: Permission[] = [
   'study:contribute',
 ];
 const STAFF: Permission[] = [
-  ...STUDENT,
+  ...STUDENT.filter((p) => p !== 'placements:register' && p !== 'outcomes:report'),
   'feed:post',
   'qa:answer',
   'announcements:post',
@@ -210,7 +243,7 @@ const STAFF: Permission[] = [
 const COLLEGE_ADMIN: Permission[] = ALL_PERMISSIONS.filter((p) => !PLATFORM_PERMISSIONS.includes(p));
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
-  SUPER_ADMIN: ['platform:tenants', 'platform:health', 'audit:read'],
+  SUPER_ADMIN: ['platform:tenants', 'platform:health', 'platform:billing', 'platform:support', 'audit:read'],
   COLLEGE_ADMIN,
   TPO: [
     ...STAFF,
@@ -220,6 +253,12 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'reports:export',
     'mentorship:oversee',
     'jobs:sources',
+    // The TPO runs onboarding: verification and guardian-number reviews, invites (B2, B4, B6).
+    'verification:review',
+    'onboarding:manage',
+    // Placements (B7).
+    'placements:manage',
+    'outcomes:verify',
   ],
   FACULTY: STAFF,
   ALUMNI,
@@ -236,6 +275,8 @@ export const UNVERIFIED_PERMISSIONS: readonly Permission[] = [
   'roadmaps:read',
   'jobs:read',
   'content:report',
+  // A member stuck before verification can still ask for help (B14).
+  'support:create',
 ];
 
 /** Roles that must have TOTP enabled before any permission is effective. */

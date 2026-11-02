@@ -1,6 +1,6 @@
 import { useDeferredValue, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { Command } from 'cmdk';
 import { Dialog as D } from 'radix-ui';
@@ -14,13 +14,14 @@ import {
   Orbit,
   CalendarDays,
 } from 'lucide-react';
-import type {
-  EventView,
-  JobView,
-  PostView,
-  PublicProfile,
-  QuestionView,
-  RoadmapSummaryView,
+import {
+  type EventView,
+  type JobView,
+  type PostView,
+  type PublicProfile,
+  type QuestionView,
+  type RoadmapSummaryView,
+  nextLocale,
 } from '@campuslink/shared';
 import { api } from '../../lib/api';
 import { usePalette } from '../../lib/palette';
@@ -221,7 +222,7 @@ export function CommandPalette() {
                 </Command.Item>
                 <Command.Item
                   value="lang"
-                  onSelect={() => setLanguage(i18n.language === 'te' ? 'en' : 'te')}
+                  onSelect={() => setLanguage(nextLocale(i18n.language))}
                   className={item}
                 >
                   <Languages className="size-4 text-fg-2" aria-hidden /> {t('palette.switchLang')}

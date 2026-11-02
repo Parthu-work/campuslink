@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCheck } from 'lucide-react';
 import { IntentLink } from '../../components/ui/intent-link';

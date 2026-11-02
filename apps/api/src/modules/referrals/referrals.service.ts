@@ -411,6 +411,18 @@ export class ReferralsService {
   }
 
   /** Analytics: referral requests since a date by outcome, and who referred. */
+  /** Referrals given between two dates, by referrer (B8 alumni engagement). */
+  async referredBetween(from: Date, to: Date) {
+    const rows = await ReferralRequestModel.find({
+      status: 'referred',
+      respondedAt: { $gte: from, $lt: to },
+    })
+      .select('referrerId')
+      .limit(100_000)
+      .lean();
+    return rows.map((r) => ({ referrerId: String(r.referrerId) }));
+  }
+
   async statsSince(since: Date) {
     const rows = await ReferralRequestModel.aggregate<{ _id: string; n: number }>([
       { $match: { createdAt: { $gte: since } } },

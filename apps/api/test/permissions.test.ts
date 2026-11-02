@@ -25,7 +25,8 @@ const call = (method: string, path: string, token: string) => {
 };
 
 beforeAll(async () => {
-  T = await makeTenant('perm');
+  // Every module on, so each route is reached (feature switches have their own suite).
+  T = await makeTenant('perm', 'college', { leaderboards: true });
   for (const role of TENANT_ROLES)
     users[role] = await makeUser(ctx, T, { roles: [role], mfa: role === 'COLLEGE_ADMIN' });
 });
@@ -169,7 +170,7 @@ describe('super admin is platform-only', () => {
           accent: '#f2b705',
           monogram: 'NC',
         },
-        subscription: { plan: 'trial', seatLimit: 800, renewalDate: null },
+        subscription: { plan: 'pilot', seats: 800, renewalDate: null },
         firstAdmin: { name: 'Priya Admin', email: 'priya@newcollege.example' },
       });
     expect(created.status).toBe(201);

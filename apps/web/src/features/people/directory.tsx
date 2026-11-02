@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Search, Users } from 'lucide-react';
 import { BRANCHES, type PublicProfile } from '@campuslink/shared';

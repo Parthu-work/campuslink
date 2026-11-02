@@ -1,16 +1,22 @@
 import { useRef, type SyntheticEvent } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { SignedFileView } from '@campuslink/shared';
+import type { DataSaverWidth, SignedFileView } from '@campuslink/shared';
+import { useDataSaver } from './data-saver';
 import { api, apiBlob } from './api';
 
 /**
  * Files need the bearer token, so <img src> cannot fetch them directly. This hook downloads the
  * blob once (cached by React Query) and exposes an object URL. Videos stream instead (below).
  */
-export function useFileUrl(fileId: string | null | undefined): string | undefined {
+export function useFileUrl(
+  fileId: string | null | undefined,
+  /** The width the image is shown at: with data saver on, a smaller copy that size is fetched (B13). */
+  width?: DataSaverWidth,
+): string | undefined {
+  const w = useDataSaver() && width ? width : null;
   const { data } = useQuery({
-    queryKey: ['file', fileId],
-    queryFn: async () => URL.createObjectURL(await apiBlob(`/files/${fileId}`)),
+    queryKey: ['file', fileId, w],
+    queryFn: async () => URL.createObjectURL(await apiBlob(`/files/${fileId}${w ? `?w=${w}` : ''}`)),
     enabled: !!fileId,
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,

@@ -16,4 +16,14 @@ export interface AdminOverviewView {
   materialReviews: { pending: number } | null;
   imports: { running: number; failedThisWeek: number } | null;
   ai: { status: AiStatusView; budgetPercent: number | null } | null;
+  /** This month's WhatsApp messages against the allowance (B3); null when off or not permitted. */
+  whatsapp?: { sent: number; allowance: number } | null;
+  /** B6: students on the list who have not joined yet (onboarding:manage). */
+  onboarding?: { notJoined: number } | null;
+  /** B7: drives whose registration closes within 48 hours (placements:manage). */
+  placements?: { closingSoon: number } | null;
+  /** B7: offers reported by members and waiting for verification (outcomes:verify). */
+  offers?: { pending: number } | null;
+  /** B14: problem reports sent to the college and not answered yet (support:manage). */
+  support?: { open: number } | null;
 }

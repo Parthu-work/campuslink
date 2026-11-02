@@ -5,6 +5,8 @@ import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '@fontsource-variable/bricolage-grotesque';
 import '@fontsource-variable/anek-telugu';
+// Devanagari for Hindi (B12): unicode-range keeps it from downloading until Hindi text shows.
+import '@fontsource-variable/anek-devanagari';
 import './styles/index.css';
 import { i18nReady } from './i18n';
 import './lib/preferences';
@@ -23,7 +25,10 @@ if (!root) throw new Error('Root element missing');
 // Strings first (one small file, fetched alongside the college and the session), then the app. The
 // first render is a transition, so React yields to the browser between components instead of
 // holding the main thread (the launch mark from index.html stays on screen meanwhile).
-void i18nReady.finally(() =>
+// The saved offline copy (B13) gets a short head start, so a cold start shows the last-known
+// content at once; a slow device never waits more than 400 ms for it.
+const savedCopy = Promise.race([boot.saved, new Promise((r) => setTimeout(r, 400))]);
+void Promise.all([i18nReady, savedCopy]).finally(() =>
   startTransition(() =>
     createRoot(root).render(
       <StrictMode>

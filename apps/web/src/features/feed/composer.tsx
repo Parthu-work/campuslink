@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../i18n/react';
 import { Film, ImagePlus } from 'lucide-react';
 import { POST_KINDS, type PostKind } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';

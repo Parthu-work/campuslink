@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { useDataSaver } from '../../lib/data-saver';
+import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CalendarClock,
@@ -268,6 +269,7 @@ export function HomePage() {
   const { data: me, isLoading } = useMe();
   const canPost = useCan('feed:post');
   const canRequest = useCan('mentorship:request');
+  const saver = useDataSaver();
   const [params, setParams] = useSearchParams();
   const tab = params.get('tab') === 'following' ? 'following' : 'for_you';
   // Today's One Useful Thing sits above the feed, so the feed leaves it out (IA-12).
@@ -301,7 +303,8 @@ export function HomePage() {
             </div>
           </Card>
         )}
-        <StoriesRow />
+        {/* Data saver (B13) leaves stories out: they are mostly photos. */}
+        {!saver && <StoriesRow />}
         {canRequest && <UpNext />}
         <OneUsefulThing />
         {canPost && <Composer />}
