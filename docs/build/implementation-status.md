@@ -8,15 +8,15 @@ This is a one-page status. The detailed record is [`progress.md`](progress.md) (
 
 All fifteen builds of [`master-prompt-1.md`](master-prompt-1.md) are implemented, tested and documented on the branch. The pull request merges into `main` as a fast-forward (no conflicts).
 
-| Gate                                                                    | Status                                                                                         |
-| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Format, lint, typecheck                                                 | Green (local and CI)                                                                           |
-| Unit tests: shared 144, web 69                                          | Green (local and CI)                                                                           |
-| API tests, tenant isolation and permission suites, coverage gate        | Green in CI (this environment has no MongoDB)                                                  |
-| Build and bundle budget                                                 | Green: first load 162.1 KB of 170 KB                                                           |
-| Security (dependency audit, gitleaks) and adapters (ClamAV, S3, Qdrant) | Green in CI                                                                                    |
-| End-to-end (Playwright with axe, phone and desktop)                     | Two failures fixed on 2 November; CI on the fix is running. See "Fixed while getting CI green" |
-| Load test (`pnpm loadtest`)                                             | Written, not run yet (needs the dev infrastructure; not part of CI)                            |
+| Gate                                                                    | Status                                                                                                             |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Format, lint, typecheck                                                 | Green (local and CI)                                                                                               |
+| Unit tests: shared 144, web 69                                          | Green (local and CI)                                                                                               |
+| API tests, tenant isolation and permission suites, coverage gate        | Green in CI (this environment has no MongoDB)                                                                      |
+| Build and bundle budget                                                 | Green: first load 162.1 KB of 170 KB                                                                               |
+| Security (dependency audit, gitleaks) and adapters (ClamAV, S3, Qdrant) | Green in CI                                                                                                        |
+| End-to-end (Playwright with axe, phone and desktop)                     | Green in CI on `daa76c1` (196 cases across both projects; 16 are phone-only or desktop-only and skip on the other) |
+| Load test (`pnpm loadtest`)                                             | Written, not run yet (needs the dev infrastructure; not part of CI)                                                |
 
 ## What is implemented
 
@@ -40,13 +40,14 @@ All fifteen builds of [`master-prompt-1.md`](master-prompt-1.md) are implemented
 
 ## Fixed while getting CI green
 
-Five problems from earlier builds turned up only when the full suites ran. All are fixed on the branch:
+Six problems from earlier builds turned up only when the full suites ran. All are fixed on the branch:
 
 1. **Seed:** demo consent records carried an old notice version, so every demo member would have met the notice gate.
 2. **API test:** the auth suite pinned the permissions of unverified members without `support:create`, which B14 added on purpose.
 3. **Erasure bug (B9):** erasing two members who opened the app on the same day failed on a duplicate key in the one-visit-a-day index. The index now covers only visits that still have a member; a regression test was added.
 4. **Admin › Support** showed two page titles (the layout's and its own), which broke the help e2e spec on both projects.
 5. **Offline cold start (B13):** the offline cache dropped reads that finished before the session check returned, so the college record was never saved and an offline start showed "Something went wrong". Reproduced locally with a slow session refresh, fixed, and the same repro now opens Home offline.
+6. **Offline cold start on slow devices (B13):** the first render waits at most 400 ms for the saved copy, so a slow phone could reach the college gate before the restore finished. The gate now waits for the saved copy to settle, and signing in saves any reads still pending.
 
 CI also prints Playwright's failure snapshots in the job log now, so an e2e failure can be read without downloading the artifact.
 
