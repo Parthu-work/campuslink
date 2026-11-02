@@ -144,12 +144,18 @@ function watch(qc: QueryClient) {
 
   const flush = async () => {
     timer = null;
-    if (useSession.getState().status !== 'signed-in') return dirty.clear();
+    // Nothing is saved before the session is known to be signed in; reads that finished earlier
+    // (the college, fetched at boot or on the sign-in screen) wait for it rather than being lost.
+    const status = useSession.getState().status;
+    if (status === 'signed-out') return dirty.clear();
+    if (status !== 'signed-in') return;
     const owner = meId(qc);
     const rows: SavedQuery[] = [];
     for (const [hash, q] of dirty) {
       const isPublic = q.queryKey[0] === 'tenant';
+      // The member is not known yet (`/me` still loading): keep it for the next write.
       if (!isPublic && !owner) continue;
+      dirty.delete(hash);
       rows.push({
         hash,
         key: q.queryKey,
@@ -158,7 +164,6 @@ function watch(qc: QueryClient) {
         owner: isPublic ? null : owner,
       });
     }
-    dirty.clear();
     if (!rows.length) return;
     await run(QUERIES, 'readwrite', (s) => void rows.forEach((r) => s.put(r))).catch(() => undefined);
     await prune().catch(() => undefined);
@@ -186,7 +191,10 @@ function watch(qc: QueryClient) {
   useSession.subscribe((s, prev) => {
     if (s.status === prev.status) return;
     if (s.status === 'signed-out') void wipe(qc);
-    if (s.status === 'signed-in') void replayOutbox(qc);
+    if (s.status === 'signed-in') {
+      if (dirty.size) timer ??= setTimeout(() => void flush(), WRITE_DELAY_MS);
+      void replayOutbox(qc);
+    }
   });
 
   // Back online: an offline session is checked again; a signed-in one sends what waited.
