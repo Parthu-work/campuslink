@@ -380,6 +380,9 @@ export function createApp({
       const t = await findTenantById(tenantId);
       return t ? entitlements.limit(t, 'whatsapp') : 0;
     },
+    // Critical reminders by SMS (prompt 1b, R4): only templates registered on DLT are ever used.
+    sms,
+    smsTemplateIds: dltIds,
   });
   otpService.onSent = (userId, channel, messageId) =>
     channelService.record(userId, channel, 'auth_code', 'authentication', true, messageId);

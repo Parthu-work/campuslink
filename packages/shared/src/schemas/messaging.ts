@@ -272,6 +272,12 @@ export const notificationPrefsBody = z.strictObject({
     end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
     timezone: z.string().min(1).max(64),
   }),
+  /**
+   * SMS for critical reminders only (a session about to start, a drive about to close), when
+   * WhatsApp cannot reach the member (prompt 1b, R4). On by default; never used for anything else.
+   * Optional so clients from before it keep saving.
+   */
+  smsReminders: z.boolean().default(true),
 });
 export type NotificationPrefs = z.infer<typeof notificationPrefsBody>;
 

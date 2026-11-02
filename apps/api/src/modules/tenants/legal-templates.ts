@@ -34,6 +34,7 @@ We do not use third-party trackers or advertising, and we never sell your data.
 - To verify that you are a student, alumnus or staff member of the college.
 - To run mentorship, placements, study material and the other features the college has turned on.
 - With your consent: to suggest mentors, to send you email digests and WhatsApp updates, and to count your activity in statistics. You can change these at any time in Settings → Privacy.
+- To text you (SMS) when a session is about to start or a placement drive is about to close, if WhatsApp does not reach you. Nothing else is sent by SMS. You can turn this off in Settings → Notifications.
 
 ## Who sees what
 

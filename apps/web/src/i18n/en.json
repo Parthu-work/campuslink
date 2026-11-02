@@ -1320,6 +1320,8 @@
     "quietFrom": "From",
     "quietTo": "Until",
     "quietNote": "Session reminders still arrive on time.",
+    "smsReminders": "SMS reminders",
+    "smsRemindersBody": "If WhatsApp cannot reach you, we text you when a session is about to start or a drive is about to close. Nothing else is ever sent by SMS.",
     "emptyBody": "Requests, replies, sessions and badges will appear here as they happen.",
     "emptyAction": "See what's new at home",
     "whatsapp": "WhatsApp",

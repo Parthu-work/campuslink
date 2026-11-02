@@ -50,7 +50,8 @@ const LOCALE: Record<WaLang, string> = { en: 'en-IN', te: 'te-IN', hi: 'hi-IN' }
 
 const session = (d: Record<string, string>, lang: WaLang) =>
   SESSION_LABEL[lang][d.sessionType as SessionType] ?? d.sessionType ?? '';
-const when = (iso: string | undefined, lang: WaLang, timezone: string) =>
+/** A date and time in the member's language and time zone (WhatsApp and SMS reminders). */
+export const when = (iso: string | undefined, lang: WaLang, timezone: string) =>
   iso
     ? new Intl.DateTimeFormat(LOCALE[lang], {
         dateStyle: 'medium',

@@ -13,6 +13,7 @@ import {
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select } from '../../components/ui/field';
 import { Card, Skeleton } from '../../components/ui/misc';
+import { Switch } from '../../components/ui/switch';
 import { api, ApiError } from '../../lib/api';
 import { currentSubscription, disablePush, enablePush, pushSupported } from '../../lib/push';
 import { SCREEN } from '../../lib/query-client';
@@ -215,6 +216,12 @@ function PrefsForm({ initial, whatsapp }: { initial: NotificationPrefs; whatsapp
         )}
         <p className="text-caption text-fg-3">{t('notifications.quietNote')}</p>
       </fieldset>
+      <Switch
+        checked={p.smsReminders}
+        onChange={(v) => setP({ ...p, smsReminders: v })}
+        label={t('notifications.smsReminders')}
+        description={t('notifications.smsRemindersBody')}
+      />
       <Button
         variant="primary"
         className="justify-self-start"

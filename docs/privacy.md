@@ -32,6 +32,12 @@
 - Sign-in answers the same whether or not a number has an account, and a code to a number with no account is never sent.
 - One-time code challenges keep the number encrypted for at most 24 hours (sign-up needs it after the code) and are then deleted.
 
+## SMS reminders (prompt 1b)
+
+- Besides codes, SMS is used for two reminders only: a session that starts within the hour, and a placement drive whose registration is about to close. They go only to a verified number, only when WhatsApp did not reach the member, and only while the member keeps **SMS reminders** on (Settings › Notifications; on by default). SMS is never used for marketing or for anything else.
+- MSG91 receives the number, the member's first name, a time and a link to the app; never message or request text, the other person's name or the company.
+- What was sent is kept like WhatsApp messages: the template name and status per member for 90 days, exported and erased with the account; daily counts carry no member ids.
+
 ## WhatsApp messages (build B3)
 
 - Sent only to members who opted in (`whatsapp_updates`, optional, versioned) and have a verified number, for the kinds of notification they leave switched on. Meta (WhatsApp) receives the number and the template's variables: names, times, session types, company names and counts, never message or request text.

@@ -21,6 +21,9 @@ import {
   type ChannelAction,
   type WaLang,
 } from './whatsapp-templates.js';
+import { when, WA_LANGS } from './whatsapp-templates.js';
+import { SMS_TEMPLATES, smsReminderKey, type SmsTemplateKey } from './sms-templates.js';
+import type { SmsProvider } from '../../../lib/sms.js';
 import type { WhatsAppProvider } from '../../../lib/whatsapp.js';
 import type { FieldCipher } from '../../../lib/crypto.js';
 import type { Logger } from '../../../lib/logger.js';
@@ -55,7 +58,13 @@ export interface ChannelDeps {
   appSecret: string;
   /** The college's monthly allowance (the plan's, from B10; a default until then). */
   allowance?: (tenantId: Types.ObjectId) => Promise<number>;
+  /** SMS for critical reminders (prompt 1b, R4): the provider codes use, and the registered ids. */
+  sms?: SmsProvider;
+  smsTemplateIds?: Partial<Record<SmsTemplateKey, string>>;
 }
+
+/** Messages that count against the college's allowance: WhatsApp, and SMS other than codes. */
+const METERED = { $or: [{ channel: 'whatsapp' }, { channel: 'sms', category: { $ne: 'authentication' } }] };
 
 const today = () => new Date().toISOString().slice(0, 10);
 const month = () => new Date().toISOString().slice(0, 7);
@@ -120,12 +129,70 @@ export class ChannelService {
     return { phone: this.d.cipher.decrypt(u.phoneEnc), lang: toLang(u.locale) };
   }
 
+  /** This month's metered messages (WhatsApp and reminder SMS; codes by SMS are not counted). */
   async monthCount(): Promise<number> {
     const m = month();
-    const rows = await ChannelUsageModel.find({ channel: 'whatsapp', day: { $regex: `^${m}-` } })
+    const rows = await ChannelUsageModel.find({ ...METERED, day: { $regex: `^${m}-\\d` } })
       .select('count')
       .lean();
     return rows.reduce((n, r) => n + r.count, 0);
+  }
+
+  // ── SMS reminders (prompt 1b, R4) ─────────────────────────────
+  /** The registered template for a reminder in the member's language (English when theirs is not). */
+  private smsTemplate(base: SmsTemplateKey, locale: string | null | undefined): SmsTemplateKey | null {
+    const ids = this.d.smsTemplateIds ?? {};
+    const own = `${base}_${locale ?? 'en'}`;
+    if (own in SMS_TEMPLATES && ids[own as SmsTemplateKey]) return own as SmsTemplateKey;
+    return ids[base] ? base : null;
+  }
+
+  /** SMS could carry this notification at all: a reminder type with a registered template and a provider. */
+  smsUsable(type: NotificationType, data: Record<string, string>): boolean {
+    const key = smsReminderKey(type, data);
+    return !!key && !!this.d.sms?.available && !!this.d.smsTemplateIds?.[key];
+  }
+
+  /**
+   * Sends a critical reminder by SMS (the caller decided WhatsApp did not reach the member and the
+   * member has SMS reminders on). Needs a verified number; counts against the college's allowance,
+   * which it never exceeds.
+   */
+  async sendSms(
+    userId: string,
+    type: NotificationType,
+    data: Record<string, string>,
+    c: { timezone: string; link: string },
+  ): Promise<SendOutcome> {
+    const base = smsReminderKey(type, data);
+    if (!base || !this.d.sms?.available || !this.smsUsable(type, data)) return 'unavailable';
+    const u = await UserModel.findById(userId).select('+phoneEnc phoneVerifiedAt status locale name').lean();
+    if (!u?.phoneEnc || !u.phoneVerifiedAt || u.status !== 'active') return 'unavailable';
+    const key = this.smsTemplate(base, u.locale);
+    const id = key && this.d.smsTemplateIds?.[key];
+    if (!key || !id) return 'unavailable';
+    if ((await this.monthCount()) >= (await this.allowance())) {
+      await this.budgetAlerts();
+      metrics.smsReminders.inc({ template: base, outcome: 'capped' });
+      return 'capped';
+    }
+    const lang = (WA_LANGS as readonly string[]).includes(key.slice(-2)) ? (key.slice(-2) as WaLang) : 'en';
+    const firstName = u.name.trim().split(/\s+/)[0] ?? '';
+    let messageId: string;
+    try {
+      ({ messageId } = await this.d.sms.sendTemplate(this.d.cipher.decrypt(u.phoneEnc), id, [
+        firstName,
+        when(data.start, lang, c.timezone),
+        c.link,
+      ]));
+    } catch (err) {
+      this.d.logger.warn({ err, type }, 'sms reminder failed');
+      metrics.smsReminders.inc({ template: base, outcome: 'failed' });
+      return 'failed';
+    }
+    await this.record(userId, 'sms', key, CATEGORY_OF[type], true, messageId);
+    metrics.smsReminders.inc({ template: base, outcome: 'sent' });
+    return 'sent';
   }
 
   async allowance(): Promise<number> {
@@ -248,7 +315,7 @@ export class ChannelService {
       { $inc: { count: 1 } },
       { upsert: true },
     );
-    if (channel === 'whatsapp') await this.budgetAlerts();
+    if (channel === 'whatsapp' || category !== 'authentication') await this.budgetAlerts();
   }
 
   private async budgetAlerts() {

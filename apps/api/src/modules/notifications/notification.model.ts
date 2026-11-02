@@ -46,6 +46,8 @@ const prefsSchema = new Schema(
       end: { type: String, default: '07:00' },
       timezone: { type: String, default: DEFAULT_TIMEZONE },
     },
+    /** SMS for critical reminders (prompt 1b, R4); missing means on. */
+    smsReminders: { type: Boolean },
   },
   baseSchemaOptions,
 );

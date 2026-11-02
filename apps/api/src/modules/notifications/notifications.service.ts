@@ -119,13 +119,14 @@ export class NotificationsService {
         end: p?.quietHours?.end ?? '07:00',
         timezone: p?.quietHours?.timezone ?? DEFAULT_TIMEZONE,
       },
+      smsReminders: p?.smsReminders ?? true,
     };
   }
 
   async updatePrefs(viewer: AuthState, body: NotificationPrefs) {
     await NotificationPrefsModel.updateOne(
       { userId: viewer.userId },
-      { $set: { channels: body.channels, quietHours: body.quietHours } },
+      { $set: { channels: body.channels, quietHours: body.quietHours, smsReminders: body.smsReminders } },
       { upsert: true },
     );
     return this.prefs(viewer.userId);
@@ -173,13 +174,16 @@ export class NotificationsService {
     const email = ch.email && !opts.noEmail;
     const push = ch.push && this.d.push.enabled;
     const whatsapp = ch.whatsapp && !!this.d.channels && (await this.d.channels.usable(type));
-    if (!email && !push && !whatsapp) return { emailQueued: false };
+    // SMS only for the critical reminders, and only when WhatsApp does not reach them (R4).
+    const sms = prefs.smsReminders && !!this.d.channels?.smsUsable(type, data);
+    if (!email && !push && !whatsapp && !sms) return { emailQueued: false };
     if (type === 'new_message' && (await this.d.realtime.isOnline(tenantId, uid)))
       return { emailQueued: false };
+    // Quiet hours hold SMS like the other channels; session reminders ignore them for all channels.
     const delayMs = IGNORES_QUIET_HOURS.includes(type) ? 0 : quietDelayMs(prefs.quietHours);
     await this.d.jobs.enqueue(
       DELIVER_JOB,
-      { tenantId: String(tenantId), userId: uid, type, data, email, push, whatsapp },
+      { tenantId: String(tenantId), userId: uid, type, data, email, push, whatsapp, sms },
       delayMs ? { delayMs } : {},
     );
     return { emailQueued: email };
@@ -198,14 +202,23 @@ export class NotificationsService {
     const path = pathFor(type, data);
     let email = !!job.email;
     let push = !!job.push;
+    let whatsappSent = false;
     if (job.whatsapp && this.d.channels) {
       const outcome = await this.d.channels.send(String(job.userId), type, data, prefs.quietHours.timezone);
+      whatsappSent = outcome === 'sent';
       // Capped, failed or not reachable on WhatsApp: fall back to push, else email (B3).
       if (outcome !== 'sent' && !email && !push) {
         if (this.d.push.enabled && (await PushSubscriptionModel.exists({ userId: job.userId }))) push = true;
         else email = true;
       }
     }
+    // A critical reminder WhatsApp did not deliver (off for them, not opted in, or failed) goes by
+    // SMS too, when they have SMS reminders on (checked again: they may have turned it off since).
+    if (job.sms && !whatsappSent && this.d.channels && prefs.smsReminders)
+      await this.d.channels.sendSms(String(job.userId), type, data, {
+        timezone: prefs.quietHours.timezone,
+        link: this.d.tenantUrl(tenant, path),
+      });
     // Members who joined by phone may have no email address (B2).
     if (email && user.email) {
       const content = renderEmail({

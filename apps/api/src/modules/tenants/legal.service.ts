@@ -19,7 +19,7 @@ import { requireTenantId } from '../../lib/context.js';
  * The college's legal pages and notice versions (build B14). The privacy policy and terms are the
  * platform's templates (legal-templates.ts) filled with the college's details. The notice version
  * a member accepts is the platform's `PRIVACY_NOTICE_VERSION`, plus the college's own version once
- * it has published its details (`2026-10-draft+c2`); when either changes, members accept again on
+ * it has published its details (`2026-11-draft+c2`); when either changes, members accept again on
  * their next sign-in. Acceptances are append-only consent records, kept on erasure.
  */
 export class LegalService {

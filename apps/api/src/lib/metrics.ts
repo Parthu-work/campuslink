@@ -54,6 +54,11 @@ export const metrics = {
   ),
   jobs: new Counter('campuslink_jobs_total', 'Background jobs by name and outcome', ['job', 'outcome']),
   otpSends: new Counter('campuslink_otp_sends_total', 'One-time codes sent, by channel', ['channel']),
+  smsReminders: new Counter(
+    'campuslink_sms_reminders_total',
+    'Critical reminders sent by SMS, by template and outcome',
+    ['template', 'outcome'],
+  ),
   whatsappFailures: new Counter(
     'campuslink_whatsapp_delivery_failures_total',
     'WhatsApp messages Meta reported as failed',

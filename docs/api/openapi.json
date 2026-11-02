@@ -7291,6 +7291,10 @@
                       "timezone"
                     ],
                     "additionalProperties": false
+                  },
+                  "smsReminders": {
+                    "default": true,
+                    "type": "boolean"
                   }
                 },
                 "required": [
