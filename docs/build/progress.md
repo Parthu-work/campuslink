@@ -529,7 +529,7 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 
 | Phase | Name                                                           | Status      |
 | ----- | -------------------------------------------------------------- | ----------- |
-| G1    | AiTasksService: the shared AI layer                            | Not started |
+| G1    | AiTasksService: the shared AI layer                            | Built       |
 | G2    | Resume builder, ATS check and alumni review                    | Not started |
 | G3    | AI mock interviews (text and voice) with human follow-up       | Not started |
 | G4    | Aptitude and coding practice                                   | Not started |
@@ -542,3 +542,9 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 | G11   | Career Copilot                                                 | Not started |
 | G12   | The network (ADR 0014 first; stop for approval)                | Not started |
 | G13   | Re-audit, YC metrics pack and final report                     | Not started |
+
+### G1 · AiTasksService: the shared AI layer (Built; done once G2 to G5 and G11 use it)
+
+**Shipped.** `modules/ai-tasks/ai-tasks.service.ts`: `run(viewer, task, input)` and `stream(...)` over `AiSettingsService.runtime()` (consent, kill switch, allowance, budget and breaker already there), with the per-member daily limit per feature (`AI_FEATURE_LIMITS` in shared, applied only here), the model by tier, member text through `redactPersonal()` and documents through `neutraliseInstructions()` inside numbered `<source>` blocks, Zod parsing with one repair turn, usage recorded under the task's feature, and the task's fallback (or a reason) instead of any provider error. `AiUsageService.requestsTodayFor(userId, feature)`. Spec: `docs/specs/ai-tasks.md`. Tests: `test/ai-tasks.test.ts` (paths, delimiting, an injection suite with hostile resumes, job descriptions and answers, streaming).
+
+**Decisions.** The built-in demo responder cannot write JSON for every task, so each task supplies `mock(input)`, a deterministic demo result; the mock is still called so its injection trap still runs, and there is no repair turn on it. No new usage features were needed: `resume`, `interview` and `copilot` were reserved in B11, and Admin › AI and Billing already show usage by feature.

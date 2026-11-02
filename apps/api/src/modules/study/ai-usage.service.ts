@@ -131,6 +131,15 @@ export class AiUsageService {
   }
 
   /** Model requests of one kind a member made today (the per-member daily limit). */
+  /** A member's AI calls today for one feature (prompt 2, G1: `AI_FEATURE_LIMITS`). */
+  async requestsTodayFor(userId: string, feature: AiUsageFeature): Promise<number> {
+    const [row] = await AiUsageModel.aggregate<{ n: number }>([
+      { $match: { day: usageDay(), userId: oid(userId), feature } },
+      { $group: { _id: null, n: { $sum: '$requests' } } },
+    ]);
+    return row?.n ?? 0;
+  }
+
   async requestsToday(userId: string, kind: AiUsageKind): Promise<number> {
     const [row] = await AiUsageModel.aggregate<{ n: number }>([
       { $match: { day: usageDay(), userId: oid(userId), kind } },

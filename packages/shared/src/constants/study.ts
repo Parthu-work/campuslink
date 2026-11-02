@@ -161,6 +161,27 @@ export const AI_USAGE_FEATURES = [
   'copilot',
 ] as const;
 export type AiUsageFeature = (typeof AI_USAGE_FEATURES)[number];
+
+/**
+ * Prompt 2 (G1): AI calls a member may make per UTC day for each feature that runs through
+ * `AiTasksService`, applied there and nowhere else. Background features (embeddings, transcripts,
+ * reranking) and the study assistant (its own per-member limit) are not listed.
+ */
+export const AI_FEATURE_LIMITS: Readonly<Partial<Record<AiUsageFeature, number>>> = {
+  resume: 30,
+  interview: 60,
+  copilot: 40,
+};
+
+/** Why an AI task gave no AI result (the caller shows its fallback or "not available right now"). */
+export const AI_TASK_UNAVAILABLE = [
+  'not_configured',
+  'budget',
+  'daily_limit',
+  'unavailable',
+  'invalid_output',
+] as const;
+export type AiTaskUnavailable = (typeof AI_TASK_UNAVAILABLE)[number];
 /** The feature a kind of usage counts under when the caller names none. */
 export const USAGE_FEATURE_OF_KIND: Readonly<Record<AiUsageKind, AiUsageFeature>> = {
   chat: 'study_chat',

@@ -46,6 +46,7 @@ import { ChannelService } from './modules/notifications/channels/channel.service
 import { channelRoutes } from './modules/notifications/channels/channel.routes.js';
 import { OtpSender } from './modules/notifications/channels/otp-sender.js';
 import { InactivityService } from './modules/privacy/inactivity.service.js';
+import { AiTasksService } from './modules/ai-tasks/ai-tasks.service.js';
 import { DIGEST_JOB, DigestService } from './modules/notifications/digest.service.js';
 import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
 import { OtpService } from './modules/verification/otp.service.js';
@@ -774,7 +775,9 @@ export function createApp({
             embeddingBaseUrl: env.AI_DEFAULT_EMBEDDING_BASE_URL ?? null,
           }
         : null,
-  });
+  }); // Prompt 2 (G1): the one AI layer every new AI feature goes through (E1).
+  const aiTasksService = new AiTasksService({ ai: aiSettingsService, usage: aiUsageService, logger });
+
   aiSettingsService.onAlert = async (type, data) => {
     for (const id of await usersService.activeIdsWithRole(Role.COLLEGE_ADMIN))
       await notificationsService.notify(id, type, data);
@@ -1322,6 +1325,7 @@ export function createApp({
     events: eventsService,
     analytics: analyticsService,
     privacy: privacyService,
+    aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,
     subjects: subjectsService,
