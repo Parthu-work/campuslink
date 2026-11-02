@@ -419,7 +419,7 @@ A new session reads this file first and resumes from the first phase that is not
 | R8   | WhatsApp digests (owner: yes)                      | Done                 |
 | R9   | Hindi invoices (owner: evaluate)                   | Done: stays English  |
 | R10  | Revisit `style-src 'unsafe-inline'`                | Done (gap kept)      |
-| R11  | Find and fix the intermittent API test             | Not started          |
+| R11  | Find and fix the intermittent API test             | Done: causes fixed   |
 | R12  | Check the report definitions against the manuals   | Partly: NAAC blocked |
 | R13  | Translated legal texts (owner: O6 done, start)     | Blocked: O7 review   |
 
@@ -484,6 +484,17 @@ A new session reads this file first and resumes from the first phase that is not
 **Found.** `style-src 'self'` with `style-src-attr 'unsafe-inline'` would break three things in production, found by searching the built bundle for runtime style injection: **sonner 2.0.8** injects its stylesheet as a `<style>` element when imported (no nonce, no opt-out), so toasts would lose their styles; **react-remove-scroll 2.7.2** through **react-style-singleton 2.2.3** (Radix Dialog and Sheet scroll lock) injects a `<style>` with the computed scrollbar gap and accepts a nonce only from `__webpack_nonce__`, so dialogs would stop locking page scroll; and our own `applyBranding()` writes each college's palette into a `<style>` element. pdf.js uses constructable stylesheets, and React `style` props and motion set styles through the CSSOM; CSP governs neither.
 
 **Decision.** The CSP is unchanged. Tightening it needs a per-response nonce (nginx `sub_filter` into `index.html` and the same in `vite preview`) passed to react-style-singleton through `window.__webpack_nonce__`, sonner's CSS as a file with its injector removed (or another toast library), and the palette moved to `document.adoptedStyleSheets`. That is a change to the deploy and to two libraries, not a header edit; the gap row in `docs/security-review.md` now says exactly this.
+
+### R11 · The intermittent API test (Done: two causes fixed, each with a test that catches it)
+
+**Found.** The CI log of the failed run on `2f8f71f` was readable once `verify` started MongoDB quietly: `observability.test.ts` asserts that an error report carries no phone number, and the check matched the report's own random event id (`…91681334226…`), not anything personal. Any run where the random id or the timestamp happened to contain ten digits starting 6 to 9 failed. While looping the suite a second timing dependency showed up: `realtime.test.ts` signed a one-second token and waited for the gateway to disconnect it, so a slow machine could see the token expire before the socket connected.
+
+**Fixed.**
+
+- `SentryErrorReporter` takes its clock and event id from the caller (`{ now, eventId }`, defaulting to the real ones). The tests pass fixed values, the personal-data check ignores the id and time fields, and a regression test feeds the old id and shows the old check would have flagged it (`d399014`).
+- `RealtimeGateway` takes `now()` (default `Date.now`). The test signs a normal 60-second token and moves the gateway's clock to 300 ms before expiry, listening for the disconnect before awaiting the connection (`f462f80`).
+
+**Runs.** The API suite in a loop on the fixed code (tmpfs MongoDB): run 1 passed 1000 tests (7 skipped) in 513 s, run 2 passed 1000 in 557 s; run 3 stopped at 921 when the machine ran out of memory under a concurrent build, not on a test assertion. CI passed on every run since `d399014` (`e45efec`, `9b261b8`, `434b22c`). The item closes on the first criterion (the cause fixed with a test that would have caught it); the loop is evidence, not the reason.
 
 ### R13 · Translated legal texts (Blocked: waiting for the native-speaker review, O7)
 
