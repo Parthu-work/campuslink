@@ -38,11 +38,18 @@ export const consentService = {
     });
   },
 
-  /** The notice version the member last agreed to (at sign-up or since), or null without records. */
+  /**
+   * The notice version the member last agreed to, or null without records. Only the records of an
+   * acceptance count: the `account` consent given at sign-up and an accepted notice. A change in
+   * Settings records the notice in force but is not an acceptance of it.
+   */
   async latestNoticeVersion(userId: string): Promise<string | null> {
     const r = await ConsentModel.findOne({
       userId: new Types.ObjectId(userId),
-      purpose: { $in: ['account', NOTICE_PURPOSE] },
+      $or: [
+        { purpose: 'account', source: 'signup' },
+        { purpose: NOTICE_PURPOSE, source: 'notice' },
+      ],
     })
       .sort({ _id: -1 })
       .select('noticeVersion')
@@ -134,11 +141,13 @@ export const consentService = {
         'This consent is needed to run your account. To withdraw it, request account deletion instead.',
       );
     }
+    // The college's current notice, so the log shows which notice was in force at the change.
+    const noticeVersion = await this.currentNotice();
     await ConsentModel.create({
       userId: new Types.ObjectId(userId),
       purpose,
       version: CONSENT_PURPOSES[purpose].version,
-      noticeVersion: PRIVACY_NOTICE_VERSION,
+      noticeVersion,
       granted,
       source: 'settings',
     });

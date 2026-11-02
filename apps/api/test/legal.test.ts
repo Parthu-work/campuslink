@@ -5,6 +5,7 @@ import { api, makeTenant, makeUser, testApp, type TestTenant, type TestUser } fr
 import { runInTenant } from '../src/lib/context.js';
 import { consentService } from '../src/modules/consent/consent.service.js';
 import { AuditModel } from '../src/modules/audit/audit.model.js';
+import { ConsentModel } from '../src/modules/consent/consent.model.js';
 
 /** Legal pages and re-consent (build B14). */
 const ctx = testApp();
@@ -93,6 +94,51 @@ describe('publishing asks members to accept again', () => {
         AuditModel.countDocuments({ action: 'consent.notice_accepted', actorId: student.id }),
       ),
     ).toBe(1);
+  });
+
+  it('a change in Settings is not an acceptance, and does not undo one (prompt 1b, R1)', async () => {
+    // The student accepted +c1 above. Settings changes, including re-granting the required account
+    // consent, must not send them back through the gate.
+    for (const [purpose, granted] of [
+      ['analytics_aggregate', false],
+      ['analytics_aggregate', true],
+      ['account', true],
+    ] as const) {
+      const r = await as(student).post('/me/consents').send({ purpose, granted });
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+    }
+    expect((await as(student).get('/me')).body.data.notice).toEqual({
+      version: `${PRIVACY_NOTICE_VERSION}+c1`,
+      accepted: true,
+    });
+    // The log records the notice in force at the change: the college's, not the platform's base.
+    const last = await runInTenant(A._id, () =>
+      ConsentModel.findOne({ userId: new Types.ObjectId(student.id), source: 'settings' })
+        .sort({ _id: -1 })
+        .lean(),
+    );
+    expect(last?.noticeVersion).toBe(`${PRIVACY_NOTICE_VERSION}+c1`);
+
+    // A member who has not accepted +c1 is still asked after re-granting account in Settings.
+    const late = await makeUser(ctx, A, { roles: ['STUDENT'] });
+    await runInTenant(A._id, () =>
+      ConsentModel.create({
+        userId: new Types.ObjectId(late.id),
+        purpose: 'account',
+        version: 1,
+        noticeVersion: PRIVACY_NOTICE_VERSION,
+        granted: true,
+        source: 'signup',
+      }),
+    );
+    expect((await as(late).get('/me')).body.data.notice.accepted).toBe(false);
+    expect((await as(late).post('/me/consents').send({ purpose: 'account', granted: true })).status).toBe(
+      200,
+    );
+    expect((await as(late).get('/me')).body.data.notice).toEqual({
+      version: `${PRIVACY_NOTICE_VERSION}+c1`,
+      accepted: false,
+    });
   });
 
   it('a member who signs up after publishing has accepted it already', async () => {
