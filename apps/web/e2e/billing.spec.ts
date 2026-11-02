@@ -76,8 +76,10 @@ test('the platform drafts, issues and records a bank payment for a college', asy
   await expectNoA11yViolations(page);
   await credit.getByRole('button', { name: 'Save draft' }).click();
   const credits = page.getByRole('region', { name: 'Credit notes' });
-  await expect(credits.getByRole('cell', { name: /^Draft/ })).toBeVisible();
-  await credits.getByRole('button', { name: 'Issue' }).click();
+  // A draft has no number yet and can be issued or voided.
+  const issue = credits.getByRole('button', { name: 'Issue' });
+  await expect(issue).toBeVisible();
+  await issue.click();
   await expect(credits.getByRole('cell', { name: /^CN\// })).toBeVisible();
   const [pdf] = await Promise.all([
     page.waitForEvent('download'),
