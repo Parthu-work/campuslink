@@ -394,3 +394,55 @@ A new session reads this file first and resumes from the first phase that is not
 - **The load test is not in CI** (it needs its own database and takes minutes); this environment had no MongoDB, so its figures are still to be recorded in `docs/performance.md`.
 
 **Next:** none in this prompt. The owner's registrations and reviews are listed in [`report-1.md`](report-1.md).
+
+## Prompt 1b · Finish what prompt 1 left open
+
+[`master-prompt-1b-remaining.md`](master-prompt-1b-remaining.md). A new session resumes from the first item that is not **Done**.
+
+**Baseline.** `main` at `1d527a1` (merge of [Parthu-work/campuslink#1](https://github.com/Parthu-work/campuslink/pull/1)); CI green on it (verify, e2e, adapters, security). Work starts from `a471e43` (`claude/vigilant-cray-oelucl`, `main` plus this prompt's file; CI green).
+
+**Branch rule.** The owner asked for a new branch from the most recently updated branch, so this work is on `feat/prompt-1b-remaining` (from `a471e43`), not on `main`, and reaches `main` through a pull request.
+
+**Gate on the baseline.** Green, once the checkout uses LF line endings: a Windows checkout with `core.autocrlf=true` fails `format:check` on every file (Prettier expects LF). Set `core.autocrlf false` for the checkout (`git config --worktree core.autocrlf false`) and check it out again. No code change was needed.
+
+**Owner's answers (this session, 2 November 2026).** R7: no answer given, so not built (the purge is not promised). R8: yes, build the weekly WhatsApp digest. R9: yes, evaluate Hindi invoices. R13: the lawyer's review of the English texts (O6) is done; start the translations.
+
+| Item | What                                               | Status      |
+| ---- | -------------------------------------------------- | ----------- |
+| R1   | Only sign-up and notice records count as accepting | Done        |
+| R2   | Run the load test and record it                    | Not started |
+| R3   | UI checks on the B12 to B14 screens                | Not started |
+| R4   | SMS for critical reminders                         | Done        |
+| R5   | Credit notes                                       | Not started |
+| R6   | Edit AI prices in the platform console             | Not started |
+| R7   | Inactive-account purge                             | Not started |
+| R8   | WhatsApp digests (owner: yes)                      | Not started |
+| R9   | Hindi invoices (owner: evaluate)                   | Not started |
+| R10  | Revisit `style-src 'unsafe-inline'`                | Not started |
+| R11  | Find and fix the intermittent API test             | Not started |
+| R12  | Check the report definitions against the manuals   | Not started |
+| R13  | Translated legal texts (owner: O6 done, start)     | Not started |
+
+### R1 · Only sign-up and notice records count as accepting (Done)
+
+**Shipped.** `consentService.latestNoticeVersion()` reads only the `account` record from sign-up and `privacy_notice` records from the notice gate. `consentService.set()` (Settings) records the college's current notice (`currentNotice()`), so the log shows which notice was in force. Test in `legal.test.ts`: after accepting `+c1`, Settings changes (re-granting `account` too) keep `accepted: true`; a member who has not accepted still sees `accepted: false` after a Settings change. The test fails on the old code.
+
+**Next:** R4, built before R2 and R3 (those need a quiet machine and the browser).
+
+### R4 · SMS for critical reminders (Done)
+
+**Shipped.**
+
+- Templates `session_reminder` and `drive_reminder` (service-explicit) with separate Unicode `_te` and `_hi` versions, in `sms-templates.ts` and `docs/sms-templates.md` (identical; `channel-templates.test.ts`). Variables: first name, time, link.
+- `ChannelService.sendSms()`: a verified number, a registered template (the member's language when registered, else English), the college's allowance. `NotificationsService` sends it when WhatsApp did not deliver (off, not opted in, or failed) and the member has **SMS reminders** on. Only `booking_reminder` at 1 hour and `drive_reminder` qualify (`smsReminderKey()`).
+- Settings › Notifications: an **SMS reminders** switch (`smsReminders`, on by default; en, te, hi).
+- Metering: `ChannelMessage`/`ChannelUsage` with channel `sms`; `/metrics` `campuslink_sms_reminders_total{template,outcome}`.
+- Docs: `docs/sms-templates.md`, `docs/specs/whatsapp-channel.md`, `docs/privacy.md`, the privacy policy template, `translation-review.md`.
+- Tests: `sms-reminders.test.ts` (each condition on and off, language, quiet hours, metering, the allowance cap, no SMS for other types).
+
+**Decisions.**
+
+- **SMS reminders count against the college's monthly allowance, shared with WhatsApp, and stop at it.** Critical WhatsApp messages are exempt from the allowance, but an SMS costs several times more, so a reminder SMS never exceeds it. Codes by SMS are metered but not counted (they are needed to sign in). The admin usage card now counts both.
+- **Session reminders ignore quiet hours on SMS too**, as on every other channel (the member chose the time); drive reminders wait for quiet hours to end.
+- **The privacy policy now says what SMS is used for**, so `PRIVACY_NOTICE_VERSION` moves from `2026-10-draft` to `2026-11-draft` and members accept again. The new sentence needs the lawyer's look (O6).
+- The link is the third variable. DLT platforms limit a plain variable to 30 characters, so it must be registered as a URL variable with the college domains whitelisted (written in the doc for the owner).
