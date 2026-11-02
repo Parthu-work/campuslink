@@ -407,21 +407,21 @@ A new session reads this file first and resumes from the first phase that is not
 
 **Owner's answers (this session, 2 November 2026).** R7: no answer given, so not built (the purge is not promised). R8: yes, build the weekly WhatsApp digest. R9: yes, evaluate Hindi invoices. R13: the lawyer's review of the English texts (O6) is done; start the translations.
 
-| Item | What                                               | Status             |
-| ---- | -------------------------------------------------- | ------------------ |
-| R1   | Only sign-up and notice records count as accepting | Done               |
-| R2   | Run the load test and record it                    | Not started        |
-| R3   | UI checks on the B12 to B14 screens                | Not started        |
-| R4   | SMS for critical reminders                         | Done               |
-| R5   | Credit notes                                       | Done               |
-| R6   | Edit AI prices in the platform console             | Done               |
-| R7   | Inactive-account purge                             | Not started        |
-| R8   | WhatsApp digests (owner: yes)                      | Done               |
-| R9   | Hindi invoices (owner: evaluate)                   | Not started        |
-| R10  | Revisit `style-src 'unsafe-inline'`                | Done (gap kept)    |
-| R11  | Find and fix the intermittent API test             | Not started        |
-| R12  | Check the report definitions against the manuals   | Not started        |
-| R13  | Translated legal texts (owner: O6 done, start)     | Blocked: O7 review |
+| Item | What                                               | Status               |
+| ---- | -------------------------------------------------- | -------------------- |
+| R1   | Only sign-up and notice records count as accepting | Done                 |
+| R2   | Run the load test and record it                    | Not started          |
+| R3   | UI checks on the B12 to B14 screens                | Not started          |
+| R4   | SMS for critical reminders                         | Done                 |
+| R5   | Credit notes                                       | Done                 |
+| R6   | Edit AI prices in the platform console             | Done                 |
+| R7   | Inactive-account purge                             | Done                 |
+| R8   | WhatsApp digests (owner: yes)                      | Done                 |
+| R9   | Hindi invoices (owner: evaluate)                   | Done: stays English  |
+| R10  | Revisit `style-src 'unsafe-inline'`                | Done (gap kept)      |
+| R11  | Find and fix the intermittent API test             | Not started          |
+| R12  | Check the report definitions against the manuals   | Partly: NAAC blocked |
+| R13  | Translated legal texts (owner: O6 done, start)     | Blocked: O7 review   |
 
 ### R1 · Only sign-up and notice records count as accepting (Done)
 
@@ -492,3 +492,19 @@ A new session reads this file first and resumes from the first phase that is not
 **Shipped (unpublished).** Telugu and Hindi versions of the privacy policy and terms in `legal-translations.ts`, with the filled-in labels (email, phone, the missing-officer and missing-address sentences) translated too. `GET /legal/:doc?lang=` serves a translation only once its `reviewed` field names the review; the response says `language` and `translated`, and the page then says the English version is the legal reference (en, te, hi). Every language accepts the same notice version, so the notice gate works the same in each. Tests in `legal.test.ts`: placeholders and sections match English; an unreviewed translation is not served; once reviewed it is served, filled in, and accepting the notice from it works; and a fingerprint of every published text is pinned to `PRIVACY_NOTICE_VERSION`, so publishing a translation or changing any text without a version bump fails. Docs: `docs/specs/help-support-legal.md`, `translation-review.md` (the legal texts first).
 
 **To finish (after O7):** set `reviewed` for each language, bump `PRIVACY_NOTICE_VERSION`, record the new fingerprint in the test.
+
+### R9 · Hindi invoices (Done: evaluated; stays English)
+
+**Evaluation:** [`hindi-invoice-evaluation.md`](hindi-invoice-evaluation.md). `@pdf-lib/fontkit` 1.1.1 crashes on Devanagari (`regeneratorRuntime is not defined`), so today's invoice path cannot draw Hindi at all. Patched, fontkit picks the same glyphs as HarfBuzz (WebAssembly, 197 KB) in all nine sample phrases, but eight of the nine need mark offsets that `pdf-lib`'s `drawText` drops. A Hindi copy needs glyph-by-glyph drawing with offsets, a Devanagari font (Noto Sans Devanagari) and Hindi amounts in words.
+
+**Decision:** not built. The prompt allows it only after a native speaker checks a prototype's conjuncts and vowel signs, and none was available; an English invoice is valid for GST.
+
+### R12 · Report definitions against the manuals (Partly done: NBA and NIRF checked; NAAC blocked)
+
+The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tier-II UG Engineering SAR format, GAPC v4.0 (January 2025), criterion 4.6, and NIRF 2025's Engineering and Colleges methodologies. **NBA:** the definition now follows the manual (version `2026.2`): the Placement Index as a percentage, points = 0.3 × the average, the manual's letters, and the "with a qualifying exam" column removed (the manual defines no such figure); it stays marked for review only for the N + N2 floor on FS, which needs the sanctioned intake the platform does not hold. **NIRF:** agrees with the methodology (median of placed graduates over three years); stays marked for review because the per-year layout and unit come from a data format the methodology does not include. **NAAC:** not checked: `naac.gov.in` presented a revoked TLS certificate, so nothing was downloaded from it, and the four NAAC definitions stay marked for review. Every check, with document, date and URL, is in `docs/specs/outcomes-reports.md` › Checks against the manuals and in each definition's source note.
+
+### R7 · Inactive-account purge (Done; the owner said yes later in the session)
+
+**Shipped.** `retention.inactiveAccountMonths` per college (null: off, the default; 24 to 120 months), set in Admin › Branding › Legal details › **Unused accounts** (`GET`/`PUT /admin/retention`, `tenant:settings`, audited as `tenant.retention_changed` with the months before and after). `InactivityService`, in the daily retention run for colleges that turned it on: a member whose last activity (sign-in, or a session refresh) is that old gets a warning 60 days before the deadline and another 14 days before (notification `account_inactive`, by email, push and the new critical WhatsApp template `cl_account_inactive`, by the member's own channel settings), then `PrivacyService.scheduleDeletion()` (shared with a member's own request) with the college's grace period. Each step waits for the one before (the second warning at least 46 days after the first, the deletion at least 14 days after the second), so turning it on never shortens anyone's notice. Signing in starts the clock again. Never selected: college admins, TPOs, faculty, and members `PlacementsService.inProgressFor()` or `SupportService.openFor()` name. The privacy policy states it (en, te, hi) only while it is on; a change bumps the college's notice version, and the template text bumped `PRIVACY_NOTICE_VERSION` to `2026-11b-draft` (fingerprint re-pinned). Tests: `inactivity.test.ts` (the setting, its limits and permissions, the policy text on and off, the notice version; selection, warnings once each, the second and the scheduling waiting their turn, erasure scheduled not immediate, signing in, session refresh, staff and the exceptions, off means nothing).
+
+**Decisions.** The early `inactiveAccountDays` field (unused, three years by default) is left in place and marked unused rather than migrated away; the purge reads only the new months field. The warning's date is when the erasure is scheduled; the erasure itself follows after the grace period, during which signing in cancels it.

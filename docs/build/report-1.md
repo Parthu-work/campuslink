@@ -75,6 +75,8 @@ All are optional unless the provider that needs them is selected; `config/env.ts
 
 ## What the owner must register or have reviewed
 
+**Prompt 1b:** each item below, with the exact texts, settings and a one-page live check, is in [`owner-checklists.md`](owner-checklists.md) (O1 to O8). New since prompt 1: the reminder SMS templates (R4) for DLT and MSG91, the weekly digest template `cl_weekly_digest` (R8) for Meta, credit notes (R5) for the chartered accountant, the privacy policy's SMS sentence for the lawyer, and the Telugu and Hindi legal texts (R13) for the native-speaker review.
+
 1. **Meta Business verification**, a WhatsApp Business number, and the templates in [`docs/whatsapp-templates.md`](../whatsapp-templates.md) in English, Telugu and Hindi (utility templates and the authentication template with a copy-code button). Then one live code and one template send with `WHATSAPP_PROVIDER=cloud` to confirm the Graph API version and button components (the adapter is verified against fakes only).
 2. **DLT registration** (TRAI): the principal entity, a six-letter header, and the code templates in [`docs/sms-templates.md`](../sms-templates.md) (`otp` in English first; `otp_hi` when Hindi codes are wanted).
 3. **MSG91**: an account with the DLT templates mapped to Flow templates; one live code with `SMS_PROVIDER=msg91` to confirm `template_id` and the `var` names.
