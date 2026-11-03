@@ -11,6 +11,7 @@ import {
 } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { useTranslation } from '../i18n/react';
+import { loadPack, type Pack } from '../i18n';
 import { Compass } from 'lucide-react';
 import {
   ADMIN_PERMISSIONS,
@@ -38,6 +39,12 @@ import { PublicOnly, RequireAuth, RequirePermission, Splash } from './guards';
  * before it commits the navigation, so the current screen stays on screen (with the top progress
  * bar) instead of being replaced by a spinner. Only the public pages are on the first-load path.
  */
+/** A screen whose strings are in a language pack: the code and the pack load together. */
+const withPack =
+  <M,>(pack: Pack, importer: () => Promise<M>) =>
+  () =>
+    Promise.all([importer(), loadPack(pack)]).then(([m]) => m);
+
 const load = {
   signIn: () => import('../features/auth/sign-in'),
   signUp: () => import('../features/auth/sign-up'),
@@ -99,11 +106,12 @@ const load = {
   driveEditor: () => import('../features/admin/drive-editor'),
   driveManage: () => import('../features/admin/drive-manage'),
   outcomes: () => import('../features/outcomes/outcomes'),
-  resumes: () => import('../features/resume/resumes'),
-  resume: () => import('../features/resume/resume-page'),
-  interviews: () => import('../features/interviews/interviews'),
-  interviewSession: () => import('../features/interviews/session'),
-  interviewQuestions: () => import('../features/admin/interview-questions'),
+  // Prompt 2: these screens' strings come in the `career` pack, loaded with their code.
+  resumes: withPack('career', () => import('../features/resume/resumes')),
+  resume: withPack('career', () => import('../features/resume/resume-page')),
+  interviews: withPack('career', () => import('../features/interviews/interviews')),
+  interviewSession: withPack('career', () => import('../features/interviews/session')),
+  interviewQuestions: withPack('career', () => import('../features/admin/interview-questions')),
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),

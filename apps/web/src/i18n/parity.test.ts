@@ -5,6 +5,17 @@ import en from './en.json';
 /** Every language's strings file, by its locale code (`./hi.json` → `hi`). */
 const files = import.meta.glob<Record<string, unknown>>('./*.json', { eager: true, import: 'default' });
 const bundle = (l: string) => files[`./${l}.json`];
+/** Packs (`packs/<name>.<locale>.json`): sections loaded with the screens that use them. */
+const packFiles = import.meta.glob<Record<string, unknown>>('./packs/*.json', {
+  eager: true,
+  import: 'default',
+});
+const packNames = [...new Set(Object.keys(packFiles).map((f) => f.split('/').pop()?.split('.')[0] ?? ''))];
+const pack = (name: string, l: string) => packFiles[`./packs/${name}.${l}.json`];
+/** Where each pack's sections may be used: only screens that load the pack (app/router.tsx, withPack). */
+const PACK_USERS: Record<string, string[]> = {
+  career: ['/features/resume/', '/features/interviews/', '/features/admin/interview-questions.tsx'],
+};
 
 /** Flattens nested strings to "a.b.c" → value. */
 const flat = (o: unknown, prefix = ''): Record<string, string> =>
@@ -23,6 +34,30 @@ describe('every language', () => {
   });
 
   const e = flat(en);
+
+  describe.each(packNames)('the %s pack', (name) => {
+    const pe = flat(pack(name, 'en'));
+    it('exists in every language with exactly the English keys and variables', () => {
+      for (const l of SUPPORTED_LOCALES) {
+        const t = flat(pack(name, l));
+        expect(Object.keys(t).sort(), l).toEqual(Object.keys(pe).sort());
+        expect(
+          Object.keys(pe).filter(
+            (k) => JSON.stringify(vars(pe[k] ?? '')) !== JSON.stringify(vars(t[k] ?? '')),
+          ),
+          l,
+        ).toEqual([]);
+        expect(
+          Object.entries(t).filter(([, v]) => !v.trim()),
+          l,
+        ).toEqual([]);
+      }
+    });
+    it('shares no section with the main strings', () => {
+      expect(Object.keys(pack(name, 'en') ?? {}).filter((k) => k in en)).toEqual([]);
+    });
+  });
+
   // The app loads only the member's language and has no fallback bundle (i18n/index.ts).
   describe.each(SUPPORTED_LOCALES.filter((l) => l !== 'en'))('%s', (l) => {
     const t = flat(bundle(l));
@@ -45,7 +80,10 @@ describe('every language', () => {
 });
 
 describe('keys the code asks for', () => {
-  const e = flat(en);
+  const e = { ...flat(en), ...Object.assign({}, ...packNames.map((n) => flat(pack(n, 'en')))) } as Record<
+    string,
+    string
+  >;
   const sources = import.meta.glob<string>(['../**/*.{ts,tsx}', '!../**/*.test.{ts,tsx}'], {
     query: '?raw',
     import: 'default',
@@ -67,6 +105,21 @@ describe('keys the code asks for', () => {
 
   // A key built at run time (`progress.mentorLevels.${id}`) needs a group of strings under its
   // prefix; once a string took a group's name and every mentor level showed its raw key.
+  it("uses a pack's sections only on the screens that load it", () => {
+    const misplaced = packNames.flatMap((name) => {
+      const sections = Object.keys(pack(name, 'en') ?? {});
+      return code.flatMap(([file, src]) =>
+        PACK_USERS[name]?.some((u) => file.includes(u))
+          ? []
+          : [...src.matchAll(/\bt\(\s*['`]([a-zA-Z]\w*)\./g)]
+              .map((m) => m[1] ?? '')
+              .filter((section) => sections.includes(section))
+              .map((section) => `${file}: ${section}`),
+      );
+    });
+    expect(misplaced).toEqual([]);
+  });
+
   it('every built key has a group of strings under its prefix', () => {
     const missing = code.flatMap(([file, src]) =>
       [...src.matchAll(/\bt\(\s*`([a-zA-Z][\w.-]*\.)\$\{/g)]

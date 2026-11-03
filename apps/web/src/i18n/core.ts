@@ -48,6 +48,16 @@ export class Translator {
     this.bundles.set(lng, strings);
   }
 
+  /** Adds a pack of sections to a language already loaded (its own top-level keys only). */
+  addStrings(lng: string, strings: Strings): void {
+    this.bundles.set(lng, { ...(this.bundles.get(lng) ?? {}), ...strings });
+  }
+
+  /** Whether a language already has this top-level section. */
+  hasSection(lng: string, section: string): boolean {
+    return !!this.bundles.get(lng)?.[section];
+  }
+
   async changeLanguage(lng: string): Promise<void> {
     if (lng === this.language) return;
     this.setLanguage(lng);

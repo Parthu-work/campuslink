@@ -174,9 +174,11 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
                 {reports.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.company
-                      ? t('interviews.forCompany', { company: r.company })
-                      : t(`interviews.track.${r.track}`)}{' '}
-                    · {formatDateTime(r.createdAt)}
+                      ? t('request.reportNameCompany', {
+                          company: r.company,
+                          date: formatDateTime(r.createdAt),
+                        })
+                      : t('request.reportName', { date: formatDateTime(r.createdAt) })}
                   </option>
                 ))}
               </Select>
