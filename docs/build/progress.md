@@ -542,7 +542,7 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 | ----- | -------------------------------------------------------------- | ----------- |
 | G1    | AiTasksService: the shared AI layer                            | Built       |
 | G2    | Resume builder, ATS check and alumni review                    | Done        |
-| G3    | AI mock interviews (text and voice) with human follow-up       | Not started |
+| G3    | AI mock interviews (text and voice) with human follow-up       | Done        |
 | G4    | Aptitude and coding practice                                   | Not started |
 | G5    | Readiness score and the TPO readiness board                    | Not started |
 | G6    | Alumni engagement                                              | Not started |
@@ -567,3 +567,11 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 **Tests.** `test/resumes.test.ts` (14): PDF round-trip with pdfjs-dist, the no-new-number property test, isolation, review access, moderation, attach to a drive, export with PDF and erasure. `word-diff.test.ts`; `e2e/resumes.spec.ts` with axe on each screen.
 
 **Decisions.** The résumé content is English only (validated): ATS read English and the PDF font is Latin; every screen around it is translated. A member who may not read a résumé gets 404, not 403. Rewrites run only on saved bullets, so the server reads the text it rewrites from the record, never from the request. "Ask an alumnus to review" opens the mentor list filtered to résumé reviews; the micro-ask route waits for G6.
+
+### G3 · AI mock interviews with human follow-up (Done)
+
+**Shipped.** `modules/interviews/`: practice sessions of 5 to 8 questions (HR, technical for a branch, or a drive's role) in English, Telugu, Hindi or mixed, typed or spoken. Questions come from a built-in starter set (12 HR questions in three languages; technical sets for software, electrical, mechanical, civil, chemical and any branch) and the college's bank; AI-written role questions for a drive are used once and wait in Admin › Interview questions until faculty approve them. Each answer is scored on clarity, structure (STAR on HR), correctness (technical only) and communication, 1 to 5, with quotes kept only if they are in the answer, a tip and at most one follow-up (three a session); the summary uses the deep tier; without AI everything is kept unscored with a rules summary. Voice: MediaRecorder upload, transcribed in the worker by the Whisper service or OpenAI with the college's key, then deleted (E3); a failed transcript hands the turn back to the text box. A finished report can be shared with a mock interview request; its mentor reads it while the request is open or accepted. Progress per dimension over time on the page. Events `mock_started`, `mock_completed`, `human_mock_booked`. Cost measured and recorded in `docs/ai-assistant.md` (about 7,500 tokens for a six-question practice). Spec: `docs/specs/interviews.md`.
+
+**Tests.** `test/interviews.test.ts` (12) and `test/interviews-text.test.ts` (1): the draw, scoring and evidence, follow-ups, the double-submit guard, the rubric schema, voice deleted after transcription, the text fallback, the faculty-only review queue, drive questions into the queue, the shared report, isolation, the daily allowance, export and erasure. `e2e/interviews.spec.ts` (practice to report, the bank; axe).
+
+**Decisions.** A `starter` question source was added for the built-in set (the prompt's list has no source for questions shipped with the app). Technical questions are asked in English, as campus technical rounds are; answers may be in any language. Sessions a day are derived from the feature's AI limit (60 calls ÷ 13 calls a session at most = 4). Recordings are always deleted; keeping one (E3 allows it) is not offered. `AiTasksService.run` now takes just the member's id, so the worker can score a transcribed answer. A second test app in one file breaks product-event recording, so the no-AI case has its own test file.

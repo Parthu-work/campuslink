@@ -67,6 +67,10 @@ import type {
   SupportStatus,
   SupportTicketView,
   ResumeCommentView,
+  InterviewHistoryView,
+  InterviewQuestionStatus,
+  InterviewQuestionView,
+  InterviewView,
   ResumeSummaryView,
   ResumeView,
 } from '@campuslink/shared';
@@ -739,4 +743,24 @@ export const resumeComments = (id: string) =>
   queryOptions({
     queryKey: ['resume-comments', id],
     queryFn: ({ signal }) => api.get<ResumeCommentView[]>(`/resumes/${id}/comments`, signal),
+  });
+
+// Mock interviews (prompt 2, G3).
+export const interviews = () =>
+  queryOptions({
+    queryKey: ['interviews'],
+    queryFn: ({ signal }) => api.get<InterviewHistoryView>('/interviews', signal),
+  });
+
+export const interview = (id: string) =>
+  queryOptions({
+    queryKey: ['interview', id],
+    queryFn: ({ signal }) => api.get<InterviewView>(`/interviews/${id}`, signal),
+  });
+
+export const interviewQuestions = (status: InterviewQuestionStatus) =>
+  queryOptions({
+    queryKey: ['interview-questions', status],
+    queryFn: ({ signal }) =>
+      api.get<InterviewQuestionView[]>(`/admin/interview-questions?status=${status}`, signal),
   });

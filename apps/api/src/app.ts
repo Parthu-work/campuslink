@@ -49,6 +49,8 @@ import { InactivityService } from './modules/privacy/inactivity.service.js';
 import { AiTasksService } from './modules/ai-tasks/ai-tasks.service.js';
 import { RESUME_RENDER_JOB, ResumesService } from './modules/resumes/resumes.service.js';
 import { resumeRoutes } from './modules/resumes/resumes.routes.js';
+import { INTERVIEW_TRANSCRIBE_JOB, InterviewsService } from './modules/interviews/interviews.service.js';
+import { interviewRoutes } from './modules/interviews/interviews.routes.js';
 import { DIGEST_JOB, DigestService } from './modules/notifications/digest.service.js';
 import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
 import { OtpService } from './modules/verification/otp.service.js';
@@ -802,27 +804,53 @@ export function createApp({
       await notificationsService.notify(id, type, data);
   };
 
+  const mediaTools = media ?? (env.MEDIA_TOOLS === 'none' ? noMediaTools : new CliMediaTools());
+  const whisperService =
+    whisper !== undefined
+      ? whisper
+      : env.WHISPER_URL
+        ? new WhisperServiceTranscriber({
+            apiKey: null,
+            baseUrl: env.WHISPER_URL,
+            // Platform-owned service from the environment, typically on the private network.
+            allowPrivateNetwork: true,
+            fetcher,
+          })
+        : null;
   const materialPipeline = new MaterialPipeline({
     files: filesService,
     subjects: subjectsService,
     ai: aiSettingsService,
     notifications: notificationsService,
     realtime,
-    media: media ?? (env.MEDIA_TOOLS === 'none' ? noMediaTools : new CliMediaTools()),
+    media: mediaTools,
     ocr: ocr ?? (env.OCR_PROVIDER === 'none' ? noOcr : new TesseractOcr(env.OCR_LANGUAGES)),
-    whisper:
-      whisper !== undefined
-        ? whisper
-        : env.WHISPER_URL
-          ? new WhisperServiceTranscriber({
-              apiKey: null,
-              baseUrl: env.WHISPER_URL,
-              // Platform-owned service from the environment, typically on the private network.
-              allowPrivateNetwork: true,
-              fetcher,
-            })
-          : null,
+    whisper: whisperService,
   });
+
+  // Mock interviews (prompt 2, G3): the same transcription providers as study material (E3).
+  const interviewsService = new InterviewsService({
+    ai: aiTasksService,
+    aiSettings: aiSettingsService,
+    usage: aiUsageService,
+    files: filesService,
+    jobs: queue,
+    media: mediaTools,
+    whisper: whisperService,
+    profiles: profilesService,
+    logger,
+    drive: async (viewer, driveId) => {
+      const v = await placementsService.get(viewer, driveId).catch(() => null);
+      if (!v) return null;
+      const text = await placementsService.roleText(viewer, driveId);
+      return { company: v.company.name, title: v.title, text: text ?? v.title };
+    },
+    isMockMentor: (viewer, interviewId) => requestsService.seesInterview(viewer, interviewId),
+  });
+  queue.register(INTERVIEW_TRANSCRIBE_JOB, (data) => interviewsService.onTranscribe(data));
+  requestsService.interviewOwned = (userId, interviewId) => interviewsService.owns(userId, interviewId);
+  requestsService.onMockRequested = (menteeId, interviewId) =>
+    interviewsService.mockBooked(menteeId, interviewId);
   const materialsService = new MaterialsService({
     files: filesService,
     subjects: subjectsService,
@@ -1009,6 +1037,7 @@ export function createApp({
     offersService,
     chatService,
     resumesService,
+    interviewsService,
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1068,6 +1097,7 @@ export function createApp({
   privacyService.register('aiSettings', hook(aiSettingsService));
   privacyService.register('support', hook(supportService));
   privacyService.register('resumes', hook(resumesService));
+  privacyService.register('interviews', hook(interviewsService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -1251,6 +1281,7 @@ export function createApp({
   app.use(API_PREFIX, defineModule('insights', insightsRoutes(productInsights, platformService), pipeline));
   app.use(API_PREFIX, defineModule('support', supportRoutes(supportService, filesService), pipeline));
   app.use(API_PREFIX, defineModule('resumes', resumeRoutes(resumesService), pipeline));
+  app.use(API_PREFIX, defineModule('interviews', interviewRoutes(interviewsService), pipeline));
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -1348,6 +1379,7 @@ export function createApp({
     analytics: analyticsService,
     privacy: privacyService,
     resumes: resumesService,
+    interviews: interviewsService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,

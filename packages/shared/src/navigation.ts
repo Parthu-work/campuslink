@@ -18,6 +18,7 @@ export type NavId =
   | 'placements'
   | 'outcomes'
   | 'resume'
+  | 'interviews'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -87,6 +88,7 @@ export type AdminSectionId =
   | 'onboarding'
   | 'placements'
   | 'offers'
+  | 'interviewQuestions'
   | 'reports'
   | 'moderation'
   | 'mentorship'
@@ -125,6 +127,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('onboarding', '/admin/onboarding', 'onboarding:manage', 'people'),
   section('placements', '/admin/placements', 'placements:manage', 'placements'),
   section('offers', '/admin/offers', 'outcomes:verify', 'placements'),
+  // The mock interview question bank and its review queue (prompt 2, G3).
+  section('interviewQuestions', '/admin/interview-questions', 'interviews:review', 'placements'),
   section('moderation', '/admin/moderation', 'moderation:act', 'community'),
   section('mentorship', '/admin/mentorship', 'mentorship:oversee', 'community'),
   section('sources', '/admin/sources', 'sources:manage', 'community'),
@@ -177,6 +181,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   outcomes: d('outcomes', '/outcomes', 'you', ['outcomes:report']),
   // Résumé builder, ATS check and alumni review (prompt 2, G2).
   resume: d('resume', '/resume', 'you', ['resumes:manage']),
+  // AI mock interviews with human follow-up (prompt 2, G3).
+  interviews: d('interviews', '/interviews', 'you', ['interviews:practice']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -293,6 +299,7 @@ const MENU_ORDER: readonly NavId[] = [
   'leaderboard',
   'outcomes',
   'resume',
+  'interviews',
   'progress',
   'rewards',
   'saved',

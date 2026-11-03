@@ -42,5 +42,6 @@ export * from './schemas/insights.js';
 export * from './schemas/billing.js';
 export * from './schemas/support.js';
 export * from './schemas/resumes.js';
+export * from './schemas/interviews.js';
 export * from './schemas/legal.js';
 export * from './navigation.js';

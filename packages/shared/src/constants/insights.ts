@@ -19,6 +19,10 @@ export const PRODUCT_EVENTS = [
   'resume_created',
   'resume_reviewed',
   'ats_checked',
+  // Prompt 2, G3: mock interviews.
+  'mock_started',
+  'mock_completed',
+  'human_mock_booked',
 ] as const;
 export type ProductEventName = (typeof PRODUCT_EVENTS)[number];
 

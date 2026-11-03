@@ -27,7 +27,7 @@ import { Stepper } from '../../components/ui/stepper';
 import { FormError } from '../../components/layout/auth-layout';
 import { api } from '../../lib/api';
 import { useCan } from '../../lib/me';
-import { resumes } from '../../lib/queries';
+import { interviews, resumes } from '../../lib/queries';
 import { focusOnMount } from '../../lib/focus';
 import { applyApiError } from '../../lib/errors';
 import { formatDateTime, newIdempotencyKey } from '../../lib/format';
@@ -54,6 +54,12 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
   const myResumes = useQuery({ ...resumes(), enabled: canResumes && type === 'resume_review' });
   const [resumeId, setResumeId] = useState<string | null>(null);
   const chosenResume = type === 'resume_review' ? (resumeId ?? myResumes.data?.[0]?.id ?? '') : '';
+  // Prompt 2, G3: a mock interview can share a finished practice report (the mentor opens it).
+  const canPractise = useCan('interviews:practice');
+  const practice = useQuery({ ...interviews(), enabled: canPractise && type === 'mock_interview' });
+  const reports = (practice.data?.sessions ?? []).filter((x) => x.status === 'completed');
+  const [interviewId, setInterviewId] = useState<string | null>(null);
+  const chosenReport = type === 'mock_interview' ? (interviewId ?? reports[0]?.id ?? '') : '';
   const slots = useQuery({
     queryKey: ['slots', mentor.userId, type],
     queryFn: () => api.get<SlotsView>(`/mentors/${mentor.userId}/slots?type=${type}&days=14`),
@@ -75,6 +81,7 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
           ...text,
           ...(bookable && slot ? { slotStart: slot } : {}),
           ...(chosenResume ? { resumeId: chosenResume } : {}),
+          ...(chosenReport ? { interviewId: chosenReport } : {}),
         },
         key,
       ),
@@ -148,6 +155,28 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
                 {myResumes.data.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.title}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        )}
+        {type === 'mock_interview' && reports.length > 0 && (
+          <Field label={t('request.report')} hint={t('request.reportHint', { name: first })}>
+            {({ id, describedBy }) => (
+              <Select
+                id={id}
+                aria-describedby={describedBy}
+                value={chosenReport}
+                onChange={(e) => setInterviewId(e.target.value)}
+              >
+                <option value="">{t('request.noReport')}</option>
+                {reports.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.company
+                      ? t('interviews.forCompany', { company: r.company })
+                      : t(`interviews.track.${r.track}`)}{' '}
+                    · {formatDateTime(r.createdAt)}
                   </option>
                 ))}
               </Select>

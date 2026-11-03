@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { FileUser, Inbox, MessageSquare, Video } from 'lucide-react';
+import { FileUser, Inbox, MessageSquare, Mic, Video } from 'lucide-react';
 import {
   DECLINE_TEMPLATES,
   isBookable,
@@ -279,6 +279,12 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
           <Link to={`/resume/${r.resumeId}`} className={buttonVariants({ variant: 'outline' })}>
             <FileUser className="size-4" aria-hidden />{' '}
             {t(box === 'received' ? 'request.openResume' : 'request.yourResume')}
+          </Link>
+        )}
+        {r.interviewId && (r.status === 'pending' || r.status === 'accepted') && (
+          <Link to={`/interviews/${r.interviewId}`} className={buttonVariants({ variant: 'outline' })}>
+            <Mic className="size-4" aria-hidden />{' '}
+            {t(box === 'received' ? 'request.openReport' : 'request.yourReport')}
           </Link>
         )}
         {r.status === 'accepted' && r.conversationId && (

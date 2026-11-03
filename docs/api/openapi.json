@@ -376,6 +376,8 @@
                               "support:create",
                               "support:manage",
                               "resumes:manage",
+                              "interviews:practice",
+                              "interviews:review",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -463,6 +465,8 @@
                               "support:create",
                               "support:manage",
                               "resumes:manage",
+                              "interviews:practice",
+                              "interviews:review",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -5549,6 +5553,10 @@
                       "resumeId": {
                         "type": "string",
                         "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "interviewId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
                       }
                     },
                     "required": [
@@ -5595,6 +5603,10 @@
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                       },
                       "resumeId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "interviewId": {
                         "type": "string",
                         "pattern": "^[a-f0-9]{24}$"
                       }
@@ -20124,6 +20136,569 @@
           }
         },
         "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/interviews": {
+      "get": {
+        "tags": [
+          "Mock interviews"
+        ],
+        "summary": "My practice interviews, progress per rubric dimension and today's allowance",
+        "description": "Requires permission `interviews:practice` (Practise mock interviews with AI feedback and share a report for a human mock). Host scope: college.",
+        "operationId": "interviews_get_interviews",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "interviews:practice"
+      },
+      "post": {
+        "tags": [
+          "Mock interviews"
+        ],
+        "summary": "Start a practice interview (HR, technical for a branch, or a drive's role)",
+        "description": "Requires permission `interviews:practice` (Practise mock interviews with AI feedback and share a report for a human mock). Host scope: college. Rate limit: aiChat.",
+        "operationId": "interviews_post_interviews",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "track": {
+                    "type": "string",
+                    "enum": [
+                      "hr",
+                      "technical",
+                      "drive"
+                    ]
+                  },
+                  "branch": {
+                    "type": "string",
+                    "enum": [
+                      "CSE",
+                      "IT",
+                      "ECE",
+                      "EEE",
+                      "MECH",
+                      "CIVIL",
+                      "CHEM",
+                      "AIML",
+                      "DS",
+                      "OTHER"
+                    ]
+                  },
+                  "driveId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "difficulty": {
+                    "default": "medium",
+                    "type": "string",
+                    "enum": [
+                      "easy",
+                      "medium",
+                      "hard"
+                    ]
+                  },
+                  "language": {
+                    "default": "en",
+                    "type": "string",
+                    "enum": [
+                      "en",
+                      "te",
+                      "hi",
+                      "mixed"
+                    ]
+                  },
+                  "mode": {
+                    "default": "text",
+                    "type": "string",
+                    "enum": [
+                      "text",
+                      "voice"
+                    ]
+                  },
+                  "questions": {
+                    "default": 6,
+                    "type": "integer",
+                    "minimum": 5,
+                    "maximum": 8
+                  }
+                },
+                "required": [
+                  "track"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "interviews:practice"
+      }
+    },
+    "/api/v1/interviews/{id}": {
+      "get": {
+        "tags": [
+          "Mock interviews"
+        ],
+        "summary": "A practice interview (mine, or one shared with me for a human mock)",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "interviews_get_interviews_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/interviews/{id}/answers": {
+      "post": {
+        "tags": [
+          "Mock interviews"
+        ],
+        "summary": "Answer the current question in writing",
+        "description": "Requires permission `interviews:practice` (Practise mock interviews with AI feedback and share a report for a human mock). Host scope: college. Rate limit: aiChat.",
+        "operationId": "interviews_post_interviews_id_answers",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "turn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 11
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  }
+                },
+                "required": [
+                  "turn",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "interviews:practice"
+      }
+    },
+    "/api/v1/interviews/{id}/skip": {
+      "post": {
+        "tags": [
+          "Mock interviews"
+        ],
+        "summary": "Skip the current question",
+        "description": "Requires permission `interviews:practice` (Practise mock interviews with AI feedback and share a report for a human mock). Host scope: college.",
+        "operationId": "interviews_post_interviews_id_skip",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "turn": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 11
+                  }
+                },
+                "required": [
+                  "turn"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "interviews:practice"
+      }
+    },
+    "/api/v1/interviews/{id}/turns/{turn}/audio": {
+      "post": {
+        "tags": [
+          "Mock interviews"
+        ],
+        "summary": "Answer the current question by voice (transcribed, then the recording is deleted)",
+        "description": "Requires permission `interviews:practice` (Practise mock interviews with AI feedback and share a report for a human mock). Host scope: college. Rate limit: upload.",
+        "operationId": "interviews_post_interviews_id_turns_turn_audio",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "turn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 11
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "interviews:practice"
+      }
+    },
+    "/api/v1/interviews/{id}/finish": {
+      "post": {
+        "tags": [
+          "Mock interviews"
+        ],
+        "summary": "End the interview now and get feedback on what was answered",
+        "description": "Requires permission `interviews:practice` (Practise mock interviews with AI feedback and share a report for a human mock). Host scope: college. Rate limit: aiChat.",
+        "operationId": "interviews_post_interviews_id_finish",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "interviews:practice"
+      }
+    },
+    "/api/v1/admin/interview-questions": {
+      "get": {
+        "tags": [
+          "Mock interviews"
+        ],
+        "summary": "The question bank by status (AI-generated questions wait here for review)",
+        "description": "Requires permission `interviews:review` (Add interview questions and review AI-generated ones before they enter the bank). Host scope: college.",
+        "operationId": "interviews_get_admin_interview_questions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "pending",
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "interviews:review"
+      },
+      "post": {
+        "tags": [
+          "Mock interviews"
+        ],
+        "summary": "Add a question to the bank",
+        "description": "Requires permission `interviews:review` (Add interview questions and review AI-generated ones before they enter the bank). Host scope: college. Rate limit: posting.",
+        "operationId": "interviews_post_admin_interview_questions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "track": {
+                    "type": "string",
+                    "enum": [
+                      "hr",
+                      "technical"
+                    ]
+                  },
+                  "branch": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "CSE",
+                          "IT",
+                          "ECE",
+                          "EEE",
+                          "MECH",
+                          "CIVIL",
+                          "CHEM",
+                          "AIML",
+                          "DS",
+                          "OTHER"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "difficulty": {
+                    "default": "medium",
+                    "type": "string",
+                    "enum": [
+                      "easy",
+                      "medium",
+                      "hard"
+                    ]
+                  },
+                  "topic": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 60
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 400
+                  },
+                  "rubric": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 400
+                  }
+                },
+                "required": [
+                  "track",
+                  "topic",
+                  "text",
+                  "rubric"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "interviews:review"
+      }
+    },
+    "/api/v1/admin/interview-questions/{id}/decision": {
+      "post": {
+        "tags": [
+          "Mock interviews"
+        ],
+        "summary": "Approve (optionally edited) or reject an AI-generated question",
+        "description": "Requires permission `interviews:review` (Add interview questions and review AI-generated ones before they enter the bank). Host scope: college.",
+        "operationId": "interviews_post_admin_interview_questions_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ]
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 400
+                  },
+                  "rubric": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 400
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "interviews:review"
       }
     },
     "/api/v1/legal/{doc}": {

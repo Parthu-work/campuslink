@@ -51,11 +51,25 @@ export interface RequestsDeps {
 export class RequestsService {
   /** Set by the app: does this member own this résumé (prompt 2, G2)? */
   resumeOwned: (userId: string, resumeId: string) => Promise<boolean> = async () => false;
+  /** Set by the app (prompt 2, G3): the interview is the mentee's own, completed practice session. */
+  interviewOwned: (userId: string, interviewId: string) => Promise<boolean> = async () => false;
+  /** Set by the app (prompt 2, G3): a mock interview request was sent. */
+  onMockRequested: (menteeId: string, interviewId: string | null) => Promise<void> = async () => undefined;
 
   /**
    * The viewer is the mentor of a résumé review about this résumé that is pending or accepted:
    * they may read it and comment (prompt 2, G2). Declined, withdrawn or expired requests end it.
    */
+  /** The viewer is the mentor of an open or accepted mock interview request sharing this report. */
+  async seesInterview(viewer: AuthState, interviewId: string): Promise<boolean> {
+    return !!(await MentorshipRequestModel.exists({
+      interviewId: new Types.ObjectId(interviewId),
+      mentorId: new Types.ObjectId(viewer.userId),
+      sessionType: 'mock_interview',
+      status: { $in: ['pending', 'accepted'] },
+    }));
+  }
+
   async reviewsResume(viewer: AuthState, resumeId: string): Promise<boolean> {
     return !!(await MentorshipRequestModel.exists({
       resumeId: new Types.ObjectId(resumeId),
@@ -103,6 +117,7 @@ export class RequestsService {
       need: r.need ?? null,
       slotStart: r.slotStart ? r.slotStart.toISOString() : null,
       resumeId: r.resumeId ? String(r.resumeId) : null,
+      interviewId: r.interviewId ? String(r.interviewId) : null,
       mentor: ref(r.mentorId),
       mentee: ref(r.menteeId),
       declineTemplate: (r.declineTemplate ?? null) as DeclineTemplate | null,
@@ -130,6 +145,9 @@ export class RequestsService {
     // A résumé review may carry one of the mentee's own résumés (prompt 2, G2).
     if (body.resumeId && !(await this.resumeOwned(viewer.userId, body.resumeId)))
       throw badRequest('Pick one of your own résumés');
+    // A mock interview may share one of the mentee's finished practice reports (prompt 2, G3).
+    if (body.interviewId && !(await this.interviewOwned(viewer.userId, body.interviewId)))
+      throw badRequest('Pick one of your own finished practice interviews');
     const me = new Types.ObjectId(viewer.userId);
     const [pending, thisWeek] = await Promise.all([
       MentorshipRequestModel.countDocuments({ menteeId: me, status: 'pending' }),
@@ -168,12 +186,15 @@ export class RequestsService {
         expiresAt: new Date(Date.now() + REQUEST_TTL_DAYS * DAY),
         rematchOf,
         resumeId: body.resumeId ? new Types.ObjectId(body.resumeId) : null,
+        interviewId: body.interviewId ? new Types.ObjectId(body.interviewId) : null,
       });
     } catch (e) {
       if (isDuplicate(e)) throw conflict('You already have an open request with this mentor');
       throw e;
     }
     const id = String(doc._id);
+    if (body.sessionType === 'mock_interview')
+      await this.onMockRequested(viewer.userId, body.interviewId ?? null);
     const tenantId = String(requireTenantId());
     await this.d.jobs.enqueue(
       EXPIRE_JOB,

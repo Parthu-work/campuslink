@@ -76,6 +76,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `platform:support` Answer problem reports members sent to the platform (bugs) | ✅ | · | · | · | · | · |
 | `support:create` Report a problem and follow its replies | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `resumes:manage` Build résumés, check them against a role and ask an alumnus to review one | · | ✅ | · | · | ✅ | ✅ |
+| `interviews:practice` Practise mock interviews with AI feedback and share a report for a human mock | · | ✅ | · | · | ✅ | ✅ |
+| `interviews:review` Add interview questions and review AI-generated ones before they enter the bank | · | ✅ | ✅ | ✅ | · | · |
 | `support:manage` Answer and close problem reports sent to the college | · | ✅ | · | · | · | · |
 | `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ |
 | `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ |
@@ -417,6 +419,16 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/resumes/:id/rewrite` | `resumes:manage` | college | aiChat | Three tighter versions of one bullet that keep its facts (AI when available, else rules) |
 | `GET /api/v1/resumes/:id/comments` | any signed-in user | college | — | Review comments on a résumé (its owner and its reviewers) |
 | `POST /api/v1/resumes/:id/comments` | any signed-in user | college | interact | Comment on a section of a résumé I review (or my own) |
+| `GET /api/v1/interviews` | `interviews:practice` | college | — | My practice interviews, progress per rubric dimension and today's allowance |
+| `POST /api/v1/interviews` | `interviews:practice` | college | aiChat | Start a practice interview (HR, technical for a branch, or a drive's role) |
+| `GET /api/v1/interviews/:id` | any signed-in user | college | — | A practice interview (mine, or one shared with me for a human mock) |
+| `POST /api/v1/interviews/:id/answers` | `interviews:practice` | college | aiChat | Answer the current question in writing |
+| `POST /api/v1/interviews/:id/skip` | `interviews:practice` | college | — | Skip the current question |
+| `POST /api/v1/interviews/:id/turns/:turn/audio` | `interviews:practice` | college | upload | Answer the current question by voice (transcribed, then the recording is deleted) |
+| `POST /api/v1/interviews/:id/finish` | `interviews:practice` | college | aiChat | End the interview now and get feedback on what was answered |
+| `GET /api/v1/admin/interview-questions` | `interviews:review` | college | — | The question bank by status (AI-generated questions wait here for review) |
+| `POST /api/v1/admin/interview-questions` | `interviews:review` | college | posting | Add a question to the bank |
+| `POST /api/v1/admin/interview-questions/:id/decision` | `interviews:review` | college | — | Approve (optionally edited) or reject an AI-generated question |
 | `GET /api/v1/legal/:doc` | public | college | — | The college’s privacy policy or terms, with its details filled in (public) |
 | `GET /api/v1/admin/legal` | `tenant:branding` | college | — | The college’s legal details (legal name, address, grievance officer) |
 | `GET /api/v1/admin/retention` | `tenant:settings` | college | — | Whether accounts unused for some months are deleted (and after how many) |

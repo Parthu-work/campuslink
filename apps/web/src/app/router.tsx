@@ -101,6 +101,9 @@ const load = {
   outcomes: () => import('../features/outcomes/outcomes'),
   resumes: () => import('../features/resume/resumes'),
   resume: () => import('../features/resume/resume-page'),
+  interviews: () => import('../features/interviews/interviews'),
+  interviewSession: () => import('../features/interviews/session'),
+  interviewQuestions: () => import('../features/admin/interview-questions'),
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
@@ -479,6 +482,13 @@ function collegeRoutes(): RouteObject[] {
           screen(load.resume, 'ResumePage', undefined, at('/resume/:id'), ({ id }) =>
             isId(id) ? [qc.ensureQueryData(q.resume(id))] : [],
           ),
+          // Mock interviews (prompt 2, G3): the owner practises; a mentor opens a shared report.
+          screen(load.interviews, 'InterviewsPage', 'interviews:practice', at('/interviews'), () => [
+            qc.ensureQueryData(q.interviews()),
+          ]),
+          screen(load.interviewSession, 'InterviewSessionPage', undefined, at('/interviews/:id'), ({ id }) =>
+            isId(id) ? [qc.ensureQueryData(q.interview(id))] : [],
+          ),
           screen(
             load.drivePage,
             'DrivePage',
@@ -600,6 +610,13 @@ function collegeRoutes(): RouteObject[] {
               inFeature('placements', 'outcomes:verify'),
               at('offers'),
               () => [qc.ensureInfiniteQueryData(q.offersQueue('reported'))],
+            ),
+            screen(
+              load.interviewQuestions,
+              'InterviewQuestionsAdmin',
+              'interviews:review',
+              at('interview-questions'),
+              () => [qc.ensureQueryData(q.interviewQuestions('pending'))],
             ),
             screen(
               load.reports,

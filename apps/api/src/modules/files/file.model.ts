@@ -22,6 +22,8 @@ export const FILE_PURPOSES = [
   'support_screenshot',
   // Résumés (prompt 2, G2): a résumé's rendered PDF, served only through the résumé routes.
   'resume_pdf',
+  // Mock interviews (prompt 2, G3): a recorded answer, deleted once it is transcribed (E3).
+  'interview_audio',
 ] as const;
 export type FilePurpose = (typeof FILE_PURPOSES)[number];
 

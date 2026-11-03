@@ -248,6 +248,20 @@ sequenceDiagram
 2. Write `apps/api/src/modules/study/ai/<name>.ts` implementing the interfaces, using `callJson` (it maps statuses, redacts keys and goes through `safeFetch`).
 3. Add one line to `ai/registry.ts`, the labels in `en.json` and `te.json` (`ai.providers.<id>`), and adapter tests in `apps/api/test/ai-providers.test.ts`.
 
+## Mock interviews: what one costs (prompt 2, G3)
+
+Mock interviews run through the shared AI layer (`AiTasksService`) under the usage feature `interview`, so Admin › AI and Billing show them on their own line. Each answer is one fast-tier call (scores, quotes, a tip and at most one follow-up); the summary is one deep-tier call; a drive interview adds one fast-tier call that writes two role questions. Voice answers are transcribed by the Whisper service or OpenAI and recorded under `transcription` (priced per minute, so not in the token figures below).
+
+**Measured** (3 November 2026) from the real prompts, with the app's estimate of four characters a token: a six-question HR practice in English with two follow-ups and answers of about 80 words is ten calls and **about 7,500 tokens** (about 6,700 in, 900 out):
+
+| Call                              |  Calls | Input tokens | Output tokens |
+| --------------------------------- | -----: | -----------: | ------------: |
+| Score an answer (fast)            |      8 |        5,200 |           800 |
+| Summary (deep)                    |      1 |        1,500 |           125 |
+| Role questions for a drive (fast) | 0 or 1 |          350 |           100 |
+
+Longer answers and eight questions push a session towards 10,000 tokens. Telugu and Hindi text usually takes more tokens per word than English with most providers' tokenizers, so the same practice in those languages costs more; the four-characters estimate undercounts them. A member may start `INTERVIEW_SESSIONS_PER_DAY` (4) sessions a day, and the feature's daily limit (60 calls) caps a member at roughly 40,000 tokens a day in the worst case.
+
 ## Access rules
 
 | Who                | Library and chatbot                                        | Subjects and syllabus            | Material                                       | AI settings                                                     |

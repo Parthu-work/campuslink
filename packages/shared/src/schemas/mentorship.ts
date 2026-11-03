@@ -145,6 +145,8 @@ const requestTarget = {
   slotStart: slotStart.optional(),
   /** Prompt 2, G2: the résumé a résumé review is about (the reviewer may read and comment on it). */
   resumeId: objectId.optional(),
+  /** Prompt 2, G3: a mock interview report shared for a human mock interview. */
+  interviewId: objectId.optional(),
 };
 export const mentorshipRequestBody = z
   .union([requestMessage.extend(requestTarget), requestText.extend(requestTarget)])
@@ -159,6 +161,10 @@ export const mentorshipRequestBody = z
   .refine((b) => !b.resumeId || b.sessionType === 'resume_review', {
     message: 'Only a résumé review carries a résumé',
     path: ['resumeId'],
+  })
+  .refine((b) => !b.interviewId || b.sessionType === 'mock_interview', {
+    message: 'Only a mock interview carries a practice report',
+    path: ['interviewId'],
   });
 export type MentorshipRequestBody = z.infer<typeof mentorshipRequestBody>;
 
@@ -283,6 +289,8 @@ export interface RequestView {
   rematchOffered: boolean;
   /** Prompt 2, G2: the résumé a résumé review is about (the mentor opens it at /resume/:id). */
   resumeId: string | null;
+  /** Prompt 2, G3: the practice report shared with a mock interview (the mentor opens it). */
+  interviewId: string | null;
 }
 export interface BookingView {
   id: string;

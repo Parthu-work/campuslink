@@ -40,6 +40,18 @@ const IMAGE_RULES: Record<ImagePurpose, { maxEdge: number }> = {
   support_screenshot: { maxEdge: 2000 },
 };
 const VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime']);
+/** What browsers' MediaRecorder produces (WebM or Ogg Opus; MP4/AAC on Safari). */
+const RECORDING_TYPES = new Set([
+  'audio/webm',
+  'video/webm',
+  'audio/ogg',
+  'audio/opus',
+  'audio/mp4',
+  'audio/x-m4a',
+  'video/mp4',
+  'audio/aac',
+  'audio/mpeg',
+]);
 /** Data-saver variants kept in memory (each is a small WebP, typically 5–40 KB). */
 const VARIANT_CACHE_SIZE = 300;
 type ClaimablePurpose =
@@ -516,6 +528,16 @@ export class FilesService {
   async storeResumePdf(ownerId: string, data: Buffer) {
     if (data.subarray(0, 5).toString('latin1') !== '%PDF-') throw unsupported('Not a PDF');
     return this.store(ownerId, 'resume_pdf', data, 'application/pdf');
+  }
+
+  /**
+   * A recorded interview answer (prompt 2, G3): kept only until the worker transcribes it (then
+   * deleted), with a one-hour deletion date as the safety net; never served by /files.
+   */
+  async storeInterviewAudio(ownerId: string, data: Buffer) {
+    const type = await fileTypeFromBuffer(data);
+    if (!type || !RECORDING_TYPES.has(type.mime)) throw unsupported('Record in WebM, Ogg or MP4 audio');
+    return this.store(ownerId, 'interview_audio', data, type.mime, new Date(Date.now() + 60 * 60_000));
   }
 
   async storeInvoice(data: Buffer) {

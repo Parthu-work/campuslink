@@ -100,7 +100,7 @@ export class AiTasksService {
 
   /** Why AI cannot answer for this member and feature right now, or null when it can. */
   async unavailable(
-    viewer: AuthState,
+    viewer: Pick<AuthState, 'userId'>,
     feature: AiUsageFeature,
     rt?: AiRuntime,
   ): Promise<AiTaskUnavailable | null> {
@@ -112,7 +112,8 @@ export class AiTasksService {
     return null;
   }
 
-  async run<I, O>(viewer: AuthState, task: AiTask<I, O>, input: I): Promise<AiTaskResult<O>> {
+  /** `viewer` is the member it is for: only their id is used (a worker job passes just that). */
+  async run<I, O>(viewer: Pick<AuthState, 'userId'>, task: AiTask<I, O>, input: I): Promise<AiTaskResult<O>> {
     const rt = await this.d.ai.runtime();
     const blocked = await this.unavailable(viewer, task.feature, rt);
     const chat = rt.chat;
@@ -238,7 +239,7 @@ export class AiTasksService {
   }
 
   private async record(
-    viewer: AuthState,
+    viewer: Pick<AuthState, 'userId'>,
     task: { feature: AiUsageFeature },
     chat: NonNullable<AiRuntime['chat']>,
     model: string,

@@ -97,6 +97,9 @@ export const ALL_PERMISSIONS = [
   'support:manage',
   // Résumés (prompt 2, G2)
   'resumes:manage',
+  // Mock interviews (prompt 2, G3)
+  'interviews:practice',
+  'interviews:review',
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
   'platform:health',
@@ -175,6 +178,8 @@ export const PERMISSIONS: Record<Permission, string> = {
   'platform:support': 'Answer problem reports members sent to the platform (bugs)',
   'support:create': 'Report a problem and follow its replies',
   'resumes:manage': 'Build résumés, check them against a role and ask an alumnus to review one',
+  'interviews:practice': 'Practise mock interviews with AI feedback and share a report for a human mock',
+  'interviews:review': 'Add interview questions and review AI-generated ones before they enter the bank',
   'support:manage': 'Answer and close problem reports sent to the college',
   'placements:view': 'See placement drives and the eligibility rules',
   'placements:register': 'Register for placement drives one is eligible for',
@@ -213,6 +218,7 @@ const STUDENT: Permission[] = [
   'outcomes:report',
   'support:create',
   'resumes:manage',
+  'interviews:practice',
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
 const STUDENT_ONLY: readonly Permission[] = ['placements:view', 'placements:register'];
@@ -228,7 +234,13 @@ const ALUMNI: Permission[] = [
   'study:contribute',
 ];
 const STAFF: Permission[] = [
-  ...STUDENT.filter((p) => p !== 'placements:register' && p !== 'outcomes:report' && p !== 'resumes:manage'),
+  ...STUDENT.filter(
+    (p) =>
+      p !== 'placements:register' &&
+      p !== 'outcomes:report' &&
+      p !== 'resumes:manage' &&
+      p !== 'interviews:practice',
+  ),
   'feed:post',
   'qa:answer',
   'announcements:post',
@@ -239,6 +251,7 @@ const STAFF: Permission[] = [
   'study:upload',
   'study:manage',
   'study:analytics',
+  'interviews:review',
   'analytics:cohort',
   'moderation:act',
   'users:invite',

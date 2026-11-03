@@ -97,7 +97,8 @@
     "billing": "Billing",
     "help": "Help",
     "platformSupport": "Support",
-    "resume": "Résumé"
+    "resume": "Résumé",
+    "interviews": "Mock interviews"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -480,7 +481,8 @@
     "reports": "Reports",
     "billing": "Billing",
     "notInPlan": "Not in your college’s plan. Talk to us to add it.",
-    "support": "Support"
+    "support": "Support",
+    "interviewQuestions": "Interview questions"
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -846,7 +848,12 @@
     "resumeHint": "{{name}} can open it and leave comments while the request is open or accepted.",
     "noResume": "None: I will share it in the conversation",
     "openResume": "Open the résumé",
-    "yourResume": "Your résumé"
+    "yourResume": "Your résumé",
+    "report": "Practice report to share",
+    "reportHint": "{{name}} can read it while the request is open or accepted.",
+    "noReport": "None",
+    "openReport": "Open the practice report",
+    "yourReport": "Your practice report"
   },
   "sessions": {
     "upcoming": "Upcoming",
@@ -4525,6 +4532,152 @@
       "about": "About",
       "add": "Comment",
       "send": "Post comment"
+    }
+  },
+  "interviews": {
+    "intro": "Practise an interview any time, in English, Telugu or Hindi, by typing or speaking. You get honest feedback on each answer, then book a mock with an alumnus.",
+    "history": "Your practice interviews",
+    "emptyTitle": "No practice yet",
+    "emptyBody": "Start with an HR round: about fifteen minutes, five questions.",
+    "forCompany": "{{company}} practice",
+    "reportOf": "{{name}}'s practice interview",
+    "again": "Practise again",
+    "start": {
+      "title": "Start a practice interview",
+      "track": "Interview",
+      "branch": "Branch",
+      "branchHint": "Technical questions for this branch.",
+      "myBranch": "My branch",
+      "drive": "Drive",
+      "difficulty": "Difficulty",
+      "language": "Language",
+      "mode": "Answer by",
+      "count": "Length",
+      "questions_one": "{{count}} question",
+      "questions_other": "{{count}} questions",
+      "noVoice": "Voice answers are not available at your college right now, or in this browser. Typing works the same.",
+      "englishTechnical": "Technical questions are asked in English, as in campus rounds. Answer in whichever language you like.",
+      "go": "Start",
+      "left_one": "{{count}} practice interview left today",
+      "left_other": "{{count}} practice interviews left today",
+      "none": "That is all for today. Come back tomorrow.",
+      "privacy": "Only you see your answers and feedback, unless you share a report with a mentor. Voice recordings are deleted as soon as they are turned into text."
+    },
+    "track": {
+      "hr": "HR",
+      "technical": "Technical",
+      "drive": "A placement drive"
+    },
+    "trackDetail": {
+      "hr": "About you, teamwork, goals",
+      "technical": "Your branch, at the level you pick",
+      "drive": "Questions for one drive's role"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "language": {
+      "en": "English",
+      "te": "తెలుగు",
+      "hi": "हिन्दी",
+      "mixed": "Mixed"
+    },
+    "mode": {
+      "text": "Typing",
+      "voice": "Speaking"
+    },
+    "status": {
+      "in_progress": "In progress",
+      "completed": "Done",
+      "abandoned": "Stopped"
+    },
+    "dimension": {
+      "clarity": "Clarity",
+      "structure": "Structure",
+      "correctness": "Correctness",
+      "communication": "Communication"
+    },
+    "outOf5": "{{n}} of 5",
+    "progress": {
+      "title": "Your progress",
+      "intro": "Average per dimension in each finished practice, newest last.",
+      "table": "Average scores per practice interview",
+      "date": "Date"
+    },
+    "progressLabel": "{{done}} of {{total}} done",
+    "questionN": "Question {{n}}",
+    "questionOf": "Question {{n}} of {{total}}",
+    "followUp": "Follow-up",
+    "yourAnswer": "Your answer",
+    "orType": "Or type your answer",
+    "submit": "Submit answer",
+    "skip": "Skip",
+    "skipped": "Skipped",
+    "scoring": "Reading your answer…",
+    "finish": "End the interview now",
+    "done": "Your feedback is ready",
+    "lastFeedback": "Feedback on your last answer",
+    "byVoice": "Spoken",
+    "tip": "Tip",
+    "unscored": "Feedback on this answer was not available.",
+    "someUnscored_one": "Feedback on {{count}} answer was not available, so it is not in the averages.",
+    "someUnscored_other": "Feedback on {{count}} answers was not available, so they are not in the averages.",
+    "summary": "How it went",
+    "strengths": "What went well",
+    "improve": "What to work on",
+    "noVerdict": "Practice feedback only: it is not a pass or fail, and says nothing about any company’s decision.",
+    "voice": {
+      "record": "Record your answer",
+      "stop": "Stop ({{time}})",
+      "transcribing": "Turning your answer into text…",
+      "notHeard": "We could not make out the recording. Type your answer, or record it again.",
+      "denied": "The microphone is blocked. Allow it in your browser, or type your answer.",
+      "failed": "Recording did not work on this device. Type your answer instead.",
+      "note": "Recordings are deleted once they are turned into text. Up to three minutes per answer."
+    },
+    "human": {
+      "title": "Practise with a person",
+      "body": "Book a mock interview with an alumnus who works in this kind of role.",
+      "bodyCompany": "Book a mock interview with an alumnus, ideally one who works at {{company}} or in a similar role.",
+      "book": "Book a mock interview",
+      "share": "When you send the request you can choose to share this report."
+    },
+    "bank": {
+      "intro": "Questions your students practise with, alongside the built-in set. Questions the AI writes for a drive wait here until a faculty member approves them.",
+      "add": "Add a question",
+      "addTitle": "Add an interview question",
+      "addBody": "It goes straight into the bank, with you as its reviewer.",
+      "added": "Question added",
+      "anyBranch": "Any branch",
+      "topic": "Topic",
+      "question": "Question",
+      "rubric": "What a good answer covers",
+      "rubricHint": "One or two sentences. The feedback compares answers with this.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approved": "Approved: it joins the bank",
+      "rejected": "Rejected",
+      "reviewedBy": "Reviewed by {{name}}",
+      "byStatus": "Questions by status",
+      "status": {
+        "pending": "To review",
+        "approved": "In the bank",
+        "rejected": "Rejected"
+      },
+      "none": {
+        "pending": "Nothing to review",
+        "approved": "No questions of your own yet",
+        "rejected": "Nothing rejected"
+      },
+      "source": {
+        "starter": "Built-in",
+        "faculty": "Faculty",
+        "alumni": "Alumni",
+        "interview_bank": "Interview bank",
+        "ai_generated": "Written by AI"
+      }
     }
   }
 }
