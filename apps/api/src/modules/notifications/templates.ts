@@ -213,6 +213,34 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: '{name} reviewed your résumé',
       body: '{name} left a comment on your résumé. Open it to read the review.',
     },
+    micro_ask_received: {
+      title: '{name} asked you a small favour',
+      body: 'Something that fits in a few minutes. Open it to say yes or pass.',
+    },
+    micro_ask_done: {
+      title: '{name} helped with your ask',
+      body: '{name} marked your ask as done. Say thanks when you can.',
+    },
+    micro_ask_unmatched: {
+      title: 'No alumnus is free for your ask yet',
+      body: 'We tried the alumni who match. Try again later, or ask more widely.',
+    },
+    office_hours_scheduled: {
+      title: '{name} holds office hours on {time}',
+      body: '{event}: open it to say you are going.',
+    },
+    certificate_ready: {
+      title: 'Your mentorship certificate is ready',
+      body: 'Download it, or share its verification link.',
+    },
+    alumni_of_month_nominated: {
+      title: 'You are nominated alumnus of the month',
+      body: 'Your college wants to recognise you. Open it to accept or decline.',
+    },
+    pledge_received: {
+      title: 'Your college received your contribution',
+      body: 'Thank you. The acknowledgement is ready to download.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -423,6 +451,34 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: '{name} మీ రెజ్యూమ్‌ను సమీక్షించారు',
       body: '{name} మీ రెజ్యూమ్‌పై వ్యాఖ్య రాశారు. సమీక్ష చదవడానికి తెరవండి.',
     },
+    micro_ask_received: {
+      title: '{name} మిమ్మల్ని ఒక చిన్న సహాయం అడిగారు',
+      body: 'కొన్ని నిమిషాల్లో అయ్యే పని. అంగీకరించడానికి లేదా వదిలేయడానికి తెరవండి.',
+    },
+    micro_ask_done: {
+      title: '{name} మీ అభ్యర్థనలో సహాయం చేశారు',
+      body: '{name} మీ అభ్యర్థన పూర్తైనట్లు గుర్తించారు. వీలైనప్పుడు ధన్యవాదాలు చెప్పండి.',
+    },
+    micro_ask_unmatched: {
+      title: 'మీ అభ్యర్థనకు ఇంకా ఏ పూర్వ విద్యార్థి ఖాళీగా లేరు',
+      body: 'సరిపోయే పూర్వ విద్యార్థులను ప్రయత్నించాం. తర్వాత మళ్లీ ప్రయత్నించండి, లేదా విస్తృతంగా అడగండి.',
+    },
+    office_hours_scheduled: {
+      title: '{name} {time}కి ఆఫీస్ అవర్స్ నిర్వహిస్తున్నారు',
+      body: '{event}: వస్తున్నారని చెప్పడానికి తెరవండి.',
+    },
+    certificate_ready: {
+      title: 'మీ మెంటార్‌షిప్ సర్టిఫికెట్ సిద్ధంగా ఉంది',
+      body: 'డౌన్‌లోడ్ చేయండి, లేదా దాని ధృవీకరణ లింక్ పంచుకోండి.',
+    },
+    alumni_of_month_nominated: {
+      title: 'మీరు ఈ నెల పూర్వ విద్యార్థిగా నామినేట్ అయ్యారు',
+      body: 'మీ కాలేజీ మిమ్మల్ని గుర్తించాలనుకుంటోంది. అంగీకరించడానికి లేదా తిరస్కరించడానికి తెరవండి.',
+    },
+    pledge_received: {
+      title: 'మీ కాలేజీకి మీ విరాళం అందింది',
+      body: 'ధన్యవాదాలు. రసీదు డౌన్‌లోడ్‌కు సిద్ధంగా ఉంది.',
+    },
   },
   hi: {
     request_received: { title: 'नया मेंटरशिप अनुरोध', body: '{name} ने आपसे {type} के लिए पूछा है।' },
@@ -617,6 +673,34 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     resume_comment: {
       title: '{name} ने आपके रिज़्यूमे की समीक्षा की',
       body: '{name} ने आपके रिज़्यूमे पर टिप्पणी की है। समीक्षा पढ़ने के लिए खोलें।',
+    },
+    micro_ask_received: {
+      title: '{name} ने आपसे एक छोटी मदद मांगी है',
+      body: 'कुछ मिनटों का काम। हां कहने या छोड़ने के लिए खोलें।',
+    },
+    micro_ask_done: {
+      title: '{name} ने आपके अनुरोध में मदद की',
+      body: '{name} ने आपका अनुरोध पूरा बताया है। मौका मिलने पर धन्यवाद कहें।',
+    },
+    micro_ask_unmatched: {
+      title: 'आपके अनुरोध के लिए अभी कोई पूर्व छात्र खाली नहीं है',
+      body: 'हमने मेल खाते पूर्व छात्रों से पूछा। बाद में फिर कोशिश करें, या ज़्यादा लोगों से पूछें।',
+    },
+    office_hours_scheduled: {
+      title: '{name} {time} को ऑफ़िस आवर्स रखेंगे',
+      body: '{event}: आ रहे हैं यह बताने के लिए खोलें।',
+    },
+    certificate_ready: {
+      title: 'आपका मेंटरशिप प्रमाणपत्र तैयार है',
+      body: 'इसे डाउनलोड करें, या इसका सत्यापन लिंक साझा करें।',
+    },
+    alumni_of_month_nominated: {
+      title: 'आपको इस महीने का पूर्व छात्र नामित किया गया है',
+      body: 'आपका कॉलेज आपको सम्मानित करना चाहता है। स्वीकार या अस्वीकार करने के लिए खोलें।',
+    },
+    pledge_received: {
+      title: 'आपके कॉलेज को आपका योगदान मिल गया',
+      body: 'धन्यवाद। पावती डाउनलोड के लिए तैयार है।',
     },
   },
 };
@@ -832,6 +916,20 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/settings/privacy';
     case 'resume_comment':
       return `/resume/${data.resumeId ?? ''}`;
+    case 'micro_ask_received':
+      return `/alumni?tab=asks&box=received${data.askId ? `&ask=${data.askId}` : ''}`;
+    case 'micro_ask_done':
+      return '/alumni?tab=asks';
+    case 'micro_ask_unmatched':
+      return '/alumni?tab=asks';
+    case 'office_hours_scheduled':
+      return `/events/${data.eventId ?? ''}`;
+    case 'certificate_ready':
+      return '/alumni?tab=certificates';
+    case 'alumni_of_month_nominated':
+      return '/alumni?tab=recognition';
+    case 'pledge_received':
+      return '/alumni?tab=giving';
     default:
       return '/sessions';
   }

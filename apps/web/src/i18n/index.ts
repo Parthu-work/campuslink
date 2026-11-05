@@ -28,6 +28,15 @@ const PACKS = {
       hi: () => import('./packs/career.hi.json'),
     },
   },
+  // Alumni engagement (prompt 2, G6): asks, certificates, giving, batches and their admin screens.
+  alumni: {
+    sections: ['alumni', 'batch', 'verifyCert', 'alumniAdmin'],
+    load: {
+      en: () => import('./packs/alumni.en.json'),
+      te: () => import('./packs/alumni.te.json'),
+      hi: () => import('./packs/alumni.hi.json'),
+    },
+  },
 } satisfies Record<
   string,
   { sections: string[]; load: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> }

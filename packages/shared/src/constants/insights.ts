@@ -15,6 +15,13 @@ export const PRODUCT_EVENTS = [
   'offer_verified',
   'study_question',
   'roadmap_step',
+  // Prompt 2, G6: alumni engagement.
+  'micro_ask_sent',
+  'micro_ask_done',
+  'office_hours_subscribed',
+  'certificate_issued',
+  'pledge_made',
+  'linkedin_imported',
   // Prompt 2, G2: résumés.
   'resume_created',
   'resume_reviewed',

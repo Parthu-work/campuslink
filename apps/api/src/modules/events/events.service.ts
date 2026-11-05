@@ -10,6 +10,7 @@ import {
   type EventKind,
   type EventQuestionView,
   type EventView,
+  type OfficeHoursSubscriptionView,
   type RsvpStatus,
   type eventBody,
   type eventUpdateBody,
@@ -20,6 +21,7 @@ import {
   EventQuestionModel,
   EventQuestionVoteModel,
   EventRsvpModel,
+  OfficeHoursSubscriptionModel,
   type EventDoc,
   type EventQuestionDoc,
   type RsvpDoc,
@@ -30,6 +32,9 @@ import { plainText } from '../../lib/text.js';
 import { requireTenantId } from '../../lib/context.js';
 import { withTextSearch } from '../../db/search.js';
 import { noAward, type Award } from '../../lib/awards.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
+import { backgroundAuth } from '../users/users.service.js';
+import { findTenantById } from '../tenants/tenant.cache.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import { isModerator, type Removal } from '../moderation/moderation.service.js';
 import type { JobQueue, TenantJob } from '../../lib/jobs.js';
@@ -38,6 +43,9 @@ import type { NotificationsService } from '../notifications/notifications.servic
 import type { AuthState } from '../../types.js';
 
 export const EVENT_REMINDER_JOB = 'events.reminder';
+/** Prompt 2, G6: when a weekly office hour ends, the next one in its series is made. */
+export const OFFICE_HOURS_NEXT_JOB = 'events.office_hours_next';
+const WEEK = 7 * 86_400_000;
 const HOUR = 3_600_000;
 const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11000;
 const oid = (id: string | Types.ObjectId) => new Types.ObjectId(String(id));
@@ -82,12 +90,13 @@ export class EventsService {
   // ── Privacy ─────────────────────────────
   async exportFor(userId: string) {
     const u = oid(userId);
-    const [rsvps, questions, hosted] = await Promise.all([
+    const [rsvps, questions, hosted, officeHoursSubscriptions] = await Promise.all([
       EventRsvpModel.find({ userId: u }).select('eventId status checkedIn createdAt').lean(),
       EventQuestionModel.find({ authorId: u }).select('eventId body createdAt').lean(),
       EventModel.find({ hostId: u }).select('title kind startsAt status').lean(),
+      OfficeHoursSubscriptionModel.find({ userId: u }).select('hostId createdAt').lean(),
     ]);
-    return { rsvps, questions, hosted };
+    return { rsvps, questions, hosted, officeHoursSubscriptions };
   }
 
   /** RSVPs and questions are deleted (seats are freed); my future events are cancelled. */
@@ -106,11 +115,16 @@ export class EventsService {
         { hostId: u, status: 'scheduled', startsAt: { $gt: new Date() } },
         { $set: { status: 'cancelled' }, $inc: { version: 1 } },
       ),
+      // Their weekly series stop, and nobody follows their office hours any more.
+      EventModel.updateMany({ hostId: u, recurrence: { $ne: null } }, { $set: { recurrence: null } }),
+      OfficeHoursSubscriptionModel.deleteMany({ $or: [{ userId: u }, { hostId: u }] }),
     ]);
   }
 
   /** Points for attendance and hosting (wired in app.ts). */
   award: Award = noAward;
+  /** Product analytics (B9), set in app.ts. */
+  track: Track = noTrack;
   constructor(private readonly d: EventsDeps) {}
 
   // ── Loading and access ─────────────────────────────
@@ -204,6 +218,10 @@ export class EventsService {
           isHost: String(e.hostId) === viewer.userId,
           canManage: manage,
           hasQa: QA_KINDS.includes(e.kind),
+          recurrence: e.recurrence
+            ? { weekly: true as const, until: new Date(e.recurrence.until).toISOString() }
+            : null,
+          seriesId: e.seriesId ? String(e.seriesId) : null,
         };
       }),
     );
@@ -256,6 +274,10 @@ export class EventsService {
       capacity: body.capacity,
       audience: body.audience,
       branches: body.branches,
+      recurrence:
+        body.kind === 'office_hours' && body.recurrence
+          ? { weekly: true, until: new Date(body.recurrence.until) }
+          : null,
     };
   }
 
@@ -292,6 +314,9 @@ export class EventsService {
     if (Date.parse(body.startsAt) < Date.now() - 5 * 60_000) throw badRequest('Pick a time in the future');
     const e = await EventModel.create({ ...this.fields(body), hostId: oid(viewer.userId) });
     await this.schedule(e);
+    if (e.recurrence) await EventModel.updateOne({ _id: e._id }, { $set: { seriesId: e._id } });
+    await this.scheduleNext(e);
+    if (e.kind === 'office_hours') await this.notifySubscribers(e);
     await audit.record(
       {
         action: 'event.created',
@@ -335,6 +360,9 @@ export class EventsService {
     if (!next) throw conflict('This event just changed. Refresh and try again.');
     await this.unschedule(id, e.version);
     await this.schedule(next);
+    if (next.recurrence && !next.seriesId)
+      await EventModel.updateOne({ _id: next._id }, { $set: { seriesId: next._id } });
+    await this.scheduleNext(next);
     await this.promote(next);
     if (body.notifyChange) await this.notifyAll(next, 'event_updated');
     await audit.record(
@@ -505,6 +533,115 @@ export class EventsService {
     return lines.map(fold).join('\r\n') + '\r\n';
   }
 
+  // ── Weekly office hours (prompt 2, G6) ─────────────────────────────
+
+  /** Queues the making of the next instance for when this one ends (keyed by its end time). */
+  private async scheduleNext(e: Pick<EventDoc, '_id' | 'endsAt' | 'kind' | 'recurrence'>) {
+    if (e.kind !== 'office_hours' || !e.recurrence) return;
+    const end = new Date(e.endsAt);
+    await this.d.jobs.enqueue(
+      OFFICE_HOURS_NEXT_JOB,
+      { tenantId: String(requireTenantId()), eventId: String(e._id), endsAt: end.toISOString() },
+      { jobId: `ohnext-${String(e._id)}-${end.getTime()}`, delayMs: Math.max(0, end.getTime() - Date.now()) },
+    );
+  }
+
+  /**
+   * Job: the instance ended, so make next week's, unless the series stopped (recurrence removed,
+   * the event removed or moved since, the host left) or the next one would be after `until`. The
+   * unique index on (series, start) makes a second run a no-op. A one-off cancellation does not
+   * stop the series.
+   */
+  async onNextOfficeHours(job: TenantJob) {
+    const e = await EventModel.findById(String(job.eventId)).lean<EventDoc>();
+    if (!e || !e.recurrence || e.removal || e.endsAt.toISOString() !== job.endsAt) return;
+    const startsAt = new Date(e.startsAt.getTime() + WEEK);
+    if (startsAt > new Date(e.recurrence.until)) return;
+    if (!(await this.d.profiles.isActiveMember(String(e.hostId)))) return;
+    let next: EventDoc;
+    try {
+      const created = await EventModel.create({
+        title: e.title,
+        description: e.description,
+        kind: e.kind,
+        mode: e.mode,
+        startsAt,
+        endsAt: new Date(e.endsAt.getTime() + WEEK),
+        location: e.location,
+        onlineUrl: e.onlineUrl ?? null,
+        capacity: e.capacity ?? null,
+        audience: e.audience,
+        branches: e.branches,
+        hostId: e.hostId,
+        recurrence: { weekly: true, until: e.recurrence.until },
+        seriesId: e.seriesId ?? e._id,
+      });
+      next = created.toObject() as EventDoc;
+    } catch (err) {
+      if (isDuplicate(err)) return;
+      throw err;
+    }
+    await this.schedule(next);
+    await this.scheduleNext(next);
+    await this.notifySubscribers(next);
+  }
+
+  /** Tells the host's followers about a new office hour they may attend (current rights apply). */
+  private async notifySubscribers(e: EventDoc) {
+    const subs = await OfficeHoursSubscriptionModel.find({ hostId: e.hostId })
+      .select('userId')
+      .limit(5000)
+      .lean<{ userId: Types.ObjectId }[]>();
+    if (!subs.length) return;
+    const tenant = await findTenantById(requireTenantId());
+    if (!tenant) return;
+    const host = (await this.d.profiles.refsFor([e.hostId])).get(String(e.hostId));
+    for (const s of subs) {
+      const auth = await backgroundAuth(s.userId, tenant);
+      if (!auth || !(await this.eligible(auth, e))) continue;
+      await this.d.notifications.notify(s.userId, 'office_hours_scheduled', {
+        name: host?.name ?? '',
+        event: e.title,
+        eventId: String(e._id),
+        start: e.startsAt.toISOString(),
+      });
+    }
+  }
+
+  /** Follow (or stop following) a member's office hours. */
+  async subscribe(viewer: AuthState, hostId: string, on: boolean): Promise<OfficeHoursSubscriptionView[]> {
+    if (hostId === viewer.userId) throw badRequest('You cannot follow your own office hours');
+    const key = { userId: oid(viewer.userId), hostId: oid(hostId) };
+    if (on) {
+      if (!(await this.d.profiles.isActiveMember(hostId))) throw notFound('Member');
+      const hosts =
+        (await EventModel.exists({ hostId: oid(hostId), kind: 'office_hours', removal: null })) !== null;
+      if (!hosts) throw badRequest('This member does not hold office hours yet');
+      const res = await OfficeHoursSubscriptionModel.updateOne(
+        key,
+        { $setOnInsert: key },
+        { upsert: true },
+      ).catch((err: unknown) => {
+        if (!isDuplicate(err)) throw err;
+        return null;
+      });
+      if (res?.upsertedCount) await this.track(viewer.userId, 'office_hours_subscribed', { hostId });
+    } else await OfficeHoursSubscriptionModel.deleteOne(key);
+    return this.subscriptions(viewer);
+  }
+
+  async subscriptions(viewer: AuthState): Promise<OfficeHoursSubscriptionView[]> {
+    const rows = await OfficeHoursSubscriptionModel.find({ userId: oid(viewer.userId) })
+      .sort({ createdAt: -1 })
+      .limit(200)
+      .lean<{ hostId: Types.ObjectId; createdAt: Date }[]>();
+    const refs = await this.d.profiles.refsFor(rows.map((r) => r.hostId));
+    return rows.flatMap((r) => {
+      const host = refs.get(String(r.hostId));
+      return host ? [{ host, since: r.createdAt.toISOString() }] : [];
+    });
+  }
+
   /** Delayed job: remind people going, unless the event changed since it was scheduled. */
   async onReminder(job: TenantJob) {
     const e = await EventModel.findOne({
@@ -667,6 +804,42 @@ export class EventsService {
   }
 
   /** Events held between two dates with their host (B8 alumni engagement; the host is public). */
+  /**
+   * Batch pages (prompt 2, G6): upcoming meetups for a batch, those whose title names the batch
+   * year or a reunion, open to its branch.
+   */
+  async reunionsFor(gradYear: number, branch: string) {
+    const rows = await EventModel.find({
+      kind: 'meetup',
+      status: 'scheduled',
+      removal: null,
+      endsAt: { $gte: new Date() },
+      $and: [
+        { $or: [{ branches: { $size: 0 } }, { branches: branch }] },
+        { $or: [{ title: new RegExp(`\\b${gradYear}\\b`) }, { title: /reunion/i }] },
+      ],
+    })
+      .sort({ startsAt: 1 })
+      .limit(10)
+      .lean<EventDoc[]>();
+    return rows.map((e) => ({
+      id: String(e._id),
+      title: e.title,
+      startsAt: e.startsAt.toISOString(),
+      kind: e.kind,
+    }));
+  }
+
+  /** Recognition (prompt 2, G6): events a member hosted that ended in a window. */
+  async hostedBetween(hostId: string, from: Date, to: Date): Promise<number> {
+    return EventModel.countDocuments({
+      hostId: oid(hostId),
+      status: 'scheduled',
+      removal: null,
+      endsAt: { $gte: from, $lt: to, $lte: new Date() },
+    });
+  }
+
   async heldBetween(from: Date, to: Date) {
     const rows = await EventModel.find({
       startsAt: { $gte: from, $lt: to },

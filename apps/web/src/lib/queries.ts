@@ -73,6 +73,14 @@ import type {
   InterviewView,
   ResumeSummaryView,
   ResumeView,
+  BatchView,
+  CertificateEligibility,
+  CertificateView,
+  FundView,
+  GivingSettingsView,
+  MicroAskInbox,
+  PledgeView,
+  AlumniOfMonthView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -763,4 +771,80 @@ export const interviewQuestions = (status: InterviewQuestionStatus) =>
     queryKey: ['interview-questions', status],
     queryFn: ({ signal }) =>
       api.get<InterviewQuestionView[]>(`/admin/interview-questions?status=${status}`, signal),
+  });
+
+// Alumni engagement (prompt 2, G6).
+export const microAsks = (box: 'sent' | 'received') =>
+  queryOptions({
+    queryKey: ['micro-asks', box],
+    queryFn: ({ signal }) => api.get<MicroAskInbox>(`/micro-asks/${box}`, signal),
+  });
+
+export const myCertificates = () =>
+  queryOptions({
+    queryKey: ['certificates'],
+    queryFn: ({ signal }) =>
+      api.get<{ certificates: CertificateView[]; years: CertificateEligibility[] }>(
+        '/me/certificates',
+        signal,
+      ),
+  });
+
+export const myNominations = () =>
+  queryOptions({
+    queryKey: ['nominations'],
+    queryFn: ({ signal }) => api.get<AlumniOfMonthView[]>('/me/alumni-of-the-month', signal),
+  });
+
+export const funds = () =>
+  queryOptions({
+    queryKey: ['funds'],
+    queryFn: ({ signal }) => api.get<FundView[]>('/giving/funds', signal),
+  });
+
+export const myPledges = () =>
+  queryOptions({
+    queryKey: ['pledges', 'mine'],
+    queryFn: ({ signal }) => api.get<PledgeView[]>('/me/pledges', signal),
+  });
+
+export const batch = (gradYear: string, branch: string) =>
+  queryOptions({
+    queryKey: ['batch', gradYear, branch],
+    queryFn: ({ signal }) => api.get<BatchView>(`/batches/${gradYear}/${branch}`, signal),
+  });
+
+export const adminFunds = () =>
+  queryOptions({
+    queryKey: ['admin-funds'],
+    queryFn: ({ signal }) => api.get<FundView[]>('/admin/giving/funds', signal),
+  });
+
+export const adminPledges = (status: string) =>
+  queryOptions({
+    queryKey: ['admin-pledges', status],
+    queryFn: ({ signal }) =>
+      api.get<PledgeView[]>(`/admin/giving/pledges${status ? `?status=${status}` : ''}`, signal),
+  });
+
+export const givingSettings = () =>
+  queryOptions({
+    queryKey: ['giving-settings'],
+    queryFn: ({ signal }) => api.get<GivingSettingsView>('/admin/giving/settings', signal),
+  });
+
+export const adminNominations = () =>
+  queryOptions({
+    queryKey: ['admin-nominations'],
+    queryFn: ({ signal }) => api.get<AlumniOfMonthView[]>('/admin/recognition/of-the-month', signal),
+  });
+
+export const adminCertificates = () =>
+  queryOptions({
+    queryKey: ['admin-certificates'],
+    queryFn: ({ signal }) =>
+      api.get<(CertificateView & { person: { userId: string; name: string } })[]>(
+        '/admin/recognition/certificates',
+        signal,
+      ),
   });

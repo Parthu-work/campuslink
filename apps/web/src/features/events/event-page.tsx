@@ -16,7 +16,12 @@ import {
   Video,
   XCircle,
 } from 'lucide-react';
-import type { AttendeeView, EventQuestionView, EventView } from '@campuslink/shared';
+import type {
+  AttendeeView,
+  EventQuestionView,
+  EventView,
+  OfficeHoursSubscriptionView,
+} from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Textarea } from '../../components/ui/field';
@@ -30,7 +35,7 @@ import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
 import { putOrQueue } from '../../lib/offline-writes';
 import { findCached, hasId } from '../../lib/query-seed';
 import { event } from '../../lib/queries';
-import { formatDateTime, formatTime } from '../../lib/format';
+import { formatDateTime, formatDay, formatTime } from '../../lib/format';
 import { cn } from '../../lib/cn';
 import { hasEnded } from '../../lib/events';
 import { ContentMenu } from '../feed/content-menu';
@@ -234,6 +239,38 @@ function Attendees({ e }: { e: EventView }) {
   );
 }
 
+/** Follow a host's office hours: told whenever a new one is scheduled (prompt 2, G6). */
+function FollowOfficeHours({ hostId }: { hostId: string }) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const subs = useQuery({
+    queryKey: ['office-hours-subscriptions'],
+    queryFn: () => api.get<OfficeHoursSubscriptionView[]>('/me/office-hours/subscriptions'),
+  });
+  const following = !!subs.data?.some((s) => s.host.userId === hostId);
+  const toggle = useMutation({
+    mutationFn: () =>
+      api.put<OfficeHoursSubscriptionView[]>(`/members/${hostId}/office-hours/subscription`, {
+        on: !following,
+      }),
+    onSuccess: (data) => qc.setQueryData(['office-hours-subscriptions'], data),
+    onError: (err) => toast.error(err instanceof ApiError ? err.message : t('errors.generic')),
+  });
+  if (!subs.data) return null;
+  return (
+    <div>
+      <Button
+        size="sm"
+        variant={following ? 'ghost' : 'secondary'}
+        loading={toggle.isPending}
+        onClick={() => toggle.mutate()}
+      >
+        {following ? t('events.unfollowHost') : t('events.followHost')}
+      </Button>
+    </div>
+  );
+}
+
 export function EventPage() {
   const { id = '' } = useParams();
   const { t } = useTranslation();
@@ -362,6 +399,12 @@ export function EventPage() {
               ? `${e.location} · ${t('events.mode.hybrid')}`
               : e.location}
         </p>
+        {e.recurrence && (
+          <p className="text-meta text-fg-2">
+            {t('events.repeatsUntil', { date: formatDay(e.recurrence.until) })}
+          </p>
+        )}
+        {e.kind === 'office_hours' && !e.isHost && <FollowOfficeHours hostId={e.host.userId} />}
         <p className="flex items-center gap-2 text-meta text-fg-3">
           <Users className="size-4" aria-hidden />
           {e.capacity

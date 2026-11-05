@@ -5,7 +5,14 @@ export const WA_LANGS = ['en', 'te', 'hi'] as const;
 export type WaLang = (typeof WA_LANGS)[number];
 
 /** What a quick-reply button does when tapped (the webhook runs it through the owning service). */
-export type ChannelAction = 'request_accept' | 'request_decline' | 'booking_ack' | 'drive_register';
+export type ChannelAction =
+  | 'request_accept'
+  | 'request_decline'
+  | 'booking_ack'
+  | 'drive_register'
+  // Prompt 2, G6: an alumnus says yes or passes on a micro-ask.
+  | 'micro_ask_accept'
+  | 'micro_ask_decline';
 
 export interface WaTemplate {
   /** The name the template is approved under in Meta Business Manager. */
@@ -47,6 +54,27 @@ const SESSION_LABEL: Record<WaLang, Record<SessionType, string>> = {
   },
 };
 const LOCALE: Record<WaLang, string> = { en: 'en-IN', te: 'te-IN', hi: 'hi-IN' };
+/** Micro-ask kinds in words (prompt 2, G6). */
+const MICRO_ASK_LABEL: Record<WaLang, Record<string, string>> = {
+  en: {
+    review_resume: 'a résumé review',
+    answer_question: 'an answer to a question',
+    quick_intro: 'a quick introduction',
+    feedback_on_project: 'feedback on a project',
+  },
+  te: {
+    review_resume: 'రెజ్యూమ్ సమీక్ష',
+    answer_question: 'ఒక ప్రశ్నకు జవాబు',
+    quick_intro: 'ఒక చిన్న పరిచయం',
+    feedback_on_project: 'ఒక ప్రాజెక్టుపై అభిప్రాయం',
+  },
+  hi: {
+    review_resume: 'रिज़्यूमे की समीक्षा',
+    answer_question: 'एक सवाल का जवाब',
+    quick_intro: 'एक छोटा परिचय',
+    feedback_on_project: 'एक प्रोजेक्ट पर राय',
+  },
+};
 
 const session = (d: Record<string, string>, lang: WaLang) =>
   SESSION_LABEL[lang][d.sessionType as SessionType] ?? d.sessionType ?? '';
@@ -266,6 +294,33 @@ export const WHATSAPP_TEMPLATES: Partial<Record<NotificationType, WaTemplate>> =
       en: 'Hi {{1}}, your week on your college app: {{2}} new drives you can register for, {{3}} requests waiting for your reply, {{4}} sessions this week. Open the app to see them.',
       te: '{{1}} గారూ, మీ కాలేజీ యాప్‌లో మీ వారం: మీరు నమోదు చేయగల కొత్త డ్రైవ్‌లు {{2}}, మీ జవాబు కోసం ఎదురుచూస్తున్న అభ్యర్థనలు {{3}}, ఈ వారం సెషన్‌లు {{4}}. చూడటానికి యాప్ తెరవండి.',
       hi: 'नमस्ते {{1}}, आपके कॉलेज ऐप पर आपका हफ़्ता: आप जिनमें पंजीकरण कर सकते हैं ऐसी नई ड्राइव {{2}}, आपके जवाब का इंतज़ार कर रहे अनुरोध {{3}}, इस हफ़्ते के सत्र {{4}}। देखने के लिए ऐप खोलें।',
+    },
+  },
+  /**
+   * A micro-ask (prompt 2, G6): the asker's first name and the kind of favour, never the note.
+   * Not critical: the alumnus's weekly cap and the college's allowance apply.
+   */
+  micro_ask_received: {
+    name: 'cl_micro_ask',
+    category: 'utility',
+    critical: false,
+    params: (d, c) => [d.name ?? '', MICRO_ASK_LABEL[c.lang][d.kind ?? ''] ?? ''],
+    buttons: [
+      {
+        action: 'micro_ask_accept',
+        ref: 'askId',
+        label: { en: 'Yes, I’ll help', te: 'సరే, సహాయం చేస్తాను', hi: 'हां, मदद करूंगा/करूंगी' },
+      },
+      {
+        action: 'micro_ask_decline',
+        ref: 'askId',
+        label: { en: 'Not now', te: 'ఇప్పుడు కాదు', hi: 'अभी नहीं' },
+      },
+    ],
+    text: {
+      en: '{{1}}, a student from your college, asked for a small favour: {{2}}. It takes a few minutes. Reply below, or open the app to read it.',
+      te: 'మీ కాలేజీ విద్యార్థి {{1}} ఒక చిన్న సహాయం అడిగారు: {{2}}. కొన్ని నిమిషాలే పడుతుంది. కింద జవాబివ్వండి, లేదా చదవడానికి యాప్ తెరవండి.',
+      hi: 'आपके कॉलेज के छात्र {{1}} ने एक छोटी मदद मांगी है: {{2}}। इसमें कुछ ही मिनट लगेंगे। नीचे जवाब दें, या पढ़ने के लिए ऐप खोलें।',
     },
   },
 };

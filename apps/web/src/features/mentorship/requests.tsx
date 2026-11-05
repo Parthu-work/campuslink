@@ -317,6 +317,7 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
 export function RequestsPage() {
   const { t } = useTranslation();
   const isMentor = useCan('mentorship:mentor');
+  const canAsk = useCan('alumni:ask');
   const [params, setParams] = useSearchParams();
   const box = isMentor && params.get('box') !== 'sent' ? 'received' : 'sent';
   const list = useQuery({
@@ -351,6 +352,15 @@ export function RequestsPage() {
           ]}
           onChange={(v) => setParams({ box: v }, { replace: true })}
         />
+      )}
+      {/* A smaller favour than a session: a micro-ask (prompt 2, G6). */}
+      {box === 'sent' && canAsk && (
+        <Link
+          to="/alumni?tab=asks"
+          className="justify-self-start text-meta font-semibold text-brand-ink underline"
+        >
+          {t('request.quickAsk')}
+        </Link>
       )}
       {list.isLoading && <Skeleton className="h-48" />}
       {list.isSuccess && !list.data.length && (

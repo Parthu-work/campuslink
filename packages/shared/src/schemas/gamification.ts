@@ -20,6 +20,8 @@ export const XP_RULES = {
   session_mentored: { track: 'impact', points: 10, dailyCap: null },
   new_mentee: { track: 'impact', points: 15, dailyCap: null },
   referral_given: { track: 'impact', points: 8, dailyCap: null },
+  // Prompt 2, G6: an alumnus did a micro-ask (review, answer, intro, feedback).
+  micro_ask_done: { track: 'impact', points: 8, dailyCap: 5 },
   answer_accepted_alumni: { track: 'impact', points: 5, dailyCap: null },
   roadmap_published: { track: 'impact', points: 20, dailyCap: null },
   event_hosted: { track: 'impact', points: 10, dailyCap: null },

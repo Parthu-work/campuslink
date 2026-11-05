@@ -128,6 +128,14 @@ export const NOTIFICATION_TYPES = [
   'weekly_digest',
   // An account unused for the college's set months will be deleted (prompt 1b, R7): two warnings.
   'account_inactive',
+  // Prompt 2, G6: micro-asks, office hours, recognition and giving.
+  'micro_ask_received',
+  'micro_ask_done',
+  'micro_ask_unmatched',
+  'office_hours_scheduled',
+  'certificate_ready',
+  'alumni_of_month_nominated',
+  'pledge_received',
   // Prompt 2, G2: a reviewer commented on your résumé.
   'resume_comment',
 ] as const;
@@ -214,6 +222,13 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   support_ticket: 'requests',
   weekly_digest: 'reminders',
   account_inactive: 'reminders',
+  micro_ask_received: 'requests',
+  micro_ask_done: 'requests',
+  micro_ask_unmatched: 'requests',
+  office_hours_scheduled: 'events',
+  certificate_ready: 'achievements',
+  alumni_of_month_nominated: 'achievements',
+  pledge_received: 'community',
   resume_comment: 'requests',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */

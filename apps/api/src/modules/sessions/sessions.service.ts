@@ -583,6 +583,23 @@ export class SessionsService {
 
   /** Analytics: completed sessions since a date (who and when only) and the average rating. */
   /** B5 mentor stats: completed sessions per mentor. */
+  /** Recognition (prompt 2, G6): sessions a mentor completed in a window, and how many mentees. */
+  async mentoredBetween(
+    mentorId: string,
+    from: Date,
+    to: Date,
+  ): Promise<{ sessions: number; mentees: number }> {
+    const rows = await BookingModel.find({
+      mentorId: new Types.ObjectId(mentorId),
+      status: 'completed',
+      end: { $gte: from, $lt: to },
+    })
+      .select('menteeId')
+      .limit(10_000)
+      .lean<{ menteeId: Types.ObjectId }[]>();
+    return { sessions: rows.length, mentees: new Set(rows.map((r) => String(r.menteeId))).size };
+  }
+
   async completedCounts(mentorIds: Types.ObjectId[]): Promise<Map<string, number>> {
     const rows = await BookingModel.aggregate<{ _id: Types.ObjectId; n: number }>([
       { $match: { mentorId: { $in: mentorIds }, status: 'completed' } },

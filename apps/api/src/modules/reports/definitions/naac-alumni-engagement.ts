@@ -12,9 +12,9 @@ export const naacAlumniEngagement: ReportDefinition = {
   id: 'naac-alumni-engagement',
   framework: 'NAAC',
   title: 'Alumni engagement',
-  version: '2026.1',
+  version: '2026.2',
   sourceNote:
-    'NAAC self-study data on alumni engagement other than financial contribution: events alumni hosted, mentoring sessions alumni held and referrals alumni gave, in the academic year (June to May). Financial contribution is not recorded yet. Check the metric number and format against the current manual. Not yet checked: on 2 November 2026 (prompt 1b, R12) naac.gov.in presented a revoked TLS certificate, so its manual could not be downloaded safely; see docs/specs/outcomes-reports.md.',
+    'NAAC self-study data on alumni engagement: events alumni hosted, mentoring sessions alumni held, referrals and quick favours (micro-asks) alumni gave, and financial contributions the college recorded as received, in the academic year (June to May). Check the metric number and format against the current manual. Not yet checked: on 2 November 2026 (prompt 1b, R12) naac.gov.in presented a revoked TLS certificate, so its manual could not be downloaded safely; see docs/specs/outcomes-reports.md.',
   needsReview: true,
   threeYears: false,
   async compute(data, p, count) {
@@ -43,11 +43,26 @@ export const naacAlumniEngagement: ReportDefinition = {
           'Alumni who gave referrals',
           distinct(e.referrals, (x) => x.referrerId),
         ),
+        // Prompt 2, G6: micro-asks and contributions (2026.2).
+        row('Quick favours (micro-asks) done by alumni', (e.asks ?? []).length),
+        row(
+          'Alumni who contributed financially',
+          distinct(e.contributions ?? [], (x) => x.subject),
+        ),
+        {
+          year: label(p.gradYear),
+          measure: 'Financial contribution received (₹, whole rupees)',
+          // A sum, not a count of people: shown only when five or more alumni contributed.
+          value:
+            count(distinct(e.contributions ?? [], (x) => x.subject)) === '<5'
+              ? '<5 contributors'
+              : Math.floor((e.contributions ?? []).reduce((n, x) => n + x.amountPaise, 0) / 100),
+        },
       ],
       totals: null,
       notes: [
         'All programmes: alumni activity is not split by the programme they graduated from.',
-        'Alumni financial contribution is not recorded in this version.',
+        'Financial contribution counts only what the college recorded as received (Admin › Giving); pledges not yet received are left out. The amount is hidden when fewer than five alumni contributed.',
       ],
     };
   },

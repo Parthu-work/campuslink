@@ -51,6 +51,12 @@ import { RESUME_RENDER_JOB, ResumesService } from './modules/resumes/resumes.ser
 import { resumeRoutes } from './modules/resumes/resumes.routes.js';
 import { INTERVIEW_TRANSCRIBE_JOB, InterviewsService } from './modules/interviews/interviews.service.js';
 import { interviewRoutes } from './modules/interviews/interviews.routes.js';
+import { createPostBody } from '@campuslink/shared';
+import { MICRO_ASK_EXPIRE_JOB, MicroAsksService } from './modules/alumni/micro-asks.service.js';
+import { CERTIFICATE_RENDER_JOB, RecognitionService } from './modules/alumni/recognition.service.js';
+import { ACKNOWLEDGEMENT_JOB, GivingService } from './modules/alumni/giving.service.js';
+import { AlumniService } from './modules/alumni/alumni.service.js';
+import { alumniRoutes } from './modules/alumni/alumni.routes.js';
 import { DIGEST_JOB, DigestService } from './modules/notifications/digest.service.js';
 import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
 import { OtpService } from './modules/verification/otp.service.js';
@@ -127,7 +133,7 @@ import { NUDGE_JOB, RoadmapsService, installLibraryRoadmaps } from './modules/ro
 import { roadmapRoutes } from './modules/roadmaps/roadmaps.routes.js';
 import { GamificationService } from './modules/gamification/gamification.service.js';
 import { gamificationRoutes } from './modules/gamification/gamification.routes.js';
-import { EVENT_REMINDER_JOB, EventsService } from './modules/events/events.service.js';
+import { EVENT_REMINDER_JOB, EventsService, OFFICE_HOURS_NEXT_JOB } from './modules/events/events.service.js';
 import { eventRoutes } from './modules/events/events.routes.js';
 import { AnalyticsService } from './modules/analytics/analytics.service.js';
 import { analyticsRoutes } from './modules/analytics/analytics.routes.js';
@@ -715,15 +721,20 @@ export function createApp({
         const alumni = new Set(
           (await profilesService.cohorts()).filter((p) => p.roles.includes(Role.ALUMNI)).map((p) => p.userId),
         );
-        const [events, sessions, referrals] = await Promise.all([
+        const [events, sessions, referrals, asks, contributions] = await Promise.all([
           eventsService.heldBetween(from, to),
           sessionsService.completedSince(from),
           referralsService.referredBetween(from, to),
+          microAsksService.doneBetween(from, to),
+          givingService.receivedBetween(from, to),
         ]);
         return {
           events: events.filter((e) => alumni.has(e.hostId)),
           sessions: sessions.sessions.filter((x) => x.at < to && alumni.has(x.mentorId)),
           referrals: referrals.filter((r) => alumni.has(r.referrerId)),
+          // Prompt 2, G6: micro-asks alumni did, and contributions the college received.
+          asks: asks.filter((a) => alumni.has(a.helperId)),
+          contributions,
         };
       },
     },
@@ -737,6 +748,54 @@ export function createApp({
   for (const type of ['event', 'event_question'] as const)
     safetyService.registerTarget(type, (viewer, id) => eventsService.reportTarget(type, viewer, id));
   queue.register(EVENT_REMINDER_JOB, (data) => eventsService.onReminder(data));
+
+  // ── Alumni engagement (prompt 2, G6) ─────────────────────────────
+  queue.register(OFFICE_HOURS_NEXT_JOB, (data) => eventsService.onNextOfficeHours(data));
+  const microAsksService = new MicroAsksService({
+    profiles: profilesService,
+    notifications: notificationsService,
+    jobs: queue,
+    blocked: (a, b) => safetyService.isBlockedEither(a, b),
+    ownsResume: (userId, resumeId): Promise<boolean> => resumesService.owns(userId, resumeId),
+    seesQuestion: async (viewer, id) => !!(await qaService.get(viewer, id).catch(() => null)),
+  });
+  microAsksService.award = gamificationService.award;
+  queue.register(MICRO_ASK_EXPIRE_JOB, (data) => microAsksService.onExpire(data));
+  channelService.registerAction('micro_ask_accept', (viewer, id) =>
+    microAsksService.reply(viewer, id, 'accept'),
+  );
+  channelService.registerAction('micro_ask_decline', (viewer, id) =>
+    microAsksService.reply(viewer, id, 'decline'),
+  );
+  const recognitionService = new RecognitionService({
+    profiles: profilesService,
+    files: filesService,
+    jobs: queue,
+    notifications: notificationsService,
+    mentored: (userId, from, to) => sessionsService.mentoredBetween(userId, from, to),
+    asksDone: (userId, from, to) => microAsksService.doneBy(userId, from, to),
+    hosted: (userId, from, to) => eventsService.hostedBetween(userId, from, to),
+    urlFor: async (path) => {
+      const tenant = await findTenantById(requireTenantId());
+      return tenant ? authService.tenantUrl(tenant, path) : path;
+    },
+    announce: async (actor, body) =>
+      (await postsService.create(actor, createPostBody.parse({ kind: 'text', body, announcement: true }))).id,
+  });
+  queue.register(CERTIFICATE_RENDER_JOB, (data) => recognitionService.onRender(data));
+  const givingService = new GivingService({
+    profiles: profilesService,
+    files: filesService,
+    jobs: queue,
+    notifications: notificationsService,
+  });
+  queue.register(ACKNOWLEDGEMENT_JOB, (data) => givingService.onAcknowledge(data));
+  const alumniService = new AlumniService({
+    profiles: profilesService,
+    files: filesService,
+    reunions: (gradYear, branch) => eventsService.reunionsFor(gradYear, branch),
+    notJoined: (gradYear, branch) => whitelistService.notJoined(gradYear, branch),
+  });
   const analyticsService = new AnalyticsService({
     cohorts: () => profilesService.cohorts(),
     pendingVerification: () => verificationService.pendingCount(),
@@ -792,7 +851,10 @@ export function createApp({
     academics: async (userId) => (await academicsService.factsFor([userId])).get(userId) ?? null,
     finishedRoadmaps: (userId) => roadmapsService.finishedFor(userId),
     driveText: (viewer, driveId) => placementsService.roleText(viewer, driveId),
-    isReviewer: (viewer, resumeId) => requestsService.reviewsResume(viewer, resumeId),
+    isReviewer: async (viewer, resumeId): Promise<boolean> =>
+      (await requestsService.reviewsResume(viewer, resumeId)) ||
+      // A micro-ask to review this résumé (prompt 2, G6).
+      microAsksService.reviewsResume(viewer, resumeId),
   });
   queue.register(RESUME_RENDER_JOB, (data) => resumesService.onRender(data));
   requestsService.resumeOwned = (userId, resumeId) => resumesService.owns(userId, resumeId);
@@ -1038,6 +1100,11 @@ export function createApp({
     chatService,
     resumesService,
     interviewsService,
+    eventsService,
+    microAsksService,
+    recognitionService,
+    givingService,
+    alumniService,
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1098,6 +1165,9 @@ export function createApp({
   privacyService.register('support', hook(supportService));
   privacyService.register('resumes', hook(resumesService));
   privacyService.register('interviews', hook(interviewsService));
+  privacyService.register('microAsks', hook(microAsksService));
+  privacyService.register('recognition', hook(recognitionService));
+  privacyService.register('giving', hook(givingService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -1282,6 +1352,19 @@ export function createApp({
   app.use(API_PREFIX, defineModule('support', supportRoutes(supportService, filesService), pipeline));
   app.use(API_PREFIX, defineModule('resumes', resumeRoutes(resumesService), pipeline));
   app.use(API_PREFIX, defineModule('interviews', interviewRoutes(interviewsService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule(
+      'alumni',
+      alumniRoutes({
+        asks: microAsksService,
+        recognition: recognitionService,
+        giving: givingService,
+        alumni: alumniService,
+      }),
+      pipeline,
+    ),
+  );
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -1380,6 +1463,10 @@ export function createApp({
     privacy: privacyService,
     resumes: resumesService,
     interviews: interviewsService,
+    microAsks: microAsksService,
+    recognition: recognitionService,
+    giving: givingService,
+    alumni: alumniService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,

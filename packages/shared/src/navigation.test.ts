@@ -47,7 +47,10 @@ describe('role-aware navigation', () => {
     expect(admin([Role.COLLEGE_ADMIN])).toEqual([
       ['people', ['users', 'verification', 'imports', 'list', 'onboarding']],
       ['placements', ['placements', 'offers', 'interviewQuestions']],
-      ['community', ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards']],
+      [
+        'community',
+        ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards', 'recognition', 'giving'],
+      ],
       ['insights', ['analytics', 'reports']],
       ['college', ['branding', 'features', 'ai', 'billing', 'support', 'audit']],
     ]);
@@ -213,5 +216,25 @@ describe('safeReturnPath', () => {
       `/${'a'.repeat(600)}`,
     ])
       expect(safeReturnPath(bad)).toBeNull();
+  });
+});
+
+describe('alumni engagement (prompt 2, G6)', () => {
+  const menu = (roles: Role[]) =>
+    buildNav({ roles, permissions: perms(roles), verified: true }, today).menu.flatMap((g) =>
+      g.items.map((i) => i.id),
+    );
+  const admin = (roles: Role[]) =>
+    buildNav({ roles, permissions: perms(roles), verified: true }, today).admin.flatMap((g) =>
+      g.items.map((i) => i.id),
+    );
+  it('students and alumni open Alumni; staff do not', () => {
+    expect(menu([Role.STUDENT])).toContain('alumni');
+    expect(menu([Role.ALUMNI])).toContain('alumni');
+    expect(menu([Role.FACULTY])).not.toContain('alumni');
+  });
+  it('the TPO runs recognition and giving; faculty do not', () => {
+    expect(admin([Role.TPO])).toEqual(expect.arrayContaining(['recognition', 'giving']));
+    expect(admin([Role.FACULTY])).not.toContain('giving');
   });
 });

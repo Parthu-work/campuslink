@@ -446,6 +446,9 @@ describe('deletion', () => {
         'support',
         'resumes',
         'interviews',
+        'microAsks',
+        'recognition',
+        'giving',
       ]),
     );
   });

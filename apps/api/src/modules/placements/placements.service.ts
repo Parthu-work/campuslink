@@ -546,6 +546,7 @@ export class PlacementsService {
               .trim()
               .slice(0, 4000),
           kind: 'drive',
+          recurrence: null,
           mode: 'in_person',
           startsAt: start.toISOString(),
           endsAt: new Date(start.getTime() + 4 * HOUR).toISOString(),

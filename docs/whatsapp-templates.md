@@ -135,6 +135,17 @@ Sent for: `weekly_digest`. Category: **utility**.
 - Telugu (te): `{{1}} గారూ, మీ కాలేజీ యాప్‌లో మీ వారం: మీరు నమోదు చేయగల కొత్త డ్రైవ్‌లు {{2}}, మీ జవాబు కోసం ఎదురుచూస్తున్న అభ్యర్థనలు {{3}}, ఈ వారం సెషన్‌లు {{4}}. చూడటానికి యాప్ తెరవండి.`
 - Hindi (hi): `नमस्ते {{1}}, आपके कॉलेज ऐप पर आपका हफ़्ता: आप जिनमें पंजीकरण कर सकते हैं ऐसी नई ड्राइव {{2}}, आपके जवाब का इंतज़ार कर रहे अनुरोध {{3}}, इस हफ़्ते के सत्र {{4}}। देखने के लिए ऐप खोलें।`
 
+## `cl_micro_ask`
+
+Sent for: `micro_ask_received`. Category: **utility**.
+
+- English (en): `{{1}}, a student from your college, asked for a small favour: {{2}}. It takes a few minutes. Reply below, or open the app to read it.`
+  - Quick replies: `Yes, I’ll help`, `Not now`
+- Telugu (te): `మీ కాలేజీ విద్యార్థి {{1}} ఒక చిన్న సహాయం అడిగారు: {{2}}. కొన్ని నిమిషాలే పడుతుంది. కింద జవాబివ్వండి, లేదా చదవడానికి యాప్ తెరవండి.`
+  - Quick replies: `సరే, సహాయం చేస్తాను`, `ఇప్పుడు కాదు`
+- Hindi (hi): `आपके कॉलेज के छात्र {{1}} ने एक छोटी मदद मांगी है: {{2}}। इसमें कुछ ही मिनट लगेंगे। नीचे जवाब दें, या पढ़ने के लिए ऐप खोलें।`
+  - Quick replies: `हां, मदद करूंगा/करूंगी`, `अभी नहीं`
+
 ## `cl_invite_student`
 
 Sent for: an invite to a student on the college's list. Category: **utility**.

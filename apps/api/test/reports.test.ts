@@ -306,6 +306,10 @@ describe('report definitions (B8)', () => {
       ['Alumni mentors', '<5'],
       ['Referrals given by alumni', 0],
       ['Alumni who gave referrals', 0],
+      // Prompt 2, G6: micro-asks and money the college received (none in this fixture).
+      ['Quick favours (micro-asks) done by alumni', 0],
+      ['Alumni who contributed financially', 0],
+      ['Financial contribution received (₹, whole rupees)', 0],
     ]);
   });
 
