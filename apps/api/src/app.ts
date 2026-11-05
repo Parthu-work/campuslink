@@ -51,6 +51,14 @@ import { RESUME_RENDER_JOB, ResumesService } from './modules/resumes/resumes.ser
 import { resumeRoutes } from './modules/resumes/resumes.routes.js';
 import { INTERVIEW_TRANSCRIBE_JOB, InterviewsService } from './modules/interviews/interviews.service.js';
 import { interviewRoutes } from './modules/interviews/interviews.routes.js';
+import { PracticeService } from './modules/practice/practice.service.js';
+import { practiceRoutes } from './modules/practice/practice.routes.js';
+import {
+  DisabledCodeRunner,
+  JUDGE0_LANGUAGE_IDS,
+  Judge0CodeRunner,
+  type CodeRunner,
+} from './modules/practice/code-runner.js';
 import { DIGEST_JOB, DigestService } from './modules/notifications/digest.service.js';
 import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
 import { OtpService } from './modules/verification/otp.service.js';
@@ -196,6 +204,8 @@ export interface AppDeps {
   media?: MediaTools;
   ocr?: OcrProvider;
   whisper?: TranscriptionProvider | null;
+  /** Coding practice runs (tests inject a stub); otherwise from CODE_RUNNER and JUDGE0_URL. */
+  codeRunner?: CodeRunner;
   /** The passage vector store (tests inject one); otherwise from VECTOR_STORE and QDRANT_URL. */
   vectorStore?: VectorStore;
   /** Phone channels (tests inject console providers); otherwise from SMS_PROVIDER and WHATSAPP_PROVIDER. */
@@ -266,6 +276,7 @@ export function createApp({
   media,
   ocr,
   whisper,
+  codeRunner,
   vectorStore,
   sms = smsFromEnv(env, fetcher),
   whatsapp = whatsappFromEnv(env, fetcher),
@@ -851,6 +862,38 @@ export function createApp({
   requestsService.interviewOwned = (userId, interviewId) => interviewsService.owns(userId, interviewId);
   requestsService.onMockRequested = (menteeId, interviewId) =>
     interviewsService.mockBooked(menteeId, interviewId);
+
+  // Aptitude and coding practice (prompt 2, G4): code runs only on the platform's own Judge0.
+  const practiceService = new PracticeService({
+    ai: aiTasksService,
+    runner:
+      codeRunner ??
+      (env.CODE_RUNNER === 'judge0' && env.JUDGE0_URL
+        ? new Judge0CodeRunner(
+            {
+              apiKey: null,
+              baseUrl: env.JUDGE0_URL,
+              // Platform-owned service from the environment, on the private network.
+              allowPrivateNetwork: true,
+              fetcher,
+              authToken: env.JUDGE0_AUTH_TOKEN ?? null,
+            },
+            {
+              ...JUDGE0_LANGUAGE_IDS,
+              ...Object.fromEntries(
+                (env.JUDGE0_LANGUAGES ?? '')
+                  .split(',')
+                  .filter(Boolean)
+                  .map((p) => [p.split(':')[0], Number(p.split(':')[1])]),
+              ),
+            },
+          )
+        : new DisabledCodeRunner()),
+    profiles: profilesService,
+    logger,
+    companies: () => placementsService.recruitingCompanies(),
+  });
+  practiceService.award = gamificationService.award;
   const materialsService = new MaterialsService({
     files: filesService,
     subjects: subjectsService,
@@ -1038,6 +1081,7 @@ export function createApp({
     chatService,
     resumesService,
     interviewsService,
+    practiceService,
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1098,6 +1142,7 @@ export function createApp({
   privacyService.register('support', hook(supportService));
   privacyService.register('resumes', hook(resumesService));
   privacyService.register('interviews', hook(interviewsService));
+  privacyService.register('practice', hook(practiceService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -1282,6 +1327,7 @@ export function createApp({
   app.use(API_PREFIX, defineModule('support', supportRoutes(supportService, filesService), pipeline));
   app.use(API_PREFIX, defineModule('resumes', resumeRoutes(resumesService), pipeline));
   app.use(API_PREFIX, defineModule('interviews', interviewRoutes(interviewsService), pipeline));
+  app.use(API_PREFIX, defineModule('practice', practiceRoutes(practiceService), pipeline));
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -1380,6 +1426,7 @@ export function createApp({
     privacy: privacyService,
     resumes: resumesService,
     interviews: interviewsService,
+    practice: practiceService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,

@@ -446,6 +446,7 @@ describe('deletion', () => {
         'support',
         'resumes',
         'interviews',
+        'practice',
       ]),
     );
   });

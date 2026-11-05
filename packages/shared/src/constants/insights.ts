@@ -23,6 +23,8 @@ export const PRODUCT_EVENTS = [
   'mock_started',
   'mock_completed',
   'human_mock_booked',
+  // Prompt 2, G4: aptitude and coding practice.
+  'practice_set_completed',
 ] as const;
 export type ProductEventName = (typeof PRODUCT_EVENTS)[number];
 

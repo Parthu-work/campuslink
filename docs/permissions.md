@@ -78,6 +78,9 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `resumes:manage` Build résumés, check them against a role and ask an alumnus to review one | · | ✅ | · | · | ✅ | ✅ |
 | `interviews:practice` Practise mock interviews with AI feedback and share a report for a human mock | · | ✅ | · | · | ✅ | ✅ |
 | `interviews:review` Add interview questions and review AI-generated ones before they enter the bank | · | ✅ | ✅ | ✅ | · | · |
+| `practice:use` Do the daily aptitude and coding practice set and company prep | · | ✅ | · | · | ✅ | ✅ |
+| `practice:author` Write practice questions (alumni questions are reviewed before they are used) | · | ✅ | ✅ | ✅ | ✅ | · |
+| `practice:review` Add practice questions, review drafts and alumni questions, and tag companies | · | ✅ | ✅ | ✅ | · | · |
 | `support:manage` Answer and close problem reports sent to the college | · | ✅ | · | · | · | · |
 | `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ |
 | `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ |
@@ -429,6 +432,16 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/admin/interview-questions` | `interviews:review` | college | — | The question bank by status (AI-generated questions wait here for review) |
 | `POST /api/v1/admin/interview-questions` | `interviews:review` | college | posting | Add a question to the bank |
 | `POST /api/v1/admin/interview-questions/:id/decision` | `interviews:review` | college | — | Approve (optionally edited) or reject an AI-generated question |
+| `GET /api/v1/practice` | `practice:use` | college | — | Today's set, my streak, topic accuracy and the companies I can prepare for |
+| `POST /api/v1/practice/sets` | `practice:use` | college | — | Start (or resume) today's set, or a "Preparing for <company>" set |
+| `GET /api/v1/practice/sets/:id` | `practice:use` | college | — | One of my practice sets with the answers so far |
+| `POST /api/v1/practice/sets/:id/answers` | `practice:use` | college | posting | Answer one question (coding answers run on the platform's code runner, when it is on) |
+| `POST /api/v1/practice/items` | `practice:author` | college | posting | Write a practice question (an alumnus's waits for faculty review) |
+| `GET /api/v1/admin/practice/items` | `practice:review` | college | — | The practice bank by status (alumni questions and AI drafts wait here for review) |
+| `PUT /api/v1/admin/practice/items/:id` | `practice:review` | college | — | Correct a practice question or tag the companies it prepares for |
+| `POST /api/v1/admin/practice/items/:id/decision` | `practice:review` | college | — | Approve (optionally corrected) or reject a practice question |
+| `POST /api/v1/admin/practice/drafts` | `practice:review` | college | aiChat | Ask the AI to draft questions for a topic (they wait for review) |
+| `GET /api/v1/admin/practice/mastery` | `analytics:cohort` | college | — | Topic accuracy by graduation year, small groups suppressed (for planning training) |
 | `GET /api/v1/legal/:doc` | public | college | — | The college’s privacy policy or terms, with its details filled in (public) |
 | `GET /api/v1/admin/legal` | `tenant:branding` | college | — | The college’s legal details (legal name, address, grievance officer) |
 | `GET /api/v1/admin/retention` | `tenant:settings` | college | — | Whether accounts unused for some months are deleted (and after how many) |

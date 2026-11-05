@@ -102,3 +102,4 @@ export {
 export { SupportTicketModel } from './support/support.model.js';
 export { ResumeModel, ResumeCommentModel } from './resumes/resume.model.js';
 export { InterviewModel, InterviewQuestionModel } from './interviews/interview.model.js';
+export { PracticeCardModel, PracticeItemModel, PracticeSetModel } from './practice/practice.model.js';

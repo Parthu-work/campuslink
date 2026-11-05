@@ -35,6 +35,7 @@ export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
   reports: FileBarChart2,
   offers: FileCheck2,
   interviewQuestions: MessageSquareQuote,
+  practiceBank: ListChecks,
   moderation: ShieldAlert,
   mentorship: HeartHandshake,
   sources: Newspaper,

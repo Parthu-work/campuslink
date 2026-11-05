@@ -19,6 +19,7 @@ export type NavId =
   | 'outcomes'
   | 'resume'
   | 'interviews'
+  | 'practice'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -89,6 +90,7 @@ export type AdminSectionId =
   | 'placements'
   | 'offers'
   | 'interviewQuestions'
+  | 'practiceBank'
   | 'reports'
   | 'moderation'
   | 'mentorship'
@@ -129,6 +131,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('offers', '/admin/offers', 'outcomes:verify', 'placements'),
   // The mock interview question bank and its review queue (prompt 2, G3).
   section('interviewQuestions', '/admin/interview-questions', 'interviews:review', 'placements'),
+  // The practice bank, its review queue and topic mastery by batch (prompt 2, G4).
+  section('practiceBank', '/admin/practice', 'practice:review', 'placements'),
   section('moderation', '/admin/moderation', 'moderation:act', 'community'),
   section('mentorship', '/admin/mentorship', 'mentorship:oversee', 'community'),
   section('sources', '/admin/sources', 'sources:manage', 'community'),
@@ -183,6 +187,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   resume: d('resume', '/resume', 'you', ['resumes:manage']),
   // AI mock interviews with human follow-up (prompt 2, G3).
   interviews: d('interviews', '/interviews', 'you', ['interviews:practice']),
+  // Aptitude and coding practice (prompt 2, G4).
+  practice: d('practice', '/practice', 'you', ['practice:use']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -300,6 +306,7 @@ const MENU_ORDER: readonly NavId[] = [
   'outcomes',
   'resume',
   'interviews',
+  'practice',
   'progress',
   'rewards',
   'saved',
