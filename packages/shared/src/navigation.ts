@@ -19,6 +19,7 @@ export type NavId =
   | 'outcomes'
   | 'resume'
   | 'interviews'
+  | 'readiness'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -76,6 +77,7 @@ export const ADMIN_PERMISSIONS: readonly Permission[] = [
   'placements:manage',
   'outcomes:verify',
   'support:manage',
+  'readiness:board',
 ];
 
 /** The admin area's sections, grouped (desktop side menu, phone overview). Each needs one permission. */
@@ -89,6 +91,7 @@ export type AdminSectionId =
   | 'placements'
   | 'offers'
   | 'interviewQuestions'
+  | 'readiness'
   | 'reports'
   | 'moderation'
   | 'mentorship'
@@ -129,6 +132,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('offers', '/admin/offers', 'outcomes:verify', 'placements'),
   // The mock interview question bank and its review queue (prompt 2, G3).
   section('interviewQuestions', '/admin/interview-questions', 'interviews:review', 'placements'),
+  // The readiness board (prompt 2, G5): distribution, students who need help, nudges.
+  section('readiness', '/admin/readiness', 'readiness:board', 'placements'),
   section('moderation', '/admin/moderation', 'moderation:act', 'community'),
   section('mentorship', '/admin/mentorship', 'mentorship:oversee', 'community'),
   section('sources', '/admin/sources', 'sources:manage', 'community'),
@@ -183,6 +188,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   resume: d('resume', '/resume', 'you', ['resumes:manage']),
   // AI mock interviews with human follow-up (prompt 2, G3).
   interviews: d('interviews', '/interviews', 'you', ['interviews:practice']),
+  // Placement readiness: the score and its next steps (prompt 2, G5).
+  readiness: d('readiness', '/readiness', 'you', ['readiness:view']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -226,6 +233,7 @@ export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
   leaderboard: 'leaderboards',
   placements: 'placements',
   outcomes: 'placements',
+  readiness: 'placements',
 };
 
 /** Admin sections that belong to a feature switch. */
@@ -236,6 +244,7 @@ export const ADMIN_SECTION_FEATURE: Partial<Record<AdminSectionId, Feature>> = {
   placements: 'placements',
   offers: 'placements',
   reports: 'placements',
+  readiness: 'placements',
 };
 
 /** The shipped destinations minus those whose feature the college has switched off. */
@@ -300,6 +309,7 @@ const MENU_ORDER: readonly NavId[] = [
   'outcomes',
   'resume',
   'interviews',
+  'readiness',
   'progress',
   'rewards',
   'saved',

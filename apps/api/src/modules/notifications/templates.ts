@@ -213,6 +213,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: '{name} reviewed your résumé',
       body: '{name} left a comment on your résumé. Open it to read the review.',
     },
+    readiness_nudge: {
+      title: '{company} registration closes {time}',
+      body: 'Your placement cell suggests a few steps to get ready before the {company} drive. Open your readiness to see them.',
+    },
   },
   te: {
     request_received: { title: 'కొత్త మెంటర్‌షిప్ అభ్యర్థన', body: '{name} మిమ్మల్ని {type} కోసం అడిగారు.' },
@@ -423,6 +427,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: '{name} మీ రెజ్యూమ్‌ను సమీక్షించారు',
       body: '{name} మీ రెజ్యూమ్‌పై వ్యాఖ్య రాశారు. సమీక్ష చదవడానికి తెరవండి.',
     },
+    readiness_nudge: {
+      title: '{company} నమోదు {time}కి ముగుస్తుంది',
+      body: '{company} డ్రైవ్‌కు ముందు సిద్ధం కావడానికి మీ ప్లేస్‌మెంట్ సెల్ కొన్ని దశలు సూచిస్తోంది. వాటిని చూడటానికి మీ సంసిద్ధత తెరవండి.',
+    },
   },
   hi: {
     request_received: { title: 'नया मेंटरशिप अनुरोध', body: '{name} ने आपसे {type} के लिए पूछा है।' },
@@ -617,6 +625,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     resume_comment: {
       title: '{name} ने आपके रिज़्यूमे की समीक्षा की',
       body: '{name} ने आपके रिज़्यूमे पर टिप्पणी की है। समीक्षा पढ़ने के लिए खोलें।',
+    },
+    readiness_nudge: {
+      title: '{company} पंजीकरण {time} को बंद होगा',
+      body: '{company} ड्राइव से पहले तैयार होने के लिए आपका प्लेसमेंट सेल कुछ कदम सुझा रहा है। उन्हें देखने के लिए अपनी तैयारी खोलें।',
     },
   },
 };
@@ -832,6 +844,8 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/settings/privacy';
     case 'resume_comment':
       return `/resume/${data.resumeId ?? ''}`;
+    case 'readiness_nudge':
+      return '/readiness';
     default:
       return '/sessions';
   }

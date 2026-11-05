@@ -34,6 +34,7 @@ import {
   OfferModel,
 } from '../src/modules/placements/placements.model.js';
 import { HigherStudyModel, VentureModel } from '../src/modules/placements/outcomes.model.js';
+import { ReadinessNudgeModel } from '../src/modules/readiness/readiness.model.js';
 
 const ctx = testApp();
 const services = ctx.app.locals.services as {
@@ -54,6 +55,8 @@ beforeAll(async () => {
   await as(alum).put('/me/profile').send({ headline: 'Demo backend engineer', phone: '+919876543210' });
   await as(alum).post('/posts').send({ kind: 'text', body: 'Privacy demo post from the leaving member' });
   jobId = (await postJob(ctx, T, staff)).id;
+  // A readiness nudge the placement cell sent (prompt 2, G5).
+  await runInTenant(T._id, () => ReadinessNudgeModel.create({ userId: alum.id, driveId: jobId }));
   await as(alum).put(`/jobs/${jobId}/track`).send({ status: 'applied', note: 'Private note' });
   await runInTenant(T._id, async () => {
     const subject = await SubjectModel.create({
@@ -283,6 +286,7 @@ describe('export', () => {
     ]);
     expect(d.subjects.enrollmentOverrides).toEqual([expect.objectContaining({ kind: 'include' })]);
     expect(d.aiSettings).toEqual([]);
+    expect(d.readiness.nudges).toEqual([{ driveId: jobId, at: expect.any(String) }]);
     expect(d.offers).toEqual([expect.objectContaining({ companyName: 'Privacy Demo Co', ctcLpa: 9.25 })]);
     expect(d.placementRegistrations).toEqual([expect.objectContaining({ status: 'registered' })]);
     expect(d.support).toEqual([expect.objectContaining({ subject: 'Demo problem report', desk: 'college' })]);
@@ -354,6 +358,7 @@ describe('deletion', () => {
       expect(await ChannelMessageModel.countDocuments({ userId: alum.id })).toBe(0);
       expect(await InviteLinkModel.countDocuments({ usedBy: alum.id })).toBe(0);
       expect(await SupportTicketModel.countDocuments({ userId: alum.id })).toBe(0);
+      expect(await ReadinessNudgeModel.countDocuments({ userId: alum.id })).toBe(0);
       // Placements are the college's record: anonymised, not deleted.
       const reg = await DriveRegistrationModel.findOne({ branch: 'CSE', gradYear: 2022 }).lean();
       expect(reg).toMatchObject({ userId: null, answers: [] });
@@ -446,6 +451,7 @@ describe('deletion', () => {
         'support',
         'resumes',
         'interviews',
+        'readiness',
       ]),
     );
   });

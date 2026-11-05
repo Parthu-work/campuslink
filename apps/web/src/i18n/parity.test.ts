@@ -15,6 +15,7 @@ const pack = (name: string, l: string) => packFiles[`./packs/${name}.${l}.json`]
 /** Where each pack's sections may be used: only screens that load the pack (app/router.tsx, withPack). */
 const PACK_USERS: Record<string, string[]> = {
   career: ['/features/resume/', '/features/interviews/', '/features/admin/interview-questions.tsx'],
+  readiness: ['/features/progress/readiness.tsx', '/features/admin/readiness-admin.tsx'],
 };
 
 /** Flattens nested strings to "a.b.c" → value. */

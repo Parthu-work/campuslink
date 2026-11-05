@@ -28,6 +28,15 @@ const PACKS = {
       hi: () => import('./packs/career.hi.json'),
     },
   },
+  // Placement readiness (prompt 2, G5): the student's score and the placement cell's board.
+  readiness: {
+    sections: ['readiness', 'readinessBoard'],
+    load: {
+      en: () => import('./packs/readiness.en.json'),
+      te: () => import('./packs/readiness.te.json'),
+      hi: () => import('./packs/readiness.hi.json'),
+    },
+  },
 } satisfies Record<
   string,
   { sections: string[]; load: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> }

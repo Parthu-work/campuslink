@@ -1,0 +1,143 @@
+{
+  "readiness": {
+    "intro": "One number that tells you what to do next before placements. It is the sum of the parts below, and your college sets how much each part counts.",
+    "scoreLabel": "Your readiness score",
+    "outOf": "{{score}} out of 100",
+    "headline": "You’re at {{score}}.",
+    "nextIntro": "Next, the steps that add the most:",
+    "allDone": "Every part is as high as it goes. Keep practising before each drive.",
+    "renormalised": "Not counted for you yet: {{parts}}. Your score counts the other parts, scaled to 100.",
+    "parts": "What your score is made of",
+    "how": "Each part earns points out of its share. The points add up to your score; nothing else goes into it.",
+    "private": "Only you and your college’s placement cell and faculty see your score. Other students and employers never do.",
+    "points": "{{points}} of {{max}}",
+    "gain": "+{{n}}",
+    "gainLabel_one": "adds {{count}} point",
+    "gainLabel_other": "adds {{count}} points",
+    "component": {
+      "resume": "Résumé",
+      "interviews": "Mock interviews",
+      "practice": "Practice",
+      "roadmap": "Roadmap",
+      "mentorship": "Mentorship",
+      "eligibility": "Eligibility"
+    },
+    "status": {
+      "off": "Not counted",
+      "not_applicable": "Nothing to measure yet",
+      "not_available": "Coming soon"
+    },
+    "dimension": {
+      "clarity": "clarity",
+      "structure": "structure",
+      "correctness": "correctness",
+      "communication": "communication"
+    },
+    "action": {
+      "build_resume": "Build your résumé",
+      "check_resume": "Run the ATS check on your résumé",
+      "fix_resume_issues_one": "Fix {{count}} résumé issue",
+      "fix_resume_issues_other": "Fix {{count}} résumé issues",
+      "add_keywords_one": "Add {{count}} missing keyword to your résumé",
+      "add_keywords_other": "Add {{count}} missing keywords to your résumé",
+      "check_against_role": "Check your résumé against a role",
+      "do_mock": "Do one mock interview",
+      "improve_answers": "Work on the {{dimension}} of your answers",
+      "do_practice": "Do a practice set",
+      "pick_roadmap": "Follow a roadmap for the role you want",
+      "roadmap_steps_one": "Finish {{count}} more roadmap step",
+      "roadmap_steps_other": "Finish {{count}} more roadmap steps",
+      "book_session": "Have a session with a mentor",
+      "add_academics": "Add your academic record",
+      "raise_cgpa": "Reach a CGPA of {{cgpa}} to open more drives",
+      "clear_backlogs_one": "Clear your backlog",
+      "clear_backlogs_other": "Clear your {{count}} backlogs"
+    },
+    "facts": {
+      "off": "Your college does not count this part.",
+      "notAvailable": "Not part of the app yet. Its share goes to the other parts.",
+      "noCutoffs": "Your college’s drives have not set academic cut-offs yet.",
+      "noResume": "No résumé yet.",
+      "unchecked": "Your résumé has not been checked yet.",
+      "resume": "Best ATS score: {{ats}} of 100.",
+      "noMocks": "No mock interviews yet.",
+      "interviewsUnscored": "{{mocks}} mock interviews in the last 90 days, not scored yet.",
+      "interviews": "{{mocks}} mock interviews in the last 90 days, average {{average}} of 5.",
+      "noRoadmap": "You are not following a roadmap yet.",
+      "roadmap": "{{done}} of {{total}} steps of {{roadmap}}.",
+      "mentorship_one": "{{count}} session with a mentor in the last year.",
+      "mentorship_other": "{{count}} sessions with a mentor in the last year.",
+      "pending": "Your academic record is waiting for the placement cell to verify it.",
+      "noRecord": "No academic record yet.",
+      "eligibility": "Your CGPA of {{cgpa}} meets the cut-offs of {{meets}} of {{drives}} recent drives.",
+      "practice": "Practice sets done."
+    }
+  },
+  "readinessBoard": {
+    "intro": "How ready each batch and branch is, and who needs help before a drive closes. Counts under five are hidden; minors are never listed.",
+    "exportCsv": "Export CSV",
+    "exportXlsx": "Export Excel",
+    "branch": "Branch",
+    "batch": "Batch",
+    "allBranches": "All branches",
+    "allBatches": "All batches",
+    "students": "Students",
+    "needsHelp": "Need help now",
+    "threshold": "Help below",
+    "closing": "Drives closing within",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "privacy": "Scores are visible only to the placement cell and faculty, never to other students or employers. Exports are recorded in the audit log.",
+    "weights": {
+      "open": "Weights",
+      "title": "How the score is made",
+      "body": "Give each part a weight from 0 (not counted) to 50. Weights are scaled so the score is out of 100.",
+      "share": "{{n}}% of the score",
+      "notAvailable": "Not in the app yet: its weight goes to the other parts.",
+      "threshold": "Needs help below",
+      "thresholdHint": "Students under this score are listed when a drive closes soon.",
+      "closing": "Drive closing within (days)",
+      "closingHint": "How soon a drive must close for a student to be listed.",
+      "none": "Give at least one part a weight.",
+      "saved": "Weights saved"
+    },
+    "nudge": {
+      "title_one": "Nudge {{count}} student?",
+      "title_other": "Nudge {{count}} students?",
+      "body": "Each gets one message naming the drive and when it closes, with a link to their next steps. Their score is never in it.",
+      "caps": "A student is nudged at most once a week. WhatsApp goes only to students who opted in, within their weekly limit and your college’s allowance; others get it in the app.",
+      "send": "Send nudges",
+      "done_one": "{{count}} student nudged ({{skipped}} skipped).",
+      "done_other": "{{count}} students nudged ({{skipped}} skipped)."
+    },
+    "help": {
+      "title": "Needs help",
+      "intro": "Students below {{threshold}} whose next eligible drive closes within {{days}} days, soonest first.",
+      "all": "Select all",
+      "none": "Clear selection",
+      "nudge_one": "Nudge {{count}}",
+      "nudge_other": "Nudge {{count}}",
+      "emptyTitle": "Nobody needs help right now",
+      "emptyBody": "No student below the threshold has a drive closing soon.",
+      "pick": "Select",
+      "pickOne": "Select {{name}}",
+      "student": "Student",
+      "score": "Score",
+      "drive": "Next drive",
+      "next": "Best next step",
+      "nudged": "Last nudged",
+      "closes": "Closes {{time}}"
+    },
+    "dist": {
+      "title": "Distribution",
+      "intro": "Students per score band, by batch and branch.",
+      "median": "Median",
+      "empty": "No verified students yet"
+    },
+    "parts": {
+      "title": "Average points by part",
+      "few": "Too few to show",
+      "average": "{{n}} on average"
+    }
+  }
+}

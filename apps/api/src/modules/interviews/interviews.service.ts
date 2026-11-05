@@ -224,6 +224,32 @@ export class InterviewsService {
     return !!(await InterviewModel.exists({ _id: id, userId: oid(userId), status: 'completed' }));
   }
 
+  /**
+   * Readiness (prompt 2, G5): each member's completed practice sessions since a date, newest first,
+   * with their rubric averages (null where no answer was scored).
+   */
+  async completedFor(
+    userIds: string[],
+    since: Date,
+  ): Promise<Map<string, { at: Date; averages: RubricScores | null }[]>> {
+    const rows = await InterviewModel.find({
+      userId: { $in: userIds.map(oid) },
+      status: 'completed',
+      completedAt: { $gte: since },
+    })
+      .select('userId completedAt summary')
+      .sort({ completedAt: -1 })
+      .limit(50_000)
+      .lean<Pick<InterviewDoc, 'userId' | 'completedAt' | 'summary'>[]>();
+    const out = new Map<string, { at: Date; averages: RubricScores | null }[]>();
+    for (const r of rows) {
+      const list = out.get(String(r.userId)) ?? [];
+      list.push({ at: r.completedAt ?? new Date(0), averages: r.summary?.averages ?? null });
+      out.set(String(r.userId), list);
+    }
+    return out;
+  }
+
   // ── Starting ─────────────────────────────
 
   private async bank(track: 'hr' | 'technical', branch: Branch | null): Promise<Candidate[]> {

@@ -268,6 +268,29 @@ export const WHATSAPP_TEMPLATES: Partial<Record<NotificationType, WaTemplate>> =
       hi: 'नमस्ते {{1}}, आपके कॉलेज ऐप पर आपका हफ़्ता: आप जिनमें पंजीकरण कर सकते हैं ऐसी नई ड्राइव {{2}}, आपके जवाब का इंतज़ार कर रहे अनुरोध {{3}}, इस हफ़्ते के सत्र {{4}}। देखने के लिए ऐप खोलें।',
     },
   },
+  /**
+   * The readiness nudge (prompt 2, G5): the placement cell's bulk nudge before a drive closes. The
+   * member's first name, the company and the closing time; never the score. Not critical: the
+   * member's weekly cap and the college's allowance apply.
+   */
+  readiness_nudge: {
+    name: 'cl_readiness_nudge',
+    category: 'utility',
+    critical: false,
+    params: (d, c) => [d.name ?? '', d.company ?? '', when(d.start, c.lang, c.timezone)],
+    buttons: [
+      {
+        action: 'drive_register',
+        ref: 'driveId',
+        label: { en: 'Register', te: 'నమోదు చేయండి', hi: 'पंजीकरण करें' },
+      },
+    ],
+    text: {
+      en: 'Hi {{1}}, registration for the {{2}} drive closes {{3}}. Your placement cell suggests a few steps to get ready: open the app to see them.',
+      te: '{{1}} గారూ, {{2}} డ్రైవ్ నమోదు {{3}}కి ముగుస్తుంది. సిద్ధం కావడానికి మీ ప్లేస్‌మెంట్ సెల్ కొన్ని దశలు సూచిస్తోంది: వాటిని చూడటానికి యాప్ తెరవండి.',
+      hi: 'नमस्ते {{1}}, {{2}} ड्राइव का पंजीकरण {{3}} को बंद होगा। तैयार होने के लिए आपका प्लेसमेंट सेल कुछ कदम सुझा रहा है: उन्हें देखने के लिए ऐप खोलें।',
+    },
+  },
 };
 
 /**

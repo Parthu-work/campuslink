@@ -78,6 +78,9 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `resumes:manage` Build résumés, check them against a role and ask an alumnus to review one | · | ✅ | · | · | ✅ | ✅ |
 | `interviews:practice` Practise mock interviews with AI feedback and share a report for a human mock | · | ✅ | · | · | ✅ | ✅ |
 | `interviews:review` Add interview questions and review AI-generated ones before they enter the bank | · | ✅ | ✅ | ✅ | · | · |
+| `readiness:view` See one’s own placement readiness score and its next steps | · | ✅ | · | · | · | ✅ |
+| `readiness:board` See the readiness board: distribution by batch and branch, and students who need help | · | ✅ | ✅ | ✅ | · | · |
+| `readiness:manage` Set readiness weights, nudge students who need help and export the board | · | ✅ | ✅ | · | · | · |
 | `support:manage` Answer and close problem reports sent to the college | · | ✅ | · | · | · | · |
 | `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ |
 | `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ |
@@ -429,6 +432,12 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/admin/interview-questions` | `interviews:review` | college | — | The question bank by status (AI-generated questions wait here for review) |
 | `POST /api/v1/admin/interview-questions` | `interviews:review` | college | posting | Add a question to the bank |
 | `POST /api/v1/admin/interview-questions/:id/decision` | `interviews:review` | college | — | Approve (optionally edited) or reject an AI-generated question |
+| `GET /api/v1/me/readiness` | `readiness:view` · feature `placements` | college | — | My readiness score: each component’s points and my next steps (mine only) |
+| `GET /api/v1/admin/readiness` | `readiness:board` · feature `placements` | college | search | The readiness board: distribution by batch and branch (small counts hidden) and who needs help |
+| `GET /api/v1/admin/readiness/config` | `readiness:board` · feature `placements` | college | — | The college’s readiness weights, threshold and closing window |
+| `PUT /api/v1/admin/readiness/config` | `readiness:manage` · feature `placements` | college | adminWrite | Set the readiness weights, the "needs help" threshold and the closing window (audited) |
+| `POST /api/v1/admin/readiness/nudge` | `readiness:manage` · feature `placements` | college | adminWrite | Nudge students who need help before a drive closes (once a week each, within WhatsApp caps) |
+| `GET /api/v1/admin/readiness/export` | `readiness:manage` · feature `placements` | college | search | Export the readiness board, one row per student (minors never; audited) |
 | `GET /api/v1/legal/:doc` | public | college | — | The college’s privacy policy or terms, with its details filled in (public) |
 | `GET /api/v1/admin/legal` | `tenant:branding` | college | — | The college’s legal details (legal name, address, grievance officer) |
 | `GET /api/v1/admin/retention` | `tenant:settings` | college | — | Whether accounts unused for some months are deleted (and after how many) |

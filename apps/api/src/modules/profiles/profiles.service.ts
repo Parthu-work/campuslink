@@ -396,6 +396,44 @@ export class ProfilesService {
     return rows.map((r) => String(r.userId));
   }
 
+  /**
+   * Readiness (prompt 2, G5): active, verified students (not alumni), optionally of one branch or
+   * batch, with whether each is a minor (minors are never ranked).
+   */
+  async students(
+    filter: { branch?: string | undefined; gradYear?: number | undefined } = {},
+    now = new Date(),
+  ): Promise<
+    { userId: string; name: string; branch: string | null; gradYear: number | null; minor: boolean }[]
+  > {
+    const rows = await ProfileModel.find({
+      verified: true,
+      roles: 'STUDENT',
+      ...(filter.branch ? { branch: filter.branch } : {}),
+      ...(filter.gradYear ? { gradYear: filter.gradYear } : {}),
+    })
+      .select('userId name roles branch gradYear minorUntil')
+      .limit(20_000)
+      .lean();
+    const students = rows.filter((r) => !r.roles.includes('ALUMNI'));
+    const active = new Set(
+      (
+        await UserModel.find({ _id: { $in: students.map((r) => r.userId) }, status: 'active' })
+          .select('_id')
+          .lean()
+      ).map((u) => String(u._id)),
+    );
+    return students
+      .filter((r) => active.has(String(r.userId)))
+      .map((r) => ({
+        userId: String(r.userId),
+        name: r.name,
+        branch: r.branch ?? null,
+        gradYear: r.gradYear ?? null,
+        minor: !!r.minorUntil && r.minorUntil.getTime() > now.getTime(),
+      }));
+  }
+
   async isActiveMember(userId: string): Promise<boolean> {
     return !!(await ProfileModel.exists({ userId, verified: true }));
   }

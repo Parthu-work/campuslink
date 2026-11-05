@@ -759,6 +759,53 @@ export class RoadmapsService {
     return out;
   }
 
+  /**
+   * Readiness (prompt 2, G5): each member's target roadmap (the one with a weekly goal, else the one
+   * they touched last) with the steps done of its published version.
+   */
+  async targetsFor(
+    userIds: string[],
+  ): Promise<Map<string, { roadmapId: string; slug: string; title: string; done: number; total: number }>> {
+    const progress = await RoadmapProgressModel.find({ userId: { $in: userIds.map(oid) } })
+      .limit(100_000)
+      .lean<(ProgressDoc & { updatedAt?: Date })[]>();
+    const rank = (p: ProgressDoc & { updatedAt?: Date }) =>
+      [p.nodesPerWeek > 0 ? 1 : 0, p.updatedAt ? new Date(p.updatedAt).getTime() : 0] as const;
+    const best = new Map<string, ProgressDoc & { updatedAt?: Date }>();
+    for (const p of progress) {
+      const u = String(p.userId);
+      const cur = best.get(u);
+      const [g, t] = rank(p);
+      if (!cur || g > rank(cur)[0] || (g === rank(cur)[0] && t > rank(cur)[1])) best.set(u, p);
+    }
+    const roadmapIds = [...new Set([...best.values()].map((p) => String(p.roadmapId)))];
+    const roadmaps = await RoadmapModel.find({ _id: { $in: roadmapIds.map(oid) } }).lean<RoadmapDoc[]>();
+    const nodes = new Map<string, { r: RoadmapDoc; ids: Set<string> }>();
+    for (const r of roadmaps) {
+      if (!isLive(r) || r.publishedVersion === null || r.publishedVersion === undefined) continue;
+      const v = await RoadmapVersionModel.findOne({ roadmapId: r._id, version: r.publishedVersion })
+        .select('content.nodes.id')
+        .lean<VersionDoc>();
+      nodes.set(String(r._id), { r, ids: new Set(v?.content.nodes.map((n) => n.id) ?? []) });
+    }
+    const out = new Map<
+      string,
+      { roadmapId: string; slug: string; title: string; done: number; total: number }
+    >();
+    for (const [u, p] of best) {
+      const n = nodes.get(String(p.roadmapId));
+      if (!n || !n.ids.size) continue;
+      out.set(u, {
+        roadmapId: String(n.r._id),
+        slug: n.r.slug,
+        title: n.r.title,
+        done: p.done.filter((d) => !!d.nodeId && n.ids.has(d.nodeId)).length,
+        total: n.ids.size,
+      });
+    }
+    return out;
+  }
+
   private async liveContent(id: string) {
     const r = await this.byId(id);
     if (!isLive(r) || r.publishedVersion === null) throw notFound('Roadmap');

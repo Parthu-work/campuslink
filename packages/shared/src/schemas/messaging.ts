@@ -130,6 +130,8 @@ export const NOTIFICATION_TYPES = [
   'account_inactive',
   // Prompt 2, G2: a reviewer commented on your résumé.
   'resume_comment',
+  // Prompt 2, G5: the placement cell nudges a student before a drive closes (readiness board).
+  'readiness_nudge',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -215,6 +217,7 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   weekly_digest: 'reminders',
   account_inactive: 'reminders',
   resume_comment: 'requests',
+  readiness_nudge: 'placements',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;

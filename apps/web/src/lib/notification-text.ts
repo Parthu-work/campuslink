@@ -146,6 +146,8 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return '/settings/privacy';
       case 'resume_comment':
         return `/resume/${d.resumeId ?? ''}`;
+      case 'readiness_nudge':
+        return '/readiness';
       default:
         return '/sessions';
     }

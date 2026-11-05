@@ -46,14 +46,14 @@ describe('role-aware navigation', () => {
       ]);
     expect(admin([Role.COLLEGE_ADMIN])).toEqual([
       ['people', ['users', 'verification', 'imports', 'list', 'onboarding']],
-      ['placements', ['placements', 'offers', 'interviewQuestions']],
+      ['placements', ['placements', 'offers', 'interviewQuestions', 'readiness']],
       ['community', ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards']],
       ['insights', ['analytics', 'reports']],
       ['college', ['branding', 'features', 'ai', 'billing', 'support', 'audit']],
     ]);
     // Faculty review the interview question bank (prompt 2, G3).
     expect(admin([Role.FACULTY])).toEqual([
-      ['placements', ['interviewQuestions']],
+      ['placements', ['interviewQuestions', 'readiness']],
       ['community', ['moderation']],
       ['insights', ['analytics']],
     ]);
@@ -213,5 +213,29 @@ describe('safeReturnPath', () => {
       `/${'a'.repeat(600)}`,
     ])
       expect(safeReturnPath(bad)).toBeNull();
+  });
+});
+
+describe('readiness (prompt 2, G5)', () => {
+  const ids = (roles: Role[]) =>
+    buildNav(
+      { roles, permissions: perms(roles), verified: true },
+      new Set([...today, 'readiness']),
+    ).menu.flatMap((g) => g.items.map((i) => i.id));
+  it('students find their score in the menu; alumni and staff do not', () => {
+    expect(ids([Role.STUDENT])).toContain('readiness');
+    expect(ids([Role.ALUMNI])).not.toContain('readiness');
+    expect(ids([Role.FACULTY])).not.toContain('readiness');
+  });
+  it('the board is a placements section for the TPO and faculty, hidden when placements are off', () => {
+    const admin = (roles: Role[], features?: { placements: boolean }) =>
+      buildNav(
+        { roles, permissions: perms(roles), verified: true, ...(features ? { features } : {}) },
+        today,
+      ).admin.flatMap((g) => g.items.map((i) => i.id));
+    expect(admin([Role.TPO])).toContain('readiness');
+    expect(admin([Role.FACULTY])).toContain('readiness');
+    expect(admin([Role.TPO], { placements: false })).not.toContain('readiness');
+    expect(admin([Role.ALUMNI])).not.toContain('readiness');
   });
 });

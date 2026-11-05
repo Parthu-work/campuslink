@@ -1042,6 +1042,60 @@ export class PlacementsService {
     }));
   }
 
+  /**
+   * Readiness (prompt 2, G5): the academic cut-offs of the college's own drives since a date (drafts
+   * and cancelled drives excluded), for the eligibility headroom.
+   */
+  async cutoffsSince(since: Date) {
+    const rows = await PlacementDriveModel.find({
+      status: { $nin: ['draft', 'cancelled'] },
+      registrationCloseAt: { $gte: since },
+      $or: [{ 'eligibility.minCgpa': { $ne: null } }, { 'eligibility.maxActiveBacklogs': { $ne: null } }],
+    })
+      .select('eligibility')
+      .limit(2000)
+      .lean<DriveDoc[]>();
+    return rows.map((d) => ({
+      branches: d.eligibility?.branches ?? [],
+      minCgpa: d.eligibility?.minCgpa ?? null,
+      maxActiveBacklogs: d.eligibility?.maxActiveBacklogs ?? null,
+    }));
+  }
+
+  /**
+   * Readiness (prompt 2, G5): for each member, the open drive they are eligible for and have not
+   * registered for whose registration closes first, before `until`.
+   */
+  async nextClosingFor(
+    userIds: string[],
+    until: Date,
+    now = new Date(),
+  ): Promise<Map<string, { driveId: string; company: string; closesAt: Date }>> {
+    const wanted = new Set(userIds);
+    const out = new Map<string, { driveId: string; company: string; closesAt: Date }>();
+    const drives = await PlacementDriveModel.find({
+      status: 'open',
+      registrationCloseAt: { $gt: now, $lte: until },
+    })
+      .sort({ registrationCloseAt: 1 })
+      .limit(100)
+      .lean<DriveDoc[]>();
+    for (const d of drives) {
+      const registered = new Set(
+        (
+          await DriveRegistrationModel.find({ driveId: d._id, status: { $ne: 'withdrawn' } })
+            .select('userId')
+            .lean()
+        ).map((r) => String(r.userId)),
+      );
+      const company = await this.companyName(d);
+      for (const u of await this.eligibleStudents(d))
+        if (wanted.has(u) && !registered.has(u) && !out.has(u))
+          out.set(u, { driveId: String(d._id), company, closesAt: d.registrationCloseAt });
+    }
+    return out;
+  }
+
   /** Admin overview: drives whose registration closes in the next 48 hours. */
   async closingSoon() {
     return PlacementDriveModel.countDocuments({

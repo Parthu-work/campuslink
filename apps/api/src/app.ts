@@ -51,6 +51,15 @@ import { RESUME_RENDER_JOB, ResumesService } from './modules/resumes/resumes.ser
 import { resumeRoutes } from './modules/resumes/resumes.routes.js';
 import { INTERVIEW_TRANSCRIBE_JOB, InterviewsService } from './modules/interviews/interviews.service.js';
 import { interviewRoutes } from './modules/interviews/interviews.routes.js';
+import { ReadinessService } from './modules/readiness/readiness.service.js';
+import { readinessRoutes } from './modules/readiness/readiness.routes.js';
+import {
+  eligibilityComponent,
+  interviewsComponent,
+  mentorshipComponent,
+  resumeComponent,
+  roadmapComponent,
+} from './modules/readiness/components/index.js';
 import { DIGEST_JOB, DigestService } from './modules/notifications/digest.service.js';
 import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
 import { OtpService } from './modules/verification/otp.service.js';
@@ -851,6 +860,28 @@ export function createApp({
   requestsService.interviewOwned = (userId, interviewId) => interviewsService.owns(userId, interviewId);
   requestsService.onMockRequested = (menteeId, interviewId) =>
     interviewsService.mockBooked(menteeId, interviewId);
+
+  // ── Placement readiness (prompt 2, G5) ─────────────────────────────
+  // Each component reads through its owning module's service. Practice mastery (G4) registers its
+  // component here once modules/practice/ exists; until then it is skipped and the rest scaled up.
+  const readinessService = new ReadinessService({
+    notifications: notificationsService,
+    students: (filter) => profilesService.students(filter),
+    cohort: async (userId) => (await profilesService.cohortOf([userId])).get(userId) ?? null,
+    nextClosing: (userIds, until) => placementsService.nextClosingFor(userIds, until),
+  });
+  readinessService.register(resumeComponent((ids) => resumesService.bestReportsFor(ids)));
+  readinessService.register(interviewsComponent((ids, since) => interviewsService.completedFor(ids, since)));
+  readinessService.register(roadmapComponent((ids) => roadmapsService.targetsFor(ids)));
+  readinessService.register(
+    mentorshipComponent((ids, since) => sessionsService.completedAsMentee(ids, since)),
+  );
+  readinessService.register(
+    eligibilityComponent({
+      cutoffs: (since) => placementsService.cutoffsSince(since),
+      academics: (ids) => academicsService.factsFor(ids),
+    }),
+  );
   const materialsService = new MaterialsService({
     files: filesService,
     subjects: subjectsService,
@@ -1038,6 +1069,7 @@ export function createApp({
     chatService,
     resumesService,
     interviewsService,
+    readinessService,
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1098,6 +1130,7 @@ export function createApp({
   privacyService.register('support', hook(supportService));
   privacyService.register('resumes', hook(resumesService));
   privacyService.register('interviews', hook(interviewsService));
+  privacyService.register('readiness', hook(readinessService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -1282,6 +1315,10 @@ export function createApp({
   app.use(API_PREFIX, defineModule('support', supportRoutes(supportService, filesService), pipeline));
   app.use(API_PREFIX, defineModule('resumes', resumeRoutes(resumesService), pipeline));
   app.use(API_PREFIX, defineModule('interviews', interviewRoutes(interviewsService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('readiness', withFeature('placements', readinessRoutes(readinessService)), pipeline),
+  );
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -1380,6 +1417,7 @@ export function createApp({
     privacy: privacyService,
     resumes: resumesService,
     interviews: interviewsService,
+    readiness: readinessService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,

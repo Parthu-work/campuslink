@@ -73,6 +73,9 @@ import type {
   InterviewView,
   ResumeSummaryView,
   ResumeView,
+  ReadinessView,
+  ReadinessBoardView,
+  ReadinessConfigView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -763,4 +766,23 @@ export const interviewQuestions = (status: InterviewQuestionStatus) =>
     queryKey: ['interview-questions', status],
     queryFn: ({ signal }) =>
       api.get<InterviewQuestionView[]>(`/admin/interview-questions?status=${status}`, signal),
+  });
+
+// Placement readiness (prompt 2, G5): the student's own score; the placement cell's board.
+export const readiness = () =>
+  queryOptions({
+    queryKey: ['readiness'],
+    queryFn: ({ signal }) => api.get<ReadinessView>('/me/readiness', signal),
+  });
+
+export const readinessBoard = (qs: string) =>
+  queryOptions({
+    queryKey: ['readiness-board', qs],
+    queryFn: ({ signal }) => api.get<ReadinessBoardView>(`/admin/readiness${qs ? `?${qs}` : ''}`, signal),
+  });
+
+export const readinessConfig = () =>
+  queryOptions({
+    queryKey: ['readiness-config'],
+    queryFn: ({ signal }) => api.get<ReadinessConfigView>('/admin/readiness/config', signal),
   });
