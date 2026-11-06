@@ -123,4 +123,10 @@ export { GrowthSettingsModel, PublicPageModel } from './public-pages/public-page
 export { ParentDigestModel } from './notifications/parent-digest.service.js';
 // [slot: G9]
 // [slot: A G10 G11 G13]
+export {
+  CompanyGraphModel,
+  ExperienceModel,
+  ExperiencePromptModel,
+  MentorOutcomeModel,
+} from './graph/graph.model.js';
 // [slot: B G12]

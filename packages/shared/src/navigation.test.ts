@@ -62,6 +62,7 @@ describe('role-aware navigation', () => {
           ...['placements', 'offers', 'interviewQuestions', 'readiness', 'practiceBank'],
           // [slot: G9]
           // [slot: A G10 G11 G13]
+          'experiences',
           // [slot: B G12]
         ],
       ],
@@ -119,6 +120,7 @@ describe('role-aware navigation', () => {
           ...['interviewQuestions', 'readiness', 'practiceBank'],
           // [slot: G9]
           // [slot: A G10 G11 G13]
+          'experiences',
           // [slot: B G12]
         ],
       ],

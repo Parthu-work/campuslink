@@ -333,6 +333,26 @@ export class ReferralsService {
     };
   }
 
+  /**
+   * Prompt 2, G10 (the Placement Graph and outcome-proven matching): every referral an alumnus
+   * made, with what the student reported afterwards. Aggregated and suppressed by the caller.
+   */
+  async outcomeRows(): Promise<
+    { referrerId: string; requesterId: string; company: string; at: Date; outcome: ReferralOutcome | null }[]
+  > {
+    const rows = await ReferralRequestModel.find({ status: 'referred' })
+      .select('referrerId requesterId company respondedAt createdAt outcome')
+      .limit(100_000)
+      .lean<ReferralDoc[]>();
+    return rows.map((r) => ({
+      referrerId: String(r.referrerId),
+      requesterId: String(r.requesterId),
+      company: r.company,
+      at: r.respondedAt ?? r.createdAt,
+      outcome: (r.outcome ?? null) as ReferralOutcome | null,
+    }));
+  }
+
   async onExpire(job: TenantJob) {
     await this.expireOne(String(job.referralId));
   }

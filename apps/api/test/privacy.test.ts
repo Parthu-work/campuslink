@@ -464,6 +464,8 @@ describe('deletion', () => {
         'parentDigest',
         // [slot: G9]
         // [slot: A G10 G11 G13]
+        'interviewExperiences',
+        'mentorOutcomes',
         // [slot: B G12]
       ]),
     );

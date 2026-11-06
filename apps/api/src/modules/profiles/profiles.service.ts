@@ -540,6 +540,27 @@ export class ProfilesService {
     return rows.map((r) => ({ company: r.company, n: r.n }));
   }
 
+  /**
+   * Prompt 2, G10 (the Placement Graph): verified alumni whose company every member may see, with
+   * that company. Counted per company by the caller; nobody who hid their company is included.
+   */
+  async alumniCompanies(): Promise<{ userId: string; companyKey: string; company: string }[]> {
+    const rows = await ProfileModel.find({
+      verified: true,
+      roles: 'ALUMNI',
+      companyKey: { $nin: ['', null] },
+      'visibility.company': 'members',
+    })
+      .select('userId company companyKey')
+      .limit(50_000)
+      .lean<ProfileDoc[]>();
+    return rows.map((p) => ({
+      userId: String(p.userId),
+      companyKey: p.companyKey ?? '',
+      company: p.company ?? '',
+    }));
+  }
+
   async batchFacts(branch: string, gradYear: number) {
     const [total, companies] = await Promise.all([
       ProfileModel.countDocuments({ verified: true, branch, gradYear }),

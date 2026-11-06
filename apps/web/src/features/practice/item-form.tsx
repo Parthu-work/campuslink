@@ -30,15 +30,26 @@ import { toast } from '../../lib/toast';
  * Write a practice question, or (reviewers) correct one and tag its companies (prompt 2, G4).
  * The same rules as the API (`itemProblem`) run here first, with the problem in the member's language.
  */
-export function ItemForm({ item, onClose }: { item?: PracticeItemView; onClose: () => void }) {
+export function ItemForm({
+  item,
+  onClose,
+  prefill,
+  onSaved,
+}: {
+  item?: PracticeItemView;
+  onClose: () => void;
+  /** Prompt 2, G10: a question from an interview write-up, to be written up as a practice item. */
+  prefill?: { text: string; companies: string[] };
+  onSaved?: (saved: PracticeItemView) => void;
+}) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const reviewer = useCan('practice:review');
   const [kind, setKind] = useState<PracticeKind>(item?.kind ?? 'mcq');
   const [topic, setTopic] = useState<PracticeTopic>(item?.topic ?? 'percentages');
   const [difficulty, setDifficulty] = useState<PracticeDifficulty>(item?.difficulty ?? 'medium');
-  const [companies, setCompanies] = useState<string[]>(item?.companies ?? []);
-  const [text, setText] = useState(item?.text ?? '');
+  const [companies, setCompanies] = useState<string[]>(item?.companies ?? prefill?.companies ?? []);
+  const [text, setText] = useState(item?.text ?? prefill?.text ?? '');
   const [code, setCode] = useState(item?.code ?? '');
   const [codeLanguage, setCodeLanguage] = useState<CodeLanguage | ''>(item?.codeLanguage ?? '');
   const [options, setOptions] = useState<string[]>(item?.options.length ? item.options : ['', '', '', '']);
@@ -86,6 +97,7 @@ export function ItemForm({ item, onClose }: { item?: PracticeItemView; onClose: 
             ? t('practice.form.sentForReview')
             : t('practice.form.added'),
       );
+      onSaved?.(saved);
       onClose();
     },
     onError: (e) => setError(e instanceof ApiError ? e.message : t('errors.generic')),

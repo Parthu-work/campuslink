@@ -135,6 +135,10 @@ const load = {
   growthAdmin: withPack('share', () => import('../features/share/growth-admin')),
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  // Prompt 2, G10: company pages and the Interview Experience Bank, strings in the `moat` pack.
+  companies: withPack('moat', () => import('../features/companies/companies')),
+  shareExperience: withPack('moat', () => import('../features/companies/share-experience')),
+  experiencesAdmin: withPack('moat', () => import('../features/companies/experiences-admin')),
   // [slot: B G12]
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
@@ -568,6 +572,35 @@ function collegeRoutes(): RouteObject[] {
           ]),
           // [slot: G9]
           // [slot: A G10 G11 G13]
+          // The moat data (prompt 2, G10): company pages and seniors' interview write-ups.
+          screen(
+            load.companies,
+            'CompaniesPage',
+            inFeature('placements', 'companies:view'),
+            at('/companies'),
+            () => [qc.ensureQueryData(q.companies())],
+          ),
+          screen(
+            load.companies,
+            'CompanyPage',
+            inFeature('placements', 'companies:view'),
+            at('/companies/:key'),
+            ({ key }) => (key ? [qc.ensureQueryData(q.company(key))] : []),
+          ),
+          still(
+            screen(
+              load.shareExperience,
+              'ShareExperiencePage',
+              inFeature('placements', 'experiences:share'),
+              at('/experiences/new'),
+            ),
+          ),
+          screen(
+            load.shareExperience,
+            'MyExperiencesPage',
+            inFeature('placements', 'experiences:share'),
+            at('/experiences'),
+          ),
           // [slot: B G12]
           screen(
             load.studyGroups,
@@ -738,6 +771,13 @@ function collegeRoutes(): RouteObject[] {
             ]),
             // [slot: G9]
             // [slot: A G10 G11 G13]
+            // Interview write-ups waiting for review (prompt 2, G10).
+            screen(
+              load.experiencesAdmin,
+              'ExperiencesAdmin',
+              inFeature('placements', 'experiences:review'),
+              at('experiences'),
+            ),
             // [slot: B G12]
             screen(
               load.reports,

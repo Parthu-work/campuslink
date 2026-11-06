@@ -50,6 +50,8 @@ export * from './schemas/habits.js';
 export * from './schemas/growth.js';
 // [slot: G9]
 // [slot: A G10 G11 G13]
+export * from './constants/graph.js';
+export * from './schemas/graph.js';
 // [slot: B G12]
 export * from './schemas/legal.js';
 export * from './schemas/readiness.js';

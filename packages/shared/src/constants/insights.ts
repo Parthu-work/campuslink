@@ -47,6 +47,9 @@ export const PRODUCT_EVENTS = [
   'referral_outcome_reported',
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  // Prompt 2, G10: the moat data (company pages are counted once a page a day per member).
+  'company_page_viewed',
+  'experience_shared',
   // [slot: B G12]
 ] as const;
 export type ProductEventName = (typeof PRODUCT_EVENTS)[number];

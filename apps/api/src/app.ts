@@ -89,6 +89,9 @@ import { backgroundAuth as backgroundAuthOf } from './modules/users/users.servic
 import { findTenantById as tenantById } from './modules/tenants/tenant.cache.js';
 // [slot: G9]
 // [slot: A G10 G11 G13]
+import { EXPERIENCE_PROMPT_JOB, GRAPH_JOB, GraphService } from './modules/graph/graph.service.js';
+import { ExperiencesService } from './modules/graph/experiences.service.js';
+import { graphRoutes } from './modules/graph/graph.routes.js';
 // [slot: B G12]
 import {
   DisabledCodeRunner,
@@ -1220,6 +1223,50 @@ export function createApp({
 
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  // ── The moat data (prompt 2, G10) ─────────────────────────────
+  // The Interview Experience Bank: verified authors, reviewed, then moderated like any content.
+  const experiencesService = new ExperiencesService({
+    notifications: notificationsService,
+    verifiedOffers: (id) => offersService.verifiedOf(id),
+    companiesSat: (id) => placementsService.companiesSat(id),
+    cohortOf: (ids) => profilesService.cohortOf(ids),
+    suggestInterviewQuestions: (qs) => interviewsService.suggestFromExperience(qs),
+  });
+  moderationService.register('experience', experiencesService.handler);
+  safetyService.registerTarget('experience', (viewer, id) =>
+    moderationService.reportTarget('experience', viewer, id),
+  );
+  // The Placement Graph, rebuilt nightly per college from each owning module's verified records.
+  const graphService = new GraphService({
+    logger,
+    jobs: queue,
+    notifications: notificationsService,
+    experiences: experiencesService,
+    offers: () => offersService.graphRows(),
+    drives: () => placementsService.graphRounds(),
+    referrals: () => referralsService.outcomeRows(),
+    alumni: () => profilesService.alumniCompanies(),
+    mentors: () => mentorsService.acceptingIds(),
+    sessions: async () => (await sessionsService.completedSince(new Date(0))).sessions,
+    companies: async () =>
+      (await placementsService.recruitingCompanies()).map((c) => ({ key: c.key, name: c.name })),
+    branchOf: async (ids) =>
+      new Map([...(await profilesService.cohortOf(ids))].map(([id, c]) => [id, c.branch])),
+    ownBranch: async (id) => (await profilesService.own(id)).branch,
+  });
+  queue.register(
+    GRAPH_JOB,
+    gatedJob('placements', async (data) => {
+      await graphService.run(data);
+    }),
+  );
+  queue.register(
+    EXPERIENCE_PROMPT_JOB,
+    gatedJob('placements', (data) => graphService.onPrompt(data)),
+  );
+  // Outcome-proven matching: last night's mentor outcomes, only while placements are on.
+  mentorsService.outcomeEvidence = async (_viewer, mentee, ids) =>
+    (await featureEnabled('placements')) ? graphService.evidence(mentee, ids) : new Map();
   // [slot: B G12]
 
   // Faculty insights and the admin AI dashboard (spec step 5): aggregates only.
@@ -1366,6 +1413,8 @@ export function createApp({
     referralsService,
     // [slot: G9]
     // [slot: A G10 G11 G13]
+    graphService,
+    experiencesService,
     // [slot: B G12]
   ])
     svc.track = productInsights.track;
@@ -1440,6 +1489,8 @@ export function createApp({
   privacyService.register('parentDigest', hook(parentDigestService));
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  privacyService.register('interviewExperiences', hook(experiencesService));
+  privacyService.register('mentorOutcomes', hook(graphService));
   // [slot: B G12]
   privacyService.register('files', hook(filesService));
 
@@ -1654,6 +1705,10 @@ export function createApp({
   app.use(API_PREFIX, defineModule('parent-digest', parentDigestRoutes(parentDigestService), pipeline));
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  app.use(
+    API_PREFIX,
+    defineModule('graph', withFeature('placements', graphRoutes(graphService, experiencesService)), pipeline),
+  );
   // [slot: B G12]
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
@@ -1772,6 +1827,8 @@ export function createApp({
     parentDigest: parentDigestService,
     // [slot: G9]
     // [slot: A G10 G11 G13]
+    graph: graphService,
+    experiences: experiencesService,
     // [slot: B G12]
     aiTasks: aiTasksService,
     inactivity: inactivityService,

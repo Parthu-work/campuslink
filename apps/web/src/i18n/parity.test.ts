@@ -22,6 +22,7 @@ const PACK_USERS: Record<string, string[]> = {
   share: ['/features/share/'],
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  moat: ['/features/companies/'],
   // [slot: B G12]
 };
 

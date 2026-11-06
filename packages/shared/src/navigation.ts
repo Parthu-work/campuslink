@@ -27,6 +27,7 @@ export type NavId =
   | 'captain'
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  | 'companies'
   // [slot: B G12]
   | 'requests'
   | 'review'
@@ -109,6 +110,7 @@ export type AdminSectionId =
   | 'growth'
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  | 'experiences'
   // [slot: B G12]
   | 'reports'
   | 'moderation'
@@ -171,6 +173,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('growth', '/admin/growth', 'onboarding:manage', 'people'),
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  // Interview write-ups waiting for review (prompt 2, G10).
+  section('experiences', '/admin/experiences', 'experiences:review', 'placements'),
   // [slot: B G12]
   section('analytics', '/admin/analytics', 'analytics:cohort', 'insights'),
   section('reports', '/admin/reports', 'analytics:tenant', 'insights'),
@@ -235,6 +239,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   captain: d('captain', '/captain', 'you', ['captains:class']),
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  // Company pages from the Placement Graph and the Interview Experience Bank (prompt 2, G10).
+  companies: d('companies', '/companies', 'explore', ['companies:view']),
   // [slot: B G12]
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
@@ -285,6 +291,7 @@ export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
   peers: 'peerMentors',
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  companies: 'placements',
   // [slot: B G12]
 };
 
@@ -300,6 +307,7 @@ export const ADMIN_SECTION_FEATURE: Partial<Record<AdminSectionId, Feature>> = {
   peers: 'peerMentors',
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  experiences: 'placements',
   // [slot: B G12]
 };
 
@@ -374,6 +382,7 @@ const MENU_ORDER: readonly NavId[] = [
   'captain',
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  'companies',
   // [slot: B G12]
   'progress',
   'rewards',

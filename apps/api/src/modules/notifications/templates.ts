@@ -219,6 +219,18 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     },
     // [slot: G9]
     // [slot: A G10 G11 G13]
+    experience_prompt: {
+      title: 'Help your juniors: share your {company} interview',
+      body: 'Write down the rounds and questions while you remember them. The placement cell reviews it before juniors read it.',
+    },
+    experience_published: {
+      title: 'Your {company} interview write-up is published',
+      body: 'Juniors preparing for {company} can read it now. Thank you for sharing.',
+    },
+    experience_returned: {
+      title: 'Your {company} write-up needs a change',
+      body: 'The reviewer sent it back with a note. Open it to see why.',
+    },
     // [slot: B G12]
     weekly_next_step: {
       title: 'Your next step for this week',
@@ -492,6 +504,18 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     },
     // [slot: G9]
     // [slot: A G10 G11 G13]
+    experience_prompt: {
+      title: 'జూనియర్లకు సహాయం చేయండి: మీ {company} ఇంటర్వ్యూ గురించి రాయండి',
+      body: 'గుర్తున్నప్పుడే రౌండ్లు, ప్రశ్నలు రాయండి. జూనియర్లు చదివే ముందు ప్లేస్‌మెంట్ సెల్ దాన్ని సమీక్షిస్తుంది.',
+    },
+    experience_published: {
+      title: 'మీ {company} ఇంటర్వ్యూ అనుభవం ప్రచురించబడింది',
+      body: '{company} కోసం సిద్ధమవుతున్న జూనియర్లు ఇప్పుడు దాన్ని చదవగలరు. పంచుకున్నందుకు ధన్యవాదాలు.',
+    },
+    experience_returned: {
+      title: 'మీ {company} అనుభవంలో ఒక మార్పు అవసరం',
+      body: 'సమీక్షకులు ఒక గమనికతో దాన్ని తిరిగి పంపారు. కారణం చూడటానికి తెరవండి.',
+    },
     // [slot: B G12]
     weekly_next_step: {
       title: 'ఈ వారం మీ తదుపరి అడుగు',
@@ -750,6 +774,18 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     },
     // [slot: G9]
     // [slot: A G10 G11 G13]
+    experience_prompt: {
+      title: 'जूनियर्स की मदद करें: अपना {company} इंटरव्यू साझा करें',
+      body: 'याद रहते ही राउंड और सवाल लिख लें। जूनियर्स के पढ़ने से पहले प्लेसमेंट सेल इसकी समीक्षा करता है।',
+    },
+    experience_published: {
+      title: 'आपका {company} इंटरव्यू अनुभव प्रकाशित हो गया',
+      body: '{company} की तैयारी कर रहे जूनियर्स अब इसे पढ़ सकते हैं। साझा करने के लिए धन्यवाद।',
+    },
+    experience_returned: {
+      title: 'आपके {company} अनुभव में एक बदलाव चाहिए',
+      body: 'समीक्षक ने इसे एक नोट के साथ लौटाया है। कारण देखने के लिए इसे खोलें।',
+    },
     // [slot: B G12]
     weekly_next_step: {
       title: 'इस हफ़्ते का आपका अगला कदम',
@@ -1030,6 +1066,13 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/referrals';
     // [slot: G9]
     // [slot: A G10 G11 G13]
+    // Prompt 2, G10: the Interview Experience Bank.
+    case 'experience_prompt':
+      return `/experiences/new${data.companyKey ? `?company=${encodeURIComponent(data.companyKey)}` : ''}`;
+    case 'experience_published':
+      return data.companyKey ? `/companies/${encodeURIComponent(data.companyKey)}` : '/companies';
+    case 'experience_returned':
+      return '/experiences';
     // [slot: B G12]
     case 'buddy_matched':
     case 'peer_mentor_nominated':

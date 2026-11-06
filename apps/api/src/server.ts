@@ -14,6 +14,7 @@ import { PeersService } from './modules/peers/peers.service.js';
 import { ParentDigestService } from './modules/notifications/parent-digest.service.js';
 // [slot: G9]
 // [slot: A G10 G11 G13]
+import { GraphService } from './modules/graph/graph.service.js';
 // [slot: B G12]
 import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
@@ -196,6 +197,13 @@ async function main() {
   }
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  // The Placement Graph (prompt 2, G10): hourly; one run per college a day, from 02:00 IST.
+  const graphTick = () =>
+    GraphService.enqueueNightly(jobs).catch((err: unknown) => logger.error({ err }, 'graph tick failed'));
+  if (runsJobs) {
+    setTimeout(graphTick, 240_000).unref();
+    setInterval(graphTick, 3600_000).unref();
+  }
   // [slot: B G12]
   if (runsJobs) {
     setTimeout(nextStepTick, 150_000).unref();

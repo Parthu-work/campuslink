@@ -137,6 +137,10 @@ export const ALL_PERMISSIONS = [
   'parents:digest',
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  // The moat data (prompt 2, G10): company pages and the Interview Experience Bank.
+  'companies:view',
+  'experiences:share',
+  'experiences:review',
   // [slot: B G12]
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
@@ -243,6 +247,12 @@ export const PERMISSIONS: Record<Permission, string> = {
   'parents:digest': 'Send a monthly summary to a parent, with their confirmation',
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  'companies:view':
+    'See company pages: where seniors were placed, rounds, alumni there and interview write-ups',
+  'experiences:share':
+    'Share one’s own interview experience (with a verified offer, a drive or as an alumnus)',
+  'experiences:review':
+    'Review interview write-ups before they are published and send their questions to the question banks',
   // [slot: B G12]
   'support:manage': 'Answer and close problem reports sent to the college',
   'placements:view': 'See placement drives and the eligibility rules',
@@ -294,6 +304,8 @@ const STUDENT: Permission[] = [
   'parents:digest',
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  'companies:view',
+  'experiences:share',
   // [slot: B G12]
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
@@ -344,6 +356,7 @@ const STAFF: Permission[] = [
       p !== 'share:pages' &&
       // [slot: G9]
       // [slot: A G10 G11 G13]
+      p !== 'experiences:share' &&
       // [slot: B G12]
       p !== 'parents:digest',
   ),
@@ -369,6 +382,7 @@ const STAFF: Permission[] = [
   'users:approve',
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  'experiences:review',
   // [slot: B G12]
 ];
 const COLLEGE_ADMIN: Permission[] = ALL_PERMISSIONS.filter((p) => !PLATFORM_PERMISSIONS.includes(p));

@@ -75,6 +75,15 @@ const PACKS = {
   },
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  /** The moat data (prompt 2, G10): company pages, the Interview Experience Bank, outcome reasons. */
+  moat: {
+    sections: ['moat'],
+    load: {
+      en: () => import('./packs/moat.en.json'),
+      te: () => import('./packs/moat.te.json'),
+      hi: () => import('./packs/moat.hi.json'),
+    },
+  },
   // [slot: B G12]
 } satisfies Record<
   string,

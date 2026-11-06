@@ -32,6 +32,7 @@ import { useFeature } from '../../lib/tenant-context';
 import { coverOf } from '../../lib/accent';
 import { SCREEN } from '../../lib/query-client';
 import { MentorStatsLine } from './mentor-stats';
+import { LazyOutcomeReason } from '../companies/lazy';
 
 /**
  * A mentor in a list (§8.4): a large face, what they do and where, their batch, a few topics, their
@@ -117,11 +118,15 @@ function ReasonList({ reasons }: { reasons: MatchReason[] }) {
         <li key={r.kind} className="flex items-start gap-2">
           <Sparkles className="mt-0.5 size-4 flex-none text-brand-ink" aria-hidden />
           <span>
-            {r.kind === 'branch' || r.kind === 'company'
-              ? t(`match.reason.${r.kind}`, { value: r.value })
-              : r.kind === 'available' || r.kind === 'fast_reply'
-                ? t(`match.reason.${r.kind}`)
-                : t(`match.reason.${r.kind}`, { values: r.values.join(', ') })}
+            {r.kind === 'branch' || r.kind === 'company' ? (
+              t(`match.reason.${r.kind}`, { value: r.value })
+            ) : r.kind === 'available' || r.kind === 'fast_reply' ? (
+              t(`match.reason.${r.kind}`)
+            ) : r.kind === 'outcomes' || r.kind === 'referrals' ? (
+              <LazyOutcomeReason reason={r} />
+            ) : (
+              t(`match.reason.${r.kind}`, { values: r.values.join(', ') })
+            )}
           </span>
         </li>
       ))}

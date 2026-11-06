@@ -232,6 +232,89 @@ export class PlacementsService {
     }));
   }
 
+  /**
+   * Prompt 2, G10 (the Placement Graph): drives that started, with their rounds and every
+   * registration's results as the placement cell entered them, for aggregates only.
+   */
+  async graphRounds(): Promise<
+    {
+      driveId: string;
+      companyKey: string;
+      companyName: string;
+      driveDate: Date;
+      rounds: string[];
+      registrations: {
+        userId: string | null;
+        branch: string | null;
+        results: { round: number; result: string }[];
+        final: string;
+      }[];
+    }[]
+  > {
+    const drives = await PlacementDriveModel.find({ status: { $in: ['in_progress', 'completed'] } })
+      .select('companyId driveDate rounds')
+      .sort({ driveDate: -1 })
+      .limit(2000)
+      .lean<DriveDoc[]>();
+    if (!drives.length) return [];
+    const [companies, regs] = await Promise.all([
+      PlacementCompanyModel.find({ _id: { $in: drives.map((d) => d.companyId) } })
+        .select('name companyKey')
+        .lean<PlacementCompanyDoc[]>(),
+      DriveRegistrationModel.find({
+        driveId: { $in: drives.map((d) => d._id) },
+        status: { $ne: 'withdrawn' },
+      })
+        .select('driveId userId branch roundResults final')
+        .limit(200_000)
+        .lean<RegistrationDoc[]>(),
+    ]);
+    const company = new Map(companies.map((c) => [String(c._id), c]));
+    const byDrive = new Map<string, RegistrationDoc[]>();
+    for (const r of regs) byDrive.set(String(r.driveId), [...(byDrive.get(String(r.driveId)) ?? []), r]);
+    return drives.flatMap((d) => {
+      const c = company.get(String(d.companyId));
+      if (!c) return [];
+      return [
+        {
+          driveId: String(d._id),
+          companyKey: c.companyKey,
+          companyName: c.name,
+          driveDate: d.driveDate,
+          rounds: d.rounds.map((r) => r.kind),
+          registrations: (byDrive.get(String(d._id)) ?? []).map((r) => ({
+            userId: r.userId ? String(r.userId) : null,
+            branch: r.branch ?? null,
+            results: r.roundResults.map((x) => ({ round: x.round ?? 0, result: x.result ?? 'pending' })),
+            final: r.final,
+          })),
+        },
+      ];
+    });
+  }
+
+  /** Prompt 2, G10: companies whose drive the member sat (it started), for the Experience Bank. */
+  async companiesSat(userId: string): Promise<{ key: string; name: string }[]> {
+    const regs = await DriveRegistrationModel.find({
+      userId: new Types.ObjectId(userId),
+      status: { $ne: 'withdrawn' },
+    })
+      .select('driveId')
+      .limit(500)
+      .lean<RegistrationDoc[]>();
+    if (!regs.length) return [];
+    const drives = await PlacementDriveModel.find({
+      _id: { $in: regs.map((r) => r.driveId) },
+      status: { $in: ['in_progress', 'completed'] },
+    })
+      .select('companyId')
+      .lean<DriveDoc[]>();
+    const companies = await PlacementCompanyModel.find({ _id: { $in: drives.map((d) => d.companyId) } })
+      .select('name companyKey')
+      .lean<PlacementCompanyDoc[]>();
+    return companies.map((c) => ({ key: c.companyKey, name: c.name }));
+  }
+
   async upsertCompany(body: { name: string; website: string | null; sector: string; notes: string }) {
     const key = companyKey(body.name);
     if (!key) throw badRequest('Give the company a name');
