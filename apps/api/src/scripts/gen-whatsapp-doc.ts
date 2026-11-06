@@ -19,6 +19,8 @@ Variables carry only names, times, session types, company names and counts (and,
 
 Name: the value of \`WHATSAPP_AUTH_TEMPLATE\` (default \`auth_code\`). Category: **authentication**, with a copy-code button. The body is Meta's fixed text; set \`code_expiration_minutes: ${AUTH_TEMPLATE_SETTINGS.code_expiration_minutes}\` and \`add_security_recommendation: ${AUTH_TEMPLATE_SETTINGS.add_security_recommendation}\`. Register it in English, Telugu and Hindi.
 
+**With the Android app (prompt 2, G9): one-tap autofill.** Register the same template's OTP button as \`"otp_type": "ONE_TAP"\` with \`"supported_apps": [{ "package_name": "<ANDROID_PACKAGE_NAME>", "signature_hash": "<ANDROID_SIGNATURE_HASH>" }]\` (the 11-character app hash of the Play signing key; docs/android.md shows how to get it). Meta shows the copy-code button wherever one-tap cannot work (no app, or the app did not ask for the code), so one template serves everyone; the code sent is unchanged.
+
 `;
 const entries = [
   ...Object.entries(WHATSAPP_TEMPLATES).map(([type, t]) => [`\`${type}\``, t] as const),

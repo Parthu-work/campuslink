@@ -64,8 +64,29 @@ const userSchema = new Schema(
       type: new Schema({ stage: Number, at: Date }, { _id: false, strict: 'throw' }),
       default: null,
     },
+    /**
+     * Prompt 2, G9: the college's Google Workspace or Microsoft Entra ID accounts linked to this
+     * member (the provider's stable subject id, so a renamed mailbox still signs in).
+     */
+    ssoIdentities: {
+      type: [
+        new Schema(
+          {
+            provider: { type: String, enum: ['google', 'microsoft'], required: true },
+            subject: { type: String, required: true, maxlength: 255 },
+            linkedAt: { type: Date, required: true },
+          },
+          { _id: false, strict: 'throw' },
+        ),
+      ],
+      default: [],
+    },
   },
   baseSchemaOptions,
+);
+userSchema.index(
+  { tenantId: 1, 'ssoIdentities.provider': 1, 'ssoIdentities.subject': 1 },
+  { unique: true, partialFilterExpression: { 'ssoIdentities.subject': { $type: 'string' } } },
 );
 userSchema.index(
   { tenantId: 1, email: 1 },

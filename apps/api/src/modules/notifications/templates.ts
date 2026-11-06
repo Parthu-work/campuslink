@@ -218,6 +218,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       body: 'Tell us if it led to an interview or an offer. It helps the alumni who refer.',
     },
     // [slot: G9]
+    roster_sync_review: {
+      title: 'The roster sync is waiting for you',
+      body: '{changed} of {total} rows would change. Review the change before it is applied.',
+    },
     // [slot: A G10 G11 G13]
     // [slot: B G12]
     weekly_next_step: {
@@ -491,6 +495,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       body: 'ఇంటర్వ్యూ లేదా ఆఫర్ వచ్చిందో చెప్పండి. రిఫర్ చేసే పూర్వ విద్యార్థులకు ఇది ఉపయోగపడుతుంది.',
     },
     // [slot: G9]
+    roster_sync_review: {
+      title: 'రోస్టర్ సింక్ మీ కోసం వేచి ఉంది',
+      body: '{total} వరుసల్లో {changed} మారుతాయి. వర్తింపజేసే ముందు మార్పును చూడండి.',
+    },
     // [slot: A G10 G11 G13]
     // [slot: B G12]
     weekly_next_step: {
@@ -749,6 +757,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       body: 'बताइए कि इससे इंटरव्यू या ऑफ़र मिला या नहीं। इससे रेफ़र करने वाले पूर्व छात्रों को मदद मिलती है।',
     },
     // [slot: G9]
+    roster_sync_review: {
+      title: 'रोस्टर सिंक आपका इंतज़ार कर रहा है',
+      body: '{total} में से {changed} पंक्तियाँ बदलेंगी। लागू होने से पहले बदलाव देखें।',
+    },
     // [slot: A G10 G11 G13]
     // [slot: B G12]
     weekly_next_step: {
@@ -1029,6 +1041,8 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
     case 'referral_outcome_prompt':
       return '/referrals';
     // [slot: G9]
+    case 'roster_sync_review':
+      return '/admin/imports';
     // [slot: A G10 G11 G13]
     // [slot: B G12]
     case 'buddy_matched':

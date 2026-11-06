@@ -96,6 +96,7 @@ describe('role-aware navigation', () => {
         'college',
         [
           // [slot: G9]
+          'signIn',
           // [slot: A G10 G11 G13]
           // [slot: B G12]
           ...['branding', 'features', 'ai', 'billing', 'support', 'audit'],

@@ -11,7 +11,9 @@ import {
   type ImportField,
   type ImportMapping,
   type ImportPreview,
+  type ImportSourceBody,
 } from '@campuslink/shared';
+import { LazyRosterSync, LazySyncOffer } from '../reach/lazy';
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select } from '../../components/ui/field';
 import { ErrorState } from '../../components/ui/error-state';
@@ -52,15 +54,18 @@ export function ImportsAdmin() {
   const { t } = useTranslation();
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
+  // A Google Sheet or REST source (prompt 2, G9): offered as a scheduled sync once imported.
+  const [remote, setRemote] = useState<ImportSourceBody | null>(null);
   return (
     <div className="grid gap-5">
       {jobId ? (
-        <JobView id={jobId} onNew={() => (setJobId(null), setPreview(null))} />
+        <JobView id={jobId} remote={remote} onNew={() => (setJobId(null), setPreview(null))} />
       ) : preview ? (
         <MappingStep preview={preview} onBack={() => setPreview(null)} onStarted={setJobId} />
       ) : (
-        <SourceStep onPreview={setPreview} />
+        <SourceStep onPreview={(p, r) => (setPreview(p), setRemote(r))} />
       )}
+      <LazyRosterSync />
       <History onOpen={setJobId} current={jobId} />
       <p className="sr-only" aria-live="polite">
         {jobId ? t('admin.running') : ''}
@@ -69,7 +74,11 @@ export function ImportsAdmin() {
   );
 }
 
-function SourceStep({ onPreview }: { onPreview: (p: ImportPreview) => void }) {
+function SourceStep({
+  onPreview,
+}: {
+  onPreview: (p: ImportPreview, remote: ImportSourceBody | null) => void;
+}) {
   const { t } = useTranslation();
   const [source, setSource] = useState<Source>('file');
   const [url, setUrl] = useState('');
@@ -79,11 +88,11 @@ function SourceStep({ onPreview }: { onPreview: (p: ImportPreview) => void }) {
   const [busy, setBusy] = useState(false);
   const [drag, setDrag] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
-  const run = async (fn: () => Promise<ImportPreview>) => {
+  const run = async (fn: () => Promise<ImportPreview>, remote: ImportSourceBody | null = null) => {
     setBusy(true);
     setError(undefined);
     try {
-      onPreview(await fn());
+      onPreview(await fn(), remote);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('errors.generic'));
     } finally {
@@ -147,7 +156,13 @@ function SourceStep({ onPreview }: { onPreview: (p: ImportPreview) => void }) {
           className="grid max-w-xl gap-3"
           onSubmit={(e) => (
             e.preventDefault(),
-            void run(() => api.post<ImportPreview>('/admin/imports/preview/remote', { kind: 'gsheet', url }))
+            void run(
+              () => api.post<ImportPreview>('/admin/imports/preview/remote', { kind: 'gsheet', url }),
+              {
+                kind: 'gsheet',
+                url,
+              },
+            )
           )}
         >
           <Field label={t('admin.gsheetUrl')} hint={t('admin.gsheetHint')}>
@@ -173,14 +188,15 @@ function SourceStep({ onPreview }: { onPreview: (p: ImportPreview) => void }) {
           className="grid max-w-xl gap-3"
           onSubmit={(e) => (
             e.preventDefault(),
-            void run(() =>
-              api.post<ImportPreview>('/admin/imports/preview/remote', {
-                kind: 'rest',
+            void (() => {
+              const body = {
+                kind: 'rest' as const,
                 url,
                 ...(path ? { recordsPath: path } : {}),
                 ...(token ? { bearerToken: token } : {}),
-              }),
-            )
+              };
+              return run(() => api.post<ImportPreview>('/admin/imports/preview/remote', body), body);
+            })()
           )}
         >
           <Field label={t('admin.restUrl')}>
@@ -397,7 +413,7 @@ function MappingStep({
   );
 }
 
-function JobView({ id, onNew }: { id: string; onNew: () => void }) {
+function JobView({ id, remote, onNew }: { id: string; remote: ImportSourceBody | null; onNew: () => void }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [confirm, setConfirm] = useState(false);
@@ -522,6 +538,9 @@ function JobView({ id, onNew }: { id: string; onNew: () => void }) {
           </Button>
         )}
       </div>
+      {remote && j.status === 'completed' && !j.dryRun && j.mapping?.type !== 'academics' && (
+        <LazySyncOffer source={remote} jobId={id} />
+      )}
       {confirm && (
         <Dialog
           open

@@ -24,6 +24,8 @@ import {
   VerificationRequestModel,
 } from '../modules/verification/verification.model.js';
 import { AiSettingsModel } from '../modules/study/ai-settings.model.js';
+import { SsoSettingsModel } from '../modules/auth/sso/sso.service.js';
+import { RosterSyncModel } from '../modules/imports/roster-sync.service.js';
 import { ParentDigestModel } from '../modules/notifications/parent-digest.service.js';
 
 type AnyModel = Model<Record<string, unknown>>;
@@ -78,6 +80,13 @@ export const ENCRYPTED_COLLECTIONS: EncryptedCollection[] = [
     model: AiSettingsModel as unknown as AnyModel,
     fields: ['keys.chat.apiKeyEnc', 'keys.embedding.apiKeyEnc', 'keys.youtube.apiKeyEnc'],
   },
+  // Single sign-on client secrets and a REST roster source's token (prompt 2, G9).
+  {
+    name: 'sign-in settings',
+    model: SsoSettingsModel as unknown as AnyModel,
+    fields: ['google.clientSecretEnc', 'microsoft.clientSecretEnc'],
+  },
+  { name: 'roster sync', model: RosterSyncModel as unknown as AnyModel, fields: ['source.tokenEnc'] },
   // A parent's WhatsApp number for the monthly digest (prompt 2, G8).
   { name: 'parent digests', model: ParentDigestModel as unknown as AnyModel, fields: ['phoneEnc'] },
 ];

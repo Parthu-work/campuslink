@@ -489,6 +489,7 @@
     "billing": "Billing",
     "notInPlan": "Not in your college’s plan. Talk to us to add it.",
     "support": "Support",
+    "signIn": "Sign-in options",
     "interviewQuestions": "Interview questions",
     "readiness": "Readiness board",
     "practiceBank": "Practice questions",
@@ -1347,6 +1348,10 @@
     "weekly_next_step": {
       "title": "Your next step for this week",
       "body": "One roadmap step, one opening and one alumnus to ask, picked for you."
+    },
+    "roster_sync_review": {
+      "title": "The roster sync is waiting for you",
+      "body": "{{changed}} of {{total}} rows would change. Review it first."
     },
     "buddy_matched": {
       "title": "Meet your buddy: {{name}}",

@@ -13,6 +13,7 @@ import { NextStepService } from './modules/next-step/next-step.service.js';
 import { PeersService } from './modules/peers/peers.service.js';
 import { ParentDigestService } from './modules/notifications/parent-digest.service.js';
 // [slot: G9]
+import { RosterSyncService } from './modules/imports/roster-sync.service.js';
 // [slot: A G10 G11 G13]
 // [slot: B G12]
 import type { InsightsService } from './modules/insights/insights.service.js';
@@ -195,6 +196,15 @@ async function main() {
     setInterval(parentTick, 3600_000).unref();
   }
   // [slot: G9]
+  // The roster sync (prompt 2, G9): hourly; one run per college a day, from 02:00 (IST).
+  const rosterTick = () =>
+    RosterSyncService.enqueueDue(jobs).catch((err: unknown) =>
+      logger.error({ err }, 'roster sync tick failed'),
+    );
+  if (runsJobs) {
+    setTimeout(rosterTick, 240_000).unref();
+    setInterval(rosterTick, 3600_000).unref();
+  }
   // [slot: A G10 G11 G13]
   // [slot: B G12]
   if (runsJobs) {

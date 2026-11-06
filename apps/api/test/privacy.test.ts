@@ -463,6 +463,7 @@ describe('deletion', () => {
         'publicPages',
         'parentDigest',
         // [slot: G9]
+        'calendarFeed',
         // [slot: A G10 G11 G13]
         // [slot: B G12]
       ]),

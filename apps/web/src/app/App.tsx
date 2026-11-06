@@ -14,6 +14,7 @@ import { SessionBootstrap, Splash } from './guards';
 import { AppStatus } from '../components/layout/app-status';
 import { BotCheckHost } from '../components/layout/bot-check-host';
 import { lazyPart } from '../lib/lazy-part';
+import { LazyCollegePicker, LazyPickerLink } from '../features/reach/lazy-picker';
 import { loadSonner } from '../lib/toast';
 
 // Loads just after the first render; toasts raised before it mounts are replayed by sonner.
@@ -22,6 +23,15 @@ const CelebrationHost = lazyPart(() =>
   import('../components/layout/celebration-host').then((m) => m.CelebrationHost),
 );
 const Toaster = lazy(() => loadSonner().then((m) => ({ default: m.Toaster })));
+
+/** The bare root domain, not a college's address (VITE_ROOT_DOMAIN when the build sets it). */
+const onRootDomain = () => {
+  const root = import.meta.env.VITE_ROOT_DOMAIN as string | undefined;
+  const host = location.hostname;
+  if (root) return host === root;
+  // `dpit.localhost` is a college in development; `campuslink.in` is a bare domain.
+  return host === 'localhost' || (!host.endsWith('.localhost') && host.split('.').length <= 2);
+};
 
 function TenantGate() {
   const { t } = useTranslation();
@@ -40,9 +50,13 @@ function TenantGate() {
           <EmptyState icon={<PauseCircle className="size-6" />} title={t('errors.suspendedTitle')}>
             {t('errors.suspendedBody')}
           </EmptyState>
+        ) : code === 'UNKNOWN_TENANT' && onRootDomain() ? (
+          // The bare domain (where the Android app starts, prompt 2, G9): pick the college.
+          <LazyCollegePicker />
         ) : code === 'UNKNOWN_TENANT' ? (
           <EmptyState icon={<Building2 className="size-6" />} title={t('errors.noCollegeTitle')}>
             <p>{t('errors.noCollegeBody')}</p>
+            <LazyPickerLink />
             {demo.length > 0 && (
               <ul className="mt-4 flex flex-wrap justify-center gap-2">
                 {demo.map((d) => (

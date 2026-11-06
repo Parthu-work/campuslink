@@ -14,6 +14,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const KB = 1024;
 const INITIAL_BUDGET = 170 * KB;
@@ -36,7 +37,8 @@ const SCREEN_EXCEPTIONS = {
   },
 };
 
-const dist = new URL('../dist/', import.meta.url).pathname;
+// fileURLToPath, not .pathname: on Windows the pathname is "/D:/…", which joins into "D:\D:\…".
+const dist = fileURLToPath(new URL('../dist/', import.meta.url));
 const manifest = JSON.parse(readFileSync(join(dist, '.vite/manifest.json'), 'utf8'));
 const gz = new Map();
 const size = (file) => {

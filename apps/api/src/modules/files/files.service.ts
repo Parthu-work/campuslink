@@ -371,9 +371,12 @@ export class FilesService {
     await FileModel.updateOne({ _id: fileId }, { $set: { deleteAfter: at } });
   }
 
-  /** Raw spreadsheet or CSV for an import: kept only until the import job has read it. */
-  async storeImportSource(ownerId: string, data: Buffer, mime: string) {
-    return this.store(ownerId, 'import_source', data, mime, new Date(Date.now() + 24 * 3600_000));
+  /**
+   * Raw spreadsheet or CSV for an import: kept only until the import job has read it. A roster
+   * sync waiting for an admin's approval keeps its rows longer (prompt 2, G9: `ttlMs`).
+   */
+  async storeImportSource(ownerId: string, data: Buffer, mime: string, ttlMs = 24 * 3600_000) {
+    return this.store(ownerId, 'import_source', data, mime, new Date(Date.now() + ttlMs));
   }
 
   /**

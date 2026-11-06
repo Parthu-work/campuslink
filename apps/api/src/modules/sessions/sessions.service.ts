@@ -16,6 +16,7 @@ import {
   type feedbackBody,
 } from '@campuslink/shared';
 import { BookingModel, FeedbackModel, type BookingDoc, type FeedbackDoc } from './booking.model.js';
+import type { CalendarItem } from '../calendar/calendar.service.js';
 import { holdsFor } from '../mentorship/slots.js';
 import { conflict, notFound } from '../../lib/errors.js';
 import { requireTenantId } from '../../lib/context.js';
@@ -414,6 +415,31 @@ export class SessionsService {
       'END:VCALENDAR',
     ];
     return lines.join('\r\n') + '\r\n';
+  }
+
+  /** Prompt 2, G9 (the calendar feed): the member's sessions in a window, with the other's first name. */
+  async calendarFor(userId: string, from: Date, to: Date): Promise<CalendarItem[]> {
+    const rows = await BookingModel.find({
+      participants: new Types.ObjectId(userId),
+      start: { $gte: from, $lte: to },
+    })
+      .select('mentorId menteeId start end status version')
+      .sort({ start: 1 })
+      .limit(500)
+      .lean<BookingDoc[]>();
+    const refs = await this.d.profiles.refsFor(rows.flatMap((b) => [b.mentorId, b.menteeId]));
+    return rows.map((b) => {
+      const other = String(b.mentorId) === userId ? b.menteeId : b.mentorId;
+      return {
+        kind: 'session',
+        id: String(b._id),
+        version: b.version ?? 0,
+        start: b.start,
+        end: b.end,
+        with: (refs.get(String(other))?.name ?? '').trim().split(/\s+/)[0] ?? '',
+        cancelled: b.status === 'cancelled',
+      };
+    });
   }
 
   async markNoShow(viewer: AuthState, id: string) {

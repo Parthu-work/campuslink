@@ -17,6 +17,7 @@ import { Switch } from '../../components/ui/switch';
 import { api, ApiError } from '../../lib/api';
 import { currentSubscription, disablePush, enablePush, pushSupported } from '../../lib/push';
 import { SCREEN } from '../../lib/query-client';
+import { LazyCalendarFeed } from '../reach/lazy';
 
 function PushCard() {
   const { t } = useTranslation();
@@ -265,6 +266,7 @@ export function NotificationSettings() {
       ) : (
         <Skeleton className="h-72" />
       )}
+      <LazyCalendarFeed />
     </>
   );
 }

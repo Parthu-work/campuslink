@@ -25,6 +25,7 @@ import { applyApiError } from '../../lib/errors';
 import { Segmented } from '../../components/ui/tab-nav';
 import { toE164 } from '../../lib/phone';
 import { PhoneCodeStep, PhoneField } from './phone-parts';
+import { LazySsoButtons } from '../reach/lazy';
 
 const schema = z.object({ email: emailSchema, password: z.string().min(1, 'Enter your password') });
 type Form = z.infer<typeof schema>;
@@ -36,7 +37,12 @@ export function SignInPage() {
   const location = useLocation();
   const qc = useQueryClient();
   const setToken = useSession((s) => s.setToken);
-  const [ticket, setTicket] = useState<string | null>(null);
+  // After single sign-on (prompt 2, G9), an admin's two-factor step arrives as #mfa=<ticket>.
+  const [ticket, setTicket] = useState<string | null>(() => {
+    const t = /(?:^#|&)mfa=([^&]+)/.exec(window.location.hash)?.[1] ?? null;
+    if (t) history.replaceState(history.state, '', window.location.pathname + window.location.search);
+    return t;
+  });
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
   // Phone first when the college can send codes (B2); administrators always use email.
@@ -107,6 +113,7 @@ export function SignInPage() {
       subtitle={t('auth.signInSub', { college: tenant.branding.displayName })}
     >
       <form onSubmit={onSubmit} noValidate className="grid gap-4">
+        <LazySsoButtons />
         {switcher}
         <FormError message={adminNote ?? errors.root?.message} />
         {unverifiedEmail && (
@@ -261,6 +268,7 @@ function PhoneSignIn({
           }
         }}
       >
+        <LazySsoButtons />
         {switcher}
         <PhoneField label={t('phone.number')} value={number} onChange={setNumber} error={error} />
         <Button type="submit" variant="primary" size="lg" loading={busy}>

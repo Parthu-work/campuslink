@@ -16,6 +16,7 @@
     "vite.config.ts",
     "security-headers.ts",
     "pure-shared.ts",
+    "asset-links.ts",
     "vitest.config.ts",
     "playwright.config.ts",
     "playwright.staging.config.ts"

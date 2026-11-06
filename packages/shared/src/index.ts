@@ -49,6 +49,7 @@ export * from './schemas/practice.js';
 export * from './schemas/habits.js';
 export * from './schemas/growth.js';
 // [slot: G9]
+export * from './schemas/reach.js';
 // [slot: A G10 G11 G13]
 // [slot: B G12]
 export * from './schemas/legal.js';

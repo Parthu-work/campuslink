@@ -1,0 +1,132 @@
+{
+  "reach": {
+    "calendar": {
+      "title": "Calendar feed",
+      "intro": "Your sessions, the events you are going to and your drive deadlines, in Google Calendar, Apple Calendar or any calendar that subscribes to a link. It updates by itself.",
+      "get": "Get my calendar link",
+      "onSince": "On. A calendar last read it {{when}}.",
+      "onNever": "On. No calendar has read it yet.",
+      "private": "Keep this link private: anyone with it can see your sessions and events. It is shown only now; you can get a new one at any time.",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "google": "Add to Google Calendar",
+      "apple": "Add to Apple Calendar",
+      "replace": "Get a new link",
+      "replaced": "New link ready. The old one no longer works.",
+      "off": "Turn off",
+      "offDone": "Calendar feed turned off."
+    },
+    "sync": {
+      "title": "Keep the list in sync",
+      "intro": "Read the college's Google Sheet or ERP export on a schedule, with the columns you mapped. A change to more than 5% of the rows waits for you to look at it first.",
+      "offerTitle": "Keep this list in sync",
+      "offerBody": "Read this source again on a schedule, with the same columns. Small changes apply by themselves; larger ones wait for you.",
+      "frequency": "How often",
+      "daily": "Every day",
+      "weekly": "Every week",
+      "weekday": "On",
+      "days": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      },
+      "start": "Start syncing",
+      "started": "Syncing is on.",
+      "source": "Source: {{source}}",
+      "never": "Not run yet. The first run is after 2 am.",
+      "last": "Last run {{when}}: {{status}}",
+      "status": {
+        "applied": "applied",
+        "waiting": "waiting for you",
+        "nochange": "no changes",
+        "failed": "failed",
+        "rejected": "discarded"
+      },
+      "error": "What went wrong: {{error}}",
+      "paused": "Paused.",
+      "runNow": "Sync now",
+      "queued": "Sync started. It runs in the background.",
+      "pause": "Pause",
+      "resume": "Resume",
+      "stop": "Stop syncing",
+      "stopped": "Syncing stopped. The imported records stay.",
+      "pendingTitle": "A change is waiting for you",
+      "pendingBody": "{{changed}} of {{total}} rows would change ({{pct}}%).",
+      "created": "New: {{n}}",
+      "updated": "Updated: {{n}}",
+      "unchanged": "Unchanged: {{n}}",
+      "skippedClaimed": "Kept as members verified them: {{n}}",
+      "errors": "Rows with problems: {{n}}",
+      "sample": "Some of the changes",
+      "isNew": "new",
+      "fields": {
+        "name": "name",
+        "branch": "branch",
+        "gradYear": "batch",
+        "kind": "type",
+        "email": "email",
+        "phone": "mobile",
+        "guardianPhone": "guardian's mobile"
+      },
+      "waitsUntil": "It waits until {{date}}.",
+      "approve": "Apply the change",
+      "approved": "Applying. Follow it in the import history below.",
+      "reject": "Discard",
+      "rejected": "Change discarded."
+    },
+    "sso": {
+      "continue": "Continue with {{provider}}",
+      "google": "Google",
+      "microsoft": "Microsoft",
+      "or": "or",
+      "error": {
+        "cancelled": "You cancelled the sign-in.",
+        "failed": "We could not confirm that sign-in. Try again, or use your email or phone.",
+        "domain": "Use your college account, not a personal one.",
+        "suspended": "This account is suspended. Contact your college administrator.",
+        "unavailable": "That way of signing in is not available right now.",
+        "expired": "That sign-in took too long or was opened in another browser. Try again."
+      }
+    },
+    "complete": {
+      "title": "Finish creating your account",
+      "sub": "You signed in as {{email}} with {{provider}}. A few details and you are in.",
+      "expired": "This sign-in has expired. Start again from the sign-in page.",
+      "back": "Back to sign in",
+      "cta": "Create my account"
+    },
+    "admin": {
+      "intro": "Members can sign in with the college's own Google Workspace or Microsoft Entra ID accounts. Only addresses of the college's email domains can, and college verification still applies.",
+      "domains": "Offered for: {{domains}}",
+      "noDomains": "Add the college's email domains first, under Branding.",
+      "mfa": "Admins still enter their two-factor code after signing in.",
+      "google": "Google Workspace",
+      "microsoft": "Microsoft Entra ID",
+      "howGoogle": "In Google Cloud Console, create an OAuth client of type Web application in the college's organisation, and add the redirect address below.",
+      "howMicrosoft": "In the Entra admin centre, register an app for accounts in this directory only, add a Web redirect address (below) and create a client secret.",
+      "redirect": "Redirect address to register",
+      "copy": "Copy",
+      "copied": "Copied",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "secretKept": "Saved and hidden. Type a new one to replace it.",
+      "directoryId": "Directory (tenant) ID",
+      "enabled": "Members can sign in with {{provider}}",
+      "save": "Save",
+      "saved": "Saved"
+    },
+    "picker": {
+      "title": "Find your college",
+      "intro": "Type your college's address on CampusLink, as it appears on its posters and messages.",
+      "label": "College address",
+      "hint": "Only the first part, for example {{example}}",
+      "go": "Open",
+      "remember": "Open this college next time",
+      "other": "Find your college"
+    }
+  }
+}

@@ -150,6 +150,7 @@ export const NOTIFICATION_TYPES = [
   // Prompt 2, G8: what happened after a referral (asked at 14 and 30 days).
   'referral_outcome_prompt',
   // [slot: G9]
+  'roster_sync_review',
   // [slot: A G10 G11 G13]
   // [slot: B G12]
 ] as const;
@@ -253,6 +254,7 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   circle_decided: 'community',
   referral_outcome_prompt: 'jobs',
   // [slot: G9]
+  roster_sync_review: 'requests',
   // [slot: A G10 G11 G13]
   // [slot: B G12]
 };
