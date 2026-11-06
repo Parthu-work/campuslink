@@ -115,7 +115,18 @@ test.describe('signed-in journeys', () => {
     await expectNoA11yViolations(page);
     if (info.project.name === 'mobile') await page.getByRole('link', { name: 'Overview' }).click();
     await page.getByRole('link', { name: 'Audit log' }).click();
-    await expect(page.getByText('auth.mfa_enabled')).toBeVisible();
+    // Newest first, 50 a page: other specs' audited actions can push the enrolment past the first page.
+    const enrolled = page.getByText('auth.mfa_enabled').first();
+    const rows = page.getByRole('region', { name: 'Audit log' }).getByRole('row');
+    await expect(rows.first()).toBeVisible();
+    for (let i = 0; i < 10 && !(await enrolled.isVisible()); i++) {
+      const more = page.getByRole('button', { name: 'Load more' });
+      if (!(await more.isVisible())) break;
+      const before = await rows.count();
+      await more.click();
+      await expect.poll(() => rows.count()).toBeGreaterThan(before);
+    }
+    await expect(enrolled).toBeVisible();
 
     // Branding: a logo replaces the monogram everywhere, and removing it brings the monogram back.
     await page.goto(`http://${host}.localhost:4173/admin/branding`);
