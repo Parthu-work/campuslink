@@ -103,6 +103,9 @@
     "practice": "अभ्यास",
     "peers": "पीयर मेंटरिंग",
     "circles": "सर्कल",
+    "network": "नेटवर्क",
+    "recruiter": "भर्ती",
+    "employers": "नियोक्ता",
     "alumni": "पूर्व छात्र",
     "share": "शेयर",
     "captain": "कैंपस कैप्टन"
@@ -495,6 +498,7 @@
     "peers": "पीयर मेंटर और बडी",
     "circles": "सर्कल",
     "recognition": "सम्मान",
+    "network": "नेटवर्क",
     "giving": "योगदान",
     "growth": "बढ़त और निमंत्रण",
     "captain": "कैंपस कैप्टन",
@@ -1343,6 +1347,14 @@
     "pledge_received": {
       "title": "आपके कॉलेज को आपका योगदान मिला",
       "body": "धन्यवाद। पावती तैयार है।"
+    },
+    "network_intro_received": {
+      "title": "{{college}} के {{name}} ने मदद माँगी",
+      "body": "{{type}} · नेटवर्क"
+    },
+    "network_intro_answered": {
+      "title": "{{name}} ने जवाब दिया",
+      "body": "नेटवर्क में देखें।"
     },
     "weekly_next_step": {
       "title": "इस हफ़्ते का आपका अगला कदम",

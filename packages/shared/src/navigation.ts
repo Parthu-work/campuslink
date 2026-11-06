@@ -243,13 +243,9 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   // [slot: A G10 G11 G13]
   // [slot: B G12]
   // The network (prompt 2, G12): alumni across colleges, intros, credentials.
-  network: d('network', '/network', 'you', ['network:discover', 'credentials:own']),
+  network: d('network', '/network', 'you', ['network:discover']),
   // The recruiter portal (employer tenants only).
-  recruiter: d('recruiter', '/recruiter', 'main', [
-    'employer:post',
-    'employer:candidates',
-    'employer:manage',
-  ]),
+  recruiter: d('recruiter', '/recruiter', 'main', ['employer:post']),
   // Employer approvals and college clusters (platform).
   employers: d('employers', '/platform/employers', 'platform', ['platform:employers']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
@@ -358,7 +354,7 @@ export const PERSONA_TABS: Record<NavPersona, readonly (readonly NavId[])[]> = {
   staff: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
   admin: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
   platform: [['platform'], ['billing'], ['traction'], ['health'], ['settings']],
-  employer: [['recruiter'], ['notifications'], ['help'], ['settings']],
+  employer: [['recruiter'], ['settings']],
 };
 
 /** The avatar menu: everything that is not a tab, grouped, in this order. */

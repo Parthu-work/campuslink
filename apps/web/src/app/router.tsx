@@ -136,6 +136,8 @@ const load = {
   // [slot: G9]
   // [slot: A G10 G11 G13]
   // [slot: B G12]
+  // Prompt 2, G12: the network, the recruiter portal and the registry (one module), `network` pack.
+  network: withPack('network', () => import('../features/network/screens')),
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
@@ -569,6 +571,8 @@ function collegeRoutes(): RouteObject[] {
           // [slot: G9]
           // [slot: A G10 G11 G13]
           // [slot: B G12]
+          // The network (prompt 2, G12): alumni of other colleges, intros, credentials, sharing with employers.
+          screen(load.network, 'NetworkPage', 'network:discover', at('/network')),
           screen(
             load.studyGroups,
             'StudyGroupPage',
@@ -739,6 +743,8 @@ function collegeRoutes(): RouteObject[] {
             // [slot: G9]
             // [slot: A G10 G11 G13]
             // [slot: B G12]
+            // Cross-college network and employer postings (prompt 2, G12).
+            screen(load.network, 'NetworkAdmin', 'network:manage', at('network')),
             screen(
               load.reports,
               'ReportsDashboard',
@@ -785,6 +791,8 @@ function platformRoutes(): RouteObject[] {
       children: [
         { path: '/', element: <Navigate to="/platform" replace /> },
         ...auth('/platform'),
+        // Companies apply to recruit here (prompt 2, G12); a person approves them.
+        publicScreen(load.network, 'EmployerApplyPage', '/employers/apply'),
         shell(true, [
           screen(load.platform, 'PlatformTenants', 'platform:tenants', at('/platform')),
           screen(load.traction, 'PlatformTraction', 'platform:tenants', at('/platform/traction'), () => [
@@ -803,6 +811,8 @@ function platformRoutes(): RouteObject[] {
             ),
           ),
           screen(load.platform, 'PlatformHealth', 'platform:health', at('/platform/health')),
+          // The employer registry, clusters and the colleges' share (prompt 2, G12).
+          screen(load.network, 'PlatformEmployers', 'platform:employers', at('/platform/employers')),
           still(
             screen(
               load.platformSupport,
@@ -819,11 +829,37 @@ function platformRoutes(): RouteObject[] {
   ];
 }
 
+/** An employer's host (prompt 2, G12, ADR 0014): the recruiter portal only. */
+function employerRoutes(): RouteObject[] {
+  const portal = <Navigate to="/recruiter" replace />;
+  return [
+    {
+      errorElement: <RouteError fullPage />,
+      hydrateFallbackElement: <Splash />,
+      children: [
+        { path: '/', element: portal },
+        ...auth('/recruiter'),
+        shell(true, [
+          // Shared screens link "home" to /home or /platform: both are the portal here.
+          { path: '/home', element: portal },
+          { path: '/platform', element: portal },
+          screen(load.network, 'RecruiterPage', 'employer:post', at('/recruiter')),
+          screen(load.network, 'RecruiterPostingPage', 'employer:candidates', at('/recruiter/postings/:id')),
+          settingsRoutes,
+        ]),
+      ],
+    },
+  ];
+}
+
 // Lets `warmLanding` (lib/preload.ts) match the opened URL before the router exists.
-registerRouteTables((kind) => (kind === 'platform' ? platformRoutes() : collegeRoutes()));
+registerRouteTables((kind) =>
+  kind === 'platform' ? platformRoutes() : kind === 'employer' ? employerRoutes() : collegeRoutes(),
+);
 
 let collegeInstance: ReturnType<typeof createBrowserRouter> | null = null;
 let platformInstance: ReturnType<typeof createBrowserRouter> | null = null;
+let employerInstance: ReturnType<typeof createBrowserRouter> | null = null;
 
 type AppRouterInstance = ReturnType<typeof createBrowserRouter>;
 const animated = new WeakSet<AppRouterInstance>();
@@ -854,7 +890,9 @@ export function AppRouter() {
   const router = withViewTransitions(
     tenant.kind === 'platform'
       ? (platformInstance ??= createBrowserRouter(platformRoutes()))
-      : (collegeInstance ??= createBrowserRouter(collegeRoutes())),
+      : tenant.kind === 'employer'
+        ? (employerInstance ??= createBrowserRouter(employerRoutes()))
+        : (collegeInstance ??= createBrowserRouter(collegeRoutes())),
   );
   registerPreloadRoutes(router.routes);
   registerRouterState(() => ({ navigating: router.state.navigation.state !== 'idle' }));

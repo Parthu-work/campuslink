@@ -25,6 +25,7 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     // [slot: G9]
     // [slot: A G10 G11 G13]
     // [slot: B G12]
+    college: d.college ?? '',
   };
   const href = (() => {
     switch (n.type) {
@@ -176,6 +177,10 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       // [slot: G9]
       // [slot: A G10 G11 G13]
       // [slot: B G12]
+      // Prompt 2, G12: cross-college intros.
+      case 'network_intro_received':
+      case 'network_intro_answered':
+        return `/network?tab=intros&box=${n.type === 'network_intro_received' ? 'received' : 'sent'}`;
       case 'buddy_matched':
       case 'peer_mentor_nominated':
         return '/peers';

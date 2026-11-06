@@ -71,9 +71,9 @@ describe('the network constants (ADR 0014)', () => {
     const perms = [...resolvePermissions({ roles: [Role.EMPLOYER_ADMIN], verified: true, mfaEnabled: true })];
     const nav = buildNav(
       { roles: [Role.EMPLOYER_ADMIN], permissions: perms, verified: true },
-      new Set(['recruiter', 'notifications', 'help', 'settings', 'home']),
+      new Set(['recruiter', 'settings', 'home']),
     );
-    expect(nav.tabs.map((t) => t.id)).toEqual(['recruiter', 'notifications', 'help', 'settings']);
+    expect(nav.tabs.map((t) => t.id)).toEqual(['recruiter', 'settings']);
     expect(nav.admin).toEqual([]);
   });
 });
