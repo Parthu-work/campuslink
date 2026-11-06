@@ -98,7 +98,8 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # The suite alone takes about 20 minutes (230 tests, one worker); the browser download can add 10.
+    timeout-minutes: 35
     services:
       redis:
         image: redis:7.4-alpine
