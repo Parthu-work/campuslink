@@ -368,6 +368,24 @@ export const WHATSAPP_TEMPLATES: Partial<Record<NotificationType, WaTemplate>> =
  * Invites to people on the college's list who are not members yet (B4). The college confirms they
  * agreed to hear from it on WhatsApp before sending. Variables: first name, college, the link.
  */
+/**
+ * The monthly parent digest (prompt 2, G8): to the number a student added and the parent confirmed
+ * with a code. Counts and a trend only, never messages; the CGPA only when the student chose to
+ * include it. Variables: the student's first name, drive registrations, sessions attended this
+ * month, the readiness trend, the CGPA line (or "—").
+ */
+export const PARENT_DIGEST_TEMPLATE: WaTemplate = {
+  name: 'cl_parent_digest',
+  category: 'utility',
+  critical: false,
+  params: (d) => [d.name ?? '', d.drives ?? '0', d.sessions ?? '0', d.trend || '—', d.grades || '—'],
+  text: {
+    en: 'Your monthly update on {{1}} from their college: {{2}} placement drives registered for, {{3}} mentoring sessions attended, readiness {{4}}. {{5}}. {{1}} chose to send you this and can stop it any time.',
+    te: 'కాలేజీ నుంచి {{1}} గురించి నెలవారీ సమాచారం: {{2}} ప్లేస్‌మెంట్ డ్రైవ్‌లకు నమోదు, {{3}} మెంటారింగ్ సెషన్‌లకు హాజరు, సంసిద్ధత {{4}}. {{5}}. ఇది మీకు పంపాలని {{1}} ఎంచుకున్నారు, ఎప్పుడైనా ఆపవచ్చు.',
+    hi: 'कॉलेज से {{1}} के बारे में मासिक जानकारी: {{2}} प्लेसमेंट ड्राइव में पंजीकरण, {{3}} मेंटरिंग सत्रों में भाग लिया, तैयारी {{4}}। {{5}}। {{1}} ने यह आपको भेजना चुना है और कभी भी बंद कर सकते हैं।',
+  },
+};
+
 export const INVITE_TEMPLATES: Record<'student' | 'alumni', WaTemplate> = {
   student: {
     name: 'cl_invite_student',

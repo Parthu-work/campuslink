@@ -64,6 +64,15 @@ const PACKS = {
       hi: () => import('./packs/habits.hi.json'),
     },
   },
+  /** Growth loops (prompt 2, G8): invites, public pages, Campus Captains, referral outcomes, the parent digest. */
+  share: {
+    sections: ['share'],
+    load: {
+      en: () => import('./packs/share.en.json'),
+      te: () => import('./packs/share.te.json'),
+      hi: () => import('./packs/share.hi.json'),
+    },
+  },
 } satisfies Record<
   string,
   { sections: string[]; load: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> }

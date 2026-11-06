@@ -1,5 +1,5 @@
 import { Schema, type InferSchemaType, type Types } from 'mongoose';
-import { REFERRAL_DECLINE_TEMPLATES, REFERRAL_STATUSES } from '@campuslink/shared';
+import { REFERRAL_DECLINE_TEMPLATES, REFERRAL_STATUSES, REFERRAL_OUTCOMES } from '@campuslink/shared';
 import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
 
 /** An alumnus's referral settings. Off by default: nobody is asked until they opt in. */
@@ -33,6 +33,9 @@ const requestSchema = new Schema(
     responseNote: { type: String, default: null, maxlength: 300 },
     respondedAt: { type: Date, default: null },
     expiresAt: { type: Date, required: true },
+    /** Prompt 2, G8: what happened after the referral, as the student reported it. */
+    outcome: { type: String, enum: [...REFERRAL_OUTCOMES, null], default: null },
+    outcomeAt: { type: Date, default: null },
   },
   baseSchemaOptions,
 );

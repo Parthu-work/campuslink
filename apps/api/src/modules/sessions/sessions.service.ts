@@ -598,6 +598,15 @@ export class SessionsService {
     return new Map(rows.map((r) => [String(r._id), r.n]));
   }
   /** Recognition (prompt 2, G6): sessions a mentor completed in a window, and how many mentees. */
+  /** Prompt 2, G8 (the outcomes page): minutes of completed mentoring sessions, college-wide. */
+  async mentoringMinutes(): Promise<number> {
+    const [row] = await BookingModel.aggregate<{ ms: number }>([
+      { $match: { status: 'completed' } },
+      { $group: { _id: null, ms: { $sum: { $subtract: ['$end', '$start'] } } } },
+    ]);
+    return Math.round((row?.ms ?? 0) / 60_000);
+  }
+
   async mentoredBetween(
     mentorId: string,
     from: Date,

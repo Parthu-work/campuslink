@@ -167,6 +167,9 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       // Prompt 2, G7: habit loops.
       case 'weekly_next_step':
         return '/next-step';
+      // Prompt 2, G8: the student says what came of a referral.
+      case 'referral_outcome_prompt':
+        return '/referrals?box=sent';
       case 'buddy_matched':
       case 'peer_mentor_nominated':
         return '/peers';

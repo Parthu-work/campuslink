@@ -396,6 +396,10 @@
                               "circles:join",
                               "circles:propose",
                               "circles:manage",
+                              "invites:batchmates",
+                              "captains:class",
+                              "share:pages",
+                              "parents:digest",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -503,6 +507,10 @@
                               "circles:join",
                               "circles:propose",
                               "circles:manage",
+                              "invites:batchmates",
+                              "captains:class",
+                              "share:pages",
+                              "parents:digest",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -1996,7 +2004,8 @@
                       "type": "string",
                       "enum": [
                         "CERTIFIED_CONTRIBUTOR",
-                        "PEER_MENTOR"
+                        "PEER_MENTOR",
+                        "CAMPUS_CAPTAIN"
                       ]
                     }
                   }
@@ -12691,6 +12700,91 @@
           }
         },
         "x-permission": "jobs:sources"
+      }
+    },
+    "/api/v1/referrals/{id}/outcome": {
+      "post": {
+        "tags": [
+          "Referrals"
+        ],
+        "summary": "Say what happened after I was referred (interview, offer, no reply or rejected)",
+        "description": "Requires permission `referrals:request` (Request referrals from alumni). Host scope: college.",
+        "operationId": "referrals_post_referrals_id_outcome",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "interview",
+                      "offer",
+                      "no_response",
+                      "rejected"
+                    ]
+                  }
+                },
+                "required": [
+                  "outcome"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "referrals:request"
+      }
+    },
+    "/api/v1/me/referral-impact": {
+      "get": {
+        "tags": [
+          "Referrals"
+        ],
+        "summary": "What my referrals led to (from what students reported)",
+        "description": "Requires permission `referrals:offer` (Offer referrals and set referral caps). Host scope: college.",
+        "operationId": "referrals_get_me_referral_impact",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "referrals:offer"
       }
     },
     "/api/v1/me/referral-settings": {
@@ -25435,6 +25529,603 @@
         "x-permission": "study:read"
       }
     },
+    "/api/v1/me/public-pages": {
+      "get": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "My public pages and what I could publish (a placement, a roadmap, mentoring)",
+        "description": "Requires permission `share:pages` (Publish opt-in public pages: a placement, a finished roadmap, mentoring). Host scope: college.",
+        "operationId": "public-pages_get_me_public_pages",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "share:pages"
+      },
+      "post": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "Publish one achievement as a public page (opt-in, revocable)",
+        "description": "Requires permission `share:pages` (Publish opt-in public pages: a placement, a finished roadmap, mentoring). Host scope: college. Rate limit: posting.",
+        "operationId": "public-pages_post_me_public_pages",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "placed",
+                      "roadmap",
+                      "mentored",
+                      "mentor"
+                    ]
+                  },
+                  "refId": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "nameStyle": {
+                    "default": "full",
+                    "type": "string",
+                    "enum": [
+                      "full",
+                      "first"
+                    ]
+                  },
+                  "indexable": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "share:pages"
+      }
+    },
+    "/api/v1/me/public-pages/{id}": {
+      "delete": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "Take a public page down (its link stops working)",
+        "description": "Requires permission `share:pages` (Publish opt-in public pages: a placement, a finished roadmap, mentoring). Host scope: college.",
+        "operationId": "public-pages_delete_me_public_pages_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "share:pages"
+      }
+    },
+    "/api/v1/admin/growth": {
+      "get": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "Member invites and the public outcomes page: on or off",
+        "description": "Requires permission `onboarding:manage` (Send invite links, run class join codes and follow onboarding). Host scope: college.",
+        "operationId": "public-pages_get_admin_growth",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "onboarding:manage"
+      }
+    },
+    "/api/v1/admin/growth/member-invites": {
+      "put": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "Let members invite their batch on WhatsApp (the college confirms its list opted in)",
+        "description": "Requires permission `onboarding:manage` (Send invite links, run class join codes and follow onboarding). Host scope: college.",
+        "operationId": "public-pages_put_admin_growth_member_invites",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "attestOptIn": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "enabled"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "onboarding:manage"
+      }
+    },
+    "/api/v1/admin/growth/outcomes-page": {
+      "put": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "Publish (or take down) the college outcomes page",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college.",
+        "operationId": "public-pages_put_admin_growth_outcomes_page",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "enabled"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
+    "/api/v1/admin/growth/outcomes-preview": {
+      "get": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "What the outcomes page shows (also while it is off)",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college.",
+        "operationId": "public-pages_get_admin_growth_outcomes_preview",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
+    "/api/v1/me/batchmates": {
+      "get": {
+        "tags": [
+          "Invites"
+        ],
+        "summary": "How many of my batch are on the college's list but not here yet",
+        "description": "Requires permission `invites:batchmates` (Invite people of one’s own batch who are on the college’s list but not here yet). Host scope: college.",
+        "operationId": "member-invites_get_me_batchmates",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "invites:batchmates"
+      }
+    },
+    "/api/v1/me/batchmates/invite": {
+      "post": {
+        "tags": [
+          "Invites"
+        ],
+        "summary": "Invite them on WhatsApp (within my weekly limit and the college's allowance)",
+        "description": "Requires permission `invites:batchmates` (Invite people of one’s own batch who are on the college’s list but not here yet). Host scope: college. Rate limit: posting.",
+        "operationId": "member-invites_post_me_batchmates_invite",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "count": {
+                    "default": 10,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "invites:batchmates"
+      }
+    },
+    "/api/v1/captain/class": {
+      "get": {
+        "tags": [
+          "Invites"
+        ],
+        "summary": "My class joining CampusLink (Campus Captains; counts only)",
+        "description": "Requires permission `captains:class` (See one’s own class joining (counts only) and invite classmates (Campus Captains)). Host scope: college.",
+        "operationId": "member-invites_get_captain_class",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "captains:class"
+      }
+    },
+    "/api/v1/captain/invites": {
+      "post": {
+        "tags": [
+          "Invites"
+        ],
+        "summary": "Invite classmates on WhatsApp (Campus Captains; a daily limit)",
+        "description": "Requires permission `captains:class` (See one’s own class joining (counts only) and invite classmates (Campus Captains)). Host scope: college. Rate limit: posting.",
+        "operationId": "member-invites_post_captain_invites",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "count": {
+                    "default": 10,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "captains:class"
+      }
+    },
+    "/api/v1/me/parent-digest": {
+      "get": {
+        "tags": [
+          "Parent digest"
+        ],
+        "summary": "My monthly summary to a parent: on, waiting for the code, or off",
+        "description": "Requires permission `parents:digest` (Send a monthly summary to a parent, with their confirmation). Host scope: college.",
+        "operationId": "parent-digest_get_me_parent_digest",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "parents:digest"
+      },
+      "post": {
+        "tags": [
+          "Parent digest"
+        ],
+        "summary": "Add a parent's number: they get a code, and I enter it to turn the summary on",
+        "description": "Requires permission `parents:digest` (Send a monthly summary to a parent, with their confirmation). Host scope: college. Rate limit: otp.",
+        "operationId": "parent-digest_post_me_parent_digest",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "language": {
+                    "default": "en",
+                    "type": "string",
+                    "enum": [
+                      "en",
+                      "te",
+                      "hi"
+                    ]
+                  },
+                  "includeGrades": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "phone"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "parents:digest"
+      },
+      "delete": {
+        "tags": [
+          "Parent digest"
+        ],
+        "summary": "Stop the summary (the number is deleted)",
+        "description": "Requires permission `parents:digest` (Send a monthly summary to a parent, with their confirmation). Host scope: college.",
+        "operationId": "parent-digest_delete_me_parent_digest",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "parents:digest"
+      }
+    },
+    "/api/v1/me/parent-digest/confirm": {
+      "post": {
+        "tags": [
+          "Parent digest"
+        ],
+        "summary": "Enter the code the parent received",
+        "description": "Requires permission `parents:digest` (Send a monthly summary to a parent, with their confirmation). Host scope: college. Rate limit: otp.",
+        "operationId": "parent-digest_post_me_parent_digest_confirm",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  }
+                },
+                "required": [
+                  "code"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "parents:digest"
+      }
+    },
+    "/api/v1/me/parent-digest/grades": {
+      "put": {
+        "tags": [
+          "Parent digest"
+        ],
+        "summary": "Include my CGPA in the summary (or not)",
+        "description": "Requires permission `parents:digest` (Send a monthly summary to a parent, with their confirmation). Host scope: college.",
+        "operationId": "parent-digest_put_me_parent_digest_grades",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "includeGrades": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "includeGrades"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "parents:digest"
+      }
+    },
     "/api/v1/legal/{doc}": {
       "get": {
         "tags": [
@@ -30553,6 +31244,104 @@
           }
         },
         "x-permission": "feed:read"
+      }
+    },
+    "/p/outcomes": {
+      "get": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "The college outcomes page (only while the college publishes it)",
+        "description": "Public. Host scope: college. Rate limit: search.",
+        "operationId": "share_get_p_outcomes",
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/p/outcomes/og.png": {
+      "get": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "The outcomes page share image",
+        "description": "Public. Host scope: college. Rate limit: search.",
+        "operationId": "share_get_p_outcomes_og.png",
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/p/{slug}": {
+      "get": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "A member's public page (only while they publish it)",
+        "description": "Public. Host scope: college. Rate limit: search.",
+        "operationId": "share_get_p_slug",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{2,79}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/p/{slug}/og.png": {
+      "get": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "A public page's share image (its opt-in fields only)",
+        "description": "Public. Host scope: college. Rate limit: search.",
+        "operationId": "share_get_p_slug_og.png",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]{2,79}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
       }
     }
   }

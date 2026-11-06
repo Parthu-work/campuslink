@@ -6,6 +6,11 @@ import {
   CONSENT_PURPOSES,
   CONSENT_PURPOSE_KEYS,
   ErrorCode,
+  CAPTAIN_INVITES_PER_DAY,
+  MEMBER_INVITES_PER_WEEK,
+  type BatchmatesView,
+  type CaptainClassView,
+  type InviteRunResult,
   INVITE_RESEND_HOURS,
   INVITE_TTL_DAYS,
   JOIN_CODE_ALPHABET,
@@ -92,6 +97,8 @@ export class OnboardingService {
 
   async eraseFor(userId: string) {
     await InviteLinkModel.updateMany({ usedBy: new Types.ObjectId(userId) }, { $set: { usedBy: null } });
+    // Prompt 2, G8: invites a member sent that nobody used.
+    await InviteLinkModel.deleteMany({ createdBy: new Types.ObjectId(userId), usedAt: null });
   }
 
   recordById(id: Types.ObjectId | string) {
@@ -176,6 +183,31 @@ export class OnboardingService {
       .limit(MAX_INVITES_PER_SEND)
       .select('rollNumber name kind phoneEnc')
       .lean();
+    const { result, links } = await this.deliver(tenant, actorId, recs, body.channel);
+    await audit.record(
+      {
+        action: 'onboarding.invites_sent',
+        actorId,
+        meta: { channel: body.channel, ...result, optInAttested: !!body.attestOptIn },
+      },
+      meta,
+    );
+    return { ...result, links };
+  }
+
+  /**
+   * Creates personal links for roster records and sends them by WhatsApp (or returns them for a CSV).
+   * A record invited in the last INVITE_RESEND_HOURS, or without a number for WhatsApp, is skipped;
+   * an unsent link is deleted so the record can be invited again. Shared by the placement cell's
+   * invites (B4) and members' own (prompt 2, G8).
+   */
+  private async deliver(
+    tenant: TenantRecord,
+    actorId: string,
+    recs: { _id: Types.ObjectId; rollNumber: string; name: string; kind: string; phoneEnc?: string | null }[],
+    channel: 'whatsapp' | 'csv',
+  ) {
+    const body = { channel };
     const recent = new Set(
       (
         await InviteLinkModel.find({
@@ -229,15 +261,126 @@ export class OnboardingService {
         capped = outcome === 'capped';
       }
     }
+    return { result, links };
+  }
+
+  // ── Members' invites (prompt 2, G8) ─────────────────────────────
+
+  /** Set by the app: the college turned member invites on (it confirmed its list agreed to hear from it). */
+  memberInvitesEnabled: () => Promise<boolean> = () => Promise.resolve(false);
+  /** Set by the app: the member's own branch and batch. */
+  cohortOf: (userId: string) => Promise<{ branch: string | null; gradYear: number | null }> = () =>
+    Promise.resolve({ branch: null, gradYear: null });
+
+  private async batchCounts(branch: string | null, gradYear: number | null) {
+    if (!branch || !gradYear) return { notHere: 0, invitable: 0, ids: [] as Types.ObjectId[] };
+    const recs = await WhitelistModel.find({ branch, gradYear, status: 'unclaimed' })
+      .select('_id phoneEnc')
+      .sort({ _id: 1 })
+      .limit(5000)
+      .lean<{ _id: Types.ObjectId; phoneEnc?: string | null }[]>();
+    const recent = new Set(
+      (
+        await InviteLinkModel.find({
+          whitelistId: { $in: recs.map((x) => x._id) },
+          createdAt: { $gte: new Date(Date.now() - INVITE_RESEND_HOURS * 3600_000) },
+        })
+          .select('whitelistId')
+          .lean()
+      ).map((l) => String(l.whitelistId)),
+    );
+    const ids = recs.filter((x) => x.phoneEnc && !recent.has(String(x._id))).map((x) => x._id);
+    return { notHere: recs.length, invitable: ids.length, ids };
+  }
+
+  private async sentSince(actorId: string, since: Date) {
+    return InviteLinkModel.countDocuments({
+      createdBy: new Types.ObjectId(actorId),
+      createdAt: { $gte: since },
+    });
+  }
+
+  private async canSendMemberInvites() {
+    return (await this.memberInvitesEnabled()) && (await this.d.channels.invitesUsable());
+  }
+
+  /** "N of your batch aren't here yet" (counts only: no names or numbers are shown to members). */
+  async batchmates(viewer: { userId: string }): Promise<BatchmatesView> {
+    const { branch, gradYear } = await this.cohortOf(viewer.userId);
+    const c = await this.batchCounts(branch, gradYear);
+    const sent = await this.sentSince(viewer.userId, new Date(Date.now() - 7 * DAY_MS));
+    return {
+      branch: branch as BatchmatesView['branch'],
+      gradYear,
+      notHere: c.notHere,
+      invitable: c.invitable,
+      left: Math.max(0, MEMBER_INVITES_PER_WEEK - sent),
+      enabled: await this.canSendMemberInvites(),
+    };
+  }
+
+  /** Captains (prompt 2, G8): their own class only, and counts only. */
+  async captainClass(viewer: { userId: string }): Promise<CaptainClassView> {
+    const { branch, gradYear } = await this.cohortOf(viewer.userId);
+    const [row] = branch && gradYear ? await this.progress({ branch, gradYear }) : [];
+    const c = await this.batchCounts(branch, gradYear);
+    const today = new Date(Date.now() - (Date.now() % DAY_MS));
+    const [sentToday, broughtIn] = await Promise.all([
+      this.sentSince(viewer.userId, today),
+      InviteLinkModel.countDocuments({ createdBy: new Types.ObjectId(viewer.userId), usedAt: { $ne: null } }),
+    ]);
+    return {
+      branch: branch as CaptainClassView['branch'],
+      gradYear,
+      onList: row?.roster ?? 0,
+      invited: row?.invited ?? 0,
+      joined: row?.claimed ?? 0,
+      verified: row?.verified ?? 0,
+      active7d: row?.active7d ?? 0,
+      invitable: c.invitable,
+      left: Math.max(0, CAPTAIN_INVITES_PER_DAY - sentToday),
+      broughtIn,
+      enabled: await this.canSendMemberInvites(),
+    };
+  }
+
+  /**
+   * Sends WhatsApp invites to people of the member's own batch who are not here yet, within the
+   * member's limit (a week for members, a day for Campus Captains) and the college's allowance.
+   */
+  async inviteBatch(
+    tenant: TenantRecord,
+    viewer: { userId: string },
+    count: number,
+    as: 'member' | 'captain',
+    meta: ClientMeta,
+  ): Promise<InviteRunResult> {
+    if (!(await this.canSendMemberInvites()))
+      throw new AppError(
+        503,
+        ErrorCode.CHANNEL_UNAVAILABLE,
+        'Invites from members are not on at this college',
+      );
+    const view = as === 'captain' ? await this.captainClass(viewer) : await this.batchmates(viewer);
+    if (!view.branch || !view.gradYear) throw badRequest('Add your branch and batch to your profile first');
+    const n = Math.min(count, view.left);
+    if (n <= 0)
+      throw tooMany(
+        as === 'captain'
+          ? 'You have sent today’s invites. More tomorrow.'
+          : 'You have sent this week’s invites.',
+      );
+    const { ids } = await this.batchCounts(view.branch, view.gradYear);
+    const recs = await WhitelistModel.find({ _id: { $in: ids.slice(0, n) } })
+      .select('rollNumber name kind phoneEnc')
+      .lean();
+    const { result } = await this.deliver(tenant, viewer.userId, recs, 'whatsapp');
     await audit.record(
-      {
-        action: 'onboarding.invites_sent',
-        actorId,
-        meta: { channel: body.channel, ...result, optInAttested: !!body.attestOptIn },
-      },
+      { action: 'onboarding.member_invites', actorId: viewer.userId, meta: { as, ...result } },
       meta,
     );
-    return { ...result, links };
+    if (result.sent) await this.track(viewer.userId, 'invite_sent', { as, count: String(result.sent) });
+    return { sent: result.sent, skipped: result.skipped, failed: result.failed };
   }
 
   // ── Progress (B6) ─────────────────────────────

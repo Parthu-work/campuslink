@@ -119,3 +119,5 @@ export { PracticeCardModel, PracticeItemModel, PracticeSetModel } from './practi
 export { NextStepModel } from './next-step/next-step.model.js';
 export { BuddyPairModel, BuddyVolunteerModel, PeerNominationModel } from './peers/peers.model.js';
 export { CircleMemberModel, CircleModel, StudyGroupModel } from './circles/circle.model.js';
+export { GrowthSettingsModel, PublicPageModel } from './public-pages/public-page.model.js';
+export { ParentDigestModel } from './notifications/parent-digest.service.js';

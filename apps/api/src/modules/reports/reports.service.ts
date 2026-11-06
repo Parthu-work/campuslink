@@ -17,6 +17,7 @@ import { csvCell } from '../analytics/analytics.service.js';
 import { notFound } from '../../lib/errors.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import type { AuthState } from '../../types.js';
+import type { Count } from '@campuslink/shared';
 import type { ReportData, ReportDefinition, ReportParams } from './report-data.js';
 import { DEFINITIONS, definitionOf } from './definitions/index.js';
 import { BAND_LABEL, distinct, groupBy, jobOffers } from './definitions/common.js';
@@ -197,6 +198,38 @@ export class ReportsService {
       data as never,
       { buffer: true, sheets: names } as never,
     )) as unknown as Buffer;
+  }
+
+  /**
+   * Prompt 2, G8: the public outcomes page's placement figures: the last three graduating batches
+   * (placement %, placed, the median offer band) and the top recruiters, small counts suppressed.
+   */
+  async publicOutcomes(): Promise<{
+    years: { gradYear: number; placementPct: number | null; placed: Count; medianBand: string | null }[];
+    recruiters: { company: string; offers: Count }[];
+  }> {
+    const now = currentGradYear();
+    const years = [now - 2, now - 1, now];
+    const figures = await Promise.all(years.map((y) => placementFigures(this.data, y, { branch: null })));
+    const rows = figures.flatMap((f) => jobOffers(f.all.offersRows));
+    const recruiters = [...groupBy(rows, (r) => r.companyKey).values()]
+      .map((g) => ({ company: g[0]?.companyName ?? '', n: distinct(g, (r) => r.subject) }))
+      .sort((a, b) => b.n - a.n || a.company.localeCompare(b.company))
+      .slice(0, 8);
+    return {
+      years: years
+        .map((gradYear, i) => {
+          const f = figures[i];
+          return {
+            gradYear,
+            placementPct: f ? pct(f.all.placed, f.all.seeking) : null,
+            placed: suppress(f?.all.placed ?? 0),
+            medianBand: f?.all.band ? BAND_LABEL[f.all.band] : null,
+          };
+        })
+        .reverse(),
+      recruiters: recruiters.map((r) => ({ company: r.company, offers: suppress(r.n) })),
+    };
   }
 
   /** The principal's dashboard: this batch's placement %, median band, recruiters and the trend. */

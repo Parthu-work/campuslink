@@ -3,6 +3,8 @@ import { useTranslation } from '../i18n/react';
 import {
   Activity,
   BadgeCheck,
+  Flag,
+  Share2,
   Bell,
   BookOpen,
   Bookmark,
@@ -75,6 +77,8 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   practice: Dumbbell,
   peers: HeartHandshake,
   circles: UsersRound,
+  share: Share2,
+  captain: Flag,
   requests: Inbox,
   review: ClipboardCheck,
   roadmaps: Orbit,

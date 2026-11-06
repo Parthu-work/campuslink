@@ -460,6 +460,8 @@ describe('deletion', () => {
         'peers',
         'circles',
         'studyGroups',
+        'publicPages',
+        'parentDigest',
       ]),
     );
   });

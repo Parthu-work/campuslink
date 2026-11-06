@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { pinoHttp } from 'pino-http';
 import type { Redis } from 'ioredis';
-import { API_PREFIX, DEFAULT_CHAT_MODEL, Role } from '@campuslink/shared';
+import { API_PREFIX, DEFAULT_CHAT_MODEL, Role, suppress as suppressCount } from '@campuslink/shared';
 import type { Env } from './config/env.js';
 import { httpLogSerializers, type Logger } from './lib/logger.js';
 import { requestId } from './middleware/request-id.js';
@@ -78,6 +78,15 @@ import { StudyGroupsService } from './modules/circles/study-groups.service.js';
 import { circleRoutes, studyGroupRoutes } from './modules/circles/circles.routes.js';
 import { QA_VOICE_JOB } from './modules/qa/qa.service.js';
 import { voiceTranscriber } from './modules/study/media/voice.js';
+import { PublicPagesService } from './modules/public-pages/public-pages.service.js';
+import { publicPageRoutes, shareRoutes } from './modules/public-pages/public-pages.routes.js';
+import { memberInviteRoutes } from './modules/verification/member-invites.routes.js';
+import { PARENT_DIGEST_JOB, ParentDigestService } from './modules/notifications/parent-digest.service.js';
+import { parentDigestRoutes } from './modules/notifications/parent-digest.routes.js';
+import { REFERRAL_OUTCOME_JOB } from './modules/referrals/referrals.service.js';
+import { SHARE_MODULE } from './http/openapi.js';
+import { backgroundAuth as backgroundAuthOf } from './modules/users/users.service.js';
+import { findTenantById as tenantById } from './modules/tenants/tenant.cache.js';
 import {
   DisabledCodeRunner,
   JUDGE0_LANGUAGE_IDS,
@@ -1146,6 +1155,66 @@ export function createApp({
     await nextStepService.run(data);
   });
 
+  // ── Growth loops (prompt 2, G8) ─────────────────────────────
+  // Opt-in public pages and the college outcomes page (E4): each fact from the module that owns it.
+  const publicPagesService = new PublicPagesService({
+    person: (id) => profilesService.person(id),
+    verifiedOffers: (id) => offersService.verifiedOf(id),
+    finishedRoadmaps: (id) => roadmapsService.finishedRefsFor(id),
+    mentees: async (id) => (await sessionsService.mentoredBetween(id, new Date(0), new Date())).mentees,
+    mentorCard: async (id) => {
+      const settings = await mentorsService.settings({ userId: id } as never).catch(() => null);
+      return settings?.accepting ? profilesService.publicFacts(id) : null;
+    },
+    outcomes: async () => {
+      const [placements, alumni, minutes] = await Promise.all([
+        reportsService.publicOutcomes(),
+        profilesService.alumniCompanyCounts(10),
+        sessionsService.mentoringMinutes(),
+      ]);
+      return {
+        ...placements,
+        alumniAt: alumni.map((a) => ({ company: a.company, alumni: suppressCount(a.n) })),
+        mentoringHours: Math.round(minutes / 60),
+      };
+    },
+    tenantUrl: (tenant, p) => authService.tenantUrl(tenant, p),
+  });
+  // Batchmate and Campus Captain invites go through the B4 invite links, when the college turned them on.
+  onboardingService.memberInvitesEnabled = () => publicPagesService.memberInvitesEnabled();
+  onboardingService.cohortOf = async (id) => {
+    const own = await profilesService.own(id);
+    return { branch: own.branch, gradYear: own.gradYear };
+  };
+  queue.register(REFERRAL_OUTCOME_JOB, (data) => referralsService.onOutcomePrompt(data));
+  // The monthly parent digest: confirmed by the parent's code, WhatsApp only.
+  const parentDigestService = new ParentDigestService({
+    otp: otpService,
+    cipher,
+    channels: channelService,
+    logger,
+    facts: async (id, since) => {
+      const tenant = await tenantById(String(requireTenantId()));
+      const viewer = tenant ? await backgroundAuthOf(id, tenant) : null;
+      const [drives, sessions, academic] = await Promise.all([
+        placementsService.registrationsSince(id, since),
+        sessionsService.completedAsMentee([id], since),
+        academicsService.factsFor([id]),
+      ]);
+      const score =
+        viewer?.permissions.has('readiness:view') && (await featureEnabled('placements'))
+          ? ((await readinessService.mine(viewer).catch(() => null))?.score ?? null)
+          : null;
+      return { drives, sessions: sessions.get(id) ?? 0, score, cgpa: academic.get(id)?.cgpa ?? null };
+    },
+  });
+  queue.register(
+    PARENT_DIGEST_JOB,
+    gatedJob('whatsapp', async (data) => {
+      await parentDigestService.run(data);
+    }),
+  );
+
   // Faculty insights and the admin AI dashboard (spec step 5): aggregates only.
   const insightsService = new StudyInsightsService({
     subjects: subjectsService,
@@ -1286,6 +1355,8 @@ export function createApp({
     studyGroupsService,
     peersService,
     nextStepService,
+    publicPagesService,
+    referralsService,
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1355,6 +1426,8 @@ export function createApp({
   privacyService.register('peers', hook(peersService));
   privacyService.register('circles', hook(circlesService));
   privacyService.register('studyGroups', hook(studyGroupsService));
+  privacyService.register('publicPages', hook(publicPagesService));
+  privacyService.register('parentDigest', hook(parentDigestService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -1419,6 +1492,8 @@ export function createApp({
 
   app.use(API_PREFIX, healthRouter(readiness));
   app.use(API_PREFIX, limiters.global, tenantResolver(env.APP_ROOT_DOMAIN));
+  // Prompt 2, G8: public pages at /p/... on the college's own address, resolved like every API call.
+  app.use('/p', limiters.global, tenantResolver(env.APP_ROOT_DOMAIN));
   app.use(
     API_PREFIX,
     defineModule(
@@ -1561,6 +1636,9 @@ export function createApp({
     API_PREFIX,
     defineModule('study-groups', withFeature('study', studyGroupRoutes(studyGroupsService)), pipeline),
   );
+  app.use(API_PREFIX, defineModule('public-pages', publicPageRoutes(publicPagesService), pipeline));
+  app.use(API_PREFIX, defineModule('member-invites', memberInviteRoutes(onboardingService), pipeline));
+  app.use(API_PREFIX, defineModule('parent-digest', parentDigestRoutes(parentDigestService), pipeline));
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -1619,6 +1697,8 @@ export function createApp({
   const openapi = buildOpenApi(registry);
   app.get(`${API_PREFIX}/openapi.json`, (_req, res) => res.json(openapi));
 
+  // Public pages (prompt 2, G8): their full paths start with /p/, outside the API prefix.
+  app.use(defineModule(SHARE_MODULE, shareRoutes(publicPagesService), pipeline));
   app.use(notFoundHandler);
   app.use(errorHandler(logger, errorReporter));
   app.locals.registry = registry;
@@ -1669,6 +1749,8 @@ export function createApp({
     peers: peersService,
     circles: circlesService,
     studyGroups: studyGroupsService,
+    publicPages: publicPagesService,
+    parentDigest: parentDigestService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,

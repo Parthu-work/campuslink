@@ -774,6 +774,24 @@ export class RoadmapsService {
     return null;
   }
 
+  /** Prompt 2, G8 (public pages): the live roadmaps a member finished, with their ids and step counts. */
+  async finishedRefsFor(userId: string): Promise<{ id: string; title: string; steps: number }[]> {
+    const progress = await RoadmapProgressModel.find({ userId: oid(userId) }).lean<ProgressDoc[]>();
+    const out: { id: string; title: string; steps: number }[] = [];
+    for (const p of progress) {
+      const r = await RoadmapModel.findById(p.roadmapId).lean<RoadmapDoc>();
+      if (!r || !isLive(r) || r.publishedVersion === null || r.publishedVersion === undefined) continue;
+      const v = await RoadmapVersionModel.findOne({
+        roadmapId: r._id,
+        version: r.publishedVersion,
+      }).lean<VersionDoc>();
+      const ids = new Set(v?.content.nodes.map((n) => n.id) ?? []);
+      const done = p.done.filter((d) => !!d.nodeId && ids.has(d.nodeId)).length;
+      if (ids.size && done >= ids.size) out.push({ id: String(r._id), title: r.title, steps: ids.size });
+    }
+    return out;
+  }
+
   async finishedFor(userId: string): Promise<{ title: string; at: Date }[]> {
     const progress = await RoadmapProgressModel.find({ userId: oid(userId) }).lean<ProgressDoc[]>();
     const out: { title: string; at: Date }[] = [];

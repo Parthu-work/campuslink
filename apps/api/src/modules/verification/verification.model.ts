@@ -10,6 +10,8 @@ export const OTP_PURPOSES = [
   'guardian_consent',
   /** An invite link or join code: a code to the contact on a roster record (B4). */
   'roster_claim',
+  /** Prompt 2, G8: a parent confirms the monthly digest a student set up. */
+  'parent_digest',
 ] as const;
 export type OtpPurpose = (typeof OTP_PURPOSES)[number];
 

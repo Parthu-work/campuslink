@@ -3,6 +3,7 @@ import { writeFileSync } from 'node:fs';
 import {
   WHATSAPP_TEMPLATES,
   INVITE_TEMPLATES,
+  PARENT_DIGEST_TEMPLATE,
   AUTO_REPLY,
   AUTH_TEMPLATE_SETTINGS,
   WA_LANGS,
@@ -24,6 +25,7 @@ const entries = [
   ...Object.entries(INVITE_TEMPLATES).map(
     ([kind, t]) => [`an invite to a ${kind} on the college's list`, t] as const,
   ),
+  ['the monthly parent digest (to a parent who confirmed with a code)', PARENT_DIGEST_TEMPLATE] as const,
 ];
 for (const [what, t] of entries) {
   if (!t) continue;

@@ -357,6 +357,8 @@ export interface ReferralView {
   createdAt: string;
   respondedAt: string | null;
   expiresAt: string;
+  /** Prompt 2, G8: what happened, as the student reported it. */
+  outcome?: 'interview' | 'offer' | 'no_response' | 'rejected' | null;
 }
 export interface ReferralPrefsView {
   accepting: boolean;

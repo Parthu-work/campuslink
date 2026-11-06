@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -17,6 +17,7 @@ import { celebrate } from '../../lib/celebrate';
 import { formatRelative } from '../../lib/format';
 import { useCan } from '../../lib/me';
 import { SCREEN } from '../../lib/query-client';
+import { LazyReferralImpact, LazyReferralOutcome } from '../share/lazy';
 
 const TONE = {
   pending: 'warning',
@@ -242,6 +243,11 @@ function ReferralRow({ r, box }: { r: ReferralView; box: 'received' | 'sent' }) 
         {r.declineTemplate && (
           <p className="text-meta text-fg-2">{t(`referrals.templates.${r.declineTemplate}`)}</p>
         )}
+        {box === 'sent' && r.status === 'referred' && (
+          <Suspense fallback={null}>
+            <LazyReferralOutcome r={r} />
+          </Suspense>
+        )}
         <div className="flex flex-wrap gap-2">
           {r.resumeFileId && (
             <Button size="sm" loading={download.isPending} onClick={() => download.mutate()}>
@@ -316,7 +322,14 @@ export function ReferralsPage() {
             ))}
           </ul>
         </div>
-        {canOffer && <Settings />}
+        {canOffer && (
+          <div className="grid content-start gap-4">
+            <Suspense fallback={null}>
+              <LazyReferralImpact />
+            </Suspense>
+            <Settings />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2,13 +2,16 @@ import { z } from 'zod';
 import { API_PREFIX, APP_NAME, PERMISSIONS } from '@campuslink/shared';
 import type { RouteRegistry } from './registry.js';
 
+/** The module mounted at the root (/p/...), outside the API prefix (prompt 2, G8). */
+export const SHARE_MODULE = 'share';
+
 const toJson = (schema: z.ZodType) => z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' });
 
 /** OpenAPI 3.1 document generated from the same Zod schemas that validate requests. */
 export function buildOpenApi(registry: RouteRegistry) {
   const paths: Record<string, Record<string, unknown>> = {};
   for (const { module, spec } of registry) {
-    const path = API_PREFIX + spec.path.replace(/:(\w+)/g, '{$1}');
+    const path = (module === SHARE_MODULE ? '' : API_PREFIX) + spec.path.replace(/:(\w+)/g, '{$1}');
     const params: unknown[] = [];
     if (spec.params) {
       for (const [name, s] of Object.entries(

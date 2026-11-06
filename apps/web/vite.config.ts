@@ -18,6 +18,11 @@ const apiProxy = {
         if (err.code !== 'ECONNRESET' && err.code !== 'EPIPE') console.error('[proxy]', err.message);
       }),
   },
+  // Prompt 2, G8: public pages are server-rendered by the API at /p/... (not the app's routes).
+  '/p/': {
+    target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:4000',
+    changeOrigin: false,
+  },
 };
 
 /** Preloads the UI face's Latin file, the one font every first screen needs (ADR 0008). */

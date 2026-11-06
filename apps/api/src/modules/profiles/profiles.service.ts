@@ -490,6 +490,56 @@ export class ProfilesService {
    * Batch pages (prompt 2, G6): verified members of a batch, and where those who show their company
    * to every member work (companies by count; the caller suppresses small ones).
    */
+  /** Prompt 2, G8 (public pages): a member's name, batch and whether they are a minor (never shown). */
+  async person(userId: string): Promise<{ name: string; gradYear: number | null; minor: boolean } | null> {
+    const p = await ProfileModel.findOne({ userId: new Types.ObjectId(userId), verified: true })
+      .select('name gradYear minorUntil')
+      .lean<{ name: string; gradYear?: number | null; minorUntil?: Date | null }>();
+    if (!p) return null;
+    return {
+      name: p.name,
+      gradYear: p.gradYear ?? null,
+      minor: !!p.minorUntil && p.minorUntil.getTime() > Date.now(),
+    };
+  }
+
+  /** Prompt 2, G8 (a mentor's public page): what the mentor shows to every member. */
+  async publicFacts(userId: string): Promise<{ jobTitle: string; company: string; topics: string[] } | null> {
+    const p = await ProfileModel.findOne({ userId: new Types.ObjectId(userId), verified: true })
+      .select('jobTitle company topics visibility')
+      .lean<{
+        jobTitle?: string;
+        company?: string;
+        topics?: string[];
+        visibility?: Record<string, string>;
+      }>();
+    if (!p) return null;
+    const shown = (field: string) => (p.visibility?.[field] ?? 'members') === 'members';
+    return {
+      jobTitle: shown('jobTitle') ? (p.jobTitle ?? '') : '',
+      company: shown('company') ? (p.company ?? '') : '',
+      topics: (p.topics ?? []).slice(0, 6),
+    };
+  }
+
+  /** Prompt 2, G8 (the outcomes page): where verified alumni work, by company (counts only). */
+  async alumniCompanyCounts(limit = 10): Promise<{ company: string; n: number }[]> {
+    const rows = await ProfileModel.aggregate<{ _id: string; company: string; n: number }>([
+      {
+        $match: {
+          verified: true,
+          roles: 'ALUMNI',
+          companyKey: { $nin: ['', null] },
+          'visibility.company': 'members',
+        },
+      },
+      { $group: { _id: '$companyKey', company: { $first: '$company' }, n: { $sum: 1 } } },
+      { $sort: { n: -1, _id: 1 } },
+      { $limit: limit },
+    ]);
+    return rows.map((r) => ({ company: r.company, n: r.n }));
+  }
+
   async batchFacts(branch: string, gradYear: number) {
     const [total, companies] = await Promise.all([
       ProfileModel.countDocuments({ verified: true, branch, gradYear }),

@@ -140,6 +140,14 @@ export class PlacementsService {
    * The weekly digest (prompt 1b, R8): for each member, drives opened in the last seven days that
    * are still open, that they are eligible for and have not registered for, as counts.
    */
+  /** Prompt 2, G8 (the parent digest): drives the member registered for since a date. */
+  async registrationsSince(userId: string, since: Date): Promise<number> {
+    return DriveRegistrationModel.countDocuments({
+      userId: new Types.ObjectId(userId),
+      createdAt: { $gte: since },
+    });
+  }
+
   async newEligibleCounts(userIds: string[], now = new Date()): Promise<Map<string, number>> {
     const wanted = new Set(userIds);
     const out = new Map<string, number>();

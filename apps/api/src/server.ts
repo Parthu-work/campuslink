@@ -11,6 +11,7 @@ import { BillingService } from './modules/billing/billing.service.js';
 import { DigestService } from './modules/notifications/digest.service.js';
 import { NextStepService } from './modules/next-step/next-step.service.js';
 import { PeersService } from './modules/peers/peers.service.js';
+import { ParentDigestService } from './modules/notifications/parent-digest.service.js';
 import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
@@ -181,6 +182,15 @@ async function main() {
   // Senior Buddy matching (prompt 2, G7): hourly; one run per college a day.
   const buddyTick = () =>
     PeersService.enqueueDaily(jobs).catch((err: unknown) => logger.error({ err }, 'buddy tick failed'));
+  // The parent digest (prompt 2, G8): hourly; one run per college a month, from the 1st (IST).
+  const parentTick = () =>
+    ParentDigestService.enqueueMonthly(jobs).catch((err: unknown) =>
+      logger.error({ err }, 'parent digest tick failed'),
+    );
+  if (runsJobs) {
+    setTimeout(parentTick, 210_000).unref();
+    setInterval(parentTick, 3600_000).unref();
+  }
   if (runsJobs) {
     setTimeout(nextStepTick, 150_000).unref();
     setInterval(nextStepTick, 3600_000).unref();

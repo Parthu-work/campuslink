@@ -40,6 +40,11 @@ export const PRODUCT_EVENTS = [
   'circle_joined',
   'study_group_formed',
   'voice_question',
+  // Prompt 2, G8: growth loops (page views are counted per page, never per viewer).
+  'invite_sent',
+  'public_page_published',
+  'public_page_viewed',
+  'referral_outcome_reported',
 ] as const;
 export type ProductEventName = (typeof PRODUCT_EVENTS)[number];
 

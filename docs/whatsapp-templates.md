@@ -181,6 +181,14 @@ Sent for: an invite to a alumni on the college's list. Category: **utility**.
 - Telugu (te): `హాయ్ {{1}}, {{2}} తన ప్రైవేట్ పూర్వ విద్యార్థుల నెట్‌వర్క్‌కి మిమ్మల్ని ఆహ్వానిస్తోంది, అక్కడ మీరు ప్రస్తుత విద్యార్థులకు మార్గదర్శనం చేయవచ్చు. చేరడానికి నొక్కండి: {{3}}`
 - Hindi (hi): `नमस्ते {{1}}, {{2}} आपको अपने निजी पूर्व छात्र नेटवर्क में आमंत्रित करता है, जहां आप मौजूदा छात्रों का मार्गदर्शन कर सकते हैं। जुड़ने के लिए टैप करें: {{3}}`
 
+## `cl_parent_digest`
+
+Sent for: the monthly parent digest (to a parent who confirmed with a code). Category: **utility**.
+
+- English (en): `Your monthly update on {{1}} from their college: {{2}} placement drives registered for, {{3}} mentoring sessions attended, readiness {{4}}. {{5}}. {{1}} chose to send you this and can stop it any time.`
+- Telugu (te): `కాలేజీ నుంచి {{1}} గురించి నెలవారీ సమాచారం: {{2}} ప్లేస్‌మెంట్ డ్రైవ్‌లకు నమోదు, {{3}} మెంటారింగ్ సెషన్‌లకు హాజరు, సంసిద్ధత {{4}}. {{5}}. ఇది మీకు పంపాలని {{1}} ఎంచుకున్నారు, ఎప్పుడైనా ఆపవచ్చు.`
+- Hindi (hi): `कॉलेज से {{1}} के बारे में मासिक जानकारी: {{2}} प्लेसमेंट ड्राइव में पंजीकरण, {{3}} मेंटरिंग सत्रों में भाग लिया, तैयारी {{4}}। {{5}}। {{1}} ने यह आपको भेजना चुना है और कभी भी बंद कर सकते हैं।`
+
 ## Fixed auto-reply (free-form, inside the 24-hour window)
 
 - English (en): `This number only sends updates from your college’s app and can’t read replies. Please open the app to answer.`

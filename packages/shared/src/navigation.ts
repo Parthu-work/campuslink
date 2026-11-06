@@ -23,6 +23,8 @@ export type NavId =
   | 'practice'
   | 'peers'
   | 'circles'
+  | 'share'
+  | 'captain'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -101,6 +103,7 @@ export type AdminSectionId =
   | 'practiceBank'
   | 'peers'
   | 'circles'
+  | 'growth'
   | 'reports'
   | 'moderation'
   | 'mentorship'
@@ -158,6 +161,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   // Peer mentor nominations and buddy matching; circles awaiting approval (prompt 2, G7).
   section('peers', '/admin/peers', 'peers:manage', 'people'),
   section('circles', '/admin/circles', 'circles:manage', 'community'),
+  // Member invites and the public outcomes page (prompt 2, G8).
+  section('growth', '/admin/growth', 'onboarding:manage', 'people'),
   section('analytics', '/admin/analytics', 'analytics:cohort', 'insights'),
   section('reports', '/admin/reports', 'analytics:tenant', 'insights'),
   section('branding', '/admin/branding', 'tenant:branding', 'college'),
@@ -215,6 +220,10 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   peers: d('peers', '/peers', 'you', ['peers:enroll']),
   // Circles: batch, branch, club and interest communities (prompt 2, G7).
   circles: d('circles', '/circles', 'community', ['circles:join']),
+  // Opt-in public pages and inviting the batch (prompt 2, G8).
+  share: d('share', '/share', 'you', ['share:pages', 'invites:batchmates']),
+  // Campus Captains: their class joining, and invites (prompt 2, G8).
+  captain: d('captain', '/captain', 'you', ['captains:class']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -343,6 +352,8 @@ const MENU_ORDER: readonly NavId[] = [
   'practice',
   'peers',
   'circles',
+  'share',
+  'captain',
   'progress',
   'rewards',
   'saved',

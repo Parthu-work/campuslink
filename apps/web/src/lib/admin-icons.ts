@@ -1,5 +1,6 @@
 import {
   BadgeCheck,
+  Sprout,
   Building2,
   FileCheck2,
   Gauge,
@@ -43,6 +44,7 @@ export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
   practiceBank: ListChecks,
   peers: HeartHandshake,
   circles: UsersRound,
+  growth: Sprout,
   moderation: ShieldAlert,
   mentorship: HeartHandshake,
   sources: Newspaper,

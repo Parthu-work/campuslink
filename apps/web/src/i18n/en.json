@@ -103,7 +103,9 @@
     "practice": "Practice",
     "peers": "Peer mentoring",
     "circles": "Circles",
-    "alumni": "Alumni"
+    "alumni": "Alumni",
+    "share": "Share",
+    "captain": "Campus Captain"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -493,7 +495,11 @@
     "peers": "Peer mentors and buddies",
     "circles": "Circles",
     "recognition": "Recognition",
-    "giving": "Giving"
+    "giving": "Giving",
+    "growth": "Growth and invites",
+    "captain": "Campus Captain",
+    "grantCaptain": "Make Campus Captain",
+    "revokeCaptain": "Remove Campus Captain"
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -1361,6 +1367,10 @@
     "circle_decided": {
       "title": "Your circle proposal was reviewed",
       "body": "{{circle}}: open it to see the decision."
+    },
+    "referral_outcome_prompt": {
+      "title": "How did your {{company}} referral go?",
+      "body": "Tell us if it led to an interview or an offer. It helps the alumni who refer."
     }
   },
   "notifications": {

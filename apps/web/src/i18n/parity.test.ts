@@ -19,6 +19,7 @@ const PACK_USERS: Record<string, string[]> = {
   alumni: ['/features/alumni/', '/features/admin/recognition-admin.tsx', '/features/admin/giving-admin.tsx'],
   practice: ['/features/practice/', '/features/admin/practice-bank.tsx'],
   habits: ['/features/habits/'],
+  share: ['/features/share/'],
 };
 
 /** Flattens nested strings to "a.b.c" → value. */

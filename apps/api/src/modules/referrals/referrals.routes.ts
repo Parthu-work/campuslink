@@ -1,4 +1,5 @@
 import {
+  referralOutcomeBody,
   referralPrefsBody,
   referralRequestBody,
   referralRespondBody,
@@ -17,6 +18,26 @@ const tag = 'Referrals';
 
 export function referralRoutes(s: { referrals: ReferralsService; files: FilesService }): AnyRouteSpec[] {
   return [
+    {
+      method: 'post',
+      path: '/referrals/:id/outcome',
+      tag,
+      summary: 'Say what happened after I was referred (interview, offer, no reply or rejected)',
+      access: { kind: 'permission', permission: 'referrals:request' },
+      params: idParams,
+      body: referralOutcomeBody,
+      handler: async ({ req, params, body }) => ({
+        data: await s.referrals.reportOutcome(authOf(req), params.id, body.outcome),
+      }),
+    },
+    {
+      method: 'get',
+      path: '/me/referral-impact',
+      tag,
+      summary: 'What my referrals led to (from what students reported)',
+      access: { kind: 'permission', permission: 'referrals:offer' },
+      handler: async ({ req }) => ({ data: await s.referrals.impact(authOf(req)) }),
+    },
     {
       method: 'get',
       path: '/me/referral-settings',

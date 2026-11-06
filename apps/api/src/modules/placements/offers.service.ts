@@ -277,6 +277,23 @@ export class OffersService {
   }
 
   /** Verified offers of these batches, for reports (B8; aggregated and suppressed there). */
+  /** Prompt 2, G8 (public pages): a member's verified offers, company and role only (never the CTC). */
+  async verifiedOf(
+    userId: string,
+  ): Promise<{ id: string; company: string; role: string; gradYear: number | null }[]> {
+    const rows = await OfferModel.find({ userId: new Types.ObjectId(userId), status: 'verified' })
+      .select('companyName role gradYear')
+      .sort({ _id: -1 })
+      .limit(20)
+      .lean<OfferDoc[]>();
+    return rows.map((r) => ({
+      id: String(r._id),
+      company: r.companyName,
+      role: r.role,
+      gradYear: r.gradYear ?? null,
+    }));
+  }
+
   async verifiedFor(gradYears: number[]) {
     const rows = await OfferModel.find({ status: 'verified', gradYear: { $in: gradYears } })
       .select('userId anonKey branch gradYear companyKey companyName role ctcLpa ctcBand type source')

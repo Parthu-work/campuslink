@@ -213,6 +213,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: '{name} reviewed your résumé',
       body: '{name} left a comment on your résumé. Open it to read the review.',
     },
+    referral_outcome_prompt: {
+      title: 'How did your {company} referral go?',
+      body: 'Tell us if it led to an interview or an offer. It helps the alumni who refer.',
+    },
     weekly_next_step: {
       title: 'Your next step for this week',
       body: 'One roadmap step, one opening and one alumnus to ask, picked for you. Open it to start.',
@@ -479,6 +483,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: '{name} మీ రెజ్యూమ్‌ను సమీక్షించారు',
       body: '{name} మీ రెజ్యూమ్‌పై వ్యాఖ్య రాశారు. సమీక్ష చదవడానికి తెరవండి.',
     },
+    referral_outcome_prompt: {
+      title: 'మీ {company} రిఫరల్ ఎలా జరిగింది?',
+      body: 'ఇంటర్వ్యూ లేదా ఆఫర్ వచ్చిందో చెప్పండి. రిఫర్ చేసే పూర్వ విద్యార్థులకు ఇది ఉపయోగపడుతుంది.',
+    },
     weekly_next_step: {
       title: 'ఈ వారం మీ తదుపరి అడుగు',
       body: 'మీ కోసం ఎంచుకున్న ఒక రోడ్‌మ్యాప్ దశ, ఒక అవకాశం, అడగడానికి ఒక పూర్వ విద్యార్థి. మొదలుపెట్టడానికి తెరవండి.',
@@ -729,6 +737,10 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     resume_comment: {
       title: '{name} ने आपके रिज़्यूमे की समीक्षा की',
       body: '{name} ने आपके रिज़्यूमे पर टिप्पणी की है। समीक्षा पढ़ने के लिए खोलें।',
+    },
+    referral_outcome_prompt: {
+      title: 'आपका {company} रेफ़रल कैसा रहा?',
+      body: 'बताइए कि इससे इंटरव्यू या ऑफ़र मिला या नहीं। इससे रेफ़र करने वाले पूर्व छात्रों को मदद मिलती है।',
     },
     weekly_next_step: {
       title: 'इस हफ़्ते का आपका अगला कदम',
@@ -1005,6 +1017,8 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
     // Prompt 2, G7: habit loops.
     case 'weekly_next_step':
       return '/next-step';
+    case 'referral_outcome_prompt':
+      return '/referrals';
     case 'buddy_matched':
     case 'peer_mentor_nominated':
       return '/peers';

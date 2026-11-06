@@ -8,7 +8,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 - **Deny by default.** A route without an explicit permission is either public (listed below) or open to any signed-in user of that college for self-service only.
 - **Unverified users** (college verification pending) are limited to: `feed:read`, `roadmaps:read`, `jobs:read`, `content:report`, `support:create`.
 - **MFA:** SUPER_ADMIN, COLLEGE_ADMIN have **no** permissions until TOTP is enabled.
-- **Capabilities:** `CERTIFIED_CONTRIBUTOR` adds `roadmaps:write`, `study:contribute` (students only); `PEER_MENTOR` adds `mentorship:mentor` (students only).
+- **Capabilities:** `CERTIFIED_CONTRIBUTOR` adds `roadmaps:write`, `study:contribute` (students only); `PEER_MENTOR` adds `mentorship:mentor` (students only); `CAMPUS_CAPTAIN` adds `captains:class`, `invites:batchmates` (students only).
 - **Tenant overrides:** a college admin may grant or revoke permissions per role; `platform:*` permissions can never be granted to a college role.
 - **Escalation guards:** only a college admin can act on another college admin; SUPER_ADMIN cannot be assigned through the college API; the last active college admin cannot be demoted.
 - **Feature switches:** an endpoint marked "feature `x`" answers 403 `FEATURE_DISABLED` while the college has that feature off (Admin › Features), before authentication.
@@ -96,6 +96,10 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `circles:join` Join circles and read, post, ask and attend inside them | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `circles:propose` Propose a circle (staff approve it) or create one (staff) | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `circles:manage` Approve, reject and archive circles; see every circle | · | ✅ | ✅ | ✅ | · | · |
+| `invites:batchmates` Invite people of one’s own batch who are on the college’s list but not here yet | · | ✅ | · | · | ✅ | · |
+| `captains:class` See one’s own class joining (counts only) and invite classmates (Campus Captains) | · | ✅ | · | · | · | · |
+| `share:pages` Publish opt-in public pages: a placement, a finished roadmap, mentoring | · | ✅ | · | · | ✅ | ✅ |
+| `parents:digest` Send a monthly summary to a parent, with their confirmation | · | ✅ | · | · | · | ✅ |
 | `support:manage` Answer and close problem reports sent to the college | · | ✅ | · | · | · | · |
 | `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ |
 | `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ |
@@ -319,6 +323,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `PATCH /api/v1/admin/job-sources/:id` | `jobs:sources` · feature `jobsAggregation` | college | adminWrite | Rename, pause, resume or change interval |
 | `DELETE /api/v1/admin/job-sources/:id` | `jobs:sources` · feature `jobsAggregation` | college | adminWrite | Remove a source (its open jobs close) |
 | `POST /api/v1/admin/job-sources/:id/fetch` | `jobs:sources` · feature `jobsAggregation` | college | adminWrite | Fetch now |
+| `POST /api/v1/referrals/:id/outcome` | `referrals:request` | college | — | Say what happened after I was referred (interview, offer, no reply or rejected) |
+| `GET /api/v1/me/referral-impact` | `referrals:offer` | college | — | What my referrals led to (from what students reported) |
 | `GET /api/v1/me/referral-settings` | `referrals:offer` | college | — | My referral settings (off until I opt in) and this week’s count |
 | `PUT /api/v1/me/referral-settings` | `referrals:offer` | college | — | Opt in or out of referral requests and set a weekly cap |
 | `POST /api/v1/referrals/resume` | `referrals:request` | college | upload | Upload a résumé PDF for a referral request (rebuilt, metadata removed) |
@@ -533,6 +539,22 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `PUT /api/v1/study-groups/:id/questions/:questionId` | `study:read` · feature `study` | college | — | Mark a shared question done (or not) |
 | `POST /api/v1/study-groups/:id/quizzes` | `study:read` · feature `study` | college | — | Share one of my study assistant /quiz results with the group |
 | `POST /api/v1/study-groups/:id/quizzes/:quizId/answers` | `study:read` · feature `study` | college | — | Take a quiz shared with the group (once) |
+| `GET /api/v1/me/public-pages` | `share:pages` | college | — | My public pages and what I could publish (a placement, a roadmap, mentoring) |
+| `POST /api/v1/me/public-pages` | `share:pages` | college | posting | Publish one achievement as a public page (opt-in, revocable) |
+| `DELETE /api/v1/me/public-pages/:id` | `share:pages` | college | — | Take a public page down (its link stops working) |
+| `GET /api/v1/admin/growth` | `onboarding:manage` | college | — | Member invites and the public outcomes page: on or off |
+| `PUT /api/v1/admin/growth/member-invites` | `onboarding:manage` | college | — | Let members invite their batch on WhatsApp (the college confirms its list opted in) |
+| `PUT /api/v1/admin/growth/outcomes-page` | `tenant:settings` | college | — | Publish (or take down) the college outcomes page |
+| `GET /api/v1/admin/growth/outcomes-preview` | `tenant:settings` | college | — | What the outcomes page shows (also while it is off) |
+| `GET /api/v1/me/batchmates` | `invites:batchmates` | college | — | How many of my batch are on the college's list but not here yet |
+| `POST /api/v1/me/batchmates/invite` | `invites:batchmates` | college | posting | Invite them on WhatsApp (within my weekly limit and the college's allowance) |
+| `GET /api/v1/captain/class` | `captains:class` | college | — | My class joining CampusLink (Campus Captains; counts only) |
+| `POST /api/v1/captain/invites` | `captains:class` | college | posting | Invite classmates on WhatsApp (Campus Captains; a daily limit) |
+| `GET /api/v1/me/parent-digest` | `parents:digest` | college | — | My monthly summary to a parent: on, waiting for the code, or off |
+| `POST /api/v1/me/parent-digest` | `parents:digest` | college | otp | Add a parent's number: they get a code, and I enter it to turn the summary on |
+| `POST /api/v1/me/parent-digest/confirm` | `parents:digest` | college | otp | Enter the code the parent received |
+| `PUT /api/v1/me/parent-digest/grades` | `parents:digest` | college | — | Include my CGPA in the summary (or not) |
+| `DELETE /api/v1/me/parent-digest` | `parents:digest` | college | — | Stop the summary (the number is deleted) |
 | `GET /api/v1/legal/:doc` | public | college | — | The college’s privacy policy or terms, with its details filled in (public) |
 | `GET /api/v1/admin/legal` | `tenant:branding` | college | — | The college’s legal details (legal name, address, grievance officer) |
 | `GET /api/v1/admin/retention` | `tenant:settings` | college | — | Whether accounts unused for some months are deleted (and after how many) |
@@ -626,3 +648,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/admin/moderation/appeals` | `moderation:act` | college | — | Appeals against removals |
 | `POST /api/v1/admin/moderation/appeals/:id/decision` | `moderation:act` | college | adminWrite | Uphold or reverse a removal (a different moderator must uphold) |
 | `POST /api/v1/appeals` | `feed:read` | college | reports | Appeal the removal of my content (once) |
+| `GET /p/outcomes` | public | college | search | The college outcomes page (only while the college publishes it) |
+| `GET /p/outcomes/og.png` | public | college | search | The outcomes page share image |
+| `GET /p/:slug` | public | college | search | A member's public page (only while they publish it) |
+| `GET /p/:slug/og.png` | public | college | search | A public page's share image (its opt-in fields only) |

@@ -26,6 +26,9 @@ export function lazyPart<P extends object>(load: () => Promise<ComponentType<P>>
   const make = () => lazy(() => load().then((C) => ({ default: C })));
   let Loaded = make();
   let attempt = 0;
+  // One extra try when a load fails while already online: it failed as the connection came back,
+  // after the `online` event had fired. Only one, so a file a deploy removed is not asked for in a loop.
+  let spare = true;
   return function LazyPart({ fallback = null, ...props }: P & { fallback?: ReactNode }) {
     const [tried, setTried] = useState(attempt);
     const [failed, setFailed] = useState(false);
@@ -40,8 +43,20 @@ export function lazyPart<P extends object>(load: () => Promise<ComponentType<P>>
         setTried(attempt);
         setFailed(false);
       };
-      window.addEventListener('online', retry);
-      return () => window.removeEventListener('online', retry);
+      const back = () => {
+        spare = true;
+        retry();
+      };
+      window.addEventListener('online', back);
+      let timer: number | undefined;
+      if (navigator.onLine && spare) {
+        spare = false;
+        timer = window.setTimeout(retry, 1000);
+      }
+      return () => {
+        window.removeEventListener('online', back);
+        window.clearTimeout(timer);
+      };
     }, [failed, tried]);
     const Part = Loaded;
     return (

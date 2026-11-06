@@ -217,6 +217,9 @@ export function UsersAdmin() {
                   {u.capabilities.includes('CERTIFIED_CONTRIBUTOR') && (
                     <Badge tone="accent">{t('admin.contributor')}</Badge>
                   )}
+                  {u.capabilities.includes('CAMPUS_CAPTAIN') && (
+                    <Badge tone="accent">{t('admin.captain')}</Badge>
+                  )}
                   {!u.verified && <Badge tone="warning">{t('admin.unverified')}</Badge>}
                   {u.status === 'suspended' && <Badge tone="danger">{t('admin.suspended')}</Badge>}
                 </div>
@@ -227,21 +230,37 @@ export function UsersAdmin() {
                     {t('admin.editRoles')}
                   </Button>
                 )}
-                {canGrant && u.roles.includes('STUDENT') && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() =>
-                      mutate.mutate({
-                        id: u.id,
-                        path: 'capabilities',
-                        body: { capabilities: u.capabilities.length ? [] : ['CERTIFIED_CONTRIBUTOR'] },
-                      })
-                    }
-                  >
-                    {u.capabilities.length ? t('admin.revokeContributor') : t('admin.grantContributor')}
-                  </Button>
-                )}
+                {canGrant &&
+                  u.roles.includes('STUDENT') &&
+                  // One toggle per capability: each keeps the others (peer mentoring included, G7).
+                  (
+                    [
+                      ['CERTIFIED_CONTRIBUTOR', 'admin.grantContributor', 'admin.revokeContributor'],
+                      ['CAMPUS_CAPTAIN', 'admin.grantCaptain', 'admin.revokeCaptain'],
+                    ] as const
+                  ).map(([cap, grant, revoke]) => {
+                    const has = u.capabilities.includes(cap);
+                    return (
+                      <Button
+                        key={cap}
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          mutate.mutate({
+                            id: u.id,
+                            path: 'capabilities',
+                            body: {
+                              capabilities: has
+                                ? u.capabilities.filter((c) => c !== cap)
+                                : [...u.capabilities, cap],
+                            },
+                          })
+                        }
+                      >
+                        {t(has ? revoke : grant)}
+                      </Button>
+                    );
+                  })}
                 {canReview &&
                   u.verified &&
                   !u.roles.some((r) => ['COLLEGE_ADMIN', 'TPO', 'FACULTY'].includes(r)) && (

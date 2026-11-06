@@ -114,14 +114,19 @@ test('a shell menu whose code cannot load offline leaves the shell working and a
   context,
   isMobile,
 }) => {
-  // Hold the account menu's code until the connection drops, then fail it.
+  // Hold the account menu's code until the connection drops, then fail it. A request made while
+  // offline fails at once, as it would on a real phone (holding it would hang the retry forever).
   const menu = /\/assets\/account-menu-[^/]+\.js$/;
   const held: Route[] = [];
-  await page.route(menu, (route) => void held.push(route));
+  let offline = false;
+  await page.route(menu, (route) =>
+    offline ? void route.abort('internetdisconnected') : void held.push(route),
+  );
   await ready(page);
   await context.setOffline(true);
   await expect.poll(() => held.length, { timeout: 10_000 }).toBeGreaterThan(0);
-  for (const route of held) await route.abort('internetdisconnected');
+  offline = true;
+  for (const route of held.splice(0)) await route.abort('internetdisconnected');
   await page.waitForTimeout(300);
   await shellIsAlive(page);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

@@ -29,6 +29,7 @@ Route 53  *.campuslink.example (wildcard)        ACM wildcard certificate
 ALB (HTTPS 443, TLS 1.2+; HTTP 80 → 301)  ── AWS WAF (managed common rule set, rate rule)
     │
     ├── default: web tasks, nginx (deploy/web.Dockerfile): static build + security headers
+    ├── /p/*:    API tasks (public pages and their share images, prompt 2, G8; cached 5 minutes)
     └── /api/*:  API tasks (deploy/api.Dockerfile, Express + Socket.io), ≥ 2 tasks across 2 AZs
             │    worker tasks (deploy/worker.Dockerfile, BullMQ jobs; no traffic from the ALB), ≥ 2 tasks
             │

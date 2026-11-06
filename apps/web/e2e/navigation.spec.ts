@@ -54,6 +54,10 @@ test('Home → post → back lands on the same post', async ({ page }) => {
   await signIn(page, 'ananya@dpit.example');
   const feed = page.getByRole('feed', { name: 'For you' });
   await expect(feed.getByRole('article').first()).toBeVisible();
+  // Home's cards above the feed load after it (the Next Step card, G7). Measure once they have
+  // arrived, or scroll anchoring moves the page after we read the position.
+  await expect(page.getByRole('heading', { name: 'Your next step this week' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'One useful thing today' })).toBeVisible();
   const max = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
   const y = await scrollTo(page, Math.min(900, Math.max(0, max - 50)));
   // Open a post that is on screen right now.

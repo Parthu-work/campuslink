@@ -10,6 +10,9 @@ import {
   type referralRequestBody,
   type referralRespondBody,
   type referralsQuery,
+  REFERRAL_OUTCOME_PROMPT_DAYS,
+  type ReferralImpactView,
+  type ReferralOutcome,
 } from '@campuslink/shared';
 import {
   ReferralPrefsModel,
@@ -20,6 +23,7 @@ import {
 import { badRequest, conflict, notFound } from '../../lib/errors.js';
 import { plainText } from '../../lib/text.js';
 import { requireTenantId } from '../../lib/context.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
 import type { JobQueue, TenantJob } from '../../lib/jobs.js';
 import type { JobsService } from '../jobs/jobs.service.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
@@ -31,6 +35,8 @@ import type { AuthState } from '../../types.js';
 import { noAward, type Award } from '../../lib/awards.js';
 
 export const REFERRAL_EXPIRE_JOB = 'referrals.expire';
+/** Prompt 2, G8: asks the student what happened, 14 and 30 days after a referral. */
+export const REFERRAL_OUTCOME_JOB = 'referrals.outcome_prompt';
 const DAY = 86_400_000;
 const WEEK = 7 * DAY;
 /** Résumés stay with a request for 60 days, then the retention job deletes them. */
@@ -53,6 +59,8 @@ export interface ReferralsDeps {
  * student, one-tap refer or a kind decline for the alumnus. Requests expire after 14 days.
  */
 export class ReferralsService {
+  /** Prompt 2, G8: product events (referral outcomes), set by the app. */
+  track: Track = noTrack;
   // ── Privacy ─────────────────────────────
   async exportFor(userId: string) {
     const u = new Types.ObjectId(userId);
@@ -177,6 +185,7 @@ export class ReferralsService {
       declineTemplate: (r.declineTemplate ?? null) as ReferralView['declineTemplate'],
       createdAt: r.createdAt.toISOString(),
       respondedAt: r.respondedAt?.toISOString() ?? null,
+      outcome: (r.outcome ?? null) as NonNullable<ReferralView['outcome']> | null,
       expiresAt: r.expiresAt.toISOString(),
     }));
   }
@@ -280,6 +289,50 @@ export class ReferralsService {
     });
   }
 
+  /** Job: asks the student about the outcome, unless they already said (prompt 2, G8). */
+  async onOutcomePrompt(job: TenantJob) {
+    const r = await ReferralRequestModel.findOne({
+      _id: new Types.ObjectId(String(job.referralId)),
+      status: 'referred',
+      outcome: null,
+    }).lean<ReferralDoc>();
+    if (!r) return;
+    await this.d.notifications.notify(r.requesterId, 'referral_outcome_prompt', {
+      company: r.company,
+      referralId: String(r._id),
+    });
+  }
+
+  /** The student reports what happened after being referred (they may correct it later). */
+  async reportOutcome(viewer: AuthState, id: string, outcome: ReferralOutcome): Promise<ReferralView> {
+    const done = await ReferralRequestModel.findOneAndUpdate(
+      { _id: new Types.ObjectId(id), requesterId: new Types.ObjectId(viewer.userId), status: 'referred' },
+      { $set: { outcome, outcomeAt: new Date() } },
+      { returnDocument: 'before' },
+    ).lean<ReferralDoc>();
+    if (!done) throw notFound('Referral');
+    if (!done.outcome) await this.track(viewer.userId, 'referral_outcome_reported', { outcome });
+    for (const days of REFERRAL_OUTCOME_PROMPT_DAYS)
+      await this.d.jobs.cancel(REFERRAL_OUTCOME_JOB, `refout-${id}-${days}`);
+    const fresh = await ReferralRequestModel.findById(done._id).lean<ReferralDoc>();
+    return (await this.views([fresh ?? done]))[0] as ReferralView;
+  }
+
+  /** What a referrer's referrals led to, from what students reported (prompt 2, G8; feeds G10). */
+  async impact(viewer: AuthState): Promise<ReferralImpactView> {
+    const rows = await ReferralRequestModel.aggregate<{ _id: string | null; n: number }>([
+      { $match: { referrerId: new Types.ObjectId(viewer.userId), status: 'referred' } },
+      { $group: { _id: '$outcome', n: { $sum: 1 } } },
+    ]);
+    const n = (k: string | null) => rows.find((r) => r._id === k)?.n ?? 0;
+    return {
+      referred: rows.reduce((a, r) => a + r.n, 0),
+      // An offer came through an interview: both count as interviews.
+      interviews: n('interview') + n('offer'),
+      offers: n('offer'),
+    };
+  }
+
   async onExpire(job: TenantJob) {
     await this.expireOne(String(job.referralId));
   }
@@ -334,8 +387,16 @@ export class ReferralsService {
     ).lean<ReferralDoc>();
     if (!done) throw conflict('This request just changed. Refresh and try again.');
     await this.d.jobs.cancel(REFERRAL_EXPIRE_JOB, `refexp-${id}`);
-    if (body.action === 'refer')
+    if (body.action === 'refer') {
       await this.award(viewer.userId, 'referral_given', id, { from: r.requesterId });
+      // Prompt 2, G8: ask the student what happened, at 14 and 30 days.
+      for (const days of REFERRAL_OUTCOME_PROMPT_DAYS)
+        await this.d.jobs.enqueue(
+          REFERRAL_OUTCOME_JOB,
+          { tenantId: String(requireTenantId()), referralId: id, days },
+          { jobId: `refout-${id}-${days}`, delayMs: days * 86_400_000 },
+        );
+    }
     const name = (await this.d.profiles.refsFor([viewer.userId])).get(viewer.userId)?.name ?? '';
     await this.d.notifications.notify(
       r.requesterId,

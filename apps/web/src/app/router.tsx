@@ -130,6 +130,9 @@ const load = {
   circlePage: withPack('habits', () => import('../features/habits/circle-page')),
   studyGroups: withPack('habits', () => import('../features/habits/study-groups')),
   habitsAdmin: withPack('habits', () => import('../features/habits/habits-admin')),
+  // Prompt 2, G8: growth loops, strings in the `share` pack.
+  share: withPack('share', () => import('../features/share/share')),
+  growthAdmin: withPack('share', () => import('../features/share/growth-admin')),
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
@@ -552,6 +555,11 @@ function collegeRoutes(): RouteObject[] {
             isId(id) ? [qc.ensureQueryData(q.circle(id))] : [],
           ),
           screen(load.studyGroups, 'StudyGroupsPage', inFeature('study', 'study:read'), at('/study-groups')),
+          // Growth loops (prompt 2, G8).
+          screen(load.share, 'SharePage', ['share:pages', 'invites:batchmates'], at('/share')),
+          screen(load.share, 'CaptainPage', 'captains:class', at('/captain'), () => [
+            qc.ensureQueryData(q.captainClass()),
+          ]),
           screen(
             load.studyGroups,
             'StudyGroupPage',
@@ -715,6 +723,10 @@ function collegeRoutes(): RouteObject[] {
               () => [qc.ensureQueryData(q.adminPeers())],
             ),
             screen(load.habitsAdmin, 'CirclesAdmin', 'circles:manage', at('circles')),
+            // Member invites and the outcomes page (prompt 2, G8).
+            screen(load.growthAdmin, 'GrowthAdmin', 'onboarding:manage', at('growth'), () => [
+              qc.ensureQueryData(q.adminGrowth()),
+            ]),
             screen(
               load.reports,
               'ReportsDashboard',

@@ -96,6 +96,13 @@ import type {
   MicroAskInbox,
   PledgeView,
   AlumniOfMonthView,
+  BatchmatesView,
+  CaptainClassView,
+  CollegeOutcomesView,
+  GrowthSettingsView,
+  MyPublicPagesView,
+  ParentDigestView,
+  ReferralImpactView,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -992,4 +999,48 @@ export const myQuizzes = () =>
     queryKey: ['my-quizzes'],
     queryFn: ({ signal }) =>
       api.get<{ id: string; topic: string; questions: number; createdAt: string }[]>('/me/quizzes', signal),
+  });
+
+// ── Growth loops (prompt 2, G8) ─────────────────────────────
+
+export const myPublicPages = () =>
+  queryOptions({
+    queryKey: ['public-pages'],
+    queryFn: ({ signal }) => api.get<MyPublicPagesView>('/me/public-pages', signal),
+  });
+
+export const batchmates = () =>
+  queryOptions({
+    queryKey: ['batchmates'],
+    queryFn: ({ signal }) => api.get<BatchmatesView>('/me/batchmates', signal),
+  });
+
+export const captainClass = () =>
+  queryOptions({
+    queryKey: ['captain-class'],
+    queryFn: ({ signal }) => api.get<CaptainClassView>('/captain/class', signal),
+  });
+
+export const parentDigest = () =>
+  queryOptions({
+    queryKey: ['parent-digest'],
+    queryFn: ({ signal }) => api.get<ParentDigestView>('/me/parent-digest', signal),
+  });
+
+export const referralImpact = () =>
+  queryOptions({
+    queryKey: ['referral-impact'],
+    queryFn: ({ signal }) => api.get<ReferralImpactView>('/me/referral-impact', signal),
+  });
+
+export const adminGrowth = () =>
+  queryOptions({
+    queryKey: ['admin-growth'],
+    queryFn: ({ signal }) => api.get<GrowthSettingsView>('/admin/growth', signal),
+  });
+
+export const adminOutcomesPreview = () =>
+  queryOptions({
+    queryKey: ['admin-growth', 'outcomes-preview'],
+    queryFn: ({ signal }) => api.get<CollegeOutcomesView | null>('/admin/growth/outcomes-preview', signal),
   });

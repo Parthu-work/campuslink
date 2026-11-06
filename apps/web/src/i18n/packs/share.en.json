@@ -1,0 +1,122 @@
+{
+  "share": {
+    "intro": "Bring your batch in, show what you have achieved, and keep your family in the loop. Nothing is shared until you choose it.",
+    "batch": {
+      "title": "Invite your batch",
+      "notHere": "{{n}} of your batch aren’t here yet",
+      "notHereNone": "Everyone from your batch on the college’s list is here.",
+      "batchLine": "{{branch}} · {{year}} batch",
+      "off": "Your college has not turned on invites from members yet.",
+      "invite": "Invite {{n}} on WhatsApp",
+      "left": "You can send {{n}} more this week.",
+      "noneLeft": "You have sent this week’s invites. More next week.",
+      "how": "They get the college’s invite on WhatsApp, with a link that signs them in. We never show you their numbers.",
+      "sent": "{{n}} invites sent",
+      "skipped": "Nobody new to invite right now."
+    },
+    "pages": {
+      "title": "Public pages",
+      "intro": "A page with a link you can post anywhere: LinkedIn, WhatsApp, your résumé. It shows only what you see here. You can take it down at any time.",
+      "minor": "Public pages are for members over 18.",
+      "none": "Nothing to share yet. A verified offer, a finished roadmap or mentoring juniors each make a page you can publish.",
+      "publish": "Publish",
+      "published": "Published",
+      "open": "Open page",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "takeDown": "Take down",
+      "takenDown": "Page taken down. The link no longer works.",
+      "views": "{{n}} views",
+      "dialogTitle": "Publish this page",
+      "dialogBody": "Anyone with the link can see it. It never shows your phone, email, exact salary or anything else from your profile.",
+      "nameFull": "Full name",
+      "nameFirst": "First name only",
+      "nameLabel": "Show my name as",
+      "indexable": "Let search engines list it",
+      "indexableBody": "Off: only people with the link find it.",
+      "preview": "The page will say",
+      "kind": {
+        "placed": "Placement",
+        "roadmap": "Finished roadmap",
+        "mentored": "Mentoring",
+        "mentor": "Mentor profile"
+      }
+    },
+    "parent": {
+      "title": "Monthly update for a parent",
+      "intro": "Once a month, on WhatsApp: the drives you registered for, sessions you attended and your readiness score. Your parent confirms with a code first.",
+      "phone": "Parent’s WhatsApp number",
+      "phoneHint": "With the country code, like +91 98480 12345.",
+      "language": "Their language",
+      "grades": "Include my CGPA",
+      "gradesBody": "Off unless you turn it on.",
+      "start": "Send the code",
+      "codeTitle": "Enter the code your parent received",
+      "codeBody": "We sent a 6-digit code to the number ending {{last4}}. Ask them for it.",
+      "code": "Code",
+      "confirm": "Confirm",
+      "active": "Sent each month to the number ending {{last4}}, in {{lang}}.",
+      "last": "Last sent {{date}}.",
+      "stop": "Stop the updates",
+      "stopped": "Updates stopped. We deleted the number.",
+      "confirmed": "Confirmed. The first update goes out at the start of next month.",
+      "lang": {
+        "en": "English",
+        "te": "తెలుగు",
+        "hi": "हिन्दी"
+      }
+    },
+    "captain": {
+      "intro": "Help your class join. You see counts for your own class only, never names or numbers.",
+      "onList": "On the college’s list",
+      "invited": "Invited",
+      "joined": "Joined",
+      "verified": "Verified",
+      "active": "Active this week",
+      "broughtIn": "Joined through your invites",
+      "invite": "Invite {{n}} classmates on WhatsApp",
+      "left": "You can send {{n}} more today.",
+      "noneLeft": "You have sent today’s invites. More tomorrow.",
+      "allIn": "Everyone on the list for your class has an invite.",
+      "off": "Your college has not turned on member invites yet."
+    },
+    "referral": {
+      "ask": "What happened after the referral?",
+      "saved": "Thanks. It helps the alumni who refer.",
+      "outcome": {
+        "interview": "Got an interview",
+        "offer": "Got an offer",
+        "no_response": "No response yet",
+        "rejected": "Not selected"
+      },
+      "impactTitle": "What your referrals led to",
+      "referred": "Referred",
+      "interviews": "Interviews",
+      "offers": "Offers",
+      "impactNote": "From what students told us after you referred them."
+    },
+    "admin": {
+      "intro": "Let members bring their batch in, and publish your college’s placement outcomes as a public page.",
+      "invitesTitle": "Invites from members",
+      "invitesBody": "Alumni invite their own batch, and Campus Captains their class, on WhatsApp from your college’s list. They never see the numbers. Each member can send {{n}} a week.",
+      "invitesSwitch": "Members can invite their batch",
+      "attest": "Everyone on our list agreed to hear from the college on WhatsApp.",
+      "attestNeeded": "Confirm that first.",
+      "attestedOn": "Confirmed on {{date}}.",
+      "outcomesTitle": "Public outcomes page",
+      "outcomesBody": "Placement percentage by year, top recruiters, where alumni work and mentoring hours. Aggregates only; counts under 5 show as “<5”. No names.",
+      "outcomesSwitch": "Publish the outcomes page",
+      "outcomesLink": "Open the public page",
+      "preview": "What it shows",
+      "year": "Batch",
+      "placementPct": "Placed",
+      "placed": "Students placed",
+      "median": "Median CTC band",
+      "recruiters": "Top recruiters",
+      "alumniAt": "Where alumni work",
+      "mentoringHours": "{{n}} hours of mentoring",
+      "noData": "No verified placements yet.",
+      "saved": "Saved"
+    }
+  }
+}

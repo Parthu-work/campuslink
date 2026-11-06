@@ -17,6 +17,7 @@ import {
 import {
   WHATSAPP_TEMPLATES,
   INVITE_TEMPLATES,
+  PARENT_DIGEST_TEMPLATE,
   AUTO_REPLY,
   type ChannelAction,
   type WaLang,
@@ -288,6 +289,34 @@ export class ChannelService {
       return 'failed';
     }
     await this.record(null, 'whatsapp', tpl.name, 'onboarding', false, messageId);
+    return 'sent';
+  }
+
+  /**
+   * The parent digest (prompt 2, G8) to a confirmed parent's number: not a member, so no member caps,
+   * but it counts against the college's allowance.
+   */
+  async sendParentDigest(phone: string, data: Record<string, string>, locale: string): Promise<SendOutcome> {
+    if (!(await this.invitesUsable())) return 'unavailable';
+    if ((await this.monthCount()) >= (await this.allowance())) {
+      await this.budgetAlerts();
+      return 'capped';
+    }
+    const lang = toLang(locale);
+    let messageId: string;
+    try {
+      ({ messageId } = await this.d.whatsapp.sendTemplate(
+        phone,
+        PARENT_DIGEST_TEMPLATE.name,
+        lang,
+        PARENT_DIGEST_TEMPLATE.params(data, { lang, timezone: 'UTC' }),
+        [],
+      ));
+    } catch (err) {
+      this.d.logger.warn({ err }, 'whatsapp parent digest failed');
+      return 'failed';
+    }
+    await this.record(null, 'whatsapp', PARENT_DIGEST_TEMPLATE.name, 'reminders', false, messageId);
     return 'sent';
   }
 

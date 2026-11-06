@@ -19,6 +19,8 @@ export const Capability = {
   CERTIFIED_CONTRIBUTOR: 'CERTIFIED_CONTRIBUTOR',
   /** Prompt 2, G7: a final-year with a verified offer, or nominated by faculty, mentors juniors. */
   PEER_MENTOR: 'PEER_MENTOR',
+  /** Prompt 2, G8: a student who helps their class join; granted by the college's admins. */
+  CAMPUS_CAPTAIN: 'CAMPUS_CAPTAIN',
 } as const;
 export type Capability = (typeof Capability)[keyof typeof Capability];
 export const CAPABILITIES = Object.values(Capability);
@@ -125,6 +127,11 @@ export const ALL_PERMISSIONS = [
   'circles:join',
   'circles:propose',
   'circles:manage',
+  // Growth loops (prompt 2, G8)
+  'invites:batchmates',
+  'captains:class',
+  'share:pages',
+  'parents:digest',
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
   'platform:health',
@@ -224,6 +231,10 @@ export const PERMISSIONS: Record<Permission, string> = {
   'circles:join': 'Join circles and read, post, ask and attend inside them',
   'circles:propose': 'Propose a circle (staff approve it) or create one (staff)',
   'circles:manage': 'Approve, reject and archive circles; see every circle',
+  'invites:batchmates': 'Invite people of one’s own batch who are on the college’s list but not here yet',
+  'captains:class': 'See one’s own class joining (counts only) and invite classmates (Campus Captains)',
+  'share:pages': 'Publish opt-in public pages: a placement, a finished roadmap, mentoring',
+  'parents:digest': 'Send a monthly summary to a parent, with their confirmation',
   'support:manage': 'Answer and close problem reports sent to the college',
   'placements:view': 'See placement drives and the eligibility rules',
   'placements:register': 'Register for placement drives one is eligible for',
@@ -270,6 +281,8 @@ const STUDENT: Permission[] = [
   'peers:enroll',
   'circles:join',
   'circles:propose',
+  'share:pages',
+  'parents:digest',
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
 const STUDENT_ONLY: readonly Permission[] = [
@@ -279,6 +292,8 @@ const STUDENT_ONLY: readonly Permission[] = [
   // Prompt 2, G7: the weekly Next Step, peer mentoring and buddies are for students.
   'nextstep:view',
   'peers:enroll',
+  // Prompt 2, G8: the parent digest is a student's.
+  'parents:digest',
 ];
 const ALUMNI: Permission[] = [
   ...STUDENT.filter((p) => !STUDENT_ONLY.includes(p)),
@@ -295,6 +310,7 @@ const ALUMNI: Permission[] = [
   'roadmaps:write',
   'study:contribute',
   'practice:author',
+  'invites:batchmates',
 ];
 const STAFF: Permission[] = [
   ...STUDENT.filter(
@@ -306,7 +322,9 @@ const STAFF: Permission[] = [
       p !== 'readiness:view' &&
       p !== 'practice:use' &&
       p !== 'nextstep:view' &&
-      p !== 'peers:enroll',
+      p !== 'peers:enroll' &&
+      p !== 'share:pages' &&
+      p !== 'parents:digest',
   ),
   'feed:post',
   'qa:answer',
@@ -363,6 +381,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
 export const CAPABILITY_PERMISSIONS: Record<Capability, readonly Permission[]> = {
   CERTIFIED_CONTRIBUTOR: ['roadmaps:write', 'study:contribute'],
   PEER_MENTOR: ['mentorship:mentor'],
+  CAMPUS_CAPTAIN: ['captains:class', 'invites:batchmates'],
 };
 
 /** What a user who has not completed college verification may do: read-only, limited. */
