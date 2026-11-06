@@ -583,6 +583,21 @@ export class SessionsService {
 
   /** Analytics: completed sessions since a date (who and when only) and the average rating. */
   /** B5 mentor stats: completed sessions per mentor. */
+  /** Readiness (prompt 2, G5): completed sessions per mentee since a date. */
+  async completedAsMentee(menteeIds: string[], since: Date): Promise<Map<string, number>> {
+    const rows = await BookingModel.aggregate<{ _id: Types.ObjectId; n: number }>([
+      {
+        $match: {
+          menteeId: { $in: menteeIds.map((u) => new Types.ObjectId(u)) },
+          status: 'completed',
+          end: { $gte: since },
+        },
+      },
+      { $group: { _id: '$menteeId', n: { $sum: 1 } } },
+    ]);
+    return new Map(rows.map((r) => [String(r._id), r.n]));
+  }
+
   async completedCounts(mentorIds: Types.ObjectId[]): Promise<Map<string, number>> {
     const rows = await BookingModel.aggregate<{ _id: Types.ObjectId; n: number }>([
       { $match: { mentorId: { $in: mentorIds }, status: 'completed' } },

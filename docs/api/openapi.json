@@ -378,6 +378,9 @@
                               "resumes:manage",
                               "interviews:practice",
                               "interviews:review",
+                              "readiness:view",
+                              "readiness:board",
+                              "readiness:manage",
                               "practice:use",
                               "practice:author",
                               "practice:review",
@@ -470,6 +473,9 @@
                               "resumes:manage",
                               "interviews:practice",
                               "interviews:review",
+                              "readiness:view",
+                              "readiness:board",
+                              "readiness:manage",
                               "practice:use",
                               "practice:author",
                               "practice:review",
@@ -20705,6 +20711,324 @@
           }
         },
         "x-permission": "interviews:review"
+      }
+    },
+    "/api/v1/me/readiness": {
+      "get": {
+        "tags": [
+          "Readiness"
+        ],
+        "summary": "My readiness score: each component’s points and my next steps (mine only)",
+        "description": "Requires permission `readiness:view` (See one’s own placement readiness score and its next steps). Host scope: college.",
+        "operationId": "readiness_get_me_readiness",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "readiness:view"
+      }
+    },
+    "/api/v1/admin/readiness": {
+      "get": {
+        "tags": [
+          "Readiness"
+        ],
+        "summary": "The readiness board: distribution by batch and branch (small counts hidden) and who needs help",
+        "description": "Requires permission `readiness:board` (See the readiness board: distribution by batch and branch, and students who need help). Host scope: college. Rate limit: search.",
+        "operationId": "readiness_get_admin_readiness",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1950,
+              "maximum": 2100
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "readiness:board"
+      }
+    },
+    "/api/v1/admin/readiness/config": {
+      "get": {
+        "tags": [
+          "Readiness"
+        ],
+        "summary": "The college’s readiness weights, threshold and closing window",
+        "description": "Requires permission `readiness:board` (See the readiness board: distribution by batch and branch, and students who need help). Host scope: college.",
+        "operationId": "readiness_get_admin_readiness_config",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "readiness:board"
+      },
+      "put": {
+        "tags": [
+          "Readiness"
+        ],
+        "summary": "Set the readiness weights, the \"needs help\" threshold and the closing window (audited)",
+        "description": "Requires permission `readiness:manage` (Set readiness weights, nudge students who need help and export the board). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "readiness_put_admin_readiness_config",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "weights": {
+                    "type": "object",
+                    "properties": {
+                      "resume": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 50
+                      },
+                      "interviews": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 50
+                      },
+                      "practice": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 50
+                      },
+                      "roadmap": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 50
+                      },
+                      "mentorship": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 50
+                      },
+                      "eligibility": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 50
+                      }
+                    },
+                    "required": [
+                      "resume",
+                      "interviews",
+                      "practice",
+                      "roadmap",
+                      "mentorship",
+                      "eligibility"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "threshold": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "closingDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30
+                  }
+                },
+                "required": [
+                  "weights",
+                  "threshold",
+                  "closingDays"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "readiness:manage"
+      }
+    },
+    "/api/v1/admin/readiness/nudge": {
+      "post": {
+        "tags": [
+          "Readiness"
+        ],
+        "summary": "Nudge students who need help before a drive closes (once a week each, within WhatsApp caps)",
+        "description": "Requires permission `readiness:manage` (Set readiness weights, nudge students who need help and export the board). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "readiness_post_admin_readiness_nudge",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "userIds": {
+                    "minItems": 1,
+                    "maxItems": 200,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                },
+                "required": [
+                  "userIds"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "readiness:manage"
+      }
+    },
+    "/api/v1/admin/readiness/export": {
+      "get": {
+        "tags": [
+          "Readiness"
+        ],
+        "summary": "Export the readiness board, one row per student (minors never; audited)",
+        "description": "Requires permission `readiness:manage` (Set readiness weights, nudge students who need help and export the board). Host scope: college. Rate limit: search.",
+        "operationId": "readiness_get_admin_readiness_export",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1950,
+              "maximum": 2100
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "csv",
+              "type": "string",
+              "enum": [
+                "csv",
+                "xlsx"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "readiness:manage"
       }
     },
     "/api/v1/practice": {

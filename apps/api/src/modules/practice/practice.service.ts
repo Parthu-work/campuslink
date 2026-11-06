@@ -633,6 +633,33 @@ export class PracticeService {
    * Who practised which topic and how accurately, by graduation year, for planning training.
    * Counts below five are shown as "<5", and accuracy only for groups of five or more.
    */
+  /**
+   * Readiness (prompt 2, G5): per member since a date, daily sets completed and answers given and
+   * right (all practice sets), for the practice part of the readiness score.
+   */
+  async readinessFacts(
+    userIds: string[],
+    since: Date,
+  ): Promise<Map<string, { sets: number; attempts: number; right: number }>> {
+    const rows = await PracticeSetModel.find({
+      userId: { $in: userIds.map((u) => new Types.ObjectId(u)) },
+      createdAt: { $gte: since },
+    })
+      .select('userId kind completedAt answers.correct')
+      .limit(100_000)
+      .lean<Pick<PracticeSetDoc, 'userId' | 'kind' | 'completedAt' | 'answers'>[]>();
+    const out = new Map<string, { sets: number; attempts: number; right: number }>();
+    for (const s of rows) {
+      const u = String(s.userId);
+      const f = out.get(u) ?? { sets: 0, attempts: 0, right: 0 };
+      if (s.kind === 'daily' && s.completedAt) f.sets++;
+      f.attempts += s.answers.length;
+      f.right += s.answers.filter((a) => a.correct).length;
+      out.set(u, f);
+    }
+    return out;
+  }
+
   async mastery(query: { gradYear?: number | undefined }): Promise<PracticeMasteryView> {
     const since = new Date(Date.now() - PRACTICE_MASTERY_DAYS * 86_400_000);
     const rows = await PracticeSetModel.aggregate<{

@@ -51,6 +51,16 @@ import { RESUME_RENDER_JOB, ResumesService } from './modules/resumes/resumes.ser
 import { resumeRoutes } from './modules/resumes/resumes.routes.js';
 import { INTERVIEW_TRANSCRIBE_JOB, InterviewsService } from './modules/interviews/interviews.service.js';
 import { interviewRoutes } from './modules/interviews/interviews.routes.js';
+import { ReadinessService } from './modules/readiness/readiness.service.js';
+import { readinessRoutes } from './modules/readiness/readiness.routes.js';
+import {
+  eligibilityComponent,
+  interviewsComponent,
+  mentorshipComponent,
+  practiceComponent,
+  resumeComponent,
+  roadmapComponent,
+} from './modules/readiness/components/index.js';
 import { PracticeService } from './modules/practice/practice.service.js';
 import { practiceRoutes } from './modules/practice/practice.routes.js';
 import {
@@ -863,6 +873,27 @@ export function createApp({
   requestsService.onMockRequested = (menteeId, interviewId) =>
     interviewsService.mockBooked(menteeId, interviewId);
 
+  // ── Placement readiness (prompt 2, G5) ─────────────────────────────
+  // Each component reads through its owning module's service (practice mastery, G4, is registered
+  // with the practice service below).
+  const readinessService = new ReadinessService({
+    notifications: notificationsService,
+    students: (filter) => profilesService.students(filter),
+    cohort: async (userId) => (await profilesService.cohortOf([userId])).get(userId) ?? null,
+    nextClosing: (userIds, until) => placementsService.nextClosingFor(userIds, until),
+  });
+  readinessService.register(resumeComponent((ids) => resumesService.bestReportsFor(ids)));
+  readinessService.register(interviewsComponent((ids, since) => interviewsService.completedFor(ids, since)));
+  readinessService.register(roadmapComponent((ids) => roadmapsService.targetsFor(ids)));
+  readinessService.register(
+    mentorshipComponent((ids, since) => sessionsService.completedAsMentee(ids, since)),
+  );
+  readinessService.register(
+    eligibilityComponent({
+      cutoffs: (since) => placementsService.cutoffsSince(since),
+      academics: (ids) => academicsService.factsFor(ids),
+    }),
+  );
   // Aptitude and coding practice (prompt 2, G4): code runs only on the platform's own Judge0.
   const practiceService = new PracticeService({
     ai: aiTasksService,
@@ -894,6 +925,8 @@ export function createApp({
     companies: () => placementsService.recruitingCompanies(),
   });
   practiceService.award = gamificationService.award;
+  // Readiness (G5): practice mastery, through the practice service.
+  readinessService.register(practiceComponent((ids, since) => practiceService.readinessFacts(ids, since)));
   const materialsService = new MaterialsService({
     files: filesService,
     subjects: subjectsService,
@@ -1081,6 +1114,7 @@ export function createApp({
     chatService,
     resumesService,
     interviewsService,
+    readinessService,
     practiceService,
   ])
     svc.track = productInsights.track;
@@ -1142,6 +1176,7 @@ export function createApp({
   privacyService.register('support', hook(supportService));
   privacyService.register('resumes', hook(resumesService));
   privacyService.register('interviews', hook(interviewsService));
+  privacyService.register('readiness', hook(readinessService));
   privacyService.register('practice', hook(practiceService));
   privacyService.register('files', hook(filesService));
 
@@ -1327,6 +1362,10 @@ export function createApp({
   app.use(API_PREFIX, defineModule('support', supportRoutes(supportService, filesService), pipeline));
   app.use(API_PREFIX, defineModule('resumes', resumeRoutes(resumesService), pipeline));
   app.use(API_PREFIX, defineModule('interviews', interviewRoutes(interviewsService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('readiness', withFeature('placements', readinessRoutes(readinessService)), pipeline),
+  );
   app.use(API_PREFIX, defineModule('practice', practiceRoutes(practiceService), pipeline));
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
@@ -1426,6 +1465,7 @@ export function createApp({
     privacy: privacyService,
     resumes: resumesService,
     interviews: interviewsService,
+    readiness: readinessService,
     practice: practiceService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,

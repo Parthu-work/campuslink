@@ -112,6 +112,8 @@ const load = {
   interviews: withPack('career', () => import('../features/interviews/interviews')),
   interviewSession: withPack('career', () => import('../features/interviews/session')),
   interviewQuestions: withPack('career', () => import('../features/admin/interview-questions')),
+  readiness: withPack('readiness', () => import('../features/progress/readiness')),
+  readinessAdmin: withPack('readiness', () => import('../features/admin/readiness-admin')),
   // Prompt 2, G4: practice screens' strings come in the `practice` pack.
   practice: withPack('practice', () => import('../features/practice/practice')),
   practiceSet: withPack('practice', () => import('../features/practice/set')),
@@ -437,6 +439,14 @@ function collegeRoutes(): RouteObject[] {
           screen(load.progress, 'ProgressPage', undefined, at('/progress'), () => [
             qc.ensureQueryData(q.progress()),
           ]),
+          // Placement readiness (prompt 2, G5): the student's own score.
+          screen(
+            load.readiness,
+            'ReadinessPage',
+            inFeature('placements', 'readiness:view'),
+            at('/readiness'),
+            () => [qc.ensureQueryData(q.readiness())],
+          ),
           screen(
             load.leaderboard,
             'LeaderboardPage',
@@ -636,6 +646,14 @@ function collegeRoutes(): RouteObject[] {
               'interviews:review',
               at('interview-questions'),
               () => [qc.ensureQueryData(q.interviewQuestions('pending'))],
+            ),
+            // The readiness board (prompt 2, G5).
+            screen(
+              load.readinessAdmin,
+              'ReadinessAdmin',
+              inFeature('placements', 'readiness:board'),
+              at('readiness'),
+              () => [qc.ensureQueryData(q.readinessBoard('')), qc.ensureQueryData(q.readinessConfig())],
             ),
             screen(load.practiceBank, 'PracticeBankAdmin', 'practice:review', at('practice'), () => [
               qc.ensureQueryData(q.practiceItems('pending')),

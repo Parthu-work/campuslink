@@ -100,6 +100,9 @@ export const ALL_PERMISSIONS = [
   // Mock interviews (prompt 2, G3)
   'interviews:practice',
   'interviews:review',
+  'readiness:view',
+  'readiness:board',
+  'readiness:manage',
   // Aptitude and coding practice (prompt 2, G4)
   'practice:use',
   'practice:author',
@@ -184,6 +187,9 @@ export const PERMISSIONS: Record<Permission, string> = {
   'resumes:manage': 'Build résumés, check them against a role and ask an alumnus to review one',
   'interviews:practice': 'Practise mock interviews with AI feedback and share a report for a human mock',
   'interviews:review': 'Add interview questions and review AI-generated ones before they enter the bank',
+  'readiness:view': 'See one’s own placement readiness score and its next steps',
+  'readiness:board': 'See the readiness board: distribution by batch and branch, and students who need help',
+  'readiness:manage': 'Set readiness weights, nudge students who need help and export the board',
   'practice:use': 'Do the daily aptitude and coding practice set and company prep',
   'practice:author': 'Write practice questions (alumni questions are reviewed before they are used)',
   'practice:review': 'Add practice questions, review drafts and alumni questions, and tag companies',
@@ -226,10 +232,11 @@ const STUDENT: Permission[] = [
   'support:create',
   'resumes:manage',
   'interviews:practice',
+  'readiness:view',
   'practice:use',
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
-const STUDENT_ONLY: readonly Permission[] = ['placements:view', 'placements:register'];
+const STUDENT_ONLY: readonly Permission[] = ['placements:view', 'placements:register', 'readiness:view'];
 const ALUMNI: Permission[] = [
   ...STUDENT.filter((p) => !STUDENT_ONLY.includes(p)),
   'feed:post',
@@ -249,6 +256,7 @@ const STAFF: Permission[] = [
       p !== 'outcomes:report' &&
       p !== 'resumes:manage' &&
       p !== 'interviews:practice' &&
+      p !== 'readiness:view' &&
       p !== 'practice:use',
   ),
   'feed:post',
@@ -262,6 +270,7 @@ const STAFF: Permission[] = [
   'study:manage',
   'study:analytics',
   'interviews:review',
+  'readiness:board',
   'practice:author',
   'practice:review',
   'analytics:cohort',
@@ -288,6 +297,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     // Placements (B7).
     'placements:manage',
     'outcomes:verify',
+    // Readiness (prompt 2, G5): weights, nudges and the export.
+    'readiness:manage',
   ],
   FACULTY: STAFF,
   ALUMNI,

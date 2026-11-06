@@ -99,6 +99,7 @@
     "platformSupport": "Support",
     "resume": "Résumé",
     "interviews": "Mock interviews",
+    "readiness": "Readiness",
     "practice": "Practice"
   },
   "landing": {
@@ -484,6 +485,7 @@
     "notInPlan": "Not in your college’s plan. Talk to us to add it.",
     "support": "Support",
     "interviewQuestions": "Interview questions",
+    "readiness": "Readiness board",
     "practiceBank": "Practice questions"
   },
   "role": {
@@ -1293,6 +1295,10 @@
     "resume_comment": {
       "title": "{{name}} reviewed your résumé",
       "body": "{{name}} left a comment on your résumé. Open it to read the review."
+    },
+    "readiness_nudge": {
+      "title": "{{company}} closes {{time}}",
+      "body": "Your placement cell suggests steps to get ready. Open your readiness."
     }
   },
   "notifications": {

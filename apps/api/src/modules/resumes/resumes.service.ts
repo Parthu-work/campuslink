@@ -121,6 +121,25 @@ export class ResumesService {
     return !!(await ResumeModel.exists({ _id: resumeId, userId: oid(userId) }));
   }
 
+  /**
+   * Readiness (prompt 2, G5): per member, how many résumés and the best ATS report among them (the
+   * highest score; a résumé never checked has none).
+   */
+  async bestReportsFor(userIds: string[]): Promise<Map<string, { count: number; report: AtsReport | null }>> {
+    const rows = await ResumeModel.find({ userId: { $in: userIds.map(oid) } })
+      .select('userId atsReport')
+      .lean<Pick<ResumeDoc, 'userId' | 'atsReport'>[]>();
+    const out = new Map<string, { count: number; report: AtsReport | null }>();
+    for (const r of rows) {
+      const u = String(r.userId);
+      const cur = out.get(u) ?? { count: 0, report: null };
+      cur.count++;
+      if (r.atsReport && (!cur.report || r.atsReport.score > cur.report.score)) cur.report = r.atsReport;
+      out.set(u, cur);
+    }
+    return out;
+  }
+
   // ── Writing ─────────────────────────────
 
   /** A first draft from what the platform already knows: profile, academics, finished roadmaps. */

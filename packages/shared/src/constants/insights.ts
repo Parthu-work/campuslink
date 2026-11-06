@@ -23,6 +23,8 @@ export const PRODUCT_EVENTS = [
   'mock_started',
   'mock_completed',
   'human_mock_booked',
+  // Prompt 2, G5: the placement cell nudged a student who needs help before a drive closes.
+  'readiness_nudged',
   // Prompt 2, G4: aptitude and coding practice.
   'practice_set_completed',
 ] as const;

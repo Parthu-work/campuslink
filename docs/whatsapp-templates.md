@@ -135,6 +135,17 @@ Sent for: `weekly_digest`. Category: **utility**.
 - Telugu (te): `{{1}} గారూ, మీ కాలేజీ యాప్‌లో మీ వారం: మీరు నమోదు చేయగల కొత్త డ్రైవ్‌లు {{2}}, మీ జవాబు కోసం ఎదురుచూస్తున్న అభ్యర్థనలు {{3}}, ఈ వారం సెషన్‌లు {{4}}. చూడటానికి యాప్ తెరవండి.`
 - Hindi (hi): `नमस्ते {{1}}, आपके कॉलेज ऐप पर आपका हफ़्ता: आप जिनमें पंजीकरण कर सकते हैं ऐसी नई ड्राइव {{2}}, आपके जवाब का इंतज़ार कर रहे अनुरोध {{3}}, इस हफ़्ते के सत्र {{4}}। देखने के लिए ऐप खोलें।`
 
+## `cl_readiness_nudge`
+
+Sent for: `readiness_nudge`. Category: **utility**.
+
+- English (en): `Hi {{1}}, registration for the {{2}} drive closes {{3}}. Your placement cell suggests a few steps to get ready: open the app to see them.`
+  - Quick replies: `Register`
+- Telugu (te): `{{1}} గారూ, {{2}} డ్రైవ్ నమోదు {{3}}కి ముగుస్తుంది. సిద్ధం కావడానికి మీ ప్లేస్‌మెంట్ సెల్ కొన్ని దశలు సూచిస్తోంది: వాటిని చూడటానికి యాప్ తెరవండి.`
+  - Quick replies: `నమోదు చేయండి`
+- Hindi (hi): `नमस्ते {{1}}, {{2}} ड्राइव का पंजीकरण {{3}} को बंद होगा। तैयार होने के लिए आपका प्लेसमेंट सेल कुछ कदम सुझा रहा है: उन्हें देखने के लिए ऐप खोलें।`
+  - Quick replies: `पंजीकरण करें`
+
 ## `cl_invite_student`
 
 Sent for: an invite to a student on the college's list. Category: **utility**.
