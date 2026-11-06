@@ -73,6 +73,9 @@ const PACKS = {
       hi: () => import('./packs/share.hi.json'),
     },
   },
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 } satisfies Record<
   string,
   { sections: string[]; load: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> }

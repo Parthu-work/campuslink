@@ -45,6 +45,9 @@ export const PRODUCT_EVENTS = [
   'public_page_published',
   'public_page_viewed',
   'referral_outcome_reported',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 ] as const;
 export type ProductEventName = (typeof PRODUCT_EVENTS)[number];
 

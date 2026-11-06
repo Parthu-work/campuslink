@@ -12,6 +12,9 @@ import { DigestService } from './modules/notifications/digest.service.js';
 import { NextStepService } from './modules/next-step/next-step.service.js';
 import { PeersService } from './modules/peers/peers.service.js';
 import { ParentDigestService } from './modules/notifications/parent-digest.service.js';
+// [slot: G9]
+// [slot: A G10 G11 G13]
+// [slot: B G12]
 import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
@@ -191,6 +194,9 @@ async function main() {
     setTimeout(parentTick, 210_000).unref();
     setInterval(parentTick, 3600_000).unref();
   }
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   if (runsJobs) {
     setTimeout(nextStepTick, 150_000).unref();
     setInterval(nextStepTick, 3600_000).unref();

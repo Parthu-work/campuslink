@@ -25,6 +25,9 @@ export type NavId =
   | 'circles'
   | 'share'
   | 'captain'
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -104,6 +107,9 @@ export type AdminSectionId =
   | 'peers'
   | 'circles'
   | 'growth'
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   | 'reports'
   | 'moderation'
   | 'mentorship'
@@ -163,6 +169,9 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('circles', '/admin/circles', 'circles:manage', 'community'),
   // Member invites and the public outcomes page (prompt 2, G8).
   section('growth', '/admin/growth', 'onboarding:manage', 'people'),
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   section('analytics', '/admin/analytics', 'analytics:cohort', 'insights'),
   section('reports', '/admin/reports', 'analytics:tenant', 'insights'),
   section('branding', '/admin/branding', 'tenant:branding', 'college'),
@@ -224,6 +233,9 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   share: d('share', '/share', 'you', ['share:pages', 'invites:batchmates']),
   // Campus Captains: their class joining, and invites (prompt 2, G8).
   captain: d('captain', '/captain', 'you', ['captains:class']),
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -271,6 +283,9 @@ export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
   outcomes: 'placements',
   readiness: 'placements',
   peers: 'peerMentors',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 };
 
 /** Admin sections that belong to a feature switch. */
@@ -283,6 +298,9 @@ export const ADMIN_SECTION_FEATURE: Partial<Record<AdminSectionId, Feature>> = {
   reports: 'placements',
   readiness: 'placements',
   peers: 'peerMentors',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 };
 
 /** The shipped destinations minus those whose feature the college has switched off. */
@@ -354,6 +372,9 @@ const MENU_ORDER: readonly NavId[] = [
   'circles',
   'share',
   'captain',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   'progress',
   'rewards',
   'saved',

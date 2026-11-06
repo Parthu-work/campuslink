@@ -121,3 +121,6 @@ export { BuddyPairModel, BuddyVolunteerModel, PeerNominationModel } from './peer
 export { CircleMemberModel, CircleModel, StudyGroupModel } from './circles/circle.model.js';
 export { GrowthSettingsModel, PublicPageModel } from './public-pages/public-page.model.js';
 export { ParentDigestModel } from './notifications/parent-digest.service.js';
+// [slot: G9]
+// [slot: A G10 G11 G13]
+// [slot: B G12]

@@ -26,6 +26,9 @@ const entries = [
     ([kind, t]) => [`an invite to a ${kind} on the college's list`, t] as const,
   ),
   ['the monthly parent digest (to a parent who confirmed with a code)', PARENT_DIGEST_TEMPLATE] as const,
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 ];
 for (const [what, t] of entries) {
   if (!t) continue;

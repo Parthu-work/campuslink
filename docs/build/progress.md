@@ -623,3 +623,23 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 **Tests.** `test/growth.test.ts` (11): a published placement shows company and role only (no CTC, no email, the chosen name); the share image carries only the opt-in fields; unpublished, taken-down, other-college, un-verified and erased pages are 404; minors cannot publish; the outcomes page off, on, suppressed and per college; member invites need the college's confirmation and stay in the batch and limit; captain scoping in counts; referral outcomes and impact; the parent digest's code, monthly once, stop; isolation. The privacy exporter list and `navigation.test.ts`. `e2e/growth.spec.ts` (publish, open signed out, take down; the batch and the parent update; axe).
 
 **Decisions.** E7: public pages reuse the tenant resolver as it is (mounted at `/p` too), the parent's number uses the existing field cipher, no new third party, and capabilities stay per request (no token change). Member WhatsApp invites need the college's explicit opt-in confirmation, because the people invited have not joined. A member's page is served `no-store` (the e2e test caught a taken-down page still showing from the browser cache with a five-minute cache); only the college outcomes page is cached. The admin capability button used to replace all capabilities (it would have removed peer mentoring); each capability now has its own toggle. CI on G7 failed one e2e test: on a slow runner the shell's menu code could fail exactly as the connection came back and never retry, and Home's Next Step card, loaded with a bare `lazy`, could take the whole Home screen down offline. `lazyPart` now gets one bounded extra try when a load fails while online, and the G7 and G8 add-ons (Next Step card, voice controls, referral outcome) load as parts. The Home scroll test now measures after Home's cards arrive.
+
+### G9 · Reach
+
+_Not started._
+
+### G10 · The moat data
+
+_Not started._
+
+### G11 · Career Copilot
+
+_Not started._
+
+### G12 · The network
+
+_Not started._
+
+### G13 · Re-audit, YC metrics pack and final report
+
+_Not started._

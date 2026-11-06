@@ -217,6 +217,9 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'How did your {company} referral go?',
       body: 'Tell us if it led to an interview or an offer. It helps the alumni who refer.',
     },
+    // [slot: G9]
+    // [slot: A G10 G11 G13]
+    // [slot: B G12]
     weekly_next_step: {
       title: 'Your next step for this week',
       body: 'One roadmap step, one opening and one alumnus to ask, picked for you. Open it to start.',
@@ -487,6 +490,9 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'మీ {company} రిఫరల్ ఎలా జరిగింది?',
       body: 'ఇంటర్వ్యూ లేదా ఆఫర్ వచ్చిందో చెప్పండి. రిఫర్ చేసే పూర్వ విద్యార్థులకు ఇది ఉపయోగపడుతుంది.',
     },
+    // [slot: G9]
+    // [slot: A G10 G11 G13]
+    // [slot: B G12]
     weekly_next_step: {
       title: 'ఈ వారం మీ తదుపరి అడుగు',
       body: 'మీ కోసం ఎంచుకున్న ఒక రోడ్‌మ్యాప్ దశ, ఒక అవకాశం, అడగడానికి ఒక పూర్వ విద్యార్థి. మొదలుపెట్టడానికి తెరవండి.',
@@ -742,6 +748,9 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'आपका {company} रेफ़रल कैसा रहा?',
       body: 'बताइए कि इससे इंटरव्यू या ऑफ़र मिला या नहीं। इससे रेफ़र करने वाले पूर्व छात्रों को मदद मिलती है।',
     },
+    // [slot: G9]
+    // [slot: A G10 G11 G13]
+    // [slot: B G12]
     weekly_next_step: {
       title: 'इस हफ़्ते का आपका अगला कदम',
       body: 'आपके लिए चुना एक रोडमैप कदम, एक मौका और पूछने के लिए एक पूर्व छात्र। शुरू करने के लिए खोलें।',
@@ -1019,6 +1028,9 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/next-step';
     case 'referral_outcome_prompt':
       return '/referrals';
+    // [slot: G9]
+    // [slot: A G10 G11 G13]
+    // [slot: B G12]
     case 'buddy_matched':
     case 'peer_mentor_nominated':
       return '/peers';

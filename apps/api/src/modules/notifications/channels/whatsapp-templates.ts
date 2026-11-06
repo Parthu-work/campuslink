@@ -386,6 +386,10 @@ export const PARENT_DIGEST_TEMPLATE: WaTemplate = {
   },
 };
 
+// [slot: G9]
+// [slot: A G10 G11 G13]
+// [slot: B G12]
+
 export const INVITE_TEMPLATES: Record<'student' | 'alumni', WaTemplate> = {
   student: {
     name: 'cl_invite_student',

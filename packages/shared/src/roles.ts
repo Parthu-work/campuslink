@@ -21,6 +21,9 @@ export const Capability = {
   PEER_MENTOR: 'PEER_MENTOR',
   /** Prompt 2, G8: a student who helps their class join; granted by the college's admins. */
   CAMPUS_CAPTAIN: 'CAMPUS_CAPTAIN',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 } as const;
 export type Capability = (typeof Capability)[keyof typeof Capability];
 export const CAPABILITIES = Object.values(Capability);
@@ -132,6 +135,9 @@ export const ALL_PERMISSIONS = [
   'captains:class',
   'share:pages',
   'parents:digest',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
   'platform:health',
@@ -235,6 +241,9 @@ export const PERMISSIONS: Record<Permission, string> = {
   'captains:class': 'See one’s own class joining (counts only) and invite classmates (Campus Captains)',
   'share:pages': 'Publish opt-in public pages: a placement, a finished roadmap, mentoring',
   'parents:digest': 'Send a monthly summary to a parent, with their confirmation',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   'support:manage': 'Answer and close problem reports sent to the college',
   'placements:view': 'See placement drives and the eligibility rules',
   'placements:register': 'Register for placement drives one is eligible for',
@@ -283,6 +292,9 @@ const STUDENT: Permission[] = [
   'circles:propose',
   'share:pages',
   'parents:digest',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
 const STUDENT_ONLY: readonly Permission[] = [
@@ -294,6 +306,9 @@ const STUDENT_ONLY: readonly Permission[] = [
   'peers:enroll',
   // Prompt 2, G8: the parent digest is a student's.
   'parents:digest',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 ];
 const ALUMNI: Permission[] = [
   ...STUDENT.filter((p) => !STUDENT_ONLY.includes(p)),
@@ -311,6 +326,9 @@ const ALUMNI: Permission[] = [
   'study:contribute',
   'practice:author',
   'invites:batchmates',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 ];
 const STAFF: Permission[] = [
   ...STUDENT.filter(
@@ -324,6 +342,9 @@ const STAFF: Permission[] = [
       p !== 'nextstep:view' &&
       p !== 'peers:enroll' &&
       p !== 'share:pages' &&
+      // [slot: G9]
+      // [slot: A G10 G11 G13]
+      // [slot: B G12]
       p !== 'parents:digest',
   ),
   'feed:post',
@@ -346,6 +367,9 @@ const STAFF: Permission[] = [
   'moderation:act',
   'users:invite',
   'users:approve',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 ];
 const COLLEGE_ADMIN: Permission[] = ALL_PERMISSIONS.filter((p) => !PLATFORM_PERMISSIONS.includes(p));
 
@@ -371,6 +395,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'outcomes:verify',
     // Readiness (prompt 2, G5): weights, nudges and the export.
     'readiness:manage',
+    // [slot: G9]
+    // [slot: A G10 G11 G13]
+    // [slot: B G12]
   ],
   FACULTY: STAFF,
   ALUMNI,
@@ -382,6 +409,9 @@ export const CAPABILITY_PERMISSIONS: Record<Capability, readonly Permission[]> =
   CERTIFIED_CONTRIBUTOR: ['roadmaps:write', 'study:contribute'],
   PEER_MENTOR: ['mentorship:mentor'],
   CAMPUS_CAPTAIN: ['captains:class', 'invites:batchmates'],
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 };
 
 /** What a user who has not completed college verification may do: read-only, limited. */

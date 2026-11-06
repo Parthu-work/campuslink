@@ -133,6 +133,9 @@ const load = {
   // Prompt 2, G8: growth loops, strings in the `share` pack.
   share: withPack('share', () => import('../features/share/share')),
   growthAdmin: withPack('share', () => import('../features/share/growth-admin')),
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
@@ -343,6 +346,9 @@ function collegeRoutes(): RouteObject[] {
         publicScreen(load.legal, 'LegalPage', '/legal/:doc'),
         // Anyone checks a certificate of mentorship by its code (prompt 2, G6).
         publicScreen(load.verifyCertificate, 'VerifyCertificatePage', '/verify-certificate/:code'),
+        // [slot: G9]
+        // [slot: A G10 G11 G13]
+        // [slot: B G12]
         ...auth('/home'),
         // The living style guide (revamp phase 6): development builds only; production leaves it out.
         ...(import.meta.env.DEV
@@ -560,6 +566,9 @@ function collegeRoutes(): RouteObject[] {
           screen(load.share, 'CaptainPage', 'captains:class', at('/captain'), () => [
             qc.ensureQueryData(q.captainClass()),
           ]),
+          // [slot: G9]
+          // [slot: A G10 G11 G13]
+          // [slot: B G12]
           screen(
             load.studyGroups,
             'StudyGroupPage',
@@ -727,6 +736,9 @@ function collegeRoutes(): RouteObject[] {
             screen(load.growthAdmin, 'GrowthAdmin', 'onboarding:manage', at('growth'), () => [
               qc.ensureQueryData(q.adminGrowth()),
             ]),
+            // [slot: G9]
+            // [slot: A G10 G11 G13]
+            // [slot: B G12]
             screen(
               load.reports,
               'ReportsDashboard',

@@ -1,6 +1,9 @@
 import {
   BadgeCheck,
   Sprout,
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   Building2,
   FileCheck2,
   Gauge,
@@ -45,6 +48,9 @@ export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
   peers: HeartHandshake,
   circles: UsersRound,
   growth: Sprout,
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   moderation: ShieldAlert,
   mentorship: HeartHandshake,
   sources: Newspaper,

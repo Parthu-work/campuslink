@@ -87,6 +87,9 @@ import { REFERRAL_OUTCOME_JOB } from './modules/referrals/referrals.service.js';
 import { SHARE_MODULE } from './http/openapi.js';
 import { backgroundAuth as backgroundAuthOf } from './modules/users/users.service.js';
 import { findTenantById as tenantById } from './modules/tenants/tenant.cache.js';
+// [slot: G9]
+// [slot: A G10 G11 G13]
+// [slot: B G12]
 import {
   DisabledCodeRunner,
   JUDGE0_LANGUAGE_IDS,
@@ -1215,6 +1218,10 @@ export function createApp({
     }),
   );
 
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
+
   // Faculty insights and the admin AI dashboard (spec step 5): aggregates only.
   const insightsService = new StudyInsightsService({
     subjects: subjectsService,
@@ -1357,6 +1364,9 @@ export function createApp({
     nextStepService,
     publicPagesService,
     referralsService,
+    // [slot: G9]
+    // [slot: A G10 G11 G13]
+    // [slot: B G12]
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1428,6 +1438,9 @@ export function createApp({
   privacyService.register('studyGroups', hook(studyGroupsService));
   privacyService.register('publicPages', hook(publicPagesService));
   privacyService.register('parentDigest', hook(parentDigestService));
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -1639,6 +1652,9 @@ export function createApp({
   app.use(API_PREFIX, defineModule('public-pages', publicPageRoutes(publicPagesService), pipeline));
   app.use(API_PREFIX, defineModule('member-invites', memberInviteRoutes(onboardingService), pipeline));
   app.use(API_PREFIX, defineModule('parent-digest', parentDigestRoutes(parentDigestService), pipeline));
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -1699,6 +1715,9 @@ export function createApp({
 
   // Public pages (prompt 2, G8): their full paths start with /p/, outside the API prefix.
   app.use(defineModule(SHARE_MODULE, shareRoutes(publicPagesService), pipeline));
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
   app.use(notFoundHandler);
   app.use(errorHandler(logger, errorReporter));
   app.locals.registry = registry;
@@ -1751,6 +1770,9 @@ export function createApp({
     studyGroups: studyGroupsService,
     publicPages: publicPagesService,
     parentDigest: parentDigestService,
+    // [slot: G9]
+    // [slot: A G10 G11 G13]
+    // [slot: B G12]
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,

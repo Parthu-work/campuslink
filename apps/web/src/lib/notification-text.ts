@@ -22,6 +22,9 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     percent: d.percent ?? '',
     round: d.round ?? '',
     circle: d.circle ?? '',
+    // [slot: G9]
+    // [slot: A G10 G11 G13]
+    // [slot: B G12]
   };
   const href = (() => {
     switch (n.type) {
@@ -170,6 +173,9 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       // Prompt 2, G8: the student says what came of a referral.
       case 'referral_outcome_prompt':
         return '/referrals?box=sent';
+      // [slot: G9]
+      // [slot: A G10 G11 G13]
+      // [slot: B G12]
       case 'buddy_matched':
       case 'peer_mentor_nominated':
         return '/peers';

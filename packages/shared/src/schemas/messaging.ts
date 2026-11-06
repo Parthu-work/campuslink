@@ -149,6 +149,9 @@ export const NOTIFICATION_TYPES = [
   'circle_decided',
   // Prompt 2, G8: what happened after a referral (asked at 14 and 30 days).
   'referral_outcome_prompt',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -249,6 +252,9 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   voice_failed: 'community',
   circle_decided: 'community',
   referral_outcome_prompt: 'jobs',
+  // [slot: G9]
+  // [slot: A G10 G11 G13]
+  // [slot: B G12]
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;

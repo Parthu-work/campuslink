@@ -1044,3 +1044,7 @@ export const adminOutcomesPreview = () =>
     queryKey: ['admin-growth', 'outcomes-preview'],
     queryFn: ({ signal }) => api.get<CollegeOutcomesView | null>('/admin/growth/outcomes-preview', signal),
   });
+
+// [slot: G9]
+// [slot: A G10 G11 G13]
+// [slot: B G12]
