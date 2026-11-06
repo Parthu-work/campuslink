@@ -176,12 +176,18 @@ describe('the daily set (prompt 2, G4)', () => {
     let s = await startSet(student);
     for (const i of s.items) {
       if (i.result) continue;
-      const right = await rightAnswer(i.item.id);
-      s = await answer(student, s, i.index, i.item.kind === 'coding' ? 'print:{stdin}' : right);
+      // A starter coding item may be drawn: the stub cannot pass its tests, so it is a miss.
+      s = await answer(
+        student,
+        s,
+        i.index,
+        i.item.kind === 'coding' ? 'print:nope' : await rightAnswer(i.item.id),
+      );
     }
     expect(s.completedAt).not.toBeNull();
     expect(s.answered).toBe(PRACTICE_SET_SIZE);
-    expect(s.correct).toBe(PRACTICE_SET_SIZE - 1);
+    const coding = s.items.filter((i) => i.index !== 0 && i.item.kind === 'coding').length;
+    expect(s.correct).toBe(PRACTICE_SET_SIZE - 1 - coding);
     expect(await inT(() => XpEventModel.countDocuments({ userId: student.id, kind: 'practice_set' }))).toBe(
       1,
     );
