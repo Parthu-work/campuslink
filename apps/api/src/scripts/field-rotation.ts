@@ -25,6 +25,8 @@ import {
 } from '../modules/verification/verification.model.js';
 import { AiSettingsModel } from '../modules/study/ai-settings.model.js';
 import { ParentDigestModel } from '../modules/notifications/parent-digest.service.js';
+import { IssuerKeyModel } from '../modules/credentials/credential.model.js';
+import { NetworkIntroOutModel } from '../modules/network/network.model.js';
 
 type AnyModel = Model<Record<string, unknown>>;
 
@@ -80,6 +82,13 @@ export const ENCRYPTED_COLLECTIONS: EncryptedCollection[] = [
   },
   // A parent's WhatsApp number for the monthly digest (prompt 2, G8).
   { name: 'parent digests', model: ParentDigestModel as unknown as AnyModel, fields: ['phoneEnc'] },
+  // Prompt 2, G12 (ADR 0014): the colleges' credential signing keys and contacts shared on intros.
+  { name: 'credential issuer keys', model: IssuerKeyModel as unknown as AnyModel, fields: ['privateKeyEnc'] },
+  {
+    name: 'network intros',
+    model: NetworkIntroOutModel as unknown as AnyModel,
+    fields: ['sharedContactEnc'],
+  },
 ];
 
 export interface CollectionReport {

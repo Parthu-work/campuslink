@@ -465,6 +465,10 @@ describe('deletion', () => {
         // [slot: G9]
         // [slot: A G10 G11 G13]
         // [slot: B G12]
+        'network',
+        'networkCandidacies',
+        'employers',
+        'credentials',
       ]),
     );
   });

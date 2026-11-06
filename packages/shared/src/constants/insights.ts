@@ -48,6 +48,13 @@ export const PRODUCT_EVENTS = [
   // [slot: G9]
   // [slot: A G10 G11 G13]
   // [slot: B G12]
+  // Prompt 2, G12: the network (ids and enum values only in props).
+  'network_intro_sent',
+  'network_intro_accepted',
+  'posting_published',
+  'posting_approved',
+  'candidacy_shared',
+  'credential_issued',
 ] as const;
 export type ProductEventName = (typeof PRODUCT_EVENTS)[number];
 

@@ -220,6 +220,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     // [slot: G9]
     // [slot: A G10 G11 G13]
     // [slot: B G12]
+    network_intro_received: {
+      title: '{name} of {college} asked for your help',
+      body: 'A request through the network. Open it to answer.',
+    },
+    network_intro_answered: {
+      title: '{name} answered your intro',
+      body: 'Open Network to see the answer.',
+    },
     weekly_next_step: {
       title: 'Your next step for this week',
       body: 'One roadmap step, one opening and one alumnus to ask, picked for you. Open it to start.',
@@ -493,6 +501,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     // [slot: G9]
     // [slot: A G10 G11 G13]
     // [slot: B G12]
+    network_intro_received: {
+      title: '{college} నుండి {name} మీ సహాయం కోరారు',
+      body: 'నెట్‌వర్క్ ద్వారా ఒక అభ్యర్థన. సమాధానం ఇవ్వడానికి తెరవండి.',
+    },
+    network_intro_answered: {
+      title: '{name} మీ పరిచయానికి సమాధానం ఇచ్చారు',
+      body: 'సమాధానం చూడటానికి నెట్‌వర్క్ తెరవండి.',
+    },
     weekly_next_step: {
       title: 'ఈ వారం మీ తదుపరి అడుగు',
       body: 'మీ కోసం ఎంచుకున్న ఒక రోడ్‌మ్యాప్ దశ, ఒక అవకాశం, అడగడానికి ఒక పూర్వ విద్యార్థి. మొదలుపెట్టడానికి తెరవండి.',
@@ -751,6 +767,14 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     // [slot: G9]
     // [slot: A G10 G11 G13]
     // [slot: B G12]
+    network_intro_received: {
+      title: '{college} के {name} ने आपकी मदद माँगी है',
+      body: 'नेटवर्क से एक अनुरोध। जवाब देने के लिए खोलें।',
+    },
+    network_intro_answered: {
+      title: '{name} ने आपके परिचय का जवाब दिया',
+      body: 'जवाब देखने के लिए नेटवर्क खोलें।',
+    },
     weekly_next_step: {
       title: 'इस हफ़्ते का आपका अगला कदम',
       body: 'आपके लिए चुना एक रोडमैप कदम, एक मौका और पूछने के लिए एक पूर्व छात्र। शुरू करने के लिए खोलें।',
@@ -1031,6 +1055,11 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
     // [slot: G9]
     // [slot: A G10 G11 G13]
     // [slot: B G12]
+    // Prompt 2, G12: cross-college intros.
+    case 'network_intro_received':
+      return '/network?tab=intros&box=received';
+    case 'network_intro_answered':
+      return '/network?tab=intros&box=sent';
     case 'buddy_matched':
     case 'peer_mentor_nominated':
       return '/peers';

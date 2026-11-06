@@ -51,6 +51,8 @@ export * from './schemas/growth.js';
 // [slot: G9]
 // [slot: A G10 G11 G13]
 // [slot: B G12]
+export * from './constants/network.js';
+export * from './schemas/network.js';
 export * from './schemas/legal.js';
 export * from './schemas/readiness.js';
 export * from './schemas/alumni.js';

@@ -124,3 +124,18 @@ export { ParentDigestModel } from './notifications/parent-digest.service.js';
 // [slot: G9]
 // [slot: A G10 G11 G13]
 // [slot: B G12]
+export {
+  NetworkCandidacyModel,
+  NetworkClusterModel,
+  NetworkIntroModel,
+  NetworkIntroOutModel,
+  NetworkPrefsModel,
+  NetworkProfileModel,
+} from './network/network.model.js';
+export {
+  BillableEventModel,
+  EmployerUsageModel,
+  PostingModel,
+  PostingOfferModel,
+} from './employers/employer.model.js';
+export { CredentialModel, IssuerKeyModel } from './credentials/credential.model.js';
