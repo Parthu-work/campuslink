@@ -12,6 +12,7 @@ import {
   eligibilityComponent,
   interviewsComponent,
   mentorshipComponent,
+  practiceComponent,
   resumeComponent,
   roadmapComponent,
 } from '../src/modules/readiness/components/index.js';
@@ -290,5 +291,27 @@ describe('components', () => {
       academics: async () => new Map(),
     }).compute([M], NOW);
     expect(none.get('u1')).toBeNull();
+  });
+
+  it('practice: daily sets done and answer accuracy; one more set is a certain gain', async () => {
+    const out = await practiceComponent(
+      async () =>
+        new Map([
+          ['u1', { sets: 4, attempts: 40, right: 30 }],
+          ['u2', { sets: 12, attempts: 100, right: 90 }],
+        ]),
+    ).compute(
+      ['u1', 'u2', 'u3'].map((userId) => ({ ...M, userId })),
+      NOW,
+    );
+    // 0.4 × 4/10 + 0.6 × 0.75
+    expect(out.get('u1')).toMatchObject({
+      facts: { sets: 4, accuracy: 75 },
+      next: { id: 'do_practice', gain: 0.04 },
+    });
+    expect(out.get('u1')?.fraction).toBeCloseTo(0.16 + 0.45, 5);
+    expect(out.get('u2')).toMatchObject({ next: null });
+    expect(out.get('u2')?.fraction).toBeCloseTo(0.4 + 0.54, 5);
+    expect(out.get('u3')).toMatchObject({ fraction: 0, facts: { sets: 0, accuracy: null } });
   });
 });

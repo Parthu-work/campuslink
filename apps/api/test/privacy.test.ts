@@ -452,6 +452,7 @@ describe('deletion', () => {
         'resumes',
         'interviews',
         'readiness',
+        'practice',
       ]),
     );
   });

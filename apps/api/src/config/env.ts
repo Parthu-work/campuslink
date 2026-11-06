@@ -237,6 +237,19 @@ export const envSchema = z.object({
   /** The Qdrant REST address (the optional `qdrant` Docker profile: http://127.0.0.1:6333). Platform-owned. */
   QDRANT_URL: z.url({ protocol: /^https?$/ }).optional(),
   QDRANT_API_KEY: z.string().min(16).optional(),
+  /**
+   * Real code runs for coding practice (prompt 2, G4): `judge0` with a self-hosted Judge0 at
+   * JUDGE0_URL on an isolated network (no internet from the sandboxes). Off by default: coding is
+   * then practised through output prediction and multiple choice.
+   */
+  CODE_RUNNER: z.enum(['disabled', 'judge0']).default('disabled'),
+  JUDGE0_URL: z.url({ protocol: /^https?$/ }).optional(),
+  JUDGE0_AUTH_TOKEN: z.string().min(16).optional(),
+  /** Judge0 language ids when its compilers differ from Judge0 CE 1.13, e.g. `python:92,java:91`. */
+  JUDGE0_LANGUAGES: z
+    .string()
+    .regex(/^(c|cpp|java|python|javascript):\d{1,4}(,(c|cpp|java|python|javascript):\d{1,4})*$/)
+    .optional(),
   /** `llm` re-orders retrieved passages with the college's chat model (more tokens); `none` keeps fusion order. */
   AI_RERANKER: z.enum(['none', 'llm']).default('none'),
   VAPID_SUBJECT: z
@@ -315,6 +328,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error(
       'WHATSAPP_PROVIDER=cloud needs WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_APP_SECRET, WHATSAPP_VERIFY_TOKEN and WHATSAPP_GRAPH_VERSION',
     );
+  if (env.CODE_RUNNER === 'judge0' && !env.JUDGE0_URL) throw new Error('CODE_RUNNER=judge0 needs JUDGE0_URL');
   if (env.ERROR_REPORTER === 'sentry' && !env.ERROR_REPORTER_DSN)
     throw new Error('ERROR_REPORTER=sentry needs ERROR_REPORTER_DSN');
   if (env.SMS_PROVIDER === 'msg91' && !(env.SMS_API_KEY && env.SMS_SENDER_ID && env.SMS_DLT_ENTITY_ID))

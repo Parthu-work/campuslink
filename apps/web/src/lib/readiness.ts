@@ -18,6 +18,8 @@ export function readinessActionHref(a: Pick<ReadinessAction, 'id' | 'target'>): 
       return a.target ? `/roadmaps/${encodeURIComponent(a.target)}` : '/roadmaps';
     case 'book_session':
       return '/mentors';
+    case 'do_practice':
+      return '/practice';
     case 'add_academics':
     case 'raise_cgpa':
     case 'clear_backlogs':
@@ -49,6 +51,6 @@ export function readinessFactKey(c: Pick<ReadinessComponentView, 'id' | 'status'
     case 'eligibility':
       return f.pending ? 'pending' : f.cgpa === null || f.cgpa === undefined ? 'noRecord' : 'eligibility';
     default:
-      return 'practice';
+      return f.sets ? 'practice' : 'noPractice';
   }
 }

@@ -11,12 +11,11 @@ test('a student sees their score, what it is made of and their next steps', asyn
   await expect(page.getByRole('heading', { level: 1, name: 'Readiness' })).toBeVisible();
   await expect(page.getByRole('heading', { level: 2, name: /^You’re at \d+\.$/ })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'What your score is made of' })).toBeVisible();
-  // Practice (G4) is not in this build: it says so, and the score counts the rest.
+  // Practice (G4) counts: its card shows points like every other part.
   const practice = page
     .getByRole('listitem')
     .filter({ has: page.getByRole('heading', { name: 'Practice' }) });
-  await expect(practice.getByText('Coming soon')).toBeVisible();
-  await expect(page.getByText(/Not counted for you yet/)).toBeVisible();
+  await expect(practice.getByText(/^\d+ of \d+$/)).toBeVisible();
   await expect(page.getByText(/Other students and employers never do/)).toBeVisible();
   await expectNoA11yViolations(page);
 });

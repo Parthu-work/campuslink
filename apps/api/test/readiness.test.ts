@@ -185,13 +185,19 @@ beforeAll(async () => {
 });
 
 describe('the student’s own score', () => {
-  it('is the sum of its components, says practice is not available yet, and suggests next steps', async () => {
+  it('is the sum of its components, counts practice (G4), and suggests next steps', async () => {
     const r = await as(low).get('/me/readiness');
     expect(r.status, JSON.stringify(r.body)).toBe(200);
     const v = r.body.data as ReadinessView;
     expect(v.components.reduce((n, c) => n + c.points, 0)).toBe(v.score);
-    expect(v.components.find((c) => c.id === 'practice')?.status).toBe('not_available');
-    expect(v.renormalised).toBe(true);
+    // Practice (G4) is registered: no practice yet scores 0, with a next step.
+    expect(v.components.find((c) => c.id === 'practice')).toMatchObject({
+      status: 'scored',
+      points: 0,
+      facts: { sets: 0, accuracy: null },
+      next: { id: 'do_practice' },
+    });
+    expect(v.renormalised).toBe(false);
     expect(v.components.find((c) => c.id === 'resume')).toMatchObject({
       status: 'scored',
       facts: { ats: 40 },
@@ -253,10 +259,7 @@ describe('the readiness board', () => {
     expect(cse?.bands.every((n) => n === 0 || n === '<5' || (typeof n === 'number' && n >= 5))).toBe(true);
     expect(ece).toMatchObject({ students: '<5', median: null });
     expect(b.students).toBe(8);
-    expect(b.components.find((c) => c.id === 'practice')).toMatchObject({
-      status: 'not_available',
-      average: null,
-    });
+    expect(b.components.find((c) => c.id === 'practice')).toMatchObject({ status: 'scored' });
     // One branch only.
     const only = (await as(tpo).get('/admin/readiness?branch=ECE')).body.data as ReadinessBoardView;
     expect(only.groups.map((g) => g.branch)).toEqual(['ECE']);

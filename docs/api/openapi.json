@@ -381,6 +381,9 @@
                               "readiness:view",
                               "readiness:board",
                               "readiness:manage",
+                              "practice:use",
+                              "practice:author",
+                              "practice:review",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -473,6 +476,9 @@
                               "readiness:view",
                               "readiness:board",
                               "readiness:manage",
+                              "practice:use",
+                              "practice:author",
+                              "practice:review",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -21023,6 +21029,1045 @@
           }
         },
         "x-permission": "readiness:manage"
+      }
+    },
+    "/api/v1/practice": {
+      "get": {
+        "tags": [
+          "Practice"
+        ],
+        "summary": "Today's set, my streak, topic accuracy and the companies I can prepare for",
+        "description": "Requires permission `practice:use` (Do the daily aptitude and coding practice set and company prep). Host scope: college.",
+        "operationId": "practice_get_practice",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "practice:use"
+      }
+    },
+    "/api/v1/practice/sets": {
+      "post": {
+        "tags": [
+          "Practice"
+        ],
+        "summary": "Start (or resume) today's set, or a \"Preparing for <company>\" set",
+        "description": "Requires permission `practice:use` (Do the daily aptitude and coding practice set and company prep). Host scope: college.",
+        "operationId": "practice_post_practice_sets",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "company": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "practice:use"
+      }
+    },
+    "/api/v1/practice/sets/{id}": {
+      "get": {
+        "tags": [
+          "Practice"
+        ],
+        "summary": "One of my practice sets with the answers so far",
+        "description": "Requires permission `practice:use` (Do the daily aptitude and coding practice set and company prep). Host scope: college.",
+        "operationId": "practice_get_practice_sets_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "practice:use"
+      }
+    },
+    "/api/v1/practice/sets/{id}/answers": {
+      "post": {
+        "tags": [
+          "Practice"
+        ],
+        "summary": "Answer one question (coding answers run on the platform's code runner, when it is on)",
+        "description": "Requires permission `practice:use` (Do the daily aptitude and coding practice set and company prep). Host scope: college. Rate limit: posting.",
+        "operationId": "practice_post_practice_sets_id_answers",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9
+                  },
+                  "answer": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "codeLanguage": {
+                    "type": "string",
+                    "enum": [
+                      "c",
+                      "cpp",
+                      "java",
+                      "python",
+                      "javascript"
+                    ]
+                  }
+                },
+                "required": [
+                  "index"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "practice:use"
+      }
+    },
+    "/api/v1/practice/items": {
+      "post": {
+        "tags": [
+          "Practice"
+        ],
+        "summary": "Write a practice question (an alumnus's waits for faculty review)",
+        "description": "Requires permission `practice:author` (Write practice questions (alumni questions are reviewed before they are used)). Host scope: college. Rate limit: posting.",
+        "operationId": "practice_post_practice_items",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "mcq",
+                      "numeric",
+                      "output_prediction",
+                      "coding"
+                    ]
+                  },
+                  "topic": {
+                    "type": "string",
+                    "enum": [
+                      "percentages",
+                      "profit_loss",
+                      "ratio",
+                      "averages",
+                      "time_work",
+                      "time_distance",
+                      "interest",
+                      "number_system",
+                      "permutations",
+                      "probability",
+                      "series",
+                      "coding_decoding",
+                      "blood_relations",
+                      "directions",
+                      "syllogisms",
+                      "arrangements",
+                      "grammar",
+                      "vocabulary",
+                      "reading",
+                      "sentence_order",
+                      "arrays",
+                      "strings",
+                      "linked_lists",
+                      "stacks_queues",
+                      "trees",
+                      "graphs",
+                      "sorting_searching",
+                      "recursion",
+                      "dynamic_programming",
+                      "complexity",
+                      "c",
+                      "java",
+                      "python",
+                      "oop",
+                      "dbms"
+                    ]
+                  },
+                  "difficulty": {
+                    "default": "medium",
+                    "type": "string",
+                    "enum": [
+                      "easy",
+                      "medium",
+                      "hard"
+                    ]
+                  },
+                  "companies": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 80
+                    }
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  },
+                  "code": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "codeLanguage": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "c",
+                          "cpp",
+                          "java",
+                          "python",
+                          "javascript"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "options": {
+                    "default": [],
+                    "maxItems": 6,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 300
+                    }
+                  },
+                  "answer": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "tolerance": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "explanation": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  },
+                  "tests": {
+                    "default": [],
+                    "maxItems": 5,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "stdin": {
+                          "default": "",
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "expected": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "required": [
+                        "expected"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "topic",
+                  "text",
+                  "explanation"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "practice:author"
+      }
+    },
+    "/api/v1/admin/practice/items": {
+      "get": {
+        "tags": [
+          "Practice"
+        ],
+        "summary": "The practice bank by status (alumni questions and AI drafts wait here for review)",
+        "description": "Requires permission `practice:review` (Add practice questions, review drafts and alumni questions, and tag companies). Host scope: college.",
+        "operationId": "practice_get_admin_practice_items",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "pending",
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ]
+            }
+          },
+          {
+            "name": "topic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "percentages",
+                "profit_loss",
+                "ratio",
+                "averages",
+                "time_work",
+                "time_distance",
+                "interest",
+                "number_system",
+                "permutations",
+                "probability",
+                "series",
+                "coding_decoding",
+                "blood_relations",
+                "directions",
+                "syllogisms",
+                "arrangements",
+                "grammar",
+                "vocabulary",
+                "reading",
+                "sentence_order",
+                "arrays",
+                "strings",
+                "linked_lists",
+                "stacks_queues",
+                "trees",
+                "graphs",
+                "sorting_searching",
+                "recursion",
+                "dynamic_programming",
+                "complexity",
+                "c",
+                "java",
+                "python",
+                "oop",
+                "dbms"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "practice:review"
+      }
+    },
+    "/api/v1/admin/practice/items/{id}": {
+      "put": {
+        "tags": [
+          "Practice"
+        ],
+        "summary": "Correct a practice question or tag the companies it prepares for",
+        "description": "Requires permission `practice:review` (Add practice questions, review drafts and alumni questions, and tag companies). Host scope: college.",
+        "operationId": "practice_put_admin_practice_items_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "mcq",
+                      "numeric",
+                      "output_prediction",
+                      "coding"
+                    ]
+                  },
+                  "topic": {
+                    "type": "string",
+                    "enum": [
+                      "percentages",
+                      "profit_loss",
+                      "ratio",
+                      "averages",
+                      "time_work",
+                      "time_distance",
+                      "interest",
+                      "number_system",
+                      "permutations",
+                      "probability",
+                      "series",
+                      "coding_decoding",
+                      "blood_relations",
+                      "directions",
+                      "syllogisms",
+                      "arrangements",
+                      "grammar",
+                      "vocabulary",
+                      "reading",
+                      "sentence_order",
+                      "arrays",
+                      "strings",
+                      "linked_lists",
+                      "stacks_queues",
+                      "trees",
+                      "graphs",
+                      "sorting_searching",
+                      "recursion",
+                      "dynamic_programming",
+                      "complexity",
+                      "c",
+                      "java",
+                      "python",
+                      "oop",
+                      "dbms"
+                    ]
+                  },
+                  "difficulty": {
+                    "default": "medium",
+                    "type": "string",
+                    "enum": [
+                      "easy",
+                      "medium",
+                      "hard"
+                    ]
+                  },
+                  "companies": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 80
+                    }
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  },
+                  "code": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 6000
+                  },
+                  "codeLanguage": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "c",
+                          "cpp",
+                          "java",
+                          "python",
+                          "javascript"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "options": {
+                    "default": [],
+                    "maxItems": 6,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 300
+                    }
+                  },
+                  "answer": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "tolerance": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "explanation": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  },
+                  "tests": {
+                    "default": [],
+                    "maxItems": 5,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "stdin": {
+                          "default": "",
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "expected": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "required": [
+                        "expected"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "kind",
+                  "topic",
+                  "text",
+                  "explanation"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "practice:review"
+      }
+    },
+    "/api/v1/admin/practice/items/{id}/decision": {
+      "post": {
+        "tags": [
+          "Practice"
+        ],
+        "summary": "Approve (optionally corrected) or reject a practice question",
+        "description": "Requires permission `practice:review` (Add practice questions, review drafts and alumni questions, and tag companies). Host scope: college.",
+        "operationId": "practice_post_admin_practice_items_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ]
+                  },
+                  "edit": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "mcq",
+                          "numeric",
+                          "output_prediction",
+                          "coding"
+                        ]
+                      },
+                      "topic": {
+                        "type": "string",
+                        "enum": [
+                          "percentages",
+                          "profit_loss",
+                          "ratio",
+                          "averages",
+                          "time_work",
+                          "time_distance",
+                          "interest",
+                          "number_system",
+                          "permutations",
+                          "probability",
+                          "series",
+                          "coding_decoding",
+                          "blood_relations",
+                          "directions",
+                          "syllogisms",
+                          "arrangements",
+                          "grammar",
+                          "vocabulary",
+                          "reading",
+                          "sentence_order",
+                          "arrays",
+                          "strings",
+                          "linked_lists",
+                          "stacks_queues",
+                          "trees",
+                          "graphs",
+                          "sorting_searching",
+                          "recursion",
+                          "dynamic_programming",
+                          "complexity",
+                          "c",
+                          "java",
+                          "python",
+                          "oop",
+                          "dbms"
+                        ]
+                      },
+                      "difficulty": {
+                        "default": "medium",
+                        "type": "string",
+                        "enum": [
+                          "easy",
+                          "medium",
+                          "hard"
+                        ]
+                      },
+                      "companies": {
+                        "default": [],
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 80
+                        }
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 2000
+                      },
+                      "code": {
+                        "default": "",
+                        "type": "string",
+                        "maxLength": 6000
+                      },
+                      "codeLanguage": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "c",
+                              "cpp",
+                              "java",
+                              "python",
+                              "javascript"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "options": {
+                        "default": [],
+                        "maxItems": 6,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 300
+                        }
+                      },
+                      "answer": {
+                        "default": "",
+                        "type": "string",
+                        "maxLength": 2000
+                      },
+                      "tolerance": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1000000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "explanation": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 2000
+                      },
+                      "tests": {
+                        "default": [],
+                        "maxItems": 5,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "stdin": {
+                              "default": "",
+                              "type": "string",
+                              "maxLength": 2000
+                            },
+                            "expected": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 2000
+                            }
+                          },
+                          "required": [
+                            "expected"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "topic",
+                      "text",
+                      "explanation"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "practice:review"
+      }
+    },
+    "/api/v1/admin/practice/drafts": {
+      "post": {
+        "tags": [
+          "Practice"
+        ],
+        "summary": "Ask the AI to draft questions for a topic (they wait for review)",
+        "description": "Requires permission `practice:review` (Add practice questions, review drafts and alumni questions, and tag companies). Host scope: college. Rate limit: aiChat.",
+        "operationId": "practice_post_admin_practice_drafts",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "enum": [
+                      "percentages",
+                      "profit_loss",
+                      "ratio",
+                      "averages",
+                      "time_work",
+                      "time_distance",
+                      "interest",
+                      "number_system",
+                      "permutations",
+                      "probability",
+                      "series",
+                      "coding_decoding",
+                      "blood_relations",
+                      "directions",
+                      "syllogisms",
+                      "arrangements",
+                      "grammar",
+                      "vocabulary",
+                      "reading",
+                      "sentence_order",
+                      "arrays",
+                      "strings",
+                      "linked_lists",
+                      "stacks_queues",
+                      "trees",
+                      "graphs",
+                      "sorting_searching",
+                      "recursion",
+                      "dynamic_programming",
+                      "complexity",
+                      "c",
+                      "java",
+                      "python",
+                      "oop",
+                      "dbms"
+                    ]
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "mcq",
+                      "numeric",
+                      "output_prediction"
+                    ]
+                  },
+                  "difficulty": {
+                    "default": "medium",
+                    "type": "string",
+                    "enum": [
+                      "easy",
+                      "medium",
+                      "hard"
+                    ]
+                  },
+                  "count": {
+                    "default": 3,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "companies": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 80
+                    }
+                  }
+                },
+                "required": [
+                  "topic",
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "practice:review"
+      }
+    },
+    "/api/v1/admin/practice/mastery": {
+      "get": {
+        "tags": [
+          "Practice"
+        ],
+        "summary": "Topic accuracy by graduation year, small groups suppressed (for planning training)",
+        "description": "Requires permission `analytics:cohort` (View cohort analytics). Host scope: college.",
+        "operationId": "practice_get_admin_practice_mastery",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1990,
+              "maximum": 2100
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "analytics:cohort"
       }
     },
     "/api/v1/legal/{doc}": {

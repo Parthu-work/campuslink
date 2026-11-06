@@ -8,10 +8,10 @@ const has = (group: Record<string, string>, key: string) =>
   key in group || `${key}_one` in group || `${key}_other` in group;
 
 describe('readiness next steps', () => {
-  it('every action has words, and a link except practice (until G4 ships it)', () => {
+  it('every action has words and a link', () => {
     for (const id of READINESS_ACTIONS) {
       expect(has(strings.readiness.action, id), id).toBe(true);
-      if (id !== 'do_practice') expect(readinessActionHref({ id }), id).toMatch(/^\//);
+      expect(readinessActionHref({ id }), id).toMatch(/^\//);
     }
     expect(readinessActionHref({ id: 'roadmap_steps', target: 'sde-path' })).toBe('/roadmaps/sde-path');
   });

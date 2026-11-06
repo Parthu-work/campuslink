@@ -114,6 +114,10 @@ const load = {
   interviewQuestions: withPack('career', () => import('../features/admin/interview-questions')),
   readiness: withPack('readiness', () => import('../features/progress/readiness')),
   readinessAdmin: withPack('readiness', () => import('../features/admin/readiness-admin')),
+  // Prompt 2, G4: practice screens' strings come in the `practice` pack.
+  practice: withPack('practice', () => import('../features/practice/practice')),
+  practiceSet: withPack('practice', () => import('../features/practice/set')),
+  practiceBank: withPack('practice', () => import('../features/admin/practice-bank')),
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
@@ -507,6 +511,13 @@ function collegeRoutes(): RouteObject[] {
           screen(load.interviewSession, 'InterviewSessionPage', undefined, at('/interviews/:id'), ({ id }) =>
             isId(id) ? [qc.ensureQueryData(q.interview(id))] : [],
           ),
+          // Aptitude and coding practice (prompt 2, G4).
+          screen(load.practice, 'PracticePage', 'practice:use', at('/practice'), () => [
+            qc.ensureQueryData(q.practice()),
+          ]),
+          screen(load.practiceSet, 'PracticeSetPage', 'practice:use', at('/practice/sets/:id'), ({ id }) =>
+            isId(id) ? [qc.ensureQueryData(q.practiceSet(id))] : [],
+          ),
           screen(
             load.drivePage,
             'DrivePage',
@@ -644,6 +655,9 @@ function collegeRoutes(): RouteObject[] {
               at('readiness'),
               () => [qc.ensureQueryData(q.readinessBoard('')), qc.ensureQueryData(q.readinessConfig())],
             ),
+            screen(load.practiceBank, 'PracticeBankAdmin', 'practice:review', at('practice'), () => [
+              qc.ensureQueryData(q.practiceItems('pending')),
+            ]),
             screen(
               load.reports,
               'ReportsDashboard',

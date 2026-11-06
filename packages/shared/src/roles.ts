@@ -103,6 +103,10 @@ export const ALL_PERMISSIONS = [
   'readiness:view',
   'readiness:board',
   'readiness:manage',
+  // Aptitude and coding practice (prompt 2, G4)
+  'practice:use',
+  'practice:author',
+  'practice:review',
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
   'platform:health',
@@ -186,6 +190,9 @@ export const PERMISSIONS: Record<Permission, string> = {
   'readiness:view': 'See one’s own placement readiness score and its next steps',
   'readiness:board': 'See the readiness board: distribution by batch and branch, and students who need help',
   'readiness:manage': 'Set readiness weights, nudge students who need help and export the board',
+  'practice:use': 'Do the daily aptitude and coding practice set and company prep',
+  'practice:author': 'Write practice questions (alumni questions are reviewed before they are used)',
+  'practice:review': 'Add practice questions, review drafts and alumni questions, and tag companies',
   'support:manage': 'Answer and close problem reports sent to the college',
   'placements:view': 'See placement drives and the eligibility rules',
   'placements:register': 'Register for placement drives one is eligible for',
@@ -226,6 +233,7 @@ const STUDENT: Permission[] = [
   'resumes:manage',
   'interviews:practice',
   'readiness:view',
+  'practice:use',
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
 const STUDENT_ONLY: readonly Permission[] = ['placements:view', 'placements:register', 'readiness:view'];
@@ -239,6 +247,7 @@ const ALUMNI: Permission[] = [
   'referrals:offer',
   'roadmaps:write',
   'study:contribute',
+  'practice:author',
 ];
 const STAFF: Permission[] = [
   ...STUDENT.filter(
@@ -247,7 +256,8 @@ const STAFF: Permission[] = [
       p !== 'outcomes:report' &&
       p !== 'resumes:manage' &&
       p !== 'interviews:practice' &&
-      p !== 'readiness:view',
+      p !== 'readiness:view' &&
+      p !== 'practice:use',
   ),
   'feed:post',
   'qa:answer',
@@ -261,6 +271,8 @@ const STAFF: Permission[] = [
   'study:analytics',
   'interviews:review',
   'readiness:board',
+  'practice:author',
+  'practice:review',
   'analytics:cohort',
   'moderation:act',
   'users:invite',

@@ -71,6 +71,11 @@ import type {
   InterviewQuestionStatus,
   InterviewQuestionView,
   InterviewView,
+  PracticeHomeView,
+  PracticeItemView,
+  PracticeMasteryView,
+  PracticeSetView,
+  PracticeStatus,
   ResumeSummaryView,
   ResumeView,
   ReadinessView,
@@ -785,4 +790,29 @@ export const readinessConfig = () =>
   queryOptions({
     queryKey: ['readiness-config'],
     queryFn: ({ signal }) => api.get<ReadinessConfigView>('/admin/readiness/config', signal),
+  });
+
+// Aptitude and coding practice (prompt 2, G4).
+export const practice = () =>
+  queryOptions({
+    queryKey: ['practice'],
+    queryFn: ({ signal }) => api.get<PracticeHomeView>('/practice', signal),
+  });
+
+export const practiceSet = (id: string) =>
+  queryOptions({
+    queryKey: ['practice', 'set', id],
+    queryFn: ({ signal }) => api.get<PracticeSetView>(`/practice/sets/${id}`, signal),
+  });
+
+export const practiceItems = (status: PracticeStatus) =>
+  queryOptions({
+    queryKey: ['practice-items', status],
+    queryFn: ({ signal }) => api.get<PracticeItemView[]>(`/admin/practice/items?status=${status}`, signal),
+  });
+
+export const practiceMastery = () =>
+  queryOptions({
+    queryKey: ['practice-mastery'],
+    queryFn: ({ signal }) => api.get<PracticeMasteryView>('/admin/practice/mastery', signal),
   });

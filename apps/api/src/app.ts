@@ -57,9 +57,18 @@ import {
   eligibilityComponent,
   interviewsComponent,
   mentorshipComponent,
+  practiceComponent,
   resumeComponent,
   roadmapComponent,
 } from './modules/readiness/components/index.js';
+import { PracticeService } from './modules/practice/practice.service.js';
+import { practiceRoutes } from './modules/practice/practice.routes.js';
+import {
+  DisabledCodeRunner,
+  JUDGE0_LANGUAGE_IDS,
+  Judge0CodeRunner,
+  type CodeRunner,
+} from './modules/practice/code-runner.js';
 import { DIGEST_JOB, DigestService } from './modules/notifications/digest.service.js';
 import { parseDltTemplateIds } from './modules/notifications/channels/sms-templates.js';
 import { OtpService } from './modules/verification/otp.service.js';
@@ -205,6 +214,8 @@ export interface AppDeps {
   media?: MediaTools;
   ocr?: OcrProvider;
   whisper?: TranscriptionProvider | null;
+  /** Coding practice runs (tests inject a stub); otherwise from CODE_RUNNER and JUDGE0_URL. */
+  codeRunner?: CodeRunner;
   /** The passage vector store (tests inject one); otherwise from VECTOR_STORE and QDRANT_URL. */
   vectorStore?: VectorStore;
   /** Phone channels (tests inject console providers); otherwise from SMS_PROVIDER and WHATSAPP_PROVIDER. */
@@ -275,6 +286,7 @@ export function createApp({
   media,
   ocr,
   whisper,
+  codeRunner,
   vectorStore,
   sms = smsFromEnv(env, fetcher),
   whatsapp = whatsappFromEnv(env, fetcher),
@@ -862,8 +874,8 @@ export function createApp({
     interviewsService.mockBooked(menteeId, interviewId);
 
   // ── Placement readiness (prompt 2, G5) ─────────────────────────────
-  // Each component reads through its owning module's service. Practice mastery (G4) registers its
-  // component here once modules/practice/ exists; until then it is skipped and the rest scaled up.
+  // Each component reads through its owning module's service (practice mastery, G4, is registered
+  // with the practice service below).
   const readinessService = new ReadinessService({
     notifications: notificationsService,
     students: (filter) => profilesService.students(filter),
@@ -882,6 +894,39 @@ export function createApp({
       academics: (ids) => academicsService.factsFor(ids),
     }),
   );
+  // Aptitude and coding practice (prompt 2, G4): code runs only on the platform's own Judge0.
+  const practiceService = new PracticeService({
+    ai: aiTasksService,
+    runner:
+      codeRunner ??
+      (env.CODE_RUNNER === 'judge0' && env.JUDGE0_URL
+        ? new Judge0CodeRunner(
+            {
+              apiKey: null,
+              baseUrl: env.JUDGE0_URL,
+              // Platform-owned service from the environment, on the private network.
+              allowPrivateNetwork: true,
+              fetcher,
+              authToken: env.JUDGE0_AUTH_TOKEN ?? null,
+            },
+            {
+              ...JUDGE0_LANGUAGE_IDS,
+              ...Object.fromEntries(
+                (env.JUDGE0_LANGUAGES ?? '')
+                  .split(',')
+                  .filter(Boolean)
+                  .map((p) => [p.split(':')[0], Number(p.split(':')[1])]),
+              ),
+            },
+          )
+        : new DisabledCodeRunner()),
+    profiles: profilesService,
+    logger,
+    companies: () => placementsService.recruitingCompanies(),
+  });
+  practiceService.award = gamificationService.award;
+  // Readiness (G5): practice mastery, through the practice service.
+  readinessService.register(practiceComponent((ids, since) => practiceService.readinessFacts(ids, since)));
   const materialsService = new MaterialsService({
     files: filesService,
     subjects: subjectsService,
@@ -1070,6 +1115,7 @@ export function createApp({
     resumesService,
     interviewsService,
     readinessService,
+    practiceService,
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1131,6 +1177,7 @@ export function createApp({
   privacyService.register('resumes', hook(resumesService));
   privacyService.register('interviews', hook(interviewsService));
   privacyService.register('readiness', hook(readinessService));
+  privacyService.register('practice', hook(practiceService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -1319,6 +1366,7 @@ export function createApp({
     API_PREFIX,
     defineModule('readiness', withFeature('placements', readinessRoutes(readinessService)), pipeline),
   );
+  app.use(API_PREFIX, defineModule('practice', practiceRoutes(practiceService), pipeline));
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -1418,6 +1466,7 @@ export function createApp({
     resumes: resumesService,
     interviews: interviewsService,
     readiness: readinessService,
+    practice: practiceService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,

@@ -49,7 +49,8 @@ function ComponentCard({ c }: { c: ReadinessComponentView }) {
   const scored = c.status === 'scored';
   const f = c.facts;
   const fact = t(`readiness.facts.${readinessFactKey(c)}`, {
-    count: Number(f.sessions ?? f.mocks ?? f.resumes ?? 0),
+    count: Number(f.sessions ?? f.mocks ?? f.resumes ?? f.sets ?? 0),
+    accuracy: f.accuracy ?? 0,
     ats: f.ats ?? '',
     mocks: f.mocks ?? 0,
     average: f.average ?? '',

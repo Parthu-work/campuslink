@@ -200,6 +200,30 @@ export class PlacementsService {
     return rows.map((c) => this.companyView(c, true));
   }
 
+  /** Companies that recruit through the college, with their next open drive's closing time (G4 practice tags). */
+  async recruitingCompanies(): Promise<{ key: string; name: string; nextDriveCloses: Date | null }[]> {
+    const [companies, drives] = await Promise.all([
+      PlacementCompanyModel.find()
+        .select('name companyKey')
+        .sort({ name: 1 })
+        .limit(500)
+        .lean<PlacementCompanyDoc[]>(),
+      PlacementDriveModel.find({ status: 'open', registrationCloseAt: { $gt: new Date() } })
+        .select('companyId registrationCloseAt')
+        .sort({ registrationCloseAt: 1 })
+        .limit(500)
+        .lean<{ companyId: unknown; registrationCloseAt: Date }[]>(),
+    ]);
+    const next = new Map<string, Date>();
+    for (const d of drives)
+      if (!next.has(String(d.companyId))) next.set(String(d.companyId), d.registrationCloseAt);
+    return companies.map((c) => ({
+      key: c.companyKey,
+      name: c.name,
+      nextDriveCloses: next.get(String(c._id)) ?? null,
+    }));
+  }
+
   async upsertCompany(body: { name: string; website: string | null; sector: string; notes: string }) {
     const key = companyKey(body.name);
     if (!key) throw badRequest('Give the company a name');

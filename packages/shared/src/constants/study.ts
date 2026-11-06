@@ -149,7 +149,7 @@ export const AI_USAGE_KINDS = ['chat', 'embedding', 'transcription', 'rerank'] a
 export type AiUsageKind = (typeof AI_USAGE_KINDS)[number];
 /**
  * What the tokens were spent on (build B11): billing usage and the platform's cost estimate split
- * by it. Prompt 2 adds résumé, interview and copilot work under their own names.
+ * by it. Prompt 2 adds résumé, interview, copilot and practice work under their own names.
  */
 export const AI_USAGE_FEATURES = [
   'study_chat',
@@ -159,6 +159,7 @@ export const AI_USAGE_FEATURES = [
   'resume',
   'interview',
   'copilot',
+  'practice',
 ] as const;
 export type AiUsageFeature = (typeof AI_USAGE_FEATURES)[number];
 
@@ -171,6 +172,8 @@ export const AI_FEATURE_LIMITS: Readonly<Partial<Record<AiUsageFeature, number>>
   resume: 30,
   interview: 60,
   copilot: 40,
+  // Faculty drafting practice items (each draft waits for review).
+  practice: 20,
 };
 
 /** Why an AI task gave no AI result (the caller shows its fallback or "not available right now"). */

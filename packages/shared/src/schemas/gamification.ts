@@ -17,6 +17,8 @@ export const XP_RULES = {
   feedback_given: { track: 'xp', points: 5, dailyCap: null },
   event_attended: { track: 'xp', points: 10, dailyCap: null },
   study_quiz: { track: 'xp', points: 5, dailyCap: 5 },
+  // Prompt 2, G4: finishing the day's practice set (once a day).
+  practice_set: { track: 'xp', points: 10, dailyCap: 1 },
   session_mentored: { track: 'impact', points: 10, dailyCap: null },
   new_mentee: { track: 'impact', points: 15, dailyCap: null },
   referral_given: { track: 'impact', points: 8, dailyCap: null },

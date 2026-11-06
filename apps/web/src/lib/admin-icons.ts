@@ -37,6 +37,7 @@ export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
   offers: FileCheck2,
   interviewQuestions: MessageSquareQuote,
   readiness: Gauge,
+  practiceBank: ListChecks,
   moderation: ShieldAlert,
   mentorship: HeartHandshake,
   sources: Newspaper,

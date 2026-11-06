@@ -70,7 +70,9 @@
       "pending": "Your academic record is waiting for the placement cell to verify it.",
       "noRecord": "No academic record yet.",
       "eligibility": "Your CGPA of {{cgpa}} meets the cut-offs of {{meets}} of {{drives}} recent drives.",
-      "practice": "Practice sets done."
+      "noPractice": "No practice sets yet.",
+      "practice_one": "{{count}} daily practice set in the last 90 days, {{accuracy}}% of answers right.",
+      "practice_other": "{{count}} daily practice sets in the last 90 days, {{accuracy}}% of answers right."
     }
   },
   "readinessBoard": {

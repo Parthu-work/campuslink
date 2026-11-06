@@ -20,6 +20,7 @@ export type NavId =
   | 'resume'
   | 'interviews'
   | 'readiness'
+  | 'practice'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -92,6 +93,7 @@ export type AdminSectionId =
   | 'offers'
   | 'interviewQuestions'
   | 'readiness'
+  | 'practiceBank'
   | 'reports'
   | 'moderation'
   | 'mentorship'
@@ -134,6 +136,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('interviewQuestions', '/admin/interview-questions', 'interviews:review', 'placements'),
   // The readiness board (prompt 2, G5): distribution, students who need help, nudges.
   section('readiness', '/admin/readiness', 'readiness:board', 'placements'),
+  // The practice bank, its review queue and topic mastery by batch (prompt 2, G4).
+  section('practiceBank', '/admin/practice', 'practice:review', 'placements'),
   section('moderation', '/admin/moderation', 'moderation:act', 'community'),
   section('mentorship', '/admin/mentorship', 'mentorship:oversee', 'community'),
   section('sources', '/admin/sources', 'sources:manage', 'community'),
@@ -190,6 +194,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   interviews: d('interviews', '/interviews', 'you', ['interviews:practice']),
   // Placement readiness: the score and its next steps (prompt 2, G5).
   readiness: d('readiness', '/readiness', 'you', ['readiness:view']),
+  // Aptitude and coding practice (prompt 2, G4).
+  practice: d('practice', '/practice', 'you', ['practice:use']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -310,6 +316,7 @@ const MENU_ORDER: readonly NavId[] = [
   'resume',
   'interviews',
   'readiness',
+  'practice',
   'progress',
   'rewards',
   'saved',
