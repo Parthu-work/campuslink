@@ -1,13 +1,21 @@
 import { Types } from 'mongoose';
 import type { z } from 'zod';
-import type {
-  AnswerView,
-  QuestionView,
-  RemovalReason,
-  Topic,
-  questionBody,
-  questionsQuery,
+import {
+  VOICE_MAX_SECONDS,
+  type AnswerView,
+  type QuestionView,
+  type RemovalReason,
+  type Topic,
+  type VoiceInfo,
+  type questionBody,
+  type questionsQuery,
 } from '@campuslink/shared';
+import { noCircles, type CircleScope } from '../../lib/circle-scope.js';
+import { requireTenantId } from '../../lib/context.js';
+import type { JobQueue, TenantJob } from '../../lib/jobs.js';
+import { noTrack, type Track } from '../../lib/product-events.js';
+import type { FilesService } from '../files/files.service.js';
+import type { VoiceTranscriber } from '../study/media/voice.js';
 import {
   AnswerModel,
   AnswerVoteModel,
@@ -27,6 +35,32 @@ import type { AuthState } from '../../types.js';
 import { noAward, type Award } from '../../lib/awards.js';
 
 const isDuplicate = (e: unknown) => (e as { code?: number } | null)?.code === 11000;
+export const QA_VOICE_JOB = 'qa.voice_transcribe';
+type VoiceDoc =
+  | {
+      state: VoiceInfo['state'];
+      audioFileId: Types.ObjectId | null;
+      keep: boolean;
+      durationSec: number | null;
+    }
+  | null
+  | undefined;
+const voiceView = (v: VoiceDoc): VoiceInfo | null =>
+  v
+    ? {
+        state: v.state,
+        audioFileId: v.keep && v.state === 'ready' && v.audioFileId ? String(v.audioFileId) : null,
+        durationSec: v.durationSec ?? null,
+      }
+    : null;
+/** A transcript as a question: its first sentence the title (10 to 150 characters), the rest the body. */
+function splitQuestion(text: string): { title: string; body: string } | null {
+  const clean = text.replace(/\s+/g, ' ').trim();
+  if (clean.length < 10) return null;
+  const first = clean.split(/(?<=[?.!।])\s+/)[0] ?? clean;
+  const title = (first.length >= 10 ? first : clean).slice(0, 150).trim();
+  return { title, body: clean.slice(title.length).trim().slice(0, 2000) };
+}
 const blankAuthor = (id: string) => ({
   userId: id,
   name: '',
@@ -53,6 +87,17 @@ export class QaService {
 
   async eraseFor(userId: string) {
     const u = new Types.ObjectId(userId);
+    // Prompt 2, G7: kept voice recordings go with the questions and answers.
+    const recordings = [
+      ...(await QuestionModel.find({ authorId: u, 'voice.audioFileId': { $ne: null } })
+        .select('voice')
+        .lean()),
+      ...(await AnswerModel.find({ authorId: u, 'voice.audioFileId': { $ne: null } })
+        .select('voice')
+        .lean()),
+    ];
+    for (const r of recordings)
+      if (r.voice?.audioFileId) await this.voice?.files.remove(r.voice.audioFileId).catch(() => undefined);
     await Promise.all([
       QuestionModel.deleteMany({ authorId: u }),
       AnswerModel.deleteMany({ authorId: u }),
@@ -62,6 +107,11 @@ export class QaService {
 
   /** Points for actions this module confirms (wired in app.ts). */
   award: Award = noAward;
+  /** Prompt 2, G7: product events (voice questions) and circle scoping, set by the app. */
+  track: Track = noTrack;
+  circles: CircleScope = noCircles;
+  /** Prompt 2, G7: voice questions and answers (null when the app has no transcription set up). */
+  voice: { transcriber: VoiceTranscriber; files: FilesService; jobs: JobQueue } | null = null;
   constructor(
     private readonly d: {
       profiles: ProfilesService;
@@ -85,11 +135,16 @@ export class QaService {
         removal?: Removal | null;
       }[],
     );
+    const circleNames = await this.circles.names(rows.flatMap((q) => (q.circleId ? [q.circleId] : [])));
     return rows.map((q) => {
       const id = String(q._id);
       const rejected = q.status === 'rejected' && q.rejection?.reason;
       return {
         id,
+        circle: q.circleId
+          ? { id: String(q.circleId), name: circleNames.get(String(q.circleId)) ?? '' }
+          : null,
+        voice: voiceView(q.voice as VoiceDoc),
         title: q.title,
         body: q.body,
         topics: q.topics as Topic[],
@@ -116,11 +171,13 @@ export class QaService {
   async ask(viewer: AuthState, body: z.output<typeof questionBody>) {
     const title = plainText(body.title);
     if (title.length < 10) throw badRequest('Write a clear question (at least 10 characters)');
+    const circleId = await this.circles.assertCanPost(viewer, body.circleId);
     const q = await QuestionModel.create({
       authorId: new Types.ObjectId(viewer.userId),
       title,
       body: plainText(body.body),
       topics: body.topics,
+      circleId,
     });
     return (await this.questionViews(viewer, [q.toObject() as QuestionDoc]))[0] as QuestionView;
   }
@@ -131,6 +188,11 @@ export class QaService {
       : { status: 'published' };
     if (q.topic) filter.topics = q.topic;
     if (q.unanswered) filter.answers = 0;
+    // Prompt 2, G7: a circle's questions for those who may see it; otherwise outside circles or in mine.
+    if (q.circle) {
+      if (!(await this.circles.canSee(viewer, q.circle))) throw notFound('Circle');
+      filter.circleId = new Types.ObjectId(q.circle);
+    } else if (!q.mine) Object.assign(filter, { $and: [await this.circles.condition(viewer)] });
     if (q.cursor) filter._id = { $lt: new Types.ObjectId(q.cursor) };
     const hidden = await this.d.safety.hiddenFor(viewer.userId);
     const rows = (await QuestionModel.find(filter).sort({ _id: -1 }).limit(31).lean<QuestionDoc[]>()).filter(
@@ -149,6 +211,7 @@ export class QaService {
     const mine = String(q.authorId) === viewer.userId;
     if (q.status !== 'published' && !mine && !isModerator(viewer)) throw notFound('Question');
     if (!mine && (await this.d.safety.isBlockedEither(viewer.userId, q.authorId))) throw notFound('Question');
+    if (!mine && !(await this.circles.canSee(viewer, q.circleId))) throw notFound('Question');
     return q;
   }
 
@@ -182,6 +245,7 @@ export class QaService {
       votedHelpful: voted.has(String(a._id)),
       accepted: !!q.acceptedAnswerId && String(q.acceptedAnswerId) === String(a._id),
       status: a.status as AnswerView['status'],
+      voice: voiceView(a.voice as VoiceDoc),
       isMine: String(a.authorId) === viewer.userId,
       removal: removals.get(String(a._id)) ?? null,
       createdAt: a.createdAt.toISOString(),
@@ -411,10 +475,210 @@ export class QaService {
 
   async search(viewer: AuthState, text: string) {
     if (text.length < 3) return [];
-    const rows = await withTextSearch(QuestionModel.find({ status: 'published' }), text)
+    const rows = await withTextSearch(
+      QuestionModel.find({ status: 'published', $and: [await this.circles.condition(viewer)] }),
+      text,
+    )
       .limit(5)
       .lean<QuestionDoc[]>();
     return this.questionViews(viewer, rows);
+  }
+
+  // ── Voice (prompt 2, G7) ─────────────────────────────
+
+  private async storeVoice(viewer: AuthState, file: Buffer | undefined) {
+    if (!file?.length) throw badRequest('Record your question or answer first');
+    if (!this.voice || !(await this.voice.transcriber.available()))
+      throw badRequest('Voice is not available right now: type it instead');
+    return { voice: this.voice, stored: await this.voice.files.storeVoiceAudio(viewer.userId, file) };
+  }
+
+  /** Ask by voice: the recording is transcribed in the worker; the transcript goes to moderation like a typed question. */
+  async askByVoice(
+    viewer: AuthState,
+    file: Buffer | undefined,
+    opts: { keepAudio: boolean; circleId?: string | undefined },
+  ) {
+    const circleId = await this.circles.assertCanPost(viewer, opts.circleId);
+    const { voice, stored } = await this.storeVoice(viewer, file);
+    const q = await QuestionModel.create({
+      authorId: new Types.ObjectId(viewer.userId),
+      title: 'Voice question',
+      body: '',
+      topics: [],
+      circleId,
+      status: 'transcribing',
+      voice: {
+        state: 'transcribing',
+        audioFileId: new Types.ObjectId(stored.id),
+        keep: opts.keepAudio,
+        durationSec: null,
+      },
+    });
+    await voice.jobs.enqueue(
+      QA_VOICE_JOB,
+      { tenantId: String(requireTenantId()), kind: 'question', id: String(q._id), fileId: stored.id },
+      { jobId: `qa-voice-${String(q._id)}` },
+    );
+    await this.track(viewer.userId, 'voice_question', { kind: 'question' });
+    return (await this.questionViews(viewer, [q.toObject() as QuestionDoc]))[0] as QuestionView;
+  }
+
+  /** Answer by voice: published when the transcript is ready (with a play button if the author kept the audio). */
+  async answerByVoice(viewer: AuthState, questionId: string, file: Buffer | undefined, keepAudio: boolean) {
+    const q = await this.visible(viewer, questionId);
+    if (q.status !== 'published') throw conflict('This question is not open for answers');
+    const { voice, stored } = await this.storeVoice(viewer, file);
+    const a = await AnswerModel.create({
+      questionId: q._id,
+      authorId: new Types.ObjectId(viewer.userId),
+      body: '…',
+      status: 'transcribing',
+      voice: {
+        state: 'transcribing',
+        audioFileId: new Types.ObjectId(stored.id),
+        keep: keepAudio,
+        durationSec: null,
+      },
+    });
+    await voice.jobs.enqueue(
+      QA_VOICE_JOB,
+      { tenantId: String(requireTenantId()), kind: 'answer', id: String(a._id), fileId: stored.id },
+      { jobId: `qa-voice-${String(a._id)}` },
+    );
+    await this.track(viewer.userId, 'voice_question', { kind: 'answer' });
+    return (await this.answerViews(viewer, q, [a.toObject() as AnswerDoc]))[0] as AnswerView;
+  }
+
+  /**
+   * Job: transcribe one recording. A question goes to moderation with its transcript as the text;
+   * an answer is published. The recording is deleted unless its author chose to keep it (E3).
+   * Nothing heard, or over a minute: `voice_failed`, and the author types it instead.
+   */
+  async onVoice(job: TenantJob) {
+    if (!this.voice) return;
+    const kind = job.kind === 'answer' ? 'answer' : 'question';
+    const id = String(job.id);
+    const fileId = String(job.fileId);
+    const Model = (kind === 'question' ? QuestionModel : AnswerModel) as unknown as typeof QuestionModel;
+    const doc = await Model.findById(id).lean<QuestionDoc>();
+    const v = doc?.voice as VoiceDoc;
+    if (!doc || !v || v.state !== 'transcribing' || String(v.audioFileId) !== fileId) return;
+    const data = await this.voice.files.read(fileId).catch(() => null);
+    const heard = data
+      ? await this.voice.transcriber.transcribe(data, String(doc.authorId))
+      : { text: '', durationSec: null };
+    const tooLong = (heard.durationSec ?? 0) > VOICE_MAX_SECONDS + 2;
+    const asQuestion = kind === 'question' ? splitQuestion(heard.text) : null;
+    const ok = !tooLong && (kind === 'question' ? !!asQuestion : heard.text.length >= 2);
+    const keep = ok && v.keep;
+    if (keep) await this.voice.files.keep(fileId, heard.durationSec);
+    else await this.voice.files.remove(fileId).catch(() => undefined);
+    const voiceSet = {
+      'voice.state': ok ? 'ready' : 'voice_failed',
+      'voice.audioFileId': keep ? new Types.ObjectId(fileId) : null,
+      'voice.durationSec': heard.durationSec,
+    };
+    const questionId = kind === 'question' ? id : String((doc as unknown as AnswerDoc).questionId);
+    if (!ok) {
+      await Model.updateOne({ _id: doc._id }, { $set: { ...voiceSet, status: 'voice_failed' } });
+      await this.d.notifications.notify(doc.authorId, 'voice_failed', { questionId });
+      return;
+    }
+    if (kind === 'question' && asQuestion)
+      await QuestionModel.updateOne(
+        { _id: doc._id },
+        { $set: { ...voiceSet, title: asQuestion.title, body: asQuestion.body, status: 'pending' } },
+      );
+    else {
+      await AnswerModel.updateOne(
+        { _id: doc._id },
+        { $set: { ...voiceSet, body: heard.text.slice(0, 3000), status: 'published' } },
+      );
+      await this.answerPublished(questionId, String(doc.authorId));
+    }
+    await this.d.notifications.notify(doc.authorId, 'voice_ready', { questionId });
+  }
+
+  /** An answer became visible: count it and tell the asker (typed answers do this in `answer`). */
+  private async answerPublished(questionId: string, authorId: string) {
+    const q = await QuestionModel.findOneAndUpdate(
+      { _id: new Types.ObjectId(questionId) },
+      { $inc: { answers: 1 }, $set: { lastActivityAt: new Date() } },
+      { returnDocument: 'after' },
+    ).lean<QuestionDoc>();
+    if (q && String(q.authorId) !== authorId) {
+      const name = (await this.d.profiles.refsFor([authorId])).get(authorId)?.name ?? '';
+      await this.d.notifications.notify(q.authorId, 'question_answered', { name, questionId: String(q._id) });
+    }
+  }
+
+  /**
+   * The author corrects a voice question's or answer's transcript (or types what could not be
+   * heard). A question waiting for moderation stays waiting; a failed one goes to moderation.
+   */
+  async editVoice(
+    viewer: AuthState,
+    kind: 'question' | 'answer',
+    id: string,
+    edit: { title?: string | undefined; body: string },
+  ) {
+    const me = new Types.ObjectId(viewer.userId);
+    if (kind === 'question') {
+      const q = await QuestionModel.findOne({
+        _id: new Types.ObjectId(id),
+        authorId: me,
+        voice: { $ne: null },
+      }).lean<QuestionDoc>();
+      if (!q || q.status === 'transcribing' || q.status === 'removed') throw notFound('Question');
+      const title = plainText(edit.title ?? q.title);
+      if (title.length < 10) throw badRequest('Write a clear question (at least 10 characters)');
+      await QuestionModel.updateOne(
+        { _id: q._id },
+        {
+          $set: {
+            title,
+            body: plainText(edit.body).slice(0, 2000),
+            ...(q.status === 'voice_failed' ? { status: 'pending', 'voice.state': 'ready' } : {}),
+          },
+        },
+      );
+      return this.get(viewer, id);
+    }
+    const a = await AnswerModel.findOne({
+      _id: new Types.ObjectId(id),
+      authorId: me,
+      voice: { $ne: null },
+    }).lean<AnswerDoc>();
+    if (!a || a.status === 'transcribing' || a.status === 'removed') throw notFound('Answer');
+    const text = plainText(edit.body);
+    if (text.length < 10) throw badRequest('Write a fuller answer (at least 10 characters)');
+    await AnswerModel.updateOne(
+      { _id: a._id },
+      { $set: { body: text.slice(0, 3000), status: 'published', 'voice.state': 'ready' } },
+    );
+    if (a.status === 'voice_failed') await this.answerPublished(String(a.questionId), viewer.userId);
+    return this.get(viewer, String(a.questionId));
+  }
+
+  /** Files hook: a kept recording is heard by whoever may read its question. */
+  async audioAccess(fileId: string, viewer: AuthState): Promise<{ name: string } | null> {
+    const fid = new Types.ObjectId(fileId);
+    const q = await QuestionModel.findOne({ 'voice.audioFileId': fid })
+      .select('_id')
+      .lean<{ _id: Types.ObjectId }>();
+    const a = q
+      ? null
+      : await AnswerModel.findOne({ 'voice.audioFileId': fid, status: 'published' })
+          .select('questionId')
+          .lean<{ questionId: Types.ObjectId }>();
+    const questionId = q?._id ?? a?.questionId;
+    if (!questionId) return null;
+    const ok = await this.visible(viewer, String(questionId)).then(
+      () => true,
+      () => false,
+    );
+    return ok ? { name: 'recording' } : null;
   }
 
   /** Analytics: published answers per author since a date. */

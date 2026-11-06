@@ -21,6 +21,7 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     time: d.start ? formatDateTime(d.start) : '',
     percent: d.percent ?? '',
     round: d.round ?? '',
+    circle: d.circle ?? '',
   };
   const href = (() => {
     switch (n.type) {
@@ -163,6 +164,17 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return '/alumni?tab=certificates';
       case 'pledge_received':
         return '/alumni?tab=giving';
+      // Prompt 2, G7: habit loops.
+      case 'weekly_next_step':
+        return '/next-step';
+      case 'buddy_matched':
+      case 'peer_mentor_nominated':
+        return '/peers';
+      case 'voice_ready':
+      case 'voice_failed':
+        return d.questionId ? `/questions/${d.questionId}` : '/questions';
+      case 'circle_decided':
+        return d.circleId ? `/circles/${d.circleId}` : '/circles';
       default:
         return '/sessions';
     }

@@ -30,6 +30,8 @@ import { MentorProfileModel, MenteePrefsModel, type MentorDoc } from './mentor.m
 import { MentorshipRequestModel } from './request.model.js';
 import { MentorReviewModel } from './review.model.js';
 import { requireTenantId } from '../../lib/context.js';
+import { featureEnabled } from '../tenants/features.js';
+import { PEER_SESSION_TYPES, PEER_WEEKLY_CAP_DEFAULT, PEER_WEEKLY_CAP_MAX } from '@campuslink/shared';
 import { computeSlots, type AvailabilityRules } from './slots.js';
 import { badRequest, conflict, notFound } from '../../lib/errors.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
@@ -212,12 +214,66 @@ export class MentorsService {
   }
 
   async updateSettings(viewer: AuthState, body: MentorSettingsBody) {
+    const current = await this.load(viewer.userId);
+    // A peer mentor keeps the lighter settings: a few requests a week, students only, chats and calls.
+    const settings = current?.peer
+      ? {
+          ...body,
+          weeklyCap: Math.min(body.weeklyCap, PEER_WEEKLY_CAP_MAX),
+          audience: 'students' as const,
+          sessionTypes: body.sessionTypes.map((t) => ({
+            ...t,
+            enabled: t.enabled && PEER_SESSION_TYPES.includes(t.type),
+          })),
+        }
+      : body;
     await MentorProfileModel.updateOne(
       { userId: viewer.userId },
-      { $set: { ...body, userId: new Types.ObjectId(viewer.userId) } },
+      { $set: { ...settings, userId: new Types.ObjectId(viewer.userId) } },
       { upsert: true },
     );
     return this.settings(viewer);
+  }
+
+  /**
+   * Prompt 2, G7: turns a student's peer mentoring on (lighter defaults: two requests a week,
+   * students only, quick chats and short calls; their availability is kept) or off (paused).
+   */
+  async setPeerMentor(userId: string, on: boolean): Promise<void> {
+    if (!on) {
+      await MentorProfileModel.updateOne(
+        { userId: new Types.ObjectId(userId), peer: true },
+        { $set: { accepting: false } },
+      );
+      return;
+    }
+    const current = await this.load(userId);
+    await MentorProfileModel.updateOne(
+      { userId: new Types.ObjectId(userId) },
+      {
+        $set: {
+          userId: new Types.ObjectId(userId),
+          peer: true,
+          accepting: true,
+          audience: 'students',
+          weeklyCap: Math.min(current?.weeklyCap ?? PEER_WEEKLY_CAP_DEFAULT, PEER_WEEKLY_CAP_DEFAULT),
+          sessionTypes: PEER_SESSION_TYPES.map((type) => ({
+            type,
+            enabled: true,
+            durationMin: type === 'quick_chat' ? 15 : 30,
+          })),
+        },
+      },
+      { upsert: true },
+    );
+  }
+
+  /** A peer mentor guides juniors only (a later batch), and only while the college has peer mentors on. */
+  private async peerAllows(viewer: AuthState, mentorGradYear: number | null | undefined): Promise<boolean> {
+    if (!viewer.roles.includes('STUDENT') || viewer.roles.includes('ALUMNI')) return false;
+    if (!(await featureEnabled('peerMentors'))) return false;
+    const own = await this.d.profiles.own(viewer.userId);
+    return !!own.gradYear && !!mentorGradYear && own.gradYear > mentorGradYear;
   }
 
   async updateAvailability(viewer: AuthState, body: AvailabilityBody) {
@@ -281,6 +337,7 @@ export class MentorsService {
         .map((t) => ({ type: t.type, durationMin: t.durationMin })),
       open: settings.accepting && received < settings.weeklyCap,
       companyVerified: !!p.companyVerified,
+      ...(m.peer ? { peer: true } : {}),
       ...(stats ? { stats } : {}),
     };
   }
@@ -386,10 +443,19 @@ export class MentorsService {
       mentors.map((m) => m.userId),
     );
     const counts = await this.receivedCounts(mentors.map((m) => m.userId));
-    return views.flatMap((p) => {
+    // Peer mentors' batches come from the profile itself (a hidden batch still decides who is junior).
+    const peers = mentors.filter((m) => m.peer).map((m) => m.userId);
+    const batches = peers.length
+      ? await this.d.profiles.cohortOf(peers)
+      : new Map<string, { gradYear: number | null }>();
+    const out: { profile: PublicProfile; mentor: MentorDoc; card: MentorCard }[] = [];
+    for (const p of views) {
       const m = byUser.get(p.userId);
-      return m ? [{ profile: p, mentor: m, card: this.card(p, m, counts.get(p.userId) ?? 0) }] : [];
-    });
+      if (!m) continue;
+      if (m.peer && !(await this.peerAllows(viewer, batches.get(p.userId)?.gradYear))) continue;
+      out.push({ profile: p, mentor: m, card: this.card(p, m, counts.get(p.userId) ?? 0) });
+    }
+    return out;
   }
 
   async list(viewer: AuthState, q: z.output<typeof mentorsQuery>) {
@@ -534,6 +600,10 @@ export class MentorsService {
     )
       throw notFound('Mentor');
     if (!m.accepting) throw conflict('This mentor has paused new requests');
+    if (m.peer) {
+      const batch = (await this.d.profiles.cohortOf([m.userId])).get(mentorId)?.gradYear;
+      if (!(await this.peerAllows(viewer, batch))) throw notFound('Mentor');
+    }
     if (!audienceAllows(m.audience as MenteeAudience, viewer.roles))
       throw conflict(
         m.audience === 'students' ? 'This mentor guides students only' : 'This mentor guides alumni only',

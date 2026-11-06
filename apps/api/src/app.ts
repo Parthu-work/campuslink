@@ -15,7 +15,7 @@ import { tenantResolver } from './http/tenant.middleware.js';
 import { createLimiters } from './http/rate-limit.js';
 import { authenticate, csrfProtection } from './http/auth.middleware.js';
 import { defineModule, type RouteRegistry, type PipelineDeps } from './http/registry.js';
-import { gatedJob, withFeature } from './modules/tenants/features.js';
+import { featureEnabled, gatedJob, withFeature } from './modules/tenants/features.js';
 import { buildOpenApi } from './http/openapi.js';
 import { TokenService } from './lib/jwt.js';
 import { FieldCipher } from './lib/crypto.js';
@@ -69,6 +69,15 @@ import { AlumniService } from './modules/alumni/alumni.service.js';
 import { alumniRoutes } from './modules/alumni/alumni.routes.js';
 import { PracticeService } from './modules/practice/practice.service.js';
 import { practiceRoutes } from './modules/practice/practice.routes.js';
+import { NEXT_STEP_JOB, NextStepService } from './modules/next-step/next-step.service.js';
+import { nextStepRoutes } from './modules/next-step/next-step.routes.js';
+import { BUDDY_MATCH_JOB, PeersService } from './modules/peers/peers.service.js';
+import { peersRoutes } from './modules/peers/peers.routes.js';
+import { CirclesService } from './modules/circles/circles.service.js';
+import { StudyGroupsService } from './modules/circles/study-groups.service.js';
+import { circleRoutes, studyGroupRoutes } from './modules/circles/circles.routes.js';
+import { QA_VOICE_JOB } from './modules/qa/qa.service.js';
+import { voiceTranscriber } from './modules/study/media/voice.js';
 import {
   DisabledCodeRunner,
   JUDGE0_LANGUAGE_IDS,
@@ -1048,6 +1057,95 @@ export function createApp({
     logger,
   });
 
+  // ── Habit loops (prompt 2, G7) ─────────────────────────────
+  // Circles: posts, questions and events with a circle id are for its members.
+  const circlesService = new CirclesService({ profiles: profilesService });
+  postsService.circles = circlesService;
+  qaService.circles = circlesService;
+  eventsService.circles = circlesService;
+  // Voice Q&A: the same transcription providers as mock interviews (E3).
+  qaService.voice = {
+    transcriber: voiceTranscriber({
+      whisper: whisperService,
+      aiSettings: aiSettingsService,
+      usage: aiUsageService,
+      media: mediaTools,
+      logger,
+    }),
+    files: filesService,
+    jobs: queue,
+  };
+  queue.register(QA_VOICE_JOB, (data) => qaService.onVoice(data));
+  filesService.registerAccess('qa_audio', (fileId, viewer) => qaService.audioAccess(fileId, viewer));
+  const studyGroupsService = new StudyGroupsService({
+    profiles: profilesService,
+    subject: async (viewer, id) => {
+      const s = await subjectsService.readable(viewer, id);
+      return { id: String(s._id), name: s.name };
+    },
+    quizOf: (viewer, id) => chatService.quizOf(viewer, id),
+    recentQuizzes: (viewer) => chatService.recentQuizzes(viewer),
+  });
+  const peersService = new PeersService({
+    notifications: notificationsService,
+    logger,
+    students: () => profilesService.students(),
+    cohortOf: (ids) => profilesService.cohortOf(ids),
+    languagesOf: (ids) => profilesService.languagesOf(ids),
+    hasVerifiedOffer: (id) => offersService.hasVerified(id),
+    setPeerMentor: (id, on) => mentorsService.setPeerMentor(id, on),
+  });
+  queue.register(
+    BUDDY_MATCH_JOB,
+    gatedJob('peerMentors', async () => {
+      await peersService.matchFirstYears();
+    }),
+  );
+  // The weekly Next Step: each item from the module that owns it.
+  const nextStepService = new NextStepService({
+    notifications: notificationsService,
+    logger,
+    students: () => profilesService.students(),
+    roadmapStep: (viewer) => roadmapsService.nextStepFor(viewer),
+    opportunity: async (viewer) => {
+      if (viewer.permissions.has('placements:view') && (await featureEnabled('placements'))) {
+        const drive = (await placementsService.list(viewer, 'eligible')).find(
+          (d) => !d.myRegistration && d.registrationOpen,
+        );
+        if (drive)
+          return {
+            kind: 'drive' as const,
+            id: drive.id,
+            company: drive.company.name,
+            title: drive.title,
+            closesAt: drive.registrationCloseAt,
+          };
+      }
+      if (!viewer.permissions.has('jobs:read')) return null;
+      const job = (await jobsService.radar(viewer)).forYou[0];
+      return job ? { kind: 'job' as const, id: job.id, company: job.company, title: job.title } : null;
+    },
+    alumnus: async (viewer) => {
+      if (!viewer.permissions.has('mentorship:request')) return null;
+      const m = (await mentorsService.match(viewer)).find((x) => !x.mentor.peer);
+      return m
+        ? {
+            userId: m.mentor.userId,
+            name: m.mentor.name,
+            company: m.mentor.company,
+            jobTitle: m.mentor.jobTitle,
+          }
+        : null;
+    },
+    readiness: async (viewer) =>
+      viewer.permissions.has('readiness:view') && (await featureEnabled('placements'))
+        ? (await readinessService.mine(viewer)).score
+        : null,
+  });
+  queue.register(NEXT_STEP_JOB, async (data) => {
+    await nextStepService.run(data);
+  });
+
   // Faculty insights and the admin AI dashboard (spec step 5): aggregates only.
   const insightsService = new StudyInsightsService({
     subjects: subjectsService,
@@ -1183,6 +1281,11 @@ export function createApp({
     givingService,
     alumniService,
     practiceService,
+    qaService,
+    circlesService,
+    studyGroupsService,
+    peersService,
+    nextStepService,
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1248,6 +1351,10 @@ export function createApp({
   privacyService.register('recognition', hook(recognitionService));
   privacyService.register('giving', hook(givingService));
   privacyService.register('practice', hook(practiceService));
+  privacyService.register('nextSteps', hook(nextStepService));
+  privacyService.register('peers', hook(peersService));
+  privacyService.register('circles', hook(circlesService));
+  privacyService.register('studyGroups', hook(studyGroupsService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -1447,6 +1554,13 @@ export function createApp({
     ),
   );
   app.use(API_PREFIX, defineModule('practice', practiceRoutes(practiceService), pipeline));
+  app.use(API_PREFIX, defineModule('next-step', nextStepRoutes(nextStepService), pipeline));
+  app.use(API_PREFIX, defineModule('peers', withFeature('peerMentors', peersRoutes(peersService)), pipeline));
+  app.use(API_PREFIX, defineModule('circles', circleRoutes(circlesService), pipeline));
+  app.use(
+    API_PREFIX,
+    defineModule('study-groups', withFeature('study', studyGroupRoutes(studyGroupsService)), pipeline),
+  );
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -1551,6 +1665,10 @@ export function createApp({
     giving: givingService,
     alumni: alumniService,
     practice: practiceService,
+    nextStep: nextStepService,
+    peers: peersService,
+    circles: circlesService,
+    studyGroups: studyGroupsService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,

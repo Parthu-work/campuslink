@@ -209,6 +209,8 @@ export interface PersonRef {
   avatarFileId: string | null;
 }
 export interface MentorCard extends PersonRef {
+  /** Prompt 2, G7: a peer mentor (a senior student), not an alumnus. */
+  peer?: boolean;
   headline: string;
   company: string;
   jobTitle: string;
@@ -268,6 +270,8 @@ export interface SlotsView {
 }
 export interface RequestView {
   id: string;
+  /** Prompt 2, G7: a request to a peer mentor (a senior student), with lighter caps. */
+  peer?: boolean;
   status: RequestStatus;
   sessionType: SessionType;
   /** The mentee's message; null on requests sent in the older three-part form. */

@@ -50,6 +50,8 @@ const prefsSchema = new Schema(
     smsReminders: { type: Boolean },
     /** The weekly WhatsApp digest (prompt 1b, R8); missing means off. */
     weeklyDigest: { type: Boolean },
+    /** The weekly Next Step (prompt 2, G7); missing means on. */
+    weeklyNextStep: { type: Boolean },
   },
   baseSchemaOptions,
 );

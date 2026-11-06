@@ -213,6 +213,30 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: '{name} reviewed your résumé',
       body: '{name} left a comment on your résumé. Open it to read the review.',
     },
+    weekly_next_step: {
+      title: 'Your next step for this week',
+      body: 'One roadmap step, one opening and one alumnus to ask, picked for you. Open it to start.',
+    },
+    buddy_matched: {
+      title: 'Meet your buddy: {name}',
+      body: 'Your senior buddy pairing has started. Open it to see the four-week checklist.',
+    },
+    peer_mentor_nominated: {
+      title: 'You were nominated as a peer mentor',
+      body: 'Faculty think you can guide juniors. Open it to turn peer mentoring on.',
+    },
+    voice_ready: {
+      title: 'Your recording is written out',
+      body: 'Check the transcript and fix any words it got wrong.',
+    },
+    voice_failed: {
+      title: 'We could not make out your recording',
+      body: 'Type it instead, or record it again somewhere quieter.',
+    },
+    circle_decided: {
+      title: 'Your circle proposal was reviewed',
+      body: '{circle}: open it to see the decision.',
+    },
     readiness_nudge: {
       title: '{company} registration closes {time}',
       body: 'Your placement cell suggests a few steps to get ready before the {company} drive. Open your readiness to see them.',
@@ -455,6 +479,30 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: '{name} మీ రెజ్యూమ్‌ను సమీక్షించారు',
       body: '{name} మీ రెజ్యూమ్‌పై వ్యాఖ్య రాశారు. సమీక్ష చదవడానికి తెరవండి.',
     },
+    weekly_next_step: {
+      title: 'ఈ వారం మీ తదుపరి అడుగు',
+      body: 'మీ కోసం ఎంచుకున్న ఒక రోడ్‌మ్యాప్ దశ, ఒక అవకాశం, అడగడానికి ఒక పూర్వ విద్యార్థి. మొదలుపెట్టడానికి తెరవండి.',
+    },
+    buddy_matched: {
+      title: 'మీ బడ్డీని కలవండి: {name}',
+      body: 'మీ సీనియర్ బడ్డీ జత మొదలైంది. నాలుగు వారాల చెక్‌లిస్ట్ చూడటానికి తెరవండి.',
+    },
+    peer_mentor_nominated: {
+      title: 'మీరు పీర్ మెంటార్‌గా నామినేట్ అయ్యారు',
+      body: 'మీరు జూనియర్లకు మార్గదర్శనం చేయగలరని ఫ్యాకల్టీ భావిస్తున్నారు. పీర్ మెంటారింగ్ ఆన్ చేయడానికి తెరవండి.',
+    },
+    voice_ready: {
+      title: 'మీ రికార్డింగ్ రాతలోకి మారింది',
+      body: 'ట్రాన్స్‌క్రిప్ట్ చూసి, తప్పుగా వచ్చిన పదాలను సరిచేయండి.',
+    },
+    voice_failed: {
+      title: 'మీ రికార్డింగ్ అర్థం కాలేదు',
+      body: 'బదులుగా టైప్ చేయండి, లేదా నిశ్శబ్దంగా ఉన్న చోట మళ్లీ రికార్డ్ చేయండి.',
+    },
+    circle_decided: {
+      title: 'మీ సర్కిల్ ప్రతిపాదన సమీక్షించబడింది',
+      body: '{circle}: నిర్ణయం చూడటానికి తెరవండి.',
+    },
     readiness_nudge: {
       title: '{company} నమోదు {time}కి ముగుస్తుంది',
       body: '{company} డ్రైవ్‌కు ముందు సిద్ధం కావడానికి మీ ప్లేస్‌మెంట్ సెల్ కొన్ని దశలు సూచిస్తోంది. వాటిని చూడటానికి మీ సంసిద్ధత తెరవండి.',
@@ -681,6 +729,30 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
     resume_comment: {
       title: '{name} ने आपके रिज़्यूमे की समीक्षा की',
       body: '{name} ने आपके रिज़्यूमे पर टिप्पणी की है। समीक्षा पढ़ने के लिए खोलें।',
+    },
+    weekly_next_step: {
+      title: 'इस हफ़्ते का आपका अगला कदम',
+      body: 'आपके लिए चुना एक रोडमैप कदम, एक मौका और पूछने के लिए एक पूर्व छात्र। शुरू करने के लिए खोलें।',
+    },
+    buddy_matched: {
+      title: 'अपने बडी से मिलिए: {name}',
+      body: 'आपकी सीनियर बडी जोड़ी शुरू हो गई है। चार हफ़्ते की चेकलिस्ट देखने के लिए खोलें।',
+    },
+    peer_mentor_nominated: {
+      title: 'आपको पीयर मेंटर के लिए नामित किया गया है',
+      body: 'फ़ैकल्टी को लगता है कि आप जूनियर्स का मार्गदर्शन कर सकते हैं। पीयर मेंटरिंग चालू करने के लिए खोलें।',
+    },
+    voice_ready: {
+      title: 'आपकी रिकॉर्डिंग लिख दी गई है',
+      body: 'ट्रांसक्रिप्ट जाँचें और जो शब्द ग़लत आए हों उन्हें ठीक करें।',
+    },
+    voice_failed: {
+      title: 'आपकी रिकॉर्डिंग समझ नहीं आई',
+      body: 'इसके बजाय टाइप करें, या किसी शांत जगह से फिर रिकॉर्ड करें।',
+    },
+    circle_decided: {
+      title: 'आपके सर्कल प्रस्ताव की समीक्षा हुई',
+      body: '{circle}: फ़ैसला देखने के लिए खोलें।',
     },
     readiness_nudge: {
       title: '{company} पंजीकरण {time} को बंद होगा',
@@ -930,6 +1002,17 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return `/resume/${data.resumeId ?? ''}`;
     case 'readiness_nudge':
       return '/readiness';
+    // Prompt 2, G7: habit loops.
+    case 'weekly_next_step':
+      return '/next-step';
+    case 'buddy_matched':
+    case 'peer_mentor_nominated':
+      return '/peers';
+    case 'voice_ready':
+    case 'voice_failed':
+      return data.questionId ? `/questions/${data.questionId}` : '/questions';
+    case 'circle_decided':
+      return data.circleId ? `/circles/${data.circleId}` : '/circles';
     case 'micro_ask_received':
       return `/alumni?tab=asks&box=received${data.askId ? `&ask=${data.askId}` : ''}`;
     case 'micro_ask_done':

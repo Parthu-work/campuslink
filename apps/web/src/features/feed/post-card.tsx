@@ -362,6 +362,13 @@ export function PostCard({
             featurable={post.status === 'published'}
           />
         </AuthorLine>
+        {post.circle && (
+          <p>
+            <Link to={`/circles/${post.circle.id}`} className="inline-flex min-h-11 items-center">
+              <Badge>{post.circle.name}</Badge>
+            </Link>
+          </p>
+        )}
         {(post.announcement || post.kind === 'reel') && (
           <p className="flex flex-wrap gap-2">
             {post.announcement && (

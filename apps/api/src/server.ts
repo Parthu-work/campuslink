@@ -9,6 +9,8 @@ import { BullJobQueue, InlineJobQueue } from './lib/jobs.js';
 import { runRetention } from './lib/maintenance.js';
 import { BillingService } from './modules/billing/billing.service.js';
 import { DigestService } from './modules/notifications/digest.service.js';
+import { NextStepService } from './modules/next-step/next-step.service.js';
+import { PeersService } from './modules/peers/peers.service.js';
 import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
@@ -169,6 +171,21 @@ async function main() {
   if (runsJobs) {
     setTimeout(digestTick, 120_000).unref();
     setInterval(digestTick, 3600_000).unref();
+  }
+
+  // The weekly Next Step (prompt 2, G7): hourly; one run per college an ISO week, from Monday 19:00 IST.
+  const nextStepTick = () =>
+    NextStepService.enqueueWeekly(jobs).catch((err: unknown) =>
+      logger.error({ err }, 'next step tick failed'),
+    );
+  // Senior Buddy matching (prompt 2, G7): hourly; one run per college a day.
+  const buddyTick = () =>
+    PeersService.enqueueDaily(jobs).catch((err: unknown) => logger.error({ err }, 'buddy tick failed'));
+  if (runsJobs) {
+    setTimeout(nextStepTick, 150_000).unref();
+    setInterval(nextStepTick, 3600_000).unref();
+    setTimeout(buddyTick, 180_000).unref();
+    setInterval(buddyTick, 3600_000).unref();
   }
 
   const shutdown = (signal: string) => {

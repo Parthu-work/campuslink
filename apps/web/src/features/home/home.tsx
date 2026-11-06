@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useDataSaver } from '../../lib/data-saver';
 import { useTranslation } from '../../i18n/react';
@@ -30,6 +30,7 @@ import { Composer } from '../feed/composer';
 import { StoriesRow } from '../feed/stories';
 import { FeedList } from '../feed/feed-list';
 import { firstName } from '../../lib/names';
+import { LazyNextStepCard } from '../habits/lazy-next-step';
 
 function NextSession() {
   const { t } = useTranslation();
@@ -269,6 +270,7 @@ export function HomePage() {
   const { data: me, isLoading } = useMe();
   const canPost = useCan('feed:post');
   const canRequest = useCan('mentorship:request');
+  const canNextStep = useCan('nextstep:view');
   const saver = useDataSaver();
   const [params, setParams] = useSearchParams();
   const tab = params.get('tab') === 'following' ? 'following' : 'for_you';
@@ -306,6 +308,11 @@ export function HomePage() {
         {/* Data saver (B13) leaves stories out: they are mostly photos. */}
         {!saver && <StoriesRow />}
         {canRequest && <UpNext />}
+        {canNextStep && (
+          <Suspense fallback={null}>
+            <LazyNextStepCard />
+          </Suspense>
+        )}
         <OneUsefulThing />
         {canPost && <Composer />}
         <Segmented

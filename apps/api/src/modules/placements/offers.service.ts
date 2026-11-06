@@ -267,6 +267,11 @@ export class OffersService {
     return true;
   }
 
+  /** Prompt 2, G7: the member has a verified offer (peer mentoring is open to final-years with one). */
+  async hasVerified(userId: string): Promise<boolean> {
+    return !!(await OfferModel.exists({ userId: new Types.ObjectId(userId), status: 'verified' }));
+  }
+
   async pendingCount() {
     return OfferModel.countDocuments({ status: 'reported' });
   }

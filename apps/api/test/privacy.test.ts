@@ -456,6 +456,10 @@ describe('deletion', () => {
         'recognition',
         'giving',
         'practice',
+        'nextSteps',
+        'peers',
+        'circles',
+        'studyGroups',
       ]),
     );
   });

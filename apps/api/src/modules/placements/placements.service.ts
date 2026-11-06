@@ -579,6 +579,7 @@ export class PlacementsService {
           capacity: null,
           audience: 'students',
           branches: body.eligibility.branches.slice(0, 10),
+          circleId: null,
         },
         meta,
       );

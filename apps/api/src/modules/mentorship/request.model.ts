@@ -30,6 +30,8 @@ const requestSchema = new Schema(
     resumeId: { type: Schema.Types.ObjectId, default: null },
     /** Prompt 2, G3: the practice report shared with a mock interview (the mentor may read it). */
     interviewId: { type: Schema.Types.ObjectId, default: null },
+    /** Prompt 2, G7: sent to a peer mentor (a senior student). */
+    peer: { type: Boolean, default: false },
   },
   baseSchemaOptions,
 );

@@ -111,6 +111,7 @@ export class RequestsService {
       id: String(r._id),
       status: r.status as RequestView['status'],
       sessionType: r.sessionType as SessionType,
+      ...(r.peer ? { peer: true } : {}),
       message: r.message ?? null,
       goal: r.goal ?? null,
       background: r.background ?? null,
@@ -141,7 +142,7 @@ export class RequestsService {
     body: MentorshipRequestBody,
     rematchOf: Types.ObjectId | null = null,
   ): Promise<RequestView> {
-    await this.d.mentors.assertRequestable(viewer, body.mentorId, body.sessionType);
+    const mentor = await this.d.mentors.assertRequestable(viewer, body.mentorId, body.sessionType);
     // A résumé review may carry one of the mentee's own résumés (prompt 2, G2).
     if (body.resumeId && !(await this.resumeOwned(viewer.userId, body.resumeId)))
       throw badRequest('Pick one of your own résumés');
@@ -187,6 +188,7 @@ export class RequestsService {
         rematchOf,
         resumeId: body.resumeId ? new Types.ObjectId(body.resumeId) : null,
         interviewId: body.interviewId ? new Types.ObjectId(body.interviewId) : null,
+        peer: !!mentor.peer,
       });
     } catch (e) {
       if (isDuplicate(e)) throw conflict('You already have an open request with this mentor');

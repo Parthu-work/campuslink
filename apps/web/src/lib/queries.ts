@@ -76,6 +76,13 @@ import type {
   PracticeMasteryView,
   PracticeSetView,
   PracticeStatus,
+  BuddyBoardView,
+  BuddyView,
+  CircleView,
+  NextStepView,
+  PeerMentorStatusView,
+  StudyGroupView,
+  QuestionView,
   ResumeSummaryView,
   ResumeView,
   ReadinessView,
@@ -898,4 +905,91 @@ export const practiceMastery = () =>
   queryOptions({
     queryKey: ['practice-mastery'],
     queryFn: ({ signal }) => api.get<PracticeMasteryView>('/admin/practice/mastery', signal),
+  });
+
+// Habit loops (prompt 2, G7).
+export const nextStep = () =>
+  queryOptions({
+    queryKey: ['next-step'],
+    queryFn: ({ signal }) => api.get<NextStepView | null>('/me/next-step', signal),
+    staleTime: 10 * 60_000,
+  });
+
+export const peerStatus = () =>
+  queryOptions({
+    queryKey: ['peer-status'],
+    queryFn: ({ signal }) => api.get<PeerMentorStatusView>('/me/peer', signal),
+  });
+
+export const buddy = () =>
+  queryOptions({
+    queryKey: ['buddy'],
+    queryFn: ({ signal }) => api.get<BuddyView>('/me/buddy', signal),
+  });
+
+export const adminPeers = () =>
+  queryOptions({
+    queryKey: ['admin-peers'],
+    queryFn: ({ signal }) =>
+      api.get<{
+        nominations: {
+          userId: string;
+          name: string;
+          branch: string | null;
+          gradYear: number | null;
+          active: boolean;
+          nominatedAt: string;
+        }[];
+        buddies: BuddyBoardView;
+      }>('/admin/peers', signal),
+  });
+
+export const circles = (scope: 'mine' | 'discover' | 'pending') =>
+  queryOptions({
+    queryKey: ['circles', scope],
+    queryFn: ({ signal }) => api.get<CircleView[]>(`/circles?scope=${scope}`, signal),
+  });
+
+export const circle = (id: string) =>
+  queryOptions({
+    queryKey: ['circles', 'one', id],
+    queryFn: ({ signal }) => api.get<CircleView>(`/circles/${id}`, signal),
+  });
+
+export const circlePosts = (id: string) =>
+  queryOptions({
+    queryKey: ['circle-posts', id],
+    queryFn: ({ signal }) => api.get<PostView[]>(`/posts?circle=${id}`, signal),
+  });
+
+export const circleQuestions = (id: string) =>
+  queryOptions({
+    queryKey: ['circle-questions', id],
+    queryFn: ({ signal }) => api.get<QuestionView[]>(`/questions?circle=${id}`, signal),
+  });
+
+export const circleEvents = (id: string) =>
+  queryOptions({
+    queryKey: ['circle-events', id],
+    queryFn: ({ signal }) => api.get<EventView[]>(`/events?circle=${id}`, signal),
+  });
+
+export const studyGroups = (subjectId: string) =>
+  queryOptions({
+    queryKey: ['study-groups', subjectId],
+    queryFn: ({ signal }) =>
+      api.get<StudyGroupView[]>(`/study-groups${subjectId ? `?subjectId=${subjectId}` : ''}`, signal),
+  });
+
+export const studyGroup = (id: string) =>
+  queryOptions({
+    queryKey: ['study-groups', 'one', id],
+    queryFn: ({ signal }) => api.get<StudyGroupView>(`/study-groups/${id}`, signal),
+  });
+
+export const myQuizzes = () =>
+  queryOptions({
+    queryKey: ['my-quizzes'],
+    queryFn: ({ signal }) =>
+      api.get<{ id: string; topic: string; questions: number; createdAt: string }[]>('/me/quizzes', signal),
   });

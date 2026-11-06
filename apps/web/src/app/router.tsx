@@ -123,6 +123,13 @@ const load = {
   practice: withPack('practice', () => import('../features/practice/practice')),
   practiceSet: withPack('practice', () => import('../features/practice/set')),
   practiceBank: withPack('practice', () => import('../features/admin/practice-bank')),
+  // Prompt 2, G7: habit loops, strings in the `habits` pack.
+  nextStep: withPack('habits', () => import('../features/habits/next-step')),
+  peers: withPack('habits', () => import('../features/habits/peers')),
+  circles: withPack('habits', () => import('../features/habits/circles')),
+  circlePage: withPack('habits', () => import('../features/habits/circle-page')),
+  studyGroups: withPack('habits', () => import('../features/habits/study-groups')),
+  habitsAdmin: withPack('habits', () => import('../features/habits/habits-admin')),
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
@@ -535,6 +542,23 @@ function collegeRoutes(): RouteObject[] {
           screen(load.practiceSet, 'PracticeSetPage', 'practice:use', at('/practice/sets/:id'), ({ id }) =>
             isId(id) ? [qc.ensureQueryData(q.practiceSet(id))] : [],
           ),
+          // Habit loops (prompt 2, G7).
+          screen(load.nextStep, 'NextStepPage', 'nextstep:view', at('/next-step')),
+          screen(load.peers, 'PeersPage', inFeature('peerMentors', 'peers:enroll'), at('/peers'), () => [
+            qc.ensureQueryData(q.peerStatus()),
+          ]),
+          screen(load.circles, 'CirclesPage', 'circles:join', at('/circles')),
+          screen(load.circlePage, 'CirclePage', undefined, at('/circles/:id'), ({ id }) =>
+            isId(id) ? [qc.ensureQueryData(q.circle(id))] : [],
+          ),
+          screen(load.studyGroups, 'StudyGroupsPage', inFeature('study', 'study:read'), at('/study-groups')),
+          screen(
+            load.studyGroups,
+            'StudyGroupPage',
+            inFeature('study', 'study:read'),
+            at('/study-groups/:id'),
+            ({ id }) => (isId(id) ? [qc.ensureQueryData(q.studyGroup(id))] : []),
+          ),
           screen(
             load.drivePage,
             'DrivePage',
@@ -682,6 +706,15 @@ function collegeRoutes(): RouteObject[] {
             screen(load.practiceBank, 'PracticeBankAdmin', 'practice:review', at('practice'), () => [
               qc.ensureQueryData(q.practiceItems('pending')),
             ]),
+            // Peer mentors and buddies; circles awaiting approval (prompt 2, G7).
+            screen(
+              load.habitsAdmin,
+              'PeersAdmin',
+              inFeature('peerMentors', 'peers:manage'),
+              at('peers'),
+              () => [qc.ensureQueryData(q.adminPeers())],
+            ),
+            screen(load.habitsAdmin, 'CirclesAdmin', 'circles:manage', at('circles')),
             screen(
               load.reports,
               'ReportsDashboard',

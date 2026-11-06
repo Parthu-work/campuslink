@@ -140,6 +140,13 @@ export const NOTIFICATION_TYPES = [
   'resume_comment',
   // Prompt 2, G5: the placement cell nudges a student before a drive closes (readiness board).
   'readiness_nudge',
+  // Prompt 2, G7: habit loops.
+  'weekly_next_step',
+  'buddy_matched',
+  'peer_mentor_nominated',
+  'voice_ready',
+  'voice_failed',
+  'circle_decided',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -233,6 +240,12 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   pledge_received: 'community',
   resume_comment: 'requests',
   readiness_nudge: 'placements',
+  weekly_next_step: 'reminders',
+  buddy_matched: 'community',
+  peer_mentor_nominated: 'achievements',
+  voice_ready: 'community',
+  voice_failed: 'community',
+  circle_decided: 'community',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;
@@ -311,6 +324,11 @@ export const notificationPrefsBody = z.strictObject({
    * cannot carry it. Optional so clients from before it keep saving.
    */
   weeklyDigest: z.boolean().default(false),
+  /**
+   * The weekly Next Step (prompt 2, G7): on WhatsApp within the member's caps, push or email
+   * otherwise, and on Home. On by default. Optional so clients from before it keep saving.
+   */
+  weeklyNextStep: z.boolean().default(true),
 });
 export type NotificationPrefs = z.infer<typeof notificationPrefsBody>;
 

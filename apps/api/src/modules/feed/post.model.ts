@@ -64,10 +64,16 @@ const postSchema = new Schema(
     },
     status: { type: String, enum: ['published', 'removed'], default: 'published' },
     removal: removalFragment,
+    /** Prompt 2, G7: a post in a circle is shown to its members only. */
+    circleId: { type: Schema.Types.ObjectId, default: null },
   },
   baseSchemaOptions,
 );
 postSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
+postSchema.index(
+  { tenantId: 1, circleId: 1, _id: -1 },
+  { partialFilterExpression: { circleId: { $type: 'objectId' } } },
+);
 postSchema.index({ tenantId: 1, announcement: 1, pinnedUntil: -1 });
 postSchema.index({ tenantId: 1, authorId: 1, createdAt: -1 });
 postSchema.index({ tenantId: 1, kind: 1, status: 1, createdAt: -1 });

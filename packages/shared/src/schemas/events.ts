@@ -33,6 +33,8 @@ const eventFields = {
   capacity: z.number().int().min(1).max(10_000).nullable().default(null),
   audience: z.enum(EVENT_AUDIENCES).default('everyone'),
   branches: z.array(z.enum(BRANCHES)).max(10).default([]),
+  /** Prompt 2, G7: an event in a circle is shown to its members only. */
+  circleId: objectId.nullable().default(null),
   /** Office hours only (prompt 2, G6): repeat weekly until a date; the next one is made as each ends. */
   recurrence: z
     .strictObject({ weekly: z.literal(true), until: isoDate })
@@ -81,6 +83,8 @@ export const eventUpdateBody = z
 export const eventsQuery = z.strictObject({
   when: z.enum(['upcoming', 'past', 'mine']).default('upcoming'),
   kind: z.enum(EVENT_KINDS).optional(),
+  /** Prompt 2, G7: a circle's events (members only). */
+  circle: objectId.optional(),
   cursor: objectId.optional(),
 });
 export const rsvpBody = z.strictObject({ going: z.boolean() });
@@ -90,6 +94,8 @@ export const eventQuestionStatusBody = z.strictObject({ status: z.enum(['open', 
 
 export interface EventView {
   id: string;
+  /** Prompt 2, G7: the circle it belongs to (members only see it), else null. */
+  circle?: { id: string; name: string } | null;
   title: string;
   description: string;
   kind: EventKind;

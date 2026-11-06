@@ -8,7 +8,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 - **Deny by default.** A route without an explicit permission is either public (listed below) or open to any signed-in user of that college for self-service only.
 - **Unverified users** (college verification pending) are limited to: `feed:read`, `roadmaps:read`, `jobs:read`, `content:report`, `support:create`.
 - **MFA:** SUPER_ADMIN, COLLEGE_ADMIN have **no** permissions until TOTP is enabled.
-- **Capabilities:** `CERTIFIED_CONTRIBUTOR` adds `roadmaps:write`, `study:contribute` (students only).
+- **Capabilities:** `CERTIFIED_CONTRIBUTOR` adds `roadmaps:write`, `study:contribute` (students only); `PEER_MENTOR` adds `mentorship:mentor` (students only).
 - **Tenant overrides:** a college admin may grant or revoke permissions per role; `platform:*` permissions can never be granted to a college role.
 - **Escalation guards:** only a college admin can act on another college admin; SUPER_ADMIN cannot be assigned through the college API; the last active college admin cannot be demoted.
 - **Feature switches:** an endpoint marked "feature `x`" answers 403 `FEATURE_DISABLED` while the college has that feature off (Admin › Features), before authentication.
@@ -90,6 +90,12 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `practice:use` Do the daily aptitude and coding practice set and company prep | · | ✅ | · | · | ✅ | ✅ |
 | `practice:author` Write practice questions (alumni questions are reviewed before they are used) | · | ✅ | ✅ | ✅ | ✅ | · |
 | `practice:review` Add practice questions, review drafts and alumni questions, and tag companies | · | ✅ | ✅ | ✅ | · | · |
+| `nextstep:view` Get the weekly Next Step: a roadmap step, a drive or job, an alumnus to ask | · | ✅ | · | · | · | ✅ |
+| `peers:enroll` Become a peer mentor (with an offer or a nomination), volunteer as a senior buddy, see one’s buddy | · | ✅ | · | · | · | ✅ |
+| `peers:manage` Nominate peer mentors and follow how first-years are matched with senior buddies | · | ✅ | ✅ | ✅ | · | · |
+| `circles:join` Join circles and read, post, ask and attend inside them | · | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `circles:propose` Propose a circle (staff approve it) or create one (staff) | · | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `circles:manage` Approve, reject and archive circles; see every circle | · | ✅ | ✅ | ✅ | · | · |
 | `support:manage` Answer and close problem reports sent to the college | · | ✅ | · | · | · | · |
 | `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ |
 | `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ |
@@ -281,6 +287,10 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/answers/:id/helpful` | `feed:interact` | college | interact | Vote an answer helpful |
 | `DELETE /api/v1/answers/:id/helpful` | `feed:interact` | college | interact | Remove my helpful vote |
 | `DELETE /api/v1/answers/:id` | `feed:read` | college | — | Delete my answer |
+| `POST /api/v1/questions/voice` | `qa:ask` | college | upload | Ask by voice (up to a minute): transcribed, then moderated like a typed question |
+| `POST /api/v1/questions/:id/answers/voice` | `qa:answer` | college | upload | Answer by voice (up to a minute): published when the transcript is ready |
+| `PUT /api/v1/questions/:id/transcript` | `qa:ask` | college | — | Correct my voice question's transcript (or type what could not be heard) |
+| `PUT /api/v1/answers/:id/transcript` | `qa:answer` | college | — | Correct my voice answer's transcript (or type what could not be heard) |
 | `GET /api/v1/admin/sources` | `sources:manage` · feature `contentSources` | college | — | Sources with health (last fetch, failures, items in 7 days) |
 | `POST /api/v1/admin/sources/test` | `sources:manage` · feature `contentSources` | college | adminWrite | Test a feed URL (robots.txt, reachability, parsing) before adding |
 | `POST /api/v1/admin/sources` | `sources:manage` · feature `contentSources` | college | adminWrite | Add an RSS/Atom source (tested first) |
@@ -496,6 +506,33 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/admin/practice/items/:id/decision` | `practice:review` | college | — | Approve (optionally corrected) or reject a practice question |
 | `POST /api/v1/admin/practice/drafts` | `practice:review` | college | aiChat | Ask the AI to draft questions for a topic (they wait for review) |
 | `GET /api/v1/admin/practice/mastery` | `analytics:cohort` | college | — | Topic accuracy by graduation year, small groups suppressed (for planning training) |
+| `GET /api/v1/me/next-step` | `nextstep:view` | college | — | This week's Next Step: a roadmap step, a drive or job, an alumnus to ask, readiness |
+| `POST /api/v1/me/next-step/open` | `nextstep:view` | college | — | Record that this week's Next Step (or one of its items) was opened |
+| `GET /api/v1/me/peer` | `peers:enroll` · feature `peerMentors` | college | — | Whether I can be a peer mentor or a senior buddy, and whether I am |
+| `PUT /api/v1/me/peer/mentor` | `peers:enroll` · feature `peerMentors` | college | — | Become (or stop being) a peer mentor for juniors |
+| `PUT /api/v1/me/peer/buddy` | `peers:enroll` · feature `peerMentors` | college | — | Volunteer (or stop) as a senior buddy for first-years |
+| `GET /api/v1/me/buddy` | `peers:enroll` · feature `peerMentors` | college | — | My senior buddy (first-years) or the first-years I guide (seniors) |
+| `POST /api/v1/buddies/:id/checklist` | `peers:enroll` · feature `peerMentors` | college | — | Tick (or untick) an item of the four-week buddy checklist |
+| `GET /api/v1/admin/peers` | `peers:manage` · feature `peerMentors` | college | — | Peer mentor nominations and how buddy matching is going |
+| `POST /api/v1/admin/peers/nominations` | `peers:manage` · feature `peerMentors` | college | — | Nominate a student as a peer mentor (or withdraw the nomination) |
+| `POST /api/v1/admin/peers/match-buddies` | `peers:manage` · feature `peerMentors` | college | — | Match first-years without a buddy now (it also runs every day) |
+| `GET /api/v1/circles` | any signed-in user | college | — | My circles, circles I can join, or circles waiting for approval |
+| `POST /api/v1/circles` | `circles:propose` | college | posting | Create a circle (staff) or propose one (it waits for staff approval) |
+| `GET /api/v1/circles/:id` | any signed-in user | college | — | A circle |
+| `POST /api/v1/circles/:id/join` | `circles:join` | college | — | Join a circle |
+| `POST /api/v1/circles/:id/leave` | `circles:join` | college | — | Leave a circle |
+| `POST /api/v1/admin/circles/:id/decision` | `circles:manage` | college | — | Approve or reject a proposed circle, or archive an active one |
+| `GET /api/v1/study-groups` | `study:read` · feature `study` | college | — | Study groups on a subject, or my own groups |
+| `POST /api/v1/study-groups` | `study:read` · feature `study` | college | posting | Start a study group on a subject (3 to 6 members) |
+| `GET /api/v1/me/quizzes` | `study:read` · feature `study` | college | — | My recent study assistant quizzes (to share one with a study group) |
+| `GET /api/v1/study-groups/:id` | `study:read` · feature `study` | college | — | A study group |
+| `POST /api/v1/study-groups/:id/join` | `study:read` · feature `study` | college | — | Join a study group with room |
+| `POST /api/v1/study-groups/:id/leave` | `study:read` · feature `study` | college | — | Leave a study group |
+| `PUT /api/v1/study-groups/:id/slot` | `study:read` · feature `study` | college | — | Set (or clear) when and where the group meets next |
+| `POST /api/v1/study-groups/:id/questions` | `study:read` · feature `study` | college | posting | Add a question to the group's shared list |
+| `PUT /api/v1/study-groups/:id/questions/:questionId` | `study:read` · feature `study` | college | — | Mark a shared question done (or not) |
+| `POST /api/v1/study-groups/:id/quizzes` | `study:read` · feature `study` | college | — | Share one of my study assistant /quiz results with the group |
+| `POST /api/v1/study-groups/:id/quizzes/:quizId/answers` | `study:read` · feature `study` | college | — | Take a quiz shared with the group (once) |
 | `GET /api/v1/legal/:doc` | public | college | — | The college’s privacy policy or terms, with its details filled in (public) |
 | `GET /api/v1/admin/legal` | `tenant:branding` | college | — | The college’s legal details (legal name, address, grievance officer) |
 | `GET /api/v1/admin/retention` | `tenant:settings` | college | — | Whether accounts unused for some months are deleted (and after how many) |

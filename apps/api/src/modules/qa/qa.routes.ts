@@ -1,5 +1,13 @@
 import { z } from 'zod';
-import { answerBody, objectId, questionBody, questionsQuery } from '@campuslink/shared';
+import {
+  VOICE_AUDIO_MAX_BYTES,
+  answerBody,
+  objectId,
+  questionBody,
+  questionsQuery,
+  voiceEditBody,
+  voiceUploadQuery,
+} from '@campuslink/shared';
 import type { AnyRouteSpec } from '../../http/registry.js';
 import { idParams } from '../../http/validation.js';
 import { authOf } from '../../http/request-context.js';
@@ -107,6 +115,60 @@ export function qaRoutes(svc: QaService): AnyRouteSpec[] {
       access: READ,
       params: idParams,
       handler: async ({ req, params }) => ({ data: await svc.deleteAnswer(authOf(req), params.id) }),
+    },
+    // ── Voice Q&A (prompt 2, G7) ─────────────────────────────
+    {
+      method: 'post',
+      path: '/questions/voice',
+      tag,
+      summary: 'Ask by voice (up to a minute): transcribed, then moderated like a typed question',
+      access: { kind: 'permission', permission: 'qa:ask' },
+      limiter: 'upload',
+      query: voiceUploadQuery,
+      upload: { field: 'audio', maxBytes: VOICE_AUDIO_MAX_BYTES },
+      handler: async ({ req, query, file }) => ({
+        status: 201,
+        data: await svc.askByVoice(authOf(req), file?.buffer, query),
+      }),
+    },
+    {
+      method: 'post',
+      path: '/questions/:id/answers/voice',
+      tag,
+      summary: 'Answer by voice (up to a minute): published when the transcript is ready',
+      access: { kind: 'permission', permission: 'qa:answer' },
+      limiter: 'upload',
+      params: idParams,
+      query: voiceUploadQuery,
+      upload: { field: 'audio', maxBytes: VOICE_AUDIO_MAX_BYTES },
+      handler: async ({ req, params, query, file }) => ({
+        status: 201,
+        data: await svc.answerByVoice(authOf(req), params.id, file?.buffer, query.keepAudio),
+      }),
+    },
+    {
+      method: 'put',
+      path: '/questions/:id/transcript',
+      tag,
+      summary: 'Correct my voice question\x27s transcript (or type what could not be heard)',
+      access: { kind: 'permission', permission: 'qa:ask' },
+      params: idParams,
+      body: voiceEditBody,
+      handler: async ({ req, params, body }) => ({
+        data: await svc.editVoice(authOf(req), 'question', params.id, body),
+      }),
+    },
+    {
+      method: 'put',
+      path: '/answers/:id/transcript',
+      tag,
+      summary: 'Correct my voice answer\x27s transcript (or type what could not be heard)',
+      access: { kind: 'permission', permission: 'qa:answer' },
+      params: idParams,
+      body: voiceEditBody,
+      handler: async ({ req, params, body }) => ({
+        data: await svc.editVoice(authOf(req), 'answer', params.id, body),
+      }),
     },
   ];
 }

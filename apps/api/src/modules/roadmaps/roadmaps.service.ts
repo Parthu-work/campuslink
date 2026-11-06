@@ -738,6 +738,42 @@ export class RoadmapsService {
    * Roadmaps a member finished (every step of the published version done), with when they finished:
    * the "certificates" a résumé is prefilled with (prompt 2, G2).
    */
+  /**
+   * Prompt 2, G7 (the weekly Next Step): the next step on the member's target roadmap (the one with
+   * a weekly goal, else the one touched last): the first step not done whose prerequisites are.
+   */
+  async nextStepFor(
+    viewer: AuthState,
+  ): Promise<{ roadmapId: string; slug: string; roadmap: string; nodeId: string; title: string } | null> {
+    if (!viewer.permissions.has('roadmaps:progress')) return null;
+    const rows = await RoadmapProgressModel.find({ userId: new Types.ObjectId(viewer.userId) })
+      .sort({ nodesPerWeek: -1, updatedAt: -1 })
+      .limit(5)
+      .lean<ProgressDoc[]>();
+    for (const p of rows) {
+      const r = await RoadmapModel.findById(p.roadmapId).lean<RoadmapDoc>();
+      if (!r || !isLive(r) || r.publishedVersion === null) continue;
+      const v = await RoadmapVersionModel.findOne({
+        roadmapId: r._id,
+        version: r.publishedVersion,
+      }).lean<VersionDoc>();
+      if (!v) continue;
+      const done = new Set(p.done.map((d) => d.nodeId ?? ''));
+      const next =
+        v.content.nodes.find((n) => !done.has(n.id) && n.prerequisites.every((x) => done.has(x))) ??
+        v.content.nodes.find((n) => !done.has(n.id));
+      if (next)
+        return {
+          roadmapId: String(r._id),
+          slug: r.slug,
+          roadmap: r.title,
+          nodeId: next.id,
+          title: next.title,
+        };
+    }
+    return null;
+  }
+
   async finishedFor(userId: string): Promise<{ title: string; at: Date }[]> {
     const progress = await RoadmapProgressModel.find({ userId: oid(userId) }).lean<ProgressDoc[]>();
     const out: { title: string; at: Date }[] = [];

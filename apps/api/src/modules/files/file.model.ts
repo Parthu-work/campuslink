@@ -24,6 +24,8 @@ export const FILE_PURPOSES = [
   'resume_pdf',
   // Mock interviews (prompt 2, G3): a recorded answer, deleted once it is transcribed (E3).
   'interview_audio',
+  // Prompt 2, G7: a voice question or answer (deleted after transcription unless its author keeps it).
+  'qa_audio',
   // Alumni engagement (prompt 2, G6): a mentorship certificate and a contribution acknowledgement.
   'mentor_certificate',
   'giving_acknowledgement',

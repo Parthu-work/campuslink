@@ -9,6 +9,8 @@ const mentorSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     accepting: { type: Boolean, default: false },
+    /** Prompt 2, G7: a peer mentor (a senior student): juniors only, lighter caps and session types. */
+    peer: { type: Boolean, default: false },
     weeklyCap: { type: Number, default: 5, min: 1, max: 30 },
     audience: { type: String, enum: MENTEE_AUDIENCES, default: 'both' },
     sessionTypes: {

@@ -34,6 +34,12 @@ export const PRODUCT_EVENTS = [
   'readiness_nudged',
   // Prompt 2, G4: aptitude and coding practice.
   'practice_set_completed',
+  // Prompt 2, G7: habit loops.
+  'next_step_opened',
+  'buddy_matched',
+  'circle_joined',
+  'study_group_formed',
+  'voice_question',
 ] as const;
 export type ProductEventName = (typeof PRODUCT_EVENTS)[number];
 

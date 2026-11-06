@@ -1,5 +1,5 @@
 import { Schema, type InferSchemaType, type Types } from 'mongoose';
-import { REMOVAL_REASONS, TOPICS } from '@campuslink/shared';
+import { REMOVAL_REASONS, TOPICS, VOICE_STATES } from '@campuslink/shared';
 import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
 import { removalFragment } from '../../db/fragments.js';
 
@@ -10,7 +10,12 @@ const questionSchema = new Schema(
     title: { type: String, required: true, maxlength: 150 },
     body: { type: String, default: '', maxlength: 2000 },
     topics: { type: [{ type: String, enum: TOPICS }], default: [] },
-    status: { type: String, enum: ['pending', 'published', 'rejected', 'removed'], default: 'pending' },
+    // `transcribing` and `voice_failed` (prompt 2, G7): a voice question nobody else sees yet.
+    status: {
+      type: String,
+      enum: ['pending', 'published', 'rejected', 'removed', 'transcribing', 'voice_failed'],
+      default: 'pending',
+    },
     rejection: {
       type: { reason: { type: String, enum: REMOVAL_REASONS }, by: Schema.Types.ObjectId, at: Date },
       default: null,
@@ -19,6 +24,21 @@ const questionSchema = new Schema(
     answers: { type: Number, default: 0 },
     acceptedAnswerId: { type: Schema.Types.ObjectId, default: null },
     lastActivityAt: { type: Date, default: () => new Date() },
+    /** Prompt 2, G7: a question asked in a circle is shown to its members only. */
+    circleId: { type: Schema.Types.ObjectId, default: null },
+    /** Prompt 2, G7: asked or answered by voice (transcribed; the audio kept only if the author chose). */
+    voice: {
+      type: new Schema(
+        {
+          state: { type: String, enum: VOICE_STATES, required: true },
+          audioFileId: { type: Schema.Types.ObjectId, default: null },
+          keep: { type: Boolean, default: false },
+          durationSec: { type: Number, default: null },
+        },
+        { _id: false, strict: 'throw' },
+      ),
+      default: null,
+    },
   },
   baseSchemaOptions,
 );
@@ -38,8 +58,25 @@ const answerSchema = new Schema(
     authorId: { type: Schema.Types.ObjectId, required: true },
     body: { type: String, required: true, maxlength: 3000 },
     helpful: { type: Number, default: 0 },
-    status: { type: String, enum: ['published', 'removed'], default: 'published' },
+    status: {
+      type: String,
+      enum: ['published', 'removed', 'transcribing', 'voice_failed'],
+      default: 'published',
+    },
     removal: removalFragment,
+    /** Prompt 2, G7: asked or answered by voice (transcribed; the audio kept only if the author chose). */
+    voice: {
+      type: new Schema(
+        {
+          state: { type: String, enum: VOICE_STATES, required: true },
+          audioFileId: { type: Schema.Types.ObjectId, default: null },
+          keep: { type: Boolean, default: false },
+          durationSec: { type: Number, default: null },
+        },
+        { _id: false, strict: 'throw' },
+      ),
+      default: null,
+    },
   },
   baseSchemaOptions,
 );

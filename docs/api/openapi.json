@@ -390,6 +390,12 @@
                               "practice:use",
                               "practice:author",
                               "practice:review",
+                              "nextstep:view",
+                              "peers:enroll",
+                              "peers:manage",
+                              "circles:join",
+                              "circles:propose",
+                              "circles:manage",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -491,6 +497,12 @@
                               "practice:use",
                               "practice:author",
                               "practice:review",
+                              "nextstep:view",
+                              "peers:enroll",
+                              "peers:manage",
+                              "circles:join",
+                              "circles:propose",
+                              "circles:manage",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -1983,7 +1995,8 @@
                     "items": {
                       "type": "string",
                       "enum": [
-                        "CERTIFIED_CONTRIBUTOR"
+                        "CERTIFIED_CONTRIBUTOR",
+                        "PEER_MENTOR"
                       ]
                     }
                   }
@@ -7345,6 +7358,10 @@
                   "weeklyDigest": {
                     "default": false,
                     "type": "boolean"
+                  },
+                  "weeklyNextStep": {
+                    "default": true,
+                    "type": "boolean"
                   }
                 },
                 "required": [
@@ -8126,6 +8143,15 @@
             }
           },
           {
+            "name": "circle",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -8276,6 +8302,18 @@
                       "urgent": {
                         "default": false,
                         "type": "boolean"
+                      },
+                      "circleId": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "required": [
@@ -8421,6 +8459,18 @@
                       "urgent": {
                         "default": false,
                         "type": "boolean"
+                      },
+                      "circleId": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "required": [
@@ -8566,6 +8616,18 @@
                       "urgent": {
                         "default": false,
                         "type": "boolean"
+                      },
+                      "circleId": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "required": [
@@ -8711,6 +8773,18 @@
                       "urgent": {
                         "default": false,
                         "type": "boolean"
+                      },
+                      "circleId": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "required": [
@@ -8838,6 +8912,18 @@
                       "urgent": {
                         "default": false,
                         "type": "boolean"
+                      },
+                      "circleId": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "required": [
@@ -9751,6 +9837,15 @@
             }
           },
           {
+            "name": "circle",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -9834,6 +9929,18 @@
                         "education-news"
                       ]
                     }
+                  },
+                  "circleId": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 },
                 "required": [
@@ -10137,6 +10244,235 @@
           }
         },
         "x-permission": "feed:read"
+      }
+    },
+    "/api/v1/questions/voice": {
+      "post": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Ask by voice (up to a minute): transcribed, then moderated like a typed question",
+        "description": "Requires permission `qa:ask` (Ask questions in moderated Q&A). Host scope: college. Rate limit: upload.",
+        "operationId": "qa_post_questions_voice",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "keepAudio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "false",
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "circleId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "qa:ask"
+      }
+    },
+    "/api/v1/questions/{id}/answers/voice": {
+      "post": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Answer by voice (up to a minute): published when the transcript is ready",
+        "description": "Requires permission `qa:answer` (Answer questions in Q&A). Host scope: college. Rate limit: upload.",
+        "operationId": "qa_post_questions_id_answers_voice",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "keepAudio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "false",
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "circleId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "qa:answer"
+      }
+    },
+    "/api/v1/questions/{id}/transcript": {
+      "put": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Correct my voice question's transcript (or type what could not be heard)",
+        "description": "Requires permission `qa:ask` (Ask questions in moderated Q&A). Host scope: college.",
+        "operationId": "qa_put_questions_id_transcript",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 150
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 3000
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "qa:ask"
+      }
+    },
+    "/api/v1/answers/{id}/transcript": {
+      "put": {
+        "tags": [
+          "Q&A"
+        ],
+        "summary": "Correct my voice answer's transcript (or type what could not be heard)",
+        "description": "Requires permission `qa:answer` (Answer questions in Q&A). Host scope: college.",
+        "operationId": "qa_put_answers_id_transcript",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 150
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 3000
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "qa:answer"
       }
     },
     "/api/v1/admin/sources": {
@@ -14744,6 +15080,15 @@
             }
           },
           {
+            "name": "circle",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -14882,6 +15227,18 @@
                         "OTHER"
                       ]
                     }
+                  },
+                  "circleId": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "recurrence": {
                     "default": null,
@@ -15099,6 +15456,18 @@
                         "OTHER"
                       ]
                     }
+                  },
+                  "circleId": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "recurrence": {
                     "default": null,
@@ -23817,6 +24186,1253 @@
           }
         },
         "x-permission": "analytics:cohort"
+      }
+    },
+    "/api/v1/me/next-step": {
+      "get": {
+        "tags": [
+          "Next Step"
+        ],
+        "summary": "This week's Next Step: a roadmap step, a drive or job, an alumnus to ask, readiness",
+        "description": "Requires permission `nextstep:view` (Get the weekly Next Step: a roadmap step, a drive or job, an alumnus to ask). Host scope: college.",
+        "operationId": "next-step_get_me_next_step",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "nextstep:view"
+      }
+    },
+    "/api/v1/me/next-step/open": {
+      "post": {
+        "tags": [
+          "Next Step"
+        ],
+        "summary": "Record that this week's Next Step (or one of its items) was opened",
+        "description": "Requires permission `nextstep:view` (Get the weekly Next Step: a roadmap step, a drive or job, an alumnus to ask). Host scope: college.",
+        "operationId": "next-step_post_me_next_step_open",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "item": {
+                    "default": "page",
+                    "type": "string",
+                    "enum": [
+                      "page",
+                      "roadmap",
+                      "opportunity",
+                      "alumnus",
+                      "readiness"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "nextstep:view"
+      }
+    },
+    "/api/v1/me/peer": {
+      "get": {
+        "tags": [
+          "Peer mentors and buddies"
+        ],
+        "summary": "Whether I can be a peer mentor or a senior buddy, and whether I am",
+        "description": "Requires permission `peers:enroll` (Become a peer mentor (with an offer or a nomination), volunteer as a senior buddy, see one’s buddy). Host scope: college.",
+        "operationId": "peers_get_me_peer",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "peers:enroll"
+      }
+    },
+    "/api/v1/me/peer/mentor": {
+      "put": {
+        "tags": [
+          "Peer mentors and buddies"
+        ],
+        "summary": "Become (or stop being) a peer mentor for juniors",
+        "description": "Requires permission `peers:enroll` (Become a peer mentor (with an offer or a nomination), volunteer as a senior buddy, see one’s buddy). Host scope: college.",
+        "operationId": "peers_put_me_peer_mentor",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "on": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "on"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "peers:enroll"
+      }
+    },
+    "/api/v1/me/peer/buddy": {
+      "put": {
+        "tags": [
+          "Peer mentors and buddies"
+        ],
+        "summary": "Volunteer (or stop) as a senior buddy for first-years",
+        "description": "Requires permission `peers:enroll` (Become a peer mentor (with an offer or a nomination), volunteer as a senior buddy, see one’s buddy). Host scope: college.",
+        "operationId": "peers_put_me_peer_buddy",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "on": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "on"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "peers:enroll"
+      }
+    },
+    "/api/v1/me/buddy": {
+      "get": {
+        "tags": [
+          "Peer mentors and buddies"
+        ],
+        "summary": "My senior buddy (first-years) or the first-years I guide (seniors)",
+        "description": "Requires permission `peers:enroll` (Become a peer mentor (with an offer or a nomination), volunteer as a senior buddy, see one’s buddy). Host scope: college.",
+        "operationId": "peers_get_me_buddy",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "peers:enroll"
+      }
+    },
+    "/api/v1/buddies/{id}/checklist": {
+      "post": {
+        "tags": [
+          "Peer mentors and buddies"
+        ],
+        "summary": "Tick (or untick) an item of the four-week buddy checklist",
+        "description": "Requires permission `peers:enroll` (Become a peer mentor (with an offer or a nomination), volunteer as a senior buddy, see one’s buddy). Host scope: college.",
+        "operationId": "peers_post_buddies_id_checklist",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "item": {
+                    "type": "string",
+                    "enum": [
+                      "hello",
+                      "campus",
+                      "study",
+                      "plan"
+                    ]
+                  },
+                  "done": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "item",
+                  "done"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "peers:enroll"
+      }
+    },
+    "/api/v1/admin/peers": {
+      "get": {
+        "tags": [
+          "Peer mentors and buddies"
+        ],
+        "summary": "Peer mentor nominations and how buddy matching is going",
+        "description": "Requires permission `peers:manage` (Nominate peer mentors and follow how first-years are matched with senior buddies). Host scope: college.",
+        "operationId": "peers_get_admin_peers",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "peers:manage"
+      }
+    },
+    "/api/v1/admin/peers/nominations": {
+      "post": {
+        "tags": [
+          "Peer mentors and buddies"
+        ],
+        "summary": "Nominate a student as a peer mentor (or withdraw the nomination)",
+        "description": "Requires permission `peers:manage` (Nominate peer mentors and follow how first-years are matched with senior buddies). Host scope: college.",
+        "operationId": "peers_post_admin_peers_nominations",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "on": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "userId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "peers:manage"
+      }
+    },
+    "/api/v1/admin/peers/match-buddies": {
+      "post": {
+        "tags": [
+          "Peer mentors and buddies"
+        ],
+        "summary": "Match first-years without a buddy now (it also runs every day)",
+        "description": "Requires permission `peers:manage` (Nominate peer mentors and follow how first-years are matched with senior buddies). Host scope: college.",
+        "operationId": "peers_post_admin_peers_match_buddies",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "peers:manage"
+      }
+    },
+    "/api/v1/circles": {
+      "get": {
+        "tags": [
+          "Circles"
+        ],
+        "summary": "My circles, circles I can join, or circles waiting for approval",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "circles_get_circles",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "mine",
+              "type": "string",
+              "enum": [
+                "mine",
+                "discover",
+                "pending"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "post": {
+        "tags": [
+          "Circles"
+        ],
+        "summary": "Create a circle (staff) or propose one (it waits for staff approval)",
+        "description": "Requires permission `circles:propose` (Propose a circle (staff approve it) or create one (staff)). Host scope: college. Rate limit: posting.",
+        "operationId": "circles_post_circles",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 60
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "batch",
+                      "branch",
+                      "club",
+                      "interest"
+                    ]
+                  },
+                  "description": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 500
+                  },
+                  "branch": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "CSE",
+                          "IT",
+                          "ECE",
+                          "EEE",
+                          "MECH",
+                          "CIVIL",
+                          "CHEM",
+                          "AIML",
+                          "DS",
+                          "OTHER"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "gradYear": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1990,
+                        "maximum": 2100
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "circles:propose"
+      }
+    },
+    "/api/v1/circles/{id}": {
+      "get": {
+        "tags": [
+          "Circles"
+        ],
+        "summary": "A circle",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "circles_get_circles_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/circles/{id}/join": {
+      "post": {
+        "tags": [
+          "Circles"
+        ],
+        "summary": "Join a circle",
+        "description": "Requires permission `circles:join` (Join circles and read, post, ask and attend inside them). Host scope: college.",
+        "operationId": "circles_post_circles_id_join",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "circles:join"
+      }
+    },
+    "/api/v1/circles/{id}/leave": {
+      "post": {
+        "tags": [
+          "Circles"
+        ],
+        "summary": "Leave a circle",
+        "description": "Requires permission `circles:join` (Join circles and read, post, ask and attend inside them). Host scope: college.",
+        "operationId": "circles_post_circles_id_leave",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "circles:join"
+      }
+    },
+    "/api/v1/admin/circles/{id}/decision": {
+      "post": {
+        "tags": [
+          "Circles"
+        ],
+        "summary": "Approve or reject a proposed circle, or archive an active one",
+        "description": "Requires permission `circles:manage` (Approve, reject and archive circles; see every circle). Host scope: college.",
+        "operationId": "circles_post_admin_circles_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject",
+                      "archive"
+                    ]
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "circles:manage"
+      }
+    },
+    "/api/v1/study-groups": {
+      "get": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "Study groups on a subject, or my own groups",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-groups_get_study_groups",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      },
+      "post": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "Start a study group on a subject (3 to 6 members)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college. Rate limit: posting.",
+        "operationId": "study-groups_post_study_groups",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "subjectId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 60
+                  },
+                  "slot": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "place": {
+                            "default": "",
+                            "type": "string",
+                            "minLength": 0,
+                            "maxLength": 200
+                          }
+                        },
+                        "required": [
+                          "at"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "subjectId",
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/me/quizzes": {
+      "get": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "My recent study assistant quizzes (to share one with a study group)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-groups_get_me_quizzes",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study-groups/{id}": {
+      "get": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "A study group",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-groups_get_study_groups_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study-groups/{id}/join": {
+      "post": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "Join a study group with room",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-groups_post_study_groups_id_join",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study-groups/{id}/leave": {
+      "post": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "Leave a study group",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-groups_post_study_groups_id_leave",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study-groups/{id}/slot": {
+      "put": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "Set (or clear) when and where the group meets next",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-groups_put_study_groups_id_slot",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "slot": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          "place": {
+                            "default": "",
+                            "type": "string",
+                            "minLength": 0,
+                            "maxLength": 200
+                          }
+                        },
+                        "required": [
+                          "at"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "slot"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study-groups/{id}/questions": {
+      "post": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "Add a question to the group's shared list",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college. Rate limit: posting.",
+        "operationId": "study-groups_post_study_groups_id_questions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study-groups/{id}/questions/{questionId}": {
+      "put": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "Mark a shared question done (or not)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-groups_put_study_groups_id_questions_questionId",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "questionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "done": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "done"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study-groups/{id}/quizzes": {
+      "post": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "Share one of my study assistant /quiz results with the group",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-groups_post_study_groups_id_quizzes",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "messageId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
+      }
+    },
+    "/api/v1/study-groups/{id}/quizzes/{quizId}/answers": {
+      "post": {
+        "tags": [
+          "Study groups"
+        ],
+        "summary": "Take a quiz shared with the group (once)",
+        "description": "Requires permission `study:read` (Use the subject library and the study assistant). Host scope: college.",
+        "operationId": "study-groups_post_study_groups_id_quizzes_quizId_answers",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          },
+          {
+            "name": "quizId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "answers": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9
+                        },
+                        {
+                          "type": "string",
+                          "maxLength": 300
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "answers"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "study:read"
       }
     },
     "/api/v1/legal/{doc}": {

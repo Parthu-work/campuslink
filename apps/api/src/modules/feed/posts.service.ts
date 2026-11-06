@@ -32,6 +32,7 @@ import type { NotificationsService } from '../notifications/notifications.servic
 import type { SafetyService } from '../moderation/safety.service.js';
 import { isModerator, type ModerationService, type Removal } from '../moderation/moderation.service.js';
 import type { AuthState } from '../../types.js';
+import { noCircles, type CircleScope } from '../../lib/circle-scope.js';
 import { noAward, type Award } from '../../lib/awards.js';
 import { featureEnabled, requireFeature } from '../tenants/features.js';
 
@@ -66,7 +67,8 @@ export interface PostsDeps {
   fetcher: typeof safeFetch;
 }
 
-const RANK_FIELDS = 'authorId createdAt topics authorBranch authorAlumni announcement counts audience';
+const RANK_FIELDS =
+  'authorId createdAt topics authorBranch authorAlumni announcement counts audience circleId';
 export type PostRankFields = Pick<
   PostDoc,
   | '_id'
@@ -105,6 +107,9 @@ export class PostsService {
   award: Award = noAward;
   constructor(private readonly d: PostsDeps) {}
 
+  /** Prompt 2, G7: circle posts are for circle members (set by the app from CirclesService). */
+  circles: CircleScope = noCircles;
+
   /** Set by the app: queues the WhatsApp, push or email fan-out of an announcement (B6). */
   onAnnounce: ((postId: string) => Promise<void>) | null = null;
 
@@ -114,6 +119,15 @@ export class PostsService {
    * covers their branch, batch and role. Staff who post announcements see every one.
    */
   async audienceCondition(viewer: AuthState): Promise<Record<string, unknown>> {
+    // Prompt 2, G7: and outside any circle, or in one of the viewer's circles.
+    const [announcements, circles] = await Promise.all([
+      this.announcementCondition(viewer),
+      this.circles.condition(viewer),
+    ]);
+    return Object.keys(announcements).length ? { $and: [announcements, circles] } : circles;
+  }
+
+  private async announcementCondition(viewer: AuthState): Promise<Record<string, unknown>> {
     if (viewer.permissions.has('announcements:post')) return {};
     const own = await this.d.profiles.own(viewer.userId);
     const any = (field: string) => ({ [`audience.${field}.0`]: { $exists: false } });
@@ -133,10 +147,17 @@ export class PostsService {
   }
 
   /** The same rule for posts already loaded. */
-  async audienceAllows(viewer: AuthState, posts: Pick<PostDoc, 'authorId' | 'audience'>[]) {
-    if (viewer.permissions.has('announcements:post')) return posts.map(() => true);
+  async audienceAllows(viewer: AuthState, posts: Pick<PostDoc, 'authorId' | 'audience' | 'circleId'>[]) {
+    // Prompt 2, G7: a circle's posts only for those who may see the circle.
+    const circles = new Map<string, boolean>();
+    for (const p of posts)
+      if (p.circleId && !circles.has(String(p.circleId)))
+        circles.set(String(p.circleId), await this.circles.canSee(viewer, p.circleId));
+    const inCircle = (p: Pick<PostDoc, 'circleId'>) => !p.circleId || !!circles.get(String(p.circleId));
+    if (viewer.permissions.has('announcements:post')) return posts.map(inCircle);
     const own = await this.d.profiles.own(viewer.userId);
     return posts.map((p) => {
+      if (!inCircle(p)) return false;
       const a = p.audience as Audience | null | undefined;
       if (!hasTarget(a) || String(p.authorId) === viewer.userId) return true;
       return (
@@ -184,6 +205,9 @@ export class PostsService {
     if (!body.announcement && (body.audience || body.pinDays || body.sendWhatsApp || body.urgent))
       throw badRequest('Only official announcements have an audience, a pin or a WhatsApp send');
     if (body.urgent && !body.sendWhatsApp) throw badRequest('An urgent announcement goes out on WhatsApp');
+    if (body.circleId && body.announcement)
+      throw badRequest('Announcements go to the whole college, not to a circle');
+    const circleId = await this.circles.assertCanPost(viewer, body.circleId);
     if (body.urgent) {
       const now = new Date();
       const month = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
@@ -247,6 +271,7 @@ export class PostsService {
       urgent: body.urgent,
       authorAlumni: facts?.alumni ?? false,
       authorBranch: facts?.branch ?? null,
+      circleId,
     });
     if (!body.announcement) await this.award(viewer.userId, 'post_published', String(doc._id));
     if (body.sendWhatsApp) await this.onAnnounce?.(String(doc._id));
@@ -258,6 +283,7 @@ export class PostsService {
     if (!docs.length) return [];
     const ids = docs.map((p) => p._id);
     const me = new Types.ObjectId(viewer.userId);
+    const circleNames = await this.circles.names(docs.flatMap((p) => (p.circleId ? [p.circleId] : [])));
     const [authors, reactions, saves, votes] = await Promise.all([
       this.d.profiles.authorsFor(
         viewer,
@@ -337,6 +363,9 @@ export class PostsService {
             }
           : null,
         announcement: p.announcement,
+        circle: p.circleId
+          ? { id: String(p.circleId), name: circleNames.get(String(p.circleId)) ?? '' }
+          : null,
         audience: hasTarget(p.audience as Audience | null)
           ? (p.audience as unknown as PostView['audience'])
           : null,
@@ -408,6 +437,10 @@ export class PostsService {
         items: await this.views(viewer, ordered),
         nextCursor: saves.length > 20 ? String(saves[19]?._id) : null,
       };
+    }
+    if (q.circle) {
+      if (!(await this.circles.canSee(viewer, q.circle))) throw notFound('Circle');
+      filter.circleId = new Types.ObjectId(q.circle);
     }
     const own = q.author === viewer.userId;
     if (q.author) filter.authorId = new Types.ObjectId(q.author);

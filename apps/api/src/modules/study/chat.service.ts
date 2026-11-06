@@ -840,6 +840,43 @@ export class ChatService {
     await ChatSessionModel.deleteMany({ userId: oid(viewer.userId) });
   }
 
+  /** Prompt 2, G7 (study groups): the member's recent /quiz answers, to pick one to share. */
+  async recentQuizzes(
+    viewer: AuthState,
+  ): Promise<{ id: string; topic: string; questions: number; createdAt: string }[]> {
+    const rows = await ChatMessageModel.find({
+      userId: oid(viewer.userId),
+      role: 'assistant',
+      'result.kind': 'quiz',
+      superseded: { $ne: true },
+    })
+      .sort({ _id: -1 })
+      .limit(20)
+      .select('result createdAt')
+      .lean<ChatMessageDoc[]>();
+    return rows.flatMap((m) => {
+      const r = m.result as ChatResult | null;
+      return r?.kind === 'quiz'
+        ? [
+            {
+              id: String(m._id),
+              topic: r.topic,
+              questions: r.questions.length,
+              createdAt: m.createdAt.toISOString(),
+            },
+          ]
+        : [];
+    });
+  }
+
+  /** Prompt 2, G7 (study groups): the questions of one of the member's own /quiz answers, to share. */
+  async quizOf(viewer: AuthState, id: string): Promise<{ topic: string; questions: QuizQuestion[] }> {
+    const m = await this.ownAnswer(viewer, id);
+    const result = m.result as ChatResult | null;
+    if (result?.kind !== 'quiz') throw badRequest('That answer is not a quiz');
+    return { topic: result.topic, questions: result.questions };
+  }
+
   private async ownAnswer(viewer: AuthState, id: string): Promise<ChatMessageDoc> {
     const m = await ChatMessageModel.findOne({
       _id: oid(id),

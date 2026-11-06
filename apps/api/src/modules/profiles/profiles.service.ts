@@ -370,6 +370,14 @@ export class ProfilesService {
   }
 
   /** B7 placements: branch and batch per member (eligibility, the institutional record). */
+  /** Prompt 2, G7 (buddy matching): the languages each member speaks. */
+  async languagesOf(userIds: (string | Types.ObjectId)[]): Promise<Map<string, string[]>> {
+    const rows = await ProfileModel.find({ userId: { $in: userIds.map(String) } })
+      .select('userId languages')
+      .lean<{ userId: Types.ObjectId; languages?: string[] }[]>();
+    return new Map(rows.map((r) => [String(r.userId), r.languages ?? []]));
+  }
+
   async cohortOf(userIds: (string | Types.ObjectId)[]) {
     const rows = await ProfileModel.find({ userId: { $in: userIds.map(String) } })
       .select('userId name branch gradYear')

@@ -553,6 +553,23 @@ export class FilesService {
     return this.store(ownerId, 'interview_audio', data, type.mime, new Date(Date.now() + 60 * 60_000));
   }
 
+  /** Prompt 2, G7: a voice question or answer, held an hour for transcription (or kept on request). */
+  async storeVoiceAudio(ownerId: string, data: Buffer) {
+    const type = await fileTypeFromBuffer(data);
+    if (!type || !RECORDING_TYPES.has(type.mime)) throw unsupported('Record in WebM, Ogg or MP4 audio');
+    return this.store(ownerId, 'qa_audio', data, type.mime, new Date(Date.now() + 60 * 60_000));
+  }
+
+  /** Prompt 2, G7: the author chose to keep their voice recording, so it is no longer deleted. */
+  async keep(fileId: string | Types.ObjectId, durationSec: number | null): Promise<void> {
+    await FileModel.updateOne(
+      { _id: fileId },
+      {
+        $set: { deleteAfter: null, attachedAt: new Date(), ...(durationSec !== null ? { durationSec } : {}) },
+      },
+    );
+  }
+
   async storeInvoice(data: Buffer) {
     if (data.subarray(0, 5).toString('latin1') !== '%PDF-') throw unsupported('Not a PDF');
     return this.store(null, 'invoice', data, 'application/pdf');

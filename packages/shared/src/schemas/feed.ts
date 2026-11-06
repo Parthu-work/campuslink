@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { objectId } from './common.js';
 import { httpsUrl } from './people.js';
 import type { PersonRef } from './mentorship.js';
+import type { VoiceInfo } from './habits.js';
 import { BRANCHES, type Branch } from '../constants/people.js';
 
 // ── Topics ─────────────────────────────
@@ -70,6 +71,8 @@ const common = {
   pinDays: z.number().int().min(1).max(MAX_PIN_DAYS).optional(),
   sendWhatsApp: z.boolean().default(false),
   urgent: z.boolean().default(false),
+  /** Prompt 2, G7: a post in a circle is shown to its members only. */
+  circleId: objectId.nullable().default(null),
 };
 
 export const createPostBody = z.discriminatedUnion('kind', [
@@ -121,6 +124,8 @@ export const postsQuery = z.strictObject({
   author: objectId.optional(),
   topic: z.enum(TOPICS).optional(),
   saved: z.enum(['true']).optional(),
+  /** Prompt 2, G7: a circle's posts (members only). */
+  circle: objectId.optional(),
   cursor: objectId.optional(),
 });
 
@@ -156,12 +161,20 @@ export const followBody = z
   );
 
 // ── Q&A ─────────────────────────────
-export const questionBody = z.strictObject({ title: text(10, 150), body: text(0, 2000).default(''), topics });
+export const questionBody = z.strictObject({
+  title: text(10, 150),
+  body: text(0, 2000).default(''),
+  topics,
+  /** Prompt 2, G7: a question asked in a circle is shown to its members only. */
+  circleId: objectId.nullable().default(null),
+});
 export const answerBody = z.strictObject({ body: text(10, 3000) });
 export const questionsQuery = z.strictObject({
   topic: z.enum(TOPICS).optional(),
   mine: z.enum(['true']).optional(),
   unanswered: z.enum(['true']).optional(),
+  /** Prompt 2, G7: a circle's questions (members only). */
+  circle: objectId.optional(),
   cursor: objectId.optional(),
 });
 
@@ -258,6 +271,8 @@ export interface RemovalView {
 }
 export interface PostView {
   id: string;
+  /** Prompt 2, G7: the circle it belongs to (members only see it), else null. */
+  circle?: { id: string; name: string } | null;
   kind: PostKind;
   author: AuthorRef;
   body: string;
@@ -323,11 +338,16 @@ export interface StoryView {
 }
 export interface QuestionView {
   id: string;
+  /** Prompt 2, G7: the circle it belongs to (members only see it), else null. */
+  circle?: { id: string; name: string } | null;
+  /** Prompt 2, G7: asked or answered by voice. */
+  voice?: VoiceInfo | null;
   title: string;
   body: string;
   topics: Topic[];
   author: AuthorRef;
-  status: 'pending' | 'published' | 'rejected' | 'removed';
+  /** `transcribing` and `voice_failed` (prompt 2, G7): a voice question only its author sees. */
+  status: 'pending' | 'published' | 'rejected' | 'removed' | 'transcribing' | 'voice_failed';
   answers: number;
   acceptedAnswerId: string | null;
   isMine: boolean;
@@ -336,13 +356,15 @@ export interface QuestionView {
 }
 export interface AnswerView {
   id: string;
+  /** Prompt 2, G7: asked or answered by voice. */
+  voice?: VoiceInfo | null;
   questionId: string;
   author: AuthorRef;
   body: string;
   helpful: number;
   votedHelpful: boolean;
   accepted: boolean;
-  status: 'published' | 'removed';
+  status: 'published' | 'removed' | 'transcribing' | 'voice_failed';
   isMine: boolean;
   removal: RemovalView | null;
   createdAt: string;

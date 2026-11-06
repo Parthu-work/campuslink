@@ -15,7 +15,11 @@ export const ROLES = Object.values(Role);
 /** Roles that can exist inside a college tenant. SUPER_ADMIN lives only in the platform tenant. */
 export const TENANT_ROLES = ROLES.filter((r) => r !== Role.SUPER_ADMIN);
 
-export const Capability = { CERTIFIED_CONTRIBUTOR: 'CERTIFIED_CONTRIBUTOR' } as const;
+export const Capability = {
+  CERTIFIED_CONTRIBUTOR: 'CERTIFIED_CONTRIBUTOR',
+  /** Prompt 2, G7: a final-year with a verified offer, or nominated by faculty, mentors juniors. */
+  PEER_MENTOR: 'PEER_MENTOR',
+} as const;
 export type Capability = (typeof Capability)[keyof typeof Capability];
 export const CAPABILITIES = Object.values(Capability);
 
@@ -114,6 +118,13 @@ export const ALL_PERMISSIONS = [
   'practice:use',
   'practice:author',
   'practice:review',
+  // Habit loops (prompt 2, G7)
+  'nextstep:view',
+  'peers:enroll',
+  'peers:manage',
+  'circles:join',
+  'circles:propose',
+  'circles:manage',
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
   'platform:health',
@@ -206,6 +217,13 @@ export const PERMISSIONS: Record<Permission, string> = {
   'practice:use': 'Do the daily aptitude and coding practice set and company prep',
   'practice:author': 'Write practice questions (alumni questions are reviewed before they are used)',
   'practice:review': 'Add practice questions, review drafts and alumni questions, and tag companies',
+  'nextstep:view': 'Get the weekly Next Step: a roadmap step, a drive or job, an alumnus to ask',
+  'peers:enroll':
+    'Become a peer mentor (with an offer or a nomination), volunteer as a senior buddy, see one’s buddy',
+  'peers:manage': 'Nominate peer mentors and follow how first-years are matched with senior buddies',
+  'circles:join': 'Join circles and read, post, ask and attend inside them',
+  'circles:propose': 'Propose a circle (staff approve it) or create one (staff)',
+  'circles:manage': 'Approve, reject and archive circles; see every circle',
   'support:manage': 'Answer and close problem reports sent to the college',
   'placements:view': 'See placement drives and the eligibility rules',
   'placements:register': 'Register for placement drives one is eligible for',
@@ -248,9 +266,20 @@ const STUDENT: Permission[] = [
   'interviews:practice',
   'readiness:view',
   'practice:use',
+  'nextstep:view',
+  'peers:enroll',
+  'circles:join',
+  'circles:propose',
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
-const STUDENT_ONLY: readonly Permission[] = ['placements:view', 'placements:register', 'readiness:view'];
+const STUDENT_ONLY: readonly Permission[] = [
+  'placements:view',
+  'placements:register',
+  'readiness:view',
+  // Prompt 2, G7: the weekly Next Step, peer mentoring and buddies are for students.
+  'nextstep:view',
+  'peers:enroll',
+];
 const ALUMNI: Permission[] = [
   ...STUDENT.filter((p) => !STUDENT_ONLY.includes(p)),
   'feed:post',
@@ -275,7 +304,9 @@ const STAFF: Permission[] = [
       p !== 'resumes:manage' &&
       p !== 'interviews:practice' &&
       p !== 'readiness:view' &&
-      p !== 'practice:use',
+      p !== 'practice:use' &&
+      p !== 'nextstep:view' &&
+      p !== 'peers:enroll',
   ),
   'feed:post',
   'qa:answer',
@@ -291,6 +322,8 @@ const STAFF: Permission[] = [
   'readiness:board',
   'practice:author',
   'practice:review',
+  'peers:manage',
+  'circles:manage',
   'analytics:cohort',
   'moderation:act',
   'users:invite',
@@ -329,6 +362,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
 
 export const CAPABILITY_PERMISSIONS: Record<Capability, readonly Permission[]> = {
   CERTIFIED_CONTRIBUTOR: ['roadmaps:write', 'study:contribute'],
+  PEER_MENTOR: ['mentorship:mentor'],
 };
 
 /** What a user who has not completed college verification may do: read-only, limited. */

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
@@ -187,6 +187,9 @@ function EventForm({ existing }: { existing: EventView | null }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const canCreate = useCan('events:create');
+  // Prompt 2, G7: from a circle's page (?circle=), the event is for that circle's members.
+  const [params] = useSearchParams();
+  const circleParam = /^[a-f0-9]{24}$/.test(params.get('circle') ?? '') ? params.get('circle') : null;
   const kinds = canCreate ? EVENT_KINDS : EVENT_KINDS.filter((k) => HOSTED_KINDS.includes(k));
   const [key] = useState(newIdempotencyKey);
   const [busy, setBusy] = useState(false);
@@ -236,6 +239,7 @@ function EventForm({ existing }: { existing: EventView | null }) {
     capacity: f.capacity ? Number(f.capacity) : null,
     audience: f.audience,
     branches: f.branches,
+    circleId: existing ? (existing.circle?.id ?? null) : circleParam,
     recurrence:
       f.kind === 'office_hours' && f.repeatUntil
         ? { weekly: true as const, until: fromLocalInput(`${f.repeatUntil}T23:59`) }

@@ -15,10 +15,11 @@ export const recordingSupported = () =>
 
 /**
  * One answer at a time with MediaRecorder: mono, low bitrate, stopped automatically at three
- * minutes. Any failure (no support, permission refused, device error) leaves the text box to answer
- * with (E3: voice is optional, text is complete).
+ * minutes (or at `maxMs`: voice Q&A stops at one, prompt 2, G7). Any failure (no support,
+ * permission refused, device error) leaves the text box to answer with (E3: voice is optional,
+ * text is complete).
  */
-export function useRecorder(onDone: (audio: Blob) => void) {
+export function useRecorder(onDone: (audio: Blob) => void, maxMs = MAX_MS) {
   const [state, setState] = useState<RecorderState>(() => (recordingSupported() ? 'idle' : 'unsupported'));
   const [elapsed, setElapsed] = useState(0);
   const rec = useRef<MediaRecorder | null>(null);
@@ -72,12 +73,12 @@ export function useRecorder(onDone: (audio: Blob) => void) {
     setElapsed(0);
     setState('recording');
     timers.current.tick = window.setInterval(() => setElapsed(Date.now() - began), 500);
-    timers.current.stop = window.setTimeout(() => r.state === 'recording' && r.stop(), MAX_MS);
-  }, [cleanup]);
+    timers.current.stop = window.setTimeout(() => r.state === 'recording' && r.stop(), maxMs);
+  }, [cleanup, maxMs]);
 
   const stop = useCallback(() => {
     if (rec.current?.state === 'recording') rec.current.stop();
   }, []);
 
-  return { state, elapsed, start, stop, maxMs: MAX_MS };
+  return { state, elapsed, start, stop, maxMs };
 }

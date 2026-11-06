@@ -301,6 +301,22 @@ export const WHATSAPP_TEMPLATES: Partial<Record<NotificationType, WaTemplate>> =
    * member's first name, the company and the closing time; never the score. Not critical: the
    * member's weekly cap and the college's allowance apply.
    */
+  /**
+   * The weekly Next Step (prompt 2, G7): the member's first name and the roadmap step's title (a
+   * title the college's roadmap authors wrote, never member text). Not critical: the weekly cap
+   * and the college's allowance apply; push or email when WhatsApp cannot carry it.
+   */
+  weekly_next_step: {
+    name: 'cl_weekly_next_step',
+    category: 'utility',
+    critical: false,
+    params: (d) => [d.name ?? '', d.step || '—'],
+    text: {
+      en: 'Hi {{1}}, your next step this week: {{2}}. There is also an opening that fits you and an alumnus to ask. Open the app to see them.',
+      te: '{{1}} గారూ, ఈ వారం మీ తదుపరి అడుగు: {{2}}. మీకు సరిపోయే ఒక అవకాశం, అడగడానికి ఒక పూర్వ విద్యార్థి కూడా ఉన్నారు. చూడటానికి యాప్ తెరవండి.',
+      hi: 'नमस्ते {{1}}, इस हफ़्ते आपका अगला कदम: {{2}}। आपके लायक एक मौका और पूछने के लिए एक पूर्व छात्र भी है। देखने के लिए ऐप खोलें।',
+    },
+  },
   readiness_nudge: {
     name: 'cl_readiness_nudge',
     category: 'utility',

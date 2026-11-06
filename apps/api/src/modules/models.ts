@@ -116,3 +116,6 @@ export {
 } from './alumni/alumni.model.js';
 export { MicroAskOptOutModel } from './alumni/opt-out.model.js';
 export { PracticeCardModel, PracticeItemModel, PracticeSetModel } from './practice/practice.model.js';
+export { NextStepModel } from './next-step/next-step.model.js';
+export { BuddyPairModel, BuddyVolunteerModel, PeerNominationModel } from './peers/peers.model.js';
+export { CircleMemberModel, CircleModel, StudyGroupModel } from './circles/circle.model.js';

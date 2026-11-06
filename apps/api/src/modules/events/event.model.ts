@@ -34,10 +34,16 @@ const eventSchema = new Schema(
     },
     /** The first instance of a weekly series (null for a one-off event). */
     seriesId: { type: Schema.Types.ObjectId, default: null },
+    /** Prompt 2, G7: an event in a circle is shown to its members only. */
+    circleId: { type: Schema.Types.ObjectId, default: null },
   },
   baseSchemaOptions,
 );
 eventSchema.index({ tenantId: 1, status: 1, startsAt: 1 });
+eventSchema.index(
+  { tenantId: 1, circleId: 1, startsAt: 1 },
+  { partialFilterExpression: { circleId: { $type: 'objectId' } } },
+);
 // One instance per series and start: the job that makes the next one can run twice safely.
 eventSchema.index(
   { tenantId: 1, seriesId: 1, startsAt: 1 },

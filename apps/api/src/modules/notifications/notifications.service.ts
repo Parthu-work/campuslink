@@ -121,6 +121,7 @@ export class NotificationsService {
       },
       smsReminders: p?.smsReminders ?? true,
       weeklyDigest: p?.weeklyDigest ?? false,
+      weeklyNextStep: p?.weeklyNextStep ?? true,
     };
   }
 
@@ -133,6 +134,7 @@ export class NotificationsService {
           quietHours: body.quietHours,
           smsReminders: body.smsReminders,
           weeklyDigest: body.weeklyDigest,
+          weeklyNextStep: body.weeklyNextStep,
         },
       },
       { upsert: true },
@@ -157,6 +159,8 @@ export class NotificationsService {
     // The weekly digest (R8) has its own switch: WhatsApp first, push or email only as a fallback,
     // and never in the in-app list (it only counts what the app already shows).
     if (type === 'weekly_digest') return this.queueDigest(String(tenantId), uid, data, prefs);
+    // The weekly Next Step (prompt 2, G7) has its own switch too; it is also kept in the in-app list.
+    if (type === 'weekly_next_step' && !prefs.weeklyNextStep) return { emailQueued: false };
     if (ch.inApp) {
       if (type === 'new_message') {
         // Messages show as a live toast and an unread badge, not as stored notifications.
@@ -181,6 +185,26 @@ export class NotificationsService {
           view(doc.toObject() as NotificationDoc),
         );
       }
+    }
+    // The Next Step goes on WhatsApp first, push or email only as a fallback (like the digest).
+    if (type === 'weekly_next_step') {
+      const whatsapp = !!this.d.channels && (await this.d.channels.usable(type));
+      const delayMs = quietDelayMs(prefs.quietHours);
+      await this.d.jobs.enqueue(
+        DELIVER_JOB,
+        {
+          tenantId: String(tenantId),
+          userId: uid,
+          type,
+          data,
+          email: false,
+          push: false,
+          whatsapp,
+          fallback: true,
+        },
+        delayMs ? { delayMs } : {},
+      );
+      return { emailQueued: false };
     }
     const email = ch.email && !opts.noEmail;
     const push = ch.push && this.d.push.enabled;
@@ -237,6 +261,7 @@ export class NotificationsService {
     const prefs = await this.prefs(String(job.userId));
     // Turned off while it waited (quiet hours): not sent.
     if (type === 'weekly_digest' && !prefs.weeklyDigest) return;
+    if (type === 'weekly_next_step' && !prefs.weeklyNextStep) return;
     const text = renderNotification(type, data, locale, prefs.quietHours.timezone);
     const path = pathFor(type, data);
     let email = !!job.email;

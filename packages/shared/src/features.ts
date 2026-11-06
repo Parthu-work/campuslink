@@ -16,7 +16,7 @@ export const FEATURES = {
   study: 'Study library and the study assistant',
   placements: 'Placement drives, registrations and offers',
   whatsapp: 'WhatsApp messages and codes (when the platform has WhatsApp set up)',
-  peerMentors: 'Peer mentors: seniors guiding juniors (coming soon)',
+  peerMentors: 'Peer mentors and the Senior Buddy: seniors guiding juniors and first-years',
 } as const;
 export type Feature = keyof typeof FEATURES;
 export const FEATURE_KEYS = Object.keys(FEATURES) as [Feature, ...Feature[]];

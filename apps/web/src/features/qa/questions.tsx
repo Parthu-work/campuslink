@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -19,12 +19,15 @@ import { formatRelative, newIdempotencyKey } from '../../lib/format';
 import { AuthorLine } from '../feed/post-card';
 import { ContentMenu, RemovalNotice } from '../feed/content-menu';
 import { TopicPicker } from '../feed/composer-form';
+import { LazyVoiceAnswer, LazyVoiceAsk, LazyVoiceNote } from '../habits/lazy';
 
 const STATUS_TONE = {
   pending: 'warning',
   published: 'success',
   rejected: 'danger',
   removed: 'danger',
+  transcribing: 'info',
+  voice_failed: 'warning',
 } as const;
 
 function AskForm({ onDone }: { onDone: () => void }) {
@@ -165,6 +168,11 @@ export function QuestionsPage() {
                 <Plus className="size-4" aria-hidden /> {t('qa.ask')}
               </Button>
             )}
+            {canAsk && (
+              <Suspense fallback={null}>
+                <LazyVoiceAsk />
+              </Suspense>
+            )}
           </>
         }
       />
@@ -270,7 +278,19 @@ function AnswerCard({ a, q, onChange }: { a: AnswerView; q: QuestionView; onChan
           {a.removal && (
             <RemovalNotice targetType="answer" targetId={a.id} removal={a.removal} canAppeal={a.isMine} />
           )}
-          <RichText text={a.body} />
+          {a.voice ? (
+            <Suspense fallback={null}>
+              <LazyVoiceNote
+                voice={a.voice}
+                kind="answer"
+                id={a.id}
+                mine={a.isMine}
+                body={a.body}
+                questionId={q.id}
+              />
+            </Suspense>
+          ) : null}
+          {a.status !== 'transcribing' && <RichText text={a.body} />}
           <div className="flex flex-wrap items-center gap-2 border-t border-line pt-2">
             <Button
               size="sm"
@@ -369,6 +389,19 @@ export function QuestionPage() {
               />
             )}
             {question.body && <RichText text={question.body} />}
+            {question.voice && (
+              <Suspense fallback={null}>
+                <LazyVoiceNote
+                  voice={question.voice}
+                  kind="question"
+                  id={question.id}
+                  mine={question.isMine}
+                  title={question.title}
+                  body={question.body}
+                  questionId={question.id}
+                />
+              </Suspense>
+            )}
             {question.topics.length > 0 && (
               <p className="flex flex-wrap gap-1.5">
                 {question.topics.map((tp) => (
@@ -388,6 +421,13 @@ export function QuestionPage() {
               ))}
             </ul>
           </section>
+          {canAnswer && question.status === 'published' && (
+            <Suspense fallback={null}>
+              <div>
+                <LazyVoiceAnswer questionId={question.id} />
+              </div>
+            </Suspense>
+          )}
           {canAnswer && question.status === 'published' && (
             <Card className="p-4">
               <form

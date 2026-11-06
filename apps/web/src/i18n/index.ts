@@ -55,6 +55,15 @@ const PACKS = {
       hi: () => import('./packs/practice.hi.json'),
     },
   },
+  /** Habit loops (prompt 2, G7): Next Step, peers and buddies, circles, study groups, voice Q&A. */
+  habits: {
+    sections: ['habits'],
+    load: {
+      en: () => import('./packs/habits.en.json'),
+      te: () => import('./packs/habits.te.json'),
+      hi: () => import('./packs/habits.hi.json'),
+    },
+  },
 } satisfies Record<
   string,
   { sections: string[]; load: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> }

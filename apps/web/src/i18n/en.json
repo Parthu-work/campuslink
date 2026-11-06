@@ -101,6 +101,8 @@
     "interviews": "Mock interviews",
     "readiness": "Readiness",
     "practice": "Practice",
+    "peers": "Peer mentoring",
+    "circles": "Circles",
     "alumni": "Alumni"
   },
   "landing": {
@@ -488,6 +490,8 @@
     "interviewQuestions": "Interview questions",
     "readiness": "Readiness board",
     "practiceBank": "Practice questions",
+    "peers": "Peer mentors and buddies",
+    "circles": "Circles",
     "recognition": "Recognition",
     "giving": "Giving"
   },
@@ -1333,6 +1337,30 @@
     "pledge_received": {
       "title": "Your college received your contribution",
       "body": "Thank you. The acknowledgement is ready."
+    },
+    "weekly_next_step": {
+      "title": "Your next step for this week",
+      "body": "One roadmap step, one opening and one alumnus to ask, picked for you."
+    },
+    "buddy_matched": {
+      "title": "Meet your buddy: {{name}}",
+      "body": "Your senior buddy pairing has started. See the four-week checklist."
+    },
+    "peer_mentor_nominated": {
+      "title": "You were nominated as a peer mentor",
+      "body": "Faculty think you can guide juniors. Turn peer mentoring on when you are ready."
+    },
+    "voice_ready": {
+      "title": "Your recording is written out",
+      "body": "Check the text and fix any words it got wrong."
+    },
+    "voice_failed": {
+      "title": "We could not make out your recording",
+      "body": "Type it instead, or record again somewhere quieter."
+    },
+    "circle_decided": {
+      "title": "Your circle proposal was reviewed",
+      "body": "{{circle}}: open it to see the decision."
     }
   },
   "notifications": {
@@ -1393,6 +1421,8 @@
     "smsRemindersBody": "If WhatsApp cannot reach you, we text you when a session is about to start or a drive is about to close. Nothing else is ever sent by SMS.",
     "weeklyDigest": "Weekly digest on WhatsApp",
     "weeklyDigestBody": "Once a week: how many new drives you can register for, requests waiting for your reply and sessions this week. Counts only, and only when there is something new. Off unless you turn it on.",
+    "weeklyNextStep": "Weekly Next Step",
+    "weeklyNextStepBody": "Every Monday evening: one roadmap step, one opening and one alumnus to ask. On WhatsApp when you have it on, otherwise by push or email.",
     "emptyBody": "Requests, replies, sessions and badges will appear here as they happen.",
     "emptyAction": "See what's new at home",
     "whatsapp": "WhatsApp",
@@ -1665,7 +1695,9 @@
       "pending": "Waiting for review",
       "published": "Published",
       "rejected": "Not approved",
-      "removed": "Removed"
+      "removed": "Removed",
+      "transcribing": "Writing it out",
+      "voice_failed": "Could not make it out"
     },
     "solved": "Answered",
     "accepted": "Best answer",
@@ -3338,7 +3370,7 @@
     "study": "Subjects, notes and videos, and the study assistant.",
     "placements": "Placement drives, registrations, round results and offers.",
     "whatsapp": "Codes and important updates on WhatsApp, for members who agree to it.",
-    "peerMentors": "Seniors guiding juniors. Coming soon."
+    "peerMentors": "Seniors guiding juniors, and a senior buddy for every first-year."
   },
   "phone": {
     "numberHint": "Your 10-digit mobile number.",

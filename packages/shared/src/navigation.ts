@@ -21,6 +21,8 @@ export type NavId =
   | 'interviews'
   | 'readiness'
   | 'practice'
+  | 'peers'
+  | 'circles'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -97,6 +99,8 @@ export type AdminSectionId =
   | 'interviewQuestions'
   | 'readiness'
   | 'practiceBank'
+  | 'peers'
+  | 'circles'
   | 'reports'
   | 'moderation'
   | 'mentorship'
@@ -151,6 +155,9 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   // Alumni of the month and certificates; funds and pledges (prompt 2, G6).
   section('recognition', '/admin/recognition', 'alumni:recognise', 'community'),
   section('giving', '/admin/giving', 'giving:manage', 'community'),
+  // Peer mentor nominations and buddy matching; circles awaiting approval (prompt 2, G7).
+  section('peers', '/admin/peers', 'peers:manage', 'people'),
+  section('circles', '/admin/circles', 'circles:manage', 'community'),
   section('analytics', '/admin/analytics', 'analytics:cohort', 'insights'),
   section('reports', '/admin/reports', 'analytics:tenant', 'insights'),
   section('branding', '/admin/branding', 'tenant:branding', 'college'),
@@ -204,6 +211,10 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   readiness: d('readiness', '/readiness', 'you', ['readiness:view']),
   // Aptitude and coding practice (prompt 2, G4).
   practice: d('practice', '/practice', 'you', ['practice:use']),
+  // Peer mentoring and the Senior Buddy (prompt 2, G7).
+  peers: d('peers', '/peers', 'you', ['peers:enroll']),
+  // Circles: batch, branch, club and interest communities (prompt 2, G7).
+  circles: d('circles', '/circles', 'community', ['circles:join']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -250,6 +261,7 @@ export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
   placements: 'placements',
   outcomes: 'placements',
   readiness: 'placements',
+  peers: 'peerMentors',
 };
 
 /** Admin sections that belong to a feature switch. */
@@ -261,6 +273,7 @@ export const ADMIN_SECTION_FEATURE: Partial<Record<AdminSectionId, Feature>> = {
   offers: 'placements',
   reports: 'placements',
   readiness: 'placements',
+  peers: 'peerMentors',
 };
 
 /** The shipped destinations minus those whose feature the college has switched off. */
@@ -328,6 +341,8 @@ const MENU_ORDER: readonly NavId[] = [
   'interviews',
   'readiness',
   'practice',
+  'peers',
+  'circles',
   'progress',
   'rewards',
   'saved',

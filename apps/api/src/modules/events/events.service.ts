@@ -41,6 +41,7 @@ import type { JobQueue, TenantJob } from '../../lib/jobs.js';
 import type { ProfilesService } from '../profiles/profiles.service.js';
 import type { NotificationsService } from '../notifications/notifications.service.js';
 import type { AuthState } from '../../types.js';
+import { noCircles, type CircleScope } from '../../lib/circle-scope.js';
 
 export const EVENT_REMINDER_JOB = 'events.reminder';
 /** Prompt 2, G6: when a weekly office hour ends, the next one in its series is made. */
@@ -125,6 +126,9 @@ export class EventsService {
   award: Award = noAward;
   /** Product analytics (B9), set in app.ts. */
   track: Track = noTrack;
+  /** Prompt 2, G7: a circle's events are for its members (set by the app from CirclesService). */
+  circles: CircleScope = noCircles;
+
   constructor(private readonly d: EventsDeps) {}
 
   // ── Loading and access ─────────────────────────────
@@ -135,6 +139,7 @@ export class EventsService {
   }
 
   private async eligible(viewer: AuthState, e: EventDoc) {
+    if (e.circleId && !(await this.circles.canSee(viewer, e.circleId))) return false;
     if (canManageAll(viewer) || String(e.hostId) === viewer.userId) return true;
     if (e.audience === 'students' && !viewer.roles.includes('STUDENT')) return false;
     if (e.audience === 'alumni' && !viewer.roles.includes('ALUMNI')) return false;
@@ -167,6 +172,7 @@ export class EventsService {
     if (!rows.length) return [];
     const ids = rows.map((e) => e._id);
     const me = oid(viewer.userId);
+    const circleNames = await this.circles.names(rows.flatMap((e) => (e.circleId ? [e.circleId] : [])));
     const [mine, waitlists, refs] = await Promise.all([
       EventRsvpModel.find({ eventId: { $in: ids }, userId: me }).lean<RsvpDoc[]>(),
       EventRsvpModel.aggregate<{ _id: Types.ObjectId; n: number }>([
@@ -198,6 +204,9 @@ export class EventsService {
             })) + 1;
         return {
           id: String(e._id),
+          circle: e.circleId
+            ? { id: String(e.circleId), name: circleNames.get(String(e.circleId)) ?? '' }
+            : null,
           title: e.title,
           description: e.description,
           kind: e.kind,
@@ -232,6 +241,11 @@ export class EventsService {
     const now = new Date();
     const filter: Record<string, unknown> = { removal: null };
     if (q.kind) filter.kind = q.kind;
+    // Prompt 2, G7: one circle's events, or events outside circles and in the viewer's circles.
+    if (q.circle) {
+      if (!(await this.circles.canSee(viewer, q.circle))) throw notFound('Circle');
+      filter.circleId = oid(q.circle);
+    } else Object.assign(filter, { $and: [await this.circles.condition(viewer)] });
     let sort: Record<string, 1 | -1> = { startsAt: 1, _id: 1 };
     if (q.when === 'upcoming') {
       filter.status = 'scheduled';
@@ -312,7 +326,8 @@ export class EventsService {
         'Alumni can host AMAs and office hours; other events are created by staff',
       );
     if (Date.parse(body.startsAt) < Date.now() - 5 * 60_000) throw badRequest('Pick a time in the future');
-    const e = await EventModel.create({ ...this.fields(body), hostId: oid(viewer.userId) });
+    const circleId = await this.circles.assertCanPost(viewer, body.circleId);
+    const e = await EventModel.create({ ...this.fields(body), circleId, hostId: oid(viewer.userId) });
     await this.schedule(e);
     if (e.recurrence) await EventModel.updateOne({ _id: e._id }, { $set: { seriesId: e._id } });
     await this.scheduleNext(e);
@@ -575,6 +590,7 @@ export class EventsService {
         hostId: e.hostId,
         recurrence: { weekly: true, until: e.recurrence.until },
         seriesId: e.seriesId ?? e._id,
+        circleId: e.circleId ?? null,
       });
       next = created.toObject() as EventDoc;
     } catch (err) {
