@@ -1,4 +1,11 @@
-import { ADMIN_PERMISSIONS, suppress, type AdminOverviewView, type Permission } from '@campuslink/shared';
+import {
+  ADMIN_PERMISSIONS,
+  suppress,
+  type AdminOverviewView,
+  type AdminSectionId,
+  type Feature,
+  type Permission,
+} from '@campuslink/shared';
 import { forbidden } from '../../lib/errors.js';
 import type { AuthState } from '../../types.js';
 import type { UsersService } from '../users/users.service.js';
@@ -48,6 +55,22 @@ export interface OverviewDeps {
  */
 export class AdminOverviewService {
   constructor(private readonly d: OverviewDeps) {}
+
+  /** Review queues later modules add (prompt 2): each is an admin section with its own permission. */
+  private readonly queues: {
+    id: AdminSectionId;
+    permission: Permission;
+    feature?: Feature;
+    pending: () => Promise<number>;
+  }[] = [];
+  addQueue(q: {
+    id: AdminSectionId;
+    permission: Permission;
+    feature?: Feature;
+    pending: () => Promise<number>;
+  }) {
+    this.queues.push(q);
+  }
 
   async overview(viewer: AuthState): Promise<AdminOverviewView> {
     const can = (p: Permission) => viewer.permissions.has(p);
@@ -111,11 +134,16 @@ export class AdminOverviewService {
         : null;
     const support =
       this.d.support && can('support:manage') ? { open: await this.d.support.openCount() } : null;
+    const queues: NonNullable<AdminOverviewView['queues']> = [];
+    for (const qd of this.queues)
+      if (can(qd.permission) && (!qd.feature || (await featureEnabled(qd.feature))))
+        queues.push({ id: qd.id, pending: await qd.pending() });
     return {
       onboarding,
       placements,
       offers,
       support,
+      queues,
       members,
       activity,
       verification,

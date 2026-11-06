@@ -303,6 +303,20 @@ describe('the Interview Experience Bank (G10)', () => {
     expect(page.experiences).toEqual([]);
   });
 
+  it('Admin › Overview counts write-ups waiting for review, for reviewers only', async () => {
+    const ov = (await as(faculty).get('/admin/overview')).body.data as {
+      queues: { id: string; pending: number }[];
+    };
+    expect(ov.queues).toEqual(
+      expect.arrayContaining([
+        { id: 'experiences', pending: 1 },
+        { id: 'interviewQuestions', pending: expect.any(Number) },
+        { id: 'practiceBank', pending: expect.any(Number) },
+      ]),
+    );
+    expect((await as(viewer).get('/admin/overview')).status).toBe(403);
+  });
+
   it('reviewers publish it and send picked questions to the interview bank (pending faculty review)', async () => {
     expect((await as(viewer).get('/admin/experiences')).status).toBe(403);
     const queue = (await as(faculty).get('/admin/experiences')).body.data as ExperienceView[];

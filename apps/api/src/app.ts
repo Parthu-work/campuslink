@@ -1695,6 +1695,23 @@ export function createApp({
   privacyService.register('interviewExperiences', hook(experiencesService));
   privacyService.register('mentorOutcomes', hook(graphService));
   privacyService.register('copilot', hook(copilotService));
+  // Admin › Overview: the review queues of prompt 2 (G3, G4, G10), each behind its own permission.
+  overviewService.addQueue({
+    id: 'interviewQuestions',
+    permission: 'interviews:review',
+    pending: () => interviewsService.pendingCount(),
+  });
+  overviewService.addQueue({
+    id: 'practiceBank',
+    permission: 'practice:review',
+    pending: () => practiceService.pendingCount(),
+  });
+  overviewService.addQueue({
+    id: 'experiences',
+    permission: 'experiences:review',
+    feature: 'placements',
+    pending: () => experiencesService.pendingCount(),
+  });
   // [slot: B G12]
   privacyService.register('files', hook(filesService));
 

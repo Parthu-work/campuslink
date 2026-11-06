@@ -37,7 +37,7 @@ A write-up (`interviewexperiences`): company, role, year, rounds (kind, name, qu
 - **Reviewed first.** A write-up is `pending` until the placement cell or faculty (`experiences:review`, Admin › Interview write-ups) publish it or send it back with a note the author sees (`experience_published`, `experience_returned`). The author can withdraw it until it is published. Text is stored as plain text.
 - **Moderated after publishing** through `ModerationService` (target `experience`): reports (`/reports`), removal with a reason the author sees (`content_removed`), appeals to a second moderator.
 - **Questions flow into the banks only after their own review.** While publishing, the reviewer picks questions for the mock interview bank (G3): they arrive `pending` with source `interview_bank` and are drawn only after faculty approve them in Admin › Interview questions. From a published write-up a reviewer can write a question up as a practice item (G4, the practice form prefilled with the question and company); faculty items go into the practice bank directly, and the question is marked as used. Practice company prep links each company to its page.
-- **The 7-day prompt.** The nightly run gives every offer verified in the last 30 days one `experienceprompts` record (unique per offer, the claim) and a delayed job `graph.experience_prompt` due 7 days after verification (job id `expprompt-<offer>`). It sends `experience_prompt` once, and not at all if the member already wrote about that company.
+- **The 7-day prompt.** The nightly run gives every offer verified in the last 30 days one `experienceprompts` record (unique per offer, the claim) and a delayed job `graph.experience_prompt` due 7 days after verification (job id `expprompt-<offer>`). It sends `experience_prompt` once, and not at all if the member already wrote about that company. It goes in-app, by push or email, and on WhatsApp (template `cl_experience_prompt`) to members who opted in, within their weekly cap. The prompt fires 7 days after verification; only an offer verified more than 7 days before the next nightly run (an outage) is asked at once instead.
 - `experience_shared` is recorded when a write-up is sent (with its basis only).
 
 ## Outcome-proven matching
@@ -62,6 +62,4 @@ The same nightly run writes, per mentor (`mentoroutcomes`), what their mentees r
 
 ## Known gaps
 
-- The admin overview has no count for write-ups waiting (nor for G3's and G4's queues); to be added for all prompt 2 queues in G13.
 - `content.experience` (the content name in moderation notices) is not in the core language files yet (the core files are frozen to three anchors while the branches are parallel); the report menu gets it from the pack. G13 adds it.
-- The 7-day prompt is scheduled by the nightly run (up to a day after verification), not at the moment of verification, so the placements module is not changed.
