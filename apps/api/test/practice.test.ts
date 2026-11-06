@@ -160,7 +160,9 @@ describe('the daily set (prompt 2, G4)', () => {
     const r = wrongly.items[0]?.result;
     expect(r).toMatchObject({ given: 'not it at all', correct: false });
     expect(r?.explanation.length).toBeGreaterThan(10);
-    expect(r?.answer).not.toBe('');
+    // A coding item (the shuffle may put one first) shows no single answer: its tests are hidden.
+    if (first.item.kind === 'coding') expect(r?.answer).toBe('');
+    else expect(r?.answer).not.toBe('');
     expect(
       (await as(student).post(`/practice/sets/${s.id}/answers`).send({ index: 0, answer: 'x' })).status,
     ).toBe(409);
