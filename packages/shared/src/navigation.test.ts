@@ -46,7 +46,7 @@ describe('role-aware navigation', () => {
       ]);
     expect(admin([Role.COLLEGE_ADMIN])).toEqual([
       ['people', ['users', 'verification', 'imports', 'list', 'onboarding']],
-      ['placements', ['placements', 'offers', 'interviewQuestions']],
+      ['placements', ['placements', 'offers', 'interviewQuestions', 'practiceBank']],
       [
         'community',
         ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards', 'recognition', 'giving'],
@@ -56,7 +56,7 @@ describe('role-aware navigation', () => {
     ]);
     // Faculty review the interview question bank (prompt 2, G3).
     expect(admin([Role.FACULTY])).toEqual([
-      ['placements', ['interviewQuestions']],
+      ['placements', ['interviewQuestions', 'practiceBank']],
       ['community', ['moderation']],
       ['insights', ['analytics']],
     ]);

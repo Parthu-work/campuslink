@@ -37,6 +37,15 @@ const PACKS = {
       hi: () => import('./packs/alumni.hi.json'),
     },
   },
+  /** Aptitude and coding practice (prompt 2, G4). */
+  practice: {
+    sections: ['practice'],
+    load: {
+      en: () => import('./packs/practice.en.json'),
+      te: () => import('./packs/practice.te.json'),
+      hi: () => import('./packs/practice.hi.json'),
+    },
+  },
 } satisfies Record<
   string,
   { sections: string[]; load: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> }

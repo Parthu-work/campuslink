@@ -117,6 +117,10 @@ const load = {
   verifyCertificate: withPack('alumni', () => import('../features/alumni/verify-certificate')),
   recognitionAdmin: withPack('alumni', () => import('../features/admin/recognition-admin')),
   givingAdmin: withPack('alumni', () => import('../features/admin/giving-admin')),
+  // Prompt 2, G4: practice screens' strings come in the `practice` pack.
+  practice: withPack('practice', () => import('../features/practice/practice')),
+  practiceSet: withPack('practice', () => import('../features/practice/set')),
+  practiceBank: withPack('practice', () => import('../features/admin/practice-bank')),
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
@@ -514,6 +518,13 @@ function collegeRoutes(): RouteObject[] {
             ({ gradYear, branch }) =>
               gradYear && branch ? [qc.ensureQueryData(q.batch(gradYear, branch))] : [],
           ),
+          // Aptitude and coding practice (prompt 2, G4).
+          screen(load.practice, 'PracticePage', 'practice:use', at('/practice'), () => [
+            qc.ensureQueryData(q.practice()),
+          ]),
+          screen(load.practiceSet, 'PracticeSetPage', 'practice:use', at('/practice/sets/:id'), ({ id }) =>
+            isId(id) ? [qc.ensureQueryData(q.practiceSet(id))] : [],
+          ),
           screen(
             load.drivePage,
             'DrivePage',
@@ -649,6 +660,9 @@ function collegeRoutes(): RouteObject[] {
             ]),
             screen(load.givingAdmin, 'GivingAdmin', 'giving:manage', at('giving'), () => [
               qc.ensureQueryData(q.adminFunds()),
+            ]),
+            screen(load.practiceBank, 'PracticeBankAdmin', 'practice:review', at('practice'), () => [
+              qc.ensureQueryData(q.practiceItems('pending')),
             ]),
             screen(
               load.reports,

@@ -114,3 +114,4 @@ export {
   GivingSettingsModel,
 } from './alumni/alumni.model.js';
 export { MicroAskOptOutModel } from './alumni/opt-out.model.js';
+export { PracticeCardModel, PracticeItemModel, PracticeSetModel } from './practice/practice.model.js';

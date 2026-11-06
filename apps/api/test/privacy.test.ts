@@ -449,6 +449,7 @@ describe('deletion', () => {
         'microAsks',
         'recognition',
         'giving',
+        'practice',
       ]),
     );
   });

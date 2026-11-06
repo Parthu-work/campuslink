@@ -99,7 +99,8 @@
     "platformSupport": "Support",
     "resume": "Résumé",
     "interviews": "Mock interviews",
-    "alumni": "Alumni"
+    "alumni": "Alumni",
+    "practice": "Practice"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -485,7 +486,8 @@
     "support": "Support",
     "interviewQuestions": "Interview questions",
     "recognition": "Recognition",
-    "giving": "Giving"
+    "giving": "Giving",
+    "practiceBank": "Practice questions"
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -2378,7 +2380,8 @@
       "revoked": "Reversed by an admin",
       "redeemed": "Reward requested",
       "refund": "Points returned",
-      "study_quiz": "Quiz finished"
+      "study_quiz": "Quiz finished",
+      "practice_set": "Daily practice done"
     },
     "badgeCount": "{{n}} of {{total}}",
     "weekLabel": "Active on {{n}} of the last 7 days",
@@ -4146,7 +4149,8 @@
       "rerank": "Ranking passages",
       "resume": "Résumé help",
       "interview": "Mock interviews",
-      "copilot": "Copilot"
+      "copilot": "Copilot",
+      "practice": "Practice questions"
     },
     "creditNotes": "Credit notes",
     "creditNotesIntro": "A credit note reduces what an invoice asks for. The invoice itself never changes.",
