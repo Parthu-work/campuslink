@@ -85,6 +85,7 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   // [slot: G9]
   // [slot: A G10 G11 G13]
   companies: Building2,
+  copilot: Sparkles,
   // [slot: B G12]
   requests: Inbox,
   review: ClipboardCheck,

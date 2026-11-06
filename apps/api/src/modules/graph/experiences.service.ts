@@ -192,6 +192,39 @@ export class ExperiencesService {
     return new Map(rows.map((r) => [r._id, { n: r.n, name: r.name }]));
   }
 
+  /** Prompt 2, G11: which of these write-ups are published now (the copilot re-checks its sources). */
+  async publishedAmong(ids: string[]): Promise<Set<string>> {
+    const rows = await ExperienceModel.find({
+      _id: { $in: ids.filter((i) => Types.ObjectId.isValid(i)).map(oid) },
+      status: 'published',
+    })
+      .select('_id')
+      .lean<{ _id: Types.ObjectId }[]>();
+    return new Set(rows.map((r) => String(r._id)));
+  }
+
+  /** Prompt 2, G11: published write-ups as text for the copilot's index (never the author). */
+  async copilotTexts(): Promise<{ id: string; companyKey: string; title: string; text: string }[]> {
+    const rows = await ExperienceModel.find({ status: 'published' })
+      .sort({ _id: -1 })
+      .limit(1000)
+      .lean<ExperienceDoc[]>();
+    return rows.map((r) => ({
+      id: String(r._id),
+      companyKey: r.companyKey,
+      title: `${r.companyName}: ${r.role} interview (${r.year})`,
+      text: [
+        `Interview write-up by a senior${r.branch ? ` from ${r.branch}` : ''}: ${r.companyName}, ${r.role}, ${r.year}. Result: ${r.result.replace('_', ' ')}. Difficulty: ${r.difficulty}.`,
+        ...r.rounds.map((x, i) =>
+          `Round ${i + 1} (${x.name || x.kind.replace('_', ' ')}): ${x.questions.map((q) => q.text).join(' ')} ${x.notes}`.trim(),
+        ),
+        r.tips ? `Tips: ${r.tips}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    }));
+  }
+
   /** Whether the member already wrote about this company (the 7-day prompt is then not sent). */
   async wroteAbout(userId: string, key: string): Promise<boolean> {
     return !!(await ExperienceModel.exists({ authorId: oid(userId), companyKey: key }));

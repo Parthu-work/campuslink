@@ -139,6 +139,8 @@ const load = {
   companies: withPack('moat', () => import('../features/companies/companies')),
   shareExperience: withPack('moat', () => import('../features/companies/share-experience')),
   experiencesAdmin: withPack('moat', () => import('../features/companies/experiences-admin')),
+  // Prompt 2, G11: the Career Copilot, strings in the `copilot` pack.
+  copilot: withPack('copilot', () => import('../features/copilot/copilot')),
   // [slot: B G12]
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
@@ -601,6 +603,8 @@ function collegeRoutes(): RouteObject[] {
             inFeature('placements', 'experiences:share'),
             at('/experiences'),
           ),
+          // The Career Copilot (prompt 2, G11): a conversation, so no pull to refresh.
+          still(screen(load.copilot, 'CopilotPage', inFeature('placements', 'copilot:use'), at('/copilot'))),
           // [slot: B G12]
           screen(
             load.studyGroups,

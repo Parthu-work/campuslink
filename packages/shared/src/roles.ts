@@ -141,6 +141,8 @@ export const ALL_PERMISSIONS = [
   'companies:view',
   'experiences:share',
   'experiences:review',
+  // The Career Copilot (prompt 2, G11).
+  'copilot:use',
   // [slot: B G12]
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
@@ -253,6 +255,8 @@ export const PERMISSIONS: Record<Permission, string> = {
     'Share one’s own interview experience (with a verified offer, a drive or as an alumnus)',
   'experiences:review':
     'Review interview write-ups before they are published and send their questions to the question banks',
+  'copilot:use':
+    'Ask the Career Copilot: cited answers from the college’s own placement data, then a human to talk to',
   // [slot: B G12]
   'support:manage': 'Answer and close problem reports sent to the college',
   'placements:view': 'See placement drives and the eligibility rules',
@@ -306,6 +310,7 @@ const STUDENT: Permission[] = [
   // [slot: A G10 G11 G13]
   'companies:view',
   'experiences:share',
+  'copilot:use',
   // [slot: B G12]
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
@@ -320,6 +325,8 @@ const STUDENT_ONLY: readonly Permission[] = [
   'parents:digest',
   // [slot: G9]
   // [slot: A G10 G11 G13]
+  // Prompt 2, G11: the Career Copilot answers from campus drives and placement data.
+  'copilot:use',
   // [slot: B G12]
 ];
 const ALUMNI: Permission[] = [
@@ -357,6 +364,7 @@ const STAFF: Permission[] = [
       // [slot: G9]
       // [slot: A G10 G11 G13]
       p !== 'experiences:share' &&
+      p !== 'copilot:use' &&
       // [slot: B G12]
       p !== 'parents:digest',
   ),

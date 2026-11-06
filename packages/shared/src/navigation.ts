@@ -28,6 +28,7 @@ export type NavId =
   // [slot: G9]
   // [slot: A G10 G11 G13]
   | 'companies'
+  | 'copilot'
   // [slot: B G12]
   | 'requests'
   | 'review'
@@ -241,6 +242,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   // [slot: A G10 G11 G13]
   // Company pages from the Placement Graph and the Interview Experience Bank (prompt 2, G10).
   companies: d('companies', '/companies', 'explore', ['companies:view']),
+  // The Career Copilot (prompt 2, G11).
+  copilot: d('copilot', '/copilot', 'explore', ['copilot:use']),
   // [slot: B G12]
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
@@ -292,6 +295,7 @@ export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
   // [slot: G9]
   // [slot: A G10 G11 G13]
   companies: 'placements',
+  copilot: 'placements',
   // [slot: B G12]
 };
 
@@ -383,6 +387,7 @@ const MENU_ORDER: readonly NavId[] = [
   // [slot: G9]
   // [slot: A G10 G11 G13]
   'companies',
+  'copilot',
   // [slot: B G12]
   'progress',
   'rewards',

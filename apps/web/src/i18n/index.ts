@@ -84,6 +84,15 @@ const PACKS = {
       hi: () => import('./packs/moat.hi.json'),
     },
   },
+  /** The Career Copilot (prompt 2, G11). */
+  copilot: {
+    sections: ['copilot'],
+    load: {
+      en: () => import('./packs/copilot.en.json'),
+      te: () => import('./packs/copilot.te.json'),
+      hi: () => import('./packs/copilot.hi.json'),
+    },
+  },
   // [slot: B G12]
 } satisfies Record<
   string,

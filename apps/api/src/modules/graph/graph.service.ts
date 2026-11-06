@@ -10,6 +10,7 @@ import {
   type CompaniesView,
   type CompanyGraphView,
   type CompanyListItem,
+  type CtcBand,
   type OutcomeEvidence,
 } from '@campuslink/shared';
 import type { AuthState } from '../../types.js';
@@ -45,6 +46,15 @@ const DAY = 86_400_000;
 /** Offers verified longer ago than this are not asked about (the first run after deploying). */
 const PROMPT_LOOKBACK_DAYS = 30;
 const oid = (id: string | Types.ObjectId) => new Types.ObjectId(String(id));
+/** CTC bands in words (the copilot's index is English; the app words them per language). */
+const BAND_TEXT: Record<CtcBand, string> = {
+  under_3: 'under ₹3 LPA',
+  '3_5': '₹3–5 LPA',
+  '5_8': '₹5–8 LPA',
+  '8_12': '₹8–12 LPA',
+  '12_20': '₹12–20 LPA',
+  '20_plus': '₹20 LPA and above',
+};
 /** A share shown only when the group it is built on has at least SMALL_CELL people. */
 const rate = (part: number, whole: number) => (whole >= SMALL_CELL ? Math.round((part / whole) * 100) : null);
 
@@ -264,6 +274,60 @@ export class GraphService {
       },
       experiences,
     };
+  }
+
+  /** Prompt 2, G11: the companies with a page, to recognise one named in a copilot question. */
+  async companyNames(): Promise<{ key: string; name: string }[]> {
+    const rows = await CompanyGraphModel.find()
+      .select('companyKey name')
+      .limit(2000)
+      .lean<{ companyKey: string; name: string }[]>();
+    return rows.map((r) => ({ key: r.companyKey, name: r.name }));
+  }
+
+  /** Prompt 2, G11: which of these companies have a page (the copilot re-checks its sources). */
+  async hasCompanies(keys: string[]): Promise<Set<string>> {
+    const rows = await CompanyGraphModel.find({ companyKey: { $in: keys } })
+      .select('companyKey')
+      .lean<{ companyKey: string }[]>();
+    return new Set(rows.map((r) => r.companyKey));
+  }
+
+  /**
+   * Prompt 2, G11: each company page as text for the Career Copilot's index, with exactly the
+   * page's rules (counts through `suppress()`, shares and bands only from five, never a member).
+   */
+  async copilotTexts(): Promise<{ key: string; name: string; text: string }[]> {
+    const rows = await CompanyGraphModel.find().sort({ offers: -1 }).limit(1000).lean<CompanyGraphDoc[]>();
+    const n = (x: number) => String(suppress(x));
+    return rows.map((g) => ({
+      key: g.companyKey,
+      name: g.name,
+      text: [
+        `Company: ${g.name}. Students placed there (verified job offers, all batches on record): ${n(g.offers)}.`,
+        ...g.batches
+          .slice(0, GRAPH_YEARS_SHOWN)
+          .map(
+            (b) =>
+              `Batch ${b.gradYear}: ${n(b.offers)} placed${b.offers >= SMALL_CELL && b.band ? `, median CTC band ${BAND_TEXT[b.band]}` : ''}.`,
+          ),
+        g.branches.length
+          ? `By branch: ${g.branches.map((b) => `${b.branch} ${n(b.offers)}`).join(', ')}.`
+          : '',
+        `Campus drives with results: ${n(g.drives)}.`,
+        ...g.rounds.map((r) => {
+          const pr = rate(r.cleared, r.appeared);
+          return `Round ${r.kind.replace('_', ' ')}: ${n(r.appeared)} sat it${pr === null ? '' : `, ${pr}% cleared`}.`;
+        }),
+        `Alumni working there: ${n(g.alumni)}; of them taking mentoring requests: ${n(g.mentors)}; mentoring sessions with them: ${n(g.sessions)}.`,
+        g.referrals.referred
+          ? `Referrals by alumni there: ${n(g.referrals.referred)}; led to an interview or offer, as students reported: ${n(g.referrals.converted)}.`
+          : '',
+        '“<5” means fewer than five.',
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    }));
   }
 
   /** `company_page_viewed` once per member, company and day (per process). */

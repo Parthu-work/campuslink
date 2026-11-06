@@ -50,6 +50,9 @@ export const PRODUCT_EVENTS = [
   // Prompt 2, G10: the moat data (company pages are counted once a page a day per member).
   'company_page_viewed',
   'experience_shared',
+  // Prompt 2, G11: the Career Copilot (a question asked; a human next step opened).
+  'copilot_question',
+  'copilot_handoff',
   // [slot: B G12]
 ] as const;
 export type ProductEventName = (typeof PRODUCT_EVENTS)[number];

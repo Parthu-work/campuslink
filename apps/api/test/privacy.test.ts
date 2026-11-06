@@ -466,6 +466,7 @@ describe('deletion', () => {
         // [slot: A G10 G11 G13]
         'interviewExperiences',
         'mentorOutcomes',
+        'copilot',
         // [slot: B G12]
       ]),
     );

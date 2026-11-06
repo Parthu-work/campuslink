@@ -129,4 +129,5 @@ export {
   ExperiencePromptModel,
   MentorOutcomeModel,
 } from './graph/graph.model.js';
+export { CopilotChunkModel, CopilotMessageModel, CopilotSessionModel } from './copilot/copilot.model.js';
 // [slot: B G12]

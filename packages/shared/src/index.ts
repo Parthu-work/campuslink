@@ -52,6 +52,8 @@ export * from './schemas/growth.js';
 // [slot: A G10 G11 G13]
 export * from './constants/graph.js';
 export * from './schemas/graph.js';
+export * from './constants/copilot.js';
+export * from './schemas/copilot.js';
 // [slot: B G12]
 export * from './schemas/legal.js';
 export * from './schemas/readiness.js';

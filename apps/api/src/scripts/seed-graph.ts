@@ -5,10 +5,12 @@ import { InlineJobQueue } from '../lib/jobs.js';
 import { storageFromEnv } from '../lib/storage-factory.js';
 import { createApp } from '../app.js';
 import type { GraphService } from '../modules/graph/graph.service.js';
+import type { CopilotIndexService } from '../modules/copilot/copilot-index.service.js';
 
 /**
  * Prompt 2, G10: builds the demo colleges' Placement Graph from their seeded (DEMO) records, as the
- * nightly job would, so company pages have something to show straight after `pnpm seed`.
+ * nightly job would, so company pages and the Career Copilot have something to show straight after
+ * `pnpm seed`.
  */
 export function graphSeeder(env: Env) {
   const app = createApp({
@@ -19,9 +21,10 @@ export function graphSeeder(env: Env) {
     jobs: new InlineJobQueue(),
     storage: storageFromEnv(env).storage,
   });
-  const services = app.locals.services as { graph: GraphService };
-  /** Builds the graph of the college in context (call inside its tenant context). */
+  const services = app.locals.services as { graph: GraphService; copilotIndex: CopilotIndexService };
+  /** Builds the graph, then the Career Copilot's index (G11), of the college in context. */
   return async function seedGraph() {
     await services.graph.run();
+    await services.copilotIndex.run();
   };
 }
