@@ -16,6 +16,7 @@ const pack = (name: string, l: string) => packFiles[`./packs/${name}.${l}.json`]
 const PACK_USERS: Record<string, string[]> = {
   career: ['/features/resume/', '/features/interviews/', '/features/admin/interview-questions.tsx'],
   readiness: ['/features/progress/readiness.tsx', '/features/admin/readiness-admin.tsx'],
+  alumni: ['/features/alumni/', '/features/admin/recognition-admin.tsx', '/features/admin/giving-admin.tsx'],
   practice: ['/features/practice/', '/features/admin/practice-bank.tsx'],
 };
 

@@ -100,7 +100,8 @@
     "resume": "Résumé",
     "interviews": "Mock interviews",
     "readiness": "Readiness",
-    "practice": "Practice"
+    "practice": "Practice",
+    "alumni": "Alumni"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -486,7 +487,9 @@
     "support": "Support",
     "interviewQuestions": "Interview questions",
     "readiness": "Readiness board",
-    "practiceBank": "Practice questions"
+    "practiceBank": "Practice questions",
+    "recognition": "Recognition",
+    "giving": "Giving"
   },
   "role": {
     "SUPER_ADMIN": "Platform admin",
@@ -859,7 +862,8 @@
     "openReport": "Open the practice report",
     "yourReport": "Your practice report",
     "reportName": "Practice, {{date}}",
-    "reportNameCompany": "{{company}} practice, {{date}}"
+    "reportNameCompany": "{{company}} practice, {{date}}",
+    "quickAsk": "Or send a quick ask instead"
   },
   "sessions": {
     "upcoming": "Upcoming",
@@ -1019,7 +1023,9 @@
     "saveAvailability": "Save availability",
     "feedback": "Feedback on your sessions",
     "feedbackPrivate": "Private to you and the college admins.",
-    "noFeedback": "No feedback yet."
+    "noFeedback": "No feedback yet.",
+    "asks": "Quick asks for you",
+    "asksBody": "Small favours from students, two a week at most."
   },
   "notify": {
     "request_received": {
@@ -1299,6 +1305,34 @@
     "readiness_nudge": {
       "title": "{{company}} closes {{time}}",
       "body": "Your placement cell suggests steps to get ready. Open your readiness."
+    },
+    "micro_ask_received": {
+      "title": "{{name}} asked you a small favour",
+      "body": "Something that fits in a few minutes. Open it to say yes or pass."
+    },
+    "micro_ask_done": {
+      "title": "{{name}} helped with your ask",
+      "body": "{{name}} marked your ask as done. Say thanks when you can."
+    },
+    "micro_ask_unmatched": {
+      "title": "No alumnus is free for your ask yet",
+      "body": "Try again later, or ask more widely."
+    },
+    "office_hours_scheduled": {
+      "title": "{{name}} holds office hours on {{time}}",
+      "body": "{{event}}: open it to say you are going."
+    },
+    "certificate_ready": {
+      "title": "Your mentorship certificate is ready",
+      "body": "Download it, or share its verification link."
+    },
+    "alumni_of_month_nominated": {
+      "title": "You are nominated alumnus of the month",
+      "body": "Open it to accept or decline."
+    },
+    "pledge_received": {
+      "title": "Your college received your contribution",
+      "body": "Thank you. The acknowledgement is ready."
     }
   },
   "notifications": {
@@ -2363,7 +2397,8 @@
       "silver": "Silver mentor",
       "gold": "Gold mentor",
       "platinum": "Platinum mentor"
-    }
+    },
+    "alumniOfMonth": "Alumni of the month"
   },
   "rewards": {
     "title": "Rewards",
@@ -2493,7 +2528,9 @@
       "capacityHint": "Leave empty for no limit; a waitlist opens when full.",
       "audience": "Who it’s for",
       "branches": "Only these branches (optional)",
-      "notify": "Tell people going about this change"
+      "notify": "Tell people going about this change",
+      "repeatUntil": "Repeat weekly until",
+      "repeatHint": "Optional. The next one is added as each ends."
     },
     "qa": {
       "title": "Questions",
@@ -2510,7 +2547,10 @@
         "answered": "Answered",
         "hidden": "Hidden"
       }
-    }
+    },
+    "repeatsUntil": "Every week until {{date}}",
+    "followHost": "Follow these office hours",
+    "unfollowHost": "Following"
   },
   "analytics": {
     "title": "Analytics",

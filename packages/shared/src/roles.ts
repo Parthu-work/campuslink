@@ -92,6 +92,13 @@ export const ALL_PERMISSIONS = [
   'audit:read',
   'rewards:manage',
   'rewards:redeem',
+  // Alumni engagement (prompt 2, G6)
+  'alumni:ask',
+  'alumni:help',
+  'alumni:recognise',
+  'giving:pledge',
+  'giving:manage',
+  'profile:import',
   // Help and support (B14)
   'support:create',
   'support:manage',
@@ -178,6 +185,12 @@ export const PERMISSIONS: Record<Permission, string> = {
   'audit:read': 'Read the audit log',
   'rewards:manage': 'Manage the rewards catalogue',
   'rewards:redeem': 'Redeem points for rewards',
+  'alumni:ask': 'Send small asks (review, answer, intro, feedback) routed to matching alumni',
+  'alumni:help': 'Receive and answer micro-asks; get a mentorship certificate for each academic year',
+  'alumni:recognise': 'Nominate the alumnus of the month and revoke mentorship certificates',
+  'giving:pledge': 'Pledge to the college’s funds and download acknowledgements',
+  'giving:manage': 'Publish funds, record money the college received and set receipt details',
+  'profile:import': 'Fill one’s profile from one’s own LinkedIn data export',
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants': 'Create, suspend and configure colleges',
   'platform:health': 'View platform health',
@@ -215,6 +228,7 @@ const STUDENT: Permission[] = [
   'sources:follow',
   'directory:read',
   'profile:visibility',
+  'profile:import',
   'mentorship:request',
   'sessions:book',
   'messages:send',
@@ -245,6 +259,10 @@ const ALUMNI: Permission[] = [
   'ama:host',
   'jobs:post',
   'referrals:offer',
+  // Prompt 2, G6: micro-asks both ways, certificates and giving.
+  'alumni:ask',
+  'alumni:help',
+  'giving:pledge',
   'roadmaps:write',
   'study:contribute',
   'practice:author',
@@ -290,6 +308,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'analytics:tenant',
     'reports:export',
     'mentorship:oversee',
+    // Prompt 2, G6: recognition and giving.
+    'alumni:recognise',
+    'giving:manage',
     'jobs:sources',
     // The TPO runs onboarding: verification and guardian-number reviews, invites (B2, B4, B6).
     'verification:review',
@@ -302,7 +323,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   ],
   FACULTY: STAFF,
   ALUMNI,
-  STUDENT,
+  // Students ask alumni small favours (prompt 2, G6); staff do not.
+  STUDENT: [...STUDENT, 'alumni:ask'],
 };
 
 export const CAPABILITY_PERMISSIONS: Record<Capability, readonly Permission[]> = {

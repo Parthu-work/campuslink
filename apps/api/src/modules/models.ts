@@ -68,6 +68,7 @@ export {
   EventRsvpModel,
   EventQuestionModel,
   EventQuestionVoteModel,
+  OfficeHoursSubscriptionModel,
 } from './events/event.model.js';
 export {
   SubjectModel,
@@ -103,4 +104,15 @@ export { SupportTicketModel } from './support/support.model.js';
 export { ResumeModel, ResumeCommentModel } from './resumes/resume.model.js';
 export { InterviewModel, InterviewQuestionModel } from './interviews/interview.model.js';
 export { ReadinessConfigModel, ReadinessNudgeModel } from './readiness/readiness.model.js';
+export {
+  MicroAskModel,
+  MicroAskOfferModel,
+  MentorCertificateModel,
+  AlumniOfMonthModel,
+  FundModel,
+  PledgeModel,
+  ReceiptCounterModel,
+  GivingSettingsModel,
+} from './alumni/alumni.model.js';
+export { MicroAskOptOutModel } from './alumni/opt-out.model.js';
 export { PracticeCardModel, PracticeItemModel, PracticeSetModel } from './practice/practice.model.js';

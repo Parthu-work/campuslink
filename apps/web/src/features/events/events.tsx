@@ -166,6 +166,8 @@ type Form = {
   audience: (typeof EVENT_AUDIENCES)[number];
   branches: string[];
   notifyChange: boolean;
+  /** Office hours only (prompt 2, G6): repeat weekly until this date (YYYY-MM-DD), or ''. */
+  repeatUntil: string;
 };
 
 export function EventFormPage() {
@@ -203,6 +205,7 @@ function EventForm({ existing }: { existing: EventView | null }) {
           audience: existing.audience,
           branches: existing.branches,
           notifyChange: true,
+          repeatUntil: existing.recurrence ? existing.recurrence.until.slice(0, 10) : '',
         }
       : {
           title: '',
@@ -217,6 +220,7 @@ function EventForm({ existing }: { existing: EventView | null }) {
           audience: 'everyone',
           branches: [],
           notifyChange: true,
+          repeatUntil: '',
         },
   );
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF({ ...f, [k]: v });
@@ -232,6 +236,10 @@ function EventForm({ existing }: { existing: EventView | null }) {
     capacity: f.capacity ? Number(f.capacity) : null,
     audience: f.audience,
     branches: f.branches,
+    recurrence:
+      f.kind === 'office_hours' && f.repeatUntil
+        ? { weekly: true as const, until: fromLocalInput(`${f.repeatUntil}T23:59`) }
+        : null,
   };
   const parsed = eventBody.safeParse(payload);
   const issues = parsed.success ? [] : [...new Set(parsed.error.issues.map((i) => i.message))].slice(0, 4);
@@ -335,6 +343,19 @@ function EventForm({ existing }: { existing: EventView | null }) {
           )}
         </Field>
       </div>
+      {f.kind === 'office_hours' && (
+        <Field label={t('events.form.repeatUntil')} hint={t('events.form.repeatHint')}>
+          {(fl) => (
+            <Input
+              id={fl.id}
+              aria-describedby={fl.describedBy}
+              type="date"
+              value={f.repeatUntil}
+              onChange={(e) => set('repeatUntil', e.target.value)}
+            />
+          )}
+        </Field>
+      )}
       {f.mode !== 'online' && input('location', t('events.form.venue'), { maxLength: 200 })}
       {f.mode !== 'in_person' && (
         <Field label={t('events.form.link')} hint={t('events.form.linkHint')}>

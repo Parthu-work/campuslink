@@ -373,6 +373,12 @@
                               "audit:read",
                               "rewards:manage",
                               "rewards:redeem",
+                              "alumni:ask",
+                              "alumni:help",
+                              "alumni:recognise",
+                              "giving:pledge",
+                              "giving:manage",
+                              "profile:import",
                               "support:create",
                               "support:manage",
                               "resumes:manage",
@@ -468,6 +474,12 @@
                               "audit:read",
                               "rewards:manage",
                               "rewards:redeem",
+                              "alumni:ask",
+                              "alumni:help",
+                              "alumni:recognise",
+                              "giving:pledge",
+                              "giving:manage",
+                              "profile:import",
                               "support:create",
                               "support:manage",
                               "resumes:manage",
@@ -14870,6 +14882,33 @@
                         "OTHER"
                       ]
                     }
+                  },
+                  "recurrence": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "weekly": {
+                            "type": "boolean",
+                            "const": true
+                          },
+                          "until": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          }
+                        },
+                        "required": [
+                          "weekly",
+                          "until"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 },
                 "required": [
@@ -15060,6 +15099,33 @@
                         "OTHER"
                       ]
                     }
+                  },
+                  "recurrence": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "weekly": {
+                            "type": "boolean",
+                            "const": true
+                          },
+                          "until": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          }
+                        },
+                        "required": [
+                          "weekly",
+                          "until"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "notifyChange": {
                     "default": true,
@@ -15498,6 +15564,85 @@
                 },
                 "required": [
                   "status"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/me/office-hours/subscriptions": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Whose office hours I follow",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college.",
+        "operationId": "events_get_me_office_hours_subscriptions",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "events:rsvp"
+      }
+    },
+    "/api/v1/members/{id}/office-hours/subscription": {
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Follow or stop following a member’s office hours",
+        "description": "Requires permission `events:rsvp` (RSVP to events). Host scope: college. Rate limit: interact.",
+        "operationId": "events_put_members_id_office_hours_subscription",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "on": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "on"
                 ],
                 "additionalProperties": false
               }
@@ -21029,6 +21174,1610 @@
           }
         },
         "x-permission": "readiness:manage"
+      }
+    },
+    "/api/v1/micro-asks/sent": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Micro-asks I sent",
+        "description": "Requires permission `alumni:ask` (Send small asks (review, answer, intro, feedback) routed to matching alumni). Host scope: college.",
+        "operationId": "alumni_get_micro_asks_sent",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:ask"
+      }
+    },
+    "/api/v1/micro-asks/received": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Micro-asks handed to me, and this week’s count against the cap",
+        "description": "Requires permission `alumni:help` (Receive and answer micro-asks; get a mentorship certificate for each academic year). Host scope: college.",
+        "operationId": "alumni_get_micro_asks_received",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:help"
+      }
+    },
+    "/api/v1/micro-asks": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Ask a small favour; it goes to one matching alumnus at a time (two a week each at most)",
+        "description": "Requires permission `alumni:ask` (Send small asks (review, answer, intro, feedback) routed to matching alumni). Host scope: college. Rate limit: requests.",
+        "operationId": "alumni_post_micro_asks",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "review_resume",
+                      "answer_question",
+                      "quick_intro",
+                      "feedback_on_project"
+                    ]
+                  },
+                  "audience": {
+                    "default": {},
+                    "type": "object",
+                    "properties": {
+                      "company": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 80
+                      },
+                      "branch": {
+                        "type": "string",
+                        "enum": [
+                          "CSE",
+                          "IT",
+                          "ECE",
+                          "EEE",
+                          "MECH",
+                          "CIVIL",
+                          "CHEM",
+                          "AIML",
+                          "DS",
+                          "OTHER"
+                        ]
+                      },
+                      "topic": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 40
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "resumeId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "questionId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "kind",
+                  "note"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:ask"
+      }
+    },
+    "/api/v1/micro-asks/{id}": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "One micro-ask (mine, or one handed to me)",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "alumni_get_micro_asks_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/micro-asks/{id}/reply": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Say yes, pass (it moves on) or mark it done (impact points)",
+        "description": "Requires permission `alumni:help` (Receive and answer micro-asks; get a mentorship certificate for each academic year). Host scope: college. Rate limit: interact.",
+        "operationId": "alumni_post_micro_asks_id_reply",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "accept",
+                      "decline",
+                      "done"
+                    ]
+                  }
+                },
+                "required": [
+                  "action"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:help"
+      }
+    },
+    "/api/v1/micro-asks/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Withdraw one of my asks",
+        "description": "Requires permission `alumni:ask` (Send small asks (review, answer, intro, feedback) routed to matching alumni). Host scope: college.",
+        "operationId": "alumni_post_micro_asks_id_cancel",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:ask"
+      }
+    },
+    "/api/v1/me/micro-asks/settings": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Whether I take micro-asks",
+        "description": "Requires permission `alumni:help` (Receive and answer micro-asks; get a mentorship certificate for each academic year). Host scope: college.",
+        "operationId": "alumni_get_me_micro_asks_settings",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:help"
+      },
+      "put": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Take micro-asks, or stop",
+        "description": "Requires permission `alumni:help` (Receive and answer micro-asks; get a mentorship certificate for each academic year). Host scope: college.",
+        "operationId": "alumni_put_me_micro_asks_settings",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "open": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "open"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:help"
+      }
+    },
+    "/api/v1/me/certificates": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "My mentorship certificates, and what this year’s and last year’s would say",
+        "description": "Requires permission `alumni:help` (Receive and answer micro-asks; get a mentorship certificate for each academic year). Host scope: college.",
+        "operationId": "alumni_get_me_certificates",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:help"
+      },
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Issue (or refresh) my certificate of mentorship for an academic year",
+        "description": "Requires permission `alumni:help` (Receive and answer micro-asks; get a mentorship certificate for each academic year). Host scope: college. Rate limit: posting.",
+        "operationId": "alumni_post_me_certificates",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "academicYear": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "academicYear"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:help"
+      }
+    },
+    "/api/v1/me/certificates/{id}/pdf": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Download my certificate",
+        "description": "Requires permission `alumni:help` (Receive and answer micro-asks; get a mentorship certificate for each academic year). Host scope: college.",
+        "operationId": "alumni_get_me_certificates_id_pdf",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:help"
+      }
+    },
+    "/api/v1/verify/certificates/{code}": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Check a certificate of mentorship by its code (public: what it says and whether it stands)",
+        "description": "Public. Host scope: college. Rate limit: search.",
+        "operationId": "alumni_get_verify_certificates_code",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{32}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/alumni/of-the-month": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Alumni of the month (the last twelve), for the Wall of Mentors",
+        "description": "Requires permission `directory:read` (Browse the people directory). Host scope: college.",
+        "operationId": "alumni_get_alumni_of_the_month",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "directory:read"
+      }
+    },
+    "/api/v1/me/alumni-of-the-month": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "My nominations as alumnus of the month",
+        "description": "Requires permission `alumni:help` (Receive and answer micro-asks; get a mentorship certificate for each academic year). Host scope: college.",
+        "operationId": "alumni_get_me_alumni_of_the_month",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:help"
+      }
+    },
+    "/api/v1/me/alumni-of-the-month/{id}": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Accept or decline a nomination (nothing is shown unless I accept)",
+        "description": "Requires permission `alumni:help` (Receive and answer micro-asks; get a mentorship certificate for each academic year). Host scope: college.",
+        "operationId": "alumni_post_me_alumni_of_the_month_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "accept": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "accept"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:help"
+      }
+    },
+    "/api/v1/admin/recognition/of-the-month": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Nominations, accepted and declined",
+        "description": "Requires permission `alumni:recognise` (Nominate the alumnus of the month and revoke mentorship certificates). Host scope: college.",
+        "operationId": "alumni_get_admin_recognition_of_the_month",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:recognise"
+      },
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Nominate the alumnus of the month (they are asked first; audited)",
+        "description": "Requires permission `alumni:recognise` (Nominate the alumnus of the month and revoke mentorship certificates). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "alumni_post_admin_recognition_of_the_month",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "month": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+                  },
+                  "citation": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "userId",
+                  "month",
+                  "citation"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:recognise"
+      }
+    },
+    "/api/v1/admin/recognition/of-the-month/{id}/announce": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Post the announcement once the alumnus accepted (needs announcements:post)",
+        "description": "Requires permission `alumni:recognise` (Nominate the alumnus of the month and revoke mentorship certificates). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "alumni_post_admin_recognition_of_the_month_id_announce",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "body"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:recognise"
+      }
+    },
+    "/api/v1/admin/recognition/certificates": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Certificates issued in the college",
+        "description": "Requires permission `alumni:recognise` (Nominate the alumnus of the month and revoke mentorship certificates). Host scope: college.",
+        "operationId": "alumni_get_admin_recognition_certificates",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:recognise"
+      }
+    },
+    "/api/v1/admin/recognition/certificates/{id}/revoke": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Revoke a certificate (its public check then says so; audited)",
+        "description": "Requires permission `alumni:recognise` (Nominate the alumnus of the month and revoke mentorship certificates). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "alumni_post_admin_recognition_certificates_id_revoke",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "alumni:recognise"
+      }
+    },
+    "/api/v1/giving/funds": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "The college’s open funds, with what was received and pledged",
+        "description": "Requires permission `giving:pledge` (Pledge to the college’s funds and download acknowledgements). Host scope: college.",
+        "operationId": "alumni_get_giving_funds",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:pledge"
+      }
+    },
+    "/api/v1/giving/pledges": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Pledge to a fund (you pay the college directly, never the platform)",
+        "description": "Requires permission `giving:pledge` (Pledge to the college’s funds and download acknowledgements). Host scope: college. Rate limit: interact.",
+        "operationId": "alumni_post_giving_pledges",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "fundId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "amountPaise": {
+                    "type": "integer",
+                    "minimum": 100,
+                    "maximum": 1000000000
+                  }
+                },
+                "required": [
+                  "fundId",
+                  "amountPaise"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:pledge"
+      }
+    },
+    "/api/v1/me/pledges": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "My pledges",
+        "description": "Requires permission `giving:pledge` (Pledge to the college’s funds and download acknowledgements). Host scope: college.",
+        "operationId": "alumni_get_me_pledges",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:pledge"
+      }
+    },
+    "/api/v1/me/pledges/{id}/paid": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Say I paid the college (with the payment reference)",
+        "description": "Requires permission `giving:pledge` (Pledge to the college’s funds and download acknowledgements). Host scope: college.",
+        "operationId": "alumni_post_me_pledges_id_paid",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "reference": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 80
+                  }
+                },
+                "required": [
+                  "reference"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:pledge"
+      }
+    },
+    "/api/v1/me/pledges/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Cancel a pledge the college has not received",
+        "description": "Requires permission `giving:pledge` (Pledge to the college’s funds and download acknowledgements). Host scope: college.",
+        "operationId": "alumni_post_me_pledges_id_cancel",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:pledge"
+      }
+    },
+    "/api/v1/me/pledges/{id}/acknowledgement": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Download the acknowledgement for a contribution the college received",
+        "description": "Requires permission `giving:pledge` (Pledge to the college’s funds and download acknowledgements). Host scope: college.",
+        "operationId": "alumni_get_me_pledges_id_acknowledgement",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:pledge"
+      }
+    },
+    "/api/v1/admin/giving/funds": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Every fund, open and closed",
+        "description": "Requires permission `giving:manage` (Publish funds, record money the college received and set receipt details). Host scope: college.",
+        "operationId": "alumni_get_admin_giving_funds",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:manage"
+      },
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Publish a fund with its target and the college’s own payment link or bank details",
+        "description": "Requires permission `giving:manage` (Publish funds, record money the college received and set receipt details). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "alumni_post_admin_giving_funds",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 100
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "enum": [
+                      "scholarship",
+                      "lab",
+                      "event",
+                      "general"
+                    ]
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  },
+                  "targetPaise": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 100,
+                        "maximum": 100000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "payLink": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "bankDetails": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 600
+                  },
+                  "status": {
+                    "default": "open",
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "closed"
+                    ]
+                  }
+                },
+                "required": [
+                  "title",
+                  "purpose",
+                  "description"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:manage"
+      }
+    },
+    "/api/v1/admin/giving/funds/{id}": {
+      "put": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Edit, open or close a fund",
+        "description": "Requires permission `giving:manage` (Publish funds, record money the college received and set receipt details). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "alumni_put_admin_giving_funds_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 100
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "enum": [
+                      "scholarship",
+                      "lab",
+                      "event",
+                      "general"
+                    ]
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  },
+                  "targetPaise": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 100,
+                        "maximum": 100000000000
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "payLink": {
+                    "default": null,
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "bankDetails": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 600
+                  },
+                  "status": {
+                    "default": "open",
+                    "type": "string",
+                    "enum": [
+                      "open",
+                      "closed"
+                    ]
+                  }
+                },
+                "required": [
+                  "title",
+                  "purpose",
+                  "description"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:manage"
+      }
+    },
+    "/api/v1/admin/giving/settings": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Whether the college issues tax receipts, and what receipts say",
+        "description": "Requires permission `giving:manage` (Publish funds, record money the college received and set receipt details). Host scope: college.",
+        "operationId": "alumni_get_admin_giving_settings",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:manage"
+      },
+      "put": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Set tax-receipt registration and the signatory (audited)",
+        "description": "Requires permission `giving:manage` (Publish funds, record money the college received and set receipt details). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "alumni_put_admin_giving_settings",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "taxReceipts": {
+                    "type": "boolean"
+                  },
+                  "registration": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 200
+                  },
+                  "signatory": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 80
+                  }
+                },
+                "required": [
+                  "taxReceipts"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:manage"
+      }
+    },
+    "/api/v1/admin/giving/pledges": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Pledges, by status or fund",
+        "description": "Requires permission `giving:manage` (Publish funds, record money the college received and set receipt details). Host scope: college.",
+        "operationId": "alumni_get_admin_giving_pledges",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pledged",
+                "paid",
+                "received",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "fundId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:manage"
+      }
+    },
+    "/api/v1/admin/giving/pledges/{id}/receive": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Record money the college received: numbers it and makes the acknowledgement (audited)",
+        "description": "Requires permission `giving:manage` (Publish funds, record money the college received and set receipt details). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "alumni_post_admin_giving_pledges_id_receive",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "amountPaise": {
+                    "type": "integer",
+                    "minimum": 100,
+                    "maximum": 1000000000
+                  },
+                  "receivedOn": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "reference": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 80
+                  }
+                },
+                "required": [
+                  "amountPaise",
+                  "receivedOn"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:manage"
+      }
+    },
+    "/api/v1/admin/giving/pledges/{id}/acknowledgement": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Download a contribution’s acknowledgement",
+        "description": "Requires permission `giving:manage` (Publish funds, record money the college received and set receipt details). Host scope: college.",
+        "operationId": "alumni_get_admin_giving_pledges_id_acknowledgement",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "giving:manage"
+      }
+    },
+    "/api/v1/me/linkedin/preview": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Read my own LinkedIn data export (ZIP or CSV) into a preview; nothing is stored",
+        "description": "Requires permission `profile:import` (Fill one’s profile from one’s own LinkedIn data export). Host scope: college. Rate limit: upload.",
+        "operationId": "alumni_post_me_linkedin_preview",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "profile:import"
+      }
+    },
+    "/api/v1/me/linkedin/apply": {
+      "post": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "Copy what I confirmed from the preview to my profile (company, role, skills)",
+        "description": "Requires permission `profile:import` (Fill one’s profile from one’s own LinkedIn data export). Host scope: college. Rate limit: posting.",
+        "operationId": "alumni_post_me_linkedin_apply",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "company": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 100
+                  },
+                  "jobTitle": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 100
+                  },
+                  "skills": {
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 50
+                    }
+                  }
+                },
+                "required": [
+                  "company",
+                  "jobTitle",
+                  "skills"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "profile:import"
+      }
+    },
+    "/api/v1/batches/{gradYear}/{branch}": {
+      "get": {
+        "tags": [
+          "Alumni"
+        ],
+        "summary": "A batch: who is here (visibility respected), where it works (small counts hidden), reunions",
+        "description": "Requires permission `directory:read` (Browse the people directory). Host scope: college.",
+        "operationId": "alumni_get_batches_gradYear_branch",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "gradYear",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1950,
+              "maximum": 2100
+            }
+          },
+          {
+            "name": "branch",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "directory:read"
       }
     },
     "/api/v1/practice": {

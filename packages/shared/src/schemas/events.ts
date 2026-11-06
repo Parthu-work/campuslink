@@ -3,6 +3,7 @@ import { objectId } from './common.js';
 import { httpsUrl } from './people.js';
 import type { PersonRef } from './mentorship.js';
 import { BRANCHES, type Branch } from '../constants/people.js';
+import { OFFICE_HOURS_MAX_WEEKS } from '../constants/alumni.js';
 
 export const EVENT_KINDS = ['meetup', 'talk', 'drive', 'workshop', 'ama', 'office_hours'] as const;
 export type EventKind = (typeof EVENT_KINDS)[number];
@@ -32,6 +33,11 @@ const eventFields = {
   capacity: z.number().int().min(1).max(10_000).nullable().default(null),
   audience: z.enum(EVENT_AUDIENCES).default('everyone'),
   branches: z.array(z.enum(BRANCHES)).max(10).default([]),
+  /** Office hours only (prompt 2, G6): repeat weekly until a date; the next one is made as each ends. */
+  recurrence: z
+    .strictObject({ weekly: z.literal(true), until: isoDate })
+    .nullable()
+    .default(null),
 };
 const eventRules = <
   T extends { startsAt: string; endsAt: string; mode: string; location: string; onlineUrl: string | null },
@@ -49,6 +55,24 @@ const eventRules = <
     ctx.addIssue({ code: 'custom', message: 'Add the online link', path: ['onlineUrl'] });
   if (e.mode !== 'online' && e.location.length < 2)
     ctx.addIssue({ code: 'custom', message: 'Add the venue', path: ['location'] });
+  const r = (e as { kind?: string; recurrence?: { until: string } | null }).recurrence;
+  if (r) {
+    if ((e as { kind?: string }).kind !== 'office_hours')
+      ctx.addIssue({ code: 'custom', message: 'Only office hours repeat', path: ['recurrence'] });
+    const until = Date.parse(r.until);
+    if (!(until > end))
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Repeat until a date after the first one',
+        path: ['recurrence'],
+      });
+    if (until - s > OFFICE_HOURS_MAX_WEEKS * 7 * 86_400_000)
+      ctx.addIssue({
+        code: 'custom',
+        message: `Office hours repeat for at most ${OFFICE_HOURS_MAX_WEEKS} weeks`,
+        path: ['recurrence'],
+      });
+  }
 };
 export const eventBody = z.strictObject(eventFields).superRefine(eventRules);
 export const eventUpdateBody = z
@@ -87,6 +111,9 @@ export interface EventView {
   isHost: boolean;
   canManage: boolean;
   hasQa: boolean;
+  /** Weekly office hours (prompt 2, G6): until when, and the series this one belongs to. */
+  recurrence: { weekly: true; until: string } | null;
+  seriesId: string | null;
 }
 export interface AttendeeView {
   person: PersonRef;

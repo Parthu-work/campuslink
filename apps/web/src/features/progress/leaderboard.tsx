@@ -3,7 +3,12 @@ import { Link } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { Crown, Medal, Users } from 'lucide-react';
-import type { LeaderboardRow, MyProgressView, WallOfMentorsView } from '@campuslink/shared';
+import type {
+  AlumniOfMonthView,
+  LeaderboardRow,
+  MyProgressView,
+  WallOfMentorsView,
+} from '@campuslink/shared';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Illustration } from '../../components/ui/illustration';
 import { IntentLink } from '../../components/ui/intent-link';
@@ -135,6 +140,11 @@ export function WallOfMentorsPage() {
     queryFn: () => api.get<WallOfMentorsView>('/wall-of-mentors'),
   });
   const motm = q.data?.mentorOfTheMonth;
+  // Alumni of the month the college named and who accepted (prompt 2, G6).
+  const named = useQuery({
+    queryKey: ['alumni-of-the-month'],
+    queryFn: () => api.get<AlumniOfMonthView[]>('/alumni/of-the-month'),
+  });
   return (
     <div className="grid gap-5">
       <PageHeader icon={<Users />} title={t('progress.wall')} intro={t('progress.wallIntro')} />
@@ -154,6 +164,27 @@ export function WallOfMentorsPage() {
             <p className="text-meta text-fg-2">{t('progress.impactN', { impact: motm.impact })}</p>
           </div>
         </Card>
+      )}
+      {!!named.data?.length && (
+        <section aria-labelledby="alumni-of-month" className="grid gap-3">
+          <h2 id="alumni-of-month" className="text-title font-semibold">
+            {t('progress.alumniOfMonth')}
+          </h2>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {named.data.map((a) => (
+              <li key={a.id}>
+                <Card className="flex items-start gap-3 p-4">
+                  <PersonAvatar name={a.person.name} fileId={a.person.avatarFileId} size={48} />
+                  <div className="min-w-0">
+                    <p className="text-meta font-semibold text-brand-ink">{a.month}</p>
+                    <p className="font-semibold">{a.person.name}</p>
+                    <p className="text-meta text-fg-2">{a.citation}</p>
+                  </div>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
       {q.isLoading ? (
         <Skeleton className="h-48" />

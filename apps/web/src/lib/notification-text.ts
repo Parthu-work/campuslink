@@ -148,6 +148,21 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
         return `/resume/${d.resumeId ?? ''}`;
       case 'readiness_nudge':
         return '/readiness';
+      // Prompt 2, G6: alumni engagement.
+      case 'micro_ask_received':
+        return `/alumni?tab=asks&box=received${d.askId ? `&ask=${d.askId}` : ''}`;
+      case 'micro_ask_done':
+        return '/alumni?tab=asks';
+      case 'micro_ask_unmatched':
+        return '/alumni?tab=asks';
+      case 'office_hours_scheduled':
+        return `/events/${d.eventId ?? ''}`;
+      case 'certificate_ready':
+        return '/alumni?tab=certificates';
+      case 'alumni_of_month_nominated':
+        return '/alumni?tab=certificates';
+      case 'pledge_received':
+        return '/alumni?tab=giving';
       default:
         return '/sessions';
     }

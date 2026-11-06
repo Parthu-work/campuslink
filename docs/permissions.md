@@ -70,6 +70,12 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `audit:read` Read the audit log | ✅ | ✅ | · | · | · | · |
 | `rewards:manage` Manage the rewards catalogue | · | ✅ | · | · | · | · |
 | `rewards:redeem` Redeem points for rewards | · | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `alumni:ask` Send small asks (review, answer, intro, feedback) routed to matching alumni | · | ✅ | · | · | ✅ | ✅ |
+| `alumni:help` Receive and answer micro-asks; get a mentorship certificate for each academic year | · | ✅ | · | · | ✅ | · |
+| `alumni:recognise` Nominate the alumnus of the month and revoke mentorship certificates | · | ✅ | ✅ | · | · | · |
+| `giving:pledge` Pledge to the college’s funds and download acknowledgements | · | ✅ | · | · | ✅ | · |
+| `giving:manage` Publish funds, record money the college received and set receipt details | · | ✅ | ✅ | · | · | · |
+| `profile:import` Fill one’s profile from one’s own LinkedIn data export | · | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `platform:tenants` Create, suspend and configure colleges | ✅ | · | · | · | · | · |
 | `platform:health` View platform health | ✅ | · | · | · | · | · |
 | `platform:billing` Plans, invoices and payments for every college | ✅ | · | · | · | · | · |
@@ -358,6 +364,8 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/events/:id/questions` | `events:rsvp` | college | interact | Ask a question in the queue |
 | `PUT /api/v1/event-questions/:id/vote` | `events:rsvp` | college | interact | Upvote a question (one vote each) |
 | `PATCH /api/v1/event-questions/:id` | `events:rsvp` | college | — | Mark a question answered, reopen it or hide it (host or staff) |
+| `GET /api/v1/me/office-hours/subscriptions` | `events:rsvp` | college | — | Whose office hours I follow |
+| `PUT /api/v1/members/:id/office-hours/subscription` | `events:rsvp` | college | interact | Follow or stop following a member’s office hours |
 | `GET /api/v1/placements/drives` | `placements:view` · feature `placements` | college | — | Drives open to me (eligible), every visible drive, or the ones I registered for |
 | `GET /api/v1/placements/drives/:id` | `placements:view` · feature `placements` | college | — | A drive with my eligibility (and why not) and my registration |
 | `POST /api/v1/placements/resume` | `placements:register` · feature `placements` | college | upload | Upload a PDF résumé (or a file answer) for a drive registration |
@@ -441,6 +449,43 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `PUT /api/v1/admin/readiness/config` | `readiness:manage` · feature `placements` | college | adminWrite | Set the readiness weights, the "needs help" threshold and the closing window (audited) |
 | `POST /api/v1/admin/readiness/nudge` | `readiness:manage` · feature `placements` | college | adminWrite | Nudge students who need help before a drive closes (once a week each, within WhatsApp caps) |
 | `GET /api/v1/admin/readiness/export` | `readiness:manage` · feature `placements` | college | search | Export the readiness board, one row per student (minors never; audited) |
+| `GET /api/v1/micro-asks/sent` | `alumni:ask` | college | — | Micro-asks I sent |
+| `GET /api/v1/micro-asks/received` | `alumni:help` | college | — | Micro-asks handed to me, and this week’s count against the cap |
+| `POST /api/v1/micro-asks` | `alumni:ask` | college | requests | Ask a small favour; it goes to one matching alumnus at a time (two a week each at most) |
+| `GET /api/v1/micro-asks/:id` | any signed-in user | college | — | One micro-ask (mine, or one handed to me) |
+| `POST /api/v1/micro-asks/:id/reply` | `alumni:help` | college | interact | Say yes, pass (it moves on) or mark it done (impact points) |
+| `POST /api/v1/micro-asks/:id/cancel` | `alumni:ask` | college | — | Withdraw one of my asks |
+| `GET /api/v1/me/micro-asks/settings` | `alumni:help` | college | — | Whether I take micro-asks |
+| `PUT /api/v1/me/micro-asks/settings` | `alumni:help` | college | — | Take micro-asks, or stop |
+| `GET /api/v1/me/certificates` | `alumni:help` | college | — | My mentorship certificates, and what this year’s and last year’s would say |
+| `POST /api/v1/me/certificates` | `alumni:help` | college | posting | Issue (or refresh) my certificate of mentorship for an academic year |
+| `GET /api/v1/me/certificates/:id/pdf` | `alumni:help` | college | — | Download my certificate |
+| `GET /api/v1/verify/certificates/:code` | public | college | search | Check a certificate of mentorship by its code (public: what it says and whether it stands) |
+| `GET /api/v1/alumni/of-the-month` | `directory:read` | college | — | Alumni of the month (the last twelve), for the Wall of Mentors |
+| `GET /api/v1/me/alumni-of-the-month` | `alumni:help` | college | — | My nominations as alumnus of the month |
+| `POST /api/v1/me/alumni-of-the-month/:id` | `alumni:help` | college | — | Accept or decline a nomination (nothing is shown unless I accept) |
+| `GET /api/v1/admin/recognition/of-the-month` | `alumni:recognise` | college | — | Nominations, accepted and declined |
+| `POST /api/v1/admin/recognition/of-the-month` | `alumni:recognise` | college | adminWrite | Nominate the alumnus of the month (they are asked first; audited) |
+| `POST /api/v1/admin/recognition/of-the-month/:id/announce` | `alumni:recognise` | college | adminWrite | Post the announcement once the alumnus accepted (needs announcements:post) |
+| `GET /api/v1/admin/recognition/certificates` | `alumni:recognise` | college | — | Certificates issued in the college |
+| `POST /api/v1/admin/recognition/certificates/:id/revoke` | `alumni:recognise` | college | adminWrite | Revoke a certificate (its public check then says so; audited) |
+| `GET /api/v1/giving/funds` | `giving:pledge` | college | — | The college’s open funds, with what was received and pledged |
+| `POST /api/v1/giving/pledges` | `giving:pledge` | college | interact | Pledge to a fund (you pay the college directly, never the platform) |
+| `GET /api/v1/me/pledges` | `giving:pledge` | college | — | My pledges |
+| `POST /api/v1/me/pledges/:id/paid` | `giving:pledge` | college | — | Say I paid the college (with the payment reference) |
+| `POST /api/v1/me/pledges/:id/cancel` | `giving:pledge` | college | — | Cancel a pledge the college has not received |
+| `GET /api/v1/me/pledges/:id/acknowledgement` | `giving:pledge` | college | — | Download the acknowledgement for a contribution the college received |
+| `GET /api/v1/admin/giving/funds` | `giving:manage` | college | — | Every fund, open and closed |
+| `POST /api/v1/admin/giving/funds` | `giving:manage` | college | adminWrite | Publish a fund with its target and the college’s own payment link or bank details |
+| `PUT /api/v1/admin/giving/funds/:id` | `giving:manage` | college | adminWrite | Edit, open or close a fund |
+| `GET /api/v1/admin/giving/settings` | `giving:manage` | college | — | Whether the college issues tax receipts, and what receipts say |
+| `PUT /api/v1/admin/giving/settings` | `giving:manage` | college | adminWrite | Set tax-receipt registration and the signatory (audited) |
+| `GET /api/v1/admin/giving/pledges` | `giving:manage` | college | — | Pledges, by status or fund |
+| `POST /api/v1/admin/giving/pledges/:id/receive` | `giving:manage` | college | adminWrite | Record money the college received: numbers it and makes the acknowledgement (audited) |
+| `GET /api/v1/admin/giving/pledges/:id/acknowledgement` | `giving:manage` | college | — | Download a contribution’s acknowledgement |
+| `POST /api/v1/me/linkedin/preview` | `profile:import` | college | upload | Read my own LinkedIn data export (ZIP or CSV) into a preview; nothing is stored |
+| `POST /api/v1/me/linkedin/apply` | `profile:import` | college | posting | Copy what I confirmed from the preview to my profile (company, role, skills) |
+| `GET /api/v1/batches/:gradYear/:branch` | `directory:read` | college | — | A batch: who is here (visibility respected), where it works (small counts hidden), reunions |
 | `GET /api/v1/practice` | `practice:use` | college | — | Today's set, my streak, topic accuracy and the companies I can prepare for |
 | `POST /api/v1/practice/sets` | `practice:use` | college | — | Start (or resume) today's set, or a "Preparing for <company>" set |
 | `GET /api/v1/practice/sets/:id` | `practice:use` | college | — | One of my practice sets with the answers so far |

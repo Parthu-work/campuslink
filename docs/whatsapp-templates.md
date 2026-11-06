@@ -146,6 +146,17 @@ Sent for: `readiness_nudge`. Category: **utility**.
 - Hindi (hi): `नमस्ते {{1}}, {{2}} ड्राइव का पंजीकरण {{3}} को बंद होगा। तैयार होने के लिए आपका प्लेसमेंट सेल कुछ कदम सुझा रहा है: उन्हें देखने के लिए ऐप खोलें।`
   - Quick replies: `पंजीकरण करें`
 
+## `cl_micro_ask`
+
+Sent for: `micro_ask_received`. Category: **utility**.
+
+- English (en): `{{1}}, a student from your college, asked for a small favour: {{2}}. It takes a few minutes. Reply below, or open the app to read it.`
+  - Quick replies: `Yes, I’ll help`, `Not now`
+- Telugu (te): `మీ కాలేజీ విద్యార్థి {{1}} ఒక చిన్న సహాయం అడిగారు: {{2}}. కొన్ని నిమిషాలే పడుతుంది. కింద జవాబివ్వండి, లేదా చదవడానికి యాప్ తెరవండి.`
+  - Quick replies: `సరే, సహాయం చేస్తాను`, `ఇప్పుడు కాదు`
+- Hindi (hi): `आपके कॉलेज के छात्र {{1}} ने एक छोटी मदद मांगी है: {{2}}। इसमें कुछ ही मिनट लगेंगे। नीचे जवाब दें, या पढ़ने के लिए ऐप खोलें।`
+  - Quick replies: `हां, मदद करूंगा/करूंगी`, `अभी नहीं`
+
 ## `cl_invite_student`
 
 Sent for: an invite to a student on the college's list. Category: **utility**.

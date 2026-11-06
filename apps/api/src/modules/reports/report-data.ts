@@ -56,6 +56,9 @@ export interface ReportData {
     events: { title: string; kind: string; startsAt: Date; hostId: string }[];
     sessions: { mentorId: string }[];
     referrals: { referrerId: string }[];
+    /** Prompt 2, G6: micro-asks alumni did, and contributions the college received (whole paise). */
+    asks?: { helperId: string }[];
+    contributions?: { subject: string; amountPaise: number }[];
   }>;
 }
 

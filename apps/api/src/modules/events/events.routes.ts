@@ -6,6 +6,7 @@ import {
   eventQuestionStatusBody,
   eventUpdateBody,
   eventsQuery,
+  officeHoursSubscriptionBody,
   rsvpBody,
 } from '@campuslink/shared';
 import type { AnyRouteSpec } from '../../http/registry.js';
@@ -173,6 +174,28 @@ export function eventRoutes(s: EventsService): AnyRouteSpec[] {
       body: eventQuestionStatusBody,
       handler: async ({ req, params, body }) => ({
         data: await s.setQuestionStatus(authOf(req), params.id, body.status),
+      }),
+    },
+    // Prompt 2, G6: follow a member's office hours (told when a new one is scheduled).
+    {
+      method: 'get',
+      path: '/me/office-hours/subscriptions',
+      tag,
+      summary: 'Whose office hours I follow',
+      access: RSVP,
+      handler: async ({ req }) => ({ data: await s.subscriptions(authOf(req)) }),
+    },
+    {
+      method: 'put',
+      path: '/members/:id/office-hours/subscription',
+      tag,
+      summary: 'Follow or stop following a member’s office hours',
+      access: RSVP,
+      limiter: 'interact',
+      params: idParams,
+      body: officeHoursSubscriptionBody,
+      handler: async ({ req, params, body }) => ({
+        data: await s.subscribe(authOf(req), params.id, body.on),
       }),
     },
   ];

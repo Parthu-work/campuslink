@@ -51,6 +51,11 @@ export class WhitelistService {
   }
 
   /** Records on the college's list per branch and batch (B8 reports: the final-year count N). */
+  /** Batch pages (prompt 2, G6): people on the list for a batch who have not joined yet. */
+  async notJoined(gradYear: number, branch: string): Promise<number> {
+    return WhitelistModel.countDocuments({ gradYear, branch, status: 'unclaimed' });
+  }
+
   async countsByCohort(gradYears: number[]) {
     const rows = await WhitelistModel.aggregate<{
       _id: { branch: string | null; gradYear: number };

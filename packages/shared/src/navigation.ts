@@ -33,6 +33,7 @@ export type NavId =
   | 'people'
   | 'referrals'
   | 'mentoring'
+  | 'alumni'
   | 'reels'
   | 'following'
   | 'saved'
@@ -68,6 +69,8 @@ export const ADMIN_PERMISSIONS: readonly Permission[] = [
   'jobs:sources',
   'analytics:cohort',
   'rewards:manage',
+  'alumni:recognise',
+  'giving:manage',
   'imports:manage',
   'onboarding:manage',
   'verification:review',
@@ -100,6 +103,8 @@ export type AdminSectionId =
   | 'sources'
   | 'jobSources'
   | 'rewards'
+  | 'recognition'
+  | 'giving'
   | 'analytics'
   | 'branding'
   | 'features'
@@ -143,6 +148,9 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('sources', '/admin/sources', 'sources:manage', 'community'),
   section('jobSources', '/admin/job-sources', 'jobs:sources', 'community'),
   section('rewards', '/admin/rewards', 'rewards:manage', 'community'),
+  // Alumni of the month and certificates; funds and pledges (prompt 2, G6).
+  section('recognition', '/admin/recognition', 'alumni:recognise', 'community'),
+  section('giving', '/admin/giving', 'giving:manage', 'community'),
   section('analytics', '/admin/analytics', 'analytics:cohort', 'insights'),
   section('reports', '/admin/reports', 'analytics:tenant', 'insights'),
   section('branding', '/admin/branding', 'tenant:branding', 'college'),
@@ -210,6 +218,8 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   messages: d('messages', '/messages', 'you', ['messages:send']),
   notifications: d('notifications', '/notifications', 'you'),
   mentoring: d('mentoring', '/mentor', 'you', ['mentorship:mentor']),
+  // Micro-asks, certificates, giving and your batch (prompt 2, G6).
+  alumni: d('alumni', '/alumni', 'you', ['alumni:help', 'alumni:ask']),
   progress: d('progress', '/progress', 'you'),
   rewards: d('rewards', '/rewards', 'you', ['rewards:redeem']),
   saved: d('saved', '/saved', 'you', ['feed:interact']),
@@ -307,6 +317,7 @@ const MENU_ORDER: readonly NavId[] = [
   'assistant',
   'review',
   'mentoring',
+  'alumni',
   'requests',
   'people',
   'reels',

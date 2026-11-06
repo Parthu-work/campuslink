@@ -37,6 +37,15 @@ const PACKS = {
       hi: () => import('./packs/readiness.hi.json'),
     },
   },
+  // Alumni engagement (prompt 2, G6): asks, certificates, giving, batches and their admin screens.
+  alumni: {
+    sections: ['alumni', 'batch', 'verifyCert', 'alumniAdmin'],
+    load: {
+      en: () => import('./packs/alumni.en.json'),
+      te: () => import('./packs/alumni.te.json'),
+      hi: () => import('./packs/alumni.hi.json'),
+    },
+  },
   /** Aptitude and coding practice (prompt 2, G4). */
   practice: {
     sections: ['practice'],

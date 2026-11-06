@@ -23,6 +23,8 @@ import { StatCard, StatGrid } from '../../components/ui/stat-card';
 import { Switch } from '../../components/ui/switch';
 import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
+import { useCan } from '../../lib/me';
+import { IntentLink } from '../../components/ui/intent-link';
 
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
 const TIMES = Array.from(
@@ -504,6 +506,20 @@ function FeedbackList() {
   );
 }
 
+/** Micro-asks (prompt 2, G6): small favours for the alumnus, two a week at most. */
+function QuickAsks() {
+  const { t } = useTranslation();
+  if (!useCan('alumni:help')) return null;
+  return (
+    <IntentLink to="/alumni?tab=asks&box=received" className="block rounded-[var(--radius-lg)]">
+      <Card variant="interactive" className="grid gap-1 p-4">
+        <b>{t('mentor.asks')}</b>
+        <span className="text-meta text-fg-2">{t('mentor.asksBody')}</span>
+      </Card>
+    </IntentLink>
+  );
+}
+
 export function MentorDashboard() {
   const { t } = useTranslation();
   const q = useQuery({
@@ -514,6 +530,7 @@ export function MentorDashboard() {
     <>
       <PageHeader title={t('nav.mentor')} />
       <ImpactCard />
+      <QuickAsks />
       {q.isLoading && <Skeleton className="h-80" />}
       {q.data && (
         <>

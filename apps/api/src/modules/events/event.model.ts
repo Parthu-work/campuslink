@@ -24,10 +24,25 @@ const eventSchema = new Schema(
     /** Seats taken, kept in step with "going" RSVPs by conditional updates (capacity is atomic). */
     goingCount: { type: Number, default: 0, min: 0 },
     removal: removalFragment,
+    /** Weekly office hours (prompt 2, G6): repeat until a date; each instance makes the next one. */
+    recurrence: {
+      type: new Schema(
+        { weekly: { type: Boolean, required: true }, until: { type: Date, required: true } },
+        { _id: false, strict: 'throw' },
+      ),
+      default: null,
+    },
+    /** The first instance of a weekly series (null for a one-off event). */
+    seriesId: { type: Schema.Types.ObjectId, default: null },
   },
   baseSchemaOptions,
 );
 eventSchema.index({ tenantId: 1, status: 1, startsAt: 1 });
+// One instance per series and start: the job that makes the next one can run twice safely.
+eventSchema.index(
+  { tenantId: 1, seriesId: 1, startsAt: 1 },
+  { unique: true, partialFilterExpression: { seriesId: { $type: 'objectId' } } },
+);
 eventSchema.index({ tenantId: 1, status: 1, endsAt: -1 });
 eventSchema.index({ tenantId: 1, hostId: 1, startsAt: -1 });
 eventSchema.index(
@@ -83,3 +98,19 @@ const voteSchema = new Schema(
 );
 voteSchema.index({ tenantId: 1, questionId: 1, userId: 1 }, { unique: true });
 export const EventQuestionVoteModel = defineTenantModel('EventQuestionVote', voteSchema);
+
+/** A member follows a host's office hours and hears when a new one is scheduled (prompt 2, G6). */
+const subscriptionSchema = new Schema(
+  {
+    userId: { type: Schema.Types.ObjectId, required: true },
+    hostId: { type: Schema.Types.ObjectId, required: true },
+  },
+  baseSchemaOptions,
+);
+subscriptionSchema.index({ tenantId: 1, userId: 1, hostId: 1 }, { unique: true });
+subscriptionSchema.index({ tenantId: 1, hostId: 1 });
+export type OfficeHoursSubscriptionDoc = InferSchemaType<typeof subscriptionSchema> & {
+  _id: Types.ObjectId;
+  createdAt: Date;
+};
+export const OfficeHoursSubscriptionModel = defineTenantModel('OfficeHoursSubscription', subscriptionSchema);

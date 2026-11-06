@@ -114,6 +114,11 @@ const load = {
   interviewQuestions: withPack('career', () => import('../features/admin/interview-questions')),
   readiness: withPack('readiness', () => import('../features/progress/readiness')),
   readinessAdmin: withPack('readiness', () => import('../features/admin/readiness-admin')),
+  alumni: withPack('alumni', () => import('../features/alumni/alumni')),
+  batch: withPack('alumni', () => import('../features/alumni/batch')),
+  verifyCertificate: withPack('alumni', () => import('../features/alumni/verify-certificate')),
+  recognitionAdmin: withPack('alumni', () => import('../features/admin/recognition-admin')),
+  givingAdmin: withPack('alumni', () => import('../features/admin/giving-admin')),
   // Prompt 2, G4: practice screens' strings come in the `practice` pack.
   practice: withPack('practice', () => import('../features/practice/practice')),
   practiceSet: withPack('practice', () => import('../features/practice/set')),
@@ -326,6 +331,8 @@ function collegeRoutes(): RouteObject[] {
         publicScreen(load.join, 'JoinPage', '/join/:code', '/home'),
         // The college's privacy policy and terms (B14): readable before and after signing in.
         publicScreen(load.legal, 'LegalPage', '/legal/:doc'),
+        // Anyone checks a certificate of mentorship by its code (prompt 2, G6).
+        publicScreen(load.verifyCertificate, 'VerifyCertificatePage', '/verify-certificate/:code'),
         ...auth('/home'),
         // The living style guide (revamp phase 6): development builds only; production leaves it out.
         ...(import.meta.env.DEV
@@ -511,6 +518,16 @@ function collegeRoutes(): RouteObject[] {
           screen(load.interviewSession, 'InterviewSessionPage', undefined, at('/interviews/:id'), ({ id }) =>
             isId(id) ? [qc.ensureQueryData(q.interview(id))] : [],
           ),
+          // Alumni engagement (prompt 2, G6).
+          screen(load.alumni, 'AlumniPage', ['alumni:help', 'alumni:ask'], at('/alumni')),
+          screen(
+            load.batch,
+            'BatchPage',
+            'directory:read',
+            at('/batch/:gradYear/:branch'),
+            ({ gradYear, branch }) =>
+              gradYear && branch ? [qc.ensureQueryData(q.batch(gradYear, branch))] : [],
+          ),
           // Aptitude and coding practice (prompt 2, G4).
           screen(load.practice, 'PracticePage', 'practice:use', at('/practice'), () => [
             qc.ensureQueryData(q.practice()),
@@ -655,6 +672,13 @@ function collegeRoutes(): RouteObject[] {
               at('readiness'),
               () => [qc.ensureQueryData(q.readinessBoard('')), qc.ensureQueryData(q.readinessConfig())],
             ),
+            // Recognition and giving (prompt 2, G6).
+            screen(load.recognitionAdmin, 'RecognitionAdmin', 'alumni:recognise', at('recognition'), () => [
+              qc.ensureQueryData(q.adminNominations()),
+            ]),
+            screen(load.givingAdmin, 'GivingAdmin', 'giving:manage', at('giving'), () => [
+              qc.ensureQueryData(q.adminFunds()),
+            ]),
             screen(load.practiceBank, 'PracticeBankAdmin', 'practice:review', at('practice'), () => [
               qc.ensureQueryData(q.practiceItems('pending')),
             ]),

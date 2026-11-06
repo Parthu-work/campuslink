@@ -531,6 +531,19 @@ export class FilesService {
   }
 
   /**
+   * Our own PDFs for alumni (prompt 2, G6): a mentorship certificate or a contribution
+   * acknowledgement, kept with the record and served only through the alumni routes.
+   */
+  async storeAlumniPdf(
+    ownerId: string,
+    purpose: 'mentor_certificate' | 'giving_acknowledgement',
+    data: Buffer,
+  ) {
+    if (data.subarray(0, 5).toString('latin1') !== '%PDF-') throw unsupported('Not a PDF');
+    return this.store(ownerId, purpose, data, 'application/pdf');
+  }
+
+  /**
    * A recorded interview answer (prompt 2, G3): kept only until the worker transcribes it (then
    * deleted), with a one-hour deletion date as the safety net; never served by /files.
    */
@@ -543,6 +556,23 @@ export class FilesService {
   async storeInvoice(data: Buffer) {
     if (data.subarray(0, 5).toString('latin1') !== '%PDF-') throw unsupported('Not a PDF');
     return this.store(null, 'invoice', data, 'application/pdf');
+  }
+
+  /**
+   * Scans an upload that is read in memory and never stored (prompt 2, G6: a LinkedIn export the
+   * member previews). Fails closed like every stored upload.
+   */
+  async scanOnly(data: Buffer): Promise<void> {
+    const scan = await this.scanner.scan(data).catch((e: unknown) => {
+      if (e instanceof ScannerUnavailableError)
+        throw new AppError(
+          503,
+          ErrorCode.INTERNAL,
+          'Uploads are paused while the file scanner is unavailable. Please try again shortly.',
+        );
+      throw e;
+    });
+    if (scan === 'infected') throw unsupported('This file was flagged by the malware scanner');
   }
 
   /** `ownerId` null: the college's own file (its logo). */

@@ -433,6 +433,75 @@ export class ProfilesService {
         minor: !!r.minorUntil && r.minorUntil.getTime() > now.getTime(),
       }));
   }
+  /**
+   * Micro-asks (prompt 2, G6): verified alumni matching any of a company, a branch or a topic (in
+   * their skills or topics), best match first. Without any criterion, every verified alumnus.
+   */
+  async alumniMatching(a: { companyKey?: string; branch?: string; topic?: string }): Promise<string[]> {
+    const topic = a.topic ? new RegExp(`^${a.topic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') : null;
+    const any = [
+      ...(a.companyKey ? [{ companyKey: a.companyKey }] : []),
+      ...(a.branch ? [{ branch: a.branch }] : []),
+      ...(topic ? [{ skills: topic }, { topics: topic }] : []),
+    ];
+    const rows = await ProfileModel.find({
+      verified: true,
+      roles: 'ALUMNI',
+      ...(any.length ? { $or: any } : {}),
+    })
+      .select('userId companyKey branch skills topics')
+      .limit(2000)
+      .lean<
+        {
+          userId: Types.ObjectId;
+          companyKey: string;
+          branch: string | null;
+          skills: string[];
+          topics: string[];
+        }[]
+      >();
+    const score = (r: (typeof rows)[number]) =>
+      (a.companyKey && r.companyKey === a.companyKey ? 4 : 0) +
+      (a.branch && r.branch === a.branch ? 2 : 0) +
+      (topic && [...r.skills, ...r.topics].some((x) => topic.test(x)) ? 1 : 0);
+    return rows
+      .map((r) => ({ id: String(r.userId), s: score(r) }))
+      .sort((x, y) => y.s - x.s || x.id.localeCompare(y.id))
+      .map((r) => r.id);
+  }
+
+  /** Roles by member (prompt 2, G6: only alumni are nominated or asked). */
+  async rolesOf(userIds: string[]): Promise<Map<string, string[]>> {
+    const rows = await ProfileModel.find({ userId: { $in: userIds.map((u) => new Types.ObjectId(u)) } })
+      .select('userId roles')
+      .lean<{ userId: Types.ObjectId; roles: string[] }[]>();
+    return new Map(rows.map((r) => [String(r.userId), r.roles]));
+  }
+
+  /**
+   * Batch pages (prompt 2, G6): verified members of a batch, and where those who show their company
+   * to every member work (companies by count; the caller suppresses small ones).
+   */
+  async batchFacts(branch: string, gradYear: number) {
+    const [total, companies] = await Promise.all([
+      ProfileModel.countDocuments({ verified: true, branch, gradYear }),
+      ProfileModel.aggregate<{ _id: string; company: string; n: number }>([
+        {
+          $match: {
+            verified: true,
+            branch,
+            gradYear,
+            companyKey: { $nin: ['', null] },
+            'visibility.company': 'members',
+          },
+        },
+        { $group: { _id: '$companyKey', company: { $first: '$company' }, n: { $sum: 1 } } },
+        { $sort: { n: -1, _id: 1 } },
+        { $limit: 50 },
+      ]),
+    ]);
+    return { total, companies: companies.map((c) => ({ company: c.company, n: c.n })) };
+  }
 
   async isActiveMember(userId: string): Promise<boolean> {
     return !!(await ProfileModel.exists({ userId, verified: true }));
