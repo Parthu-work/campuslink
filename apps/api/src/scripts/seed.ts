@@ -64,6 +64,7 @@ import {
   RoadmapVersionModel,
 } from '../modules/roadmaps/roadmap.model.js';
 import { studySeeder } from './seed-study.js';
+import { graphSeeder } from './seed-graph.js';
 import { InvoiceCounterModel, InvoiceModel, PaymentModel } from '../modules/billing/billing.model.js';
 import { financialYearOf, gstSplit, invoiceNumber, istDay } from '@campuslink/shared';
 
@@ -1288,6 +1289,7 @@ async function main() {
   const hash = await hashPassword(password);
   const rows: string[][] = [];
   const seedStudy = studySeeder(env);
+  const seedGraph = graphSeeder(env);
 
   const platform = await TenantModel.create({
     slug: 'admin',
@@ -1500,6 +1502,8 @@ async function main() {
       await seedWhatsAppLog(ids, c.slug);
       await seedSupport(ids, t._id, t.branding.displayName);
       await seedStudy(t._id, ids.get('faculty') as Types.ObjectId, { material: studyMaterial });
+      // Prompt 2, G10: company pages from the seeded DEMO drives, offers and alumni.
+      await seedGraph();
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
   }

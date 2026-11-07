@@ -15,6 +15,8 @@ import { ParentDigestService } from './modules/notifications/parent-digest.servi
 // [slot: G9]
 import { RosterSyncService } from './modules/imports/roster-sync.service.js';
 // [slot: A G10 G11 G13]
+import { GraphService } from './modules/graph/graph.service.js';
+import { CopilotIndexService } from './modules/copilot/copilot-index.service.js';
 // [slot: B G12]
 import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
@@ -206,6 +208,22 @@ async function main() {
     setInterval(rosterTick, 3600_000).unref();
   }
   // [slot: A G10 G11 G13]
+  // The Placement Graph (prompt 2, G10): hourly; one run per college a day, from 02:00 IST.
+  const graphTick = () =>
+    GraphService.enqueueNightly(jobs).catch((err: unknown) => logger.error({ err }, 'graph tick failed'));
+  if (runsJobs) {
+    setTimeout(graphTick, 240_000).unref();
+    setInterval(graphTick, 3600_000).unref();
+  }
+  // The Career Copilot's index (prompt 2, G11): hourly; one run per college a day, from 03:00 IST.
+  const copilotTick = () =>
+    CopilotIndexService.enqueueDaily(jobs).catch((err: unknown) =>
+      logger.error({ err }, 'copilot index tick failed'),
+    );
+  if (runsJobs) {
+    setTimeout(copilotTick, 270_000).unref();
+    setInterval(copilotTick, 3600_000).unref();
+  }
   // [slot: B G12]
   if (runsJobs) {
     setTimeout(nextStepTick, 150_000).unref();

@@ -180,6 +180,13 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       case 'roster_sync_review':
         return '/admin/imports';
       // [slot: A G10 G11 G13]
+      // Prompt 2, G10: the Interview Experience Bank.
+      case 'experience_prompt':
+        return `/experiences/new${d.companyKey ? `?company=${encodeURIComponent(d.companyKey)}` : ''}`;
+      case 'experience_published':
+        return d.companyKey ? `/companies/${encodeURIComponent(d.companyKey)}` : '/companies';
+      case 'experience_returned':
+        return '/experiences';
       // [slot: B G12]
       case 'buddy_matched':
       case 'peer_mentor_nominated':

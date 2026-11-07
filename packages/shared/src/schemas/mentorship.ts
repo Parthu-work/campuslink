@@ -254,6 +254,9 @@ export type MatchReason =
   | { kind: 'skills'; values: string[] }
   | { kind: 'languages'; values: string[] }
   | { kind: 'available' }
+  // Prompt 2, G10: outcome-proven matching (mentees like the viewer reached interviews or offers).
+  | { kind: 'outcomes'; count: number; scope: 'branch' | 'target' }
+  | { kind: 'referrals'; count: number }
   | { kind: 'fast_reply' };
 export interface MentorMatch {
   mentor: MentorCard;

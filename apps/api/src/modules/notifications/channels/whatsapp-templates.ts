@@ -388,6 +388,21 @@ export const PARENT_DIGEST_TEMPLATE: WaTemplate = {
 
 // [slot: G9]
 // [slot: A G10 G11 G13]
+/**
+ * Prompt 2, G10: "share your interview", 7 days after an offer is verified (within the member's
+ * caps). Variable: the company.
+ */
+WHATSAPP_TEMPLATES.experience_prompt = {
+  name: 'cl_experience_prompt',
+  category: 'utility',
+  critical: false,
+  params: (d) => [d.company ?? ''],
+  text: {
+    en: 'Congratulations on your {{1}} offer. Help your juniors: share how your interview went, the rounds and the questions in your own words. Open the app to write it; the placement cell reviews it first.',
+    te: 'మీ {{1}} ఆఫర్‌కు అభినందనలు. జూనియర్లకు సహాయం చేయండి: మీ ఇంటర్వ్యూ ఎలా జరిగిందో, రౌండ్లు, ప్రశ్నలు మీ మాటల్లో పంచుకోండి. రాయడానికి యాప్ తెరవండి; ముందుగా ప్లేస్‌మెంట్ సెల్ సమీక్షిస్తుంది.',
+    hi: 'आपके {{1}} ऑफ़र के लिए बधाई। जूनियर्स की मदद करें: बताएँ कि आपका इंटरव्यू कैसा रहा, राउंड और सवाल अपने शब्दों में। लिखने के लिए ऐप खोलें; पहले प्लेसमेंट सेल इसकी समीक्षा करता है।',
+  },
+};
 // [slot: B G12]
 
 export const INVITE_TEMPLATES: Record<'student' | 'alumni', WaTemplate> = {

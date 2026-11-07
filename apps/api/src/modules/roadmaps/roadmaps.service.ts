@@ -1076,6 +1076,45 @@ export class RoadmapsService {
     return (await this.list(viewer, { q: text })).slice(0, 5);
   }
 
+  /**
+   * Prompt 2, G11 (the Career Copilot's index): every published roadmap's current content as text,
+   * for the college-wide index; who may read each one is checked again on every answer (`list`).
+   */
+  async copilotTexts(): Promise<{ id: string; slug: string; title: string; text: string }[]> {
+    const rows = await RoadmapModel.find({
+      status: 'published',
+      removal: null,
+      publishedVersion: { $ne: null },
+    })
+      .select('slug title publishedVersion')
+      .limit(300)
+      .lean<RoadmapDoc[]>();
+    const out: { id: string; slug: string; title: string; text: string }[] = [];
+    for (const r of rows) {
+      const v = await RoadmapVersionModel.findOne({ roadmapId: r._id, version: r.publishedVersion })
+        .select('content')
+        .lean<VersionDoc>();
+      if (!v) continue;
+      const c = v.content;
+      out.push({
+        id: String(r._id),
+        slug: r.slug,
+        title: c.title,
+        text: [
+          `Roadmap: ${c.title}. ${c.summary}`,
+          c.outcomes.length ? `Outcomes: ${c.outcomes.join('; ')}.` : '',
+          ...c.nodes.map(
+            (n, i) =>
+              `Step ${i + 1}: ${n.title} (${n.kind}, about ${n.estimateHours[0]}–${n.estimateHours[1]} hours). ${n.summary}`,
+          ),
+        ]
+          .filter(Boolean)
+          .join('\n'),
+      });
+    }
+    return out;
+  }
+
   /** Analytics: roadmap steps marked done per member since a date. */
   async stepsByUserSince(since: Date) {
     const rows = await RoadmapProgressModel.aggregate<{ _id: Types.ObjectId; n: number }>([

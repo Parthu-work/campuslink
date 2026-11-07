@@ -152,6 +152,10 @@ export const NOTIFICATION_TYPES = [
   // [slot: G9]
   'roster_sync_review',
   // [slot: A G10 G11 G13]
+  // Prompt 2, G10: share your interview (7 days after a verified offer); a write-up reviewed.
+  'experience_prompt',
+  'experience_published',
+  'experience_returned',
   // [slot: B G12]
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -256,6 +260,9 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   // [slot: G9]
   roster_sync_review: 'requests',
   // [slot: A G10 G11 G13]
+  experience_prompt: 'placements',
+  experience_published: 'placements',
+  experience_returned: 'placements',
   // [slot: B G12]
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
@@ -400,6 +407,8 @@ export const REPORT_TARGETS = [
   'roadmap_comment',
   'event',
   'event_question',
+  // Prompt 2, G10: an Interview Experience Bank write-up.
+  'experience',
   'review',
 ] as const;
 export const REPORT_REASONS = ['spam', 'harassment', 'inappropriate', 'impersonation', 'other'] as const;

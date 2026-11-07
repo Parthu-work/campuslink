@@ -100,6 +100,8 @@
     "resume": "Résumé",
     "interviews": "Mock interviews",
     "readiness": "Readiness",
+    "companies": "Companies",
+    "copilot": "Career Copilot",
     "practice": "Practice",
     "peers": "Peer mentoring",
     "circles": "Circles",
@@ -492,6 +494,7 @@
     "signIn": "Sign-in options",
     "interviewQuestions": "Interview questions",
     "readiness": "Readiness board",
+    "experiences": "Interview write-ups",
     "practiceBank": "Practice questions",
     "peers": "Peer mentors and buddies",
     "circles": "Circles",
@@ -1364,6 +1367,18 @@
     "voice_ready": {
       "title": "Your recording is written out",
       "body": "Check the text and fix any words it got wrong."
+    },
+    "experience_prompt": {
+      "title": "Help your juniors: share your {{company}} interview",
+      "body": "Write down the rounds and questions while you remember them."
+    },
+    "experience_published": {
+      "title": "Your {{company}} write-up is published",
+      "body": "Juniors preparing for {{company}} can read it now."
+    },
+    "experience_returned": {
+      "title": "Your {{company}} write-up needs a change",
+      "body": "The reviewer sent it back with a note."
     },
     "voice_failed": {
       "title": "We could not make out your recording",

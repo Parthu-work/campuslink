@@ -164,6 +164,7 @@ function Topics({ home }: { home: PracticeHomeView }) {
 
 function Companies({ home, start }: { home: PracticeHomeView; start: ReturnType<typeof useStart> }) {
   const { t } = useTranslation();
+  const seniors = useCan('companies:view');
   return (
     <section aria-labelledby="practice-companies" className="grid gap-3">
       <div className="grid gap-1">
@@ -196,7 +197,7 @@ function Companies({ home, start }: { home: PracticeHomeView; start: ReturnType<
                     )}
                   </p>
                 </div>
-                <div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   <Button
                     variant="secondary"
                     disabled={!home.companySetsLeft || start.isPending}
@@ -205,6 +206,15 @@ function Companies({ home, start }: { home: PracticeHomeView; start: ReturnType<
                   >
                     {t('practice.companies.go', { company: c.name })}
                   </Button>
+                  {/* Prompt 2, G10: the company's page with seniors' interview write-ups. */}
+                  {seniors && (
+                    <Link
+                      to={`/companies/${encodeURIComponent(c.key)}`}
+                      className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink hover:underline"
+                    >
+                      {t('practice.companies.seniors', { company: c.name })}
+                    </Link>
+                  )}
                 </div>
               </Card>
             </li>

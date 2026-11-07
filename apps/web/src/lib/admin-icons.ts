@@ -52,6 +52,7 @@ export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
   // [slot: G9]
   signIn: KeyRound,
   // [slot: A G10 G11 G13]
+  experiences: MessageSquareQuote,
   // [slot: B G12]
   moderation: ShieldAlert,
   mentorship: HeartHandshake,

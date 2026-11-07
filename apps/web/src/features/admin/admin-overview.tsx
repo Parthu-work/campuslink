@@ -16,7 +16,7 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react';
-import type { AdminOverviewView, Count } from '@campuslink/shared';
+import { ADMIN_SECTIONS, type AdminOverviewView, type Count } from '@campuslink/shared';
 import { IntentLink } from '../../components/ui/intent-link';
 import { Badge, Card, Skeleton } from '../../components/ui/misc';
 import { ErrorState } from '../../components/ui/error-state';
@@ -126,6 +126,17 @@ export function AdminOverview() {
                 {t('admin.ov.offersHint')}
               </QueueCard>
             )}
+            {/* Prompt 2: review queues by admin section (interview questions, practice, write-ups). */}
+            {v.queues?.map((qd) => (
+              <QueueCard
+                key={qd.id}
+                to={ADMIN_SECTIONS.find((sct) => sct.id === qd.id)?.path ?? '/admin'}
+                icon={ADMIN_ICONS[qd.id]}
+                title={t(`admin.${qd.id}`)}
+                value={shown(qd.pending)}
+                waiting={qd.pending > 0}
+              />
+            ))}
             {v.verification && (
               <QueueCard
                 to="/admin/verification"

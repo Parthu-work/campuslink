@@ -23,6 +23,8 @@ const PACK_USERS: Record<string, string[]> = {
   // [slot: G9]
   reach: ['/features/reach/'],
   // [slot: A G10 G11 G13]
+  moat: ['/features/companies/'],
+  copilot: ['/features/copilot/'],
   // [slot: B G12]
 };
 

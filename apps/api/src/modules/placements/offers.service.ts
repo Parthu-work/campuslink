@@ -314,6 +314,30 @@ export class OffersService {
     }));
   }
 
+  /**
+   * Prompt 2, G10 (the Placement Graph): every verified offer, for aggregates only (the graph
+   * suppresses and bands them), with when it was made and verified (outcomes and the 7-day prompt).
+   */
+  async graphRows() {
+    const rows = await OfferModel.find({ status: 'verified' })
+      .select('userId branch gradYear companyKey companyName ctcLpa ctcBand type offerDate verifiedAt')
+      .limit(100_000)
+      .lean<OfferDoc[]>();
+    return rows.map((r) => ({
+      id: String(r._id),
+      userId: r.userId ? String(r.userId) : null,
+      branch: r.branch ?? null,
+      gradYear: r.gradYear ?? null,
+      companyKey: r.companyKey,
+      companyName: r.companyName,
+      ctcLpa: r.ctcLpa ?? null,
+      ctcBand: r.ctcBand as CtcBand,
+      type: r.type,
+      offerDate: r.offerDate,
+      verifiedAt: r.verifiedAt ?? null,
+    }));
+  }
+
   /** Files hook: offer proof is readable by whoever verifies offers (and its uploader). */
   async proofAccess(fileId: string, viewer: AuthState) {
     if (!viewer.permissions.has('outcomes:verify')) return null;

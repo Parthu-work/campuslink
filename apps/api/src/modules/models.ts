@@ -126,4 +126,11 @@ export { CalendarFeedModel } from './calendar/calendar.service.js';
 export { RosterSyncModel } from './imports/roster-sync.service.js';
 export { SsoPendingModel, SsoSettingsModel, SsoStateModel } from './auth/sso/sso.service.js';
 // [slot: A G10 G11 G13]
+export {
+  CompanyGraphModel,
+  ExperienceModel,
+  ExperiencePromptModel,
+  MentorOutcomeModel,
+} from './graph/graph.model.js';
+export { CopilotChunkModel, CopilotMessageModel, CopilotSessionModel } from './copilot/copilot.model.js';
 // [slot: B G12]

@@ -49,6 +49,7 @@
       "items_other": "{{count}} questions",
       "closes": "drive registration closes {{date}}",
       "go": "Practise for {{company}}",
+      "seniors": "Seniors’ interviews at {{company}}",
       "emptyTitle": "No company sets yet",
       "emptyBody": "When faculty tag questions for a company that visits the college, you can practise for it here."
     },

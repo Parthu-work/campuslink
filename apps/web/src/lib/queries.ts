@@ -1047,4 +1047,6 @@ export const adminOutcomesPreview = () =>
 
 // [slot: G9]
 // [slot: A G10 G11 G13]
+/** Company pages from the Placement Graph (prompt 2, G10), defined with the feature; the router prefetches them. */
+export { companies, company } from '../features/companies/queries';
 // [slot: B G12]

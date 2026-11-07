@@ -10,6 +10,8 @@ import {
   STATS_MIN_REVIEWS,
   STATS_WINDOW_DAYS,
   isBookable,
+  outcomePoints,
+  type OutcomeEvidence,
   type ReplyBand,
   type AvailabilityBody,
   type MatchReason,
@@ -107,7 +109,13 @@ export function scoreMatch(
   },
   mentor: PublicProfile,
   /** B5: how fast the mentor replies and how loaded they are (bounded terms; absent = neutral). */
-  signals?: { medianReplyHours: number | null; pending: number; weeklyCap: number },
+  signals?: {
+    medianReplyHours: number | null;
+    pending: number;
+    weeklyCap: number;
+    /** Prompt 2, G10: what mentees like the viewer and the mentor's referrals went on to (bounded). */
+    outcomes?: OutcomeEvidence;
+  },
 ): { score: number; reasons: MatchReason[] } {
   const f = mentor.fields;
   const reasons: MatchReason[] = [];
@@ -154,6 +162,15 @@ export function scoreMatch(
     // Load: -10 once pending requests reach the weekly cap, -5 more per extra one, at most -15.
     if (signals.pending >= signals.weeklyCap)
       score -= Math.min(15, 10 + (signals.pending - signals.weeklyCap) * 5);
+    // Outcome-proven (G10): +4 per mentee like the viewer who reached an interview or offer (at
+    // most +12), +3 per converted referral (at most +6), never more than +15; under two adds nothing.
+    if (signals.outcomes) {
+      const o = signals.outcomes;
+      const points = outcomePoints(o);
+      score += points.total;
+      if (points.mentee) reasons.push({ kind: 'outcomes', count: o.mentees, scope: o.scope });
+      if (points.referral) reasons.push({ kind: 'referrals', count: o.referrals });
+    }
   }
   return { score: Math.max(0, Math.min(100, score)), reasons };
 }
@@ -266,6 +283,15 @@ export class MentorsService {
       },
       { upsert: true },
     );
+  }
+
+  /** Prompt 2, G10 (the Placement Graph): alumni taking requests ("alumni there who mentor"; not peers). */
+  async acceptingIds(): Promise<Set<string>> {
+    const rows = await MentorProfileModel.find({ accepting: true, peer: { $ne: true } })
+      .select('userId')
+      .limit(20_000)
+      .lean<{ userId: Types.ObjectId }[]>();
+    return new Set(rows.map((r) => String(r.userId)));
   }
 
   /** A peer mentor guides juniors only (a later batch), and only while the college has peer mentors on. */
@@ -424,6 +450,16 @@ export class MentorsService {
     ]);
     return new Map(rows.map((r) => [String(r._id), r.n]));
   }
+
+  /**
+   * Prompt 2, G10: outcome evidence per mentor for this viewer (set by the app from the Placement
+   * Graph's nightly mentor outcomes; empty until then).
+   */
+  outcomeEvidence: (
+    viewer: AuthState,
+    mentee: { branch: string | null; targetCompanies: string[] },
+    mentorIds: Types.ObjectId[],
+  ) => Promise<Map<string, OutcomeEvidence>> = () => Promise.resolve(new Map());
 
   /** Mentors the viewer may approach: accepting, verified, audience fits, nobody blocked anybody. */
   private async candidates(viewer: AuthState, sessionType?: SessionType) {
@@ -621,7 +657,11 @@ export class MentorsService {
     const mentee = { ...prefs, branch: own.branch, skills: own.skills, languages: own.languages };
     const open = (await this.candidates(viewer)).filter((c) => c.card.open);
     const ids = open.map((c) => c.mentor.userId);
-    const [base, pending] = await Promise.all([this.baseStats(ids), this.pendingCounts(ids)]);
+    const [base, pending, outcomes] = await Promise.all([
+      this.baseStats(ids),
+      this.pendingCounts(ids),
+      this.outcomeEvidence(viewer, mentee, ids).catch(() => new Map<string, OutcomeEvidence>()),
+    ]);
     const scored = open
       .map((c) => {
         const b = base.get(c.profile.userId);
@@ -632,6 +672,9 @@ export class MentorsService {
             medianReplyHours: b?.medianReplyHours ?? null,
             pending: pending.get(c.profile.userId) ?? 0,
             weeklyCap: c.mentor.weeklyCap,
+            ...(outcomes.has(c.profile.userId)
+              ? { outcomes: outcomes.get(c.profile.userId) as OutcomeEvidence }
+              : {}),
           }),
         };
       })
