@@ -538,21 +538,21 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 
 **Baseline.** Prompt 1 (B1 to B15) is Done. Prompt 2 starts from `feat/prompt-1b-remaining` at `434b22c` (prompt 1b, not yet merged into `main`; CI green up to `9b261b8`), on the branch `feat/prompt-2`, as the owner asked to continue in this session. Facts checked and corrected in [`facts.md`](facts.md) (locales, ADR numbering: the network ADR becomes **0014**, the notice version, platform models).
 
-| Phase | Name                                                           | Status      |
-| ----- | -------------------------------------------------------------- | ----------- |
-| G1    | AiTasksService: the shared AI layer                            | Done        |
-| G2    | Resume builder, ATS check and alumni review                    | Done        |
-| G3    | AI mock interviews (text and voice) with human follow-up       | Done        |
-| G4    | Aptitude and coding practice                                   | Done        |
-| G5    | Readiness score and the TPO readiness board                    | Done        |
-| G6    | Alumni engagement                                              | Done        |
-| G7    | Habit loops                                                    | Done        |
-| G8    | Growth loops                                                   | Done        |
-| G9    | Reach: Android app, single sign-on, calendar feed, roster sync | Done        |
-| G10   | The moat data                                                  | Done        |
-| G11   | Career Copilot                                                 | Done        |
-| G12   | The network (ADR 0014 approved)                                | Done        |
-| G13   | Re-audit, YC metrics pack and final report                     | In progress |
+| Phase | Name                                                           | Status |
+| ----- | -------------------------------------------------------------- | ------ |
+| G1    | AiTasksService: the shared AI layer                            | Done   |
+| G2    | Resume builder, ATS check and alumni review                    | Done   |
+| G3    | AI mock interviews (text and voice) with human follow-up       | Done   |
+| G4    | Aptitude and coding practice                                   | Done   |
+| G5    | Readiness score and the TPO readiness board                    | Done   |
+| G6    | Alumni engagement                                              | Done   |
+| G7    | Habit loops                                                    | Done   |
+| G8    | Growth loops                                                   | Done   |
+| G9    | Reach: Android app, single sign-on, calendar feed, roster sync | Done   |
+| G10   | The moat data                                                  | Done   |
+| G11   | Career Copilot                                                 | Done   |
+| G12   | The network (ADR 0014 approved)                                | Done   |
+| G13   | Re-audit, YC metrics pack and final report                     | Done   |
 
 ### G1 · AiTasksService: the shared AI layer (Done: G2 to G5 and G11 use it)
 
@@ -658,7 +658,7 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 
 **Decisions.** See the ADR's implementation notes: the network's consent purposes are a separate map (sign-up and Settings list the others with core strings), the inbox is proved by the set-password link, employers get their own résumé link, posting reports stay in the network module, and withdrawals show as a count. Outside the merge slots (approved with the ADR or required by it): `Role`, `ROLE_PERMISSIONS`, `MFA_REQUIRED_ROLES`, `TENANT_ROLES`, `PLATFORM_PERMISSIONS` and the college admin's permission filter (`roles.ts`); `navPersona`, `PERSONA_TABS` and `homePath` (`navigation.ts`); `ErrorCode` (two codes); `NavPersona`; the tenant model (one block next to `kind`) and `TenantRecord`; `requireScope`, `RequestContext` and the tenant plugin (the scoped allowlist); `PLATFORM_MODELS`; the consent model's enum and two consent-service methods; one method each on `ProfilesService`, `PlacementsService` (two), `OffersService`, `UsersService` and the audit service (two), the `afterSync` hook; `ENCRYPTED_COLLECTIONS`; three limiters; the platform service's slug check; the seed (one employer); in the web, `lib/nav.ts` (the employer host's destinations), `lib/preload.ts` (the kind type), `app/router.tsx` (the employer route table and two platform screens) and `vite.config.ts` (the credential paths). The bundle stays within budget (initial +0.59 KB; one lazily loaded module for all G12 screens; nav icons reused); core `te.json` +0.13 KB. **Gaps**: production nginx and the staging edge route `/{slug}/verify/`, `/{slug}/did.json` and `/{slug}/credentials/status/1` to the API like `/p/` (added in G13; an ALB needs the same rule, `docs/deployment.md`); invoicing employers through `BillingService` and paying colleges their share are hooks only; the generated docs (`docs:gen`, `docs:whatsapp`) were discarded on the parallel branches as agreed and regenerated once G9 to G12 were merged (G13 branch, `feat/prompt-2-g13`).
 
-### G13 · Re-audit, YC metrics pack and final report (In progress: gates)
+### G13 · Re-audit, YC metrics pack and final report (Done)
 
 **Merge.** On `feat/prompt-2-g13` (from `feat/prompt-2` at `0083f90`, which held G1 to G9): `feat/prompt-2-g10` (G10, G11) and `feat/prompt-2-g12` (G12) merged with no conflicts; `docs:gen` and `docs:whatsapp` regenerated; all 1,280 API tests passed on the merged tree. The session could push only this branch, so G10 to G12 reach `feat/prompt-2` through its pull request.
 
@@ -666,4 +666,6 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 
 **Decisions.** The demo cohort is real accounts named "Demo Student"/"Demo Alumnus" (company pages need offers and alumni tied to members); the year's AI usage is replayed from measured per-request tokens rather than 900 AI calls per college; offers per 100 final-years counts offers, as Admin › Analytics does, and compares with the previous batch at the same date; five end-to-end checks that assumed the small seed (one page of members, a company with one offer, invites off) were updated to search by name, accept pay only as a band and expect invites on. Local only (not committed): the container's Docker needed a higher file limit and an idle-handle setting for MongoDB to survive the full API suite, and hosts entries for `*.localhost` so Node resolves them as CI does.
 
-**Gates.** Pending (see report-2.md › Gates).
+**Re-audit findings, fixed here.** Companies, the Career Copilot, Share and Campus Captain were never in the web's shipped destinations, so the menu, rail and palette left them out (G8, G10, G11); Home's Next Step card (G7) loaded after Home painted and pushed the feed down (CLS 0.309): Home's loader preloads it and `lazyPart` gained `preload()`, rendering a preloaded part without suspending (chosen once per mount); 44 px targets on Prompt 2 screens (tag input, checkbox labels, three text links, the sign-in copy button, a write-up's options button); the résumé list's empty-state heading level; a missing full stop on company pages. The CI-only failures on the way: the seed's member invites need WhatsApp (now the cell's CSV links), and two navigation checks assumed a short Home (one now scrolls until a post is on screen; the other was flaky because of the Next Step swap, fixed above). Not fixed (outside Prompt 2): the English landing and sign-in pages download the Devanagari and Telugu fonts for the language switcher (B12), so their LCP is slower than in the first audit.
+
+**Gates.** See report-2.md › Gates.

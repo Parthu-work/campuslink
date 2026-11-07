@@ -105,6 +105,17 @@ Measured on the seeded year's `AiUsage` (12 months, December 2025 to November 20
 
 **This is an estimate, and a low one.** The mock provider counts four characters a token over the real prompts, and writes short replies (about 70 tokens), where a real answer may use up to the 700-token cap: with every Copilot and study answer at the cap, the month comes to about 2,100 tokens and **$0.0006 per active student** (about ₹0.05). Telugu and Hindi take more tokens per word with most tokenizers. The frequency (about 1.3 questions a student a month) is the demo's chosen shape, not a measurement: a student asking 20 questions a month at the cap costs about $0.01. Deep-tier calls (résumé rewrites, interview summaries) priced at a larger model would cost more; at Claude Sonnet 5.5 ($2 / $10) the same usage is 20 times dearer. Run `pnpm --filter @campuslink/api ai:smoke` with a real key, and the admin's AI dashboard with real prices, before quoting a figure.
 
+## The UI re-audit (G13)
+
+Results and every screenshot are in [`after-2/`](after-2/README.md): 1,152 screenshots (every Prompt 2 screen at 360 and 1440 px, light and dark, both colleges; Telugu and Hindi at 360 px), the platform console and the recruiter portal.
+
+- **axe (WCAG 2.2 AA):** 598 scans, no violations.
+- **Sideways overflow:** none, on all 155 measured screens and in Telugu and Hindi; no bottom-bar label cut off.
+- **Targets:** none under 44 px on the 58 measured Prompt 2 screens (after the fixes below); Prompt 1's known patterns remain.
+- **Journeys** J0 to J10 pass throttled and unthrottled; the Prompt 2 journey's steps are ready in 167 to 366 ms on the throttled phone.
+- **Lighthouse:** accessibility 100 on every Prompt 2 page; performance 93 to 97 on them; Home 83 cold (56 in the first audit) with no layout shift; landing and sign-in slower than in the first audit because of the Hindi and Telugu fonts (below).
+- **Per-screen JS** under 70 KB; **initial JS** 169.8 KiB of 170.
+
 ## Decisions and deviations
 
 The full list is in `progress.md` under each phase and in ADR 0014's implementation notes. The ones the owner should know:
@@ -119,9 +130,10 @@ The full list is in `progress.md` under each phase and in ADR 0014's implementat
 - **The seed's demo invites are the placement cell's CSV links**, not members' WhatsApp invites: CI seeds without WhatsApp, where member invites refuse to send (the first CI run on the seed failed on exactly that).
 - **Fixed what the re-audit found** (G13 owns the re-audit, so its findings were fixed here rather than listed):
   - Companies, the Career Copilot, Share and Campus Captain were never in the web's shipped destinations, so the account menu, the desktop rail and the command palette did not offer them (G8, G10, G11); they do now.
-  - Home's weekly Next Step card (G7) loaded after Home painted and pushed the feed down (Lighthouse layout shift 0.309, was 0.089); Home's loader now prefetches it and Home keeps its space while it loads.
+  - Home's weekly Next Step card (G7) loaded after Home painted and pushed the feed down (Lighthouse layout shift 0.309, was 0.089); Home's loader now preloads it, and `lazyPart` gained `preload()` and renders a preloaded part without suspending, so Home's layout shift is 0.
   - Targets under 44 px on Prompt 2 screens: the tag input's remove buttons and field, the checkbox label (Admin › Readiness rows), the quick-ask and practice look-back links (19 px tall, under WCAG's 24 px too), the Next Step card's link, the sign-in copy button and a write-up's options button.
   - "Updated 7 Nov" ran into the next sentence on company pages (a missing full stop, en, te, hi).
+  - The résumé list's empty state was an `h3` directly under the screen's `h1` (Lighthouse heading order); `EmptyState` takes a `level`.
 - **The audit scripts follow the demo student into her final year:** since June 2026 Ananya (batch 2027) has Placements in place of Jobs on her bar, so the journeys and the scroll-memory check tap Placements and open Jobs from the menu.
 
 ## New environment variables (Prompt 2)
@@ -167,6 +179,7 @@ All optional; `config/env.ts` refuses to boot on a malformed value.
 - **From earlier phases** (`security-review.md` › Gaps): `style-src 'unsafe-inline'` in the CSP and no external penetration test.
 - **The initial bundle is at 169.8 KiB of 170 KiB**: the next screen-shell change must be paid for elsewhere.
 - **Prompt 1 screens with targets under 44 px** (unchanged from the earlier audits, WCAG 2.5.8's 24 px met): member-name links on Home and a job (24 px), job titles in the jobs list (39 px), the roadmap review queue and others listed in `after-2/data-after/touch-targets-360.json`. The demo year's larger lists show more of the same links.
+- **The English landing and sign-in pages download the Devanagari (253 KiB) and Telugu (138 KiB) fonts** for the language switcher's native names (since B12), so their largest paint is slower than in the first audit (landing 3.7 → 5.8 s under simulated throttling). Showing those two names in the system font would fix it.
 - **`pnpm audit` (all dependencies)** reports 5 low or moderate advisories in build and export tooling (glob and minimatch through eslint, workbox and write-excel-file's archiver; deepmerge through workbox); the gate (`--prod --audit-level=high`) is clean. No dependency changed in Prompt 2's G13.
 
 ## Gates
