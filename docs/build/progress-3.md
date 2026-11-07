@@ -17,7 +17,7 @@ One section per phase: what shipped, decisions, gaps and gate results. The brief
 
 ### 1. Before set
 
-`docs/build/before-3/`, captured with the audit scripts from a clean worktree at `094acfc` (`AUDIT_OUT=docs/build/before-3`): `after/` holds 1,152 screenshots (every role and screen, 360 and 1440, light and dark, DPIT and MRCE; Telugu and Hindi at 360), and `data-after/` the axe, target, overflow, journey, extras and Lighthouse results (see the run log at the end of this section for which scripts completed).
+`docs/build/before-3/`, captured with the audit scripts from a clean worktree at `094acfc` (`AUDIT_OUT=docs/build/before-3`): `after/` holds 1,152 screenshots (every role and screen, 360 and 1440, light and dark, DPIT and MRCE; Telugu and Hindi at 360), and `data-after/` the axe, target, overflow, journey, extras and Lighthouse results All five scripts completed (details and Lighthouse table in `before-3/README.md`): axe 598 scans with no violations; 90 targets under 44 px on 23 screens; Lighthouse home-cold LCP 3.9 s, landing 6.0 s, sign-in 4.6 s in this container.
 
 ### 2. Tap counts (before)
 
