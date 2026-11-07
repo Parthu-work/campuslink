@@ -28,9 +28,6 @@ export const Capability = {
   PEER_MENTOR: 'PEER_MENTOR',
   /** Prompt 2, G8: a student who helps their class join; granted by the college's admins. */
   CAMPUS_CAPTAIN: 'CAMPUS_CAPTAIN',
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
 } as const;
 export type Capability = (typeof Capability)[keyof typeof Capability];
 export const CAPABILITIES = Object.values(Capability);
@@ -142,15 +139,12 @@ export const ALL_PERMISSIONS = [
   'captains:class',
   'share:pages',
   'parents:digest',
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
   // The moat data (prompt 2, G10): company pages and the Interview Experience Bank.
   'companies:view',
   'experiences:share',
   'experiences:review',
   // The Career Copilot (prompt 2, G11).
   'copilot:use',
-  // [slot: B G12]
   // The network (prompt 2, G12, ADR 0014)
   'network:discover',
   'network:manage',
@@ -263,8 +257,6 @@ export const PERMISSIONS: Record<Permission, string> = {
   'captains:class': 'See one’s own class joining (counts only) and invite classmates (Campus Captains)',
   'share:pages': 'Publish opt-in public pages: a placement, a finished roadmap, mentoring',
   'parents:digest': 'Send a monthly summary to a parent, with their confirmation',
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
   'companies:view':
     'See company pages: where seniors were placed, rounds, alumni there and interview write-ups',
   'experiences:share':
@@ -273,7 +265,6 @@ export const PERMISSIONS: Record<Permission, string> = {
     'Review interview write-ups before they are published and send their questions to the question banks',
   'copilot:use':
     'Ask the Career Copilot: cited answers from the college’s own placement data, then a human to talk to',
-  // [slot: B G12]
   'network:discover':
     'Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)',
   'network:manage':
@@ -340,12 +331,9 @@ const STUDENT: Permission[] = [
   'circles:propose',
   'share:pages',
   'parents:digest',
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
   'companies:view',
   'experiences:share',
   'copilot:use',
-  // [slot: B G12]
   'network:discover',
   'credentials:own',
 ];
@@ -359,11 +347,8 @@ const STUDENT_ONLY: readonly Permission[] = [
   'peers:enroll',
   // Prompt 2, G8: the parent digest is a student's.
   'parents:digest',
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
   // Prompt 2, G11: the Career Copilot answers from campus drives and placement data.
   'copilot:use',
-  // [slot: B G12]
 ];
 const ALUMNI: Permission[] = [
   ...STUDENT.filter((p) => !STUDENT_ONLY.includes(p)),
@@ -381,9 +366,6 @@ const ALUMNI: Permission[] = [
   'study:contribute',
   'practice:author',
   'invites:batchmates',
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
 ];
 const STAFF: Permission[] = [
   ...STUDENT.filter(
@@ -397,11 +379,8 @@ const STAFF: Permission[] = [
       p !== 'nextstep:view' &&
       p !== 'peers:enroll' &&
       p !== 'share:pages' &&
-      // [slot: G9]
-      // [slot: A G10 G11 G13]
       p !== 'experiences:share' &&
       p !== 'copilot:use' &&
-      // [slot: B G12]
       p !== 'network:discover' &&
       p !== 'credentials:own' &&
       p !== 'parents:digest',
@@ -426,10 +405,7 @@ const STAFF: Permission[] = [
   'moderation:act',
   'users:invite',
   'users:approve',
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
   'experiences:review',
-  // [slot: B G12]
 ];
 const COLLEGE_ADMIN: Permission[] = ALL_PERMISSIONS.filter(
   (p) => !PLATFORM_PERMISSIONS.includes(p) && !EMPLOYER_PERMISSIONS.includes(p),
@@ -464,9 +440,6 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'outcomes:verify',
     // Readiness (prompt 2, G5): weights, nudges and the export.
     'readiness:manage',
-    // [slot: G9]
-    // [slot: A G10 G11 G13]
-    // [slot: B G12]
     // The network (prompt 2, G12): postings offered to the college, blocks.
     'network:manage',
   ],
@@ -483,9 +456,6 @@ export const CAPABILITY_PERMISSIONS: Record<Capability, readonly Permission[]> =
   CERTIFIED_CONTRIBUTOR: ['roadmaps:write', 'study:contribute'],
   PEER_MENTOR: ['mentorship:mentor'],
   CAMPUS_CAPTAIN: ['captains:class', 'invites:batchmates'],
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
 };
 
 /** What a user who has not completed college verification may do: read-only, limited. */

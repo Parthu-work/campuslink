@@ -25,11 +25,8 @@ export type NavId =
   | 'circles'
   | 'share'
   | 'captain'
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
   | 'companies'
   | 'copilot'
-  // [slot: B G12]
   | 'network'
   | 'recruiter'
   | 'employers'
@@ -112,11 +109,8 @@ export type AdminSectionId =
   | 'peers'
   | 'circles'
   | 'growth'
-  // [slot: G9]
   | 'signIn'
-  // [slot: A G10 G11 G13]
   | 'experiences'
-  // [slot: B G12]
   | 'network'
   | 'reports'
   | 'moderation'
@@ -177,13 +171,10 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   section('circles', '/admin/circles', 'circles:manage', 'community'),
   // Member invites and the public outcomes page (prompt 2, G8).
   section('growth', '/admin/growth', 'onboarding:manage', 'people'),
-  // [slot: G9]
   // Sign-in with the college's Google Workspace or Microsoft Entra ID accounts (prompt 2, G9).
   section('signIn', '/admin/sign-in', 'tenant:settings', 'college'),
-  // [slot: A G10 G11 G13]
   // Interview write-ups waiting for review (prompt 2, G10).
   section('experiences', '/admin/experiences', 'experiences:review', 'placements'),
-  // [slot: B G12]
   // Cross-college network: switches, postings offered to the college, blocks, credentials (G12).
   section('network', '/admin/network', 'network:manage', 'placements'),
   section('analytics', '/admin/analytics', 'analytics:cohort', 'insights'),
@@ -247,13 +238,10 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   share: d('share', '/share', 'you', ['share:pages', 'invites:batchmates']),
   // Campus Captains: their class joining, and invites (prompt 2, G8).
   captain: d('captain', '/captain', 'you', ['captains:class']),
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
   // Company pages from the Placement Graph and the Interview Experience Bank (prompt 2, G10).
   companies: d('companies', '/companies', 'explore', ['companies:view']),
   // The Career Copilot (prompt 2, G11).
   copilot: d('copilot', '/copilot', 'explore', ['copilot:use']),
-  // [slot: B G12]
   // The network (prompt 2, G12): alumni across colleges, intros, credentials.
   network: d('network', '/network', 'you', ['network:discover']),
   // The recruiter portal (employer tenants only).
@@ -307,11 +295,8 @@ export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
   outcomes: 'placements',
   readiness: 'placements',
   peers: 'peerMentors',
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
   companies: 'placements',
   copilot: 'placements',
-  // [slot: B G12]
 };
 
 /** Admin sections that belong to a feature switch. */
@@ -324,10 +309,7 @@ export const ADMIN_SECTION_FEATURE: Partial<Record<AdminSectionId, Feature>> = {
   reports: 'placements',
   readiness: 'placements',
   peers: 'peerMentors',
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
   experiences: 'placements',
-  // [slot: B G12]
 };
 
 /** The shipped destinations minus those whose feature the college has switched off. */
@@ -402,11 +384,8 @@ const MENU_ORDER: readonly NavId[] = [
   'circles',
   'share',
   'captain',
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
   'companies',
   'copilot',
-  // [slot: B G12]
   'network',
   'progress',
   'rewards',

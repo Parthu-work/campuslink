@@ -87,14 +87,12 @@ import { REFERRAL_OUTCOME_JOB } from './modules/referrals/referrals.service.js';
 import { SHARE_MODULE } from './http/openapi.js';
 import { backgroundAuth as backgroundAuthOf } from './modules/users/users.service.js';
 import { findTenantById as tenantById } from './modules/tenants/tenant.cache.js';
-// [slot: G9]
 import { CalendarService } from './modules/calendar/calendar.service.js';
 import { calendarRoutes } from './modules/calendar/calendar.routes.js';
 import { ROSTER_SYNC_JOB, RosterSyncService } from './modules/imports/roster-sync.service.js';
 import { rosterSyncRoutes } from './modules/imports/roster-sync.routes.js';
 import { SsoService } from './modules/auth/sso/sso.service.js';
 import { ssoRoutes } from './modules/auth/sso/sso.routes.js';
-// [slot: A G10 G11 G13]
 import { EXPERIENCE_PROMPT_JOB, GRAPH_JOB, GraphService } from './modules/graph/graph.service.js';
 import { ExperiencesService } from './modules/graph/experiences.service.js';
 import { graphRoutes } from './modules/graph/graph.routes.js';
@@ -103,7 +101,6 @@ import { COPILOT_INDEX_JOB, CopilotIndexService } from './modules/copilot/copilo
 import { CopilotService, type LiveSource } from './modules/copilot/copilot.service.js';
 import { copilotRoutes } from './modules/copilot/copilot.routes.js';
 import { companyKey as companyKeyOf } from './lib/company.js';
-// [slot: B G12]
 import { resolveTxt } from 'node:dns/promises';
 import { READINESS_MILESTONES } from '@campuslink/shared';
 import { NETWORK_RECONCILE_JOB, NetworkService, collegeNames } from './modules/network/network.service.js';
@@ -1247,7 +1244,6 @@ export function createApp({
     }),
   );
 
-  // [slot: G9]
   // ── Reach (prompt 2, G9) ─────────────────────────────
   // The calendar feed: sessions, events the member is going to, and drive dates and deadlines.
   const calendarService = new CalendarService({
@@ -1304,7 +1300,6 @@ export function createApp({
     cipher,
     tenantUrl: (tenant, p) => authService.tenantUrl(tenant, p),
   });
-  // [slot: A G10 G11 G13]
   // ── The moat data (prompt 2, G10) ─────────────────────────────
   // The Interview Experience Bank: verified authors, reviewed, then moderated like any content.
   const experiencesService = new ExperiencesService({
@@ -1546,7 +1541,6 @@ export function createApp({
     },
     isMinor: async (id) => (await profilesService.minorsAmong([id])).has(id),
   });
-  // [slot: B G12]
   // ── The network (prompt 2, G12, ADR 0014) ─────────────────────────────
   // Cross-college discovery and intros, the college's side of the recruiter portal, employers and
   // verified credentials. Every cross-tenant read or write is a named path (lib/network-scope.ts).
@@ -1798,12 +1792,9 @@ export function createApp({
     nextStepService,
     publicPagesService,
     referralsService,
-    // [slot: G9]
-    // [slot: A G10 G11 G13]
     graphService,
     experiencesService,
     copilotService,
-    // [slot: B G12]
     networkService,
     collegePostingsService,
     employersService,
@@ -1879,9 +1870,7 @@ export function createApp({
   privacyService.register('studyGroups', hook(studyGroupsService));
   privacyService.register('publicPages', hook(publicPagesService));
   privacyService.register('parentDigest', hook(parentDigestService));
-  // [slot: G9]
   privacyService.register('calendarFeed', hook(calendarService));
-  // [slot: A G10 G11 G13]
   privacyService.register('interviewExperiences', hook(experiencesService));
   privacyService.register('mentorOutcomes', hook(graphService));
   privacyService.register('copilot', hook(copilotService));
@@ -1902,7 +1891,6 @@ export function createApp({
     feature: 'placements',
     pending: () => experiencesService.pendingCount(),
   });
-  // [slot: B G12]
   privacyService.register('network', hook(networkService));
   privacyService.register('networkCandidacies', hook(collegePostingsService));
   privacyService.register(
@@ -2121,11 +2109,9 @@ export function createApp({
   app.use(API_PREFIX, defineModule('public-pages', publicPageRoutes(publicPagesService), pipeline));
   app.use(API_PREFIX, defineModule('member-invites', memberInviteRoutes(onboardingService), pipeline));
   app.use(API_PREFIX, defineModule('parent-digest', parentDigestRoutes(parentDigestService), pipeline));
-  // [slot: G9]
   app.use(API_PREFIX, defineModule('calendar', calendarRoutes(calendarService), pipeline));
   app.use(API_PREFIX, defineModule('roster-sync', rosterSyncRoutes(rosterSyncService), pipeline));
   app.use(API_PREFIX, defineModule('sso', ssoRoutes(ssoService, cookie), pipeline));
-  // [slot: A G10 G11 G13]
   app.use(
     API_PREFIX,
     defineModule('graph', withFeature('placements', graphRoutes(graphService, experiencesService)), pipeline),
@@ -2134,7 +2120,6 @@ export function createApp({
     API_PREFIX,
     defineModule('copilot', withFeature('placements', copilotRoutes(copilotService, logger)), pipeline),
   );
-  // [slot: B G12]
   app.use(
     API_PREFIX,
     defineModule('network', networkRoutes(networkService, collegePostingsService), pipeline),
@@ -2201,9 +2186,6 @@ export function createApp({
 
   // Public pages (prompt 2, G8): their full paths start with /p/, outside the API prefix.
   app.use(defineModule(SHARE_MODULE, shareRoutes(publicPagesService), pipeline));
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
   // Verified credentials (prompt 2, G12): /{tenant}/verify/{id}, did.json and the status list, with
   // the college taken from the path (ADR 0014 §12).
   app.use(credentialTenantFromPath(env.APP_ROOT_DOMAIN));
@@ -2260,16 +2242,13 @@ export function createApp({
     studyGroups: studyGroupsService,
     publicPages: publicPagesService,
     parentDigest: parentDigestService,
-    // [slot: G9]
     calendar: calendarService,
     rosterSync: rosterSyncService,
     sso: ssoService,
-    // [slot: A G10 G11 G13]
     graph: graphService,
     experiences: experiencesService,
     copilot: copilotService,
     copilotIndex: copilotIndexService,
-    // [slot: B G12]
     network: networkService,
     collegePostings: collegePostingsService,
     employers: employersService,

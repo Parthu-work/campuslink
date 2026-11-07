@@ -73,7 +73,6 @@ const PACKS = {
       hi: () => import('./packs/share.hi.json'),
     },
   },
-  // [slot: G9]
   /** Reach (prompt 2, G9): the calendar feed, the roster sync, single sign-on, the college picker. */
   reach: {
     sections: ['reach'],
@@ -83,7 +82,6 @@ const PACKS = {
       hi: () => import('./packs/reach.hi.json'),
     },
   },
-  // [slot: A G10 G11 G13]
   /** The moat data (prompt 2, G10): company pages, the Interview Experience Bank, outcome reasons. */
   moat: {
     sections: ['moat'],
@@ -102,7 +100,6 @@ const PACKS = {
       hi: () => import('./packs/copilot.hi.json'),
     },
   },
-  // [slot: B G12]
   /** The network (prompt 2, G12): alumni across colleges, credentials, the recruiter portal and registry. */
   network: {
     sections: ['network', 'recruiter'],

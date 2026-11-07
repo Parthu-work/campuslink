@@ -12,12 +12,9 @@ import { DigestService } from './modules/notifications/digest.service.js';
 import { NextStepService } from './modules/next-step/next-step.service.js';
 import { PeersService } from './modules/peers/peers.service.js';
 import { ParentDigestService } from './modules/notifications/parent-digest.service.js';
-// [slot: G9]
 import { RosterSyncService } from './modules/imports/roster-sync.service.js';
-// [slot: A G10 G11 G13]
 import { GraphService } from './modules/graph/graph.service.js';
 import { CopilotIndexService } from './modules/copilot/copilot-index.service.js';
-// [slot: B G12]
 import { NetworkService } from './modules/network/network.service.js';
 import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
@@ -198,7 +195,6 @@ async function main() {
     setTimeout(parentTick, 210_000).unref();
     setInterval(parentTick, 3600_000).unref();
   }
-  // [slot: G9]
   // The roster sync (prompt 2, G9): hourly; one run per college a day, from 02:00 (IST).
   const rosterTick = () =>
     RosterSyncService.enqueueDue(jobs).catch((err: unknown) =>
@@ -208,7 +204,6 @@ async function main() {
     setTimeout(rosterTick, 240_000).unref();
     setInterval(rosterTick, 3600_000).unref();
   }
-  // [slot: A G10 G11 G13]
   // The Placement Graph (prompt 2, G10): hourly; one run per college a day, from 02:00 IST.
   const graphTick = () =>
     GraphService.enqueueNightly(jobs).catch((err: unknown) => logger.error({ err }, 'graph tick failed'));
@@ -225,7 +220,6 @@ async function main() {
     setTimeout(copilotTick, 270_000).unref();
     setInterval(copilotTick, 3600_000).unref();
   }
-  // [slot: B G12]
   // The network's reconcile (prompt 2, G12, ADR 0014 N19): every 15 minutes, one run per college and
   // window (projections, candidacies, hires, credentials and the yearly key rotation).
   const networkTick = () =>

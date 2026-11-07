@@ -386,8 +386,6 @@ export const PARENT_DIGEST_TEMPLATE: WaTemplate = {
   },
 };
 
-// [slot: G9]
-// [slot: A G10 G11 G13]
 /**
  * Prompt 2, G10: "share your interview", 7 days after an offer is verified (within the member's
  * caps). Variable: the company.
@@ -403,7 +401,6 @@ WHATSAPP_TEMPLATES.experience_prompt = {
     hi: 'आपके {{1}} ऑफ़र के लिए बधाई। जूनियर्स की मदद करें: बताएँ कि आपका इंटरव्यू कैसा रहा, राउंड और सवाल अपने शब्दों में। लिखने के लिए ऐप खोलें; पहले प्लेसमेंट सेल इसकी समीक्षा करता है।',
   },
 };
-// [slot: B G12]
 
 export const INVITE_TEMPLATES: Record<'student' | 'alumni', WaTemplate> = {
   student: {

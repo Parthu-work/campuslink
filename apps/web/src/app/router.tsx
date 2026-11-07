@@ -133,18 +133,15 @@ const load = {
   // Prompt 2, G8: growth loops, strings in the `share` pack.
   share: withPack('share', () => import('../features/share/share')),
   growthAdmin: withPack('share', () => import('../features/share/growth-admin')),
-  // [slot: G9]
   // Prompt 2, G9: reach, strings in the `reach` pack.
   ssoComplete: withPack('reach', () => import('../features/reach/sso-complete')),
   signInAdmin: withPack('reach', () => import('../features/reach/sign-in-admin')),
-  // [slot: A G10 G11 G13]
   // Prompt 2, G10: company pages and the Interview Experience Bank, strings in the `moat` pack.
   companies: withPack('moat', () => import('../features/companies/companies')),
   shareExperience: withPack('moat', () => import('../features/companies/share-experience')),
   experiencesAdmin: withPack('moat', () => import('../features/companies/experiences-admin')),
   // Prompt 2, G11: the Career Copilot, strings in the `copilot` pack.
   copilot: withPack('copilot', () => import('../features/copilot/copilot')),
-  // [slot: B G12]
   // Prompt 2, G12: the network, the recruiter portal and the registry (one module), `network` pack.
   network: withPack('network', () => import('../features/network/screens')),
   reports: () => import('../features/reports/reports'),
@@ -357,10 +354,7 @@ function collegeRoutes(): RouteObject[] {
         publicScreen(load.legal, 'LegalPage', '/legal/:doc'),
         // Anyone checks a certificate of mentorship by its code (prompt 2, G6).
         publicScreen(load.verifyCertificate, 'VerifyCertificatePage', '/verify-certificate/:code'),
-        // [slot: G9]
         publicScreen(load.ssoComplete, 'SsoCompletePage', '/sign-up/sso', '/home'),
-        // [slot: A G10 G11 G13]
-        // [slot: B G12]
         ...auth('/home'),
         // The living style guide (revamp phase 6): development builds only; production leaves it out.
         ...(import.meta.env.DEV
@@ -578,8 +572,6 @@ function collegeRoutes(): RouteObject[] {
           screen(load.share, 'CaptainPage', 'captains:class', at('/captain'), () => [
             qc.ensureQueryData(q.captainClass()),
           ]),
-          // [slot: G9]
-          // [slot: A G10 G11 G13]
           // The moat data (prompt 2, G10): company pages and seniors' interview write-ups.
           screen(
             load.companies,
@@ -611,7 +603,6 @@ function collegeRoutes(): RouteObject[] {
           ),
           // The Career Copilot (prompt 2, G11): a conversation, so no pull to refresh.
           still(screen(load.copilot, 'CopilotPage', inFeature('placements', 'copilot:use'), at('/copilot'))),
-          // [slot: B G12]
           // The network (prompt 2, G12): alumni of other colleges, intros, credentials, sharing with employers.
           screen(load.network, 'NetworkPage', 'network:discover', at('/network')),
           screen(
@@ -781,10 +772,8 @@ function collegeRoutes(): RouteObject[] {
             screen(load.growthAdmin, 'GrowthAdmin', 'onboarding:manage', at('growth'), () => [
               qc.ensureQueryData(q.adminGrowth()),
             ]),
-            // [slot: G9]
             // Single sign-on settings (prompt 2, G9).
             screen(load.signInAdmin, 'SignInAdmin', 'tenant:settings', at('sign-in')),
-            // [slot: A G10 G11 G13]
             // Interview write-ups waiting for review (prompt 2, G10).
             screen(
               load.experiencesAdmin,
@@ -792,7 +781,6 @@ function collegeRoutes(): RouteObject[] {
               inFeature('placements', 'experiences:review'),
               at('experiences'),
             ),
-            // [slot: B G12]
             // Cross-college network and employer postings (prompt 2, G12).
             screen(load.network, 'NetworkAdmin', 'network:manage', at('network')),
             screen(

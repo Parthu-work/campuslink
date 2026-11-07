@@ -149,14 +149,11 @@ export const NOTIFICATION_TYPES = [
   'circle_decided',
   // Prompt 2, G8: what happened after a referral (asked at 14 and 30 days).
   'referral_outcome_prompt',
-  // [slot: G9]
   'roster_sync_review',
-  // [slot: A G10 G11 G13]
   // Prompt 2, G10: share your interview (7 days after a verified offer); a write-up reviewed.
   'experience_prompt',
   'experience_published',
   'experience_returned',
-  // [slot: B G12]
   // Prompt 2, G12: cross-college intros (names and the request type, never the note).
   'network_intro_received',
   'network_intro_answered',
@@ -260,13 +257,10 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   voice_failed: 'community',
   circle_decided: 'community',
   referral_outcome_prompt: 'jobs',
-  // [slot: G9]
   roster_sync_review: 'requests',
-  // [slot: A G10 G11 G13]
   experience_prompt: 'placements',
   experience_published: 'placements',
   experience_returned: 'placements',
-  // [slot: B G12]
   network_intro_received: 'requests',
   network_intro_answered: 'requests',
 };

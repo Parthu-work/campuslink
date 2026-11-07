@@ -48,14 +48,11 @@ export * from './schemas/interviews.js';
 export * from './schemas/practice.js';
 export * from './schemas/habits.js';
 export * from './schemas/growth.js';
-// [slot: G9]
 export * from './schemas/reach.js';
-// [slot: A G10 G11 G13]
 export * from './constants/graph.js';
 export * from './schemas/graph.js';
 export * from './constants/copilot.js';
 export * from './schemas/copilot.js';
-// [slot: B G12]
 export * from './constants/network.js';
 export * from './schemas/network.js';
 export * from './schemas/legal.js';

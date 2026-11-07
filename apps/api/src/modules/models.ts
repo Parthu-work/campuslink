@@ -121,11 +121,9 @@ export { BuddyPairModel, BuddyVolunteerModel, PeerNominationModel } from './peer
 export { CircleMemberModel, CircleModel, StudyGroupModel } from './circles/circle.model.js';
 export { GrowthSettingsModel, PublicPageModel } from './public-pages/public-page.model.js';
 export { ParentDigestModel } from './notifications/parent-digest.service.js';
-// [slot: G9]
 export { CalendarFeedModel } from './calendar/calendar.service.js';
 export { RosterSyncModel } from './imports/roster-sync.service.js';
 export { SsoPendingModel, SsoSettingsModel, SsoStateModel } from './auth/sso/sso.service.js';
-// [slot: A G10 G11 G13]
 export {
   CompanyGraphModel,
   ExperienceModel,
@@ -133,7 +131,6 @@ export {
   MentorOutcomeModel,
 } from './graph/graph.model.js';
 export { CopilotChunkModel, CopilotMessageModel, CopilotSessionModel } from './copilot/copilot.model.js';
-// [slot: B G12]
 export {
   NetworkCandidacyModel,
   NetworkClusterModel,
