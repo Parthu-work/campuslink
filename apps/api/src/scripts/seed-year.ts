@@ -856,7 +856,7 @@ export function yearSeeder(env: Env) {
     const admin = await auth(id('admin'));
     await s.publicPages.setMemberInvites(admin, true, true, meta);
     await s.publicPages.setOutcomesPage(admin, true, meta);
-    // Four classmates on the list who have not joined: one final-year invites them.
+    // Four classmates on the list who have not joined yet.
     for (let n = 0; n < 4; n++) {
       const phone = `+9190000${ctx.prefix === 'DP' ? '3' : '4'}00${String(n).padStart(2, '0')}`;
       await WhitelistModel.create({
@@ -870,8 +870,18 @@ export function yearSeeder(env: Env) {
         phoneIndex: ctx.cipher.blindIndex(phone),
       });
     }
-    const inviter = finalYears.find((p) => p.branch === 'CSE');
-    if (inviter) await s.onboarding.inviteBatch(tenant, { userId: String(inviter.id) }, 4, 'member', meta);
+    // The placement cell makes their invite links for its own mail merge (CSV, B4), which works in
+    // every environment; members' WhatsApp invites (G8) need a configured channel, so the seed does
+    // not depend on them (with WhatsApp on, a final-year can invite the rest of the batch from /share).
+    const invitees = await WhitelistModel.find({ name: /^Demo Invitee 27-/ })
+      .select('_id')
+      .lean();
+    await s.onboarding.sendInvites(
+      tenant,
+      String(id('tpo')),
+      { ids: invitees.map((r) => String(r._id)), channel: 'csv' },
+      meta,
+    );
     const proud = batch(2026).find((p) => p.placed);
     if (proud?.placed)
       await s.publicPages.publish(
