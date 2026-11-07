@@ -146,7 +146,7 @@ function Attachment({ m, mine }: { m: MessageView; mine: boolean }) {
       type="button"
       onClick={async () => saveBlob(await apiBlob(`/files/${a.fileId}`), a.name)}
       className={cn(
-        'flex min-h-11 items-center gap-2 rounded-[var(--radius-sm)] border px-3 text-left text-meta',
+        'flex min-h-11 items-center gap-2 rounded-[var(--radius-sm)] border px-3 text-left text-callout',
         mine ? 'border-[color-mix(in_srgb,var(--on-brand)_35%,transparent)]' : 'border-line-strong',
       )}
     >
@@ -297,7 +297,7 @@ export function ConversationPage() {
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)] lg:items-start">
       <aside aria-label={t('nav.messages')} className="hidden content-start gap-3 lg:grid">
-        <h2 className="text-title font-semibold">{t('nav.messages')}</h2>
+        <h2 className="text-headline font-semibold">{t('nav.messages')}</h2>
         <ConversationList activeId={conversationId} />
       </aside>
       <div className="grid min-w-0 content-start gap-3">
@@ -305,7 +305,7 @@ export function ConversationPage() {
         <Card variant="raised" className="grid gap-0 overflow-hidden">
           <header className="flex items-center gap-3 border-b border-line p-3.5">
             <PersonAvatar name={c.other.name} fileId={c.other.avatarFileId} />
-            <h1 className="min-w-0 flex-1 truncate text-title font-bold">{c.other.name}</h1>
+            <h1 className="min-w-0 flex-1 truncate text-headline font-bold">{c.other.name}</h1>
             <SafetyMenu userId={c.other.userId} name={c.other.name} />
           </header>
           <div
@@ -329,7 +329,7 @@ export function ConversationPage() {
             )}
             {msgs.isLoading && <Skeleton className="h-24" />}
             {msgs.isSuccess && !items.length && (
-              <p className="mx-auto max-w-[40ch] py-8 text-center text-meta text-fg-3">
+              <p className="mx-auto max-w-[40ch] py-8 text-center text-callout text-fg-3">
                 {t('messages.start', { name: firstName(c.other.name) })}
               </p>
             )}
@@ -422,7 +422,7 @@ export function ConversationPage() {
             {typing ? t('messages.typing', { name: firstName(c.other.name) }) : ''}
           </p>
           {closed ? (
-            <p className="flex items-center gap-2 border-t border-line p-3.5 text-meta text-fg-2">
+            <p className="flex items-center gap-2 border-t border-line p-3.5 text-callout text-fg-2">
               <Lock className="size-4" aria-hidden /> {t('messages.closedBody')}
             </p>
           ) : (

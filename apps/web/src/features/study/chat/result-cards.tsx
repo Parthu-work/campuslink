@@ -32,7 +32,7 @@ function Nearby({ topics, onAsk, command }: { topics: string[]; onAsk: Ask; comm
   if (!topics.length) return null;
   return (
     <div className="grid gap-2">
-      <p className="text-meta text-fg-2">{t('study.chat.nearby')}</p>
+      <p className="text-callout text-fg-2">{t('study.chat.nearby')}</p>
       <div className="flex flex-wrap gap-2">
         {topics.map((x) => (
           <Chip
@@ -140,7 +140,7 @@ function VideoRow({ title, videos, q }: { title: string; videos: ChatVideo[]; q:
   if (!videos.length) return null;
   return (
     <section className="grid gap-2" aria-label={title}>
-      <h4 className="text-meta font-semibold">{title}</h4>
+      <h4 className="text-callout font-semibold">{title}</h4>
       <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1" tabIndex={0}>
         {videos.map((v) => (
           <VideoCard key={v.material.id} v={v} q={q} />
@@ -163,7 +163,7 @@ function Videos({ r, onAsk }: { r: Extract<ChatResult, { kind: 'videos' }>; onAs
           className="grid gap-2 rounded-[var(--radius-md)] border border-dashed border-line-strong p-3"
           aria-label={t('study.chat.fromWeb')}
         >
-          <h4 className="text-meta font-semibold">{t('study.chat.fromWeb')}</h4>
+          <h4 className="text-callout font-semibold">{t('study.chat.fromWeb')}</h4>
           <p className="text-caption text-fg-3">{t('study.chat.fromWebNote')}</p>
           <ul className="grid gap-1">
             {r.web.map((w) => (
@@ -172,7 +172,7 @@ function Videos({ r, onAsk }: { r: Extract<ChatResult, { kind: 'videos' }>; onAs
                   href={w.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-meta text-brand-ink hover:underline"
+                  className="inline-flex items-center gap-1.5 text-callout text-brand-ink hover:underline"
                 >
                   <ExternalLink className="size-3.5 flex-none" aria-hidden />
                   {w.title}
@@ -293,7 +293,7 @@ function Quiz({
               {done && (
                 <div
                   className={cn(
-                    'grid gap-1 rounded-[var(--radius-md)] p-3 text-meta',
+                    'grid gap-1 rounded-[var(--radius-md)] p-3 text-callout',
                     right === false ? 'bg-warning-surface' : 'bg-success-surface',
                   )}
                 >
@@ -317,7 +317,7 @@ function Quiz({
         })}
       </ol>
       {done ? (
-        <p className="text-lead font-semibold" role="status">
+        <p className="text-body font-semibold" role="status">
           {t('study.chat.score', { correct: done.correct, total: done.total })}
         </p>
       ) : (
@@ -377,7 +377,7 @@ function Flashcards({ m, r }: { m: ChatMessageView; r: Extract<ChatResult, { kin
             flipped && '[transform:rotateY(180deg)]',
           )}
         >
-          <span className="col-start-1 row-start-1 grid place-items-center rounded-[var(--radius-lg)] border border-line-strong bg-surface-2 p-5 text-center text-lead font-semibold [backface-visibility:hidden]">
+          <span className="col-start-1 row-start-1 grid place-items-center rounded-[var(--radius-lg)] border border-line-strong bg-surface-2 p-5 text-center text-body font-semibold [backface-visibility:hidden]">
             {card.front}
           </span>
           <span className="col-start-1 row-start-1 grid place-items-center rounded-[var(--radius-lg)] border border-brand bg-brand-surface p-5 text-center [backface-visibility:hidden] [transform:rotateY(180deg)]">
@@ -398,7 +398,7 @@ function Flashcards({ m, r }: { m: ChatMessageView; r: Extract<ChatResult, { kin
         >
           <ChevronLeft className="size-4" aria-hidden />
         </Button>
-        <span className="text-meta text-fg-2">
+        <span className="text-callout text-fg-2">
           {t('study.chat.cardOf', { n: at + 1, count: r.cards.length })}
         </span>
         <Button
@@ -486,7 +486,7 @@ export function ResultCard({
           {m.citations.length > 0 && (
             <ul className="grid gap-2">
               {m.citations.map((c) => (
-                <li key={c.n} className="rounded-[var(--radius-md)] border border-line p-3 text-meta">
+                <li key={c.n} className="rounded-[var(--radius-md)] border border-line p-3 text-callout">
                   <p className="text-fg-2">“{c.snippet}”</p>
                 </li>
               ))}
@@ -510,7 +510,7 @@ export function HelpCard({ onPick }: { onPick: (input: string) => void }) {
             onClick={() => onPick(`/${c} `)}
             className="grid w-full gap-0.5 rounded-[var(--radius-sm)] px-2 py-1.5 text-start hover:bg-hover"
           >
-            <span className="font-mono text-meta font-semibold text-brand-ink">/{c}</span>
+            <span className="font-mono text-callout font-semibold text-brand-ink">/{c}</span>
             <span className="text-caption text-fg-2">{t(`study.chat.cmd.${c}`)}</span>
           </button>
         </li>

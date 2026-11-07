@@ -88,7 +88,7 @@ export function Tabs<T extends string>({
               tabIndex={selected ? 0 : -1}
               onClick={() => onChange(tab.id)}
               onKeyDown={(e) => onKey(e, i)}
-              className="relative flex min-h-12 flex-none items-center gap-2 px-3 text-meta font-semibold whitespace-nowrap text-fg-2 transition-colors duration-[var(--dur-fast)] hover:text-fg aria-selected:text-fg"
+              className="relative flex min-h-12 flex-none items-center gap-2 px-3 text-callout font-semibold whitespace-nowrap text-fg-2 transition-colors duration-[var(--dur-fast)] hover:text-fg aria-selected:text-fg"
             >
               {tab.label}
               {tab.count !== undefined && (

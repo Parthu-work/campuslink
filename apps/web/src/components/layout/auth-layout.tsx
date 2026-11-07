@@ -64,7 +64,7 @@ export function FormError({ message }: { message?: string | undefined }) {
   return (
     <p
       role="alert"
-      className="rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--danger)_40%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-3.5 py-2.5 text-meta text-fg"
+      className="rounded-[var(--radius-sm)] border border-[color-mix(in_srgb,var(--danger)_40%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-3.5 py-2.5 text-callout text-fg"
     >
       {message}
     </p>

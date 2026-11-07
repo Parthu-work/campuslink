@@ -117,7 +117,7 @@ export function SignInPage() {
         {switcher}
         <FormError message={adminNote ?? errors.root?.message} />
         {unverifiedEmail && (
-          <div className="flex flex-wrap items-center gap-3 text-meta">
+          <div className="flex flex-wrap items-center gap-3 text-callout">
             {resent ? (
               <span className="text-fg-2" role="status">
                 {t('auth.resent')}
@@ -164,7 +164,7 @@ export function SignInPage() {
         <div className="flex justify-end">
           <Link
             to="/forgot-password"
-            className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink hover:underline"
+            className="inline-flex min-h-11 items-center text-callout font-semibold text-brand-ink hover:underline"
           >
             {t('auth.forgot')}
           </Link>
@@ -172,7 +172,7 @@ export function SignInPage() {
         <Button type="submit" variant="primary" size="lg" loading={isSubmitting}>
           {t('auth.signInCta')}
         </Button>
-        <p className="text-center text-meta text-fg-2">
+        <p className="text-center text-callout text-fg-2">
           {t('auth.noAccount')}{' '}
           <Link
             to="/sign-up"
@@ -233,7 +233,7 @@ function PhoneSignIn({
             }
           }}
         />
-        <p className="text-center text-meta text-fg-2">
+        <p className="text-center text-callout text-fg-2">
           {t('phone.noAccountYet')}{' '}
           <Link
             to="/sign-up"
@@ -274,7 +274,7 @@ function PhoneSignIn({
         <Button type="submit" variant="primary" size="lg" loading={busy}>
           {t('phone.sendCode')}
         </Button>
-        <p className="text-center text-meta text-fg-2">
+        <p className="text-center text-callout text-fg-2">
           {t('auth.noAccount')}{' '}
           <Link
             to="/sign-up"

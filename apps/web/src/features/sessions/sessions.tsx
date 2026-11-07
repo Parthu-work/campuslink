@@ -89,7 +89,7 @@ function JoinDialog({
     >
       {join.isLoading && <Skeleton className="h-12" />}
       {join.error && (
-        <p role="alert" className="text-meta text-danger">
+        <p role="alert" className="text-callout text-danger">
           {join.error instanceof ApiError ? join.error.message : t('errors.generic')}
         </p>
       )}
@@ -312,7 +312,7 @@ function FeedbackDialog({
       description={t('sessions.feedbackPrivate')}
     >
       <fieldset>
-        <legend className="mb-2 text-meta font-semibold">{t('sessions.rating')}</legend>
+        <legend className="mb-2 text-callout font-semibold">{t('sessions.rating')}</legend>
         <div role="radiogroup" aria-label={t('sessions.rating')} className="flex gap-1">
           {STARS.map((n, i) => (
             <button
@@ -397,21 +397,23 @@ function BookingCard({ b, now }: { b: BookingView; now: number }) {
           className="grid w-14 flex-none justify-items-center rounded-[var(--radius-md)] bg-surface-2 py-1.5"
         >
           <span className="text-caption font-semibold text-brand-ink uppercase">{formatWeekday(day)}</span>
-          <b className="font-display text-title leading-tight tabular-nums">{day.getDate()}</b>
+          <b className="font-display text-headline leading-tight tabular-nums">{day.getDate()}</b>
         </span>
         <div className="min-w-0 flex-1">
           <p className="flex min-w-0 items-center gap-2">
             <PersonAvatar name={other.name} fileId={other.avatarFileId} size={24} />
             <b className="truncate">{other.name}</b>
           </p>
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {t(`session.type.${b.sessionType}`)} · {formatDay(b.start)}, {formatTime(b.start)}–
             {formatTime(b.end)}
           </p>
           {(soon || canJoin) && (
             <p
               className={
-                canJoin ? 'text-meta font-semibold text-success' : 'text-meta font-semibold text-brand-ink'
+                canJoin
+                  ? 'text-callout font-semibold text-success'
+                  : 'text-callout font-semibold text-brand-ink'
               }
             >
               {canJoin ? t('sessions.openNow') : countdown(t, start - now)}
@@ -546,7 +548,7 @@ function WeekStrip({
             className="pressable grid min-h-14 min-w-14 flex-none justify-items-center gap-0.5 rounded-[var(--radius-md)] border border-line-strong px-2 py-1.5 text-caption text-fg-2 aria-pressed:border-brand aria-pressed:bg-brand-surface aria-pressed:text-fg"
           >
             <span>{formatWeekday(`${d}T12:00:00`)}</span>
-            <b className="font-display text-lead text-fg tabular-nums">{Number(d.slice(8))}</b>
+            <b className="font-display text-body text-fg tabular-nums">{Number(d.slice(8))}</b>
             <span aria-hidden className={n ? 'size-1.5 rounded-full bg-brand' : 'size-1.5'} />
           </button>
         );

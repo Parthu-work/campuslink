@@ -54,7 +54,7 @@ function FeatureChecks({
   const { t } = useTranslation();
   return (
     <fieldset className="grid gap-1 sm:grid-cols-2">
-      <legend className="mb-1 text-meta font-semibold">{t('pbilling.terms.features')}</legend>
+      <legend className="mb-1 text-callout font-semibold">{t('pbilling.terms.features')}</legend>
       {FEATURE_KEYS.map((f) => (
         <Checkbox
           key={f}
@@ -260,7 +260,7 @@ export function SubscriptionForm({ view, onSaved }: { view: PlatformCollegeBilli
           </Field>
         </div>
         <fieldset className="grid gap-3 rounded-[var(--radius-md)] border border-line p-4">
-          <legend className="px-1 text-meta font-semibold">{t('pbilling.buyer')}</legend>
+          <legend className="px-1 text-callout font-semibold">{t('pbilling.buyer')}</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label={t('pbilling.legalName')} error={fe['buyer.legalName']}>
               {({ id }) => <Input id={id} value={v.legalName} onChange={set('legalName')} />}
@@ -287,7 +287,7 @@ export function SubscriptionForm({ view, onSaved }: { view: PlatformCollegeBilli
           </Field>
         </fieldset>
         <details className="rounded-[var(--radius-md)] border border-line p-4">
-          <summary className="cursor-pointer text-meta font-semibold">{t('pbilling.custom')}</summary>
+          <summary className="cursor-pointer text-callout font-semibold">{t('pbilling.custom')}</summary>
           <p className="mt-2 text-caption text-fg-3">{t('pbilling.customHint')}</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {NUMBER_TERMS.map((k) => (
@@ -444,7 +444,7 @@ export function InvoiceDialog({
           </Field>
         </div>
         <fieldset className="grid gap-3">
-          <legend className="mb-1 text-meta font-semibold">{t('pbilling.lines')}</legend>
+          <legend className="mb-1 text-callout font-semibold">{t('pbilling.lines')}</legend>
           {lines.map((l, i) => (
             <div key={l.key} className="grid gap-2 rounded-[var(--radius-md)] bg-surface-2 p-3">
               <Field label={t('pbilling.description')} error={errors.fields[`lines.${i}.description`]}>
@@ -892,7 +892,7 @@ export function AiPricesCard() {
     <Card className="grid gap-3 p-4">
       <div className="grid gap-1">
         <h2 className="text-heading font-semibold">{t('pbilling.aiPrices')}</h2>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {t(v.source === 'saved' ? 'pbilling.aiPricesSaved' : 'pbilling.aiPricesEnv')}
         </p>
       </div>

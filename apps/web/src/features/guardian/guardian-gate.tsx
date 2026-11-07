@@ -96,7 +96,7 @@ export function GuardianGate() {
       <div className="grid gap-4">
         <Card className="grid gap-3 p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-title font-semibold">{t('guardian.declarationTitle')}</h2>
+            <h2 className="text-headline font-semibold">{t('guardian.declarationTitle')}</h2>
             <Segmented<DeclarationLanguage>
               label={t('guardian.language')}
               value={lang}
@@ -153,7 +153,7 @@ export function GuardianGate() {
 
   return (
     <AuthLayout title={t('guardian.title')} subtitle={t('guardian.intro')}>
-      <p className="flex items-start gap-2 text-meta text-fg-2">
+      <p className="flex items-start gap-2 text-callout text-fg-2">
         <ShieldCheck className="mt-0.5 size-4 flex-none text-brand-ink" aria-hidden />
         {t('guardian.why')}
       </p>

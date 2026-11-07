@@ -74,8 +74,8 @@ function LegalForm({ current }: { current: LegalSettingsView }) {
   return (
     <Card className="grid gap-4 p-5">
       <div className="grid gap-1">
-        <h2 className="text-title font-semibold">{t('legal.detailsTitle')}</h2>
-        <p className="text-meta text-fg-2">{t('legal.detailsIntro')}</p>
+        <h2 className="text-headline font-semibold">{t('legal.detailsTitle')}</h2>
+        <p className="text-callout text-fg-2">{t('legal.detailsIntro')}</p>
         {current.version > 0 && (
           <p className="text-caption text-fg-3">
             {t('legal.detailsVersion', {
@@ -115,7 +115,7 @@ function LegalForm({ current }: { current: LegalSettingsView }) {
           )}
         </Field>
         <fieldset className="grid gap-4">
-          <legend className="mb-1 text-meta font-semibold">{t('legal.officerTitle')}</legend>
+          <legend className="mb-1 text-callout font-semibold">{t('legal.officerTitle')}</legend>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={t('legal.officerName')}>
               {({ id }) => (
@@ -157,7 +157,7 @@ function LegalForm({ current }: { current: LegalSettingsView }) {
           </div>
         </fieldset>
         {error && (
-          <p role="alert" className="text-meta text-danger-ink">
+          <p role="alert" className="text-callout text-danger-ink">
             {error}
           </p>
         )}
@@ -167,7 +167,7 @@ function LegalForm({ current }: { current: LegalSettingsView }) {
           </Button>
           <Link
             to="/legal/privacy"
-            className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink underline underline-offset-2"
+            className="inline-flex min-h-11 items-center text-callout font-semibold text-brand-ink underline underline-offset-2"
           >
             {t('legal.preview')}
           </Link>
@@ -238,8 +238,8 @@ function RetentionCard() {
   return (
     <Card className="grid gap-4 p-5">
       <div className="grid gap-1">
-        <h2 className="text-title font-semibold">{t('legal.retentionTitle')}</h2>
-        <p className="text-meta text-fg-2">
+        <h2 className="text-headline font-semibold">{t('legal.retentionTitle')}</h2>
+        <p className="text-callout text-fg-2">
           {t('legal.retentionIntro', { days: d.deletedAccountGraceDays })}
         </p>
       </div>

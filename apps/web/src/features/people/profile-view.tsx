@@ -83,7 +83,7 @@ export function ProfileView() {
     <div className="mx-auto grid w-full max-w-[760px] gap-4">
       {back}
       {self && (
-        <p className="flex flex-wrap items-center gap-2 rounded-[var(--radius-md)] bg-brand-surface px-4 py-3 text-meta">
+        <p className="flex flex-wrap items-center gap-2 rounded-[var(--radius-md)] bg-brand-surface px-4 py-3 text-callout">
           <Eye className="size-4 flex-none text-brand-ink" aria-hidden />
           <span className="min-w-0 flex-1">{t('people.selfView')}</span>
           <Link to="/profile" className="font-semibold text-brand-ink hover:underline">
@@ -101,8 +101,8 @@ export function ProfileView() {
             {!self && <SafetyMenu userId={p.userId} name={p.name} />}
           </div>
           <div className="grid gap-1">
-            <h1 className="text-headline leading-tight font-bold">{p.name}</h1>
-            {f.headline && <p className="text-lead text-fg-2">{f.headline}</p>}
+            <h1 className="text-title leading-tight font-bold">{p.name}</h1>
+            {f.headline && <p className="text-body text-fg-2">{f.headline}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
             {p.roles.map((r) => (
@@ -121,7 +121,7 @@ export function ProfileView() {
               {role.join(' · ')}
               {p.companyVerified && (
                 <span
-                  className="inline-flex items-center gap-1 text-meta font-semibold text-success"
+                  className="inline-flex items-center gap-1 text-callout font-semibold text-success"
                   title={t('people.verifiedCompany', { domain: p.companyVerified.domain })}
                 >
                   <BadgeCheck className="size-4" aria-hidden /> {t('people.companyVerified')}
@@ -130,7 +130,7 @@ export function ProfileView() {
             </p>
           )}
           {f.location && (
-            <p className="flex items-center gap-1.5 text-meta text-fg-2">
+            <p className="flex items-center gap-1.5 text-callout text-fg-2">
               <MapPin className="size-4" aria-hidden /> {f.location}
             </p>
           )}
@@ -138,7 +138,7 @@ export function ProfileView() {
             <div className="flex flex-wrap items-center gap-3 border-t border-line pt-3">
               <span
                 className={cn(
-                  'inline-flex items-center gap-1.5 text-meta font-semibold',
+                  'inline-flex items-center gap-1.5 text-callout font-semibold',
                   mentor.data.open ? 'text-success' : 'text-warning',
                 )}
               >
@@ -175,7 +175,7 @@ export function ProfileView() {
             {f.bio ? (
               <p className="max-w-[65ch] whitespace-pre-line">{f.bio}</p>
             ) : (
-              <p className="text-meta text-fg-3">{t('people.noBio')}</p>
+              <p className="text-callout text-fg-3">{t('people.noBio')}</p>
             )}
             {f.languages && section(t('people.languages'), tags(f.languages))}
           </TabPanel>
@@ -184,7 +184,7 @@ export function ProfileView() {
           <TabPanel idBase={tabsId} id="skills" className="grid gap-5">
             {f.skills && section(t('people.skills'), tags(f.skills, 'brand'))}
             {f.topics && section(t('people.topics'), tags(f.topics, 'brand'))}
-            {!f.skills && !f.topics && <p className="text-meta text-fg-3">{t('people.noSkills')}</p>}
+            {!f.skills && !f.topics && <p className="text-callout text-fg-3">{t('people.noSkills')}</p>}
           </TabPanel>
         )}
         {tab === 'contact' && (
@@ -214,7 +214,7 @@ export function ProfileView() {
                 <p className="text-body">{[f.email, f.phone].filter(Boolean).join(' · ')}</p>
               ) : (
                 // A clear privacy indicator: hidden by default (data minimisation).
-                <p className="flex items-start gap-2 rounded-[var(--radius-md)] bg-surface-2 p-3 text-meta text-fg-2">
+                <p className="flex items-start gap-2 rounded-[var(--radius-md)] bg-surface-2 p-3 text-callout text-fg-2">
                   <Lock className="mt-0.5 size-4 flex-none" aria-hidden /> {t('people.contactPrivate')}
                 </p>
               ),

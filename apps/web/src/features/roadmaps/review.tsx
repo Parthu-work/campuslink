@@ -42,10 +42,10 @@ function LibraryPanel() {
   });
   return (
     <section aria-labelledby="library" className="grid gap-2">
-      <h2 id="library" className="flex items-center gap-2 font-display text-title font-semibold">
+      <h2 id="library" className="flex items-center gap-2 font-display text-headline font-semibold">
         <Library className="size-5 text-brand-ink" aria-hidden /> {t('roadmaps.library.title')}
       </h2>
-      <p className="text-meta text-fg-2">{t('roadmaps.library.intro')}</p>
+      <p className="text-callout text-fg-2">{t('roadmaps.library.intro')}</p>
       {q.isLoading ? (
         <Skeleton className="h-40" />
       ) : (
@@ -115,7 +115,7 @@ export function RoadmapReviewPage() {
         />
       </div>
       <section aria-labelledby="queue" className="grid gap-2">
-        <h2 id="queue" className="font-display text-title font-semibold">
+        <h2 id="queue" className="font-display text-headline font-semibold">
           {t('roadmaps.review.waiting')}
         </h2>
         {q.isLoading ? (
@@ -134,7 +134,7 @@ export function RoadmapReviewPage() {
                     >
                       {i.title} · v{i.version}
                     </Link>
-                    <p className="text-meta text-fg-2">{i.changeNote}</p>
+                    <p className="text-callout text-fg-2">{i.changeNote}</p>
                     <p className="text-caption text-fg-3">
                       {i.author ? i.author.name : t('roadmaps.libraryAuthor')} ·{' '}
                       {formatRelative(i.submittedAt)}
@@ -145,7 +145,7 @@ export function RoadmapReviewPage() {
                   ) : (
                     <Link
                       to={`/roadmaps/${i.slug}/history`}
-                      className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink"
+                      className="inline-flex min-h-11 items-center text-callout font-semibold text-brand-ink"
                     >
                       {t('roadmaps.review.open')}
                     </Link>

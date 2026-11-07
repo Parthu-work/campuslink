@@ -50,19 +50,19 @@ export function EventCard({ e }: { e: EventView }) {
           className="grid w-16 justify-items-center rounded-[var(--radius-md)] border border-line bg-surface-1 py-1.5 shadow-elev-2"
         >
           <span className="text-caption font-bold text-brand-ink uppercase">{formatMonth(start)}</span>
-          <b className="font-display text-headline leading-none tabular-nums">{start.getDate()}</b>
+          <b className="font-display text-title leading-none tabular-nums">{start.getDate()}</b>
           <span className="text-caption text-fg-3">{formatWeekday(start)}</span>
         </span>
         <IntentLink
           to={`/events/${e.id}`}
-          className="mt-1 text-title leading-tight font-semibold after:absolute after:inset-0"
+          className="mt-1 text-headline leading-tight font-semibold after:absolute after:inset-0"
         >
           {e.title}
         </IntentLink>
-        <p className="flex items-center gap-1.5 text-meta text-fg-2">
+        <p className="flex items-center gap-1.5 text-callout text-fg-2">
           <CalendarDays className="size-4 flex-none" aria-hidden /> {formatDateTime(e.startsAt)}
         </p>
-        <p className="flex items-center gap-1.5 text-meta text-fg-2">
+        <p className="flex items-center gap-1.5 text-callout text-fg-2">
           {e.mode === 'online' ? (
             <Video className="size-4 flex-none" aria-hidden />
           ) : (
@@ -408,7 +408,7 @@ function EventForm({ existing }: { existing: EventView | null }) {
         </Field>
       </div>
       <fieldset className="grid gap-1.5">
-        <legend className="text-meta font-semibold">{t('events.form.branches')}</legend>
+        <legend className="text-callout font-semibold">{t('events.form.branches')}</legend>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {BRANCHES.map((b) => (
             <Checkbox
@@ -428,7 +428,7 @@ function EventForm({ existing }: { existing: EventView | null }) {
         </Checkbox>
       )}
       {!!issues.length && (f.title || f.startsAt) && (
-        <ul className="list-disc pl-5 text-meta text-danger" aria-live="polite">
+        <ul className="list-disc pl-5 text-callout text-danger" aria-live="polite">
           {issues.map((i) => (
             <li key={i}>{i}</li>
           ))}

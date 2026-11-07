@@ -39,7 +39,7 @@ function Nominate() {
   return (
     <Card className="grid gap-3 p-4">
       <h3 className="font-semibold">{t('habits.admin.nominateTitle')}</h3>
-      <p className="text-meta text-fg-2">{t('habits.admin.nominateBody')}</p>
+      <p className="text-callout text-fg-2">{t('habits.admin.nominateBody')}</p>
       <Field label={t('habits.admin.find')}>
         {({ id }) => (
           <Input id={id} maxLength={80} value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -96,10 +96,10 @@ export function PeersAdmin() {
   const b: BuddyBoardView = data.data.buddies;
   return (
     <div className="grid gap-5">
-      <p className="max-w-[60ch] text-meta text-fg-2">{t('habits.admin.intro')}</p>
+      <p className="max-w-[60ch] text-callout text-fg-2">{t('habits.admin.intro')}</p>
       <section aria-labelledby="buddies-admin" className="grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="buddies-admin" className="text-title font-semibold">
+          <h2 id="buddies-admin" className="text-headline font-semibold">
             {t('habits.admin.buddies')}
           </h2>
           <Button variant="secondary" loading={match.isPending} onClick={() => match.mutate()}>
@@ -115,7 +115,7 @@ export function PeersAdmin() {
         <p className="text-caption text-fg-3">{t('habits.admin.matchDaily')}</p>
       </section>
       <section aria-labelledby="peers-admin" className="grid gap-3">
-        <h2 id="peers-admin" className="text-title font-semibold">
+        <h2 id="peers-admin" className="text-headline font-semibold">
           {t('habits.admin.nominations')}
         </h2>
         <Nominate />
@@ -162,25 +162,25 @@ export function CirclesAdmin() {
   });
   return (
     <div className="grid gap-5">
-      <p className="max-w-[60ch] text-meta text-fg-2">{t('habits.admin.circlesIntro')}</p>
+      <p className="max-w-[60ch] text-callout text-fg-2">{t('habits.admin.circlesIntro')}</p>
       <section aria-labelledby="circles-pending" className="grid gap-3">
-        <h2 id="circles-pending" className="text-title font-semibold">
+        <h2 id="circles-pending" className="text-headline font-semibold">
           {t('habits.admin.pending')}
         </h2>
         {pending.isLoading && <Skeleton className="h-24" />}
         {pending.isSuccess && !pending.data.length && (
-          <p className="text-meta text-fg-2">{t('habits.admin.noPending')}</p>
+          <p className="text-callout text-fg-2">{t('habits.admin.noPending')}</p>
         )}
         <ul className="grid gap-2">
           {pending.data?.map((c) => (
             <li key={c.id}>
               <Card className="grid gap-2 p-4">
                 <span className="font-semibold">{c.name}</span>
-                <span className="text-meta text-fg-2">
+                <span className="text-callout text-fg-2">
                   {t(`habits.circles.kind.${c.kind}`)}
                   {c.createdBy?.name ? ` · ${t('habits.admin.by', { name: c.createdBy.name })}` : ''}
                 </span>
-                {c.description && <p className="text-meta">{c.description}</p>}
+                {c.description && <p className="text-callout">{c.description}</p>}
                 <div className="flex flex-wrap gap-2">
                   <Button
                     size="sm"
@@ -203,11 +203,11 @@ export function CirclesAdmin() {
         </ul>
       </section>
       <section aria-labelledby="circles-active" className="grid gap-3">
-        <h2 id="circles-active" className="text-title font-semibold">
+        <h2 id="circles-active" className="text-headline font-semibold">
           {t('habits.admin.active')}
         </h2>
         {active.isSuccess && !active.data.length && (
-          <p className="text-meta text-fg-2">{t('habits.admin.noActive')}</p>
+          <p className="text-callout text-fg-2">{t('habits.admin.noActive')}</p>
         )}
         <ul className="grid gap-2 sm:grid-cols-2">
           {active.data?.map((c) => (

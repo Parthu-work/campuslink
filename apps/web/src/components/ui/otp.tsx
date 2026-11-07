@@ -43,7 +43,7 @@ export function OtpInput({
           maxLength={1}
           aria-label={`${label} ${i + 1}`}
           autoFocus={autoFocus && i === 0}
-          className="aspect-[1/1.2] w-full max-w-14 min-w-0 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 text-center font-mono text-headline font-semibold caret-brand transition-[border-color,box-shadow] duration-[var(--dur-fast)] focus:border-brand focus:shadow-[0_0_0_4px_color-mix(in_oklch,var(--brand)_22%,transparent)] focus:outline-none"
+          className="aspect-[1/1.2] w-full max-w-14 min-w-0 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 text-center font-mono text-title font-semibold caret-brand transition-[border-color,box-shadow] duration-[var(--dur-fast)] focus:border-brand focus:shadow-[0_0_0_4px_color-mix(in_oklch,var(--brand)_22%,transparent)] focus:outline-none"
           onChange={(e) => {
             const v = e.target.value.replace(/\D/g, '').slice(-1);
             set(i, v);

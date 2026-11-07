@@ -86,7 +86,7 @@ export function CompanyMark({ name, size = 'md' }: { name: string; size?: 'md' |
       aria-hidden
       className={cn(
         'grid flex-none place-items-center rounded-[var(--radius-md)] font-display font-bold',
-        size === 'lg' ? 'size-14 text-title' : 'size-11 text-body',
+        size === 'lg' ? 'size-14 text-headline' : 'size-11 text-body',
       )}
       style={{ background: `var(--subject-${n}-surface)`, color: `var(--subject-${n}-ink)` }}
     >
@@ -121,7 +121,7 @@ export function JobCard({ job, compact = false }: { job: JobView; compact?: bool
                 {job.title}
               </IntentLink>
             </h3>
-            <p className="truncate text-meta text-fg-2">{job.company}</p>
+            <p className="truncate text-callout text-fg-2">{job.company}</p>
           </div>
           <SaveJobButton job={job} />
         </div>

@@ -23,5 +23,12 @@ export const toast = Object.assign(
   {
     success: later((t, ...args: Parameters<Toast['success']>) => t.success(...args)),
     error: later((t, ...args: Parameters<Toast['error']>) => t.error(...args)),
+    /**
+     * A reversible action's confirmation with an Undo button (ADR 0015: mark done, pass on a
+     * mentor, withdraw). `undoLabel` is `t('ui.undo')`; the toast stays 6 s so Undo is reachable.
+     */
+    undo: later((t, message: string, undoLabel: string, onUndo: () => void) =>
+      t(message, { duration: 6000, action: { label: undoLabel, onClick: onUndo } }),
+    ),
   },
 );

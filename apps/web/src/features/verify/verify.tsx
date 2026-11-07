@@ -164,7 +164,7 @@ export function VerifyPage() {
                   id={id}
                   value={roll}
                   onChange={(e) => setRoll(e.target.value)}
-                  className="min-h-14 font-mono text-lead tracking-wider uppercase"
+                  className="min-h-14 font-mono text-body tracking-wider uppercase"
                   autoComplete="off"
                   autoCapitalize="characters"
                   enterKeyHint={isAlumni ? 'next' : 'go'}
@@ -184,13 +184,13 @@ export function VerifyPage() {
                     onChange={(e) => setGradYear(e.target.value.replace(/\D/g, '').slice(0, 4))}
                     inputMode="numeric"
                     enterKeyHint="go"
-                    className="min-h-14 font-mono text-lead"
+                    className="min-h-14 font-mono text-body"
                   />
                 )}
               </Field>
             )}
             {notice && (
-              <p role="status" className="rounded-[var(--radius-md)] bg-surface-2 px-4 py-3 text-meta">
+              <p role="status" className="rounded-[var(--radius-md)] bg-surface-2 px-4 py-3 text-callout">
                 {notice}
               </p>
             )}
@@ -218,7 +218,7 @@ export function VerifyPage() {
             }}
             className="grid gap-4"
           >
-            <h2 className="text-title font-semibold">{t('verify.codeTitle')}</h2>
+            <h2 className="text-headline font-semibold">{t('verify.codeTitle')}</h2>
             <p className="text-fg-2" role="status">
               {t('verify.codeSent', { destination: step.destination })}
             </p>
@@ -279,14 +279,14 @@ function YoureIn() {
         <h1 ref={hero} tabIndex={-1} className="text-display font-bold">
           {t('verify.youreIn')}
         </h1>
-        <p className="max-w-[44ch] text-lead text-fg-2">
+        <p className="max-w-[44ch] text-body text-fg-2">
           {t('verify.youreInBody', { college: tenant.branding.shortName })}
         </p>
       </section>
       <Card variant="raised" className="grid gap-3 p-5">
         <div>
-          <h2 className="text-title font-semibold">{t('verify.interestsTitle')}</h2>
-          <p className="text-meta text-fg-2">{t('verify.interestsBody')}</p>
+          <h2 className="text-headline font-semibold">{t('verify.interestsTitle')}</h2>
+          <p className="text-callout text-fg-2">{t('verify.interestsBody')}</p>
         </div>
         <div role="group" aria-label={t('verify.interestsTitle')} className="flex flex-wrap gap-2">
           {TOPICS.map((tp) => {
@@ -305,7 +305,7 @@ function YoureIn() {
         </div>
       </Card>
       <nav aria-label={t('verify.nextTitle')} className="grid gap-2">
-        <h2 className="text-title font-semibold">{t('verify.nextTitle')}</h2>
+        <h2 className="text-headline font-semibold">{t('verify.nextTitle')}</h2>
         {next.map(([to, Icon, title, body]) => (
           <IntentLink key={to} to={to} className="block">
             <Card variant="interactive" className="flex items-center gap-3 p-4">
@@ -314,7 +314,7 @@ function YoureIn() {
               </span>
               <span className="min-w-0 flex-1">
                 <b className="block text-body">{t(title)}</b>
-                <span className="block text-meta text-fg-2">{t(body)}</span>
+                <span className="block text-callout text-fg-2">{t(body)}</span>
               </span>
               <ChevronRight className="size-5 flex-none text-fg-3" aria-hidden />
             </Card>
@@ -360,7 +360,7 @@ function IdCardForm({
   };
   return (
     <form onSubmit={submit} className="grid gap-4">
-      <h2 className="text-title font-semibold">{t('verify.idTitle')}</h2>
+      <h2 className="text-headline font-semibold">{t('verify.idTitle')}</h2>
       <p className="text-fg-2">{t('verify.idBody')}</p>
       <FormError message={error} />
       <Field label={t('verify.roll')}>
@@ -369,7 +369,7 @@ function IdCardForm({
             id={id}
             value={roll}
             onChange={(e) => setRoll(e.target.value)}
-            className="min-h-14 font-mono text-lead tracking-wider uppercase"
+            className="min-h-14 font-mono text-body tracking-wider uppercase"
             autoCapitalize="characters"
             required
             minLength={4}
@@ -384,7 +384,7 @@ function IdCardForm({
             accept="image/jpeg,image/png,image/webp"
             capture="environment"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="text-meta file:mr-3 file:min-h-11 file:rounded-full file:border-0 file:bg-surface-2 file:px-4 file:font-semibold file:text-fg"
+            className="text-callout file:mr-3 file:min-h-11 file:rounded-full file:border-0 file:bg-surface-2 file:px-4 file:font-semibold file:text-fg"
             required
           />
         )}

@@ -84,9 +84,9 @@ export function MentorPage() {
             <SafetyMenu userId={m.userId} name={m.name} />
           </div>
           <div className="grid gap-1">
-            <h1 className="text-headline leading-tight font-bold">{m.name}</h1>
+            <h1 className="text-title leading-tight font-bold">{m.name}</h1>
             {role.length > 0 && (
-              <p className="flex flex-wrap items-center gap-x-1.5 text-lead text-fg-2">
+              <p className="flex flex-wrap items-center gap-x-1.5 text-body text-fg-2">
                 {m.jobTitle && <span>{m.jobTitle}</span>}
                 {m.jobTitle && m.company && <span aria-hidden>·</span>}
                 {m.company && (
@@ -100,7 +100,7 @@ export function MentorPage() {
               </p>
             )}
             {(m.branch || m.gradYear) && (
-              <p className="text-meta text-fg-3">
+              <p className="text-callout text-fg-3">
                 {[m.branch, m.gradYear ? t('people.batch', { year: m.gradYear }) : '']
                   .filter(Boolean)
                   .join(' · ')}
@@ -131,7 +131,7 @@ export function MentorPage() {
               {m.sessionTypes.map((s) => (
                 <li
                   key={s.type}
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line-strong px-3 text-meta font-semibold"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line-strong px-3 text-callout font-semibold"
                 >
                   {t(`session.type.${s.type}`)}
                   <span className="inline-flex items-center gap-1 font-normal text-fg-2">
@@ -144,7 +144,7 @@ export function MentorPage() {
           </section>
           {!m.open && (
             <p
-              className="flex gap-3 rounded-[var(--radius-md)] bg-warning-surface p-3.5 text-meta"
+              className="flex gap-3 rounded-[var(--radius-md)] bg-warning-surface p-3.5 text-callout"
               role="status"
             >
               <PauseCircle className="mt-0.5 size-5 flex-none text-warning" aria-hidden />

@@ -96,7 +96,7 @@ function Block({ b, cite }: { b: ABlock; cite: (n: number) => ReactNode }) {
     case 'code':
       return (
         <pre
-          className="overflow-x-auto rounded-[var(--radius-md)] bg-surface-2 p-3 font-mono text-meta"
+          className="overflow-x-auto rounded-[var(--radius-md)] bg-surface-2 p-3 font-mono text-callout"
           tabIndex={0}
         >
           <code>{b.v}</code>
@@ -104,14 +104,14 @@ function Block({ b, cite }: { b: ABlock; cite: (n: number) => ReactNode }) {
       );
     case 'math':
       return (
-        <Suspense fallback={<pre className="overflow-x-auto font-mono text-meta">{b.v}</pre>}>
+        <Suspense fallback={<pre className="overflow-x-auto font-mono text-callout">{b.v}</pre>}>
           <MathTex tex={b.v} display />
         </Suspense>
       );
     case 'table':
       return (
         <div className="overflow-x-auto rounded-[var(--radius-md)] border border-line" tabIndex={0}>
-          <table className="w-full border-collapse text-meta">
+          <table className="w-full border-collapse text-callout">
             <thead className="bg-surface-2">
               <tr>
                 {b.head.map((c, i) => (

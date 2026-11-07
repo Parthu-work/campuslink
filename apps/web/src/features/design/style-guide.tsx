@@ -9,6 +9,17 @@ import { Dialog, Sheet } from '../../components/ui/dialog';
 import { ErrorState } from '../../components/ui/error-state';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Avatar, Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
+import { ActionCard } from '../../components/ui/action-card';
+import { Kbd, SkeletonCard, SkeletonChart, SkeletonRow } from '../../components/ui/skeletons';
+import { Countdown } from '../../components/ui/countdown';
+import { ListRow, ListSection } from '../../components/ui/list-row';
+import { PersonCard } from '../../components/ui/person-card';
+import { ScoreRing } from '../../components/ui/score-ring';
+import { StepTrack } from '../../components/ui/step-track';
+import { Timeline } from '../../components/ui/timeline';
+import { Toolbar } from '../../components/ui/toolbar';
+import { toast } from '../../lib/toast';
+import { formatDay } from '../../lib/format';
 import { Illustration, type IllustrationKind } from '../../components/ui/illustration';
 import { OtpInput } from '../../components/ui/otp';
 import { PageHeader } from '../../components/ui/page-header';
@@ -56,10 +67,11 @@ const ROLES = [
   ['faculty', 'FACULTY'],
   ['admin', 'COLLEGE_ADMIN'],
 ] as const;
-const SCALE = ['hero', 'display', 'headline', 'title', 'lead', 'body', 'meta', 'caption'] as const;
-const RADII = ['xs', 'sm', 'md', 'lg', 'xl', 'pill'] as const;
-/** The display steps use the display face and a short phrase. */
-const DISPLAY = new Set<string>(['hero', 'display', 'headline']);
+/** ADR 0015's six steps; Display and Title use the display face (screen titles, big numbers). */
+const SCALE = ['display', 'title', 'headline', 'body', 'callout', 'caption'] as const;
+/** ADR 0015's three radii (the older names map onto them) and the chip pill. */
+const RADII = ['sm', 'md', 'xl', 'pill'] as const;
+const DISPLAY = new Set<string>(['display', 'title']);
 const SPRINGS = ['snappy', 'smooth', 'bouncy'] as const;
 const ILLUSTRATIONS: IllustrationKind[] = [
   'empty',
@@ -159,7 +171,7 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
       data-theme={theme}
       className="grid min-w-0 content-start gap-8 rounded-[var(--radius-xl)] border border-line bg-bg p-5 text-fg"
     >
-      <h2 className="text-title font-bold">{t(theme === 'light' ? 'design.light' : 'design.dark')}</h2>
+      <h2 className="text-headline font-bold">{t(theme === 'light' ? 'design.light' : 'design.dark')}</h2>
 
       <Section title={t('design.surfaces')}>
         <div className="grid grid-cols-4 gap-2">
@@ -223,7 +235,7 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
           </Card>
         </div>
         <div className="aurora-mesh grid h-28 place-items-center rounded-[var(--radius-lg)] border border-line">
-          <span className="text-headline font-bold">{t('design.hero')}</span>
+          <span className="text-title font-bold">{t('design.hero')}</span>
         </div>
       </Section>
 
@@ -232,7 +244,7 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
           {Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
             <span
               key={n}
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-meta font-semibold"
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-callout font-semibold"
               style={{ background: `var(--subject-${n}-surface)`, color: `var(--subject-${n}-ink)` }}
             >
               <span className="size-2 rounded-full" style={{ background: `var(--subject-${n})` }} />
@@ -266,7 +278,7 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
           {ROLES.map(([r, role]) => (
             <span
               key={r}
-              className="rounded-full px-3 py-1 text-meta font-semibold"
+              className="rounded-full px-3 py-1 text-callout font-semibold"
               style={{ background: `var(--role-${r}-surface)`, color: `var(--role-${r}-ink)` }}
             >
               {t(`role.${role}`)}
@@ -289,22 +301,25 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
           {SCALE.map((s) => (
             <p
               key={s}
-              className={cn('min-w-0', DISPLAY.has(s) && 'font-display leading-tight font-bold')}
-              style={{ fontSize: `var(--text-${s})` }}
+              className={cn('min-w-0', DISPLAY.has(s) && 'font-display font-bold')}
+              style={{ fontSize: `var(--text-${s})`, lineHeight: `var(--lh-${s})` }}
             >
               <code className="mr-2 font-mono text-caption font-normal text-fg-3">{s}</code>
               {t(DISPLAY.has(s) ? 'design.short' : 'design.sample')}
             </p>
           ))}
-          <p className="text-lead" lang="te">
+          <p className="text-body" lang="te">
             {t('design.sampleTe')}
           </p>
-          <p className="font-mono text-meta tabular-nums text-fg-2">CSE ’21 · 1,284 XP · 10:30</p>
+          <p className="text-body" lang="hi">
+            {t('design.sampleHi')}
+          </p>
+          <p className="font-mono text-callout tabular-nums text-fg-2">CSE ’21 · 1,284 XP · 10:30</p>
         </div>
       </Section>
 
       <Section title={t('design.shape')}>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+        <div className="grid grid-cols-4 gap-2">
           {RADII.map((r) => (
             <Swatch key={r} name={r} className="bg-surface-2">
               <span
@@ -326,7 +341,7 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
           ))}
         </div>
         <div className="relative h-20 overflow-hidden rounded-[var(--radius-lg)] bg-aurora">
-          <div className="glass absolute inset-x-3 bottom-3 rounded-full border border-line px-4 py-2 text-meta font-semibold">
+          <div className="glass absolute inset-x-3 bottom-3 rounded-full border border-line px-4 py-2 text-callout font-semibold">
             {t('design.glass')}
           </div>
         </div>
@@ -351,8 +366,11 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
           <Button size="sm" className="justify-self-start" onClick={() => setPlayed((p) => !p)}>
             {t('design.play')}
           </Button>
+          <p className="text-caption text-fg-3">{t('design.v2.motionTokens')}</p>
         </div>
       </Section>
+
+      <PrimitivesV2 />
 
       <Section title={t('design.components')}>
         <div className="flex flex-wrap gap-2">
@@ -515,7 +533,7 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
               { id: 'videos', label: t('design.tabVideos') },
             ]}
           />
-          <TabPanel idBase={tabsId} id={tab} className="py-3 text-meta text-fg-2">
+          <TabPanel idBase={tabsId} id={tab} className="py-3 text-callout text-fg-2">
             {t('design.tabPanel', { tab: t(`design.tab${tab[0]?.toUpperCase()}${tab.slice(1)}`) })}
           </TabPanel>
         </div>
@@ -533,7 +551,7 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <ProgressRing value={0.68} label={t('design.ring')} valueText="68%" size={72} tone="aurora">
-            <b className="text-meta tabular-nums">68%</b>
+            <b className="text-callout tabular-nums">68%</b>
           </ProgressRing>
           <ProgressRing value={0.4} label={t('design.progress')} valueText="40%" size={56} />
           <Tooltip content={t('design.tooltip')}>
@@ -637,6 +655,222 @@ function Specimen({ college, theme }: { college: (typeof COLLEGES)[number]; them
   );
 }
 
+/** ADR 0015's primitives, in this specimen's theme and college colour. */
+function PrimitivesV2() {
+  const { t } = useTranslation();
+  // Fixed once per visit (state initialisers run once): the countdowns tick from here.
+  const [soon] = useState(() => new Date(Date.now() + 3 * 60_000).toISOString());
+  const [later] = useState(() => new Date(Date.now() + 2 * 86_400_000 + 3_600_000).toISOString());
+  const [chipOn, setChipOn] = useState(true);
+  return (
+    <>
+      <Section title={t('design.v2.buttons')}>
+        {(['sm', 'md', 'lg'] as const).map((size) => (
+          <div key={size} className="flex flex-wrap items-center gap-2">
+            <Button size={size} variant="primary">
+              {t('design.v2.register')}
+            </Button>
+            <Button size={size} variant="secondary">
+              {t('design.v2.notNow')}
+            </Button>
+            <Button size={size} variant="tertiary">
+              {t('ui.seeAll')}
+            </Button>
+            <Button size={size} variant="danger">
+              {t('design.v2.withdraw')}
+            </Button>
+          </div>
+        ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="primary" loading>
+            {t('design.v2.register')}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => toast.undo(t('design.v2.toastDone'), t('ui.undo'), () => undefined)}
+          >
+            {t('design.v2.markDone')}
+          </Button>
+        </div>
+      </Section>
+
+      <Section title={t('design.v2.primitives')}>
+        <PageHeader
+          level={2}
+          title={t('design.v2.headerTitle')}
+          subtitle={t('design.v2.headerSubtitle')}
+          about={<p>{t('design.v2.headerAbout')}</p>}
+          overflow={[{ label: t('design.v2.history'), onSelect: () => undefined }]}
+          primary={<Button variant="primary">{t('design.v2.register')}</Button>}
+        />
+        <Toolbar
+          search={<Input aria-label={t('design.v2.searchPaths')} placeholder={t('design.v2.searchPaths')} />}
+          filters={
+            <>
+              <Chip pressed={chipOn} onClick={() => setChipOn((c) => !c)}>
+                CSE
+              </Chip>
+              <Chip pressed={false}>ECE</Chip>
+            </>
+          }
+          activeFilters={chipOn ? 1 : 0}
+          onClearFilters={() => setChipOn(false)}
+        />
+        <ActionCard
+          kicker={t('design.v2.actionKicker')}
+          title={t('design.v2.rowTitle')}
+          meta={t('design.v2.actionMeta')}
+          deadline={<Countdown at={soon} kind="starts" />}
+          leading={<Avatar name={t('design.v2.personName')} size={48} />}
+          action={<Button variant="primary">{t('design.v2.join')}</Button>}
+        />
+        <ListSection
+          title={t('design.v2.sectionTitle')}
+          action={
+            <Button variant="tertiary" size="sm">
+              {t('ui.seeAll')}
+            </Button>
+          }
+        >
+          <ListRow
+            leading={<Avatar name={t('design.v2.personName')} size={40} />}
+            title={t('design.v2.rowTitle')}
+            meta={t('design.v2.rowMeta')}
+            onClick={() => undefined}
+            chevron
+          />
+          <ListRow
+            title={t('design.v2.row2Title')}
+            meta={
+              <span className="flex flex-wrap items-center gap-2">
+                {t('design.v2.row2Meta')} <Countdown at={later} />
+              </span>
+            }
+            trailing={
+              <Button size="sm" variant="primary">
+                {t('design.v2.register')}
+              </Button>
+            }
+          />
+        </ListSection>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <PersonCard
+            name={t('design.v2.personName')}
+            role={t('design.v2.personRole')}
+            batch={t('design.v2.personBatch')}
+            reason={t('design.v2.personReason')}
+            demo
+            demoLabel={t('common.demo')}
+            action={<Button size="sm">{t('design.v2.follow')}</Button>}
+          />
+          <PersonCard
+            layout="row"
+            name={t('design.v2.personName')}
+            role={t('design.v2.personRole')}
+            batch={t('design.v2.personBatch')}
+            action={<Button size="sm">{t('design.v2.follow')}</Button>}
+          />
+        </div>
+        <StepTrack
+          label={t('design.v2.track')}
+          onOpen={() => undefined}
+          phases={[
+            {
+              name: t('design.v2.phase1'),
+              steps: [
+                { id: 'a', title: t('design.v2.step1'), state: 'done', meta: t('design.v2.weeks1') },
+                {
+                  id: 'b',
+                  title: t('design.v2.step2'),
+                  state: 'next',
+                  meta: t('design.v2.weeks2'),
+                  badge: <Badge tone="accent">{t('ui.proof')}</Badge>,
+                },
+              ],
+            },
+            {
+              name: t('design.v2.phase2'),
+              steps: [
+                { id: 'c', title: t('design.v2.step3'), state: 'upcoming', meta: t('design.v2.weeks1') },
+              ],
+            },
+          ]}
+        />
+        <ScoreRing
+          score={48}
+          label={t('design.v2.score')}
+          caption={t('design.v2.of100')}
+          delta={t('design.v2.delta')}
+        />
+        <Timeline
+          label={t('design.v2.rounds')}
+          items={[
+            {
+              id: '1',
+              time: formatDay(new Date()),
+              title: t('design.v2.round1'),
+              state: 'past',
+              badge: <Badge tone="success">{t('design.v2.selected')}</Badge>,
+            },
+            { id: '2', time: formatDay(soon), title: t('design.v2.round2'), state: 'current' },
+            { id: '3', time: formatDay(later), title: t('design.v2.round3'), state: 'future' },
+          ]}
+        />
+        <EmptyState
+          title={t('design.v2.emptyTitle')}
+          preview={
+            <div className="rounded-[var(--radius-md)] border border-line bg-surface-1">
+              <SkeletonRow />
+              <SkeletonRow />
+            </div>
+          }
+          action={<Button variant="primary">{t('design.v2.findSenior')}</Button>}
+        >
+          {t('design.v2.emptyBody')}
+        </EmptyState>
+        <p className="text-callout text-fg-2">{t('design.v2.shortcut', { a: 'Ctrl', b: 'K' })}</p>
+        <div className="flex gap-1">
+          <Kbd>Ctrl</Kbd>
+          <Kbd>K</Kbd>
+        </div>
+      </Section>
+
+      <Section title={t('design.v2.skeletons')}>
+        <div className="rounded-[var(--radius-md)] border border-line bg-surface-1">
+          <SkeletonRow trailing />
+        </div>
+        <SkeletonCard />
+        <SkeletonChart height={120} />
+      </Section>
+
+      <Section title={t('design.v2.languages')}>
+        <ListSection>
+          <ListRow title={t('design.v2.rowTitle')} meta={t('design.v2.rowMeta')} chevron />
+          <ListRow
+            title={<span lang="te">{t('design.sampleTe')}</span>}
+            meta={<span lang="te">{t('design.sampleTe')}</span>}
+            chevron
+          />
+          <ListRow
+            title={<span lang="hi">{t('design.sampleHi')}</span>}
+            meta={<span lang="hi">{t('design.sampleHi')}</span>}
+            chevron
+          />
+        </ListSection>
+      </Section>
+
+      <Section title={t('design.v2.density')}>
+        <div data-density="compact">
+          <ListSection>
+            <ListRow title={t('design.v2.row2Title')} meta={t('design.v2.row2Meta')} chevron />
+            <ListRow title={t('design.v2.rowTitle')} meta={t('design.v2.rowMeta')} chevron />
+          </ListSection>
+        </div>
+      </Section>
+    </>
+  );
+}
+
 export function StyleGuidePage() {
   const { t } = useTranslation();
   const [collegeId, setCollegeId] = useState<CollegeId>('dpit');
@@ -648,7 +882,7 @@ export function StyleGuidePage() {
       <header className="grid gap-3">
         <h1 className="text-display font-bold">{t('design.title')}</h1>
         <p className="max-w-[70ch] text-fg-2">{t('design.intro')}</p>
-        <label className="flex flex-wrap items-center gap-3 text-meta font-semibold">
+        <label className="flex flex-wrap items-center gap-3 text-callout font-semibold">
           {t('design.college')}
           <Select
             value={collegeId}

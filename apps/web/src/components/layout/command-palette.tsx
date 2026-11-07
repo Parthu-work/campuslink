@@ -32,7 +32,7 @@ import { PersonAvatar } from '../ui/person-avatar';
 import { useNav } from '../../lib/nav';
 
 const item =
-  'flex min-h-11 cursor-pointer items-center gap-3 rounded-[var(--radius-sm)] px-3 text-meta data-[selected=true]:bg-surface-2';
+  'flex min-h-11 cursor-pointer items-center gap-3 rounded-[var(--radius-sm)] px-3 text-callout data-[selected=true]:bg-surface-2';
 const group =
   '[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pt-2.5 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:font-mono [&_[cmdk-group-heading]]:text-caption [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-fg-3 [&_[cmdk-group-heading]]:uppercase';
 
@@ -115,7 +115,7 @@ export function CommandPalette() {
                     </Command.Item>
                   ))}
                   {people.isSuccess && !people.data.people.length && (
-                    <p className="px-3 py-2 text-meta text-fg-2">{t('palette.noResults')}</p>
+                    <p className="px-3 py-2 text-callout text-fg-2">{t('palette.noResults')}</p>
                   )}
                 </Command.Group>
               )}

@@ -65,7 +65,7 @@ function RefList({
   const { t } = useTranslation();
   return (
     <fieldset className="grid gap-2">
-      <legend className="text-meta font-semibold">{label}</legend>
+      <legend className="text-callout font-semibold">{label}</legend>
       {items.map((s, i) => (
         <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1.4fr_auto]">
           <Input
@@ -254,7 +254,7 @@ function NodeEditor({
       </div>
       {index > 0 && (
         <fieldset className="grid gap-1.5">
-          <legend className="text-meta font-semibold">{t('roadmaps.editor.after')}</legend>
+          <legend className="text-callout font-semibold">{t('roadmaps.editor.after')}</legend>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             {all
               .filter((o) => o.id !== node.id)
@@ -454,7 +454,7 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
               )}
             </Field>
             <fieldset className="grid gap-1.5">
-              <legend className="text-meta font-semibold">{t('roadmaps.editor.branches')}</legend>
+              <legend className="text-callout font-semibold">{t('roadmaps.editor.branches')}</legend>
               <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {BRANCHES.map((b) => (
                   <Checkbox
@@ -498,7 +498,7 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
             />
           </Card>
 
-          <h2 className="font-display text-title font-semibold">{t('roadmaps.editor.steps')}</h2>
+          <h2 className="font-display text-headline font-semibold">{t('roadmaps.editor.steps')}</h2>
           {content.nodes.map((n, i) => (
             <NodeEditor
               key={i}
@@ -545,21 +545,21 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
 
         <aside className="grid content-start gap-3 lg:sticky lg:top-4 lg:self-start">
           <Card className="grid gap-3 p-4">
-            <h2 className="font-display text-title font-semibold">{t('roadmaps.checklist')}</h2>
+            <h2 className="font-display text-headline font-semibold">{t('roadmaps.checklist')}</h2>
             {errors.length ? (
-              <ul className="list-disc pl-5 text-meta text-danger" aria-live="polite">
+              <ul className="list-disc pl-5 text-callout text-danger" aria-live="polite">
                 {errors.map((e) => (
                   <li key={e}>{e}</li>
                 ))}
               </ul>
             ) : problems.length ? (
-              <ul className="list-disc pl-5 text-meta text-warning" aria-live="polite">
+              <ul className="list-disc pl-5 text-callout text-warning" aria-live="polite">
                 {problems.map((p) => (
                   <li key={p}>{p}</li>
                 ))}
               </ul>
             ) : (
-              <p className="text-meta text-success">{t('roadmaps.checklistOk')}</p>
+              <p className="text-callout text-success">{t('roadmaps.checklistOk')}</p>
             )}
             <p className="text-caption text-fg-3">{t('roadmaps.editor.rules')}</p>
             {r && (

@@ -111,7 +111,7 @@ export function ShareExperiencePage() {
             if (ready) send.mutate();
           }}
         >
-          <p className="rounded-[var(--radius-md)] bg-warning-surface p-3 text-meta text-warning-ink">
+          <p className="rounded-[var(--radius-md)] bg-warning-surface p-3 text-callout text-warning-ink">
             {t('moat.form.careful')}
           </p>
           <Field
@@ -166,7 +166,7 @@ export function ShareExperiencePage() {
             </Field>
           </div>
           <div className="grid gap-2">
-            <p className="text-meta font-semibold">{t('moat.form.difficulty')}</p>
+            <p className="text-callout font-semibold">{t('moat.form.difficulty')}</p>
             <ChoiceGroup<ExperienceDifficulty>
               label={t('moat.form.difficulty')}
               variant="chip"
@@ -176,7 +176,7 @@ export function ShareExperiencePage() {
             />
           </div>
           <div className="grid gap-2">
-            <p className="text-meta font-semibold">{t('moat.form.result')}</p>
+            <p className="text-callout font-semibold">{t('moat.form.result')}</p>
             <ChoiceGroup<ExperienceResult>
               label={t('moat.form.result')}
               variant="chip"
@@ -186,7 +186,7 @@ export function ShareExperiencePage() {
             />
           </div>
           <fieldset className="grid gap-3">
-            <legend className="mb-2 text-title font-semibold">{t('moat.form.rounds')}</legend>
+            <legend className="mb-2 text-headline font-semibold">{t('moat.form.rounds')}</legend>
             {rounds.map((r, i) => (
               <Card key={i} className="grid gap-3 p-4">
                 <div className="flex items-center justify-between gap-2">
@@ -375,7 +375,7 @@ export function MyExperiencesPage() {
                         {t(`moat.status.${e.removed ? 'removed' : e.status}`)}
                       </Badge>
                       {e.reason && (
-                        <p className="text-meta text-fg-2">{t('moat.note', { reason: e.reason })}</p>
+                        <p className="text-callout text-fg-2">{t('moat.note', { reason: e.reason })}</p>
                       )}
                     </div>
                     {e.status !== 'published' && (

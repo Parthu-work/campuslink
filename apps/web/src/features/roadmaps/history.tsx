@@ -21,14 +21,16 @@ type VersionDetail = VersionView & { content: RoadmapContent; problems: string[]
 function Diff({ before, after }: { before: RoadmapContent | null; after: RoadmapContent }) {
   const { t } = useTranslation();
   if (!before)
-    return <p className="text-meta text-fg-2">{t('roadmaps.firstVersion', { count: after.nodes.length })}</p>;
+    return (
+      <p className="text-callout text-fg-2">{t('roadmaps.firstVersion', { count: after.nodes.length })}</p>
+    );
   const d = diffContent(before, after);
   if (!d.roadmap.length && !d.nodes.length)
-    return <p className="text-meta text-fg-2">{t('roadmaps.noChanges')}</p>;
+    return <p className="text-callout text-fg-2">{t('roadmaps.noChanges')}</p>;
   return (
     <div className="grid gap-2">
       {!!d.roadmap.length && (
-        <p className="text-meta">
+        <p className="text-callout">
           <span className="font-semibold">{t('roadmaps.diff.roadmap')}:</span>{' '}
           {d.roadmap.map((f) => t(`roadmaps.field.${f}`)).join(', ')}
         </p>
@@ -38,7 +40,7 @@ function Diff({ before, after }: { before: RoadmapContent | null; after: Roadmap
           <li
             key={`${c.kind}-${c.node.id}`}
             className={cn(
-              'rounded-[var(--radius-sm)] border-l-4 bg-surface-2 px-3 py-2 text-meta',
+              'rounded-[var(--radius-sm)] border-l-4 bg-surface-2 px-3 py-2 text-callout',
               c.kind === 'added' && 'border-success',
               c.kind === 'removed' && 'border-danger',
               c.kind === 'changed' && 'border-warning',
@@ -73,7 +75,7 @@ function ReviewForm({ roadmap }: { roadmap: RoadmapView }) {
   });
   return (
     <Card className="grid gap-3 p-4">
-      <h2 className="font-display text-title font-semibold">{t('roadmaps.review.decide')}</h2>
+      <h2 className="font-display text-headline font-semibold">{t('roadmaps.review.decide')}</h2>
       <Field label={t('roadmaps.review.note')} hint={t('roadmaps.review.noteHint')}>
         {(f) => (
           <Textarea
@@ -175,7 +177,7 @@ export function RoadmapHistoryPage() {
                     {t(`roadmaps.vstatus.${v.status}`)}
                   </Badge>
                 </span>
-                {v.changeNote && <span className="line-clamp-2 text-meta text-fg-2">{v.changeNote}</span>}
+                {v.changeNote && <span className="line-clamp-2 text-callout text-fg-2">{v.changeNote}</span>}
                 <span className="text-caption text-fg-3">
                   {v.author ? v.author.name : t('roadmaps.libraryAuthor')} · {formatDay(v.createdAt)}
                   {v.reviewer && ` · ${t('roadmaps.reviewedBy', { name: v.reviewer.name })}`}
@@ -187,26 +189,26 @@ export function RoadmapHistoryPage() {
         <div className="grid content-start gap-3">
           {cur.data ? (
             <Card className="grid gap-3 p-4">
-              <h2 className="font-display text-title font-semibold">
+              <h2 className="font-display text-headline font-semibold">
                 {t('roadmaps.changesIn', { version: cur.data.version })}
               </h2>
               {cur.data.reviewNote && (
-                <p className="text-meta">
+                <p className="text-callout">
                   <span className="font-semibold">{t('roadmaps.reviewNote')}:</span> {cur.data.reviewNote}
                 </p>
               )}
               <Diff before={before.data?.content ?? null} after={cur.data.content} />
               {(cur.data.status === 'draft' || cur.data.status === 'submitted') && (
                 <div className="grid gap-1">
-                  <h3 className="text-meta font-semibold">{t('roadmaps.checklist')}</h3>
+                  <h3 className="text-callout font-semibold">{t('roadmaps.checklist')}</h3>
                   {cur.data.problems.length ? (
-                    <ul className="list-disc pl-5 text-meta text-warning">
+                    <ul className="list-disc pl-5 text-callout text-warning">
                       {cur.data.problems.map((p) => (
                         <li key={p}>{p}</li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-meta text-success">{t('roadmaps.checklistOk')}</p>
+                    <p className="text-callout text-success">{t('roadmaps.checklistOk')}</p>
                   )}
                 </div>
               )}
@@ -221,7 +223,7 @@ export function RoadmapHistoryPage() {
           )}
           {reviewing && <ReviewForm roadmap={r} />}
           {r.draft?.status === 'submitted' && !r.canReview && r.draft.version === selected && (
-            <p className="text-meta text-fg-2">{t('roadmaps.awaitingOther')}</p>
+            <p className="text-callout text-fg-2">{t('roadmaps.awaitingOther')}</p>
           )}
         </div>
       </div>

@@ -45,7 +45,7 @@ export function TopicPicker({
   const { t } = useTranslation();
   return (
     <fieldset className="grid gap-1.5">
-      <legend className="mb-1.5 text-meta font-semibold">{t('feed.topicsPick', { max })}</legend>
+      <legend className="mb-1.5 text-callout font-semibold">{t('feed.topicsPick', { max })}</legend>
       <div className="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
         {TOPICS.map((tp) => {
           const on = value.includes(tp);
@@ -289,7 +289,7 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
                 {t('feed.addOption')}
               </Button>
             )}
-            <label className="ml-auto grid gap-1.5 text-meta font-semibold">
+            <label className="ml-auto grid gap-1.5 text-callout font-semibold">
               {t('feed.pollLength')}
               <Select value={days} onChange={(e) => setDays(Number(e.target.value))}>
                 {[1, 3, 7, 14].map((d) => (
@@ -327,7 +327,7 @@ export function ComposerForm({ initialKind, onDone }: { initialKind: PostKind; o
       )}
       {canAnnounce && announcement && <AnnouncementOptions value={announceOpts} onChange={setAnnounceOpts} />}
       {error && (
-        <p role="alert" className="text-meta font-medium text-danger">
+        <p role="alert" className="text-callout font-medium text-danger">
           {error}
         </p>
       )}

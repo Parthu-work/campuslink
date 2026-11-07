@@ -63,7 +63,7 @@ export function ColumnChart({
         <span id={`${id}-t`} className="font-semibold">
           {title}
         </span>
-        {description && <span className="text-meta text-fg-2">{description}</span>}
+        {description && <span className="text-callout text-fg-2">{description}</span>}
       </figcaption>
       <div ref={ref} className="relative">
         <svg
@@ -155,13 +155,15 @@ export function ColumnChart({
             }
             role="status"
           >
-            <span className="text-meta font-semibold tabular-nums">{cur.display ?? format(cur.value)}</span>
+            <span className="text-callout font-semibold tabular-nums">
+              {cur.display ?? format(cur.value)}
+            </span>
             <span className="text-fg-2">{cur.label}</span>
             {cur.detail && <span className="text-fg-2">{cur.detail}</span>}
           </div>
         )}
       </div>
-      <details className="text-meta">
+      <details className="text-callout">
         <summary className="cursor-pointer py-3 text-fg-2">{t('common.showTable')}</summary>
         <Table label={title} className="mt-2">
           <THead>

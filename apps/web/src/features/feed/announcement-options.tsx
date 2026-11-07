@@ -28,9 +28,9 @@ export function AnnouncementOptions({
   const toggle = <T,>(list: T[], x: T) => (list.includes(x) ? list.filter((y) => y !== x) : [...list, x]);
   return (
     <fieldset className="grid gap-4 rounded-[var(--radius-md)] border border-line p-4">
-      <legend className="px-1 text-meta font-semibold">{t('announce.title')}</legend>
+      <legend className="px-1 text-callout font-semibold">{t('announce.title')}</legend>
       <div className="grid gap-2">
-        <p className="text-meta font-semibold" id={`${yearsId}-branches`}>
+        <p className="text-callout font-semibold" id={`${yearsId}-branches`}>
           {t('announce.branches')}
         </p>
         <div role="group" aria-labelledby={`${yearsId}-branches`} className="flex flex-wrap gap-2">
@@ -57,7 +57,7 @@ export function AnnouncementOptions({
         )}
       </Field>
       <div className="grid gap-2">
-        <p className="text-meta font-semibold" id={`${yearsId}-roles`}>
+        <p className="text-callout font-semibold" id={`${yearsId}-roles`}>
           {t('announce.roles')}
         </p>
         <div role="group" aria-labelledby={`${yearsId}-roles`} className="flex flex-wrap gap-2">

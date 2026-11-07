@@ -181,7 +181,7 @@ function Poll({ post }: { post: PostView }) {
         return showResults ? (
           <div
             key={i}
-            className="grid gap-1.5 rounded-[var(--radius-md)] border border-line px-3.5 py-2.5 text-meta"
+            className="grid gap-1.5 rounded-[var(--radius-md)] border border-line px-3.5 py-2.5 text-callout"
           >
             <span className="flex justify-between gap-3">
               <span className={cn(poll.myVote === i && 'font-semibold')}>
@@ -198,7 +198,7 @@ function Poll({ post }: { post: PostView }) {
             type="button"
             disabled={!canVote || vote.isPending}
             onClick={() => vote.mutate(i)}
-            className="pressable min-h-11 rounded-[var(--radius-md)] border border-line-strong px-3.5 text-left text-meta font-medium transition-colors hover:border-brand hover:bg-brand-surface disabled:opacity-60"
+            className="pressable min-h-11 rounded-[var(--radius-md)] border border-line-strong px-3.5 text-left text-callout font-medium transition-colors hover:border-brand hover:bg-brand-surface disabled:opacity-60"
           >
             {o.text}
           </button>
@@ -225,7 +225,7 @@ function LinkPreview({ link }: { link: NonNullable<PostView['link']> }) {
         <ExternalLink className="size-3.5" aria-hidden /> {link.siteName || link.host}
       </span>
       <b className="line-clamp-2">{link.title || link.url}</b>
-      {link.description && <span className="line-clamp-2 text-meta text-fg-2">{link.description}</span>}
+      {link.description && <span className="line-clamp-2 text-callout text-fg-2">{link.description}</span>}
     </a>
   );
 }
@@ -253,7 +253,7 @@ function ActionBar({ post }: { post: PostView }) {
                 react.mutate(on ? null : r);
               }}
               aria-label={t('feed.reactLabel', { reaction: t(`feed.reaction.${r}`), count: n })}
-              className="react-pop inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-2.5 text-meta text-fg-2 transition-[scale,background-color,color] duration-[var(--dur-fast)] ease-snappy hover:bg-hover active:scale-90 disabled:opacity-60 aria-pressed:bg-brand-surface aria-pressed:text-brand-ink"
+              className="react-pop inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-2.5 text-callout text-fg-2 transition-[scale,background-color,color] duration-[var(--dur-fast)] ease-snappy hover:bg-hover active:scale-90 disabled:opacity-60 aria-pressed:bg-brand-surface aria-pressed:text-brand-ink"
             >
               <Icon className="size-[18px]" aria-hidden />
               <span aria-hidden className="text-caption font-semibold tabular-nums">
@@ -265,7 +265,7 @@ function ActionBar({ post }: { post: PostView }) {
       </div>
       <IntentLink
         to={`/posts/${post.id}`}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-2.5 text-meta text-fg-2 hover:bg-hover"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full px-2.5 text-callout text-fg-2 hover:bg-hover"
         aria-label={t('feed.commentsLabel', { count: post.counts.comments })}
       >
         <MessageCircle className="size-[18px]" aria-hidden />
@@ -447,13 +447,13 @@ export function ItemCard({ item, headingLevel = 2 }: { item: ItemView; headingLe
             </time>
           </span>
         </p>
-        <H className="text-lead leading-snug font-semibold">
+        <H className="text-body leading-snug font-semibold">
           <a href={item.url} target="_blank" rel="noopener noreferrer nofollow" className="hover:underline">
             {item.title}
             <span className="sr-only"> ({t('feed.opensSite', { host: item.host })})</span>
           </a>
         </H>
-        {item.snippet && <p className="line-clamp-3 text-meta text-fg-2">{item.snippet}</p>}
+        {item.snippet && <p className="line-clamp-3 text-callout text-fg-2">{item.snippet}</p>}
         <p className="flex flex-wrap items-center gap-1.5">
           {item.topics.slice(0, 3).map((tp) => (
             <Badge key={tp}>{t(`topics.${tp}`)}</Badge>
@@ -462,7 +462,7 @@ export function ItemCard({ item, headingLevel = 2 }: { item: ItemView; headingLe
             href={item.url}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="ml-auto inline-flex min-h-11 items-center gap-1 rounded-full px-2.5 text-meta font-semibold text-brand-ink hover:bg-hover"
+            className="ml-auto inline-flex min-h-11 items-center gap-1 rounded-full px-2.5 text-callout font-semibold text-brand-ink hover:bg-hover"
             aria-hidden
             tabIndex={-1}
           >

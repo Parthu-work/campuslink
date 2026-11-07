@@ -34,7 +34,7 @@ export function NoticeGate({ version }: { version: string }) {
         >
           <ScrollText className="size-5" />
         </span>
-        <h1 className="text-title font-semibold">{t('legal.gateTitle')}</h1>
+        <h1 className="text-headline font-semibold">{t('legal.gateTitle')}</h1>
         <p className="text-body text-fg-2">{t('legal.gateBody')}</p>
         <ul className="grid gap-2 text-body">
           <li>
@@ -57,7 +57,7 @@ export function NoticeGate({ version }: { version: string }) {
           </li>
         </ul>
         {error && (
-          <p role="alert" className="text-meta text-danger-ink">
+          <p role="alert" className="text-callout text-danger-ink">
             {error}
           </p>
         )}

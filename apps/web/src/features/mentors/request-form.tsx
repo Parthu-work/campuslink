@@ -119,9 +119,9 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
     return (
       <div className="grid gap-5">
         <Stepper label={t('request.steps')} steps={steps} current={0} />
-        <p className="text-meta text-fg-2">{t('request.noColdDms')}</p>
+        <p className="text-callout text-fg-2">{t('request.noColdDms')}</p>
         <fieldset className="grid gap-2">
-          <legend className="mb-2 text-meta font-semibold">{t('request.sessionType')}</legend>
+          <legend className="mb-2 text-callout font-semibold">{t('request.sessionType')}</legend>
           <ChoiceGroup
             label={t('request.sessionType')}
             value={type}
@@ -225,7 +225,7 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
       <Stepper label={t('request.steps')} steps={steps} current={1} />
       <div className="flex items-center gap-3 rounded-[var(--radius-md)] bg-surface-2 px-4 py-3">
         <CalendarClock className="size-5 flex-none text-brand-ink" aria-hidden />
-        <p className="min-w-0 flex-1 text-meta">
+        <p className="min-w-0 flex-1 text-callout">
           <b>{t(`session.type.${type}`)}</b>
           {slot ? ` · ${formatDateTime(slot)}` : ''}
         </p>

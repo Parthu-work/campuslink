@@ -41,9 +41,9 @@ export function VerifyCertificatePage() {
             )}
             {c.valid ? t('verifyCert.valid') : t('verifyCert.revoked')}
           </p>
-          <p className="text-headline font-bold">{c.name}</p>
+          <p className="text-title font-bold">{c.name}</p>
           <p className="text-fg-2">{t('verifyCert.what', { college: c.college, year: c.academicYear })}</p>
-          <p className="text-meta">
+          <p className="text-callout">
             {t('verifyCert.counts', {
               sessions: c.sessions,
               mentees: c.mentees,

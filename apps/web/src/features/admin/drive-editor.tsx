@@ -237,7 +237,7 @@ function DriveForm({ existing }: { existing?: DriveView }) {
       <BackLink to={existing ? `/admin/placements/${existing.id}` : '/admin/placements'}>
         {existing ? t('placements.admin.backToDrive') : t('placements.admin.backToDrives')}
       </BackLink>
-      <h2 className="text-title font-semibold">
+      <h2 className="text-headline font-semibold">
         {existing ? t('placements.admin.editTitle') : t('placements.admin.newTitle')}
       </h2>
       <Card className="grid gap-4 p-5">
@@ -399,10 +399,10 @@ function DriveForm({ existing }: { existing?: DriveView }) {
         <h3 id="ed-elig" className="font-semibold">
           {t('placements.criteria')}
         </h3>
-        <p className="text-meta text-fg-2">{t('placements.admin.criteriaIntro')}</p>
+        <p className="text-callout text-fg-2">{t('placements.admin.criteriaIntro')}</p>
         <Card className="grid gap-4 p-4">
           <fieldset className="grid gap-2">
-            <legend className="mb-1.5 text-meta font-semibold">{t('placements.admin.branches')}</legend>
+            <legend className="mb-1.5 text-callout font-semibold">{t('placements.admin.branches')}</legend>
             <div className="flex flex-wrap gap-2">
               {BRANCHES.map((b) => (
                 <Chip
@@ -421,7 +421,7 @@ function DriveForm({ existing }: { existing?: DriveView }) {
             </div>
           </fieldset>
           <fieldset className="grid gap-2">
-            <legend className="mb-1.5 text-meta font-semibold">{t('placements.admin.gradYears')}</legend>
+            <legend className="mb-1.5 text-callout font-semibold">{t('placements.admin.gradYears')}</legend>
             <div className="flex flex-wrap gap-2">
               {years.map((y) => (
                 <Chip

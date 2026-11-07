@@ -51,7 +51,7 @@ function UnitCard({
           onClick={onToggle}
           className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left hover:bg-hover"
         >
-          <span className="grid size-9 flex-none place-items-center rounded-full bg-brand-surface font-mono text-meta font-bold text-brand-ink">
+          <span className="grid size-9 flex-none place-items-center rounded-full bg-brand-surface font-mono text-callout font-bold text-brand-ink">
             {index + 1}
           </span>
           <span className="grid min-w-0 flex-1">
@@ -73,14 +73,14 @@ function UnitCard({
           <ul className="flex flex-wrap gap-2">
             {unit.topics.map((tp) => (
               <li key={tp.id}>
-                <span className="inline-flex min-h-9 items-center rounded-full border border-line-strong px-3 text-meta">
+                <span className="inline-flex min-h-9 items-center rounded-full border border-line-strong px-3 text-callout">
                   {tp.title}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-meta text-fg-3">{t('study.noTopics')}</p>
+          <p className="text-callout text-fg-3">{t('study.noTopics')}</p>
         )}
       </div>
     </Card>
@@ -178,9 +178,9 @@ export function SubjectPage() {
               )
             }
           />
-          <p className="text-meta text-fg-2">{who.join(' · ')}</p>
+          <p className="text-callout text-fg-2">{who.join(' · ')}</p>
           {s.owners.length > 0 && (
-            <div className="flex items-center gap-2 text-meta text-fg-2">
+            <div className="flex items-center gap-2 text-callout text-fg-2">
               <AvatarStack
                 people={s.owners.map((o) => ({ name: o.name, fileId: o.avatarFileId }))}
                 label={t('study.taughtBy', { names: s.owners.map((o) => o.name).join(', ') })}
@@ -197,7 +197,7 @@ export function SubjectPage() {
 
       <section aria-labelledby="syllabus-title" className="grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="syllabus-title" className="flex items-center gap-2 text-title font-semibold">
+          <h2 id="syllabus-title" className="flex items-center gap-2 text-headline font-semibold">
             <ListTree className="size-5 text-brand-ink" aria-hidden /> {t('study.syllabus')}
           </h2>
           {s.can.manage && units.length > 0 && (

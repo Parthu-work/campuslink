@@ -28,7 +28,7 @@ export function BillingBanner() {
     <div
       role="status"
       className={cn(
-        'flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border p-3 text-meta',
+        'flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border p-3 text-callout',
         urgent
           ? 'border-danger bg-danger-surface text-danger-ink'
           : 'border-warning bg-warning-surface text-warning-ink',

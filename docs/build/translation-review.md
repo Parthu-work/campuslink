@@ -42,3 +42,14 @@ The remaining sections (`admin`, `platform`, `pbilling`, `billing`, `reports`, `
 - **Untranslated on purpose.** Product and brand names (`{{app}}`, Alumni Match, WhatsApp, Google Sheet, Greenhouse, YouTube), exam names (GATE, CAT, UPSC), plan names (Connect, Placement) and code examples (`**bold**`, `/videos`, `21CSE117`, `UNIT I: …`).
 - **Numbers and dates** are formatted by the browser for `hi-IN` (Western digits, Indian grouping: 1,20,000).
 - **Plurals.** Hindi uses the same noun form for many nouns in both `_one` and `_other`; the pairs are kept so the keys match English.
+
+## Prompt 3 (Telugu and Hindi, machine-assisted, not yet reviewed)
+
+Every string added or changed in prompt 3, by phase. Review in the order of the list (high-traffic first).
+
+| Phase | Where                                                                             | What                                                                                                                      |
+| ----- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| U1    | `te.json`, `hi.json` › `ui.*`                                                     | The primitives' words: About this, More actions, Filters, Clear all, Show results, Undo, countdowns, step states, See all |
+| U1    | `packs/design.te.json`, `packs/design.hi.json` › `design.v2.*`, `design.sampleHi` | The style guide's specimen text (development builds only; low priority)                                                   |
+
+Notes for the reviewer: the countdown strings wrap the browser's own relative time (`Intl.RelativeTimeFormat`, "2 రోజుల్లో", "2 दिन में"), so `ui.closes` and `ui.starts` put `{{when}}` first in Telugu and Hindi; `ui.stepOf` reorders "Step 3 of 10" for both languages.

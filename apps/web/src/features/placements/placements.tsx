@@ -37,7 +37,7 @@ function DriveCard({ drive: d }: { drive: DriveView }) {
             <CompanyMark name={d.company.name} />
             <div className="min-w-0 flex-1">
               <h3 className="text-body leading-snug font-semibold">{d.company.name}</h3>
-              <p className="truncate text-meta text-fg-2">{d.title}</p>
+              <p className="truncate text-callout text-fg-2">{d.title}</p>
             </div>
           </div>
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-fg-2">
@@ -148,7 +148,7 @@ function AcademicCard() {
           ))}
         </dl>
       ) : (
-        <p className="text-meta text-fg-2">{t('placements.recordNone')}</p>
+        <p className="text-callout text-fg-2">{t('placements.recordNone')}</p>
       )}
       {canReport && !fromCollege && (
         <div>

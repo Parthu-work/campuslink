@@ -32,7 +32,7 @@ export function TicketThread({
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={SUPPORT_STATUS_TONE[tk.status]}>{t(`help.status.${tk.status}`)}</Badge>
-        <span className="text-meta text-fg-2">
+        <span className="text-callout text-fg-2">
           {t(`help.category.${tk.category}`)} · {t(`help.desk.${tk.desk}`)}
         </span>
       </div>

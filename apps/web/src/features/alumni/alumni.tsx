@@ -150,7 +150,7 @@ function AskDialog({ onClose }: { onClose: () => void }) {
           </Field>
         )}
         <fieldset className="grid gap-3 sm:grid-cols-3">
-          <legend className="mb-2 text-meta font-semibold">{t('alumni.asks.who')}</legend>
+          <legend className="mb-2 text-callout font-semibold">{t('alumni.asks.who')}</legend>
           <Field label={t('alumni.asks.company')}>
             {({ id }) => (
               <Input id={id} maxLength={80} value={company} onChange={(e) => setCompany(e.target.value)} />
@@ -211,7 +211,7 @@ function AskCard({ a }: { a: MicroAskView }) {
           <span className="font-semibold">{t(`alumni.kind.${a.kind}`)}</span>
           <Badge tone={STATUS_TONE[a.status]}>{t(`alumni.status.${a.status}`)}</Badge>
         </div>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {a.role === 'helper'
             ? t('alumni.asks.from', { name: a.asker.name })
             : a.helper
@@ -220,14 +220,14 @@ function AskCard({ a }: { a: MicroAskView }) {
         </p>
         <p className="whitespace-pre-line">{a.note}</p>
         {a.role === 'helper' && a.resumeId && (
-          <Link to={`/resume/${a.resumeId}`} className="text-meta font-semibold text-brand-ink underline">
+          <Link to={`/resume/${a.resumeId}`} className="text-callout font-semibold text-brand-ink underline">
             {t('alumni.asks.openResume')}
           </Link>
         )}
         {a.questionId && (
           <Link
             to={`/questions/${a.questionId}`}
-            className="text-meta font-semibold text-brand-ink underline"
+            className="text-callout font-semibold text-brand-ink underline"
           >
             {t('alumni.asks.openQuestion')}
           </Link>
@@ -381,7 +381,7 @@ function CertificatesPanel() {
         .map((n) => (
           <Card key={n.id} className="grid gap-2 p-4">
             <p className="font-semibold">{t('alumni.ofMonth.nominated', { month: n.month })}</p>
-            <p className="text-meta text-fg-2">{n.citation}</p>
+            <p className="text-callout text-fg-2">{n.citation}</p>
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="primary" onClick={() => reply.mutate({ id: n.id, accept: true })}>
                 {t('alumni.ofMonth.accept')}
@@ -409,7 +409,7 @@ function CertificatesPanel() {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-meta text-fg-2">
+                  <p className="text-callout text-fg-2">
                     {t('alumni.certs.counts', {
                       sessions: y.sessions,
                       mentees: y.mentees,
@@ -558,7 +558,7 @@ function GivingPanel() {
                   <span className="font-semibold">{f.title}</span>
                   <Badge>{t(`alumni.purpose.${f.purpose}`)}</Badge>
                 </div>
-                <p className="text-meta text-fg-2">{f.description}</p>
+                <p className="text-callout text-fg-2">{f.description}</p>
                 {f.targetPaise ? (
                   <ProgressBar
                     value={f.receivedPaise}
@@ -570,7 +570,7 @@ function GivingPanel() {
                     })}
                   />
                 ) : null}
-                <p className="text-meta">
+                <p className="text-callout">
                   {f.targetPaise
                     ? t('alumni.giving.raised', {
                         got: rupees(f.receivedPaise),
@@ -624,11 +624,11 @@ function GivingPanel() {
         })}
       </ul>
       <section aria-labelledby="my-pledges" className="grid gap-3">
-        <h2 id="my-pledges" className="text-title font-semibold">
+        <h2 id="my-pledges" className="text-headline font-semibold">
           {t('alumni.giving.mine')}
         </h2>
         {mine.data && !mine.data.length && (
-          <p className="text-meta text-fg-2">{t('alumni.giving.noPledges')}</p>
+          <p className="text-callout text-fg-2">{t('alumni.giving.noPledges')}</p>
         )}
         <ul className="grid gap-2">
           {mine.data?.map((p) => (
@@ -745,7 +745,7 @@ function ImportPanel() {
           )}
           {preview.skills.length > 0 && (
             <fieldset className="grid gap-1">
-              <legend className="mb-1 text-meta font-semibold">{t('alumni.import.skills')}</legend>
+              <legend className="mb-1 text-callout font-semibold">{t('alumni.import.skills')}</legend>
               <div className="grid gap-x-4 sm:grid-cols-2">
                 {preview.skills.map((s, i) => (
                   <Checkbox
@@ -767,8 +767,8 @@ function ImportPanel() {
           )}
           {preview.education.length > 0 && (
             <div className="grid gap-1">
-              <p className="text-meta font-semibold">{t('alumni.import.education')}</p>
-              <ul className="text-meta text-fg-2">
+              <p className="text-callout font-semibold">{t('alumni.import.education')}</p>
+              <ul className="text-callout text-fg-2">
                 {preview.education.map((e, i) => (
                   <li key={`${e.school}-${i}`}>{[e.degree, e.school].filter(Boolean).join(', ')}</li>
                 ))}

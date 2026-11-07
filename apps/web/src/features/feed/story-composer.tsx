@@ -120,7 +120,7 @@ export function StoryComposer({ onDone }: { onDone: () => void }) {
       </Field>
       {mode === 'text' && (
         <fieldset>
-          <legend id={bgId} className="mb-1.5 text-meta font-semibold">
+          <legend id={bgId} className="mb-1.5 text-callout font-semibold">
             {t('stories.background')}
           </legend>
           <div role="radiogroup" aria-labelledby={bgId} className="flex gap-2">
@@ -149,7 +149,7 @@ export function StoryComposer({ onDone }: { onDone: () => void }) {
         )}
       </Field>
       {error && (
-        <p role="alert" className="text-meta font-medium text-danger">
+        <p role="alert" className="text-callout font-medium text-danger">
           {error}
         </p>
       )}

@@ -152,7 +152,7 @@ function AddQuestion({ onClose }: { onClose: () => void }) {
           )}
         </Field>
         {error && (
-          <p role="alert" className="text-meta font-medium text-danger">
+          <p role="alert" className="text-callout font-medium text-danger">
             {error}
           </p>
         )}
@@ -240,7 +240,7 @@ function QuestionCard({ question: x }: { question: InterviewQuestionView }) {
         ) : (
           <>
             <p className="font-semibold">{x.text}</p>
-            <p className="text-meta text-fg-2">{x.rubric}</p>
+            <p className="text-callout text-fg-2">{x.rubric}</p>
             {x.reviewedBy && (
               <p className="text-caption text-fg-3">
                 {t('interviews.bank.reviewedBy', { name: x.reviewedBy.name })}
@@ -262,7 +262,7 @@ export function InterviewQuestionsAdmin() {
   return (
     <div className="grid gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="max-w-[60ch] text-meta text-fg-2">{t('interviews.bank.intro')}</p>
+        <p className="max-w-[60ch] text-callout text-fg-2">{t('interviews.bank.intro')}</p>
         <Button variant="primary" onClick={() => setAdding(true)}>
           <Plus className="size-4" aria-hidden /> {t('interviews.bank.add')}
         </Button>

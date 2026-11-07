@@ -173,12 +173,12 @@ function ItemCard({ item: x }: { item: PracticeItemView }) {
         </div>
         <p className="whitespace-pre-line font-semibold">{x.text}</p>
         {x.code && (
-          <pre className="overflow-x-auto rounded-[var(--radius-md)] bg-surface-2 p-3 font-mono text-meta">
+          <pre className="overflow-x-auto rounded-[var(--radius-md)] bg-surface-2 p-3 font-mono text-callout">
             <code>{x.code}</code>
           </pre>
         )}
         {x.kind === 'mcq' && (
-          <ol className="grid gap-1 text-meta">
+          <ol className="grid gap-1 text-callout">
             {x.options.map((o, i) => (
               <li key={i} className={String(i) === x.answer ? 'font-semibold text-success-ink' : 'text-fg-2'}>
                 {String.fromCharCode(65 + i)}. {o}
@@ -188,15 +188,15 @@ function ItemCard({ item: x }: { item: PracticeItemView }) {
           </ol>
         )}
         {(x.kind === 'numeric' || x.kind === 'output_prediction') && (
-          <p className="text-meta">
+          <p className="text-callout">
             {t('practice.bank.answer')}{' '}
             <span className="whitespace-pre-wrap font-mono font-semibold">{x.answer}</span>
           </p>
         )}
         {x.kind === 'coding' && (
-          <p className="text-meta">{t('practice.bank.tests', { count: x.tests.length })}</p>
+          <p className="text-callout">{t('practice.bank.tests', { count: x.tests.length })}</p>
         )}
-        <p className="text-meta text-fg-2">{x.explanation}</p>
+        <p className="text-callout text-fg-2">{x.explanation}</p>
         <p className="text-caption text-fg-3">
           {x.createdBy?.name
             ? t('practice.bank.by', { name: x.createdBy.name })
@@ -243,7 +243,7 @@ function Mastery({ data }: { data: PracticeMasteryView }) {
     return <EmptyState art={<Illustration kind="empty" />} title={t('practice.mastery.emptyTitle')} />;
   return (
     <div className="grid gap-5">
-      <p className="max-w-[60ch] text-meta text-fg-2">
+      <p className="max-w-[60ch] text-callout text-fg-2">
         {t('practice.mastery.intro', { date: formatDay(data.since) })}
       </p>
       {data.batches.map((b) => (
@@ -254,9 +254,9 @@ function Mastery({ data }: { data: PracticeMasteryView }) {
             b.gradYear ? t('practice.mastery.batch', { year: b.gradYear }) : t('practice.mastery.noBatch')
           }
         >
-          <h3 className="text-lead font-semibold">
+          <h3 className="text-body font-semibold">
             {b.gradYear ? t('practice.mastery.batch', { year: b.gradYear }) : t('practice.mastery.noBatch')}{' '}
-            <span className="text-meta font-normal text-fg-2">
+            <span className="text-callout font-normal text-fg-2">
               · {t('practice.mastery.students', { n: String(b.students) })}
             </span>
           </h3>
@@ -306,7 +306,7 @@ export function PracticeBankAdmin() {
   return (
     <div className="grid gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="max-w-[60ch] text-meta text-fg-2">{t('practice.bank.intro')}</p>
+        <p className="max-w-[60ch] text-callout text-fg-2">{t('practice.bank.intro')}</p>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => setDrafting(true)}>
             <Sparkles className="size-4" aria-hidden /> {t('practice.bank.draft')}

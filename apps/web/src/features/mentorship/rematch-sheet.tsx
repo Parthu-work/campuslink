@@ -66,7 +66,7 @@ export function RematchSheet({
                 <div className="min-w-0">
                   <b className="block truncate">{m.name}</b>
                   {(m.jobTitle || m.company) && (
-                    <p className="truncate text-meta text-fg-2">
+                    <p className="truncate text-callout text-fg-2">
                       {[m.jobTitle, m.company].filter(Boolean).join(' · ')}
                     </p>
                   )}
@@ -74,7 +74,7 @@ export function RematchSheet({
               </div>
               {m.stats && <MentorStatsLine stats={m.stats} />}
               {reasons.some((x) => x.kind === 'fast_reply') && (
-                <p className="flex items-center gap-1.5 text-meta text-brand-ink">
+                <p className="flex items-center gap-1.5 text-callout text-brand-ink">
                   <Sparkles className="size-4" aria-hidden /> {t('match.reason.fast_reply')}
                 </p>
               )}

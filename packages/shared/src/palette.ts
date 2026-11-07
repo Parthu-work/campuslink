@@ -72,13 +72,30 @@ export interface Neutrals {
   s1: Oklch;
   s2: Oklch;
   s3: Oklch;
+  sunken: Oklch;
 }
 
-/** Canvas and surfaces, tinted by the brand hue (chroma 0.004–0.014). */
+/**
+ * Canvas and surfaces, tinted by the brand hue (chroma 0.004–0.014). ADR 0015: one background, two
+ * raised surfaces (s1 cards, s2 hover and raised groups; s3 is the pressed step), one sunken (wells,
+ * code, inputs on a card). Dark is a true dark, not an inverted grey.
+ */
 export function neutrals(h: number, theme: Theme): Neutrals {
   return theme === 'light'
-    ? { bg: ok(0.985, 0.005, h), s1: ok(1, 0, 0), s2: ok(0.965, 0.008, h), s3: ok(0.935, 0.01, h) }
-    : { bg: ok(0.16, 0.012, h), s1: ok(0.19, 0.012, h), s2: ok(0.225, 0.013, h), s3: ok(0.26, 0.014, h) };
+    ? {
+        bg: ok(0.985, 0.005, h),
+        s1: ok(1, 0, 0),
+        s2: ok(0.965, 0.008, h),
+        s3: ok(0.935, 0.01, h),
+        sunken: ok(0.962, 0.007, h),
+      }
+    : {
+        bg: ok(0.145, 0.011, h),
+        s1: ok(0.18, 0.012, h),
+        s2: ok(0.215, 0.013, h),
+        s3: ok(0.25, 0.014, h),
+        sunken: ok(0.125, 0.01, h),
+      };
 }
 
 /** A college colour's hue with lightness and chroma brought into range; greys get the fallback. */
@@ -117,7 +134,7 @@ export interface Palette {
 function themeTokens(primary: Oklch, accentBase: Oklch, theme: Theme): Tokens {
   const h = primary.h;
   const n = neutrals(h, theme);
-  const text = [n.bg, n.s1, n.s2];
+  const text = [n.bg, n.s1, n.s2, n.sunken];
   const light = theme === 'light';
   const t: Tokens = {
     '--hue': String(+h.toFixed(1)),
@@ -125,10 +142,15 @@ function themeTokens(primary: Oklch, accentBase: Oklch, theme: Theme): Tokens {
     '--surface-1': css(n.s1),
     '--surface-2': css(n.s2),
     '--surface-3': css(n.s3),
+    '--sunken': css(n.sunken),
     '--line': light ? css(ok(0.91, 0.01, h)) : formatOklch(ok(1, 0, 0), 0.08),
     '--line-strong': light ? css(ok(0.84, 0.014, h)) : formatOklch(ok(1, 0, 0), 0.16),
-    '--fg': css(ink(light ? ok(0.21, 0.014, h) : ok(0.965, 0.006, h), [n.bg, n.s1, n.s2, n.s3], 12, theme)),
-    '--fg-2': css(ink(light ? ok(0.43, 0.014, h) : ok(0.8, 0.012, h), [n.bg, n.s1, n.s2, n.s3], 6, theme)),
+    '--fg': css(
+      ink(light ? ok(0.21, 0.014, h) : ok(0.965, 0.006, h), [n.bg, n.s1, n.s2, n.s3, n.sunken], 12, theme),
+    ),
+    '--fg-2': css(
+      ink(light ? ok(0.43, 0.014, h) : ok(0.8, 0.012, h), [n.bg, n.s1, n.s2, n.s3, n.sunken], 6, theme),
+    ),
     '--fg-3': css(ink(light ? ok(0.52, 0.012, h) : ok(0.68, 0.012, h), [...text, n.s3], TEXT_RATIO, theme)),
     // Opaque enough that bar text keeps its contrast over any content (audit quick win 15).
     '--glass': formatOklch(n.s1, 0.92),
@@ -218,8 +240,13 @@ export function staticTokens(): Record<Theme, Tokens> {
   const out: Record<Theme, Tokens> = { light: {}, dark: {} };
   for (const theme of ['light', 'dark'] as const) {
     const light = theme === 'light';
+    // Status inks are fixed hues but sit on every college's tinted surfaces: check them against the
+    // surfaces of hues all round the wheel (ADR 0015, palette.test.ts › status inks).
+    const text = [0, 60, 120, 180, 240, DEFAULT_HUE, 300].flatMap((hue) => {
+      const n = neutrals(hue, theme);
+      return [n.bg, n.s1, n.s2, n.sunken];
+    });
     const n = neutrals(DEFAULT_HUE, theme);
-    const text = [n.bg, n.s1, n.s2];
     const t = out[theme];
     for (const [name, h] of Object.entries(SEMANTIC_HUES)) {
       const surface = light ? ok(0.96, 0.035, h) : ok(0.255, 0.045, h);

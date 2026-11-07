@@ -11,7 +11,7 @@ export function GrievanceCard() {
   const officer = doc.data?.grievanceOfficer;
   return (
     <Card className="grid gap-3 p-5">
-      <h2 className="text-title font-semibold">{t('legal.officerTitle')}</h2>
+      <h2 className="text-headline font-semibold">{t('legal.officerTitle')}</h2>
       {officer ? (
         <dl className="grid gap-1 text-body">
           <dt className="sr-only">{t('legal.officerName')}</dt>
@@ -35,10 +35,10 @@ export function GrievanceCard() {
           )}
         </dl>
       ) : (
-        <p className="text-meta text-fg-2">{t('legal.officerMissing')}</p>
+        <p className="text-callout text-fg-2">{t('legal.officerMissing')}</p>
       )}
-      <p className="text-meta text-fg-2">{t('legal.officerBody')}</p>
-      <div className="flex flex-wrap gap-4 text-meta">
+      <p className="text-callout text-fg-2">{t('legal.officerBody')}</p>
+      <div className="flex flex-wrap gap-4 text-callout">
         <Link
           to="/legal/privacy"
           className="inline-flex min-h-11 items-center font-semibold text-brand-ink underline underline-offset-2"

@@ -54,10 +54,10 @@ export function AtsPanel({ resume: r, dirty }: { resume: ResumeView; dirty: bool
   return (
     <section aria-labelledby="ats-title" className="grid gap-4">
       <div className="grid gap-1">
-        <h2 id="ats-title" className="text-title font-semibold">
+        <h2 id="ats-title" className="text-headline font-semibold">
           {t('resume.ats.title')}
         </h2>
-        <p className="max-w-[60ch] text-meta text-fg-2">{t('resume.ats.intro')}</p>
+        <p className="max-w-[60ch] text-callout text-fg-2">{t('resume.ats.intro')}</p>
       </div>
       <ChoiceGroup
         label={t('resume.ats.against')}
@@ -98,10 +98,10 @@ export function AtsPanel({ resume: r, dirty }: { resume: ResumeView; dirty: bool
         <Button variant="primary" loading={check.isPending} disabled={!ready} onClick={() => check.mutate()}>
           <ScanText className="size-4" aria-hidden /> {t('resume.ats.run')}
         </Button>
-        {dirty && <span className="text-meta text-fg-2">{t('resume.ats.saveFirst')}</span>}
+        {dirty && <span className="text-callout text-fg-2">{t('resume.ats.saveFirst')}</span>}
       </div>
       {error && (
-        <p role="alert" className="text-meta font-medium text-danger">
+        <p role="alert" className="text-callout font-medium text-danger">
           {error}
         </p>
       )}
@@ -117,8 +117,8 @@ function AtsResult({ report: a, current }: { report: AtsReport; current: boolean
       <div className="flex items-center gap-4">
         <ProgressRing value={a.score} max={100} label={t('resume.ats.scoreLabel', { n: a.score })} />
         <div className="grid gap-1">
-          <p className="text-title font-semibold tabular-nums">{t('resume.ats.score', { n: a.score })}</p>
-          <p className="text-meta text-fg-2">
+          <p className="text-headline font-semibold tabular-nums">{t('resume.ats.score', { n: a.score })}</p>
+          <p className="text-callout text-fg-2">
             {t('resume.ats.checked', { when: formatRelative(a.checkedAt) })}
             {' · '}
             {t('resume.ats.pages', { count: a.pages })}
@@ -128,7 +128,7 @@ function AtsResult({ report: a, current }: { report: AtsReport; current: boolean
       </div>
       <ul className="grid gap-1.5 sm:grid-cols-2">
         {a.checks.map((c) => (
-          <li key={c.id} className="flex items-start gap-2 text-meta">
+          <li key={c.id} className="flex items-start gap-2 text-callout">
             {c.ok ? (
               <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
             ) : (
@@ -175,7 +175,7 @@ function AtsResult({ report: a, current }: { report: AtsReport; current: boolean
       {!!a.gaps.length && (
         <div className="grid gap-1.5">
           <h3 className="font-semibold">{t('resume.ats.gaps')}</h3>
-          <ul className="grid list-disc gap-1 pl-5 text-meta">
+          <ul className="grid list-disc gap-1 pl-5 text-callout">
             {a.gaps.map((g) => (
               <li key={g}>{g}</li>
             ))}

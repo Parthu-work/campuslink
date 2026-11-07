@@ -39,7 +39,7 @@ export function SlotPicker({
   const times = slots.filter((s) => localDateKey(s) === day);
   return (
     <fieldset className="grid gap-3">
-      <legend className="mb-2 text-meta font-semibold">{label}</legend>
+      <legend className="mb-2 text-callout font-semibold">{label}</legend>
       <ChoiceGroup
         label={t('slots.day')}
         variant="chip"

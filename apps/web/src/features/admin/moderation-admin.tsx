@@ -157,7 +157,7 @@ function RemoveDialog({
 
 function Snapshot({ text }: { text: string }) {
   return (
-    <blockquote className="max-h-40 overflow-y-auto rounded-[var(--radius-sm)] border-l-4 border-line-strong bg-surface-2 p-3 text-meta whitespace-pre-wrap">
+    <blockquote className="max-h-40 overflow-y-auto rounded-[var(--radius-sm)] border-l-4 border-line-strong bg-surface-2 p-3 text-callout whitespace-pre-wrap">
       {text}
     </blockquote>
   );
@@ -190,7 +190,7 @@ function Reports() {
           return (
             <li key={r.id}>
               <Card className="grid gap-2 p-4">
-                <p className="flex flex-wrap items-center gap-2 text-meta">
+                <p className="flex flex-wrap items-center gap-2 text-callout">
                   <Badge tone="warning">{t(`content.${r.targetType}`)}</Badge>
                   <b>{t(`safety.reasons.${r.reason}`)}</b>
                   <span className="text-fg-3">
@@ -201,15 +201,15 @@ function Reports() {
                   </span>
                 </p>
                 {r.subject && (
-                  <p className="text-meta text-fg-2">{t('mod.about', { name: r.subject.name })}</p>
+                  <p className="text-callout text-fg-2">{t('mod.about', { name: r.subject.name })}</p>
                 )}
-                {r.note && <p className="text-meta">“{r.note}”</p>}
+                {r.note && <p className="text-callout">“{r.note}”</p>}
                 {r.snapshot && <Snapshot text={r.snapshot} />}
                 <div className="flex flex-wrap gap-2">
                   {href && (
                     <Link
                       to={href}
-                      className="inline-flex min-h-9 items-center gap-1 text-meta font-semibold text-brand-ink hover:underline"
+                      className="inline-flex min-h-9 items-center gap-1 text-callout font-semibold text-brand-ink hover:underline"
                     >
                       {t('mod.view')} <ExternalLink className="size-3.5" aria-hidden />
                     </Link>
@@ -276,13 +276,13 @@ function HeldItems() {
               ))}
             </p>
             <b>{i.title}</b>
-            {i.snippet && <p className="text-meta text-fg-2">{i.snippet}</p>}
+            {i.snippet && <p className="text-callout text-fg-2">{i.snippet}</p>}
             <div className="flex flex-wrap items-center gap-2">
               <a
                 href={i.url}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
-                className="text-meta font-semibold text-brand-ink hover:underline"
+                className="text-callout font-semibold text-brand-ink hover:underline"
               >
                 {i.host}
               </a>
@@ -342,7 +342,7 @@ function PendingQuestions() {
                 {t('mod.askedBy', { name: x.author?.name ?? '?', when: formatRelative(x.createdAt) })}
               </p>
               <b>{x.title}</b>
-              {x.body && <p className="text-meta whitespace-pre-wrap text-fg-2">{x.body}</p>}
+              {x.body && <p className="text-callout whitespace-pre-wrap text-fg-2">{x.body}</p>}
               <div className="flex justify-end gap-2">
                 <Button size="sm" onClick={() => setRejecting(x.id)}>
                   {t('admin.reject')}
@@ -422,7 +422,7 @@ function Appeals() {
         return (
           <li key={a.id}>
             <Card className="grid gap-2 p-4">
-              <p className="flex flex-wrap items-center gap-2 text-meta">
+              <p className="flex flex-wrap items-center gap-2 text-callout">
                 <Badge tone="warning">{t(`content.${a.targetType}`)}</Badge>
                 {a.removal && <b>{t(`mod.reasons.${a.removal.reason}`)}</b>}
                 <span className="text-fg-3">
@@ -430,15 +430,15 @@ function Appeals() {
                 </span>
               </p>
               {a.snapshot && <Snapshot text={a.snapshot} />}
-              <p className="text-meta">
+              <p className="text-callout">
                 <span className="font-semibold">{t('mod.authorSays')}</span> “{a.message}”
               </p>
               {a.removal?.note && (
-                <p className="text-meta text-fg-2">{t('mod.removalNote', { note: a.removal.note })}</p>
+                <p className="text-callout text-fg-2">{t('mod.removalNote', { note: a.removal.note })}</p>
               )}
               <div className="flex flex-wrap items-center gap-2">
                 {href && (
-                  <Link to={href} className="text-meta font-semibold text-brand-ink hover:underline">
+                  <Link to={href} className="text-callout font-semibold text-brand-ink hover:underline">
                     {t('mod.view')}
                   </Link>
                 )}

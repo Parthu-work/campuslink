@@ -76,7 +76,7 @@ function QaQueue({ e }: { e: EventView }) {
   const open = e.status === 'scheduled' && !hasEnded(e.endsAt);
   return (
     <section aria-labelledby="qa" className="grid gap-3">
-      <h2 id="qa" className="font-display text-title font-semibold">
+      <h2 id="qa" className="font-display text-headline font-semibold">
         {t('events.qa.title')}
       </h2>
       {open && (
@@ -112,7 +112,7 @@ function QaQueue({ e }: { e: EventView }) {
       {q.isLoading ? (
         <Skeleton className="h-16" />
       ) : !q.data?.length ? (
-        <p className="text-meta text-fg-2">{t('events.qa.empty')}</p>
+        <p className="text-callout text-fg-2">{t('events.qa.empty')}</p>
       ) : (
         <ol className="grid gap-2" aria-live="polite">
           {q.data.map((x) => (
@@ -135,7 +135,7 @@ function QaQueue({ e }: { e: EventView }) {
                   className="grid h-auto flex-none justify-items-center py-1 aria-pressed:text-brand-ink"
                 >
                   <ChevronUp className="size-5" aria-hidden />
-                  <span className="text-meta font-semibold tabular-nums">{x.votes}</span>
+                  <span className="text-callout font-semibold tabular-nums">{x.votes}</span>
                 </Button>
                 <div className="grid min-w-0 flex-1 gap-1">
                   <p className="text-body">{x.body}</p>
@@ -200,13 +200,13 @@ function Attendees({ e }: { e: EventView }) {
   });
   return (
     <section aria-labelledby="attendees" className="grid gap-2">
-      <h2 id="attendees" className="font-display text-title font-semibold">
+      <h2 id="attendees" className="font-display text-headline font-semibold">
         {t('events.attendees')}
       </h2>
       {q.isLoading ? (
         <Skeleton className="h-16" />
       ) : !q.data?.length ? (
-        <p className="text-meta text-fg-2">{t('events.noAttendees')}</p>
+        <p className="text-callout text-fg-2">{t('events.noAttendees')}</p>
       ) : (
         <ul className="grid gap-1.5">
           {q.data.map((a) => (
@@ -215,11 +215,11 @@ function Attendees({ e }: { e: EventView }) {
               className="flex items-center gap-3 rounded-[var(--radius-sm)] bg-surface-1 px-3 py-2"
             >
               <PersonAvatar name={a.person.name} fileId={a.person.avatarFileId} size={28} />
-              <span className="min-w-0 flex-1 truncate text-meta">{a.person.name}</span>
+              <span className="min-w-0 flex-1 truncate text-callout">{a.person.name}</span>
               {a.status === 'waitlist' ? (
                 <Badge>{t('events.rsvp.waitlist')}</Badge>
               ) : (
-                <label className="flex min-h-11 cursor-pointer items-center gap-2 text-meta">
+                <label className="flex min-h-11 cursor-pointer items-center gap-2 text-callout">
                   <input
                     type="checkbox"
                     className="size-5 accent-[var(--brand)]"
@@ -400,12 +400,12 @@ export function EventPage() {
               : e.location}
         </p>
         {e.recurrence && (
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {t('events.repeatsUntil', { date: formatDay(e.recurrence.until) })}
           </p>
         )}
         {e.kind === 'office_hours' && !e.isHost && <FollowOfficeHours hostId={e.host.userId} />}
-        <p className="flex items-center gap-2 text-meta text-fg-3">
+        <p className="flex items-center gap-2 text-callout text-fg-3">
           <Users className="size-4" aria-hidden />
           {e.capacity
             ? t('events.goingOf', { going: e.going, capacity: e.capacity })
@@ -422,7 +422,7 @@ export function EventPage() {
         <aside className="grid content-start gap-3 lg:sticky lg:top-5 lg:col-start-2 lg:row-start-1">
           <Card variant={e.myRsvp === 'going' ? 'featured' : 'raised'} className="grid gap-3 p-4">
             {e.myRsvp === 'waitlist' && (
-              <p className="text-meta" role="status">
+              <p className="text-callout" role="status">
                 {t('events.waitlistPosition', { position: e.myWaitlistPosition ?? 1 })}
               </p>
             )}

@@ -130,7 +130,7 @@ export function ReportsDashboard() {
               {d.topRecruiters.length ? (
                 <ol className="grid gap-2">
                   {d.topRecruiters.map((r, i) => (
-                    <li key={r.company} className="flex items-center justify-between gap-3 text-meta">
+                    <li key={r.company} className="flex items-center justify-between gap-3 text-callout">
                       <span className="min-w-0 truncate">
                         {i + 1}. {r.company}
                       </span>
@@ -141,14 +141,14 @@ export function ReportsDashboard() {
                   ))}
                 </ol>
               ) : (
-                <p className="text-meta text-fg-3">{t('reports.noRecruiters')}</p>
+                <p className="text-callout text-fg-3">{t('reports.noRecruiters')}</p>
               )}
             </Card>
           </div>
         </>
       )}
       <section aria-labelledby="reports-list" className="grid gap-3">
-        <h2 id="reports-list" className="text-title font-semibold">
+        <h2 id="reports-list" className="text-headline font-semibold">
           {t('reports.all')}
         </h2>
         {defs.isLoading && <Skeleton className="h-32" />}
@@ -258,8 +258,8 @@ export function ReportPage() {
               <Badge tone="brand">{t(`reports.framework.${v.framework}`)}</Badge>
               <span className="text-caption text-fg-3">{t('reports.version', { version: v.version })}</span>
             </div>
-            <h2 className="text-title font-semibold">{v.title}</h2>
-            <p className="text-meta text-fg-2">
+            <h2 className="text-headline font-semibold">{v.title}</h2>
+            <p className="text-callout text-fg-2">
               {[
                 v.params.branch ?? t('reports.allProgrammes'),
                 v.params.gradYears.map(gradYearLabel).join(', '),
@@ -269,23 +269,23 @@ export function ReportPage() {
           {v.needsReview && (
             <Card className="flex items-start gap-3 bg-warning-surface p-4 text-warning-ink">
               <AlertTriangle className="mt-0.5 size-5 flex-none" aria-hidden />
-              <p className="text-meta">{t('reports.needsReviewBody')}</p>
+              <p className="text-callout">{t('reports.needsReviewBody')}</p>
             </Card>
           )}
           <Filters p={p} />
           {v.rows.length ? (
             <ResultTable r={v} />
           ) : (
-            <p className="text-meta text-fg-3">{t('reports.empty')}</p>
+            <p className="text-callout text-fg-3">{t('reports.empty')}</p>
           )}
           {v.notes.length > 0 && (
-            <ul className="ml-5 grid list-disc gap-1 text-meta text-fg-2">
+            <ul className="ml-5 grid list-disc gap-1 text-callout text-fg-2">
               {v.notes.map((n) => (
                 <li key={n}>{n}</li>
               ))}
             </ul>
           )}
-          <details className="rounded-[var(--radius-md)] bg-surface-2 p-3 text-meta">
+          <details className="rounded-[var(--radius-md)] bg-surface-2 p-3 text-callout">
             <summary className="cursor-pointer font-semibold">{t('reports.source')}</summary>
             <p className="mt-2 text-fg-2">{v.sourceNote}</p>
           </details>

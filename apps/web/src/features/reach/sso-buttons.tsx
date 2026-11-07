@@ -35,7 +35,7 @@ export function SsoButtons() {
       {error && (
         <p
           role="alert"
-          className="rounded-[var(--radius-md)] border border-danger bg-danger-surface p-3 text-meta text-danger-ink"
+          className="rounded-[var(--radius-md)] border border-danger bg-danger-surface p-3 text-callout text-danger-ink"
         >
           {t(`reach.sso.error.${error}`)}
         </p>

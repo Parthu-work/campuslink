@@ -50,12 +50,12 @@ export function CalendarFeedCard() {
   const on = v.data?.enabled;
   return (
     <Card className="grid gap-3 p-5" role="region" aria-labelledby="calendar-feed-title">
-      <h2 id="calendar-feed-title" className="flex items-center gap-2 text-title font-semibold">
+      <h2 id="calendar-feed-title" className="flex items-center gap-2 text-headline font-semibold">
         <CalendarPlus className="size-5 text-brand-ink" aria-hidden /> {t('reach.calendar.title')}
       </h2>
-      <p className="text-meta text-fg-2">{t('reach.calendar.intro')}</p>
+      <p className="text-callout text-fg-2">{t('reach.calendar.intro')}</p>
       {on && !link && (
-        <p className="text-meta">
+        <p className="text-callout">
           {v.data?.lastFetchedAt
             ? t('reach.calendar.onSince', { when: formatRelative(v.data.lastFetchedAt) })
             : t('reach.calendar.onNever')}

@@ -88,7 +88,7 @@ function ReferralDialog({
           <PersonAvatar name={referrer.name} fileId={referrer.avatarFileId} size={44} />
           <div className="min-w-0">
             <b className="block truncate">{referrer.name}</b>
-            <p className="truncate text-meta text-fg-2">{job.company}</p>
+            <p className="truncate text-callout text-fg-2">{job.company}</p>
           </div>
         </div>
         <Field
@@ -125,12 +125,12 @@ function ReferralDialog({
             <FileText className="size-4" aria-hidden />{' '}
             {resume ? t('referrals.replaceResume') : t('referrals.addResume')}
           </Button>
-          <span className="text-meta text-fg-2" aria-live="polite">
+          <span className="text-callout text-fg-2" aria-live="polite">
             {resume ? resume.name : t('referrals.resumeHint')}
           </span>
         </div>
         {error && (
-          <p role="alert" className="text-meta font-medium text-danger">
+          <p role="alert" className="text-callout font-medium text-danger">
             {error}
           </p>
         )}
@@ -169,9 +169,9 @@ function Referrers({ job }: { job: JobView }) {
         <Users className="size-5 text-brand-ink" aria-hidden /> {t('jobs.alumniAt', { company: job.company })}
       </h2>
       {job.alumniCount === 0 ? (
-        <p className="text-meta text-fg-2">{t('jobs.noAlumni')}</p>
+        <p className="text-callout text-fg-2">{t('jobs.noAlumni')}</p>
       ) : (
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {t('jobs.alumniCount', { count: job.alumniCount })}{' '}
           {job.referrers > 0 ? t('jobs.referrersCount', { count: job.referrers }) : t('jobs.noReferrers')}
         </p>
@@ -219,7 +219,7 @@ function TrackControl({ job }: { job: JobView }) {
   return (
     <Card className="grid gap-3 p-4">
       <h2 className="font-semibold">{t('jobs.myProgress')}</h2>
-      <label className="grid gap-1.5 text-meta font-semibold">
+      <label className="grid gap-1.5 text-callout font-semibold">
         {t('jobs.status')}
         <Select
           value={job.track?.status ?? ''}
@@ -242,7 +242,7 @@ function TrackControl({ job }: { job: JobView }) {
             toast.success(t('jobs.noteSaved'));
           }}
         >
-          <label className="grid gap-1.5 text-meta font-semibold">
+          <label className="grid gap-1.5 text-callout font-semibold">
             {t('jobs.privateNote')}
             <Textarea
               value={note}
@@ -301,12 +301,12 @@ export function JobPage() {
               {/* The title gets the full width (audit TY-4); save and the menu sit with Apply. */}
               <div className="min-w-0">
                 <h1
-                  className="text-headline leading-tight font-bold"
+                  className="text-title leading-tight font-bold"
                   style={{ viewTransitionName: `job-${j.id}` }}
                 >
                   {j.title}
                 </h1>
-                <p className="text-lead text-fg-2">{j.company}</p>
+                <p className="text-body text-fg-2">{j.company}</p>
               </div>
               <JobFacts job={j} />
               <p className="flex flex-wrap gap-1.5">
@@ -327,7 +327,7 @@ export function JobPage() {
                     target="_blank"
                     rel="noopener noreferrer nofollow"
                     onClick={() => canSave && (!j.track || j.track.status === 'saved') && setAskApplied(true)}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 text-meta font-semibold text-on-brand"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 text-callout font-semibold text-on-brand"
                   >
                     {t('jobs.apply')} <ExternalLink className="size-4" aria-hidden />
                     <span className="sr-only">({t('jobs.opensEmployer')})</span>
@@ -352,7 +352,7 @@ export function JobPage() {
               {askApplied && (
                 <div
                   role="status"
-                  className="flex flex-wrap items-center gap-2 rounded-[var(--radius-sm)] bg-surface-2 p-3 text-meta"
+                  className="flex flex-wrap items-center gap-2 rounded-[var(--radius-sm)] bg-surface-2 p-3 text-callout"
                 >
                   {t('jobs.didYouApply')}
                   <Button

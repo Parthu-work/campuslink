@@ -51,12 +51,12 @@ function PersonPicker({
               className="flex items-center gap-3 rounded-[var(--radius-md)] px-2 py-1.5 hover:bg-hover"
             >
               <PersonAvatar name={p.name} fileId={p.avatarFileId} size={32} />
-              <span className="min-w-0 flex-1 truncate text-meta font-semibold">{p.name}</span>
+              <span className="min-w-0 flex-1 truncate text-callout font-semibold">{p.name}</span>
               {actions(p)}
             </li>
           ))}
           {!found.isLoading && rows.length === 0 && (
-            <li className="px-2 text-meta text-fg-3">{t('study.people.noOne')}</li>
+            <li className="px-2 text-callout text-fg-3">{t('study.people.noOne')}</li>
           )}
         </ul>
       )}
@@ -68,7 +68,7 @@ function PersonRow({ p, children }: { p: PersonRef; children?: React.ReactNode }
   return (
     <li className="flex items-center gap-3 rounded-[var(--radius-md)] bg-surface-2 px-3 py-2">
       <PersonAvatar name={p.name} fileId={p.avatarFileId} size={32} />
-      <span className="min-w-0 flex-1 truncate text-meta font-semibold">{p.name}</span>
+      <span className="min-w-0 flex-1 truncate text-callout font-semibold">{p.name}</span>
       {children}
     </li>
   );
@@ -126,7 +126,7 @@ export function SubjectPeople({ subject }: { subject: SubjectView }) {
         <h3 id="owners-h" className="font-semibold">
           {t('study.people.owners')}
         </h3>
-        <p className="text-meta text-fg-2">{t('study.people.ownersBody')}</p>
+        <p className="text-callout text-fg-2">{t('study.people.ownersBody')}</p>
         <ul className="grid gap-1.5">
           {subject.owners.map((o) => (
             <PersonRow key={o.userId} p={o}>
@@ -157,7 +157,7 @@ export function SubjectPeople({ subject }: { subject: SubjectView }) {
         <h3 id="takes-h" className="font-semibold">
           {t('study.people.whoTakes')}
         </h3>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {t('study.people.rule', {
             branches: subject.branches.length ? subject.branches.join(', ') : t('study.allBranches'),
             batches: subject.batches.length ? subject.batches.join(', ') : t('study.allBatches'),
@@ -209,7 +209,7 @@ export function SubjectPeople({ subject }: { subject: SubjectView }) {
         <h3 id="contrib-h" className="font-semibold">
           {t('study.people.contributors')}
         </h3>
-        <p className="text-meta text-fg-2">{t('study.people.contributorsBody')}</p>
+        <p className="text-callout text-fg-2">{t('study.people.contributorsBody')}</p>
         <ul className="grid gap-1.5">
           {(contributors.data ?? []).map((c) => (
             <PersonRow key={c.userId} p={c}>
@@ -226,7 +226,7 @@ export function SubjectPeople({ subject }: { subject: SubjectView }) {
             </PersonRow>
           ))}
           {contributors.data?.length === 0 && (
-            <li className="text-meta text-fg-3">{t('study.people.noContributors')}</li>
+            <li className="text-callout text-fg-3">{t('study.people.noContributors')}</li>
           )}
         </ul>
         {canGrant && (

@@ -204,3 +204,41 @@ describe('themeCss', () => {
     );
   });
 });
+
+describe('status inks (ADR 0015)', () => {
+  const fixed = staticTokens();
+  it.each(Object.entries(COLLEGES))(
+    'stay at 5.5:1 on a %s college’s surfaces and their own tint',
+    (_, hex) => {
+      const palette = generatePalette({ primary: hex, accent: ACCENTS[hex] });
+      for (const theme of THEMES) {
+        const surfaces = ['--bg', '--surface-1', '--surface-2', '--sunken'].map((k) =>
+          color(palette[theme], k),
+        );
+        for (const status of ['success', 'warning', 'danger', 'info']) {
+          const ink = color(fixed[theme], `--${status}-ink`);
+          const tint = color(fixed[theme], `--${status}-surface`);
+          expect(worst(ink, [...surfaces, tint]), `${theme} ${status}`).toBeGreaterThanOrEqual(INK_RATIO);
+        }
+      }
+    },
+  );
+
+  it('use fixed hues, never the college’s', () => {
+    const a = staticTokens();
+    expect(generatePalette({ primary: '#800000' }).light['--success-ink']).toBeUndefined();
+    expect(a.light['--danger-ink']).toBe(staticTokens().light['--danger-ink']);
+  });
+});
+
+describe('surfaces (ADR 0015)', () => {
+  it.each(THEMES)('%s: one canvas, two raised surfaces and a sunken well, all distinct', (theme) => {
+    const n = neutrals(275, theme);
+    const ls = [n.bg, n.s1, n.s2, n.sunken].map((c) => c.l);
+    expect(new Set(ls).size).toBe(4);
+    if (theme === 'dark') {
+      expect(n.bg.l).toBeLessThanOrEqual(0.15);
+      expect(n.sunken.l).toBeLessThan(n.bg.l);
+    } else expect(n.sunken.l).toBeLessThan(n.bg.l);
+  });
+});

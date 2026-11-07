@@ -8,6 +8,7 @@
   --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
   --color-surface-3: var(--surface-3);
+  --color-sunken: var(--sunken);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
   --color-fg: var(--fg);
@@ -106,23 +107,19 @@
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
   --font-mono: var(--font-mono);
-  /* Type scale (tokens.css): text-caption … text-hero, each with its line height. */
+  /* Type scale (tokens.css, ADR 0015): text-caption … text-display, each with its line height. */
   --text-caption: var(--text-caption);
-  --text-caption--line-height: 1.4;
-  --text-meta: var(--text-meta);
-  --text-meta--line-height: 1.45;
+  --text-caption--line-height: var(--lh-caption);
+  --text-callout: var(--text-callout);
+  --text-callout--line-height: var(--lh-callout);
   --text-body: var(--text-body);
-  --text-body--line-height: 1.55;
-  --text-lead: var(--text-lead);
-  --text-lead--line-height: 1.5;
-  --text-title: var(--text-title);
-  --text-title--line-height: 1.3;
+  --text-body--line-height: var(--lh-body);
   --text-headline: var(--text-headline);
-  --text-headline--line-height: 1.2;
+  --text-headline--line-height: var(--lh-headline);
+  --text-title: var(--text-title);
+  --text-title--line-height: var(--lh-title);
   --text-display: var(--text-display);
-  --text-display--line-height: 1.1;
-  --text-hero: var(--text-hero);
-  --text-hero--line-height: 1.04;
+  --text-display--line-height: var(--lh-display);
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -133,6 +130,8 @@
   --shadow-elev-3: var(--elev-3);
   --shadow-elev-4: var(--elev-4);
   --ease-spring: var(--ease-spring);
+  --ease-standard: var(--ease-standard);
+  --ease-emphasised: var(--ease-emphasised);
   --ease-snappy: var(--ease-snappy);
   --ease-smooth: var(--ease-smooth);
   --ease-bouncy: var(--ease-bouncy);
@@ -160,27 +159,26 @@
   body {
     background: var(--bg);
     color: var(--fg);
-    font: 400 15px/1.55 var(--font-body);
+    font: 400 var(--text-body) / var(--lh-body) var(--font-body);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+  }
+  /* Bricolage is for screen titles and big numbers (ADR 0015); section headings are Geist. */
+  h1 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
   }
   h1,
   h2,
   h3,
   h4 {
-    font-family: var(--font-display);
     text-wrap: balance;
-    letter-spacing: -0.01em;
   }
   p {
     text-wrap: pretty;
   }
-  /* Telugu and Hindi need room for their vowel signs: looser lines, no tightened headings. */
-  :root:is([lang='te'], [lang='hi']) body {
-    line-height: 1.7;
-  }
+  /* Telugu and Hindi: no tightened headings (their line heights are in tokens.css). */
   :root:is([lang='te'], [lang='hi']) :is(h1, h2, h3, h4) {
-    line-height: 1.3;
     letter-spacing: 0;
   }
   /* 2px brand ring with a 2px gap of whatever is behind (5.5:1 or better on every surface). */
@@ -197,11 +195,38 @@
   }
 }
 
+/* A section label: sentence case in the UI face (ADR 0015 retired the monospace capitals, A5). */
 @utility eyebrow {
-  font: 500 0.75rem/1.2 var(--font-mono); /* 12 px, the smallest step (audit TY-3) */
-  letter-spacing: 0.14em;
+  font: 600 var(--text-caption) / var(--lh-caption) var(--font-body);
+  color: var(--fg-3);
+}
+/* Tiny capitals, for staff table headers only (ADR 0015). */
+@utility table-label {
+  font: 600 var(--text-caption) / var(--lh-caption) var(--font-body);
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--fg-3);
+}
+/* PageHeader's phone title bar (ADR 0015): it shows only while the screen title is scrolled away
+   and the app bar has hidden itself, so the two bars never overlap. */
+.compact-bar {
+  transform: translateY(-110%);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--dur-enter) var(--ease-standard),
+    opacity var(--dur-enter) var(--ease-standard);
+}
+:root[data-chrome='hidden'] .compact-bar[data-compact='on'] {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+@utility max-w-reading {
+  max-width: var(--reading-max);
+}
+@utility max-w-content {
+  max-width: var(--content-max);
 }
 /* Glass, for floating chrome only. Solid when the member asks for less transparency, and on
    low-end devices (boot.js sets data-lowend), where a live blur costs frames. */
@@ -282,14 +307,14 @@
 }
 /* Pressed feedback for tappable surfaces (0.97, a snappy spring back). */
 @utility pressable {
-  transition: transform var(--dur-snappy) var(--ease-snappy);
+  transition: transform var(--dur-press) var(--ease-standard);
   &:active {
     transform: scale(var(--press-scale));
   }
 }
 @utility gutter {
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
 }
 @utility tabular {
   font-variant-numeric: tabular-nums;

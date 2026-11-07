@@ -49,7 +49,7 @@ function Section({ title, jobs, empty }: { title: string; jobs: JobView[]; empty
   if (!jobs.length && !empty) return null;
   return (
     <section aria-label={title} className="grid gap-2">
-      <h2 className="font-display text-title font-semibold">{title}</h2>
+      <h2 className="font-display text-headline font-semibold">{title}</h2>
       {jobs.length ? (
         <ul className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2">
           {jobs.map((j) => (
@@ -59,7 +59,7 @@ function Section({ title, jobs, empty }: { title: string; jobs: JobView[]; empty
           ))}
         </ul>
       ) : (
-        <p className="text-meta text-fg-3">{empty}</p>
+        <p className="text-callout text-fg-3">{empty}</p>
       )}
     </section>
   );
@@ -82,7 +82,7 @@ function RadarSections() {
   if (!r) return null;
   return (
     <>
-      <p className="text-meta text-fg-2" role="status">
+      <p className="text-callout text-fg-2" role="status">
         {t('jobs.newThisWeek', { count: r.newThisWeek })}
       </p>
       <Section title={t('jobs.sections.forYou')} jobs={r.forYou} />
@@ -182,7 +182,7 @@ export function JobsPage() {
   const fields = (visible: boolean) => (
     <>
       <label className="grid gap-1.5">
-        <span className={visible ? 'text-meta font-semibold' : 'sr-only'}>{t('jobs.levelLabel')}</span>
+        <span className={visible ? 'text-callout font-semibold' : 'sr-only'}>{t('jobs.levelLabel')}</span>
         <Select value={params.get('level') ?? ''} onChange={(e) => set('level', e.target.value)} size="sm">
           <option value="">{t('jobs.anyLevel')}</option>
           {JOB_LEVELS.map((l) => (
@@ -193,7 +193,7 @@ export function JobsPage() {
         </Select>
       </label>
       <label className="grid gap-1.5">
-        <span className={visible ? 'text-meta font-semibold' : 'sr-only'}>{t('jobs.typeLabel')}</span>
+        <span className={visible ? 'text-callout font-semibold' : 'sr-only'}>{t('jobs.typeLabel')}</span>
         <Select value={params.get('type') ?? ''} onChange={(e) => set('type', e.target.value)} size="sm">
           <option value="">{t('jobs.anyType')}</option>
           {JOB_TYPES.map((l) => (
@@ -204,7 +204,7 @@ export function JobsPage() {
         </Select>
       </label>
       <label className="grid gap-1.5">
-        <span className={visible ? 'text-meta font-semibold' : 'sr-only'}>{t('people.branch')}</span>
+        <span className={visible ? 'text-callout font-semibold' : 'sr-only'}>{t('people.branch')}</span>
         <Select value={params.get('branch') ?? ''} onChange={(e) => set('branch', e.target.value)} size="sm">
           <option value="">{t('people.anyBranch')}</option>
           {BRANCHES.map((b) => (
@@ -215,12 +215,12 @@ export function JobsPage() {
         </Select>
       </label>
       <label className="grid gap-1.5">
-        <span className={visible ? 'text-meta font-semibold' : 'sr-only'}>{t('jobs.location')}</span>
+        <span className={visible ? 'text-callout font-semibold' : 'sr-only'}>{t('jobs.location')}</span>
         <Input
           value={params.get('location') ?? ''}
           onChange={(e) => set('location', e.target.value)}
           placeholder={t('jobs.location')}
-          className="min-h-11 text-meta"
+          className="min-h-11 text-callout"
         />
       </label>
     </>
@@ -315,7 +315,7 @@ export function JobsPage() {
       {!filtering && <RadarSections />}
 
       <section aria-labelledby="all-jobs" className="grid gap-3">
-        <h2 id="all-jobs" className="font-display text-title font-semibold">
+        <h2 id="all-jobs" className="font-display text-headline font-semibold">
           {filtering ? t('jobs.results') : t('jobs.allOpenings')}
         </h2>
         {list.isLoading && (

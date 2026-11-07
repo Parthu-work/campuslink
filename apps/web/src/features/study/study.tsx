@@ -29,7 +29,7 @@ export function SubjectCard({ s }: { s: SubjectView }) {
     <Card variant="interactive" className="relative flex h-full gap-4 p-4">
       <span
         aria-hidden
-        className="grid size-14 flex-none place-items-center rounded-[var(--radius-md)] font-mono text-meta font-bold"
+        className="grid size-14 flex-none place-items-center rounded-[var(--radius-md)] font-mono text-callout font-bold"
         style={{ background: a.surface, color: a.ink }}
       >
         {s.code.slice(0, 6)}
@@ -41,7 +41,7 @@ export function SubjectCard({ s }: { s: SubjectView }) {
         >
           {s.name}
         </IntentLink>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {[
             s.code,
             s.semester ? t('study.semester', { n: s.semester }) : '',
@@ -80,7 +80,7 @@ export function AiNotice() {
   return (
     <Card className="flex items-start gap-3 bg-surface-2 p-4" role="note">
       <Sparkles className="mt-0.5 size-5 flex-none text-brand-ink" aria-hidden />
-      <div className="grid min-w-0 flex-1 gap-1 text-meta">
+      <div className="grid min-w-0 flex-1 gap-1 text-callout">
         <p className="font-semibold">
           {q.data.demo
             ? t('study.aiDemo')

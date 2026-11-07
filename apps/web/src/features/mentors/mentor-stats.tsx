@@ -52,7 +52,9 @@ export function MentorStatsLine({
     <ul
       aria-label={t('mentorStats.label')}
       className={
-        layout === 'line' ? 'flex flex-wrap gap-x-3 gap-y-1 text-caption text-fg-2' : 'grid gap-2 text-meta'
+        layout === 'line'
+          ? 'flex flex-wrap gap-x-3 gap-y-1 text-caption text-fg-2'
+          : 'grid gap-2 text-callout'
       }
     >
       {items.map(({ key, icon: Icon, text }) => (

@@ -235,7 +235,7 @@ export function OutcomeDialog({ kind, onClose }: { kind: OutcomeKind; onClose: (
           </>
         )}
         {error && (
-          <p role="alert" className="text-meta font-medium text-danger">
+          <p role="alert" className="text-callout font-medium text-danger">
             {error}
           </p>
         )}

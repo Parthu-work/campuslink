@@ -159,7 +159,7 @@ export function SubjectLibrary({ subject, units }: { subject: SubjectView; units
   return (
     <section aria-labelledby="library-title" className="grid gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="library-title" className="flex items-center gap-2 text-title font-semibold">
+        <h2 id="library-title" className="flex items-center gap-2 text-headline font-semibold">
           <FileText className="size-5 text-brand-ink" aria-hidden /> {t('study.library')}
         </h2>
         {subject.can.upload && (
@@ -207,7 +207,7 @@ export function SubjectLibrary({ subject, units }: { subject: SubjectView; units
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={t('study.searchMaterial')}
-            className="min-h-11 pl-9 text-meta"
+            className="min-h-11 pl-9 text-callout"
           />
         </label>
       </div>
@@ -237,13 +237,13 @@ export function SubjectLibrary({ subject, units }: { subject: SubjectView; units
                         .filter(Boolean)
                         .join(' · ')}
                     </span>
-                    <span className="text-meta text-fg-2">{h.snippet}</span>
+                    <span className="text-callout text-fg-2">{h.snippet}</span>
                   </IntentLink>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="p-3 text-meta text-fg-2">{t('study.noHits')}</p>
+            <p className="p-3 text-callout text-fg-2">{t('study.noHits')}</p>
           )}
         </Card>
       ) : (

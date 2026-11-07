@@ -9,6 +9,11 @@ export interface ButtonProps
   loading?: boolean;
 }
 
+/**
+ * A button (ADR 0015). While `loading`, the label stays in place but invisible and a spinner sits
+ * over it, so the button keeps its width; it stays focusable (focus never drops to the page,
+ * A11Y-6) but ignores clicks and implicit form submission.
+ */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, loading, children, disabled, type, onClick, ...props }, ref) => (
     <button
@@ -16,15 +21,21 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       type={type ?? 'button'}
       className={cn(buttonVariants({ variant, size }), 'aria-busy:cursor-progress', className)}
       disabled={disabled}
-      // While loading the button stays focusable (focus never drops to the page, A11Y-6) but ignores
-      // clicks and implicit form submission.
       aria-disabled={loading || undefined}
       aria-busy={loading || undefined}
       onClick={loading ? (e) => e.preventDefault() : onClick}
       {...props}
     >
-      {loading && <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden />}
-      {children}
+      {loading ? (
+        <>
+          <span className="invisible inline-flex items-center gap-2">{children}</span>
+          <span className="absolute inset-0 grid place-items-center" aria-hidden>
+            <Loader2 className="animate-spin motion-reduce:animate-none" />
+          </span>
+        </>
+      ) : (
+        children
+      )}
     </button>
   ),
 );

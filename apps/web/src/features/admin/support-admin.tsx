@@ -43,7 +43,7 @@ export function SupportAdmin() {
     );
   return (
     <div className="grid gap-5">
-      <p className="text-meta text-fg-2">{t('help.adminIntro')}</p>
+      <p className="text-callout text-fg-2">{t('help.adminIntro')}</p>
       <Segmented<Filter>
         label={t('help.filter')}
         value={filter}
@@ -70,7 +70,7 @@ export function SupportAdmin() {
                 <Card variant="interactive" className="flex items-center justify-between gap-3 p-4">
                   <span className="min-w-0">
                     <span className="block truncate font-semibold">{tk.subject}</span>
-                    <span className="text-meta text-fg-2">
+                    <span className="text-callout text-fg-2">
                       {tk.reporter?.name ?? t('placements.admin.formerMember')} ·{' '}
                       {t(`help.category.${tk.category}`)} · {formatRelative(tk.updatedAt)}
                     </span>

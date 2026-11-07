@@ -96,7 +96,7 @@ export function EmployerApplyPage() {
           ))}
           <p className="text-caption text-fg-3">{t('recruiter.apply.privacy')}</p>
           {error && (
-            <p role="alert" className="text-meta font-medium text-danger-ink">
+            <p role="alert" className="text-callout font-medium text-danger-ink">
               {error}
             </p>
           )}

@@ -146,7 +146,7 @@ function DeclineDialog({
       description={t('request.declineBody')}
     >
       <fieldset className="grid gap-2">
-        <legend className="mb-2 text-meta font-semibold">{t('request.reply')}</legend>
+        <legend className="mb-2 text-callout font-semibold">{t('request.reply')}</legend>
         {DECLINE_TEMPLATES.map((tpl) => (
           <label
             key={tpl}
@@ -159,7 +159,7 @@ function DeclineDialog({
               onChange={() => setTemplate(tpl)}
               className="mt-1 size-4 accent-[var(--brand)]"
             />
-            <span className="text-meta">
+            <span className="text-callout">
               {t(`request.decline.${tpl}`, { name: firstName(r.mentee.name) })}
             </span>
           </label>
@@ -210,7 +210,7 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
         <PersonAvatar name={other.name} fileId={other.avatarFileId} />
         <div className="min-w-0 flex-1">
           <b className="block truncate">{other.name}</b>
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {t(`session.type.${r.sessionType}`)}
             {r.slotStart ? ` · ${formatDateTime(r.slotStart)}` : ''}
           </p>
@@ -223,7 +223,7 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
           {r.message}
         </p>
       ) : (
-        <dl className="grid gap-2 text-meta">
+        <dl className="grid gap-2 text-callout">
           {(['goal', 'background', 'need'] as const).map((f) => (
             <div key={f}>
               <dt className="eyebrow">{t(`request.label.${f}`)}</dt>
@@ -233,13 +233,13 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
         </dl>
       )}
       {r.status === 'declined' && r.declineTemplate && (
-        <p className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-meta">
+        <p className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-callout">
           {t(`request.decline.${r.declineTemplate}`, { name: firstName(r.mentee.name) })}
           {r.declineNote && <span className="mt-1 block text-fg-2">“{r.declineNote}”</span>}
         </p>
       )}
       {box === 'sent' && r.rematchOffered && (
-        <p className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-meta" role="status">
+        <p className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-callout" role="status">
           {t('rematch.offer', { name: firstName(r.mentor.name) })}
         </p>
       )}
@@ -357,7 +357,7 @@ export function RequestsPage() {
       {box === 'sent' && canAsk && (
         <Link
           to="/alumni?tab=asks"
-          className="inline-flex min-h-11 items-center justify-self-start text-meta font-semibold text-brand-ink underline"
+          className="inline-flex min-h-11 items-center justify-self-start text-callout font-semibold text-brand-ink underline"
         >
           {t('request.quickAsk')}
         </Link>

@@ -42,7 +42,7 @@ function Handoffs({ message }: { message: CopilotMessageView }) {
         : t('copilot.handoff.office_hours', { title: h.name, date: h.at ? formatDateTime(h.at) : '' });
   return (
     <div className="grid gap-2">
-      <p className="text-meta font-semibold">{t('copilot.next')}</p>
+      <p className="text-callout font-semibold">{t('copilot.next')}</p>
       <ul className="grid gap-2 sm:grid-cols-2">
         {message.handoffs.map((h) => (
           <li key={h.kind}>
@@ -53,7 +53,7 @@ function Handoffs({ message }: { message: CopilotMessageView }) {
                   .post('/copilot/handoff', { messageId: message.id, kind: h.kind })
                   .catch(() => undefined)
               }
-              className="flex min-h-11 items-center gap-2 rounded-[var(--radius-md)] border border-line bg-surface-1 px-3 py-2 text-meta font-semibold text-brand-ink hover:border-line-strong"
+              className="flex min-h-11 items-center gap-2 rounded-[var(--radius-md)] border border-line bg-surface-1 px-3 py-2 text-callout font-semibold text-brand-ink hover:border-line-strong"
             >
               <UserRound className="size-4 flex-none" aria-hidden />
               <span className="flex-1">{label(h)}</span>
@@ -72,13 +72,13 @@ function Result({ result }: { result: CopilotResult }) {
     case 'refusal':
       return <p className="text-body">{t(`copilot.refusal.${result.reason}`)}</p>;
     case 'sources_only':
-      return <p className="text-meta text-fg-2">{t('copilot.sourcesOnly')}</p>;
+      return <p className="text-callout text-fg-2">{t('copilot.sourcesOnly')}</p>;
     case 'drives':
       return (
         <div className="grid gap-2">
           <p className="font-semibold">{t('copilot.drives')}</p>
           {!result.drives.length ? (
-            <p className="text-meta text-fg-2">{t('copilot.noDrives')}</p>
+            <p className="text-callout text-fg-2">{t('copilot.noDrives')}</p>
           ) : (
             <ul className="grid gap-1">
               {result.drives.map((d) => (
@@ -89,7 +89,7 @@ function Result({ result }: { result: CopilotResult }) {
                   >
                     {d.company}: {d.title}
                   </Link>
-                  <span className="text-meta text-fg-2">
+                  <span className="text-callout text-fg-2">
                     {' '}
                     · {t('copilot.closes', { date: formatDay(d.closesAt) })}
                   </span>
@@ -113,8 +113,8 @@ function Result({ result }: { result: CopilotResult }) {
             {result.weeks.map((w) => (
               <li key={w.week}>
                 <Card className="grid gap-1 p-3">
-                  <p className="text-meta font-semibold">{t('copilot.week', { n: w.week })}</p>
-                  <ul className="grid gap-1 text-meta">
+                  <p className="text-callout font-semibold">{t('copilot.week', { n: w.week })}</p>
+                  <ul className="grid gap-1 text-callout">
                     {w.items.map((it, i) => (
                       <li key={i}>
                         <Link
@@ -143,17 +143,19 @@ function Answer({ m, q }: { m: CopilotMessageView; q: string }) {
   const { t } = useTranslation();
   return (
     <Card variant="raised" className="grid gap-3 p-4">
-      <p className="flex items-center gap-2 text-meta font-semibold text-fg-2">
+      <p className="flex items-center gap-2 text-callout font-semibold text-fg-2">
         <Sparkles className="size-4 text-brand-ink" aria-hidden /> {t('copilot.copilot')}
       </p>
-      {m.status === 'streaming' && !m.text && <p className="text-meta text-fg-2">{t('copilot.thinking')}</p>}
-      {m.status === 'failed' && <p className="text-meta text-danger-ink">{t('copilot.failed')}</p>}
+      {m.status === 'streaming' && !m.text && (
+        <p className="text-callout text-fg-2">{t('copilot.thinking')}</p>
+      )}
+      {m.status === 'failed' && <p className="text-callout text-danger-ink">{t('copilot.failed')}</p>}
       {m.result && <Result result={m.result} />}
       {m.text && <AnswerText text={m.text} citations={m.citations} q={q} />}
       {!!m.citations.length && (
         <div className="grid gap-1">
-          <p className="text-meta font-semibold">{t('copilot.sources')}</p>
-          <ol className="grid gap-1 text-meta">
+          <p className="text-callout font-semibold">{t('copilot.sources')}</p>
+          <ol className="grid gap-1 text-callout">
             {m.citations.map((c) => (
               <li key={c.n} className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold">[{c.n}]</span>
@@ -267,7 +269,7 @@ export function CopilotPage() {
       {home.isError && <ErrorState error={home.error} onRetry={() => void home.refetch()} />}
       {home.data && (
         <>
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {t('copilot.rules')}{' '}
             {home.data.ai
               ? home.data.left !== null
@@ -282,7 +284,7 @@ export function CopilotPage() {
                   key={s.id}
                   to={`?c=${s.id}`}
                   aria-current={s.id === sessionId ? 'page' : undefined}
-                  className="inline-flex min-h-11 max-w-[16rem] items-center truncate rounded-full border border-line px-3 text-meta aria-[current=page]:border-brand aria-[current=page]:text-brand-ink"
+                  className="inline-flex min-h-11 max-w-[16rem] items-center truncate rounded-full border border-line px-3 text-callout aria-[current=page]:border-brand aria-[current=page]:text-brand-ink"
                 >
                   {s.title}
                 </Link>
@@ -330,7 +332,7 @@ export function CopilotPage() {
             <button
               key={c}
               type="button"
-              className="inline-flex min-h-11 items-center rounded-full border border-line px-3 text-meta hover:border-line-strong"
+              className="inline-flex min-h-11 items-center rounded-full border border-line px-3 text-callout hover:border-line-strong"
               onClick={() => setQuestion(`/${c} `)}
             >
               {t(`copilot.command.${c}`)}

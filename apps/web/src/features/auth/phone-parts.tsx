@@ -82,7 +82,7 @@ export function BirthMonthField({
     onChange(year && month ? `${year}-${month}` : `${year}-${month}`);
   return (
     <fieldset className="grid gap-1.5" aria-describedby={`${id}-hint${error ? ` ${id}-err` : ''}`}>
-      <legend className="mb-1.5 text-meta font-semibold">{t('phone.birthMonth')}</legend>
+      <legend className="mb-1.5 text-callout font-semibold">{t('phone.birthMonth')}</legend>
       <div className="grid grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-2">
         <Select aria-label={t('phone.month')} value={m} onChange={(e) => set(y, e.target.value)}>
           <option value="">{t('phone.month')}</option>
@@ -126,7 +126,7 @@ export function ConsentFields({
   const { t } = useTranslation();
   return (
     <fieldset className="grid gap-3 rounded-[var(--radius-md)] border border-line p-4">
-      <legend className="px-1 text-meta font-semibold">{t('auth.consentTitle')}</legend>
+      <legend className="px-1 text-callout font-semibold">{t('auth.consentTitle')}</legend>
       {CONSENT_PURPOSE_KEYS.map((p: ConsentPurpose) => (
         <Checkbox
           key={p}

@@ -145,9 +145,9 @@ function WeightsDialog({ config, onClose }: { config: ReadinessConfigView; onClo
             )}
           </Field>
         </div>
-        {total === 0 && <p className="text-meta text-danger">{t('readinessBoard.weights.none')}</p>}
+        {total === 0 && <p className="text-callout text-danger">{t('readinessBoard.weights.none')}</p>}
         {error && (
-          <p role="alert" className="text-meta text-danger">
+          <p role="alert" className="text-callout text-danger">
             {error}
           </p>
         )}
@@ -191,7 +191,7 @@ function NudgeDialog({ rows, onClose }: { rows: NeedsHelpRow[]; onClose: () => v
         </div>
       }
     >
-      <p className="text-meta text-fg-2">{t('readinessBoard.nudge.caps')}</p>
+      <p className="text-callout text-fg-2">{t('readinessBoard.nudge.caps')}</p>
     </Dialog>
   );
 }
@@ -211,7 +211,7 @@ function NeedsHelp({ board, canManage }: { board: ReadinessBoardView; canManage:
   return (
     <section aria-labelledby="readiness-help" className="grid gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="readiness-help" className="text-title font-semibold">
+        <h2 id="readiness-help" className="text-headline font-semibold">
           {t('readinessBoard.help.title')}
         </h2>
         {canManage && nudgeable.length > 0 && (
@@ -235,7 +235,7 @@ function NeedsHelp({ board, canManage }: { board: ReadinessBoardView; canManage:
           </div>
         )}
       </div>
-      <p className="text-meta text-fg-2">
+      <p className="text-callout text-fg-2">
         {t('readinessBoard.help.intro', { threshold: board.threshold, days: board.closingDays })}
       </p>
       {!board.needsHelp.length ? (
@@ -413,10 +413,10 @@ export function ReadinessAdmin() {
           </StatGrid>
           <NeedsHelp board={b} canManage={canManage} />
           <section aria-labelledby="readiness-dist" className="grid gap-3">
-            <h2 id="readiness-dist" className="text-title font-semibold">
+            <h2 id="readiness-dist" className="text-headline font-semibold">
               {t('readinessBoard.dist.title')}
             </h2>
-            <p className="text-meta text-fg-2">{t('readinessBoard.dist.intro')}</p>
+            <p className="text-callout text-fg-2">{t('readinessBoard.dist.intro')}</p>
             {!b.groups.length ? (
               <EmptyState art={<Illustration kind="people" />} title={t('readinessBoard.dist.empty')} />
             ) : (
@@ -449,7 +449,7 @@ export function ReadinessAdmin() {
             )}
           </section>
           <section aria-labelledby="readiness-parts" className="grid gap-3">
-            <h2 id="readiness-parts" className="text-title font-semibold">
+            <h2 id="readiness-parts" className="text-headline font-semibold">
               {t('readinessBoard.parts.title')}
             </h2>
             <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -458,7 +458,7 @@ export function ReadinessAdmin() {
                   <Card className="flex items-center justify-between gap-3 p-4">
                     <span className="font-semibold">{t(`readiness.component.${c.id}`)}</span>
                     {c.status === 'scored' ? (
-                      <span className="text-meta tabular-nums text-fg-2">
+                      <span className="text-callout tabular-nums text-fg-2">
                         {c.average === null
                           ? t('readinessBoard.parts.few')
                           : t('readinessBoard.parts.average', { n: c.average })}

@@ -129,13 +129,13 @@ export function ReportProblemDialog({ onClose }: { onClose: () => void }) {
               aria-describedby={describedBy}
               type="file"
               accept="image/png,image/jpeg,image/webp"
-              className="min-h-11 text-meta"
+              className="min-h-11 text-callout"
               onChange={(e) => setShot(e.target.files?.[0] ?? null)}
             />
           )}
         </Field>
         {error && (
-          <p role="alert" className="text-meta text-danger-ink">
+          <p role="alert" className="text-callout text-danger-ink">
             {error}
           </p>
         )}

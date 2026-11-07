@@ -5,10 +5,14 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import prettier from 'eslint-config-prettier';
 
-/** Tailwind's default sizes sit off the type scale (audit DS-2, TY-3): use text-caption … text-hero. */
+/**
+ * Tailwind's default sizes sit off the type scale (audit DS-2, TY-3), and ADR 0015 retired meta,
+ * lead and hero: use text-caption, text-callout, text-body, text-headline, text-title, text-display.
+ */
 const OFF_SCALE_TEXT = {
-  selector: 'Literal[value=/(^|[\\s:])text-(xs|sm|base|lg|[2-9]?xl)(\\s|$)/]',
-  message: 'Use a type-scale token (text-caption, text-meta, text-body, text-lead, text-title, …).',
+  selector: 'Literal[value=/(^|[\\s:])text-(xs|sm|base|lg|[2-9]?xl|meta|lead|hero)(\\s|$)/]',
+  message:
+    'Use a type-scale token (text-caption, text-callout, text-body, text-headline, text-title, text-display).',
 };
 
 export default tseslint.config(
@@ -66,7 +70,7 @@ export default tseslint.config(
     },
   },
   {
-    // Type comes from the scale (text-caption … text-hero) and page titles from PageHeader (audit
+    // Type comes from the scale (text-caption … text-display) and page titles from PageHeader (audit
     // DS-1). The landing hero and story canvases size type to their own frames.
     files: ['apps/web/src/features/**/*.tsx'],
     ignores: ['apps/web/src/features/landing/**', 'apps/web/src/features/feed/story-viewer.tsx'],
@@ -75,7 +79,7 @@ export default tseslint.config(
         'error',
         {
           selector: "JSXAttribute[name.name='className'] Literal[value=/text-\\[clamp\\(/]",
-          message: 'Use a type-scale token (text-headline, text-display…) or <PageHeader>.',
+          message: 'Use a type-scale token (text-title, text-display…) or <PageHeader>.',
         },
         OFF_SCALE_TEXT,
       ],

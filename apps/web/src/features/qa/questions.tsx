@@ -82,7 +82,7 @@ function AskForm({ onDone }: { onDone: () => void }) {
       </Field>
       <TopicPicker value={topics} onChange={setTopics} />
       {error && (
-        <p role="alert" className="text-meta font-medium text-danger">
+        <p role="alert" className="text-callout font-medium text-danger">
           {error}
         </p>
       )}
@@ -374,9 +374,9 @@ export function QuestionPage() {
                 deleting={del.isPending}
               />
             </AuthorLine>
-            <h1 className="text-headline leading-tight font-bold">{question.title}</h1>
+            <h1 className="text-title leading-tight font-bold">{question.title}</h1>
             {question.isMine && question.status === 'pending' && (
-              <p role="status" className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-meta text-fg-2">
+              <p role="status" className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-callout text-fg-2">
                 {t('qa.pendingNote')}
               </p>
             )}
@@ -411,7 +411,7 @@ export function QuestionPage() {
             )}
           </Card>
           <section aria-labelledby="answers" className="grid gap-3">
-            <h2 id="answers" className="text-title font-semibold">
+            <h2 id="answers" className="text-headline font-semibold">
               {t('qa.answers', { count: q.data.answers.length })}
             </h2>
             {!q.data.answers.length && <p className="text-fg-2">{t('qa.noAnswers')}</p>}

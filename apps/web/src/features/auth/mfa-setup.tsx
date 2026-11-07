@@ -52,7 +52,7 @@ export function MfaSetup({ onDone }: { onDone: () => void }) {
   if (codes) {
     return (
       <div className="grid gap-4">
-        <h2 className="text-title font-semibold">{t('mfa.codesTitle')}</h2>
+        <h2 className="text-headline font-semibold">{t('mfa.codesTitle')}</h2>
         <p className="text-fg-2">{t('mfa.codesBody')}</p>
         <ul className="grid grid-cols-2 gap-2 rounded-[var(--radius-md)] bg-surface-2 p-4 font-mono text-body tabular sm:grid-cols-2">
           {codes.map((c) => (
@@ -104,7 +104,7 @@ export function MfaSetup({ onDone }: { onDone: () => void }) {
                 className="rounded-[var(--radius-sm)] bg-white p-2"
               />
               <p className="text-caption text-fg-2">{t('mfa.manual')}</p>
-              <code className="flex items-center gap-2 font-mono text-meta break-all">
+              <code className="flex items-center gap-2 font-mono text-callout break-all">
                 <KeyRound className="size-4 flex-none text-fg-3" aria-hidden />
                 {setup.secret.match(/.{1,4}/g)?.join(' ')}
               </code>

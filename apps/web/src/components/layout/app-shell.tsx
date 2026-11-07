@@ -38,7 +38,7 @@ function AccountButtonPlaceholder({ name }: { name: string }) {
   return (
     <div aria-hidden className="flex min-h-12 items-center gap-3 px-2">
       <PersonAvatar name={name || '?'} fileId={null} size={36} />
-      <span className="hidden truncate text-meta font-bold xl:block">{name}</span>
+      <span className="hidden truncate text-callout font-bold xl:block">{name}</span>
     </div>
   );
 }
@@ -112,7 +112,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
       title={i.label}
       onClick={reselect(i.to)}
       {...intentPreload(i.to)}
-      className="group relative grid min-h-11 grid-cols-[24px] place-content-center items-center gap-3 rounded-[var(--radius-sm)] px-3 text-meta font-semibold text-fg-3 hover:bg-surface-2 hover:text-fg aria-[current=page]:bg-surface-2 aria-[current=page]:text-fg xl:grid-cols-[24px_1fr] xl:place-content-stretch"
+      className="group relative grid min-h-11 grid-cols-[24px] place-content-center items-center gap-3 rounded-[var(--radius-sm)] px-3 text-callout font-semibold text-fg-3 hover:bg-surface-2 hover:text-fg aria-[current=page]:bg-surface-2 aria-[current=page]:text-fg xl:grid-cols-[24px_1fr] xl:place-content-stretch"
     >
       <span className="relative">
         <i.icon className="size-5" aria-hidden />
@@ -193,7 +193,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
               type="button"
               onClick={() => sheet.open('create')}
               title={t('nav.create')}
-              className="mb-2 flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-4 text-meta font-semibold text-on-brand hover:brightness-110 xl:justify-start"
+              className="mb-2 flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-4 text-callout font-semibold text-on-brand hover:brightness-110 xl:justify-start"
             >
               <Plus className="size-5" aria-hidden />
               <span className="sr-only xl:not-sr-only">{t('nav.create')}</span>
@@ -205,7 +205,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
               type="button"
               onClick={() => openPalette(true)}
               title={t('palette.open')}
-              className="my-2 flex min-h-11 items-center justify-center gap-2.5 rounded-[var(--radius-md)] border border-line bg-surface-1 px-3 text-meta text-fg-2 hover:text-fg xl:justify-start"
+              className="my-2 flex min-h-11 items-center justify-center gap-2.5 rounded-[var(--radius-md)] border border-line bg-surface-1 px-3 text-callout text-fg-2 hover:text-fg xl:justify-start"
             >
               <Search className="size-4" aria-hidden />
               <span className="sr-only xl:not-sr-only">{t('palette.open')}</span>
@@ -322,7 +322,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           {me?.deletionPurgeAt && (
             <div
               role="alert"
-              className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-danger bg-surface-1 p-3 text-meta"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] border border-danger bg-surface-1 p-3 text-callout"
             >
               <span>{t('settings.data.banner', { date: formatDay(me.deletionPurgeAt) })}</span>
               <Link to="/settings/data" className="font-semibold text-brand-ink underline">
@@ -333,7 +333,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
           {tenant.readOnly && (
             <p
               role="status"
-              className="rounded-[var(--radius-md)] border border-warning bg-warning-surface p-3 text-meta text-warning-ink"
+              className="rounded-[var(--radius-md)] border border-warning bg-warning-surface p-3 text-callout text-warning-ink"
             >
               {t('billing.memberReadOnly')}
             </p>

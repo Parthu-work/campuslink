@@ -74,7 +74,7 @@ export function CompaniesPage() {
       {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
       {list.data && (
         <>
-          <p className="text-meta text-fg-3">
+          <p className="text-callout text-fg-3">
             {list.data.computedAt
               ? t('moat.updated', { date: formatDay(list.data.computedAt) })
               : t('moat.notYet')}{' '}
@@ -99,7 +99,7 @@ export function CompaniesPage() {
                     >
                       {c.name}
                     </IntentLink>
-                    <p className="flex flex-wrap gap-x-3 gap-y-1 text-meta text-fg-2">
+                    <p className="flex flex-wrap gap-x-3 gap-y-1 text-callout text-fg-2">
                       {c.offers !== 0 && <span>{t('moat.placed', { n: shown(c.offers) })}</span>}
                       {!!c.batches.length && (
                         <span>{t('moat.batches', { years: c.batches.join(', ') })}</span>
@@ -107,7 +107,7 @@ export function CompaniesPage() {
                       {c.alumni !== 0 && <span>{t('moat.alumni', { n: shown(c.alumni) })}</span>}
                     </p>
                     {!!c.experiences && (
-                      <p className="flex items-center gap-1.5 text-meta text-brand-ink">
+                      <p className="flex items-center gap-1.5 text-callout text-brand-ink">
                         <MessageSquareQuote className="size-4" aria-hidden />
                         {t('moat.writeUps', { count: c.experiences })}
                       </p>
@@ -147,7 +147,7 @@ function Batches({ g }: { g: CompanyGraphView }) {
   if (!g.batches.length) return null;
   return (
     <section aria-labelledby="company-batches" className="grid gap-2">
-      <h2 id="company-batches" className="text-title font-semibold">
+      <h2 id="company-batches" className="text-headline font-semibold">
         {t('moat.byBatch')}
       </h2>
       <Table label={t('moat.byBatch')}>
@@ -175,7 +175,7 @@ function Batches({ g }: { g: CompanyGraphView }) {
         </tbody>
       </Table>
       {!!g.branches.length && (
-        <p className="flex flex-wrap items-center gap-2 text-meta text-fg-2">
+        <p className="flex flex-wrap items-center gap-2 text-callout text-fg-2">
           <span className="font-semibold">{t('moat.byBranch')}:</span>
           {g.branches.map((b) => (
             <Badge key={b.branch} mono>
@@ -195,7 +195,7 @@ function Rounds({ g }: { g: CompanyGraphView }) {
     <section aria-labelledby="company-rounds" className="grid gap-3">
       {!!g.rounds.length && (
         <>
-          <h2 id="company-rounds" className="text-title font-semibold">
+          <h2 id="company-rounds" className="text-headline font-semibold">
             {t('moat.rounds')}
           </h2>
           <ol className="grid gap-2 sm:grid-cols-2">
@@ -203,7 +203,7 @@ function Rounds({ g }: { g: CompanyGraphView }) {
               <li key={r.kind}>
                 <Card className="grid gap-1 p-3">
                   <p className="font-semibold">{t(`placements.roundKind.${r.kind}`)}</p>
-                  <p className="text-meta text-fg-2">
+                  <p className="text-callout text-fg-2">
                     {t('moat.sat', { n: shown(r.appeared) })} ·{' '}
                     {r.passRate === null ? t('moat.rateHidden') : t('moat.cleared', { pct: r.passRate })}
                   </p>
@@ -216,7 +216,7 @@ function Rounds({ g }: { g: CompanyGraphView }) {
       {g.referrals.referred !== 0 && (
         <Card className="grid gap-1 p-3">
           <p className="font-semibold">{t('moat.referrals')}</p>
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {t('moat.referralLine', {
               referred: shown(g.referrals.referred),
               converted: shown(g.referrals.converted),
@@ -274,11 +274,11 @@ export function CompanyPage() {
             )}
           </div>
           <Figures g={g} />
-          <p className="text-meta text-fg-3">{t('moat.small')}</p>
+          <p className="text-callout text-fg-3">{t('moat.small')}</p>
           <Batches g={g} />
           <Rounds g={g} />
           <section aria-labelledby="company-writeups" className="grid gap-3">
-            <h2 id="company-writeups" className="text-title font-semibold">
+            <h2 id="company-writeups" className="text-headline font-semibold">
               {t('moat.writeUpsTitle')}
             </h2>
             {!g.experiences.length ? (

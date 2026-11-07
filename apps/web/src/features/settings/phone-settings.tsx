@@ -47,7 +47,7 @@ export function PhoneSettings() {
 
   return (
     <Card className="grid gap-3 p-5">
-      <h2 className="text-title font-semibold">{t('phone.settingsTitle')}</h2>
+      <h2 className="text-headline font-semibold">{t('phone.settingsTitle')}</h2>
       <p className="text-fg-2">{me?.phone ? maskPhone(me.phone) : t('phone.none')}</p>
       <Button className="justify-self-start" onClick={() => setOpen(true)}>
         {me?.phone ? t('phone.change') : t('phone.add')}
@@ -102,7 +102,7 @@ export function PhoneSettings() {
             }}
           >
             <FormError message={error} />
-            <p className="text-meta text-fg-2">{me?.phone ? t('phone.changeHint') : t('phone.addHint')}</p>
+            <p className="text-callout text-fg-2">{me?.phone ? t('phone.changeHint') : t('phone.addHint')}</p>
             <PhoneField label={t('phone.newNumber')} value={number} onChange={setNumber} autoFocus />
             {needsPassword && (
               <Field label={t('common.password')}>

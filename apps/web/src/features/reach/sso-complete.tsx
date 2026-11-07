@@ -83,7 +83,7 @@ export function SsoCompletePage() {
       >
         <FormError message={error} />
         <fieldset className="grid gap-2">
-          <legend className="mb-1.5 text-meta font-semibold">{t('auth.iAm')}</legend>
+          <legend className="mb-1.5 text-callout font-semibold">{t('auth.iAm')}</legend>
           <div className="flex gap-2">
             {(['STUDENT', 'ALUMNI'] as const).map((v) => (
               <Chip key={v} pressed={intent === v} onClick={() => setIntent(v)}>

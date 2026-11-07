@@ -199,7 +199,7 @@ export function SignUpPage() {
           />
         )}
         <fieldset className="grid gap-2">
-          <legend className="mb-1.5 text-meta font-semibold">{t('auth.iAm')}</legend>
+          <legend className="mb-1.5 text-callout font-semibold">{t('auth.iAm')}</legend>
           <Controller
             control={form.control}
             name="intent"
@@ -293,7 +293,7 @@ export function SignUpPage() {
         <Button type="submit" variant="primary" size="lg" loading={isSubmitting}>
           {method === 'phone' ? t('phone.sendCode') : t('auth.signUpCta')}
         </Button>
-        <p className="text-center text-meta text-fg-2">
+        <p className="text-center text-callout text-fg-2">
           {t('auth.haveAccount')}{' '}
           <Link to="/sign-in" className="font-semibold text-brand-ink hover:underline">
             {t('auth.signInCta')}

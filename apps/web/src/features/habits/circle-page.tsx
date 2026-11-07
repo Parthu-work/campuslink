@@ -79,7 +79,7 @@ function Posts({ c }: { c: CircleView }) {
               <RichText text={p.body} />
               <Link
                 to={`/posts/${p.id}`}
-                className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink underline"
+                className="inline-flex min-h-11 items-center text-callout font-semibold text-brand-ink underline"
               >
                 {t('habits.circle.openPost')}
               </Link>
@@ -176,7 +176,7 @@ function Events({ c }: { c: CircleView }) {
               <Link to={`/events/${e.id}`} className="font-semibold after:absolute after:inset-0">
                 {e.title}
               </Link>
-              <p className="text-meta text-fg-2">{formatDateTime(e.startsAt)}</p>
+              <p className="text-callout text-fg-2">{formatDateTime(e.startsAt)}</p>
             </Card>
           </li>
         ))}
@@ -224,15 +224,15 @@ export function CirclePage() {
           ) : undefined
         }
       />
-      <p className="flex flex-wrap items-center gap-2 text-meta text-fg-2">
+      <p className="flex flex-wrap items-center gap-2 text-callout text-fg-2">
         <Badge>{t(`habits.circles.kind.${c.kind}`)}</Badge>
         {c.status !== 'active' && <Badge tone="warning">{t(`habits.circles.status.${c.status}`)}</Badge>}
         <span>{t('habits.circles.members', { count: c.members })}</span>
       </p>
       {c.status !== 'active' ? (
-        <Card className="p-4 text-meta text-fg-2">{t('habits.circle.waiting')}</Card>
+        <Card className="p-4 text-callout text-fg-2">{t('habits.circle.waiting')}</Card>
       ) : !c.joined && !c.manage ? (
-        <Card className="flex items-center gap-3 p-4 text-meta text-fg-2">
+        <Card className="flex items-center gap-3 p-4 text-callout text-fg-2">
           <MessageCircleQuestion className="size-5 flex-none" aria-hidden /> {t('habits.circle.joinToSee')}
         </Card>
       ) : (

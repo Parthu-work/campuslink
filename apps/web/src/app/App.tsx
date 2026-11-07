@@ -62,7 +62,7 @@ function TenantGate() {
                 {demo.map((d) => (
                   <li key={d}>
                     <a
-                      className="font-mono text-meta text-brand-ink underline"
+                      className="font-mono text-callout text-brand-ink underline"
                       href={`${location.protocol}//${d}.${location.host}`}
                     >
                       {d}.{location.host}
@@ -108,10 +108,10 @@ export function App() {
             classNames: {
               toast:
                 '!gap-3 !rounded-[var(--radius-lg)] !border-0 !bg-fg !px-4 !py-3 !font-sans !text-bg !shadow-elev-3',
-              title: '!text-meta !font-semibold',
+              title: '!text-callout !font-semibold',
               description: '!text-caption !text-bg',
-              actionButton: '!min-h-9 !rounded-full !bg-bg !px-3 !text-meta !font-semibold !text-fg',
-              cancelButton: '!min-h-9 !rounded-full !bg-transparent !px-3 !text-meta !text-bg',
+              actionButton: '!min-h-9 !rounded-full !bg-bg !px-3 !text-callout !font-semibold !text-fg',
+              cancelButton: '!min-h-9 !rounded-full !bg-transparent !px-3 !text-callout !text-bg',
             },
           }}
         />

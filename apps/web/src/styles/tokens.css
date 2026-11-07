@@ -1,5 +1,6 @@
 /*
- * CampusLink design tokens: "Campus Aurora" (docs/adr/0008-design-language.md).
+ * Design tokens: design language v2 (docs/adr/0015-design-language-v2.md), which keeps ADR 0008's
+ * hue-driven colour and replaces its type, space, radii, elevation and motion.
  *
  * Colour lives in palette.css, generated from the college's hue by packages/shared/src/palette.ts
  * (`pnpm --filter @campuslink/web palette` rewrites it; a test keeps it in sync). At runtime
@@ -21,22 +22,41 @@
   --font-mono:
     'Geist Mono Variable', 'Anek Telugu Variable', 'Anek Devanagari Variable', ui-monospace, monospace;
 
-  /* Fluid type scale, eight steps (px at 360 → 1280 wide). */
-  --text-caption: 0.75rem; /* 12 */
-  --text-meta: 0.8125rem; /* 13 */
-  --text-body: 0.9375rem; /* 15 */
-  --text-lead: clamp(1rem, 0.95rem + 0.22vw, 1.125rem); /* 16 → 18 */
-  --text-title: clamp(1.1875rem, 1.1rem + 0.4vw, 1.375rem); /* 19 → 22 */
-  --text-headline: clamp(1.5rem, 1.34rem + 0.7vw, 1.875rem); /* 24 → 30 */
-  --text-display: clamp(1.875rem, 1.55rem + 1.45vw, 2.625rem); /* 30 → 42 */
-  --text-hero: clamp(2.25rem, 1.75rem + 2.2vw, 3.5rem); /* 36 → 56 */
+  /*
+   * Type (ADR 0015): six steps, px at 360 wide growing 15% by 1280. Bricolage only for Display and
+   * Title (screen titles, big numbers); Geist for the rest. Line heights are per step; Telugu and
+   * Devanagari get 2px more on every step (below), for their vowel signs.
+   */
+  --text-display: clamp(2rem, 1.8826rem + 0.5217vw, 2.3rem); /* 32/36 → 36.8 */
+  --text-title: clamp(1.375rem, 1.2943rem + 0.3587vw, 1.58125rem); /* 22/28 → 25.3 */
+  --text-headline: clamp(1.125rem, 1.059rem + 0.2935vw, 1.29375rem); /* 18/24 → 20.7 */
+  --text-body: clamp(1rem, 0.9413rem + 0.2609vw, 1.15rem); /* 16/24 → 18.4 */
+  --text-callout: clamp(0.875rem, 0.8236rem + 0.2283vw, 1.00625rem); /* 14/20 → 16.1 */
+  --text-caption: clamp(0.78125rem, 0.7354rem + 0.2038vw, 0.8984rem); /* 12.5/16 → 14.4, the floor */
+  --lh-display: 1.125;
+  --lh-title: 1.2727;
+  --lh-headline: 1.3333;
+  --lh-body: 1.5;
+  --lh-callout: 1.4286;
+  --lh-caption: 1.28;
 
-  /* Shape: chips are full, cards 20, sheets 28. */
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
+  /* Space: a 4px base; steps 4 8 12 16 20 24 32 40 56 72 (Tailwind 1 2 3 4 5 6 8 10 14 18). */
+  --gutter: 16px; /* 24 from 640 px, 32 from 1024 px (below) */
+  --reading-max: 680px;
+  --content-max: 1200px;
+
+  /* Rows and cells: 56px rows, 44px in compact density (staff tables); never under 44. */
+  --row-min-h: 3.5rem;
+  --row-py: 0.75rem;
+  --cell-py: 0.75rem;
+
+  /* Shape, three radii: 8 inputs and chips, 12 cards and inner items, 20 sheets, dialogs, hero
+     media. The older names map onto them (xs and sm → 8, md and lg → 12, xl → 20). */
+  --radius-xs: 8px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
   --radius-pill: 9999px;
 
   /*
@@ -129,10 +149,16 @@
     1,
     1
   );
-  --dur-fast: calc(140ms * var(--motion-scale));
-  --dur-base: calc(260ms * var(--motion-scale));
-  --dur-snappy: calc(300ms * var(--motion-scale));
-  --dur-smooth: calc(460ms * var(--motion-scale));
+  /* ADR 0015: press 120, enter 200, sheet 280; standard and emphasised easing. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasised: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --dur-press: calc(120ms * var(--motion-scale));
+  --dur-enter: calc(200ms * var(--motion-scale));
+  --dur-sheet: calc(280ms * var(--motion-scale));
+  --dur-fast: var(--dur-press);
+  --dur-base: var(--dur-enter);
+  --dur-snappy: var(--dur-enter);
+  --dur-smooth: var(--dur-sheet);
   --dur-bouncy: calc(840ms * var(--motion-scale));
   --press-scale: 0.97;
 
@@ -157,9 +183,11 @@
   --story-ocean: linear-gradient(150deg, #0b3f72, #136b80);
   --story-forest: linear-gradient(150deg, #123f24, #2a6a3f);
 
-  /* Depth in dark: lighter surfaces and a 1px inner highlight instead of heavy shadows. */
+  /* Depth (ADR 0015): shadows only for floating layers (menus, sheets, toasts: elev-2 and up).
+     Cards are flat with a 1px border; elev-1 is kept as a name and draws nothing. In dark, floating
+     layers get a 1px inner highlight on top of the shadow. */
   --elev-0: none;
-  --elev-1: inset 0 1px 0 oklch(1 0 0 / 0.04);
+  --elev-1: none;
   --elev-2: inset 0 1px 0 oklch(1 0 0 / 0.06), 0 8px 24px oklch(0 0 0 / 0.28);
   --elev-3: inset 0 1px 0 oklch(1 0 0 / 0.07), 0 16px 40px oklch(0 0 0 / 0.36);
   --elev-4: inset 0 1px 0 oklch(1 0 0 / 0.08), 0 28px 64px oklch(0 0 0 / 0.46);
@@ -172,7 +200,7 @@
 /* Depth in light: soft layered shadows tinted by the college hue. */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme='dark']) {
-    --elev-1: 0 1px 2px oklch(0.25 0.03 var(--hue) / 0.07);
+    --elev-1: none;
     --elev-2: 0 1px 2px oklch(0.25 0.03 var(--hue) / 0.06), 0 8px 20px oklch(0.25 0.03 var(--hue) / 0.07);
     --elev-3: 0 2px 4px oklch(0.25 0.03 var(--hue) / 0.06), 0 14px 32px oklch(0.25 0.03 var(--hue) / 0.1);
     --elev-4: 0 4px 8px oklch(0.25 0.03 var(--hue) / 0.07), 0 26px 60px oklch(0.25 0.03 var(--hue) / 0.14);
@@ -182,7 +210,7 @@
 }
 :root[data-theme='light'],
 [data-palette][data-theme='light'] {
-  --elev-1: 0 1px 2px oklch(0.25 0.03 var(--hue) / 0.07);
+  --elev-1: none;
   --elev-2: 0 1px 2px oklch(0.25 0.03 var(--hue) / 0.06), 0 8px 20px oklch(0.25 0.03 var(--hue) / 0.07);
   --elev-3: 0 2px 4px oklch(0.25 0.03 var(--hue) / 0.06), 0 14px 32px oklch(0.25 0.03 var(--hue) / 0.1);
   --elev-4: 0 4px 8px oklch(0.25 0.03 var(--hue) / 0.07), 0 26px 60px oklch(0.25 0.03 var(--hue) / 0.14);
@@ -197,4 +225,33 @@
   :root:not([data-motion='full']) {
     --motion-scale: 0;
   }
+}
+
+/* Telugu and Devanagari: 2px more line height on every step (ADR 0015; tokens.test.ts checks it). */
+:root:is([lang='te'], [lang='hi']) {
+  --lh-display: calc(1.125em + 2px);
+  --lh-title: calc(1.2727em + 2px);
+  --lh-headline: calc(1.3333em + 2px);
+  --lh-body: calc(1.5em + 2px);
+  --lh-callout: calc(1.4286em + 2px);
+  --lh-caption: calc(1.28em + 2px);
+}
+
+/* Page gutters: 16 on phones, 24 on tablets, 32 on desktops. */
+@media (min-width: 640px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+
+/* Compact density for staff tables and lists (`data-density="compact"` on a container). */
+[data-density='compact'] {
+  --row-min-h: 2.75rem;
+  --row-py: 0.5rem;
+  --cell-py: 0.5rem;
 }

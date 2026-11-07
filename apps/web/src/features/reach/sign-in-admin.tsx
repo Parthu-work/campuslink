@@ -39,10 +39,10 @@ function ProviderCard({ p, canEnable }: { p: SsoProviderSettingsView; canEnable:
   });
   return (
     <Card variant="raised" className="grid gap-4 p-5" role="region" aria-labelledby={`sso-${p.provider}`}>
-      <h2 id={`sso-${p.provider}`} className="text-title font-semibold">
+      <h2 id={`sso-${p.provider}`} className="text-headline font-semibold">
         {name}
       </h2>
-      <p className="text-meta text-fg-2">
+      <p className="text-callout text-fg-2">
         {p.provider === 'google' ? t('reach.admin.howGoogle') : t('reach.admin.howMicrosoft')}
       </p>
       <Field label={t('reach.admin.redirect')}>
@@ -135,8 +135,8 @@ export function SignInAdmin() {
   const domains = q.data.allowedEmailDomains;
   return (
     <div className="grid gap-5">
-      <p className="text-meta text-fg-2">{t('reach.admin.intro')}</p>
-      <p className="text-meta font-semibold">
+      <p className="text-callout text-fg-2">{t('reach.admin.intro')}</p>
+      <p className="text-callout font-semibold">
         {domains.length
           ? t('reach.admin.domains', { domains: domains.join(', ') })
           : t('reach.admin.noDomains')}

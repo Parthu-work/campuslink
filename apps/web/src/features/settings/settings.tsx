@@ -88,7 +88,7 @@ export function SecuritySettings() {
     <div className="grid gap-5">
       <Card className="grid gap-3 p-5">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-title font-semibold">{t('settings.twoFactor')}</h2>
+          <h2 className="text-headline font-semibold">{t('settings.twoFactor')}</h2>
           <Badge tone={me?.mfaEnabled ? 'success' : 'neutral'}>
             {me?.mfaEnabled ? t('mfa.on') : t('mfa.off')}
           </Badge>
@@ -108,7 +108,7 @@ export function SecuritySettings() {
 
       <Card className="grid gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-title font-semibold">{t('settings.sessions')}</h2>
+          <h2 className="text-headline font-semibold">{t('settings.sessions')}</h2>
           <Button
             size="sm"
             onClick={() => revokeOthers.mutate()}
@@ -128,7 +128,7 @@ export function SecuritySettings() {
                 <Laptop className="size-5 text-fg-2" aria-hidden />
               )}
               <div className="min-w-0 flex-1">
-                <b className="block text-meta">{s.device}</b>
+                <b className="block text-callout">{s.device}</b>
                 <span className="text-caption text-fg-2">
                   {s.current
                     ? t('settings.thisDevice')
@@ -172,7 +172,7 @@ function ChangePassword() {
   return (
     <Card className="p-5">
       <form onSubmit={onSubmit} noValidate className="grid max-w-md gap-4">
-        <h2 className="text-title font-semibold">{t('settings.changePassword')}</h2>
+        <h2 className="text-headline font-semibold">{t('settings.changePassword')}</h2>
         <FormError message={form.formState.errors.root?.message} />
         <Field label={t('settings.currentPassword')} error={form.formState.errors.currentPassword?.message}>
           {({ id, describedBy, invalid }) => (
@@ -235,8 +235,8 @@ export function PrivacySettings() {
     <div className="grid gap-4">
       <Card className="grid gap-4 p-5">
         <div>
-          <h2 className="text-title font-semibold">{t('settings.consentsTitle')}</h2>
-          <p className="text-meta text-fg-2">{t('settings.consentsBody')}</p>
+          <h2 className="text-headline font-semibold">{t('settings.consentsTitle')}</h2>
+          <p className="text-callout text-fg-2">{t('settings.consentsBody')}</p>
         </div>
         {consents.isLoading && <Skeleton className="h-40" />}
         <ul className="grid gap-2">
@@ -288,7 +288,7 @@ export function PreferenceSettings() {
   return (
     <Card className="grid gap-6 p-5">
       <fieldset className="grid gap-2">
-        <legend className="mb-1 text-meta font-semibold">{t('settings.theme')}</legend>
+        <legend className="mb-1 text-callout font-semibold">{t('settings.theme')}</legend>
         <ChoiceGroup<ThemePref>
           variant="chip"
           label={t('settings.theme')}
@@ -302,7 +302,7 @@ export function PreferenceSettings() {
         />
       </fieldset>
       <fieldset className="grid gap-2">
-        <legend className="mb-1 text-meta font-semibold">{t('settings.language')}</legend>
+        <legend className="mb-1 text-callout font-semibold">{t('settings.language')}</legend>
         <ChoiceGroup<Locale>
           variant="chip"
           label={t('settings.language')}
@@ -315,7 +315,7 @@ export function PreferenceSettings() {
         />
       </fieldset>
       <fieldset className="grid gap-2">
-        <legend className="mb-1 text-meta font-semibold">{t('settings.motion')}</legend>
+        <legend className="mb-1 text-callout font-semibold">{t('settings.motion')}</legend>
         <ChoiceGroup<MotionPref>
           variant="chip"
           label={t('settings.motion')}
@@ -335,7 +335,7 @@ export function PreferenceSettings() {
         onChange={setHaptics}
       />
       <fieldset className="grid gap-2">
-        <legend className="mb-1 text-meta font-semibold">{t('offline.dataSaver')}</legend>
+        <legend className="mb-1 text-callout font-semibold">{t('offline.dataSaver')}</legend>
         <ChoiceGroup<DataSaverMode>
           variant="chip"
           label={t('offline.dataSaver')}

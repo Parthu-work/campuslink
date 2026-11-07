@@ -60,7 +60,7 @@ function Retention({ v }: { v: InsightsView }) {
   const weeks = v.retention[0]?.retained.length ?? 0;
   return (
     <div className="grid gap-3">
-      <p className="max-w-[65ch] text-meta text-fg-2">{t('insights.retentionIntro')}</p>
+      <p className="max-w-[65ch] text-callout text-fg-2">{t('insights.retentionIntro')}</p>
       <Table label={t('insights.retention')}>
         <THead>
           <tr>
@@ -113,7 +113,7 @@ function Placements({ v }: { v: InsightsView }) {
   const p = v.placements;
   return (
     <div className="grid gap-3">
-      <p className="text-meta text-fg-2">{t('insights.batch', { year: gradYearLabel(p.gradYear) })}</p>
+      <p className="text-callout text-fg-2">{t('insights.batch', { year: gradYearLabel(p.gradYear) })}</p>
       <StatGrid className="md:grid-cols-3">
         <StatCard
           label={t('insights.registrationPct')}

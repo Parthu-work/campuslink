@@ -59,7 +59,7 @@ export function PlatformTenants() {
           </>
         }
       />
-      <p className="text-meta text-fg-3">{t('platform.privacyNote')}</p>
+      <p className="text-callout text-fg-3">{t('platform.privacyNote')}</p>
       {tenants.isLoading && <Skeleton className="h-40" />}
       {tenants.data?.length === 0 && (
         <EmptyState icon={<Building2 className="size-6" />} title={t('platform.create')} />
@@ -88,7 +88,7 @@ export function PlatformTenants() {
                   {t(`platform.status.${tn.status}`)}
                 </Badge>
               </div>
-              <dl className="grid grid-cols-2 gap-2 text-meta">
+              <dl className="grid grid-cols-2 gap-2 text-callout">
                 <div>
                   <dt className="eyebrow">{t('platform.plan')}</dt>
                   <dd className="font-mono">
@@ -240,7 +240,7 @@ function CreateTenantDialog({ onClose }: { onClose: () => void }) {
           </Field>
         </div>
         <fieldset className="grid gap-3 rounded-[var(--radius-md)] border border-line p-4">
-          <legend className="px-1 text-meta font-semibold">{t('platform.firstAdmin')}</legend>
+          <legend className="px-1 text-callout font-semibold">{t('platform.firstAdmin')}</legend>
           <Field label={t('platform.adminName')} error={e.firstAdmin?.name?.message}>
             {({ id, invalid }) => (
               <Input id={id} aria-invalid={invalid} {...form.register('firstAdmin.name')} />
@@ -293,7 +293,7 @@ export function PlatformHealth() {
             {Object.entries(h.data.dependencies).map(([k, ok]) => (
               <Card key={k} className="flex items-center gap-3 p-4">
                 <span className={`size-3 rounded-full ${ok ? 'bg-success' : 'bg-danger'}`} aria-hidden />
-                <b className="font-mono text-meta">{k}</b>
+                <b className="font-mono text-callout">{k}</b>
                 <Badge tone={ok ? 'success' : 'danger'} className="ml-auto">
                   {ok ? t('platform.health.up') : t('platform.health.down')}
                 </Badge>

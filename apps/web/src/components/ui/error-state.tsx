@@ -34,7 +34,7 @@ export function ErrorState({
         role="alert"
         className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] bg-surface-2 px-4 py-3"
       >
-        <p className="text-meta text-fg-2">{online ? t('errors.loadFailed') : t('errors.offlineShort')}</p>
+        <p className="text-callout text-fg-2">{online ? t('errors.loadFailed') : t('errors.offlineShort')}</p>
         {retry}
       </div>
     );

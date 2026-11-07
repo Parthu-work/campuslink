@@ -70,14 +70,14 @@ export function StatCard({
         className,
       )}
     >
-      <dt className="flex items-center gap-1.5 text-meta font-semibold text-fg-2 [&_svg]:size-4 [&_svg]:flex-none [&_svg]:text-brand-ink">
+      <dt className="flex items-center gap-1.5 text-callout font-semibold text-fg-2 [&_svg]:size-4 [&_svg]:flex-none [&_svg]:text-brand-ink">
         {icon}
         {label}
       </dt>
       <dd
         className={cn(
           'font-display leading-tight font-bold tabular-nums [overflow-wrap:anywhere]',
-          size === 'md' ? 'text-headline' : 'text-title',
+          size === 'md' ? 'text-title' : 'text-headline',
           tones[tone],
         )}
       >

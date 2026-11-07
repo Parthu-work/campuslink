@@ -120,12 +120,12 @@ export function NextStepCard() {
   return (
     <Card variant="raised" className="grid gap-3 p-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-title font-semibold">
+        <h2 className="flex items-center gap-2 text-headline font-semibold">
           <Sparkles className="size-5 text-brand-ink" aria-hidden /> {t('habits.next.title')}
         </h2>
         <Link
           to="/next-step"
-          className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-meta font-semibold text-brand-ink underline"
+          className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-callout font-semibold text-brand-ink underline"
         >
           {t('habits.next.all')}
         </Link>
@@ -158,7 +158,7 @@ export function NextStepPage() {
             <p className="text-caption text-fg-3">{t('habits.next.why')}</p>
           </Card>
         ) : (
-          <Card className="p-4 text-meta text-fg-2">{t('habits.next.none')}</Card>
+          <Card className="p-4 text-callout text-fg-2">{t('habits.next.none')}</Card>
         ))}
     </div>
   );

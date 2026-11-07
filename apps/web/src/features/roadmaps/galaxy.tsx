@@ -24,7 +24,7 @@ export function RoadmapCard({ r }: { r: RoadmapSummaryView }) {
       <div className="flex items-start justify-between gap-2">
         <IntentLink
           to={`/roadmaps/${r.slug}`}
-          className="font-display text-title leading-tight font-semibold after:absolute after:inset-0"
+          className="font-display text-headline leading-tight font-semibold after:absolute after:inset-0"
         >
           {r.title}
         </IntentLink>
@@ -34,7 +34,7 @@ export function RoadmapCard({ r }: { r: RoadmapSummaryView }) {
           </Badge>
         )}
       </div>
-      <p className="line-clamp-2 text-meta text-fg-2">{r.summary}</p>
+      <p className="line-clamp-2 text-callout text-fg-2">{r.summary}</p>
       <div className="flex flex-wrap gap-1.5">
         <Badge>{t(`roadmaps.cat.${r.category}`)}</Badge>
         <Badge>{t('roadmaps.steps', { count: r.nodeCount })}</Badge>
@@ -116,7 +116,7 @@ export function RoadmapsPage() {
 
       {!!mine.data?.length && (
         <section aria-labelledby="my-roadmaps" className="grid gap-2">
-          <h2 id="my-roadmaps" className="font-display text-title font-semibold">
+          <h2 id="my-roadmaps" className="font-display text-headline font-semibold">
             {t('roadmaps.mine')}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -131,7 +131,7 @@ export function RoadmapsPage() {
 
       {!!drafts.data?.length && (
         <section aria-labelledby="my-drafts" className="grid gap-2">
-          <h2 id="my-drafts" className="font-display text-title font-semibold">
+          <h2 id="my-drafts" className="font-display text-headline font-semibold">
             {t('roadmaps.drafts')}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -216,7 +216,7 @@ export function RoadmapsPage() {
         <div className="grid gap-6">
           {byCategory.map(([c, rs]) => (
             <section key={c} aria-labelledby={`cat-${c}`} className="grid gap-2">
-              <h2 id={`cat-${c}`} className={cn('font-display text-title font-semibold')}>
+              <h2 id={`cat-${c}`} className={cn('font-display text-headline font-semibold')}>
                 {t(`roadmaps.cat.${c}`)}
               </h2>
               <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
