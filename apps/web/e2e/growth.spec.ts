@@ -53,7 +53,10 @@ test('an alumnus sees their batch; a student can set up the parent update', asyn
   await signIn(page, `rahul@${host}.example`, host);
   await page.goto(`http://${host}.localhost:4173/share`);
   await expect(page.getByRole('heading', { name: 'Invite your batch' })).toBeVisible();
-  await expect(page.getByText('Your college has not turned on invites from members yet.')).toBeVisible();
+  // The demo year (G13) turned member invites on (with the college's opt-in confirmation).
+  await expect(page.getByText('Your college has not turned on invites from members yet.')).toHaveCount(0);
+  // Everyone on the list for Rahul's batch has joined, so there is nobody to invite.
+  await expect(page.getByText('Everyone from your batch on the college’s list is here.')).toBeVisible();
   // The parent update is a student's.
   await expect(page.getByRole('heading', { name: 'Monthly update for a parent' })).toHaveCount(0);
   await expectNoA11yViolations(page);

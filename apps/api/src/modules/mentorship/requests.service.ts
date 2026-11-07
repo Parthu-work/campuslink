@@ -245,10 +245,10 @@ export class RequestsService {
 
   /** The request left `pending`: its delayed jobs have nothing left to do. */
   /** Hours from request to reply for requests answered since a date (B9 insights). */
-  async replyHoursSince(since: Date) {
+  async replyHoursSince(since: Date, until?: Date) {
     const rows = await MentorshipRequestModel.find({
       status: { $in: ['accepted', 'declined'] },
-      respondedAt: { $gte: since },
+      respondedAt: { $gte: since, ...(until ? { $lt: until } : {}) },
     })
       .select('createdAt respondedAt')
       .limit(50_000)

@@ -1,0 +1,259 @@
+{
+ "/home": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "నమస్తే, Ananya",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Geist Mono Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/study": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "చదువు",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "30.02px",
+   "lh": "33.022px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Geist Mono Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/mentors": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "మెంటర్లు",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Geist Mono Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/jobs": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "జాబ్ రాడార్",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/roadmaps": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "రోడ్‌మ్యాప్స్",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/settings/preferences": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "సెట్టింగ్‌లు",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/resume": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "రెజ్యూమే",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/interviews": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "మాక్ ఇంటర్వ్యూలు",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/practice": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "ప్రాక్టీస్",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/readiness": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "సంసిద్ధత",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/companies": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "కంపెనీలు",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/copilot": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "కెరీర్ కోపైలట్",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/share": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "షేర్",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ },
+ "/network": {
+  "lang": "te",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "నెట్‌వర్క్",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable"
+  ]
+ }
+}

@@ -695,6 +695,33 @@ export class InterviewsService {
     return (await this.questionViews([q.toObject() as InterviewQuestionDoc]))[0];
   }
 
+  /**
+   * Prompt 2, G10: questions a reviewer picked from a published Interview Experience Bank write-up.
+   * They wait as `pending` (source `interview_bank`) until faculty approve them, usually adding
+   * what a good answer covers; nothing is drawn before that.
+   */
+  async suggestFromExperience(
+    questions: { track: 'hr' | 'technical'; text: string; company: string }[],
+  ): Promise<number> {
+    for (const q of questions)
+      await InterviewQuestionModel.create({
+        track: q.track,
+        branch: null,
+        difficulty: 'medium',
+        topic: q.company.slice(0, 60),
+        text: q.text.slice(0, 400),
+        rubric:
+          `Asked at ${q.company} (a senior’s interview). A clear, specific answer with an example.`.slice(
+            0,
+            400,
+          ),
+        source: 'interview_bank',
+        status: 'pending',
+        createdBy: null,
+      });
+    return questions.length;
+  }
+
   async decide(viewer: AuthState, id: string, body: z.output<typeof interviewQuestionDecisionBody>) {
     const q = await InterviewQuestionModel.findOneAndUpdate(
       { _id: id, status: 'pending' },

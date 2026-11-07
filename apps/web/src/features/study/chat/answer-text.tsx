@@ -142,7 +142,16 @@ function Block({ b, cite }: { b: ABlock; cite: (n: number) => ReactNode }) {
  * An answer rendered from the answer markdown subset as React elements. `[n]` becomes a small
  * link to that source (the PDF page or the video moment), when it is one of the answer's sources.
  */
-export function AnswerText({ text, citations, q }: { text: string; citations: ChatCitation[]; q: string }) {
+export function AnswerText({
+  text,
+  citations,
+  q,
+}: {
+  text: string;
+  /** Study passages, or (prompt 2, G11) Career Copilot sources that carry their own link. */
+  citations: (ChatCitation | { n: number; title: string; href: string })[];
+  q: string;
+}) {
   const { t } = useTranslation();
   const blocks = useMemo(() => parseAnswer(text), [text]);
   const byN = useMemo(() => new Map(citations.map((c) => [c.n, c])), [citations]);
@@ -151,7 +160,7 @@ export function AnswerText({ text, citations, q }: { text: string; citations: Ch
     if (!c) return <span className="text-fg-3">[{n}]</span>;
     return (
       <IntentLink
-        to={citationHref(c, q)}
+        to={'href' in c ? c.href : citationHref(c, q)}
         className="mx-0.5 inline-grid min-w-5 place-items-center rounded-full bg-brand-surface px-1 align-super text-caption font-semibold text-brand-ink hover:underline"
         aria-label={t('study.chat.sourceN', { n, title: c.title })}
       >

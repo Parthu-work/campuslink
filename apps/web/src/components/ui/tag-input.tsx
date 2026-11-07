@@ -32,20 +32,23 @@ export function TagInput({
       <label htmlFor={id} className="text-meta font-semibold">
         {label}
       </label>
-      <div className="flex min-h-[50px] flex-wrap items-center gap-1.5 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 px-2 py-1.5 focus-within:border-brand focus-within:ring-4 focus-within:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)]">
+      <div className="flex min-h-[50px] flex-wrap items-center gap-1.5 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 px-2 py-0.5 focus-within:border-brand focus-within:ring-4 focus-within:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)]">
         {value.map((tag) => (
           <span
             key={tag}
             className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-1 pr-1 pl-3 text-meta"
           >
             {tag}
+            {/* A 44 px target (negative margins keep the chip's height); the circle shows on hover. */}
             <button
               type="button"
               onClick={() => onChange(value.filter((x) => x !== tag))}
-              className="-my-1 grid size-8 place-items-center rounded-full hover:bg-surface-3"
+              className="group -my-2.5 -mr-1.5 grid size-11 place-items-center rounded-full"
               aria-label={t('common.removeTag', { tag })}
             >
-              <X className="size-3.5" aria-hidden />
+              <span className="grid size-8 place-items-center rounded-full group-hover:bg-surface-3">
+                <X className="size-3.5" aria-hidden />
+              </span>
             </button>
           </span>
         ))}
@@ -61,7 +64,7 @@ export function TagInput({
           }}
           onBlur={add}
           aria-describedby={hint ? `${id}-hint` : undefined}
-          className="min-w-[8ch] flex-1 bg-transparent px-2 py-1.5 text-body outline-none"
+          className="min-h-11 min-w-[8ch] flex-1 bg-transparent px-2 text-body outline-none"
         />
       </div>
       {hint && (

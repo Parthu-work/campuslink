@@ -20,10 +20,10 @@ const PACK_USERS: Record<string, string[]> = {
   practice: ['/features/practice/', '/features/admin/practice-bank.tsx'],
   habits: ['/features/habits/'],
   share: ['/features/share/'],
-  // [slot: G9]
   reach: ['/features/reach/'],
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
+  moat: ['/features/companies/'],
+  copilot: ['/features/copilot/'],
+  network: ['/features/network/', '/features/recruiter/'],
 };
 
 /** Flattens nested strings to "a.b.c" → value. */

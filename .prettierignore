@@ -9,6 +9,7 @@ docs/permissions.md
 docs/api/openapi.json
 # Raw re-audit measurements, written by apps/web/e2e/audit
 docs/design/revamp/data-after
+docs/build/after-2/data-after
 # Verbatim copies of the owner's brief; formatting must not change them
 docs/design/revamp/master-prompt.md
 docs/build/master-prompt-1.md

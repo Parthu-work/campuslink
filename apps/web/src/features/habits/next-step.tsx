@@ -123,7 +123,10 @@ export function NextStepCard() {
         <h2 className="flex items-center gap-2 text-title font-semibold">
           <Sparkles className="size-5 text-brand-ink" aria-hidden /> {t('habits.next.title')}
         </h2>
-        <Link to="/next-step" className="text-meta font-semibold text-brand-ink underline">
+        <Link
+          to="/next-step"
+          className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-meta font-semibold text-brand-ink underline"
+        >
           {t('habits.next.all')}
         </Link>
       </div>

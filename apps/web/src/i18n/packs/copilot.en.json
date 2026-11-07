@@ -1,0 +1,68 @@
+{
+  "copilot": {
+    "intro": "Ask about companies, drives, interviews and what to do next. Answers come only from your college’s own records, with sources, then a person to talk to.",
+    "rules": "It never predicts salaries, selection or admission, and says so when your college’s records do not cover a question.",
+    "aiOff": "AI answers are off at your college right now. You will see the sources themselves.",
+    "left_one": "{{count}} question left today",
+    "left_other": "{{count}} questions left today",
+    "new": "New conversation",
+    "history": "Your conversations",
+    "noHistory": "Your conversations appear here. Only you can see them.",
+    "remove": "Delete this conversation",
+    "removed": "Conversation deleted",
+    "placeholder": "For example: Can I get into Nimbus Labs with a 6.8 CGPA? What did seniors do?",
+    "question": "Your question",
+    "send": "Ask",
+    "stop": "Stop",
+    "thinking": "Looking through your college’s records…",
+    "commands": "Quick commands",
+    "command": {
+      "eligible": "/eligible: drives I can register for",
+      "prep": "/prep: prepare for a company",
+      "mock": "/mock: practise an interview",
+      "resume": "/resume: build a résumé for a role",
+      "plan": "/plan: a 4-week plan"
+    },
+    "you": "You",
+    "copilot": "Copilot",
+    "sources": "Sources",
+    "kind": {
+      "company": "Company page",
+      "experience": "Interview write-up",
+      "roadmap": "Roadmap",
+      "drive": "Campus drive",
+      "mentor": "Mentor",
+      "me": "Your record"
+    },
+    "refusal": {
+      "prediction": "I can’t predict salaries, selection or admission, and nobody can promise them. Your college’s records show what seniors did; a person who knows the company can tell you more.",
+      "not_covered": "Your college’s records don’t cover this yet. A person can help:"
+    },
+    "sourcesOnly": "AI answers are not available right now. This is what your college’s records say:",
+    "drives": "Drives you can register for",
+    "noDrives": "There is no open drive you can register for right now.",
+    "closes": "Registration closes {{date}}",
+    "link": {
+      "prep": "Open the {{company}} page",
+      "mock": "Start a mock interview",
+      "resume": "Open the résumé builder"
+    },
+    "plan": "Your 4-week plan",
+    "week": "Week {{n}}",
+    "planItem": {
+      "roadmap": "Roadmap step: {{title}}",
+      "roadmapAny": "Choose a roadmap and do one step",
+      "practice": "Do the daily practice set",
+      "mock": "Do one mock interview",
+      "mentor": "Talk to an alumnus about your target company"
+    },
+    "next": "Talk to a person",
+    "handoff": {
+      "ask_alumnus": "Ask {{name}} (works at {{company}})",
+      "ask_alumnusReply": "Ask {{name}} (works at {{company}}, replies in about {{hours}} hours)",
+      "drive": "Register for the {{company}} drive (closes {{date}})",
+      "office_hours": "Book office hours: {{title}} ({{date}})"
+    },
+    "failed": "That answer did not finish. Try again."
+  }
+}

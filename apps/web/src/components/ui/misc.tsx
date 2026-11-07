@@ -103,6 +103,7 @@ export function EmptyState({
   title,
   children,
   action,
+  level = 3,
 }: {
   /** A small icon in a tinted circle; `art` (an Illustration) takes its place when given. */
   icon?: ReactNode;
@@ -110,7 +111,10 @@ export function EmptyState({
   title: string;
   children?: ReactNode;
   action?: ReactNode;
+  /** The title's heading level: 2 when the empty state sits directly under the screen's title. */
+  level?: 2 | 3;
 }) {
+  const Heading = level === 2 ? 'h2' : 'h3';
   return (
     <div className="grid justify-items-center gap-3 px-5 py-10 text-center">
       {art ??
@@ -122,7 +126,7 @@ export function EmptyState({
             {icon}
           </span>
         ))}
-      <h3 className="text-title font-semibold text-balance">{title}</h3>
+      <Heading className="text-title font-semibold text-balance">{title}</Heading>
       {children && <div className="max-w-[46ch] text-fg-2">{children}</div>}
       {action && <div className="mt-1">{action}</div>}
     </div>

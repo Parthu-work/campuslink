@@ -357,7 +357,7 @@ export function RequestsPage() {
       {box === 'sent' && canAsk && (
         <Link
           to="/alumni?tab=asks"
-          className="justify-self-start text-meta font-semibold text-brand-ink underline"
+          className="inline-flex min-h-11 items-center justify-self-start text-meta font-semibold text-brand-ink underline"
         >
           {t('request.quickAsk')}
         </Link>

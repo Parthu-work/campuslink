@@ -69,7 +69,11 @@ export class ProfilesService {
     if (seed.branch !== undefined) set.branch = seed.branch;
     if (seed.gradYear !== undefined) set.gradYear = seed.gradYear;
     await ProfileModel.updateOne({ userId: u._id }, { $set: set }, { upsert: true });
+    // Prompt 2, G12: the network's projection follows the profile in the same call (ADR 0014 N18).
+    await this.afterSync?.(String(u._id)).catch(() => undefined);
   }
+  /** Set by the app (prompt 2, G12): NetworkService.refresh. */
+  afterSync: ((userId: string) => Promise<void>) | null = null;
 
   private async load(userId: string): Promise<ProfileDoc> {
     let p = await ProfileModel.findOne({ userId }).lean<ProfileDoc>();
@@ -503,6 +507,51 @@ export class ProfilesService {
     };
   }
 
+  /**
+   * Prompt 2, G12 (ADR 0014): the sources of the network projection, read only by NetworkService.
+   * `active` is the profile's verified flag (verified and active, kept by sync()).
+   */
+  async networkFacts(userIds: (string | Types.ObjectId)[]): Promise<
+    Map<
+      string,
+      {
+        name: string;
+        roles: string[];
+        active: boolean;
+        minor: boolean;
+        branch: string | null;
+        gradYear: number | null;
+        company: string;
+        jobTitle: string;
+        location: string;
+        skills: string[];
+      }
+    >
+  > {
+    const rows = await ProfileModel.find({
+      userId: { $in: userIds.map((u) => new Types.ObjectId(String(u))) },
+    })
+      .select('userId name roles verified minorUntil branch gradYear company jobTitle location skills')
+      .lean<ProfileDoc[]>();
+    return new Map(
+      rows.map((p) => [
+        String(p.userId),
+        {
+          name: p.name,
+          roles: p.roles ?? [],
+          active: !!p.verified,
+          minor: isMinor(p.minorUntil),
+          branch: p.branch ?? null,
+          gradYear: p.gradYear ?? null,
+          company: p.company ?? '',
+          jobTitle: p.jobTitle ?? '',
+          location: p.location ?? '',
+          skills: p.skills ?? [],
+        },
+      ]),
+    );
+  }
+
   /** Prompt 2, G8 (a mentor's public page): what the mentor shows to every member. */
   async publicFacts(userId: string): Promise<{ jobTitle: string; company: string; topics: string[] } | null> {
     const p = await ProfileModel.findOne({ userId: new Types.ObjectId(userId), verified: true })
@@ -538,6 +587,27 @@ export class ProfilesService {
       { $limit: limit },
     ]);
     return rows.map((r) => ({ company: r.company, n: r.n }));
+  }
+
+  /**
+   * Prompt 2, G10 (the Placement Graph): verified alumni whose company every member may see, with
+   * that company. Counted per company by the caller; nobody who hid their company is included.
+   */
+  async alumniCompanies(): Promise<{ userId: string; companyKey: string; company: string }[]> {
+    const rows = await ProfileModel.find({
+      verified: true,
+      roles: 'ALUMNI',
+      companyKey: { $nin: ['', null] },
+      'visibility.company': 'members',
+    })
+      .select('userId company companyKey')
+      .limit(50_000)
+      .lean<ProfileDoc[]>();
+    return rows.map((p) => ({
+      userId: String(p.userId),
+      companyKey: p.companyKey ?? '',
+      company: p.company ?? '',
+    }));
   }
 
   async batchFacts(branch: string, gradYear: number) {

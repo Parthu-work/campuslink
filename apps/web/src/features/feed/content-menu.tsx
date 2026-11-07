@@ -26,6 +26,7 @@ export function ContentMenu({
   deleting,
   featurable,
   blockable = true,
+  what,
 }: {
   targetType: Exclude<ContentTarget, 'item'>;
   targetId: string;
@@ -37,6 +38,8 @@ export function ContentMenu({
   featurable?: boolean;
   /** False for content without a member author (library roadmaps). */
   blockable?: boolean;
+  /** The content's name in the menu, when its strings come from a language pack (prompt 2). */
+  what?: string;
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -73,7 +76,7 @@ export function ContentMenu({
     },
     onError: fail,
   });
-  const label = t(`content.${targetType}`);
+  const label = what ?? t(`content.${targetType}`);
   if (isMine && !onDelete && !(featurable && canFeature)) return null;
   return (
     <>

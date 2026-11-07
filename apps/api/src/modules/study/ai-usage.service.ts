@@ -74,6 +74,25 @@ export class AiUsageService {
    * Tokens the college used this calendar month (UTC), for the monthly budget; with `platformOnly`,
    * only what the platform's key served (the plan's allowance, B11).
    */
+  /**
+   * Prompt 2, G13 (YC metrics): questions members asked an AI in a range of UTC days (inclusive):
+   * answer requests of the chat features (the study assistant and the Career Copilot). Counts only.
+   */
+  async chatQuestionsBetween(from: string, to: string): Promise<number> {
+    const [row] = await AiUsageModel.aggregate<{ n: number }>([
+      {
+        $match: {
+          day: { $gte: from, $lte: to },
+          kind: 'chat',
+          feature: { $in: ['study_chat', 'copilot'] },
+          userId: { $ne: null },
+        },
+      },
+      { $group: { _id: null, n: { $sum: '$requests' } } },
+    ]);
+    return row?.n ?? 0;
+  }
+
   async monthTokens(now = new Date(), opts: { platformOnly?: boolean } = {}): Promise<number> {
     const key = this.monthKey(!!opts.platformOnly);
     const month = monthStart(now);

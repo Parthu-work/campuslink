@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useDataSaver } from '../../lib/data-saver';
 import { useTranslation } from '../../i18n/react';
@@ -13,14 +13,14 @@ import {
   Sparkles,
   UserPlus,
 } from 'lucide-react';
-import type { AuthorRef, FollowState, ImpactView, Topic } from '@campuslink/shared';
+import type { AuthorRef, FollowState, ImpactView, NextStepView, Topic } from '@campuslink/shared';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { Segmented } from '../../components/ui/tab-nav';
 import { Button } from '../../components/ui/button';
 import { IntentLink } from '../../components/ui/intent-link';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { api } from '../../lib/api';
-import { oneUsefulThing, upcomingBookings } from '../../lib/queries';
+import { nextStep as nextStepQuery, oneUsefulThing, upcomingBookings } from '../../lib/queries';
 import { useCan, useMe } from '../../lib/me';
 import { formatDay, formatRelative, formatTime } from '../../lib/format';
 import { buttonVariants } from '../../components/ui/button-variants';
@@ -265,12 +265,28 @@ function RightRail() {
 }
 
 /** Home: stories, today's One Useful Thing, the composer and the For You / Following feed. */
+/** The Next Step card's shape while its code loads: a header and one row per item it will show. */
+function NextStepPlaceholder({ rows }: { rows: number }) {
+  return (
+    <Card variant="raised" className="grid gap-3 p-4" aria-hidden>
+      <Skeleton className="h-11 w-3/4" />
+      {Array.from({ length: rows }, (_, i) => (
+        <Skeleton key={i} className="h-20" />
+      ))}
+    </Card>
+  );
+}
+const stepRows = (s: NextStepView) =>
+  [s.roadmapStep, s.opportunity, s.alumnus, s.readiness].filter(Boolean).length;
+
 export function HomePage() {
   const { t } = useTranslation();
   const { data: me, isLoading } = useMe();
   const canPost = useCan('feed:post');
   const canRequest = useCan('mentorship:request');
   const canNextStep = useCan('nextstep:view');
+  // Prefetched by the route's loader: the card's space is kept while its code arrives (no shift).
+  const step = useQuery({ ...nextStepQuery(), enabled: canNextStep });
   const saver = useDataSaver();
   const [params, setParams] = useSearchParams();
   const tab = params.get('tab') === 'following' ? 'following' : 'for_you';
@@ -308,10 +324,8 @@ export function HomePage() {
         {/* Data saver (B13) leaves stories out: they are mostly photos. */}
         {!saver && <StoriesRow />}
         {canRequest && <UpNext />}
-        {canNextStep && (
-          <Suspense fallback={null}>
-            <LazyNextStepCard />
-          </Suspense>
+        {canNextStep && step.data && (
+          <LazyNextStepCard fallback={<NextStepPlaceholder rows={stepRows(step.data)} />} />
         )}
         <OneUsefulThing />
         {canPost && <Composer />}

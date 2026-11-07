@@ -262,6 +262,14 @@ Mock interviews run through the shared AI layer (`AiTasksService`) under the usa
 
 Longer answers and eight questions push a session towards 10,000 tokens. Telugu and Hindi text usually takes more tokens per word than English with most providers' tokenizers, so the same practice in those languages costs more; the four-characters estimate undercounts them. A member may start `INTERVIEW_SESSIONS_PER_DAY` (4) sessions a day, and the feature's daily limit (60 calls) caps a member at roughly 40,000 tokens a day in the worst case.
 
+## The Career Copilot: what a question costs (prompt 2, G11)
+
+The Career Copilot (`docs/specs/copilot.md`) answers through the shared AI layer under the usage feature `copilot`, so Admin › AI and Billing show it on its own line. One question is at most one fast-tier chat call and one embedding of the question; commands, predictions (refused) and questions the college's records do not cover (refused) make no chat call at all.
+
+**Measured** (6 November 2026) in `test/copilot.test.ts` with the app's estimate of four characters a token: a question about preparing for a company with eight sources (the company page, a write-up, a drive, a roadmap step, two mentor cards and the member's own facts) is **about 1,330 input tokens**; the answer is capped at 700 tokens and a real model writes about 150 words (roughly 250 tokens). With the question's embedding (about 20 tokens) a question is about **1,600 tokens**. The daily index embeds only new or changed passages (about 80 tokens a passage; 1,000 tokens for the whole demo college on its first run).
+
+A member may ask 40 questions a day (`AI_FEATURE_LIMITS.copilot`), so the worst case is about 64,000 tokens a member a day; a student asking a few questions a week costs a few thousand tokens a month. As for mock interviews, Telugu and Hindi questions and sources take more tokens per word than English with most tokenizers.
+
 ## Access rules
 
 | Who                | Library and chatbot                                        | Subjects and syllabus            | Material                                       | AI settings                                                     |

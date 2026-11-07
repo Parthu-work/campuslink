@@ -214,6 +214,8 @@ export const CONTENT_TARGETS = [
   'event',
   'event_question',
   'review',
+  // Prompt 2, G10: an Interview Experience Bank write-up.
+  'experience',
   // Prompt 2, G2: a reviewer's comment on a résumé.
   'resume_comment',
 ] as const;

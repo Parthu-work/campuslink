@@ -294,6 +294,15 @@ export class OffersService {
     }));
   }
 
+  /** Prompt 2, G12: verified offers on one drive (a hire for an employer's posting; ids only). */
+  async verifiedOnDrive(driveId: string): Promise<string[]> {
+    const rows = await OfferModel.find({ driveId: new Types.ObjectId(driveId), status: 'verified' })
+      .select('_id')
+      .limit(5000)
+      .lean();
+    return rows.map((r) => String(r._id));
+  }
+
   async verifiedFor(gradYears: number[]) {
     const rows = await OfferModel.find({ status: 'verified', gradYear: { $in: gradYears } })
       .select('userId anonKey branch gradYear companyKey companyName role ctcLpa ctcBand type source')
@@ -311,6 +320,50 @@ export class OffersService {
       ctcBand: r.ctcBand as CtcBand,
       type: r.type,
       source: r.source,
+    }));
+  }
+
+  /**
+   * Prompt 2, G10 (the Placement Graph): every verified offer, for aggregates only (the graph
+   * suppresses and bands them), with when it was made and verified (outcomes and the 7-day prompt).
+   */
+  /**
+   * Prompt 2, G13 (YC metrics): a batch's verified job offers (internships are not placements),
+   * verified on or before `asOf`, and how many students hold one. Counts only.
+   */
+  async jobOffersByBatch(gradYear: number, asOf: Date): Promise<{ offers: number; students: number }> {
+    const rows = await OfferModel.find({
+      status: 'verified',
+      gradYear,
+      type: { $ne: 'internship' },
+      verifiedAt: { $lte: asOf },
+    })
+      .select('userId anonKey')
+      .limit(50_000)
+      .lean<OfferDoc[]>();
+    return {
+      offers: rows.length,
+      students: new Set(rows.map((r) => (r.userId ? String(r.userId) : (r.anonKey ?? String(r._id))))).size,
+    };
+  }
+
+  async graphRows() {
+    const rows = await OfferModel.find({ status: 'verified' })
+      .select('userId branch gradYear companyKey companyName ctcLpa ctcBand type offerDate verifiedAt')
+      .limit(100_000)
+      .lean<OfferDoc[]>();
+    return rows.map((r) => ({
+      id: String(r._id),
+      userId: r.userId ? String(r.userId) : null,
+      branch: r.branch ?? null,
+      gradYear: r.gradYear ?? null,
+      companyKey: r.companyKey,
+      companyName: r.companyName,
+      ctcLpa: r.ctcLpa ?? null,
+      ctcBand: r.ctcBand as CtcBand,
+      type: r.type,
+      offerDate: r.offerDate,
+      verifiedAt: r.verifiedAt ?? null,
     }));
   }
 

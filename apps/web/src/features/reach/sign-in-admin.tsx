@@ -57,6 +57,7 @@ function ProviderCard({ p, canEnable }: { p: SsoProviderSettingsView; canEnable:
             />
             <Button
               size="icon"
+              className="shrink-0"
               aria-label={t('reach.admin.copy')}
               onClick={() =>
                 void navigator.clipboard

@@ -167,6 +167,14 @@ Sent for: `micro_ask_received`. Category: **utility**.
 - Hindi (hi): `आपके कॉलेज के छात्र {{1}} ने एक छोटी मदद मांगी है: {{2}}। इसमें कुछ ही मिनट लगेंगे। नीचे जवाब दें, या पढ़ने के लिए ऐप खोलें।`
   - Quick replies: `हां, मदद करूंगा/करूंगी`, `अभी नहीं`
 
+## `cl_experience_prompt`
+
+Sent for: `experience_prompt`. Category: **utility**.
+
+- English (en): `Congratulations on your {{1}} offer. Help your juniors: share how your interview went, the rounds and the questions in your own words. Open the app to write it; the placement cell reviews it first.`
+- Telugu (te): `మీ {{1}} ఆఫర్‌కు అభినందనలు. జూనియర్లకు సహాయం చేయండి: మీ ఇంటర్వ్యూ ఎలా జరిగిందో, రౌండ్లు, ప్రశ్నలు మీ మాటల్లో పంచుకోండి. రాయడానికి యాప్ తెరవండి; ముందుగా ప్లేస్‌మెంట్ సెల్ సమీక్షిస్తుంది.`
+- Hindi (hi): `आपके {{1}} ऑफ़र के लिए बधाई। जूनियर्स की मदद करें: बताएँ कि आपका इंटरव्यू कैसा रहा, राउंड और सवाल अपने शब्दों में। लिखने के लिए ऐप खोलें; पहले प्लेसमेंट सेल इसकी समीक्षा करता है।`
+
 ## `cl_invite_student`
 
 Sent for: an invite to a student on the college's list. Category: **utility**.

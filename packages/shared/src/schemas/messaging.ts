@@ -149,10 +149,14 @@ export const NOTIFICATION_TYPES = [
   'circle_decided',
   // Prompt 2, G8: what happened after a referral (asked at 14 and 30 days).
   'referral_outcome_prompt',
-  // [slot: G9]
   'roster_sync_review',
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
+  // Prompt 2, G10: share your interview (7 days after a verified offer); a write-up reviewed.
+  'experience_prompt',
+  'experience_published',
+  'experience_returned',
+  // Prompt 2, G12: cross-college intros (names and the request type, never the note).
+  'network_intro_received',
+  'network_intro_answered',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -253,10 +257,12 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   voice_failed: 'community',
   circle_decided: 'community',
   referral_outcome_prompt: 'jobs',
-  // [slot: G9]
   roster_sync_review: 'requests',
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
+  experience_prompt: 'placements',
+  experience_published: 'placements',
+  experience_returned: 'placements',
+  network_intro_received: 'requests',
+  network_intro_answered: 'requests',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;
@@ -400,6 +406,8 @@ export const REPORT_TARGETS = [
   'roadmap_comment',
   'event',
   'event_question',
+  // Prompt 2, G10: an Interview Experience Bank write-up.
+  'experience',
   'review',
 ] as const;
 export const REPORT_REASONS = ['spam', 'harassment', 'inappropriate', 'impersonation', 'other'] as const;

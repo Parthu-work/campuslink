@@ -113,7 +113,7 @@ export function Checkbox({
   return (
     <label
       htmlFor={id}
-      className="flex min-h-11 cursor-pointer items-start gap-3 py-1 text-meta leading-snug text-fg-2"
+      className="flex min-h-11 min-w-11 cursor-pointer items-start gap-3 py-1 text-meta leading-snug text-fg-2"
     >
       <span className="relative mt-0.5 grid size-5 flex-none place-items-center">
         <input
