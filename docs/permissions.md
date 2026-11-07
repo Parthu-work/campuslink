@@ -7,7 +7,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 ## Rules
 - **Deny by default.** A route without an explicit permission is either public (listed below) or open to any signed-in user of that college for self-service only.
 - **Unverified users** (college verification pending) are limited to: `feed:read`, `roadmaps:read`, `jobs:read`, `content:report`, `support:create`.
-- **MFA:** SUPER_ADMIN, COLLEGE_ADMIN have **no** permissions until TOTP is enabled.
+- **MFA:** SUPER_ADMIN, COLLEGE_ADMIN, EMPLOYER_ADMIN, RECRUITER have **no** permissions until TOTP is enabled.
 - **Capabilities:** `CERTIFIED_CONTRIBUTOR` adds `roadmaps:write`, `study:contribute` (students only); `PEER_MENTOR` adds `mentorship:mentor` (students only); `CAMPUS_CAPTAIN` adds `captains:class`, `invites:batchmates` (students only).
 - **Tenant overrides:** a college admin may grant or revoke permissions per role; `platform:*` permissions can never be granted to a college role.
 - **Escalation guards:** only a college admin can act on another college admin; SUPER_ADMIN cannot be assigned through the college API; the last active college admin cannot be demoted.
@@ -15,97 +15,105 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 - **Super admin** works only on the platform host and sees aggregate counts — never message content.
 
 ## Role defaults
-| Permission | SUPER_ADMIN | COLLEGE_ADMIN | TPO | FACULTY | ALUMNI | STUDENT |
-|---|:-:|:-:|:-:|:-:|:-:|:-:|
-| `feed:read` Browse the college feed | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `feed:post` Publish posts, tips and stories | · | ✅ | ✅ | ✅ | ✅ | · |
-| `feed:interact` React, comment, save and share | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `qa:ask` Ask questions in moderated Q&A | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `qa:answer` Answer questions in Q&A | · | ✅ | ✅ | ✅ | ✅ | · |
-| `content:report` Report content or people | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `sources:follow` Follow topics and content sources | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `sources:manage` Add or remove content sources for the college | · | ✅ | · | · | · | · |
-| `directory:read` Browse the people directory | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `profile:visibility` Control who can see profile fields | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `mentorship:request` Send structured mentorship requests | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `mentorship:mentor` Accept mentees, set availability and request caps | · | ✅ | · | · | ✅ | · |
-| `sessions:book` Book mentoring sessions | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `messages:send` Message accepted mentors or mentees | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `ama:host` Host AMAs and office hours | · | ✅ | ✅ | · | ✅ | · |
-| `mentorship:oversee` See mentorship activity and private session feedback | · | ✅ | ✅ | · | · | · |
-| `jobs:read` Browse jobs and openings | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `jobs:save` Save jobs and track applications | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `jobs:post` Publish openings | · | ✅ | ✅ | ✅ | ✅ | · |
-| `jobs:sources` Add or remove job sources (ATS boards, feeds) for the college | · | ✅ | ✅ | · | · | · |
-| `referrals:request` Request referrals from alumni | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `referrals:offer` Offer referrals and set referral caps | · | ✅ | ✅ | · | ✅ | · |
-| `roadmaps:read` View roadmaps | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `roadmaps:progress` Track personal roadmap progress | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `roadmaps:write` Draft and edit roadmaps | · | ✅ | ✅ | ✅ | ✅ | · |
-| `roadmaps:review` Review and publish roadmaps | · | ✅ | ✅ | ✅ | · | · |
-| `study:read` Use the subject library and the study assistant | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `study:contribute` Upload study material for subjects an admin granted (reviewed before publishing) | · | ✅ | · | · | ✅ | · |
-| `study:upload` Upload, edit and delete study material | · | ✅ | ✅ | ✅ | · | · |
-| `study:manage` Create subjects and manage syllabi, owners and who takes them | · | ✅ | ✅ | ✅ | · | · |
-| `study:analytics` View study analytics (faculty: their subjects; admins: the college) | · | ✅ | ✅ | ✅ | · | · |
-| `ai:settings` Configure the AI study assistant (provider, key, limits and consent) | · | ✅ | · | · | · | · |
-| `events:rsvp` RSVP to events | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `events:create` Create events, drives and meetups | · | ✅ | ✅ | ✅ | · | · |
-| `announcements:post` Post official announcements | · | ✅ | ✅ | ✅ | · | · |
-| `moderation:act` Act on reported content within scope | · | ✅ | ✅ | ✅ | · | · |
-| `analytics:cohort` View cohort analytics | · | ✅ | ✅ | ✅ | · | · |
-| `analytics:tenant` View college-wide analytics | · | ✅ | ✅ | · | · | · |
-| `reports:export` Export reports and data | · | ✅ | ✅ | · | · | · |
-| `users:invite` Invite users | · | ✅ | ✅ | ✅ | · | · |
-| `users:approve` Approve pending users | · | ✅ | ✅ | ✅ | · | · |
-| `onboarding:manage` Send invite links, run class join codes and follow onboarding | · | ✅ | ✅ | · | · | · |
-| `users:read_admin` View the admin user list | · | ✅ | · | · | · | · |
-| `users:manage` Suspend or reactivate users | · | ✅ | · | · | · | · |
-| `roles:assign` Change user roles | · | ✅ | · | · | · | · |
-| `capabilities:grant` Grant contributor capabilities | · | ✅ | · | · | · | · |
-| `imports:manage` Run data imports | · | ✅ | · | · | · | · |
-| `verification:review` Review verification requests | · | ✅ | ✅ | · | · | · |
-| `tenant:branding` Change college branding | · | ✅ | · | · | · | · |
-| `tenant:settings` Change features, limits and permission overrides | · | ✅ | · | · | · | · |
-| `audit:read` Read the audit log | ✅ | ✅ | · | · | · | · |
-| `rewards:manage` Manage the rewards catalogue | · | ✅ | · | · | · | · |
-| `rewards:redeem` Redeem points for rewards | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `alumni:ask` Send small asks (review, answer, intro, feedback) routed to matching alumni | · | ✅ | · | · | ✅ | ✅ |
-| `alumni:help` Receive and answer micro-asks; get a mentorship certificate for each academic year | · | ✅ | · | · | ✅ | · |
-| `alumni:recognise` Nominate the alumnus of the month and revoke mentorship certificates | · | ✅ | ✅ | · | · | · |
-| `giving:pledge` Pledge to the college’s funds and download acknowledgements | · | ✅ | · | · | ✅ | · |
-| `giving:manage` Publish funds, record money the college received and set receipt details | · | ✅ | ✅ | · | · | · |
-| `profile:import` Fill one’s profile from one’s own LinkedIn data export | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `platform:tenants` Create, suspend and configure colleges | ✅ | · | · | · | · | · |
-| `platform:health` View platform health | ✅ | · | · | · | · | · |
-| `platform:billing` Plans, invoices and payments for every college | ✅ | · | · | · | · | · |
-| `platform:support` Answer problem reports members sent to the platform (bugs) | ✅ | · | · | · | · | · |
-| `support:create` Report a problem and follow its replies | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `resumes:manage` Build résumés, check them against a role and ask an alumnus to review one | · | ✅ | · | · | ✅ | ✅ |
-| `interviews:practice` Practise mock interviews with AI feedback and share a report for a human mock | · | ✅ | · | · | ✅ | ✅ |
-| `interviews:review` Add interview questions and review AI-generated ones before they enter the bank | · | ✅ | ✅ | ✅ | · | · |
-| `readiness:view` See one’s own placement readiness score and its next steps | · | ✅ | · | · | · | ✅ |
-| `readiness:board` See the readiness board: distribution by batch and branch, and students who need help | · | ✅ | ✅ | ✅ | · | · |
-| `readiness:manage` Set readiness weights, nudge students who need help and export the board | · | ✅ | ✅ | · | · | · |
-| `practice:use` Do the daily aptitude and coding practice set and company prep | · | ✅ | · | · | ✅ | ✅ |
-| `practice:author` Write practice questions (alumni questions are reviewed before they are used) | · | ✅ | ✅ | ✅ | ✅ | · |
-| `practice:review` Add practice questions, review drafts and alumni questions, and tag companies | · | ✅ | ✅ | ✅ | · | · |
-| `nextstep:view` Get the weekly Next Step: a roadmap step, a drive or job, an alumnus to ask | · | ✅ | · | · | · | ✅ |
-| `peers:enroll` Become a peer mentor (with an offer or a nomination), volunteer as a senior buddy, see one’s buddy | · | ✅ | · | · | · | ✅ |
-| `peers:manage` Nominate peer mentors and follow how first-years are matched with senior buddies | · | ✅ | ✅ | ✅ | · | · |
-| `circles:join` Join circles and read, post, ask and attend inside them | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `circles:propose` Propose a circle (staff approve it) or create one (staff) | · | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `circles:manage` Approve, reject and archive circles; see every circle | · | ✅ | ✅ | ✅ | · | · |
-| `invites:batchmates` Invite people of one’s own batch who are on the college’s list but not here yet | · | ✅ | · | · | ✅ | · |
-| `captains:class` See one’s own class joining (counts only) and invite classmates (Campus Captains) | · | ✅ | · | · | · | · |
-| `share:pages` Publish opt-in public pages: a placement, a finished roadmap, mentoring | · | ✅ | · | · | ✅ | ✅ |
-| `parents:digest` Send a monthly summary to a parent, with their confirmation | · | ✅ | · | · | · | ✅ |
-| `support:manage` Answer and close problem reports sent to the college | · | ✅ | · | · | · | · |
-| `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ |
-| `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ |
-| `placements:manage` Run placement drives: companies, eligibility, registrants, rounds, overrides | · | ✅ | ✅ | · | · | · |
-| `outcomes:report` Report one’s own offers (with proof) to the placement cell | · | ✅ | · | · | ✅ | ✅ |
-| `outcomes:verify` Verify or reject reported offers | · | ✅ | ✅ | · | · | · |
+| Permission | SUPER_ADMIN | COLLEGE_ADMIN | TPO | FACULTY | ALUMNI | STUDENT | EMPLOYER_ADMIN | RECRUITER |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| `feed:read` Browse the college feed | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `feed:post` Publish posts, tips and stories | · | ✅ | ✅ | ✅ | ✅ | · | · | · |
+| `feed:interact` React, comment, save and share | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `qa:ask` Ask questions in moderated Q&A | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `qa:answer` Answer questions in Q&A | · | ✅ | ✅ | ✅ | ✅ | · | · | · |
+| `content:report` Report content or people | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `sources:follow` Follow topics and content sources | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `sources:manage` Add or remove content sources for the college | · | ✅ | · | · | · | · | · | · |
+| `directory:read` Browse the people directory | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `profile:visibility` Control who can see profile fields | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `mentorship:request` Send structured mentorship requests | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `mentorship:mentor` Accept mentees, set availability and request caps | · | ✅ | · | · | ✅ | · | · | · |
+| `sessions:book` Book mentoring sessions | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `messages:send` Message accepted mentors or mentees | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `ama:host` Host AMAs and office hours | · | ✅ | ✅ | · | ✅ | · | · | · |
+| `mentorship:oversee` See mentorship activity and private session feedback | · | ✅ | ✅ | · | · | · | · | · |
+| `jobs:read` Browse jobs and openings | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `jobs:save` Save jobs and track applications | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `jobs:post` Publish openings | · | ✅ | ✅ | ✅ | ✅ | · | · | · |
+| `jobs:sources` Add or remove job sources (ATS boards, feeds) for the college | · | ✅ | ✅ | · | · | · | · | · |
+| `referrals:request` Request referrals from alumni | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `referrals:offer` Offer referrals and set referral caps | · | ✅ | ✅ | · | ✅ | · | · | · |
+| `roadmaps:read` View roadmaps | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `roadmaps:progress` Track personal roadmap progress | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `roadmaps:write` Draft and edit roadmaps | · | ✅ | ✅ | ✅ | ✅ | · | · | · |
+| `roadmaps:review` Review and publish roadmaps | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `study:read` Use the subject library and the study assistant | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `study:contribute` Upload study material for subjects an admin granted (reviewed before publishing) | · | ✅ | · | · | ✅ | · | · | · |
+| `study:upload` Upload, edit and delete study material | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `study:manage` Create subjects and manage syllabi, owners and who takes them | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `study:analytics` View study analytics (faculty: their subjects; admins: the college) | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `ai:settings` Configure the AI study assistant (provider, key, limits and consent) | · | ✅ | · | · | · | · | · | · |
+| `events:rsvp` RSVP to events | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `events:create` Create events, drives and meetups | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `announcements:post` Post official announcements | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `moderation:act` Act on reported content within scope | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `analytics:cohort` View cohort analytics | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `analytics:tenant` View college-wide analytics | · | ✅ | ✅ | · | · | · | · | · |
+| `reports:export` Export reports and data | · | ✅ | ✅ | · | · | · | · | · |
+| `users:invite` Invite users | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `users:approve` Approve pending users | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `onboarding:manage` Send invite links, run class join codes and follow onboarding | · | ✅ | ✅ | · | · | · | · | · |
+| `users:read_admin` View the admin user list | · | ✅ | · | · | · | · | · | · |
+| `users:manage` Suspend or reactivate users | · | ✅ | · | · | · | · | · | · |
+| `roles:assign` Change user roles | · | ✅ | · | · | · | · | · | · |
+| `capabilities:grant` Grant contributor capabilities | · | ✅ | · | · | · | · | · | · |
+| `imports:manage` Run data imports | · | ✅ | · | · | · | · | · | · |
+| `verification:review` Review verification requests | · | ✅ | ✅ | · | · | · | · | · |
+| `tenant:branding` Change college branding | · | ✅ | · | · | · | · | · | · |
+| `tenant:settings` Change features, limits and permission overrides | · | ✅ | · | · | · | · | · | · |
+| `audit:read` Read the audit log | ✅ | ✅ | · | · | · | · | · | · |
+| `rewards:manage` Manage the rewards catalogue | · | ✅ | · | · | · | · | · | · |
+| `rewards:redeem` Redeem points for rewards | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `alumni:ask` Send small asks (review, answer, intro, feedback) routed to matching alumni | · | ✅ | · | · | ✅ | ✅ | · | · |
+| `alumni:help` Receive and answer micro-asks; get a mentorship certificate for each academic year | · | ✅ | · | · | ✅ | · | · | · |
+| `alumni:recognise` Nominate the alumnus of the month and revoke mentorship certificates | · | ✅ | ✅ | · | · | · | · | · |
+| `giving:pledge` Pledge to the college’s funds and download acknowledgements | · | ✅ | · | · | ✅ | · | · | · |
+| `giving:manage` Publish funds, record money the college received and set receipt details | · | ✅ | ✅ | · | · | · | · | · |
+| `profile:import` Fill one’s profile from one’s own LinkedIn data export | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `platform:tenants` Create, suspend and configure colleges | ✅ | · | · | · | · | · | · | · |
+| `platform:health` View platform health | ✅ | · | · | · | · | · | · | · |
+| `platform:billing` Plans, invoices and payments for every college | ✅ | · | · | · | · | · | · | · |
+| `platform:support` Answer problem reports members sent to the platform (bugs) | ✅ | · | · | · | · | · | · | · |
+| `support:create` Report a problem and follow its replies | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `resumes:manage` Build résumés, check them against a role and ask an alumnus to review one | · | ✅ | · | · | ✅ | ✅ | · | · |
+| `interviews:practice` Practise mock interviews with AI feedback and share a report for a human mock | · | ✅ | · | · | ✅ | ✅ | · | · |
+| `interviews:review` Add interview questions and review AI-generated ones before they enter the bank | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `readiness:view` See one’s own placement readiness score and its next steps | · | ✅ | · | · | · | ✅ | · | · |
+| `readiness:board` See the readiness board: distribution by batch and branch, and students who need help | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `readiness:manage` Set readiness weights, nudge students who need help and export the board | · | ✅ | ✅ | · | · | · | · | · |
+| `practice:use` Do the daily aptitude and coding practice set and company prep | · | ✅ | · | · | ✅ | ✅ | · | · |
+| `practice:author` Write practice questions (alumni questions are reviewed before they are used) | · | ✅ | ✅ | ✅ | ✅ | · | · | · |
+| `practice:review` Add practice questions, review drafts and alumni questions, and tag companies | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `nextstep:view` Get the weekly Next Step: a roadmap step, a drive or job, an alumnus to ask | · | ✅ | · | · | · | ✅ | · | · |
+| `peers:enroll` Become a peer mentor (with an offer or a nomination), volunteer as a senior buddy, see one’s buddy | · | ✅ | · | · | · | ✅ | · | · |
+| `peers:manage` Nominate peer mentors and follow how first-years are matched with senior buddies | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `circles:join` Join circles and read, post, ask and attend inside them | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `circles:propose` Propose a circle (staff approve it) or create one (staff) | · | ✅ | ✅ | ✅ | ✅ | ✅ | · | · |
+| `circles:manage` Approve, reject and archive circles; see every circle | · | ✅ | ✅ | ✅ | · | · | · | · |
+| `invites:batchmates` Invite people of one’s own batch who are on the college’s list but not here yet | · | ✅ | · | · | ✅ | · | · | · |
+| `captains:class` See one’s own class joining (counts only) and invite classmates (Campus Captains) | · | ✅ | · | · | · | · | · | · |
+| `share:pages` Publish opt-in public pages: a placement, a finished roadmap, mentoring | · | ✅ | · | · | ✅ | ✅ | · | · |
+| `parents:digest` Send a monthly summary to a parent, with their confirmation | · | ✅ | · | · | · | ✅ | · | · |
+| `network:discover` Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in) | · | ✅ | · | · | ✅ | ✅ | · | · |
+| `network:manage` Review employer postings offered to the college, block employers, see who looked (the network) | · | ✅ | ✅ | · | · | · | · | · |
+| `credentials:own` Request, share and revoke one’s own verified credentials | · | ✅ | · | · | ✅ | ✅ | · | · |
+| `credentials:manage` Rotate the college’s credential signing key and revoke credentials | · | ✅ | · | · | · | · | · | · |
+| `employer:post` Write postings and offer them to colleges (employer tenants) | · | · | · | · | · | · | ✅ | ✅ |
+| `employer:candidates` See pool sizes and the résumés and readiness that candidates shared (employer tenants) | · | · | · | · | · | · | ✅ | ✅ |
+| `employer:manage` Manage the employer’s recruiters and verification (employer tenants) | · | · | · | · | · | · | ✅ | · |
+| `platform:employers` Approve, reject and suspend employers; manage college clusters | ✅ | · | · | · | · | · | · | · |
+| `support:manage` Answer and close problem reports sent to the college | · | ✅ | · | · | · | · | · | · |
+| `placements:view` See placement drives and the eligibility rules | · | ✅ | ✅ | ✅ | · | ✅ | · | · |
+| `placements:register` Register for placement drives one is eligible for | · | ✅ | · | · | · | ✅ | · | · |
+| `placements:manage` Run placement drives: companies, eligibility, registrants, rounds, overrides | · | ✅ | ✅ | · | · | · | · | · |
+| `outcomes:report` Report one’s own offers (with proof) to the placement cell | · | ✅ | · | · | ✅ | ✅ | · | · |
+| `outcomes:verify` Verify or reject reported offers | · | ✅ | ✅ | · | · | · | · | · |
 
 ## Endpoints
 | Endpoint | Requires | Host | Rate limit | Purpose |
@@ -573,6 +581,60 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/auth/sso/complete` | public | college | signup | Finish the account a first single sign-on started (terms, birth month, role) |
 | `GET /api/v1/admin/sign-in` | `tenant:settings` | college | — | Single sign-on settings (secrets are never returned) |
 | `PUT /api/v1/admin/sign-in/:provider` | `tenant:settings` | college | adminWrite | Turn Google Workspace or Microsoft Entra ID sign-in on or off, with its app details |
+| `GET /api/v1/network/me` | `network:discover` | college | — | My network settings, consents and who opened what I shared |
+| `PUT /api/v1/network/me` | `network:discover` | college | — | What other colleges and employers may see of me (the projection follows at once) |
+| `PUT /api/v1/network/consents` | `network:discover` | college | — | Grant or withdraw network_discovery or employer_visibility (never for minors) |
+| `GET /api/v1/network/alumni` | `network:discover` | college | network | Alumni of other opted-in colleges (P1; the projection only) |
+| `GET /api/v1/network/alumni/:ref` | `network:discover` | college | network | One alumnus of another college (P2) |
+| `GET /api/v1/network/intros` | `network:discover` | college | — | Intros I sent and received |
+| `POST /api/v1/network/intros` | `network:discover` | college | requests | Ask an alumnus of another college for help (P3; weekly caps) |
+| `POST /api/v1/network/intros/:id/accept` | `network:discover` | college | — | Accept an intro and share a contact with that one student (P4) |
+| `POST /api/v1/network/intros/:id/decline` | `network:discover` | college | — | Decline an intro (P4) |
+| `POST /api/v1/network/intros/:id/report` | `network:discover` | college | reports | Report an intro to the sender’s college (P6) |
+| `GET /api/v1/network/candidacies` | `network:discover` | college | — | Employer drives I registered for, and what I shared with each employer |
+| `POST /api/v1/network/candidacies` | `network:discover` | college | — | Share my résumé and readiness with the employer of a drive I registered for |
+| `DELETE /api/v1/network/candidacies/:ref` | `network:discover` | college | — | Stop sharing with an employer (at once) |
+| `POST /api/v1/network/postings/:id/report` | `network:discover` | college | reports | Report an employer posting (three reports hide it until a moderator decides) |
+| `GET /api/v1/admin/network` | `network:manage` | college | — | The network switches, postings offered to the college, blocks and who looked |
+| `PUT /api/v1/admin/network/switches` | `tenant:settings` | college | adminWrite | Turn the network on or off for the college (admin with TOTP; accepting the terms) |
+| `POST /api/v1/admin/network/postings/:id/decision` | `network:manage` | college | adminWrite | Approve a posting (it becomes a drive) or decline it |
+| `POST /api/v1/admin/network/postings/:id/moderate` | `network:manage` | college | adminWrite | Keep or remove a posting hidden by reports |
+| `POST /api/v1/admin/network/blocks` | `network:manage` | college | adminWrite | Block an employer from the college |
+| `DELETE /api/v1/admin/network/blocks/:id` | `network:manage` | college | adminWrite | Unblock an employer |
+| `POST /api/v1/admin/network/paused/:userId/resume` | `network:manage` | college | adminWrite | Give network access back to a member paused by reports |
+| `POST /api/v1/employers/apply` | public | platform | employerApply | Apply as an employer (work email at the company’s domain, GSTIN; approved by a person) |
+| `GET /api/v1/employer` | `employer:post` | employer | — | The employer’s verification state, recruiters, limits and prices |
+| `POST /api/v1/employer/verify-domain` | `employer:manage` | employer | verify | Check the DNS TXT record on the company’s domain |
+| `POST /api/v1/employer/recruiters` | `employer:manage` | employer | adminWrite | Add a recruiter at the verified domain (10 seats) |
+| `DELETE /api/v1/employer/recruiters/:id` | `employer:manage` | employer | adminWrite | Remove a recruiter |
+| `GET /api/v1/employer/colleges` | `employer:post` | employer | — | Colleges that take postings from this employer, and the clusters |
+| `GET /api/v1/employer/postings` | `employer:post` | employer | — | The employer’s postings and each college’s decision |
+| `POST /api/v1/employer/postings` | `employer:post` | employer | posting | Write a posting (a draft until it is offered to colleges) |
+| `PUT /api/v1/employer/postings/:id` | `employer:post` | employer | posting | Edit a posting (colleges approve it again) |
+| `POST /api/v1/employer/postings/:id/publish` | `employer:post` | employer | posting | Offer a posting to chosen colleges or a cluster (P8) |
+| `POST /api/v1/employer/postings/:id/close` | `employer:post` | employer | — | Close a posting (pending offers are withdrawn; P10) |
+| `GET /api/v1/employer/pool` | `employer:candidates` | employer | — | How many opted-in students fit (counts only, suppressed and rounded; P7) |
+| `GET /api/v1/employer/postings/:id/candidates` | `employer:candidates` | employer | — | Students who applied and shared with this posting (P11; no contact details) |
+| `POST /api/v1/employer/candidates/:ref/resume-link` | `employer:candidates` | employer | — | A five-minute link to a candidate’s shared résumé (P12) |
+| `GET /api/v1/employer/resume/:token` | `employer:candidates` | employer | — | Read a shared résumé through its link (candidacy and consent checked again) |
+| `GET /api/v1/employer/candidates/:ref/readiness` | `employer:candidates` | employer | — | A candidate’s readiness, computed now by their college (P13; never stored) |
+| `PUT /api/v1/employer/candidates/:ref/stage` | `employer:candidates` | employer | — | Propose a shortlist decision (P14; the college publishes results) |
+| `GET /api/v1/employer/billing` | `employer:manage` | employer | — | Billable postings, drives and hires |
+| `GET /api/v1/platform/employers` | `platform:employers` | platform | — | Employers by status (the registry) |
+| `GET /api/v1/platform/employers/:id` | `platform:employers` | platform | — | One employer’s application (P16) |
+| `POST /api/v1/platform/employers/:id/decision` | `platform:employers` | platform | adminWrite | Approve, reject, suspend or reinstate an employer |
+| `GET /api/v1/platform/network/clusters` | `platform:employers` | platform | — | College clusters employers may post to |
+| `POST /api/v1/platform/network/clusters` | `platform:employers` | platform | adminWrite | Create a cluster |
+| `PUT /api/v1/platform/network/clusters/:id` | `platform:employers` | platform | adminWrite | Change a cluster |
+| `DELETE /api/v1/platform/network/clusters/:id` | `platform:employers` | platform | adminWrite | Delete a cluster |
+| `GET /api/v1/platform/network/revenue` | `platform:employers` | platform | — | Each college’s share of a month’s billable events (P17) |
+| `GET /api/v1/credentials` | `credentials:own` | college | — | My verified credentials and what I could have one for |
+| `POST /api/v1/credentials` | `credentials:own` | college | posting | Ask the college to sign a credential for a verified record (never for minors) |
+| `DELETE /api/v1/credentials/:id` | `credentials:own` | college | — | Revoke one of my credentials (its page says so at once) |
+| `GET /api/v1/admin/credentials` | `credentials:manage` | college | — | The college’s issuer keys and how many credentials are live |
+| `POST /api/v1/admin/credentials/rotate` | `credentials:manage` | college | adminWrite | Rotate the signing key (old credentials keep verifying) |
+| `POST /api/v1/admin/credentials/keys/:kid/compromised` | `credentials:manage` | college | adminWrite | Withdraw a leaked key and re-sign its live credentials with a new one |
+| `POST /api/v1/admin/credentials/:id/revoke` | `credentials:manage` | college | adminWrite | Revoke a credential |
 | `GET /api/v1/legal/:doc` | public | college | — | The college’s privacy policy or terms, with its details filled in (public) |
 | `GET /api/v1/admin/legal` | `tenant:branding` | college | — | The college’s legal details (legal name, address, grievance officer) |
 | `GET /api/v1/admin/retention` | `tenant:settings` | college | — | Whether accounts unused for some months are deleted (and after how many) |
@@ -670,3 +732,6 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /p/outcomes/og.png` | public | college | search | The outcomes page share image |
 | `GET /p/:slug` | public | college | search | A member's public page (only while they publish it) |
 | `GET /p/:slug/og.png` | public | college | search | A public page's share image (its opt-in fields only) |
+| `GET /api/v1/:slug/verify/:id` | public | college | verifyPublic | Check a credential: the claims, the signature and whether it was revoked |
+| `GET /api/v1/:slug/did.json` | public | college | verifyPublic | The college’s DID document (did:web): its credential signing keys |
+| `GET /api/v1/:slug/credentials/status/1` | public | college | verifyPublic | The college’s revocation list (W3C Bitstring Status List, signed) |
