@@ -394,6 +394,26 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
   await m('09-history', 'forward-to-progress', { sel: 'main h1', path: '^/progress$' }, () =>
     page.goForward(),
   );
+
+  // J10 (G13): Prompt 2 screens, first visits from the menu, a company page and back.
+  for (const [name, slug, path] of [
+    ['Companies', 'companies', '^/companies$'],
+    ['Career Copilot', 'copilot', '^/copilot$'],
+    ['Résumé', 'resume', '^/resume$'],
+    ['Practice', 'practice', '^/practice$'],
+  ] as const)
+    await m('10-prompt2', `${slug}-first-visit`, { sel: 'main h1', path }, () => fromMenu(page, name));
+  await fromMenu(page, 'Companies');
+  await page.locator('main a[href^="/companies/"]').first().waitFor();
+  await m('10-prompt2', 'open-company', { sel: 'main h1', path: '^/companies/.+' }, () =>
+    page.locator('main a[href^="/companies/"]').first().click(),
+  );
+  await m(
+    '10-prompt2',
+    'back-to-companies',
+    { sel: 'main a[href^="/companies/"]', path: '^/companies$' },
+    () => page.goBack(),
+  );
   await ctx.close();
 
   // J6: a mentor opens a notification and accepts the request it is about.

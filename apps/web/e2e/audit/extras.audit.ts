@@ -98,52 +98,74 @@ test('offline: an unvisited screen', async ({ browser }) => {
   save('offline.json', { swControlled, 'events-allow': allow, 'events-block': block });
 });
 
-test('Telugu', async ({ browser }) => {
-  const ctx = await browser.newContext(PHONE);
-  const page = await ctx.newPage();
-  await signIn(page, 'ananya@dpit.example');
-  await page.evaluate(() => localStorage.setItem('cl:lang', 'te'));
-  const out: Record<string, unknown> = {};
-  for (const path of ['/home', '/study', '/mentors', '/jobs', '/roadmaps', '/settings/preferences']) {
-    await page.goto(`${BASE}${path}`);
-    await page.waitForLoadState('networkidle');
-    await page.evaluate(() => document.fonts.ready);
-    out[path] = await page.evaluate(() => {
-      const body = getComputedStyle(document.body);
-      const h1 = document.querySelector('h1');
-      const h = h1 ? getComputedStyle(h1) : null;
-      const labels = Array.from(
-        Array.from(document.querySelectorAll('nav[aria-label="Main"]'))
-          .pop()
-          ?.querySelectorAll('a, button') ?? [],
-      ).map((a) => {
-        const span = a.querySelector('span:last-child') ?? a;
+// Telugu and Hindi: fonts, line heights, bottom-bar labels and overflow on the audit's screens and the
+// Prompt 2 ones (G13).
+for (const [lang, file] of [
+  ['te', 'telugu.json'],
+  ['hi', 'hindi.json'],
+] as const)
+  test(lang === 'te' ? 'Telugu' : 'Hindi', async ({ browser }) => {
+    const ctx = await browser.newContext(PHONE);
+    const page = await ctx.newPage();
+    await signIn(page, 'ananya@dpit.example');
+    await page.evaluate((l) => localStorage.setItem('cl:lang', l), lang);
+    const out: Record<string, unknown> = {};
+    for (const path of [
+      '/home',
+      '/study',
+      '/mentors',
+      '/jobs',
+      '/roadmaps',
+      '/settings/preferences',
+      '/resume',
+      '/interviews',
+      '/practice',
+      '/readiness',
+      '/companies',
+      '/copilot',
+      '/share',
+      '/network',
+    ]) {
+      await page.goto(`${BASE}${path}`);
+      await page.waitForLoadState('networkidle');
+      await page.evaluate(() => document.fonts.ready);
+      out[path] = await page.evaluate(() => {
+        const body = getComputedStyle(document.body);
+        const h1 = document.querySelector('h1');
+        const h = h1 ? getComputedStyle(h1) : null;
+        const labels = Array.from(
+          Array.from(document.querySelectorAll('nav[aria-label="Main"]'))
+            .pop()
+            ?.querySelectorAll('a, button') ?? [],
+        ).map((a) => {
+          const span = a.querySelector('span:last-child') ?? a;
+          return {
+            text: (a.textContent ?? '').trim(),
+            overflow: span.scrollWidth > span.clientWidth + 1,
+            w: Math.round(span.getBoundingClientRect().width),
+          };
+        });
         return {
-          text: (a.textContent ?? '').trim(),
-          overflow: span.scrollWidth > span.clientWidth + 1,
-          w: Math.round(span.getBoundingClientRect().width),
+          lang: document.documentElement.lang,
+          bodyFont: body.fontFamily,
+          lineHeight: body.lineHeight,
+          h1:
+            h1 && h ? { text: h1.textContent, font: h.fontFamily, size: h.fontSize, lh: h.lineHeight } : null,
+          bottomNavLabels: labels,
+          horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          fontsLoaded: [
+            ...new Set(
+              Array.from(document.fonts)
+                .filter((f) => f.status === 'loaded')
+                .map((f) => f.family),
+            ),
+          ],
         };
       });
-      return {
-        lang: document.documentElement.lang,
-        bodyFont: body.fontFamily,
-        lineHeight: body.lineHeight,
-        h1: h1 && h ? { text: h1.textContent, font: h.fontFamily, size: h.fontSize, lh: h.lineHeight } : null,
-        bottomNavLabels: labels,
-        horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
-        fontsLoaded: [
-          ...new Set(
-            Array.from(document.fonts)
-              .filter((f) => f.status === 'loaded')
-              .map((f) => f.family),
-          ),
-        ],
-      };
-    });
-  }
-  save('telugu.json', out);
-  await ctx.close();
-});
+    }
+    save(file, out);
+    await ctx.close();
+  });
 
 test('scroll memory and scroll-aware bars', async ({ browser }) => {
   const ctx = await browser.newContext(PHONE);

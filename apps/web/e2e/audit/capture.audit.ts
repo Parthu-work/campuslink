@@ -4,7 +4,7 @@ import { test, type Browser, type Page } from '@playwright/test';
 import { signIn } from '../helpers';
 import { adminSignIn } from '../admin';
 import { axe, measure, settle, type AxeResult } from './probes';
-import { ACCOUNT, SCREENS, TELUGU, type AuditRole, type AuditScreen } from './screens';
+import { ACCOUNT, OTHER_LANGS, SCREENS, TELUGU, type AuditRole, type AuditScreen } from './screens';
 
 /**
  * Re-audit capture (master prompt §12): every screen at 360 × 780 (DPR 2, touch) and 1440 × 900, in
@@ -53,6 +53,7 @@ async function context(browser: Browser, width: Width, host: string, role: Audit
   const ctx = await browser.newContext({ ...DEVICES[width], baseURL: `http://${host}.localhost:4173` });
   const page = await ctx.newPage();
   if (role === 'platform') await adminSignIn(page, 'admin', 'superadmin@campuslink.example');
+  else if (role === 'employer') await adminSignIn(page, 'emp-demo', 'recruiter@demo-employer.example');
   else if (role === 'admin') await adminSignIn(page, host, `admin@${host}.example`);
   else if (role !== 'public') await signIn(page, `${ACCOUNT[role]}@${host}.example`, host);
   return { ctx, page };
@@ -134,7 +135,7 @@ test.setTimeout(0);
 
 for (const host of COLLEGES)
   for (const role of Object.keys(SCREENS) as AuditRole[]) {
-    if (role === 'platform') continue;
+    if (role === 'platform' || role === 'employer') continue;
     test(`${host} · ${role}`, async ({ browser }) => {
       await captureRole(browser, role, host);
     });
@@ -144,16 +145,27 @@ test('platform console', async ({ browser }) => {
   await captureRole(browser, 'platform', 'admin', 'platform');
 });
 
-test('Telugu (360, light, DPIT)', async ({ browser }) => {
-  const { ctx, page } = await context(browser, 360, 'dpit', 'student');
-  await page.evaluate(() => localStorage.setItem('cl:lang', 'te'));
-  for (const s of TELUGU) {
-    await page.goto(s.path);
-    await settle(page);
-    await page.screenshot({ path: join(SHOTS, `student-${s.slug}-te-360-light-dpit.png`) });
-  }
-  await ctx.close();
+test('employer portal (G12)', async ({ browser }) => {
+  await captureRole(browser, 'employer', 'emp-demo', 'employer');
 });
+
+// Telugu and Hindi (360, light, DPIT): screenshots, and axe on each (the language changes lengths
+// and fonts, not the markup, but a label that overflows or a missing translation shows here).
+for (const lang of OTHER_LANGS)
+  test(`${lang === 'te' ? 'Telugu' : 'Hindi'} (360, light, DPIT)`, async ({ browser }) => {
+    const { ctx, page } = await context(browser, 360, 'dpit', 'student');
+    await page.evaluate((l) => localStorage.setItem('cl:lang', l), lang);
+    const axeRows: AxeResult[] = [];
+    for (const s of TELUGU) {
+      const shot = `student-${s.slug}-${lang}-360-light-dpit`;
+      await page.goto(s.path);
+      await settle(page);
+      await page.screenshot({ path: join(SHOTS, `${shot}.png`) });
+      axeRows.push(await axe(page, shot));
+    }
+    merge('axe.json', axeRows, (x: { screen: string }) => x.screen.includes(`-${lang}-360-`));
+    await ctx.close();
+  });
 
 test('summary', () => {
   const rows = JSON.parse(readFileSync(join(DATA, 'axe.json'), 'utf8')) as AxeResult[];

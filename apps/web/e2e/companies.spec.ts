@@ -25,9 +25,12 @@ test('a placed student shares an interview, faculty publish it, juniors read it 
   await page.getByRole('link', { name: COMPANY }).click();
   await expect(page.getByRole('heading', { level: 1, name: COMPANY })).toBeVisible();
   await expect(page.getByText('Placed (verified)')).toBeVisible();
-  // One verified DEMO offer: shown as fewer than five, never the exact CTC.
-  await expect(page.getByText('<5').first()).toBeVisible();
-  await expect(page.getByText(/LPA/)).toHaveCount(0);
+  // The demo year (G13) clears the five-record threshold: counts, a median band per batch and pass
+  // rates show; small cells read "<5"; pay appears only as a band, never an exact CTC.
+  await expect(page.getByText('Median CTC band').first()).toBeVisible();
+  const pay = await page.getByText(/LPA/).allInnerTexts();
+  expect(pay.length).toBeGreaterThan(0);
+  for (const t of pay) expect(t.trim()).toMatch(/^(Under ₹\d+ LPA|₹\d+–\d+ LPA|₹\d+ LPA and above)$/);
   await expectNoA11yViolations(page);
 
   await page.getByRole('link', { name: 'Share your interview' }).first().click();
