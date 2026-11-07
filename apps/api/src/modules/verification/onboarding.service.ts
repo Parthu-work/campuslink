@@ -603,8 +603,8 @@ export class OnboardingService {
   }
 
   /** Invite links created since a date (B9 activation funnel: "invited"). */
-  async invitedSince(since: Date) {
-    return InviteLinkModel.countDocuments({ createdAt: { $gte: since } });
+  async invitedSince(since: Date, until?: Date) {
+    return InviteLinkModel.countDocuments({ createdAt: { $gte: since, ...(until ? { $lt: until } : {}) } });
   }
 
   async joinInfo(tenant: TenantRecord, code: string): Promise<JoinCodeInfo> {

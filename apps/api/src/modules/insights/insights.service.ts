@@ -56,12 +56,24 @@ export interface InsightsDeps {
   eligible(userId: string): Promise<boolean>;
   /** Every member's roles (members without a profile count as students). */
   roles(): Promise<Map<string, readonly string[]>>;
-  /** Invite links sent since a date (B4). */
-  invitedSince(since: Date): Promise<number>;
-  /** Hours from request to reply, for requests answered since a date. */
-  replyHoursSince(since: Date): Promise<number[]>;
+  /** Invite links sent since a date (B4), before `until` when given. */
+  invitedSince(since: Date, until?: Date): Promise<number>;
+  /** Hours from request to reply, for requests answered since a date (before `until` when given). */
+  replyHoursSince(since: Date, until?: Date): Promise<number[]>;
   /** The graduating batch: on the college list, registered for a drive, verified job offers. */
   placement(gradYear: number): Promise<{ finalYear: number; registered: number; jobOffers: number }>;
+}
+
+/** What `rangeFacts` returns: raw counts, suppressed by `YcMetricsService` before they leave. */
+export interface RangeFacts {
+  /** False when the range starts before the retention cutoff (activation and the rest need members). */
+  complete: boolean;
+  weeklyActiveStudents: { week: string; students: number; source: 'events' | 'rollup'; partial: boolean }[];
+  activation: { invited: number; signedUp: number; verified: number; matured: number; activated: number };
+  week4: { cohort: number; retained: number };
+  mentorship: { requests: number; converted: number; replyHours: number[] };
+  activeMembers: number;
+  activeStudents: number;
 }
 
 type Row = Pick<ProductEventDoc, 'userId' | 'anonKey' | 'name' | 'day' | 'createdAt'> & {
@@ -311,6 +323,122 @@ export class InsightsService {
         questionsPerActiveStudent: ratio(studyQuestions, activeStudents),
       },
       generatedAt: new Date().toISOString(),
+    };
+  }
+
+  // ── Any date range (the YC metrics pack, G13) ─────────────────────────────
+  /**
+   * Raw facts for a date range, with the dashboard's definitions: who counts as a student, what a
+   * meaningful action is, activation within 7 days of signing up. Counts only (never a member);
+   * `YcMetricsService` suppresses every one of them before they leave. Weeks that start before the
+   * retention cutoff are read from the daily rollups, which hold no members: their weekly actives
+   * are a lower bound (the busiest day's members for one meaningful event).
+   */
+  async rangeFacts(from: string, to: string, now = new Date()): Promise<RangeFacts> {
+    const today = dayOf(now);
+    const cutoff = dayOf(new Date(now.getTime() - PRODUCT_EVENT_RETENTION_DAYS * DAY));
+    const rows = (await ProductEventModel.find({
+      day: { $gte: addDays(weekOf(new Date(`${from}T00:00:00Z`)), 0) },
+    })
+      .select('userId anonKey name day props')
+      .limit(1_000_000)
+      .lean()) as unknown as Row[];
+    const roles = await this.d.roles();
+    const isStudent = (u: string) => {
+      const rs = roles.get(u) ?? [];
+      return !rs.some((x) => x === 'FACULTY' || x === 'TPO' || x === 'COLLEGE_ADMIN' || x === 'ALUMNI');
+    };
+    const meaningful = (name: string) => (MEANINGFUL_EVENTS as readonly string[]).includes(name);
+    const inRange = rows.filter((r) => r.day >= from && r.day <= to);
+
+    // Weekly active students: a meaningful action in the ISO week (Monday to Sunday, UTC).
+    const weeks: RangeFacts['weeklyActiveStudents'] = [];
+    for (let w = weekOf(new Date(`${from}T00:00:00Z`)); w <= to; w = addDays(w, 7)) {
+      const end = addDays(w, 6);
+      if (w < cutoff) {
+        const daily = await ProductEventDailyModel.find({
+          day: { $gte: w, $lte: end },
+          name: { $in: [...MEANINGFUL_EVENTS] },
+        })
+          .select('members')
+          .lean<{ members: number }[]>();
+        weeks.push({
+          week: w,
+          students: Math.max(0, ...daily.map((d) => d.members)),
+          source: 'rollup',
+          partial: end > today,
+        });
+        continue;
+      }
+      const set = new Set(
+        rows
+          .filter((r) => r.day >= w && r.day <= end && meaningful(r.name))
+          .map(who)
+          .filter(isStudent),
+      );
+      weeks.push({ week: w, students: set.size, source: 'events', partial: end > today });
+    }
+
+    // Activation: signed up in the range → verified → a meaningful action within 7 days.
+    const signups = new Map<string, string>();
+    for (const r of inRange) if (r.name === 'signed_up' && !signups.has(who(r))) signups.set(who(r), r.day);
+    const verified = new Set(rows.filter((r) => r.name === 'verified').map(who));
+    const acted = new Map<string, string[]>();
+    for (const r of rows) if (meaningful(r.name)) acted.set(who(r), [...(acted.get(who(r)) ?? []), r.day]);
+    const matured = [...signups].filter(([, day]) => addDays(day, 7) <= today);
+    const activated = matured.filter(([u, day]) =>
+      (acted.get(u) ?? []).some((d) => d >= day && d < addDays(day, 7)),
+    ).length;
+
+    // Week-4 retention: of those who signed up in the range and whose fourth week has started,
+    // the share with any event in the ISO week four weeks after their signup week.
+    const activeIn = new Map<string, Set<string>>();
+    for (const r of rows) {
+      const w = weekOf(new Date(`${r.day}T00:00:00Z`));
+      activeIn.set(w, (activeIn.get(w) ?? new Set()).add(who(r)));
+    }
+    const thisWeek = weekOf(now);
+    const cohort = [...signups].filter(
+      ([, day]) => addDays(weekOf(new Date(`${day}T00:00:00Z`)), 28) <= thisWeek,
+    );
+    const retained = cohort.filter(([u, day]) =>
+      activeIn.get(addDays(weekOf(new Date(`${day}T00:00:00Z`)), 28))?.has(u),
+    ).length;
+
+    // Requests sent in the range, and those that led to a completed session (by now).
+    const sent = new Set(
+      inRange
+        .filter((r) => r.name === 'request_sent')
+        .flatMap((r) => (r.props?.requestId ? [r.props.requestId] : [])),
+    );
+    const done = new Set(
+      rows
+        .filter((r) => r.name === 'session_completed')
+        .flatMap((r) => (r.props?.requestId ? [r.props.requestId] : [])),
+    );
+    const [invited, replyHours] = await Promise.all([
+      this.d.invitedSince(new Date(`${from}T00:00:00Z`), new Date(`${addDays(to, 1)}T00:00:00Z`)),
+      this.d.replyHoursSince(new Date(`${from}T00:00:00Z`), new Date(`${addDays(to, 1)}T00:00:00Z`)),
+    ]);
+    const members = new Set(inRange.map(who));
+    return {
+      complete: from >= cutoff,
+      weeklyActiveStudents: weeks,
+      activation: {
+        invited,
+        signedUp: signups.size,
+        verified: [...signups.keys()].filter((u) => verified.has(u)).length,
+        matured: matured.length,
+        activated,
+      },
+      week4: { cohort: cohort.length, retained },
+      mentorship: {
+        requests: sent.size,
+        converted: [...sent].filter((id) => done.has(id)).length,
+        replyHours,
+      },
+      activeMembers: members.size,
+      activeStudents: [...members].filter(isStudent).length,
     };
   }
 

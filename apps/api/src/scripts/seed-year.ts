@@ -441,9 +441,10 @@ export function yearSeeder(env: Env) {
       }
       return { drive, registrants, start };
     };
-    // Two seasons ago (batch 2025), last season (batch 2026), this season so far (batch 2027).
-    for (const [k, d] of [480, 455, 430].entries()) await seasonDrive(k, 2025, d);
-    for (const [k, d] of [330, 300, 270].entries()) await seasonDrive(k, 2026, d);
+    // Two seasons ago (batch 2025), last season (batch 2026), this season so far (batch 2027), on
+    // the same calendar each year so "the previous batch at the same point" compares like with like.
+    for (const [k, d] of [800, 775, 755].entries()) await seasonDrive(k, 2025, d);
+    for (const [k, d] of [435, 410, 390].entries()) await seasonDrive(k, 2026, d);
     const thisSeason: Awaited<ReturnType<typeof seasonDrive>>[] = [];
     for (const [k, d] of [70, 45, 25].entries()) thisSeason.push(await seasonDrive(k, 2027, d));
 
@@ -560,7 +561,7 @@ export function yearSeeder(env: Env) {
       await MentorshipRequestModel.updateOne(
         { _id: req._id },
         { $set: { createdAt: sent } },
-        { timestamps: false },
+        { timestamps: false, overwriteImmutable: true },
       );
       const requestId = String(req._id);
       ev(sent, mentee.id, 'request_sent', { requestId });
@@ -680,7 +681,7 @@ export function yearSeeder(env: Env) {
         await ReferralRequestModel.updateOne(
           { _id: r._id },
           { $set: { createdAt: created } },
-          { timestamps: false },
+          { timestamps: false, overwriteImmutable: true },
         );
         ev(outcomeAt, p.id, 'referral_outcome_reported', { outcome });
         summary.referrals++;
@@ -696,7 +697,7 @@ export function yearSeeder(env: Env) {
           companyKey: companyKey(c.name),
           companyName: c.name,
           role: c.role,
-          year: 2026,
+          year: p.placed?.at.getUTCFullYear() ?? 2025,
           rounds: ['aptitude', 'technical', 'hr'].map(writeUpRound),
           tips: 'DEMO tip: practise speaking through your approach; revise one project end to end.',
           difficulty: (['easy', 'medium', 'hard'] as const)[i % 3],
@@ -721,7 +722,7 @@ export function yearSeeder(env: Env) {
         companyKey: companyKey(c0.name),
         companyName: c0.name,
         role: c0.role,
-        year: 2026,
+        year: fresh.placed?.at.getUTCFullYear() ?? 2026,
         rounds: ['aptitude', 'technical'].map(writeUpRound),
         tips: 'DEMO tip: the assessment is timed tightly; skip and come back.',
         difficulty: 'medium',

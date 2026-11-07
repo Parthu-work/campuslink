@@ -1236,6 +1236,50 @@ export class PlacementsService {
   }
 
   /** People of these batches who registered for a drive (B8 reports: "seeking placement"). */
+  /**
+   * Prompt 2, G13 (YC metrics): drives held in a range (started or finished), and their
+   * registrations against the students each was for: Σ registered eligible students / Σ eligible
+   * students, over the drives. The batches a drive was for may have graduated since, so alumni of
+   * those batches count too. Counts only.
+   */
+  async driveFacts(from: Date, to: Date): Promise<{ drives: number; eligible: number; registered: number }> {
+    const drives = await PlacementDriveModel.find({
+      status: { $in: ['in_progress', 'completed'] },
+      driveDate: { $gte: from, $lt: to },
+    })
+      .limit(5_000)
+      .lean<DriveDoc[]>();
+    if (!drives.length) return { drives: 0, eligible: 0, registered: 0 };
+    const regs = await DriveRegistrationModel.find({
+      driveId: { $in: drives.map((d) => d._id) },
+      status: { $ne: 'withdrawn' },
+      userId: { $ne: null },
+    })
+      .select('driveId userId')
+      .limit(200_000)
+      .lean<RegistrationDoc[]>();
+    let eligible = 0;
+    let registered = 0;
+    for (const d of drives) {
+      const ids = await this.d.profiles.idsForAudience({
+        branches: d.eligibility?.branches ?? [],
+        gradYears: d.eligibility?.gradYears ?? [],
+        roles: ['STUDENT', 'ALUMNI'],
+      });
+      const check = await this.eligibilityOf(ids);
+      const pool = new Set([
+        ...ids.filter((u) => check(d, u).eligible),
+        ...d.overrides.map((o) => String(o.userId)),
+      ]);
+      const signed = new Set(
+        regs.filter((r) => String(r.driveId) === String(d._id) && r.userId).map((r) => String(r.userId)),
+      );
+      eligible += pool.size;
+      registered += [...signed].filter((u) => pool.has(u)).length;
+    }
+    return { drives: drives.length, eligible, registered };
+  }
+
   async seekersFor(gradYears: number[]) {
     const rows = await DriveRegistrationModel.find({
       gradYear: { $in: gradYears },

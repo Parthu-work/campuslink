@@ -104,6 +104,16 @@ export class UsersService {
   ) {}
 
   /** An active adult member (B9: minors are never in product analytics). */
+  /** Prompt 2, G13 (YC metrics): active, verified members per role. Counts only. */
+  async verifiedByRole(): Promise<Record<string, number>> {
+    const rows = await UserModel.aggregate<{ _id: string; n: number }>([
+      { $match: { verified: true, status: 'active' } },
+      { $unwind: '$roles' },
+      { $group: { _id: '$roles', n: { $sum: 1 } } },
+    ]);
+    return Object.fromEntries(rows.map((r) => [r._id, r.n]));
+  }
+
   async isActiveAdult(userId: string) {
     const u = await UserModel.findById(userId).select('status adultOn').lean();
     return !!u && u.status === 'active' && !isMinor(u.adultOn);

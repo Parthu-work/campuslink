@@ -206,6 +206,7 @@ import { PrivacyService } from './modules/privacy/privacy.service.js';
 import { privacyRoutes } from './modules/privacy/privacy.routes.js';
 import { consentService } from './modules/consent/consent.service.js';
 import { InsightsService } from './modules/insights/insights.service.js';
+import { YcMetricsService } from './modules/insights/yc-metrics.service.js';
 import { insightsRoutes } from './modules/insights/insights.routes.js';
 import { SupportService } from './modules/support/support.service.js';
 import { supportRoutes } from './modules/support/support.routes.js';
@@ -1751,8 +1752,8 @@ export function createApp({
       );
     },
     roles: async () => new Map((await profilesService.cohorts()).map((p) => [p.userId, p.roles])),
-    invitedSince: (since) => onboardingService.invitedSince(since),
-    replyHoursSince: (since) => requestsService.replyHoursSince(since),
+    invitedSince: (since, until) => onboardingService.invitedSince(since, until),
+    replyHoursSince: (since, until) => requestsService.replyHoursSince(since, until),
     placement: async (gradYear) => {
       const [roster, seekers, offers] = await Promise.all([
         whitelistService.countsByCohort([gradYear]),
@@ -2193,6 +2194,18 @@ export function createApp({
   app.use(notFoundHandler);
   app.use(errorHandler(logger, errorReporter));
   app.locals.registry = registry;
+  // Prompt 2, G13: the YC metrics pack (scripts/metrics-yc.ts), counts only through the owning services.
+  const ycMetrics = new YcMetricsService({
+    insights: productInsights,
+    verifiedByRole: () => usersService.verifiedByRole(),
+    drives: (from, to) => placementsService.driveFacts(from, to),
+    roster: async (gradYear) =>
+      (await whitelistService.countsByCohort([gradYear])).reduce((n, r) => n + r.n, 0),
+    jobOffers: (gradYear, asOf) => offersService.jobOffersByBatch(gradYear, asOf),
+    aiQuestions: (from, to) => aiUsageService.chatQuestionsBetween(from, to),
+    whatsapp: (from, to) => channelService.whatsappStatusesBetween(from, to),
+  });
+
   app.locals.services = {
     auth: authService,
     users: usersService,
@@ -2257,6 +2270,7 @@ export function createApp({
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,
+    ycMetrics,
     subjects: subjectsService,
     aiSettings: aiSettingsService,
     materials: materialsService,

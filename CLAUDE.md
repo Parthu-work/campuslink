@@ -35,6 +35,7 @@ CampusLink is a multi-tenant college alumni and guidance platform: a private soc
 | Re-encrypt after a field key rotation         | `pnpm --filter @campuslink/api rotate-field-key [--dry-run \| --check]`                                   |
 | Study search and assistant performance        | `pnpm --filter @campuslink/api study:perf`                                                                |
 | Live AI smoke test (real keys, not in CI)     | `pnpm --filter @campuslink/api ai:smoke`                                                                  |
+| YC metrics pack (any date range, aggregates)  | `pnpm --filter @campuslink/api metrics:yc [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--json]`                 |
 | UI re-audit (screens, axe, targets, journeys) | `pnpm --filter @campuslink/web audit:capture` (also `audit:journeys`, `audit:extras`, `audit:lighthouse`) |
 
 ## Folder structure
