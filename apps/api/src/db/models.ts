@@ -14,6 +14,8 @@ export const PLATFORM_MODELS = new Set([
   'InvoiceCounter',
   // Prompt 1b (R6): the platform owner's own settings (what it pays its AI provider), not any college's.
   'PlatformSetting',
+  // Prompt 2, G12 (ADR 0014): named groups of colleges employers post to; no personal data.
+  'NetworkCluster',
 ]);
 
 export function defineTenantModel<T>(name: string, schema: Schema<T>): Model<T> {

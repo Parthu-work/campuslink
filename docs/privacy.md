@@ -99,6 +99,15 @@
 - The demo analytics cohort is 60 detached sign-ups (`anonKey` starting `demo-`) with no account behind them, so they never appear as people anywhere in the app.
 - The seed refuses to run with `NODE_ENV=production`, because it starts by dropping the whole database it is pointed at (`MONGODB_URI`).
 
+## The network (prompt 2, G12, ADR 0014)
+
+- **Opt-in twice.** Nothing about a member leaves their college unless the college turned the network on (alumni discovery, employer access or credentials, each off by default, with the terms accepted) and the member granted `network_discovery` or `employer_visibility` (version 1, never offered at sign-up, never for members under 18, withdrawn at once on the Network screen).
+- **What crosses.** Only the fields the member ticks (name as chosen, branch, batch, company and role, city, skills, what they help with, a LinkedIn link if added) and, for an employer drive the student applied to and chose to share, their name, branch, batch, the résumé they attached and their readiness computed when the employer looks. Never email, phone, roll number, photo, age, marks, other offers or any CTC. Employers reach students only through the college's placement cell.
+- **Who looked.** Every cross-college read is recorded in the college's audit log; a student sees which employers opened their résumé or readiness.
+- **Revocation.** Withdrawing consent, stopping sharing, suspension, erasure, a corrected birth month or the college switching off removes the member from the next read and, at the latest, within the 15-minute reconcile. A résumé an employer already downloaded cannot be recalled: approved employers are Indian entities (GSTIN) bound by the employer terms to delete it when the candidate withdraws. (Needs the lawyer's review with the employer terms.)
+- **Credentials.** Issued only when the member asks, from verified records, never for a minor; the public check shows only the attested claims; erasure revokes them and deletes the name and claims.
+- **Residency.** No new region or service: the same databases and storage in India; DNS lookups and signing run in the app; GSTINs are checked by a person on the public GST portal.
+
 ## Data minimisation (implemented)
 
 - IP addresses are reduced to /24 (IPv4) or /48 (IPv6) prefixes in sessions and audit.

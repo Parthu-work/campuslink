@@ -25,7 +25,12 @@ type Scope = { kind: 'tenant'; tenantId: Types.ObjectId } | { kind: 'platform' }
 function currentScope(op: string, model: string): Scope {
   const ctx = getContext();
   if (ctx?.tenantId) return { kind: 'tenant', tenantId: ctx.tenantId };
-  if (ctx?.platformReason) return { kind: 'platform' };
+  if (ctx?.platformReason) {
+    // A network path may touch only its own models (prompt 2, G12, ADR 0014 N13).
+    if (ctx.allowModels && !ctx.allowModels.includes(model))
+      throw new TenantContextError(`${model}.${op} is not allowed in ${ctx.platformReason}`);
+    return { kind: 'platform' };
+  }
   throw new TenantContextError(`${model}.${op} called without tenant context`);
 }
 
@@ -76,8 +81,16 @@ export function tenantPlugin(schema: Schema): void {
 
   schema.pre('aggregate', function (this: any) {
     const scope = currentScope('aggregate', this._model?.modelName ?? 'unknown');
-    if (scope.kind === 'platform') return;
     const pipeline: PipelineStage[] = this.pipeline();
+    if (scope.kind === 'platform') {
+      // A network path never joins in another collection (prompt 2, G12, ADR 0014 N13).
+      if (
+        getContext()?.allowModels &&
+        pipeline.some((s) => '$unionWith' in s || '$lookup' in s || '$graphLookup' in s)
+      )
+        throw new TenantContextError('Cross-collection stages are not allowed in a network path');
+      return;
+    }
     const first = pipeline[0] as Record<string, unknown> | undefined;
     const match = { $match: { tenantId: scope.tenantId } } as PipelineStage;
     // $geoNear/$search must stay first; filter right after them.

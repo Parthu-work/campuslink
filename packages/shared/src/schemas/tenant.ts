@@ -94,7 +94,8 @@ export interface PublicBotCheck {
 
 export interface PublicTenant {
   slug: string;
-  kind: 'college' | 'platform';
+  /** `employer`: prompt 2, G12 (ADR 0014): a recruiter portal host. */
+  kind: 'college' | 'platform' | 'employer';
   status: 'active' | 'suspended';
   branding: Branding;
   /** The uploaded logo (changes when it is replaced), or null for the monogram. */

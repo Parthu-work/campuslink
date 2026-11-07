@@ -294,6 +294,15 @@ export class OffersService {
     }));
   }
 
+  /** Prompt 2, G12: verified offers on one drive (a hire for an employer's posting; ids only). */
+  async verifiedOnDrive(driveId: string): Promise<string[]> {
+    const rows = await OfferModel.find({ driveId: new Types.ObjectId(driveId), status: 'verified' })
+      .select('_id')
+      .limit(5000)
+      .lean();
+    return rows.map((r) => String(r._id));
+  }
+
   async verifiedFor(gradYears: number[]) {
     const rows = await OfferModel.find({ status: 'verified', gradYear: { $in: gradYears } })
       .select('userId anonKey branch gradYear companyKey companyName role ctcLpa ctcBand type source')

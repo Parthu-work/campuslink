@@ -5,6 +5,7 @@ import {
   KeyRound,
   // [slot: A G10 G11 G13]
   // [slot: B G12]
+  Globe2,
   Building2,
   FileCheck2,
   Gauge,
@@ -53,6 +54,7 @@ export const ADMIN_ICONS: Record<AdminSectionId, LucideIcon> = {
   signIn: KeyRound,
   // [slot: A G10 G11 G13]
   // [slot: B G12]
+  network: Globe2,
   moderation: ShieldAlert,
   mentorship: HeartHandshake,
   sources: Newspaper,

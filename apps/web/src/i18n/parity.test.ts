@@ -24,6 +24,7 @@ const PACK_USERS: Record<string, string[]> = {
   reach: ['/features/reach/'],
   // [slot: A G10 G11 G13]
   // [slot: B G12]
+  network: ['/features/network/', '/features/recruiter/'],
 };
 
 /** Flattens nested strings to "a.b.c" → value. */

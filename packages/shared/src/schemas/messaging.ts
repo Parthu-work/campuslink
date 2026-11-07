@@ -153,6 +153,9 @@ export const NOTIFICATION_TYPES = [
   'roster_sync_review',
   // [slot: A G10 G11 G13]
   // [slot: B G12]
+  // Prompt 2, G12: cross-college intros (names and the request type, never the note).
+  'network_intro_received',
+  'network_intro_answered',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 export const NOTIFICATION_CATEGORIES = [
@@ -257,6 +260,8 @@ export const CATEGORY_OF: Record<NotificationType, NotificationCategory> = {
   roster_sync_review: 'requests',
   // [slot: A G10 G11 G13]
   // [slot: B G12]
+  network_intro_received: 'requests',
+  network_intro_answered: 'requests',
 };
 /** WhatsApp (B3) goes only to members who opted in (`whatsapp_updates` consent) and have a number. */
 export const CHANNELS = ['inApp', 'email', 'push', 'whatsapp'] as const;

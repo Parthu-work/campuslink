@@ -109,6 +109,12 @@ export class UsersService {
     return !!u && u.status === 'active' && !isMinor(u.adultOn);
   }
 
+  /** Prompt 2, G12: the address an alumnus chose to share with one student (network intros). */
+  async emailOf(userId: string): Promise<string | null> {
+    const u = await UserModel.findById(userId).select('email').lean();
+    return u?.email ?? null;
+  }
+
   async me(auth: AuthState): Promise<MeResponse> {
     // Weekly actives and retention (B9): one `visited` a day, deduplicated in memory and by index.
     await this.track(auth.userId, 'visited');

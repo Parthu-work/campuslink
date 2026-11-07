@@ -3,6 +3,8 @@ import {
   CONSENT_PURPOSES,
   CONSENT_PURPOSE_KEYS,
   GUARDIAN_CONSENT,
+  NETWORK_CONSENT_PURPOSES,
+  type NetworkConsentPurpose,
   PRIVACY_NOTICE_VERSION,
   type ConsentPurpose,
 } from '@campuslink/shared';
@@ -162,5 +164,72 @@ export const consentService = {
     );
     await this.onChange?.(userId, purpose, granted);
     return this.current(userId);
+  },
+
+  /**
+   * Prompt 2, G12 (ADR 0014): the network's purposes, recorded in the same append-only log. The
+   * network service refuses minors before calling this and applies the effect itself.
+   */
+  async setNetwork(
+    userId: string,
+    purpose: NetworkConsentPurpose,
+    granted: boolean,
+    req: RequestMetaLite,
+  ): Promise<void> {
+    await ConsentModel.create({
+      userId: new Types.ObjectId(userId),
+      purpose,
+      version: NETWORK_CONSENT_PURPOSES[purpose].version,
+      noticeVersion: await this.currentNotice(),
+      granted,
+      source: 'settings',
+    });
+    await audit.record(
+      {
+        action: granted ? 'consent.granted' : 'consent.withdrawn',
+        actorId: userId,
+        targetType: 'consent',
+        targetId: purpose,
+      },
+      req,
+    );
+  },
+
+  /** The current version each member granted of each network purpose (absent: not granted). */
+  async networkGrants(
+    userIds: (string | Types.ObjectId)[],
+  ): Promise<Map<string, Partial<Record<NetworkConsentPurpose, number>>>> {
+    const rows = await ConsentModel.find({
+      userId: { $in: userIds.map((u) => new Types.ObjectId(String(u))) },
+      purpose: { $in: Object.keys(NETWORK_CONSENT_PURPOSES) },
+    })
+      .sort({ _id: -1 })
+      .select('userId purpose granted version')
+      .lean<
+        { userId: Types.ObjectId; purpose: NetworkConsentPurpose; granted: boolean; version: number }[]
+      >();
+    const out = new Map<string, Partial<Record<NetworkConsentPurpose, number>>>();
+    const seen = new Set<string>();
+    for (const r of rows) {
+      const key = `${String(r.userId)}:${r.purpose}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const m = out.get(String(r.userId)) ?? {};
+      // Only the current version counts: a reworded purpose is asked again.
+      if (r.granted && r.version === NETWORK_CONSENT_PURPOSES[r.purpose].version) m[r.purpose] = r.version;
+      out.set(String(r.userId), m);
+    }
+    return out;
+  },
+
+  /** The member's network consent records, for their data export. */
+  async networkHistory(userId: string) {
+    return ConsentModel.find({
+      userId: new Types.ObjectId(userId),
+      purpose: { $in: Object.keys(NETWORK_CONSENT_PURPOSES) },
+    })
+      .select('purpose granted version createdAt')
+      .sort({ _id: 1 })
+      .lean();
   },
 };

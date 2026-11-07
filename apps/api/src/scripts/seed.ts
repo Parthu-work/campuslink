@@ -11,6 +11,7 @@ import {
   type Branding,
   type Branch,
   LEGACY_FEATURES,
+  gstinCheckDigit,
 } from '@campuslink/shared';
 import { loadEnv } from '../config/env.js';
 import { syncIndexes } from '../db/connect.js';
@@ -1310,6 +1311,40 @@ async function main() {
     'superadmin@campuslink.example',
     'SUPER_ADMIN',
     '2FA set-up on first sign-in',
+  ]);
+
+  // Prompt 2, G12 (ADR 0014): one fictional, already-approved employer for the recruiter portal.
+  const employer = await TenantModel.create({
+    slug: 'emp-demo',
+    kind: 'employer',
+    branding: {
+      displayName: 'Demo Employer (demo)',
+      shortName: 'Demo Employer',
+      primary: '#3b5bdb',
+      secondary: '#1e293b',
+      accent: '#0ea5e9',
+      monogram: 'DE',
+    },
+    employer: {
+      legalName: 'Demo Employer Private Limited (fictional)',
+      domain: 'demo-employer.example',
+      gstin: '36AABCD1234E1Z' + gstinCheckDigit('36AABCD1234E1Z'),
+      status: 'approved',
+      dnsToken: 'demo-token',
+      emailVerifiedAt: new Date(),
+      domainVerifiedAt: new Date(),
+      gstinCheckedAt: new Date(),
+      approvedAt: new Date(),
+    },
+  });
+  await runInTenant(employer._id, async () => {
+    await addUser('recruiter@demo-employer.example', 'Demo Recruiter', ['EMPLOYER_ADMIN'], hash);
+  });
+  rows.push([
+    'emp-demo.localhost',
+    'recruiter@demo-employer.example',
+    'EMPLOYER_ADMIN',
+    'DEMO employer; 2FA on first sign-in',
   ]);
 
   for (const c of COLLEGES) {
