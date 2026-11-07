@@ -532,7 +532,7 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 
 **How it ran on Windows:** the API and `vite preview` were started by hand (Playwright's `VAR=value` server commands do not run in `cmd`) and reused, with the installed Chrome (`PW_CHROMIUM_PATH`).
 
-## Prompt 2 · Habit, growth and the moat
+## Prompt 2 · Habit, growth and the moat (Done)
 
 [`master-prompt-2.md`](master-prompt-2.md). A new session resumes from the first phase that is not **Done**.
 
@@ -668,4 +668,4 @@ The owner approved downloading the manuals (2 November 2026). Checked: NBA's Tie
 
 **Re-audit findings, fixed here.** Companies, the Career Copilot, Share and Campus Captain were never in the web's shipped destinations, so the menu, rail and palette left them out (G8, G10, G11); Home's Next Step card (G7) loaded after Home painted and pushed the feed down (CLS 0.309): Home's loader preloads it and `lazyPart` gained `preload()`, rendering a preloaded part without suspending (chosen once per mount); 44 px targets on Prompt 2 screens (tag input, checkbox labels, three text links, the sign-in copy button, a write-up's options button); the résumé list's empty-state heading level; a missing full stop on company pages. The CI-only failures on the way: the seed's member invites need WhatsApp (now the cell's CSV links), and two navigation checks assumed a short Home (one now scrolls until a post is on screen; the other was flaky because of the Next Step swap, fixed above). Not fixed (outside Prompt 2): the English landing and sign-in pages download the Devanagari and Telugu fonts for the language switcher (B12), so their LCP is slower than in the first audit.
 
-**Gates.** See report-2.md › Gates.
+**Gates.** All green on `0c6cb3f`: format, lint, typecheck, unit and API tests (1,292 API), coverage, build and budget (169.8 KiB), the end-to-end suite (232 passed locally) and CI's verify, e2e, adapters and security jobs; details in [`report-2.md`](report-2.md) › Gates. Prompt 2 is done; the pull request into `feat/prompt-2` is #5.

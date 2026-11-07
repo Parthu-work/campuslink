@@ -184,7 +184,17 @@ All optional; `config/env.ts` refuses to boot on a malformed value.
 
 ## Gates
 
-_Pending: filled in once the full local gate, the end-to-end suite and CI on the pull request have run._
+| Gate                                                                            | Result                                                                                                                                                                                        |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck`                              | Pass (locally and in CI)                                                                                                                                                                      |
+| `pnpm test`                                                                     | Pass: shared 180, web 97, API 1,292 (112 files, 6 skipped); the tenant-isolation and permission suites pass                                                                                   |
+| API coverage gate (`vitest run --coverage`)                                     | Pass (security-critical modules at or above their thresholds)                                                                                                                                 |
+| `pnpm build` and the web budget                                                 | Pass: initial JS 169.8 KiB of 170 KiB gzip; every screen under 70 KB                                                                                                                          |
+| `pnpm test:e2e` (Playwright and axe, phone and desktop)                         | Pass locally on the final code: 232 passed, 16 skipped, 0 failed                                                                                                                              |
+| `pnpm audit --prod --audit-level=high`                                          | Clean (5 low or moderate advisories in build and export tooling, see Known gaps)                                                                                                              |
+| gitleaks v8.30.1                                                                | Clean in CI's security job (the image could not be pulled in this build environment)                                                                                                          |
+| CI on the pull request ([#5](https://github.com/Parthu-work/campuslink/pull/5)) | Green on `0c6cb3f`: verify (format, lint, typecheck, tests, isolation and permission suites, coverage, build, budget), e2e, adapters and security, on both the push and the pull request runs |
+| UI re-audit                                                                     | [`after-2/`](after-2/README.md): 598 axe scans with no violations, no overflow, no target under 44 px on Prompt 2 screens, journeys pass                                                      |
 
 ## Next
 
