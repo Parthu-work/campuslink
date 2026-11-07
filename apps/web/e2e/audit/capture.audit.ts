@@ -84,7 +84,9 @@ async function resolve(page: Page, s: AuditScreen, cache: Map<string, string>): 
 
 async function captureRole(browser: Browser, role: AuditRole, host: string, label = host) {
   const name = (slug: string, w: Width, theme: string) => `${role}-${slug}-${w}-${theme}-${label}`;
-  const owns = (x: { screen: string }) => x.screen.startsWith(`${role}-`) && x.screen.endsWith(`-${label}`);
+  // A role's own rows (the Telugu and Hindi captures, "student-…-te-360-…", belong to their own tests).
+  const owns = (x: { screen: string }) =>
+    x.screen.startsWith(`${role}-`) && x.screen.endsWith(`-${label}`) && !/-(te|hi)-360-/.test(x.screen);
   const axeRows: AxeResult[] = [];
   const failures: { screen: string; error: string }[] = [];
   const metrics: Record<string, unknown> = {};
