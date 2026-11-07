@@ -5,6 +5,7 @@ import {
   type Branding,
   type PublicBotCheck,
   type PublicTenant,
+  type TenantPalette,
   type Feature,
   resolveFeatures,
   FEATURE_KEYS,
@@ -16,6 +17,20 @@ import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import { notFound } from '../../lib/errors.js';
 import type { z } from 'zod';
 import type { tenantSettingsBody } from '@campuslink/shared';
+
+const palettes = new Map<string, TenantPalette>();
+/** The college's palette, computed once per colour pair (a few hundred contrast checks). */
+export function tenantPalette(b: Pick<Branding, 'primary' | 'accent'>): TenantPalette {
+  const key = `${b.primary}|${b.accent ?? ''}`;
+  let p = palettes.get(key);
+  if (!p) {
+    const { light, dark, chrome } = generatePalette({ primary: b.primary, accent: b.accent });
+    p = { light, dark, chrome };
+    if (palettes.size > 200) palettes.clear();
+    palettes.set(key, p);
+  }
+  return p;
+}
 
 export const toPublicTenant = (
   t: TenantRecord,
@@ -32,6 +47,7 @@ export const toPublicTenant = (
   botCheck,
   phoneSignIn,
   readOnly: !!t.billing?.readOnlyAt,
+  palette: tenantPalette(t.branding),
 });
 
 /** The app's own icons (apps/web/public/icons), used when a college has no logo and alongside it. */
@@ -49,7 +65,7 @@ const APP_ICONS = [
  */
 export function webManifest(t: TenantRecord) {
   const college = t.kind === 'college';
-  const chrome = generatePalette({ primary: t.branding.primary, accent: t.branding.accent }).chrome;
+  const chrome = tenantPalette(t.branding).chrome;
   const logo = college ? toPublicTenant(t).logoUrl : null;
   return {
     id: '/',

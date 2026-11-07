@@ -106,4 +106,16 @@ export interface PublicTenant {
   phoneSignIn: boolean;
   /** Read-only for non-payment (B10): everything reads and exports; nothing new is written. */
   readOnly: boolean;
+  /**
+   * The college's palette (ADR 0008), computed by the API from its colours so the app never ships
+   * the generator (prompt 3, U0): the per-theme tokens and the browser chrome colours.
+   */
+  palette: TenantPalette;
+}
+
+/** Tokens that follow the college's hue, per theme, and the canvas colour for the browser chrome. */
+export interface TenantPalette {
+  light: Record<string, string>;
+  dark: Record<string, string>;
+  chrome: { light: string; dark: string };
 }

@@ -5,7 +5,7 @@ import { setBotCheck } from './bot-check-config';
 
 export function TenantProvider({ tenant, children }: { tenant: PublicTenant; children: ReactNode }) {
   useEffect(() => {
-    applyBranding(tenant.branding);
+    applyBranding(tenant.palette);
     setBotCheck(tenant.botCheck ?? null);
     document.title = tenant.branding.displayName;
   }, [tenant]);

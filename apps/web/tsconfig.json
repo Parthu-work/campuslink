@@ -17,6 +17,7 @@
     "security-headers.ts",
     "pure-shared.ts",
     "asset-links.ts",
+    "lucide-icons.ts",
     "vitest.config.ts",
     "playwright.config.ts",
     "playwright.staging.config.ts"

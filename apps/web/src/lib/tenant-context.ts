@@ -1,25 +1,37 @@
 import { createContext, useContext } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { generatePalette, themeCss, type Feature, type PublicTenant } from '@campuslink/shared';
+import type { Feature, PublicTenant, TenantPalette } from '@campuslink/shared';
 import { tenant as tenantQuery } from './queries';
 import { setChromeColours } from './preferences';
 
 export const TenantContext = createContext<PublicTenant | null>(null);
 
+const block = (t: Record<string, string>, indent: string) =>
+  Object.entries(t)
+    .map(([k, v]) => `${indent}${k}: ${v};`)
+    .join('\n');
+
 /**
  * Applies a college's colours: the whole palette (tinted neutrals, brand ramp, contrast-checked
- * inks, aurora, subject accents) is generated from its primary hue and accent (ADR 0008) and
- * replaces the default from palette.css. Its exact colours are used only for its logo.
+ * inks, aurora, subject accents), generated from its primary hue and accent (ADR 0008) by the API
+ * (`PublicTenant.palette`), replaces the default from palette.css. The theme selectors match
+ * `themeCss()` in packages/shared/src/palette.ts (dark first). Its exact colours are only for its logo.
  */
-export function applyBranding(b: Pick<PublicTenant['branding'], 'primary' | 'accent'>) {
-  const palette = generatePalette({ primary: b.primary, accent: b.accent });
+export function applyBranding(palette: TenantPalette | undefined) {
+  // A tenant saved by an older version (the offline copy) has no palette: keep the default until
+  // the next read brings it.
+  if (!palette) return;
   let style = document.getElementById('college-palette') as HTMLStyleElement | null;
   if (!style) {
     style = document.createElement('style');
     style.id = 'college-palette';
     document.head.append(style);
   }
-  style.textContent = themeCss(palette);
+  style.textContent = [
+    `:root {\n${block(palette.dark, '  ')}\n}`,
+    `@media (prefers-color-scheme: light) {\n  :root:not([data-theme='dark']) {\n${block(palette.light, '    ')}\n  }\n}`,
+    `:root[data-theme='light'] {\n${block(palette.light, '  ')}\n}`,
+  ].join('\n');
   setChromeColours(palette.chrome);
 }
 
