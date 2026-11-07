@@ -30,6 +30,9 @@ export type NavId =
   | 'companies'
   | 'copilot'
   // [slot: B G12]
+  | 'network'
+  | 'recruiter'
+  | 'employers'
   | 'requests'
   | 'review'
   | 'roadmaps'
@@ -114,6 +117,7 @@ export type AdminSectionId =
   // [slot: A G10 G11 G13]
   | 'experiences'
   // [slot: B G12]
+  | 'network'
   | 'reports'
   | 'moderation'
   | 'mentorship'
@@ -180,6 +184,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   // Interview write-ups waiting for review (prompt 2, G10).
   section('experiences', '/admin/experiences', 'experiences:review', 'placements'),
   // [slot: B G12]
+  // Cross-college network: switches, postings offered to the college, blocks, credentials (G12).
+  section('network', '/admin/network', 'network:manage', 'placements'),
   section('analytics', '/admin/analytics', 'analytics:cohort', 'insights'),
   section('reports', '/admin/reports', 'analytics:tenant', 'insights'),
   section('branding', '/admin/branding', 'tenant:branding', 'college'),
@@ -248,6 +254,12 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   // The Career Copilot (prompt 2, G11).
   copilot: d('copilot', '/copilot', 'explore', ['copilot:use']),
   // [slot: B G12]
+  // The network (prompt 2, G12): alumni across colleges, intros, credentials.
+  network: d('network', '/network', 'you', ['network:discover']),
+  // The recruiter portal (employer tenants only).
+  recruiter: d('recruiter', '/recruiter', 'main', ['employer:post']),
+  // Employer approvals and college clusters (platform).
+  employers: d('employers', '/platform/employers', 'platform', ['platform:employers']),
   requests: d('requests', '/mentorship', 'explore', ['mentorship:request', 'mentorship:mentor']),
   review: d('review', '/review', 'manage', REVIEW_PERMISSIONS),
   roadmaps: d('roadmaps', '/roadmaps', 'explore', ['roadmaps:read']),
@@ -333,10 +345,12 @@ export function featureShipped(
 }
 
 /** Which bottom-tab set a member gets. Picked by their most senior role. */
-export type NavPersona = 'student' | 'alumni' | 'staff' | 'admin' | 'platform';
+export type NavPersona = 'student' | 'alumni' | 'staff' | 'admin' | 'platform' | 'employer';
 
 export function navPersona(roles: readonly Role[]): NavPersona {
   if (roles.includes(Role.SUPER_ADMIN)) return 'platform';
+  // Prompt 2, G12: recruiters of an employer tenant (ADR 0014).
+  if (roles.includes(Role.EMPLOYER_ADMIN) || roles.includes(Role.RECRUITER)) return 'employer';
   if (roles.includes(Role.COLLEGE_ADMIN)) return 'admin';
   if (roles.includes(Role.TPO) || roles.includes(Role.FACULTY)) return 'staff';
   if (roles.includes(Role.ALUMNI)) return 'alumni';
@@ -355,6 +369,7 @@ export const PERSONA_TABS: Record<NavPersona, readonly (readonly NavId[])[]> = {
   staff: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
   admin: [['home'], ['subjects', 'roadmaps'], ['create'], ['review', 'admin'], ['jobs']],
   platform: [['platform'], ['billing'], ['traction'], ['health'], ['settings']],
+  employer: [['recruiter'], ['settings']],
 };
 
 /** The avatar menu: everything that is not a tab, grouped, in this order. */
@@ -392,6 +407,7 @@ const MENU_ORDER: readonly NavId[] = [
   'companies',
   'copilot',
   // [slot: B G12]
+  'network',
   'progress',
   'rewards',
   'saved',
@@ -491,7 +507,8 @@ export function buildNav(subject: NavSubject, shipped: ReadonlySet<NavId>): NavM
 
 /** Where a member lands after signing in (and the target of the first tab). */
 export function homePath(roles: readonly Role[]): string {
-  return navPersona(roles) === 'platform' ? '/platform' : '/home';
+  const persona = navPersona(roles);
+  return persona === 'platform' ? '/platform' : persona === 'employer' ? '/recruiter' : '/home';
 }
 
 /** A post-sign-in redirect target is only honoured if it is a same-origin app path. */

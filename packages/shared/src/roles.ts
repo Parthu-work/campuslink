@@ -9,11 +9,18 @@ export const Role = {
   FACULTY: 'FACULTY',
   ALUMNI: 'ALUMNI',
   STUDENT: 'STUDENT',
+  /** Prompt 2, G12 (ADR 0014): employer tenants only; both must use TOTP. */
+  EMPLOYER_ADMIN: 'EMPLOYER_ADMIN',
+  RECRUITER: 'RECRUITER',
 } as const;
 export type Role = (typeof Role)[keyof typeof Role];
 export const ROLES = Object.values(Role);
 /** Roles that can exist inside a college tenant. SUPER_ADMIN lives only in the platform tenant. */
-export const TENANT_ROLES = ROLES.filter((r) => r !== Role.SUPER_ADMIN);
+export const TENANT_ROLES = ROLES.filter(
+  (r) => r !== Role.SUPER_ADMIN && r !== Role.EMPLOYER_ADMIN && r !== Role.RECRUITER,
+);
+/** Roles of an employer tenant (prompt 2, G12, ADR 0014): never assignable in a college. */
+export const EMPLOYER_ROLES: readonly Role[] = [Role.EMPLOYER_ADMIN, Role.RECRUITER];
 
 export const Capability = {
   CERTIFIED_CONTRIBUTOR: 'CERTIFIED_CONTRIBUTOR',
@@ -144,6 +151,15 @@ export const ALL_PERMISSIONS = [
   // The Career Copilot (prompt 2, G11).
   'copilot:use',
   // [slot: B G12]
+  // The network (prompt 2, G12, ADR 0014)
+  'network:discover',
+  'network:manage',
+  'credentials:own',
+  'credentials:manage',
+  'employer:post',
+  'employer:candidates',
+  'employer:manage',
+  'platform:employers',
   // Platform (super admin only; never grantable through tenant overrides)
   'platform:tenants',
   'platform:health',
@@ -258,6 +274,17 @@ export const PERMISSIONS: Record<Permission, string> = {
   'copilot:use':
     'Ask the Career Copilot: cited answers from the college’s own placement data, then a human to talk to',
   // [slot: B G12]
+  'network:discover':
+    'Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)',
+  'network:manage':
+    'Review employer postings offered to the college, block employers, see who looked (the network)',
+  'credentials:own': 'Request, share and revoke one’s own verified credentials',
+  'credentials:manage': 'Rotate the college’s credential signing key and revoke credentials',
+  'employer:post': 'Write postings and offer them to colleges (employer tenants)',
+  'employer:candidates':
+    'See pool sizes and the résumés and readiness that candidates shared (employer tenants)',
+  'employer:manage': 'Manage the employer’s recruiters and verification (employer tenants)',
+  'platform:employers': 'Approve, reject and suspend employers; manage college clusters',
   'support:manage': 'Answer and close problem reports sent to the college',
   'placements:view': 'See placement drives and the eligibility rules',
   'placements:register': 'Register for placement drives one is eligible for',
@@ -270,6 +297,13 @@ export const PLATFORM_PERMISSIONS: readonly Permission[] = [
   'platform:health',
   'platform:billing',
   'platform:support',
+  'platform:employers',
+];
+/** Permissions that exist only in employer tenants (prompt 2, G12); never a college's. */
+export const EMPLOYER_PERMISSIONS: readonly Permission[] = [
+  'employer:post',
+  'employer:candidates',
+  'employer:manage',
 ];
 
 const STUDENT: Permission[] = [
@@ -312,6 +346,8 @@ const STUDENT: Permission[] = [
   'experiences:share',
   'copilot:use',
   // [slot: B G12]
+  'network:discover',
+  'credentials:own',
 ];
 /** Students only: alumni and staff do not register for drives (staff still see them). */
 const STUDENT_ONLY: readonly Permission[] = [
@@ -366,6 +402,8 @@ const STAFF: Permission[] = [
       p !== 'experiences:share' &&
       p !== 'copilot:use' &&
       // [slot: B G12]
+      p !== 'network:discover' &&
+      p !== 'credentials:own' &&
       p !== 'parents:digest',
   ),
   'feed:post',
@@ -393,10 +431,19 @@ const STAFF: Permission[] = [
   'experiences:review',
   // [slot: B G12]
 ];
-const COLLEGE_ADMIN: Permission[] = ALL_PERMISSIONS.filter((p) => !PLATFORM_PERMISSIONS.includes(p));
+const COLLEGE_ADMIN: Permission[] = ALL_PERMISSIONS.filter(
+  (p) => !PLATFORM_PERMISSIONS.includes(p) && !EMPLOYER_PERMISSIONS.includes(p),
+);
 
 export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
-  SUPER_ADMIN: ['platform:tenants', 'platform:health', 'platform:billing', 'platform:support', 'audit:read'],
+  SUPER_ADMIN: [
+    'platform:tenants',
+    'platform:health',
+    'platform:billing',
+    'platform:support',
+    'platform:employers',
+    'audit:read',
+  ],
   COLLEGE_ADMIN,
   TPO: [
     ...STAFF,
@@ -420,11 +467,16 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     // [slot: G9]
     // [slot: A G10 G11 G13]
     // [slot: B G12]
+    // The network (prompt 2, G12): postings offered to the college, blocks.
+    'network:manage',
   ],
   FACULTY: STAFF,
   ALUMNI,
   // Students ask alumni small favours (prompt 2, G6); staff do not.
   STUDENT: [...STUDENT, 'alumni:ask'],
+  // Prompt 2, G12: employer tenants only.
+  EMPLOYER_ADMIN: [...EMPLOYER_PERMISSIONS],
+  RECRUITER: ['employer:post', 'employer:candidates'],
 };
 
 export const CAPABILITY_PERMISSIONS: Record<Capability, readonly Permission[]> = {
@@ -447,7 +499,12 @@ export const UNVERIFIED_PERMISSIONS: readonly Permission[] = [
 ];
 
 /** Roles that must have TOTP enabled before any permission is effective. */
-export const MFA_REQUIRED_ROLES: readonly Role[] = [Role.SUPER_ADMIN, Role.COLLEGE_ADMIN];
+export const MFA_REQUIRED_ROLES: readonly Role[] = [
+  Role.SUPER_ADMIN,
+  Role.COLLEGE_ADMIN,
+  Role.EMPLOYER_ADMIN,
+  Role.RECRUITER,
+];
 
 /** Who may assign which roles. Nobody can assign SUPER_ADMIN through the tenant API. */
 export const ASSIGNABLE_ROLES: Partial<Record<Role, readonly Role[]>> = {

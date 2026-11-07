@@ -64,6 +64,7 @@ describe('role-aware navigation', () => {
           // [slot: A G10 G11 G13]
           'experiences',
           // [slot: B G12]
+          'network',
         ],
       ],
       [

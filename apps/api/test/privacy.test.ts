@@ -469,6 +469,10 @@ describe('deletion', () => {
         'mentorOutcomes',
         'copilot',
         // [slot: B G12]
+        'network',
+        'networkCandidacies',
+        'employers',
+        'credentials',
       ]),
     );
   });

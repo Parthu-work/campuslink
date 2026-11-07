@@ -134,3 +134,18 @@ export {
 } from './graph/graph.model.js';
 export { CopilotChunkModel, CopilotMessageModel, CopilotSessionModel } from './copilot/copilot.model.js';
 // [slot: B G12]
+export {
+  NetworkCandidacyModel,
+  NetworkClusterModel,
+  NetworkIntroModel,
+  NetworkIntroOutModel,
+  NetworkPrefsModel,
+  NetworkProfileModel,
+} from './network/network.model.js';
+export {
+  BillableEventModel,
+  EmployerUsageModel,
+  PostingModel,
+  PostingOfferModel,
+} from './employers/employer.model.js';
+export { CredentialModel, IssuerKeyModel } from './credentials/credential.model.js';

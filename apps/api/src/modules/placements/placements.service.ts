@@ -148,6 +148,38 @@ export class PlacementsService {
     });
   }
 
+  /**
+   * Prompt 2, G12: members' registrations on one drive (the network's candidacies follow them):
+   * the attached résumé, whether they withdrew, and the final result the college published.
+   */
+  async registrationsOn(
+    driveId: string,
+    userIds: string[],
+  ): Promise<Map<string, { resumeFileId: string | null; withdrawn: boolean; final: string }>> {
+    const rows = await DriveRegistrationModel.find({
+      driveId: new Types.ObjectId(driveId),
+      userId: { $in: userIds.map((u) => new Types.ObjectId(u)) },
+    })
+      .select('userId resumeFileId status final')
+      .lean<RegistrationDoc[]>();
+    return new Map(
+      rows.map((r) => [
+        String(r.userId),
+        {
+          resumeFileId: r.resumeFileId ? String(r.resumeFileId) : null,
+          withdrawn: r.status === 'withdrawn',
+          final: r.final ?? 'in_process',
+        },
+      ]),
+    );
+  }
+
+  /** Prompt 2, G12: a drive's title, for the network's candidacies (null when it is gone). */
+  async driveTitle(driveId: string): Promise<string | null> {
+    const d = await PlacementDriveModel.findById(driveId).select('title').lean();
+    return d?.title ?? null;
+  }
+
   async newEligibleCounts(userIds: string[], now = new Date()): Promise<Map<string, number>> {
     const wanted = new Set(userIds);
     const out = new Map<string, number>();

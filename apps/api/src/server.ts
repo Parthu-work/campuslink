@@ -18,6 +18,7 @@ import { RosterSyncService } from './modules/imports/roster-sync.service.js';
 import { GraphService } from './modules/graph/graph.service.js';
 import { CopilotIndexService } from './modules/copilot/copilot-index.service.js';
 // [slot: B G12]
+import { NetworkService } from './modules/network/network.service.js';
 import type { InsightsService } from './modules/insights/insights.service.js';
 import type { PrivacyService } from './modules/privacy/privacy.service.js';
 import { connectTenantCacheBus } from './modules/tenants/tenant.cache.js';
@@ -225,6 +226,16 @@ async function main() {
     setInterval(copilotTick, 3600_000).unref();
   }
   // [slot: B G12]
+  // The network's reconcile (prompt 2, G12, ADR 0014 N19): every 15 minutes, one run per college and
+  // window (projections, candidacies, hires, credentials and the yearly key rotation).
+  const networkTick = () =>
+    NetworkService.enqueueReconcile(jobs).catch((err: unknown) =>
+      logger.error({ err }, 'network tick failed'),
+    );
+  if (runsJobs) {
+    setTimeout(networkTick, 240_000).unref();
+    setInterval(networkTick, 15 * 60_000).unref();
+  }
   if (runsJobs) {
     setTimeout(nextStepTick, 150_000).unref();
     setInterval(nextStepTick, 3600_000).unref();

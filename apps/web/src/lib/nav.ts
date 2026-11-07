@@ -87,6 +87,10 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   companies: Building2,
   copilot: Sparkles,
   // [slot: B G12]
+  // Icons already on the boot path (no new icon in the initial bundle).
+  network: Users,
+  recruiter: Building2,
+  employers: Building2,
   requests: Inbox,
   review: ClipboardCheck,
   roadmaps: Orbit,
@@ -158,8 +162,12 @@ const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'admin',
   'verify',
   'help',
+  'network',
 ]);
+/** An employer's host (prompt 2, G12): the recruiter portal and the account's settings. */
+const EMPLOYER_SHIPPED: ReadonlySet<NavId> = new Set<NavId>(['recruiter', 'settings']);
 const PLATFORM_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
+  'employers',
   'platform',
   'billing',
   'traction',
@@ -199,7 +207,8 @@ export function useNav() {
   const { t } = useTranslation();
   const { data: me } = useMe();
   const tenant = useTenant();
-  const platform = tenant.kind === 'platform';
+  // Employer hosts (prompt 2, G12) have no college features either: no feed, messages or palette.
+  const platform = tenant.kind !== 'college';
   const unreadMessages = useUnreadMessages(!platform);
   const unreadNotifications = useUnreadNotifications(!platform);
 
@@ -213,7 +222,11 @@ export function useNav() {
         features: tenant.features,
         gradYear: me?.gradYear ?? null,
       },
-      platform ? PLATFORM_SHIPPED : featureShipped(COLLEGE_SHIPPED, tenant.features),
+      tenant.kind === 'employer'
+        ? EMPLOYER_SHIPPED
+        : platform
+          ? PLATFORM_SHIPPED
+          : featureShipped(COLLEGE_SHIPPED, tenant.features),
     );
     const badges: Partial<Record<NavId, number>> = {
       messages: unreadMessages,
@@ -247,7 +260,7 @@ export function useNav() {
       unreadNotifications,
       canMessage: permissions.includes('messages:send'),
     };
-  }, [me, platform, tenant.features, t, unreadMessages, unreadNotifications]);
+  }, [me, platform, tenant.kind, tenant.features, t, unreadMessages, unreadNotifications]);
 }
 
 /** Platform-aware shortcut hint for the command palette (⌘K on Apple devices). */

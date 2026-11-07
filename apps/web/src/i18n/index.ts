@@ -103,6 +103,15 @@ const PACKS = {
     },
   },
   // [slot: B G12]
+  /** The network (prompt 2, G12): alumni across colleges, credentials, the recruiter portal and registry. */
+  network: {
+    sections: ['network', 'recruiter'],
+    load: {
+      en: () => import('./packs/network.en.json'),
+      te: () => import('./packs/network.te.json'),
+      hi: () => import('./packs/network.hi.json'),
+    },
+  },
 } satisfies Record<
   string,
   { sections: string[]; load: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> }

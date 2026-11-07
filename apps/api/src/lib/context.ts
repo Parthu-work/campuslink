@@ -9,6 +9,11 @@ export interface RequestContext {
   tenantId?: Types.ObjectId;
   /** Set only by withPlatformScope: lifts tenant filtering for a named, audited reason. */
   platformReason?: string;
+  /**
+   * Set only by `networkScope` (prompt 2, G12, ADR 0014 §6): the tenant-owned models this platform
+   * scope may touch. Any other tenant model throws in the tenant plugin.
+   */
+  allowModels?: readonly string[];
 }
 
 const als = new AsyncLocalStorage<RequestContext>();
@@ -41,6 +46,21 @@ export function withPlatformScope<T>(reason: string, fn: () => T): Promise<Await
   if (!/^[a-z]+:[a-z-]+$/.test(reason))
     throw new TenantContextError(`Invalid platform scope reason: ${reason}`);
   return als.run({ platformReason: reason }, async (): Promise<Awaited<T>> => await fn());
+}
+
+/**
+ * A platform scope limited to named tenant models (prompt 2, G12): the cross-college network reads
+ * only its opt-in projections. Called only from `lib/network-scope.ts`, which adds the closed list
+ * of reasons and the audit.
+ */
+export function withScopedPlatform<T>(
+  reason: string,
+  allowModels: readonly string[],
+  fn: () => T,
+): Promise<Awaited<T>> {
+  if (!/^[a-z]+:[a-z-]+$/.test(reason))
+    throw new TenantContextError(`Invalid platform scope reason: ${reason}`);
+  return als.run({ platformReason: reason, allowModels }, async (): Promise<Awaited<T>> => await fn());
 }
 
 /** Express middleware form: the rest of the request runs inside the tenant context. */

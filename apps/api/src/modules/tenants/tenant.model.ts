@@ -1,12 +1,57 @@
 import { Schema, type InferSchemaType, type HydratedDocument } from 'mongoose';
-import { FEATURE_KEYS, NEW_TENANT_FEATURES, PLAN_IDS } from '@campuslink/shared';
+import { EMPLOYER_STATUSES, FEATURE_KEYS, NEW_TENANT_FEATURES, PLAN_IDS } from '@campuslink/shared';
 import { definePlatformModel, baseSchemaOptions } from '../../db/models.js';
 
 /** The tenant registry is the only platform-level collection besides nothing else in Phase 1. */
 const tenantSchema = new Schema(
   {
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    kind: { type: String, enum: ['college', 'platform'], default: 'college', required: true },
+    kind: { type: String, enum: ['college', 'platform', 'employer'], default: 'college', required: true },
+    /**
+     * Prompt 2, G12 (ADR 0014). `network`: a college's consent to the network, each switch off by
+     * default, with who turned it on under which terms, and the employers it blocked. `employer`:
+     * an employer tenant's verification state (the employer registry is this collection).
+     */
+    network: {
+      alumniDiscovery: { type: Boolean, default: false },
+      employerAccess: { type: Boolean, default: false },
+      credentials: { type: Boolean, default: false },
+      termsVersion: { type: Number, default: null },
+      changedBy: { type: Schema.Types.ObjectId, default: null },
+      changedAt: { type: Date, default: null },
+      blockedEmployers: {
+        type: [
+          new Schema(
+            {
+              employerId: { type: Schema.Types.ObjectId, required: true },
+              at: { type: Date, required: true },
+            },
+            { _id: false, strict: 'throw' },
+          ),
+        ],
+        default: [],
+      },
+    },
+    employer: {
+      type: new Schema(
+        {
+          legalName: { type: String, required: true },
+          domain: { type: String, required: true },
+          gstin: { type: String, required: true },
+          status: { type: String, enum: EMPLOYER_STATUSES, required: true },
+          emailVerifiedAt: { type: Date, default: null },
+          dnsToken: { type: String, required: true },
+          domainVerifiedAt: { type: Date, default: null },
+          gstinCheckedAt: { type: Date, default: null },
+          approvedBy: { type: Schema.Types.ObjectId, default: null },
+          approvedAt: { type: Date, default: null },
+          reviewNote: { type: String, default: '' },
+          suspendedAt: { type: Date, default: null },
+        },
+        { _id: false, strict: 'throw' },
+      ),
+      default: null,
+    },
     status: { type: String, enum: ['active', 'suspended'], default: 'active', required: true },
     branding: {
       displayName: { type: String, required: true },

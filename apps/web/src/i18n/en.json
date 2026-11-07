@@ -105,6 +105,9 @@
     "practice": "Practice",
     "peers": "Peer mentoring",
     "circles": "Circles",
+    "network": "Network",
+    "recruiter": "Recruiting",
+    "employers": "Employers",
     "alumni": "Alumni",
     "share": "Share",
     "captain": "Campus Captain"
@@ -499,6 +502,7 @@
     "peers": "Peer mentors and buddies",
     "circles": "Circles",
     "recognition": "Recognition",
+    "network": "Network",
     "giving": "Giving",
     "growth": "Growth and invites",
     "captain": "Campus Captain",
@@ -1347,6 +1351,14 @@
     "pledge_received": {
       "title": "Your college received your contribution",
       "body": "Thank you. The acknowledgement is ready."
+    },
+    "network_intro_received": {
+      "title": "{{name}} of {{college}} asked for your help",
+      "body": "{{type}} · Network"
+    },
+    "network_intro_answered": {
+      "title": "{{name}} answered your intro",
+      "body": "Open Network to see it."
     },
     "weekly_next_step": {
       "title": "Your next step for this week",

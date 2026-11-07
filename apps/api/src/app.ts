@@ -104,6 +104,21 @@ import { CopilotService, type LiveSource } from './modules/copilot/copilot.servi
 import { copilotRoutes } from './modules/copilot/copilot.routes.js';
 import { companyKey as companyKeyOf } from './lib/company.js';
 // [slot: B G12]
+import { resolveTxt } from 'node:dns/promises';
+import { READINESS_MILESTONES } from '@campuslink/shared';
+import { NETWORK_RECONCILE_JOB, NetworkService, collegeNames } from './modules/network/network.service.js';
+import { networkRoutes } from './modules/network/network.routes.js';
+import { EmployersService } from './modules/employers/employers.service.js';
+import { CollegePostingsService } from './modules/employers/college-postings.service.js';
+import { employerRoutes } from './modules/employers/employers.routes.js';
+import { CredentialsService, type CredentialSourceFacts } from './modules/credentials/credentials.service.js';
+import {
+  CREDENTIALS_PUBLIC_MODULE,
+  credentialPublicRoutes,
+  credentialRoutes,
+  credentialTenantFromPath,
+} from './modules/credentials/credentials.routes.js';
+import { audit as networkAudit } from './modules/audit/audit.service.js';
 import {
   DisabledCodeRunner,
   JUDGE0_LANGUAGE_IDS,
@@ -1532,6 +1547,114 @@ export function createApp({
     isMinor: async (id) => (await profilesService.minorsAmong([id])).has(id),
   });
   // [slot: B G12]
+  // ── The network (prompt 2, G12, ADR 0014) ─────────────────────────────
+  // Cross-college discovery and intros, the college's side of the recruiter portal, employers and
+  // verified credentials. Every cross-tenant read or write is a named path (lib/network-scope.ts).
+  const collegePostingsService = new CollegePostingsService({
+    placements: placementsService,
+    offers: offersService,
+    profiles: profilesService,
+  });
+  const networkService = new NetworkService({
+    cipher,
+    profiles: profilesService,
+    notify: (id, type, data) => notificationsService.notify(id, type, data),
+    emailOf: (id) => usersService.emailOf(id),
+    logger,
+    afterRefresh: (id, state) => collegePostingsService.onMemberRefresh(id, state),
+  });
+  // A member sees which employers opened what they shared (N16), from the college's own audit rows.
+  networkService.setViewedBy(async (userId) => {
+    const refs = (await collegePostingsService.exportFor(userId)).candidacies.map((c) => c.ref);
+    const rows = await networkAudit.aboutTargets(
+      ['network.candidate-resume', 'network.candidate-readiness'],
+      'network_candidacy',
+      refs.filter(Boolean),
+    );
+    const names = await collegeNames(rows.map((r) => String(r.meta.by ?? '')).filter(Boolean));
+    return rows.map((r) => ({
+      employer: names.get(String(r.meta.by ?? '')) ?? '',
+      what: r.action === 'network.candidate-resume' ? ('resume' as const) : ('readiness' as const),
+      at: r.createdAt.toISOString(),
+    }));
+  });
+  profilesService.afterSync = (id) => networkService.refresh(id);
+  const employersService = new EmployersService({
+    sendSetPassword: (tenant, email, meta) =>
+      authService.forgotPassword(tenant, email, { ...meta, device: 'employer-invite' }),
+    resolveTxt: (domain) => resolveTxt(domain),
+    signingKey: createHmac('sha256', env.JWT_ACCESS_SECRET).update('network-resume-link-v1').digest(),
+    readFile: (fileId) => filesService.read(fileId),
+    readinessOf: async (userId, tenant) => {
+      const viewer = await backgroundAuthOf(userId, tenant);
+      if (!viewer?.permissions.has('readiness:view') || !(await featureEnabled('placements'))) return null;
+      const r = await readinessService.mine(viewer);
+      return {
+        score: r.score,
+        components: r.components.map((c) => ({ id: c.id, points: c.points, max: c.max })),
+      };
+    },
+  });
+  const credentialsService = new CredentialsService({
+    cipher,
+    webOrigin: env.WEB_ORIGIN,
+    person: (id) => profilesService.person(id),
+    viewerOf: (id, tenant) => backgroundAuthOf(id, tenant),
+    sources: async (viewer) => {
+      const out: CredentialSourceFacts[] = [];
+      for (const o of await offersService.verifiedOf(viewer.userId))
+        out.push({
+          type: 'PlacementOfferCredential',
+          sourceId: o.id,
+          milestone: null,
+          label: `${o.company} · ${o.role}`,
+          claims: { company: o.company, role: o.role, ...(o.gradYear ? { batch: o.gradYear } : {}) },
+        });
+      if (viewer.permissions.has('readiness:view') && (await featureEnabled('placements'))) {
+        const score = (await readinessService.mine(viewer).catch(() => null))?.score ?? 0;
+        for (const m of READINESS_MILESTONES)
+          if (score >= m)
+            out.push({
+              type: 'ReadinessMilestoneCredential',
+              sourceId: null,
+              milestone: m,
+              label: `Readiness ${m}+`,
+              claims: { milestone: `${m} of 100`, reachedOn: new Date().toISOString().slice(0, 10) },
+            });
+      }
+      for (const c of await recognitionService.certificates(viewer).catch(() => []))
+        if (c.status === 'issued')
+          out.push({
+            type: 'MentorCertificateCredential',
+            sourceId: c.id,
+            milestone: null,
+            label: `Mentorship ${c.academicYear}`,
+            claims: {
+              academicYear: c.academicYear,
+              sessions: c.sessions,
+              mentees: c.mentees,
+              asks: c.asks,
+              events: c.events,
+            },
+          });
+      for (const n of await recognitionService.myNominations(viewer).catch(() => []))
+        if (n.status === 'published')
+          out.push({
+            type: 'MentorshipRecognitionCredential',
+            sourceId: n.id,
+            milestone: null,
+            label: `Alumnus of the month · ${n.month}`,
+            claims: { award: 'Alumnus of the month', month: n.month },
+          });
+      return out;
+    },
+  });
+  queue.register(NETWORK_RECONCILE_JOB, async () => {
+    await networkService.reconcile();
+    await collegePostingsService.reconcile();
+    await credentialsService.reconcile();
+    await credentialsService.rotateIfDue();
+  });
 
   // Faculty insights and the admin AI dashboard (spec step 5): aggregates only.
   const insightsService = new StudyInsightsService({
@@ -1681,6 +1804,10 @@ export function createApp({
     experiencesService,
     copilotService,
     // [slot: B G12]
+    networkService,
+    collegePostingsService,
+    employersService,
+    credentialsService,
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1776,6 +1903,13 @@ export function createApp({
     pending: () => experiencesService.pendingCount(),
   });
   // [slot: B G12]
+  privacyService.register('network', hook(networkService));
+  privacyService.register('networkCandidacies', hook(collegePostingsService));
+  privacyService.register(
+    'employers',
+    hook({ exportFor: (u) => employersService.exportFor(u), eraseFor: () => employersService.eraseFor() }),
+  );
+  privacyService.register('credentials', hook(credentialsService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -2001,6 +2135,12 @@ export function createApp({
     defineModule('copilot', withFeature('placements', copilotRoutes(copilotService, logger)), pipeline),
   );
   // [slot: B G12]
+  app.use(
+    API_PREFIX,
+    defineModule('network', networkRoutes(networkService, collegePostingsService), pipeline),
+  );
+  app.use(API_PREFIX, defineModule('employers', employerRoutes(employersService), pipeline));
+  app.use(API_PREFIX, defineModule('credentials', credentialRoutes(credentialsService), pipeline));
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -2064,6 +2204,10 @@ export function createApp({
   // [slot: G9]
   // [slot: A G10 G11 G13]
   // [slot: B G12]
+  // Verified credentials (prompt 2, G12): /{tenant}/verify/{id}, did.json and the status list, with
+  // the college taken from the path (ADR 0014 §12).
+  app.use(credentialTenantFromPath(env.APP_ROOT_DOMAIN));
+  app.use(defineModule(CREDENTIALS_PUBLIC_MODULE, credentialPublicRoutes(credentialsService), pipeline));
   app.use(notFoundHandler);
   app.use(errorHandler(logger, errorReporter));
   app.locals.registry = registry;
@@ -2126,6 +2270,10 @@ export function createApp({
     copilot: copilotService,
     copilotIndex: copilotIndexService,
     // [slot: B G12]
+    network: networkService,
+    collegePostings: collegePostingsService,
+    employers: employersService,
+    credentials: credentialsService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,
