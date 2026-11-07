@@ -125,7 +125,7 @@ export function NextStepCard() {
         </h2>
         <Link
           to="/next-step"
-          className="inline-flex min-h-11 shrink-0 items-center text-meta font-semibold text-brand-ink underline"
+          className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-meta font-semibold text-brand-ink underline"
         >
           {t('habits.next.all')}
         </Link>

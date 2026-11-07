@@ -205,20 +205,19 @@ test('scroll memory and scroll-aware bars', async ({ browser }) => {
   await page.mouse.wheel(0, -150);
   await page.waitForTimeout(600);
   const barsAfterScrollUp = await bars(page);
-  await tap('Jobs');
-  const jobsOnArrival = await y();
-  const job = page
-    .locator('main a[href^="/jobs/"]:not([href="/jobs/new"]):not([href="/jobs/tracker"])')
-    .first();
-  await job.click();
-  await page.waitForURL(/\/jobs\/[a-f0-9]{24}$/);
-  const jobUrl = new URL(page.url()).pathname;
+  // Ananya is a final-year since June 2026, so her fourth tab is Placements (B7), not Jobs.
+  await tap('Placements');
+  const placementsOnArrival = await y();
+  const drive = page.locator('main a[href^="/placements/"]').first();
+  await drive.click();
+  await page.waitForURL(/\/placements\/[a-f0-9]{24}$/);
+  const driveUrl = new URL(page.url()).pathname;
   await tap('Home');
   const homeAfterTabRoundTrip = await y();
   await tap('Home');
   const afterTappingActiveTab = await y();
-  await tap('Jobs');
-  const jobsTabUrl = new URL(page.url()).pathname;
+  await tap('Placements');
+  const placementsTabUrl = new URL(page.url()).pathname;
   await page.goto(`${BASE}/home`);
   await page.getByRole('feed').getByRole('article').first().waitFor();
   const overflowRows = await page.evaluate(() =>
@@ -235,11 +234,11 @@ test('scroll memory and scroll-aware bars', async ({ browser }) => {
   );
   save('scroll-memory.json', {
     homeBefore,
-    jobsOnArrival,
+    placementsOnArrival,
     homeAfterTabRoundTrip,
     afterTappingActiveTab,
-    jobsTabRemembersDetail: jobsTabUrl === jobUrl,
-    jobsTabUrl,
+    placementsTabRemembersDetail: placementsTabUrl === driveUrl,
+    placementsTabUrl,
     barsAtTop,
     barsAfterScrollDown,
     barsAfterScrollUp,

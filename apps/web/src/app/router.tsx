@@ -366,6 +366,20 @@ function collegeRoutes(): RouteObject[] {
               q.homeFeed(url.searchParams.get('tab') === 'following' ? 'following' : 'for_you'),
             ),
             qc.ensureQueryData(q.oneUsefulThing()),
+            // Prompt 2, G7: the weekly Next Step card's data and code with the page, so it paints with
+            // Home instead of pushing the feed down. A widget: a failure here never fails Home.
+            qc
+              .ensureQueryData(q.me())
+              .then((me) =>
+                me.permissions.includes('nextstep:view')
+                  ? Promise.all([
+                      qc.ensureQueryData(q.nextStep()),
+                      // Imported here, not at the top: the initial bundle has no room to spare.
+                      import('../features/habits/lazy-next-step').then((m) => m.preloadNextStepCard()),
+                    ])
+                  : null,
+              )
+              .catch(() => null),
             // Stories only when the college has them on (Admin › Features).
             ...(qc.getQueryData<PublicTenant>(q.tenant().queryKey)?.features.stories === false
               ? []
