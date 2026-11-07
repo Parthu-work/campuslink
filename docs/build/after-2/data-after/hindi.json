@@ -1,0 +1,270 @@
+{
+ "/home": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "नमस्ते, Ananya",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Geist Mono Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/study": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "पढ़ाई",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "30.02px",
+   "lh": "33.022px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Geist Mono Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/mentors": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "मेंटर",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Geist Mono Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/jobs": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "जॉब रडार",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/roadmaps": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "रोडमैप",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/settings/preferences": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "सेटिंग्स",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/resume": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "रिज़्यूमे",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/interviews": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "मॉक इंटरव्यू",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/practice": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "अभ्यास",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/readiness": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "तैयारी",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/companies": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "कंपनियाँ",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/copilot": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "करियर कोपायलट",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/share": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "शेयर",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ },
+ "/network": {
+  "lang": "hi",
+  "bodyFont": "\"Geist Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+  "lineHeight": "25.5px",
+  "h1": {
+   "text": "नेटवर्क",
+   "font": "\"Bricolage Grotesque Variable\", \"Anek Telugu Variable\", \"Anek Devanagari Variable\", ui-sans-serif, system-ui, sans-serif",
+   "size": "24px",
+   "lh": "28.8px"
+  },
+  "bottomNavLabels": [],
+  "horizontalOverflow": false,
+  "fontsLoaded": [
+   "Geist Variable",
+   "Bricolage Grotesque Variable",
+   "Anek Telugu Variable",
+   "Anek Devanagari Variable"
+  ]
+ }
+}

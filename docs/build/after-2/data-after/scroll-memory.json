@@ -1,0 +1,33 @@
+{
+ "homeBefore": 572,
+ "placementsOnArrival": 0,
+ "homeAfterTabRoundTrip": 422,
+ "afterTappingActiveTab": 0,
+ "placementsTabRemembersDetail": true,
+ "placementsTabUrl": "/placements/6aeef6d1efdee2aa3526009c",
+ "barsAtTop": {
+  "headerTop": 0,
+  "headerHeight": 61,
+  "navTop": 715,
+  "navHeight": 65,
+  "vh": 780,
+  "chrome": "shown"
+ },
+ "barsAfterScrollDown": {
+  "headerTop": 0,
+  "headerHeight": 61,
+  "navTop": 715,
+  "navHeight": 65,
+  "vh": 780,
+  "chrome": "shown"
+ },
+ "barsAfterScrollUp": {
+  "headerTop": 0,
+  "headerHeight": 61,
+  "navTop": 715,
+  "navHeight": 65,
+  "vh": 780,
+  "chrome": "shown"
+ },
+ "overflowRows": []
+}
