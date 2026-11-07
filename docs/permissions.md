@@ -555,6 +555,24 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/me/parent-digest/confirm` | `parents:digest` | college | otp | Enter the code the parent received |
 | `PUT /api/v1/me/parent-digest/grades` | `parents:digest` | college | — | Include my CGPA in the summary (or not) |
 | `DELETE /api/v1/me/parent-digest` | `parents:digest` | college | — | Stop the summary (the number is deleted) |
+| `GET /api/v1/me/calendar-feed` | any signed-in user | college | — | Whether my calendar feed is on, and when a calendar last read it |
+| `POST /api/v1/me/calendar-feed` | any signed-in user | college | adminWrite | Make my calendar feed, or replace its address (the old one stops working) |
+| `DELETE /api/v1/me/calendar-feed` | any signed-in user | college | — | Turn my calendar feed off |
+| `GET /api/v1/calendar/:file` | public | college | search | A member’s calendar (ICS), by its secret address |
+| `GET /api/v1/admin/roster-sync` | `imports:manage` | college | — | The roster sync: its schedule, last run and any change waiting for approval |
+| `PUT /api/v1/admin/roster-sync` | `imports:manage` | college | adminWrite | Repeat a completed import of a Google Sheet or REST source, daily or weekly |
+| `PATCH /api/v1/admin/roster-sync` | `imports:manage` | college | — | Pause, resume or reschedule the roster sync |
+| `DELETE /api/v1/admin/roster-sync` | `imports:manage` | college | — | Stop syncing (imported records stay) |
+| `POST /api/v1/admin/roster-sync/run` | `imports:manage` | college | adminWrite | Sync now (a large change still waits for approval) |
+| `POST /api/v1/admin/roster-sync/approve` | `imports:manage` | college | adminWrite | Apply the change waiting for approval (exactly the rows it was made from) |
+| `POST /api/v1/admin/roster-sync/reject` | `imports:manage` | college | — | Discard the change waiting for approval |
+| `GET /api/v1/auth/sso/providers` | public | college | — | The college’s single sign-on options, for the sign-in page |
+| `GET /api/v1/auth/sso/:provider/start` | public | college | login | Go to the college’s identity provider to sign in |
+| `GET /api/v1/auth/sso/:provider/callback` | public | college | login | Where the identity provider sends the member back |
+| `POST /api/v1/auth/sso/pending` | public | college | login | Who a first single sign-on was for (to finish the account) |
+| `POST /api/v1/auth/sso/complete` | public | college | signup | Finish the account a first single sign-on started (terms, birth month, role) |
+| `GET /api/v1/admin/sign-in` | `tenant:settings` | college | — | Single sign-on settings (secrets are never returned) |
+| `PUT /api/v1/admin/sign-in/:provider` | `tenant:settings` | college | adminWrite | Turn Google Workspace or Microsoft Entra ID sign-in on or off, with its app details |
 | `GET /api/v1/legal/:doc` | public | college | — | The college’s privacy policy or terms, with its details filled in (public) |
 | `GET /api/v1/admin/legal` | `tenant:branding` | college | — | The college’s legal details (legal name, address, grievance officer) |
 | `GET /api/v1/admin/retention` | `tenant:settings` | college | — | Whether accounts unused for some months are deleted (and after how many) |

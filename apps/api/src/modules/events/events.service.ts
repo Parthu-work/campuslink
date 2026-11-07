@@ -26,6 +26,7 @@ import {
   type EventQuestionDoc,
   type RsvpDoc,
 } from './event.model.js';
+import type { CalendarItem } from '../calendar/calendar.service.js';
 import { AppError, badRequest, conflict, forbidden, notFound } from '../../lib/errors.js';
 import { ErrorCode } from '@campuslink/shared';
 import { plainText } from '../../lib/text.js';
@@ -546,6 +547,31 @@ export class EventsService {
       'END:VCALENDAR',
     ];
     return lines.map(fold).join('\r\n') + '\r\n';
+  }
+
+  /** Prompt 2, G9 (the calendar feed): the events the member is going to, in a window. */
+  async calendarFor(userId: string, from: Date, to: Date): Promise<CalendarItem[]> {
+    const going = await EventRsvpModel.find({ userId: new Types.ObjectId(userId), status: 'going' })
+      .select('eventId')
+      .limit(2000)
+      .lean();
+    const events = await EventModel.find({
+      _id: { $in: going.map((r) => r.eventId) },
+      startsAt: { $gte: from, $lte: to },
+    })
+      .select('title startsAt endsAt location mode status version')
+      .limit(500)
+      .lean<EventDoc[]>();
+    return events.map((e) => ({
+      kind: 'event',
+      id: String(e._id),
+      version: e.version ?? 0,
+      start: e.startsAt,
+      end: e.endsAt,
+      title: e.title,
+      location: e.location || (e.mode === 'online' ? 'Online' : ''),
+      cancelled: e.status === 'cancelled',
+    }));
   }
 
   // ── Weekly office hours (prompt 2, G6) ─────────────────────────────

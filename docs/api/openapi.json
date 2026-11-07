@@ -26126,6 +26126,719 @@
         "x-permission": "parents:digest"
       }
     },
+    "/api/v1/me/calendar-feed": {
+      "get": {
+        "tags": [
+          "Calendar"
+        ],
+        "summary": "Whether my calendar feed is on, and when a calendar last read it",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "calendar_get_me_calendar_feed",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "post": {
+        "tags": [
+          "Calendar"
+        ],
+        "summary": "Make my calendar feed, or replace its address (the old one stops working)",
+        "description": "Any signed-in user. Host scope: college. Rate limit: adminWrite.",
+        "operationId": "calendar_post_me_calendar_feed",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      },
+      "delete": {
+        "tags": [
+          "Calendar"
+        ],
+        "summary": "Turn my calendar feed off",
+        "description": "Any signed-in user. Host scope: college.",
+        "operationId": "calendar_delete_me_calendar_feed",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "authenticated"
+      }
+    },
+    "/api/v1/calendar/{file}": {
+      "get": {
+        "tags": [
+          "Calendar"
+        ],
+        "summary": "A member’s calendar (ICS), by its secret address",
+        "description": "Public. Host scope: college. Rate limit: search.",
+        "operationId": "calendar_get_calendar_file",
+        "parameters": [
+          {
+            "name": "file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}\\.ics$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/admin/roster-sync": {
+      "get": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "The roster sync: its schedule, last run and any change waiting for approval",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college.",
+        "operationId": "roster-sync_get_admin_roster_sync",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      },
+      "put": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Repeat a completed import of a Google Sheet or REST source, daily or weekly",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "roster-sync_put_admin_roster_sync",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "gsheet"
+                          },
+                          "url": {
+                            "type": "string",
+                            "maxLength": 2000,
+                            "format": "uri"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "url"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "rest"
+                          },
+                          "url": {
+                            "type": "string",
+                            "maxLength": 2000,
+                            "format": "uri"
+                          },
+                          "recordsPath": {
+                            "type": "string",
+                            "maxLength": 100,
+                            "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"
+                          },
+                          "bearerToken": {
+                            "type": "string",
+                            "minLength": 8,
+                            "maxLength": 2000
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "url"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  "fromJobId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "frequency": {
+                    "type": "string",
+                    "enum": [
+                      "daily",
+                      "weekly"
+                    ]
+                  },
+                  "weekday": {
+                    "default": 1,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  }
+                },
+                "required": [
+                  "source",
+                  "fromJobId",
+                  "frequency"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      },
+      "patch": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Pause, resume or reschedule the roster sync",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college.",
+        "operationId": "roster-sync_patch_admin_roster_sync",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "frequency": {
+                    "type": "string",
+                    "enum": [
+                      "daily",
+                      "weekly"
+                    ]
+                  },
+                  "weekday": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      },
+      "delete": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Stop syncing (imported records stay)",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college.",
+        "operationId": "roster-sync_delete_admin_roster_sync",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/admin/roster-sync/run": {
+      "post": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Sync now (a large change still waits for approval)",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "roster-sync_post_admin_roster_sync_run",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/admin/roster-sync/approve": {
+      "post": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Apply the change waiting for approval (exactly the rows it was made from)",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "roster-sync_post_admin_roster_sync_approve",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/admin/roster-sync/reject": {
+      "post": {
+        "tags": [
+          "Imports"
+        ],
+        "summary": "Discard the change waiting for approval",
+        "description": "Requires permission `imports:manage` (Run data imports). Host scope: college.",
+        "operationId": "roster-sync_post_admin_roster_sync_reject",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "imports:manage"
+      }
+    },
+    "/api/v1/auth/sso/providers": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "The college’s single sign-on options, for the sign-in page",
+        "description": "Public. Host scope: college.",
+        "operationId": "sso_get_auth_sso_providers",
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/auth/sso/{provider}/start": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Go to the college’s identity provider to sign in",
+        "description": "Public. Host scope: college. Rate limit: login.",
+        "operationId": "sso_get_auth_sso_provider_start",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "google",
+                "microsoft"
+              ]
+            }
+          },
+          {
+            "name": "next",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 300
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/auth/sso/{provider}/callback": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Where the identity provider sends the member back",
+        "description": "Public. Host scope: college. Rate limit: login.",
+        "operationId": "sso_get_auth_sso_provider_callback",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "google",
+                "microsoft"
+              ]
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/auth/sso/pending": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Who a first single sign-on was for (to finish the account)",
+        "description": "Public. Host scope: college. Rate limit: login.",
+        "operationId": "sso_post_auth_sso_pending",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "ticket": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{32,64}$"
+                  }
+                },
+                "required": [
+                  "ticket"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/auth/sso/complete": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Finish the account a first single sign-on started (terms, birth month, role)",
+        "description": "Public. Host scope: college. Rate limit: signup.",
+        "operationId": "sso_post_auth_sso_complete",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "intent": {
+                    "type": "string",
+                    "enum": [
+                      "STUDENT",
+                      "ALUMNI"
+                    ]
+                  },
+                  "birthMonth": {
+                    "type": "string",
+                    "pattern": "^(\\d{4})-(0[1-9]|1[0-2])$"
+                  },
+                  "consents": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "account",
+                        "mentorship_matching",
+                        "email_digests",
+                        "analytics_aggregate",
+                        "whatsapp_updates"
+                      ]
+                    }
+                  },
+                  "locale": {
+                    "default": "en",
+                    "type": "string",
+                    "enum": [
+                      "en",
+                      "te",
+                      "hi"
+                    ]
+                  },
+                  "ticket": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{32,64}$"
+                  }
+                },
+                "required": [
+                  "intent",
+                  "birthMonth",
+                  "consents",
+                  "ticket"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/admin/sign-in": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Single sign-on settings (secrets are never returned)",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college.",
+        "operationId": "sso_get_admin_sign_in",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
+    "/api/v1/admin/sign-in/{provider}": {
+      "put": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Turn Google Workspace or Microsoft Entra ID sign-in on or off, with its app details",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "sso_put_admin_sign_in_provider",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "google",
+                "microsoft"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "clientId": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 200
+                  },
+                  "clientSecret": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 500
+                  },
+                  "directoryId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "clientId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
     "/api/v1/legal/{doc}": {
       "get": {
         "tags": [

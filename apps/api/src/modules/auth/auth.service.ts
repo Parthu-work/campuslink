@@ -309,6 +309,57 @@ export class AuthService {
     );
   }
 
+  /**
+   * Prompt 2, G9: the account a first single sign-on starts. The identity provider already
+   * confirmed the address (so no confirmation email and no password); the rest is sign-up's:
+   * the required terms, the birth month (a minor waits for a guardian) and college verification.
+   */
+  async signupExternal(
+    body: {
+      email: string;
+      name: string;
+      intent: 'STUDENT' | 'ALUMNI';
+      birthMonth: string;
+      consents: string[];
+      locale: SignupBody['locale'];
+      identity: { provider: 'google' | 'microsoft'; subject: string };
+    },
+    meta: ClientMeta,
+  ): Promise<IssuedSession> {
+    const consents = body.consents.filter((c): c is ConsentPurpose =>
+      (CONSENT_PURPOSE_KEYS as string[]).includes(c),
+    );
+    const missing = CONSENT_PURPOSE_KEYS.filter((p) => CONSENT_PURPOSES[p].required && !consents.includes(p));
+    if (missing.length) throw badRequest('Please accept the required terms to create an account', missing);
+    if (await UserModel.exists({ email: body.email }))
+      throw new AppError(409, ErrorCode.CONFLICT, 'An account with this email exists. Sign in instead.');
+    const user = await UserModel.create({
+      email: body.email,
+      name: body.name.slice(0, 80) || body.email.split('@')[0],
+      roles: [body.intent],
+      verified: false,
+      emailVerifiedAt: new Date(),
+      ...ageFields(adultOnFromBirthMonth(body.birthMonth)),
+      locale: body.locale,
+      ssoIdentities: [{ ...body.identity, linkedAt: new Date() }],
+    });
+    await consentService.recordMany(user._id, consents, 'signup');
+    await this.onUserCreated?.(String(user._id));
+    await audit.record(
+      {
+        action: 'auth.signup',
+        actorId: String(user._id),
+        targetType: 'user',
+        targetId: String(user._id),
+        meta: { intent: body.intent, via: body.identity.provider },
+      },
+      meta,
+    );
+    const u = await UserModel.findById(user._id).select('email tokenVersion').lean();
+    if (u && this.onEmailVerified) await this.onEmailVerified(String(user._id), u.email ?? body.email, meta);
+    return this.createSession(user._id, u?.tokenVersion ?? 0, meta);
+  }
+
   async verifyEmail(token: string, meta: ClientMeta): Promise<void> {
     const t = await this.consumeToken(token, 'email_verify');
     if (!t) throw invalidLink();
@@ -476,6 +527,34 @@ export class AuthService {
     }
     await UserModel.updateOne({ _id: user._id }, { $set: { failedLogins: 0, lockedUntil: null } });
     return this.createSession(user._id, user.tokenVersion, meta);
+  }
+
+  /**
+   * Prompt 2, G9: sign-in after the college's identity provider vouched for the member (single
+   * sign-on). The same rules as a password sign-in: suspended members are refused, and members
+   * with two-factor authentication (every admin) still enter their code.
+   */
+  async signInExternal(
+    userId: Types.ObjectId,
+    meta: ClientMeta,
+  ): Promise<{ mfaRequired: true; ticket: string } | { mfaRequired: false; session: IssuedSession }> {
+    const user = await UserModel.findById(userId).select('status mfa.enabled tokenVersion').lean();
+    if (!user) throw unauthenticated();
+    if (user.status === 'suspended')
+      throw new AppError(
+        403,
+        ErrorCode.FORBIDDEN,
+        'This account is suspended. Contact your college administrator.',
+      );
+    await UserModel.updateOne({ _id: user._id }, { $set: { failedLogins: 0, lockedUntil: null } });
+    if (user.mfa?.enabled) {
+      const ticket = await this.d.tokens.signMfaTicket({
+        sub: String(user._id),
+        tid: String(requireTenantId()),
+      });
+      return { mfaRequired: true, ticket };
+    }
+    return { mfaRequired: false, session: await this.createSession(user._id, user.tokenVersion, meta) };
   }
 
   /** Returns the matched time step, or null. Tolerates ±1 step of clock drift. */

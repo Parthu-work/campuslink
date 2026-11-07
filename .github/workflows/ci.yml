@@ -39,7 +39,9 @@ jobs:
         run: |
           docker run -d --name mongo -p 27017:27017 -e GLIBC_TUNABLES=glibc.pthread.rseq=1 mongo:8.0 --quiet
           for i in $(seq 1 40); do
-            docker exec mongo mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' && exit 0
+            # HOME=/tmp: mongosh must not write into /data/db while the image's entrypoint chowns it
+            # (the race left the container stopped: 'chown: cannot access /data/db/.mongodb/mongosh').
+            docker exec -e HOME=/tmp mongo mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' && exit 0
             sleep 2
           done
           docker logs mongo | tail -50
@@ -128,7 +130,9 @@ jobs:
         run: |
           docker run -d --name mongo -p 27017:27017 -e GLIBC_TUNABLES=glibc.pthread.rseq=1 mongo:8.0 --quiet
           for i in $(seq 1 40); do
-            docker exec mongo mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' && exit 0
+            # HOME=/tmp: mongosh must not write into /data/db while the image's entrypoint chowns it
+            # (the race left the container stopped: 'chown: cannot access /data/db/.mongodb/mongosh').
+            docker exec -e HOME=/tmp mongo mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' && exit 0
             sleep 2
           done
           docker logs mongo | tail -50

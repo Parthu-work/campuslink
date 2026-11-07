@@ -111,6 +111,7 @@ export type AdminSectionId =
   | 'circles'
   | 'growth'
   // [slot: G9]
+  | 'signIn'
   // [slot: A G10 G11 G13]
   // [slot: B G12]
   | 'network'
@@ -174,6 +175,8 @@ export const ADMIN_SECTIONS: readonly AdminSection[] = [
   // Member invites and the public outcomes page (prompt 2, G8).
   section('growth', '/admin/growth', 'onboarding:manage', 'people'),
   // [slot: G9]
+  // Sign-in with the college's Google Workspace or Microsoft Entra ID accounts (prompt 2, G9).
+  section('signIn', '/admin/sign-in', 'tenant:settings', 'college'),
   // [slot: A G10 G11 G13]
   // [slot: B G12]
   // Cross-college network: switches, postings offered to the college, blocks, credentials (G12).

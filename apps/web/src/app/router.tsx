@@ -134,6 +134,9 @@ const load = {
   share: withPack('share', () => import('../features/share/share')),
   growthAdmin: withPack('share', () => import('../features/share/growth-admin')),
   // [slot: G9]
+  // Prompt 2, G9: reach, strings in the `reach` pack.
+  ssoComplete: withPack('reach', () => import('../features/reach/sso-complete')),
+  signInAdmin: withPack('reach', () => import('../features/reach/sign-in-admin')),
   // [slot: A G10 G11 G13]
   // [slot: B G12]
   // Prompt 2, G12: the network, the recruiter portal and the registry (one module), `network` pack.
@@ -349,6 +352,7 @@ function collegeRoutes(): RouteObject[] {
         // Anyone checks a certificate of mentorship by its code (prompt 2, G6).
         publicScreen(load.verifyCertificate, 'VerifyCertificatePage', '/verify-certificate/:code'),
         // [slot: G9]
+        publicScreen(load.ssoComplete, 'SsoCompletePage', '/sign-up/sso', '/home'),
         // [slot: A G10 G11 G13]
         // [slot: B G12]
         ...auth('/home'),
@@ -741,6 +745,8 @@ function collegeRoutes(): RouteObject[] {
               qc.ensureQueryData(q.adminGrowth()),
             ]),
             // [slot: G9]
+            // Single sign-on settings (prompt 2, G9).
+            screen(load.signInAdmin, 'SignInAdmin', 'tenant:settings', at('sign-in')),
             // [slot: A G10 G11 G13]
             // [slot: B G12]
             // Cross-college network and employer postings (prompt 2, G12).

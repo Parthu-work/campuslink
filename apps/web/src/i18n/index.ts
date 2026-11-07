@@ -74,6 +74,15 @@ const PACKS = {
     },
   },
   // [slot: G9]
+  /** Reach (prompt 2, G9): the calendar feed, the roster sync, single sign-on, the college picker. */
+  reach: {
+    sections: ['reach'],
+    load: {
+      en: () => import('./packs/reach.en.json'),
+      te: () => import('./packs/reach.te.json'),
+      hi: () => import('./packs/reach.hi.json'),
+    },
+  },
   // [slot: A G10 G11 G13]
   // [slot: B G12]
   /** The network (prompt 2, G12): alumni across colleges, credentials, the recruiter portal and registry. */

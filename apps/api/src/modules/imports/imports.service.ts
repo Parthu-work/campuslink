@@ -359,6 +359,157 @@ export class ImportsService {
     }
   }
 
+  // ── The scheduled roster sync (prompt 2, G9) ─────────────────────────────
+
+  /** Reads a Google Sheet or REST source into rows (a source error is a 400 with its reason). */
+  async readSource(source: ImportSourceBody): Promise<SourceRows> {
+    try {
+      if (source.kind === 'gsheet') return await googleSheetAdapter(this.d.fetcher).read(source.url);
+      return await restJsonAdapter(this.d.fetcher).read({
+        url: source.url,
+        recordsPath: source.recordsPath,
+        bearerToken: source.bearerToken,
+      });
+    } catch (e) {
+      if (e instanceof SourceError) throw badRequest(e.message);
+      throw e;
+    }
+  }
+
+  /**
+   * What a roster import of these rows would do, without doing it: the same rules as `run`
+   * (claimed records keep what the member proved; only their guardian's number may change).
+   * The sample names the fields that change, never their values.
+   */
+  async diffRoster(rows: Record<string, string>[], mapping: ImportMapping) {
+    const counts = { total: rows.length, created: 0, updated: 0, unchanged: 0, skippedClaimed: 0, errors: 0 };
+    const sample: { rollNumber: string; change: 'new' | 'updated'; fields: string[] }[] = [];
+    const note = (rollNumber: string, change: 'new' | 'updated', fields: string[]) => {
+      if (sample.length < 50) sample.push({ rollNumber, change, fields });
+    };
+    const seen = new Set<string>();
+    const valid: RowOk[] = [];
+    for (const row of rows) {
+      const r = mapRow(row, mapping);
+      if (!r.ok || seen.has(r.value.rollNumber)) {
+        counts.errors++;
+        continue;
+      }
+      seen.add(r.value.rollNumber);
+      valid.push(r.value);
+    }
+    const index = (v: string | null) => (v ? this.d.cipher.blindIndex(v) : null);
+    for (let i = 0; i < valid.length; i += 500) {
+      const chunk = valid.slice(i, i + 500);
+      const existing = new Map(
+        (
+          await WhitelistModel.find({ rollNumber: { $in: chunk.map((v) => v.rollNumber) } })
+            .select('rollNumber name branch gradYear kind emailIndex phoneIndex guardianPhoneIndex status')
+            .lean()
+        ).map((e) => [e.rollNumber, e]),
+      );
+      for (const v of chunk) {
+        const e = existing.get(v.rollNumber);
+        if (!e) {
+          counts.created++;
+          note(v.rollNumber, 'new', []);
+          continue;
+        }
+        const fields = (
+          [
+            ['name', e.name, v.name],
+            ['branch', e.branch, v.branch],
+            ['gradYear', e.gradYear, v.gradYear],
+            ['kind', e.kind, v.kind],
+            ['email', e.emailIndex, index(v.email)],
+            ['phone', e.phoneIndex, index(v.phone)],
+            ['guardianPhone', e.guardianPhoneIndex, index(v.guardianPhone)],
+          ] as const
+        )
+          .filter(([, before, after]) => (before ?? null) !== (after ?? null))
+          .map(([f]) => f as string);
+        if (!fields.length) counts.unchanged++;
+        else if (
+          e.status === 'claimed' &&
+          !(fields.length === 1 && fields[0] === 'guardianPhone' && v.guardianPhone)
+        )
+          counts.skippedClaimed++;
+        else {
+          counts.updated++;
+          note(v.rollNumber, 'updated', fields);
+        }
+      }
+    }
+    return { ...counts, sample };
+  }
+
+  /** An import is queued or running (the sync waits for it rather than racing it). */
+  async busy(): Promise<boolean> {
+    return !!(await ImportJobModel.exists({ status: { $in: ['queued', 'running'] } }));
+  }
+
+  /** The mapping of a completed roster import (the sync reuses it), or null. */
+  async rosterMappingOf(jobId: string): Promise<ImportMapping | null> {
+    const job = await ImportJobModel.findOne({ _id: jobId, status: 'completed' }).select('mapping').lean();
+    const mapping = job?.mapping as ImportMapping | undefined;
+    return mapping && mapping.type !== 'academics' ? mapping : null;
+  }
+
+  /**
+   * Starts a real roster import from rows already stored (the sync's file), with the same job,
+   * audit, error report and rollback as an import the admin starts.
+   */
+  async startStored(
+    userId: string,
+    source: { kind: 'gsheet' | 'rest'; label: string },
+    fileId: string,
+    totalRows: number,
+    mapping: ImportMapping,
+    meta: RequestMetaLite,
+  ): Promise<{ id: string }> {
+    if (await this.busy()) throw conflict('Another import is still running. Wait for it to finish.');
+    const job = await ImportJobModel.create({
+      createdBy: new Types.ObjectId(userId),
+      sourceKind: source.kind,
+      sourceLabel: source.label.slice(0, 200),
+      fileId: new Types.ObjectId(fileId),
+      mapping,
+      dryRun: false,
+      counts: { total: totalRows },
+    });
+    await audit.record(
+      {
+        action: 'import.started',
+        actorId: userId,
+        targetType: 'import',
+        targetId: String(job._id),
+        meta: { rows: totalRows, dryRun: false, source: source.kind, sync: true },
+      },
+      meta,
+    );
+    await this.d.jobs.enqueue(
+      IMPORT_JOB,
+      { tenantId: String(requireTenantId()), jobId: String(job._id) },
+      { jobId: String(job._id) },
+    );
+    return { id: String(job._id) };
+  }
+
+  /** Stores rows for a later import (the sync's waiting run keeps them until it expires). */
+  async storeRows(userId: string, rows: Record<string, string>[], ttlMs: number): Promise<string> {
+    const file = await this.d.files.storeImportSource(
+      userId,
+      Buffer.from(JSON.stringify(rows)),
+      'application/json',
+      ttlMs,
+    );
+    return file.id;
+  }
+
+  async removeStored(fileId: string): Promise<void> {
+    await this.d.files.remove(fileId).catch(() => undefined);
+  }
+
   // ── start / run ─────────────────────────────
   async start(
     userId: string,

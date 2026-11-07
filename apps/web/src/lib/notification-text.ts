@@ -23,6 +23,8 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     round: d.round ?? '',
     circle: d.circle ?? '',
     // [slot: G9]
+    changed: d.changed ?? '',
+    total: d.total ?? '',
     // [slot: A G10 G11 G13]
     // [slot: B G12]
     college: d.college ?? '',
@@ -175,6 +177,9 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       case 'referral_outcome_prompt':
         return '/referrals?box=sent';
       // [slot: G9]
+      // Prompt 2, G9: a large roster sync change waits for an admin.
+      case 'roster_sync_review':
+        return '/admin/imports';
       // [slot: A G10 G11 G13]
       // [slot: B G12]
       // Prompt 2, G12: cross-college intros.

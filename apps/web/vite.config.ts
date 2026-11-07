@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { APP_NAME } from '@campuslink/shared';
 import { previewSecurityHeaders } from './security-headers';
 import { pureShared } from './pure-shared';
+import { assetLinks } from './asset-links';
 
 /** Same-origin API proxy. Sockets that close mid-flight (tab closed) are normal, not errors. */
 const apiProxy = {
@@ -58,6 +59,8 @@ export default defineConfig({
     // The product name has one home (packages/shared/src/brand.ts); index.html uses %APP_NAME%.
     { name: 'app-name', transformIndexHtml: (html: string) => html.replaceAll('%APP_NAME%', APP_NAME) },
     pureShared(),
+    // Android app links (prompt 2, G9): /.well-known/assetlinks.json when the build is told the app.
+    assetLinks(),
     preloadUiFont(),
     react(),
     tailwindcss(),

@@ -88,6 +88,12 @@ import { SHARE_MODULE } from './http/openapi.js';
 import { backgroundAuth as backgroundAuthOf } from './modules/users/users.service.js';
 import { findTenantById as tenantById } from './modules/tenants/tenant.cache.js';
 // [slot: G9]
+import { CalendarService } from './modules/calendar/calendar.service.js';
+import { calendarRoutes } from './modules/calendar/calendar.routes.js';
+import { ROSTER_SYNC_JOB, RosterSyncService } from './modules/imports/roster-sync.service.js';
+import { rosterSyncRoutes } from './modules/imports/roster-sync.routes.js';
+import { SsoService } from './modules/auth/sso/sso.service.js';
+import { ssoRoutes } from './modules/auth/sso/sso.routes.js';
 // [slot: A G10 G11 G13]
 // [slot: B G12]
 import { resolveTxt } from 'node:dns/promises';
@@ -1234,6 +1240,62 @@ export function createApp({
   );
 
   // [slot: G9]
+  // ── Reach (prompt 2, G9) ─────────────────────────────
+  // The calendar feed: sessions, events the member is going to, and drive dates and deadlines.
+  const calendarService = new CalendarService({
+    sessions: (id, from, to) => sessionsService.calendarFor(id, from, to),
+    events: (id, from, to) => eventsService.calendarFor(id, from, to),
+    drives: async (viewer) => {
+      if (!viewer.permissions.has('placements:view') || !(await featureEnabled('placements'))) return [];
+      const [registered, open] = await Promise.all([
+        placementsService.list(viewer, 'registered'),
+        placementsService.list(viewer, 'eligible'),
+      ]);
+      return [
+        ...registered
+          .filter((d) => d.myRegistration && d.myRegistration.status !== 'withdrawn')
+          .map((d) => ({
+            kind: 'drive' as const,
+            id: d.id,
+            start: new Date(d.driveDate),
+            company: d.company.name,
+            title: d.title,
+            venue: d.venue ?? '',
+          })),
+        ...open
+          .filter((d) => !d.myRegistration)
+          .map((d) => ({
+            kind: 'deadline' as const,
+            id: d.id,
+            at: new Date(d.registrationCloseAt),
+            company: d.company.name,
+            title: d.title,
+          })),
+      ];
+    },
+    viewerOf: (id, tenant) => backgroundAuthOf(id, tenant),
+    tenantUrl: (tenant, p) => authService.tenantUrl(tenant, p),
+  });
+  // The scheduled roster sync: the import pipeline on a schedule, with approval above 5%.
+  const rosterSyncService = new RosterSyncService({
+    imports: importsService,
+    cipher,
+    logger,
+    jobs: queue,
+    admins: () => usersService.activeIdsWithRole(Role.COLLEGE_ADMIN),
+    notify: async (id, data) => {
+      await notificationsService.notify(id, 'roster_sync_review', data);
+    },
+  });
+  queue.register(ROSTER_SYNC_JOB, async (data) => {
+    await rosterSyncService.run(data);
+  });
+  // Single sign-on with the college's Google Workspace or Microsoft Entra ID (optional per college).
+  const ssoService = new SsoService({
+    auth: authService,
+    cipher,
+    tenantUrl: (tenant, p) => authService.tenantUrl(tenant, p),
+  });
   // [slot: A G10 G11 G13]
   // [slot: B G12]
   // ── The network (prompt 2, G12, ADR 0014) ─────────────────────────────
@@ -1566,6 +1628,7 @@ export function createApp({
   privacyService.register('publicPages', hook(publicPagesService));
   privacyService.register('parentDigest', hook(parentDigestService));
   // [slot: G9]
+  privacyService.register('calendarFeed', hook(calendarService));
   // [slot: A G10 G11 G13]
   // [slot: B G12]
   privacyService.register('network', hook(networkService));
@@ -1787,6 +1850,9 @@ export function createApp({
   app.use(API_PREFIX, defineModule('member-invites', memberInviteRoutes(onboardingService), pipeline));
   app.use(API_PREFIX, defineModule('parent-digest', parentDigestRoutes(parentDigestService), pipeline));
   // [slot: G9]
+  app.use(API_PREFIX, defineModule('calendar', calendarRoutes(calendarService), pipeline));
+  app.use(API_PREFIX, defineModule('roster-sync', rosterSyncRoutes(rosterSyncService), pipeline));
+  app.use(API_PREFIX, defineModule('sso', ssoRoutes(ssoService, cookie), pipeline));
   // [slot: A G10 G11 G13]
   // [slot: B G12]
   app.use(
@@ -1915,6 +1981,9 @@ export function createApp({
     publicPages: publicPagesService,
     parentDigest: parentDigestService,
     // [slot: G9]
+    calendar: calendarService,
+    rosterSync: rosterSyncService,
+    sso: ssoService,
     // [slot: A G10 G11 G13]
     // [slot: B G12]
     network: networkService,

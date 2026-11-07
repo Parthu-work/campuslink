@@ -16,5 +16,11 @@ coverage
 # Local encrypted backups (scripts/backup)
 backups/
 
+# The Android app's signing key and the project Bubblewrap generates (prompt 2, G9)
+*.keystore
+apps/android/app/
+apps/android/build/
+apps/android/.gradle/
+
 # Staging rehearsal secrets and certificate (deploy/staging/up.sh)
 .staging/
