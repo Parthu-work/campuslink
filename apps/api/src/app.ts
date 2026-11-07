@@ -2202,6 +2202,7 @@ export function createApp({
     files: filesService,
     imports: importsService,
     verification: verificationService,
+    onboarding: onboardingService,
     profiles: profilesService,
     queue,
     realtime,

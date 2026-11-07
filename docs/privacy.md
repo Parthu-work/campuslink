@@ -97,6 +97,7 @@
 
 - `pnpm seed` creates two fictional colleges for development and demos only. Every person, company, drive, offer and report in it is invented and labelled DEMO, with `.example` email addresses and `+91 90000 …` numbers that belong to nobody.
 - The demo analytics cohort is 60 detached sign-ups (`anonKey` starting `demo-`) with no account behind them, so they never appear as people anywhere in the app.
+- **The demo year (prompt 2, G13, `scripts/seed-year.ts`).** Each college also gets 86 members named "Demo Student 27-04" or "Demo Alumnus 26-11" (four batches), three placement seasons at the demo companies, sessions, referrals, interview write-ups, résumés, mock interviews, practice sets, micro-asks, a circle, invites and network opt-ins. Every text is marked DEMO. Their 52 weeks of product events follow the track rules: adults with the `analytics_aggregate` consent only (two demo members withdrew it and have no events), no minors, ids and enum values only in `props`. The year's AI usage is replayed from the tokens measured on real Copilot and study questions with the mock provider; no AI provider outside the machine is called. A second `pnpm seed` gives the same counts in every collection (only the mock interview token totals move slightly, since their prompts contain run-specific ids).
 - The seed refuses to run with `NODE_ENV=production`, because it starts by dropping the whole database it is pointed at (`MONGODB_URI`).
 
 ## The network (prompt 2, G12, ADR 0014)

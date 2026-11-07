@@ -66,6 +66,7 @@ import {
 } from '../modules/roadmaps/roadmap.model.js';
 import { studySeeder } from './seed-study.js';
 import { graphSeeder } from './seed-graph.js';
+import { yearSeeder, type YearSummary } from './seed-year.js';
 import { InvoiceCounterModel, InvoiceModel, PaymentModel } from '../modules/billing/billing.model.js';
 import { financialYearOf, gstSplit, invoiceNumber, istDay } from '@campuslink/shared';
 
@@ -1291,6 +1292,8 @@ async function main() {
   const rows: string[][] = [];
   const seedStudy = studySeeder(env);
   const seedGraph = graphSeeder(env);
+  const { seedYear, replayAi } = yearSeeder(env);
+  const years: [string, YearSummary][] = [];
 
   const platform = await TenantModel.create({
     slug: 'admin',
@@ -1537,8 +1540,23 @@ async function main() {
       await seedWhatsAppLog(ids, c.slug);
       await seedSupport(ids, t._id, t.branding.displayName);
       await seedStudy(t._id, ids.get('faculty') as Types.ObjectId, { material: studyMaterial });
+      // Prompt 2, G13: a full demo year (people, seasons, sessions, write-ups, readiness, habits, events).
+      years.push([
+        c.slug,
+        await seedYear({
+          tenantId: t._id,
+          slug: c.slug,
+          prefix: c.slug.slice(0, 2).toUpperCase(),
+          domain: c.domain,
+          ids,
+          cipher,
+          addUser: (email, name, roles) => addUser(email, name, roles, hash),
+        }),
+      ]);
       // Prompt 2, G10: company pages from the seeded DEMO drives, offers and alumni.
       await seedGraph();
+      // The year's AI usage, measured on real Copilot and study questions once the index exists.
+      await replayAi({ tenantId: t._id });
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
   }
@@ -1546,6 +1564,12 @@ async function main() {
   console.warn(
     `\nSeeded ${COLLEGES.length} demo colleges + platform. Password for every account: ${password}\n`,
   );
+  for (const [slug, y] of years)
+    console.warn(
+      `DEMO year at ${slug}: ${Object.entries(y)
+        .map(([k, v]) => `${k} ${v}`)
+        .join(', ')}`,
+    );
   console.warn(['Host', 'Email', 'Role', 'Notes'].join(' | '));
   for (const r of rows) console.warn(r.join(' | '));
   console.warn(
