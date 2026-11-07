@@ -30,6 +30,7 @@ ALB (HTTPS 443, TLS 1.2+; HTTP 80 → 301)  ── AWS WAF (managed common rule 
     │
     ├── default: web tasks, nginx (deploy/web.Dockerfile): static build + security headers
     ├── /p/*:    API tasks (public pages and their share images, prompt 2, G8; cached 5 minutes)
+    ├── /*/verify/*, /*/did.json, /*/credentials/status/1: API tasks (verified credentials, G12)
     └── /api/*:  API tasks (deploy/api.Dockerfile, Express + Socket.io), ≥ 2 tasks across 2 AZs
             │    worker tasks (deploy/worker.Dockerfile, BullMQ jobs; no traffic from the ALB), ≥ 2 tasks
             │

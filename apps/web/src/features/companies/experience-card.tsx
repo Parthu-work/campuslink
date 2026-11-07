@@ -48,7 +48,6 @@ export function ExperienceCard({
             authorName={who}
             isMine={false}
             blockable={false}
-            what={t('moat.card.what')}
           />
         )}
       </div>

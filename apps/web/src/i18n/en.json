@@ -1549,7 +1549,8 @@
     "roadmap_comment": "roadmap comment",
     "event": "event",
     "event_question": "event question",
-    "review": "review"
+    "review": "review",
+    "experience": "interview write-up"
   },
   "feed": {
     "tabs": "Feed view",

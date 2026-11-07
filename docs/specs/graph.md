@@ -62,4 +62,4 @@ The same nightly run writes, per mentor (`mentoroutcomes`), what their mentees r
 
 ## Known gaps
 
-- `content.experience` (the content name in moderation notices) is not in the core language files yet (the core files are frozen to three anchors while the branches are parallel); the report menu gets it from the pack. G13 adds it.
+None open. `content.experience` (the content name in moderation notices and the report menu) is in the core language files since G13.
