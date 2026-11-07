@@ -1,5 +1,6 @@
 import type { Count } from './analytics.js';
 import type { AiStatusView } from './study.js';
+import type { AdminSectionId } from '../navigation.js';
 
 /**
  * Admin › Overview: what is waiting for this member, with one tap into each queue. Each part is
@@ -26,4 +27,6 @@ export interface AdminOverviewView {
   offers?: { pending: number } | null;
   /** B14: problem reports sent to the college and not answered yet (support:manage). */
   support?: { open: number } | null;
+  /** Prompt 2: review queues by admin section (interview questions, practice items, write-ups). */
+  queues?: { id: AdminSectionId; pending: number }[];
 }

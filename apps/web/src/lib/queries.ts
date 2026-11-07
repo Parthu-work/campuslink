@@ -1045,6 +1045,5 @@ export const adminOutcomesPreview = () =>
     queryFn: ({ signal }) => api.get<CollegeOutcomesView | null>('/admin/growth/outcomes-preview', signal),
   });
 
-// [slot: G9]
-// [slot: A G10 G11 G13]
-// [slot: B G12]
+/** Company pages from the Placement Graph (prompt 2, G10), defined with the feature; the router prefetches them. */
+export { companies, company } from '../features/companies/queries';

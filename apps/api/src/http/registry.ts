@@ -38,8 +38,8 @@ export interface RouteSpec<
   summary: string;
   tag: string;
   access: Access;
-  /** Which kind of tenant host serves this route. Default: college. */
-  scope?: 'college' | 'platform' | 'any';
+  /** Which kind of tenant host serves this route. Default: college. `employer`: prompt 2, G12 (ADR 0014). */
+  scope?: 'college' | 'platform' | 'employer' | 'any';
   /** The feature switch this route belongs to: 403 FEATURE_DISABLED while the college has it off. */
   feature?: Feature;
   body?: B;
@@ -164,7 +164,7 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
   return router;
 }
 
-export function requireScope(scope: 'college' | 'platform' | 'any'): RequestHandler {
+export function requireScope(scope: 'college' | 'platform' | 'employer' | 'any'): RequestHandler {
   return (req, _res, next) => {
     const t = req.tenant;
     if (!t || (scope !== 'any' && t.kind !== scope)) {

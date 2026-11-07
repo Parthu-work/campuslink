@@ -73,7 +73,6 @@ const PACKS = {
       hi: () => import('./packs/share.hi.json'),
     },
   },
-  // [slot: G9]
   /** Reach (prompt 2, G9): the calendar feed, the roster sync, single sign-on, the college picker. */
   reach: {
     sections: ['reach'],
@@ -83,8 +82,33 @@ const PACKS = {
       hi: () => import('./packs/reach.hi.json'),
     },
   },
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
+  /** The moat data (prompt 2, G10): company pages, the Interview Experience Bank, outcome reasons. */
+  moat: {
+    sections: ['moat'],
+    load: {
+      en: () => import('./packs/moat.en.json'),
+      te: () => import('./packs/moat.te.json'),
+      hi: () => import('./packs/moat.hi.json'),
+    },
+  },
+  /** The Career Copilot (prompt 2, G11). */
+  copilot: {
+    sections: ['copilot'],
+    load: {
+      en: () => import('./packs/copilot.en.json'),
+      te: () => import('./packs/copilot.te.json'),
+      hi: () => import('./packs/copilot.hi.json'),
+    },
+  },
+  /** The network (prompt 2, G12): alumni across colleges, credentials, the recruiter portal and registry. */
+  network: {
+    sections: ['network', 'recruiter'],
+    load: {
+      en: () => import('./packs/network.en.json'),
+      te: () => import('./packs/network.te.json'),
+      hi: () => import('./packs/network.hi.json'),
+    },
+  },
 } satisfies Record<
   string,
   { sections: string[]; load: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> }

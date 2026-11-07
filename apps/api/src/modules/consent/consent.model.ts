@@ -1,5 +1,5 @@
 import { Schema, type InferSchemaType } from 'mongoose';
-import { CONSENT_PURPOSE_KEYS, GUARDIAN_CONSENT } from '@campuslink/shared';
+import { CONSENT_PURPOSE_KEYS, NETWORK_CONSENT_KEYS, GUARDIAN_CONSENT } from '@campuslink/shared';
 import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
 
 /** Accepting a new privacy notice and terms (B14); not a choice in Settings. */
@@ -11,7 +11,7 @@ const consentSchema = new Schema(
     userId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     purpose: {
       type: String,
-      enum: [...CONSENT_PURPOSE_KEYS, GUARDIAN_CONSENT.purpose, NOTICE_PURPOSE],
+      enum: [...CONSENT_PURPOSE_KEYS, ...NETWORK_CONSENT_KEYS, GUARDIAN_CONSENT.purpose, NOTICE_PURPOSE],
       required: true,
     },
     version: { type: Number, required: true },

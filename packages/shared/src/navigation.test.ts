@@ -44,103 +44,25 @@ describe('role-aware navigation', () => {
         g.group,
         g.items.map((i) => i.id),
       ]);
-    // New sections sit in ADMIN_SECTIONS' slots (after G8's), so within each group they follow
-    // the sections above them and come before analytics/reports and the college group's.
     expect(admin([Role.COLLEGE_ADMIN])).toEqual([
-      [
-        'people',
-        [
-          ...['users', 'verification', 'imports', 'list', 'onboarding', 'peers', 'growth'],
-          // [slot: G9]
-          // [slot: A G10 G11 G13]
-          // [slot: B G12]
-        ],
-      ],
+      ['people', ['users', 'verification', 'imports', 'list', 'onboarding', 'peers', 'growth']],
       [
         'placements',
-        [
-          ...['placements', 'offers', 'interviewQuestions', 'readiness', 'practiceBank'],
-          // [slot: G9]
-          // [slot: A G10 G11 G13]
-          // [slot: B G12]
-        ],
+        ['placements', 'offers', 'interviewQuestions', 'readiness', 'practiceBank', 'experiences', 'network'],
       ],
       [
         'community',
-        [
-          ...[
-            'moderation',
-            'mentorship',
-            'sources',
-            'jobSources',
-            'rewards',
-            'recognition',
-            'giving',
-            'circles',
-          ],
-          // [slot: G9]
-          // [slot: A G10 G11 G13]
-          // [slot: B G12]
-        ],
+        ['moderation', 'mentorship', 'sources', 'jobSources', 'rewards', 'recognition', 'giving', 'circles'],
       ],
-      [
-        'insights',
-        [
-          // [slot: G9]
-          // [slot: A G10 G11 G13]
-          // [slot: B G12]
-          ...['analytics', 'reports'],
-        ],
-      ],
-      [
-        'college',
-        [
-          // [slot: G9]
-          'signIn',
-          // [slot: A G10 G11 G13]
-          // [slot: B G12]
-          ...['branding', 'features', 'ai', 'billing', 'support', 'audit'],
-        ],
-      ],
+      ['insights', ['analytics', 'reports']],
+      ['college', ['signIn', 'branding', 'features', 'ai', 'billing', 'support', 'audit']],
     ]);
     // Faculty review the interview question bank (prompt 2, G3).
     expect(admin([Role.FACULTY])).toEqual([
-      [
-        'people',
-        [
-          'peers',
-          // [slot: G9]
-          // [slot: A G10 G11 G13]
-          // [slot: B G12]
-        ],
-      ],
-      [
-        'placements',
-        [
-          ...['interviewQuestions', 'readiness', 'practiceBank'],
-          // [slot: G9]
-          // [slot: A G10 G11 G13]
-          // [slot: B G12]
-        ],
-      ],
-      [
-        'community',
-        [
-          ...['moderation', 'circles'],
-          // [slot: G9]
-          // [slot: A G10 G11 G13]
-          // [slot: B G12]
-        ],
-      ],
-      [
-        'insights',
-        [
-          // [slot: G9]
-          // [slot: A G10 G11 G13]
-          // [slot: B G12]
-          'analytics',
-        ],
-      ],
+      ['people', ['peers']],
+      ['placements', ['interviewQuestions', 'readiness', 'practiceBank', 'experiences']],
+      ['community', ['moderation', 'circles']],
+      ['insights', ['analytics']],
     ]);
     expect(admin([Role.STUDENT])).toEqual([]);
   });

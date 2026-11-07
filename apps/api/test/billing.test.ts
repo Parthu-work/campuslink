@@ -455,7 +455,8 @@ describe('reminders and read-only (B10)', () => {
       spec: { method: string; path: string; scope?: string; readOnlyOk?: boolean };
     }[];
     const writes = registry.filter(
-      (r) => r.spec.method !== 'get' && (r.spec.scope ?? 'college') !== 'platform',
+      // Employer routes (prompt 2, G12) are served on employer hosts only.
+      (r) => r.spec.method !== 'get' && !['platform', 'employer'].includes(r.spec.scope ?? 'college'),
     );
     expect(writes.length).toBeGreaterThan(100);
     const allowed: string[] = [];
@@ -532,6 +533,15 @@ describe('reminders and read-only (B10)', () => {
         'POST /support/tickets',
         'POST /support/tickets/:id/replies',
         'PATCH /support/tickets/:id',
+        // Prompt 2, G12: network privacy (settings, consents, stop sharing, revoke) and safety.
+        'PUT /network/me',
+        'PUT /network/consents',
+        'DELETE /network/candidacies/:ref',
+        'DELETE /credentials/:id',
+        'POST /network/intros/:id/report',
+        'POST /network/postings/:id/report',
+        'POST /admin/network/postings/:id/moderate',
+        'POST /admin/network/blocks',
       ].sort(),
     );
   });
@@ -653,6 +663,7 @@ describe('who sees what (B10)', () => {
     expect([...PLATFORM_MODELS].sort()).toEqual([
       'InvoiceCounter',
       'Migration',
+      'NetworkCluster',
       'PlanSetting',
       'PlatformSetting',
       'Tenant',

@@ -63,6 +63,8 @@ test.describe('people', () => {
     await page.goto(`http://${host}.localhost:4173/people`);
     await expect(page.getByRole('heading', { name: 'People' })).toBeVisible();
     await page.getByRole('button', { name: 'Alumni', exact: true }).click();
+    // The demo year (G13) adds dozens of alumni, so find Rahul by name.
+    await page.getByPlaceholder('Search by name, company or skill').fill('Rahul');
     await expect(page.getByText('Rahul Varma')).toBeVisible();
     await expectNoA11yViolations(page);
     await page.getByPlaceholder('Search by name, company or skill').fill('Northstar');

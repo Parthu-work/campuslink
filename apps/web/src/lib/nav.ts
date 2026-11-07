@@ -5,9 +5,6 @@ import {
   BadgeCheck,
   Flag,
   Share2,
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
   Bell,
   BookOpen,
   Bookmark,
@@ -82,9 +79,12 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   circles: UsersRound,
   share: Share2,
   captain: Flag,
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
+  companies: Building2,
+  copilot: Sparkles,
+  // Icons already on the boot path (no new icon in the initial bundle).
+  network: Users,
+  recruiter: Building2,
+  employers: Building2,
   requests: Inbox,
   review: ClipboardCheck,
   roadmaps: Orbit,
@@ -134,6 +134,12 @@ const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'practice',
   'peers',
   'circles',
+  // Prompt 2: G8's share and Campus Captain screens, G10's company pages, G11's Career Copilot (their
+  // screens shipped, but the menu and palette never offered them).
+  'share',
+  'captain',
+  'companies',
+  'copilot',
   'requests',
   'roadmaps',
   'events',
@@ -156,8 +162,12 @@ const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'admin',
   'verify',
   'help',
+  'network',
 ]);
+/** An employer's host (prompt 2, G12): the recruiter portal and the account's settings. */
+const EMPLOYER_SHIPPED: ReadonlySet<NavId> = new Set<NavId>(['recruiter', 'settings']);
 const PLATFORM_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
+  'employers',
   'platform',
   'billing',
   'traction',
@@ -197,7 +207,8 @@ export function useNav() {
   const { t } = useTranslation();
   const { data: me } = useMe();
   const tenant = useTenant();
-  const platform = tenant.kind === 'platform';
+  // Employer hosts (prompt 2, G12) have no college features either: no feed, messages or palette.
+  const platform = tenant.kind !== 'college';
   const unreadMessages = useUnreadMessages(!platform);
   const unreadNotifications = useUnreadNotifications(!platform);
 
@@ -211,7 +222,11 @@ export function useNav() {
         features: tenant.features,
         gradYear: me?.gradYear ?? null,
       },
-      platform ? PLATFORM_SHIPPED : featureShipped(COLLEGE_SHIPPED, tenant.features),
+      tenant.kind === 'employer'
+        ? EMPLOYER_SHIPPED
+        : platform
+          ? PLATFORM_SHIPPED
+          : featureShipped(COLLEGE_SHIPPED, tenant.features),
     );
     const badges: Partial<Record<NavId, number>> = {
       messages: unreadMessages,
@@ -245,7 +260,7 @@ export function useNav() {
       unreadNotifications,
       canMessage: permissions.includes('messages:send'),
     };
-  }, [me, platform, tenant.features, t, unreadMessages, unreadNotifications]);
+  }, [me, platform, tenant.kind, tenant.features, t, unreadMessages, unreadNotifications]);
 }
 
 /** Platform-aware shortcut hint for the command palette (⌘K on Apple devices). */

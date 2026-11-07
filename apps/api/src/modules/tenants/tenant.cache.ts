@@ -3,6 +3,7 @@ import {
   resolveFeatures,
   type PermissionOverrides,
   type Branding,
+  type EmployerStatus,
   type Feature,
   type GstStateCode,
   type PlanId,
@@ -15,7 +16,31 @@ import { entitledFeatures, planCatalogue, termsOf } from '../billing/entitlement
 export interface TenantRecord {
   _id: Types.ObjectId;
   slug: string;
-  kind: 'college' | 'platform';
+  kind: 'college' | 'platform' | 'employer';
+  /** Prompt 2, G12 (ADR 0014): the college's network switches; an employer's verification. */
+  network?: {
+    alumniDiscovery?: boolean;
+    employerAccess?: boolean;
+    credentials?: boolean;
+    termsVersion?: number | null;
+    changedBy?: Types.ObjectId | null;
+    changedAt?: Date | null;
+    blockedEmployers?: { employerId: Types.ObjectId; at: Date }[];
+  };
+  employer?: {
+    legalName: string;
+    domain: string;
+    gstin: string;
+    status: EmployerStatus;
+    emailVerifiedAt: Date | null;
+    dnsToken: string;
+    domainVerifiedAt: Date | null;
+    gstinCheckedAt: Date | null;
+    approvedBy: Types.ObjectId | null;
+    approvedAt: Date | null;
+    reviewNote: string;
+    suspendedAt: Date | null;
+  } | null;
   status: 'active' | 'suspended';
   branding: Branding;
   logo?: { fileId: Types.ObjectId | null };

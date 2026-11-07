@@ -27,6 +27,10 @@ export const ErrorCode = {
   CHANNEL_UNAVAILABLE: 'CHANNEL_UNAVAILABLE',
   /** The college is read-only: an invoice is over 30 days overdue (B10). Reading and exporting still work. */
   READ_ONLY: 'READ_ONLY',
+  /** Prompt 2, G12: the college (or the member) has not turned the network on (ADR 0014 N20). */
+  NETWORK_NOT_ENABLED: 'NETWORK_NOT_ENABLED',
+  /** Prompt 2, G12: network purposes and credentials are never for members under 18 (N8). */
+  NOT_FOR_MINORS: 'NOT_FOR_MINORS',
   INTERNAL: 'INTERNAL',
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

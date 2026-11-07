@@ -1,5 +1,5 @@
 import type { Types } from 'mongoose';
-import { Role } from '@campuslink/shared';
+import { EMPLOYER_SLUG_PREFIX, Role } from '@campuslink/shared';
 import type { z } from 'zod';
 import type { createTenantBody, updateTenantBody } from '@campuslink/shared';
 import { TenantModel } from '../tenants/tenant.model.js';
@@ -55,6 +55,9 @@ export class PlatformService {
   onTenantCreated?: () => Promise<unknown>;
 
   async createTenant(actorId: string, body: z.output<typeof createTenantBody>, meta: RequestMetaLite) {
+    // Employer hosts are emp-<name> (prompt 2, G12, ADR 0014 N2); a college never takes the prefix.
+    if (body.slug.startsWith(EMPLOYER_SLUG_PREFIX))
+      throw conflict('That subdomain is reserved for employers');
     if (await TenantModel.exists({ slug: body.slug })) throw conflict('That subdomain is taken');
     const tenant = await TenantModel.create({
       slug: body.slug,

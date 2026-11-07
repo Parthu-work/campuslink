@@ -204,16 +204,25 @@ test.describe('scroll-aware chrome and tab memory (phones)', () => {
     await page.mouse.move(180, 400);
     await page.mouse.wheel(0, 500);
     await expect(html).toHaveAttribute('data-chrome', 'hidden');
-    const y = await page.evaluate(() => window.scrollY);
-    // Open a post on screen, in the app (a full page load would have nothing to restore).
+    // Open a post on screen, in the app (a full page load would have nothing to restore). The cards
+    // above the feed (session, Next Step, today's pick) can be tall, so scroll on until one shows.
     const posts = page.locator('main a[href^="/posts/"]');
-    for (let i = 0; i < (await posts.count()); i++) {
-      const box = await posts.nth(i).boundingBox();
-      if (box && box.y > 80 && box.y < 650) {
-        await posts.nth(i).click();
-        break;
+    const onScreen = async () => {
+      for (let i = 0; i < (await posts.count()); i++) {
+        const box = await posts.nth(i).boundingBox();
+        if (box && box.y > 80 && box.y < 650) return posts.nth(i);
       }
+      return null;
+    };
+    let post = await onScreen();
+    for (let i = 0; i < 8 && !post; i++) {
+      await page.mouse.wheel(0, 300);
+      await page.waitForTimeout(400);
+      post = await onScreen();
     }
+    if (!post) throw new Error('No post on screen to open');
+    const y = await page.evaluate(() => window.scrollY);
+    await post.click();
     await page.waitForURL(/\/posts\//);
     await expect(html).toHaveAttribute('data-chrome', 'shown');
     await page.waitForTimeout(1300); // past the window in which scrolling still counts as the member's

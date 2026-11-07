@@ -22,11 +22,9 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
     percent: d.percent ?? '',
     round: d.round ?? '',
     circle: d.circle ?? '',
-    // [slot: G9]
     changed: d.changed ?? '',
     total: d.total ?? '',
-    // [slot: A G10 G11 G13]
-    // [slot: B G12]
+    college: d.college ?? '',
   };
   const href = (() => {
     switch (n.type) {
@@ -175,12 +173,20 @@ export function notificationText(t: TFunction, n: Pick<NotificationView, 'type' 
       // Prompt 2, G8: the student says what came of a referral.
       case 'referral_outcome_prompt':
         return '/referrals?box=sent';
-      // [slot: G9]
       // Prompt 2, G9: a large roster sync change waits for an admin.
       case 'roster_sync_review':
         return '/admin/imports';
-      // [slot: A G10 G11 G13]
-      // [slot: B G12]
+      // Prompt 2, G10: the Interview Experience Bank.
+      case 'experience_prompt':
+        return `/experiences/new${d.companyKey ? `?company=${encodeURIComponent(d.companyKey)}` : ''}`;
+      case 'experience_published':
+        return d.companyKey ? `/companies/${encodeURIComponent(d.companyKey)}` : '/companies';
+      case 'experience_returned':
+        return '/experiences';
+      // Prompt 2, G12: cross-college intros.
+      case 'network_intro_received':
+      case 'network_intro_answered':
+        return `/network?tab=intros&box=${n.type === 'network_intro_received' ? 'received' : 'sent'}`;
       case 'buddy_matched':
       case 'peer_mentor_nominated':
         return '/peers';

@@ -100,9 +100,14 @@
     "resume": "Résumé",
     "interviews": "Mock interviews",
     "readiness": "Readiness",
+    "companies": "Companies",
+    "copilot": "Career Copilot",
     "practice": "Practice",
     "peers": "Peer mentoring",
     "circles": "Circles",
+    "network": "Network",
+    "recruiter": "Recruiting",
+    "employers": "Employers",
     "alumni": "Alumni",
     "share": "Share",
     "captain": "Campus Captain"
@@ -492,10 +497,12 @@
     "signIn": "Sign-in options",
     "interviewQuestions": "Interview questions",
     "readiness": "Readiness board",
+    "experiences": "Interview write-ups",
     "practiceBank": "Practice questions",
     "peers": "Peer mentors and buddies",
     "circles": "Circles",
     "recognition": "Recognition",
+    "network": "Network",
     "giving": "Giving",
     "growth": "Growth and invites",
     "captain": "Campus Captain",
@@ -1345,6 +1352,14 @@
       "title": "Your college received your contribution",
       "body": "Thank you. The acknowledgement is ready."
     },
+    "network_intro_received": {
+      "title": "{{name}} of {{college}} asked for your help",
+      "body": "{{type}} · Network"
+    },
+    "network_intro_answered": {
+      "title": "{{name}} answered your intro",
+      "body": "Open Network to see it."
+    },
     "weekly_next_step": {
       "title": "Your next step for this week",
       "body": "One roadmap step, one opening and one alumnus to ask, picked for you."
@@ -1364,6 +1379,18 @@
     "voice_ready": {
       "title": "Your recording is written out",
       "body": "Check the text and fix any words it got wrong."
+    },
+    "experience_prompt": {
+      "title": "Help your juniors: share your {{company}} interview",
+      "body": "Write down the rounds and questions while you remember them."
+    },
+    "experience_published": {
+      "title": "Your {{company}} write-up is published",
+      "body": "Juniors preparing for {{company}} can read it now."
+    },
+    "experience_returned": {
+      "title": "Your {{company}} write-up needs a change",
+      "body": "The reviewer sent it back with a note."
     },
     "voice_failed": {
       "title": "We could not make out your recording",
@@ -1522,7 +1549,8 @@
     "roadmap_comment": "roadmap comment",
     "event": "event",
     "event_question": "event question",
-    "review": "review"
+    "review": "review",
+    "experience": "interview write-up"
   },
   "feed": {
     "tabs": "Feed view",

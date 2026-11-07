@@ -131,6 +131,15 @@ export class ChannelService {
   }
 
   /** This month's metered messages (WhatsApp and reminder SMS; codes by SMS are not counted). */
+  /** Prompt 2, G13 (YC metrics): WhatsApp messages sent in a range, by their last status. Counts only. */
+  async whatsappStatusesBetween(from: Date, to: Date): Promise<Record<string, number>> {
+    const rows = await ChannelMessageModel.aggregate<{ _id: string; n: number }>([
+      { $match: { channel: 'whatsapp', createdAt: { $gte: from, $lt: to } } },
+      { $group: { _id: '$status', n: { $sum: 1 } } },
+    ]);
+    return Object.fromEntries(rows.map((r) => [r._id, r.n]));
+  }
+
   async monthCount(): Promise<number> {
     const m = month();
     const rows = await ChannelUsageModel.find({ ...METERED, day: { $regex: `^${m}-\\d` } })

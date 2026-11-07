@@ -217,13 +217,30 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'How did your {company} referral go?',
       body: 'Tell us if it led to an interview or an offer. It helps the alumni who refer.',
     },
-    // [slot: G9]
     roster_sync_review: {
       title: 'The roster sync is waiting for you',
       body: '{changed} of {total} rows would change. Review the change before it is applied.',
     },
-    // [slot: A G10 G11 G13]
-    // [slot: B G12]
+    experience_prompt: {
+      title: 'Help your juniors: share your {company} interview',
+      body: 'Write down the rounds and questions while you remember them. The placement cell reviews it before juniors read it.',
+    },
+    experience_published: {
+      title: 'Your {company} interview write-up is published',
+      body: 'Juniors preparing for {company} can read it now. Thank you for sharing.',
+    },
+    experience_returned: {
+      title: 'Your {company} write-up needs a change',
+      body: 'The reviewer sent it back with a note. Open it to see why.',
+    },
+    network_intro_received: {
+      title: '{name} of {college} asked for your help',
+      body: 'A request through the network. Open it to answer.',
+    },
+    network_intro_answered: {
+      title: '{name} answered your intro',
+      body: 'Open Network to see the answer.',
+    },
     weekly_next_step: {
       title: 'Your next step for this week',
       body: 'One roadmap step, one opening and one alumnus to ask, picked for you. Open it to start.',
@@ -494,13 +511,30 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'మీ {company} రిఫరల్ ఎలా జరిగింది?',
       body: 'ఇంటర్వ్యూ లేదా ఆఫర్ వచ్చిందో చెప్పండి. రిఫర్ చేసే పూర్వ విద్యార్థులకు ఇది ఉపయోగపడుతుంది.',
     },
-    // [slot: G9]
     roster_sync_review: {
       title: 'రోస్టర్ సింక్ మీ కోసం వేచి ఉంది',
       body: '{total} వరుసల్లో {changed} మారుతాయి. వర్తింపజేసే ముందు మార్పును చూడండి.',
     },
-    // [slot: A G10 G11 G13]
-    // [slot: B G12]
+    experience_prompt: {
+      title: 'జూనియర్లకు సహాయం చేయండి: మీ {company} ఇంటర్వ్యూ గురించి రాయండి',
+      body: 'గుర్తున్నప్పుడే రౌండ్లు, ప్రశ్నలు రాయండి. జూనియర్లు చదివే ముందు ప్లేస్‌మెంట్ సెల్ దాన్ని సమీక్షిస్తుంది.',
+    },
+    experience_published: {
+      title: 'మీ {company} ఇంటర్వ్యూ అనుభవం ప్రచురించబడింది',
+      body: '{company} కోసం సిద్ధమవుతున్న జూనియర్లు ఇప్పుడు దాన్ని చదవగలరు. పంచుకున్నందుకు ధన్యవాదాలు.',
+    },
+    experience_returned: {
+      title: 'మీ {company} అనుభవంలో ఒక మార్పు అవసరం',
+      body: 'సమీక్షకులు ఒక గమనికతో దాన్ని తిరిగి పంపారు. కారణం చూడటానికి తెరవండి.',
+    },
+    network_intro_received: {
+      title: '{college} నుండి {name} మీ సహాయం కోరారు',
+      body: 'నెట్‌వర్క్ ద్వారా ఒక అభ్యర్థన. సమాధానం ఇవ్వడానికి తెరవండి.',
+    },
+    network_intro_answered: {
+      title: '{name} మీ పరిచయానికి సమాధానం ఇచ్చారు',
+      body: 'సమాధానం చూడటానికి నెట్‌వర్క్ తెరవండి.',
+    },
     weekly_next_step: {
       title: 'ఈ వారం మీ తదుపరి అడుగు',
       body: 'మీ కోసం ఎంచుకున్న ఒక రోడ్‌మ్యాప్ దశ, ఒక అవకాశం, అడగడానికి ఒక పూర్వ విద్యార్థి. మొదలుపెట్టడానికి తెరవండి.',
@@ -756,13 +790,30 @@ const T: Record<Locale, Record<NotificationType, Text>> = {
       title: 'आपका {company} रेफ़रल कैसा रहा?',
       body: 'बताइए कि इससे इंटरव्यू या ऑफ़र मिला या नहीं। इससे रेफ़र करने वाले पूर्व छात्रों को मदद मिलती है।',
     },
-    // [slot: G9]
     roster_sync_review: {
       title: 'रोस्टर सिंक आपका इंतज़ार कर रहा है',
       body: '{total} में से {changed} पंक्तियाँ बदलेंगी। लागू होने से पहले बदलाव देखें।',
     },
-    // [slot: A G10 G11 G13]
-    // [slot: B G12]
+    experience_prompt: {
+      title: 'जूनियर्स की मदद करें: अपना {company} इंटरव्यू साझा करें',
+      body: 'याद रहते ही राउंड और सवाल लिख लें। जूनियर्स के पढ़ने से पहले प्लेसमेंट सेल इसकी समीक्षा करता है।',
+    },
+    experience_published: {
+      title: 'आपका {company} इंटरव्यू अनुभव प्रकाशित हो गया',
+      body: '{company} की तैयारी कर रहे जूनियर्स अब इसे पढ़ सकते हैं। साझा करने के लिए धन्यवाद।',
+    },
+    experience_returned: {
+      title: 'आपके {company} अनुभव में एक बदलाव चाहिए',
+      body: 'समीक्षक ने इसे एक नोट के साथ लौटाया है। कारण देखने के लिए इसे खोलें।',
+    },
+    network_intro_received: {
+      title: '{college} के {name} ने आपकी मदद माँगी है',
+      body: 'नेटवर्क से एक अनुरोध। जवाब देने के लिए खोलें।',
+    },
+    network_intro_answered: {
+      title: '{name} ने आपके परिचय का जवाब दिया',
+      body: 'जवाब देखने के लिए नेटवर्क खोलें।',
+    },
     weekly_next_step: {
       title: 'इस हफ़्ते का आपका अगला कदम',
       body: 'आपके लिए चुना एक रोडमैप कदम, एक मौका और पूछने के लिए एक पूर्व छात्र। शुरू करने के लिए खोलें।',
@@ -1040,11 +1091,20 @@ export function pathFor(type: NotificationType, data: Record<string, string>): s
       return '/next-step';
     case 'referral_outcome_prompt':
       return '/referrals';
-    // [slot: G9]
     case 'roster_sync_review':
       return '/admin/imports';
-    // [slot: A G10 G11 G13]
-    // [slot: B G12]
+    // Prompt 2, G10: the Interview Experience Bank.
+    case 'experience_prompt':
+      return `/experiences/new${data.companyKey ? `?company=${encodeURIComponent(data.companyKey)}` : ''}`;
+    case 'experience_published':
+      return data.companyKey ? `/companies/${encodeURIComponent(data.companyKey)}` : '/companies';
+    case 'experience_returned':
+      return '/experiences';
+    // Prompt 2, G12: cross-college intros.
+    case 'network_intro_received':
+      return '/network?tab=intros&box=received';
+    case 'network_intro_answered':
+      return '/network?tab=intros&box=sent';
     case 'buddy_matched':
     case 'peer_mentor_nominated':
       return '/peers';

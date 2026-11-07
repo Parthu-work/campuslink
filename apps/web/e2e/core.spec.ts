@@ -110,6 +110,8 @@ test.describe('signed-in journeys', () => {
     await expectNoA11yViolations(page);
     await page.getByRole('link', { name: 'Members', exact: true }).click();
     await page.waitForURL(/\/admin\/users$/);
+    // The demo year (G13) fills the first pages, so find the placement officer by name.
+    await page.getByLabel('Search by name or email').fill('Srinivas');
     await expect(page.getByText('Srinivas Murthy')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Members', level: 1 })).toBeVisible();
     await expectNoA11yViolations(page);

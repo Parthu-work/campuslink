@@ -21,6 +21,8 @@ export interface TaskPrompt {
   ask: string;
   member?: { label: string; text: string }[];
   documents?: { label: string; text: string }[];
+  /** Number the documents first (1…n), so an answer cites them by those numbers (G11). */
+  documentsFirst?: boolean;
 }
 
 /**
@@ -77,10 +79,11 @@ export function taskMessage(p: TaskPrompt): string {
     `<source id="${++n}" kind="${kind}" title="${stripTags(label)
       .replace(/["<>\n\r]/g, ' ')
       .slice(0, 80)}">\n${stripTags(text)}\n</source>`;
-  const blocks = [
-    ...(p.member ?? []).map((m) => block('member', m.label, redactPersonal(plainText(m.text)))),
-    ...(p.documents ?? []).map((d) => block('document', d.label, neutraliseInstructions(plainText(d.text)))),
-  ];
+  const member = () =>
+    (p.member ?? []).map((m) => block('member', m.label, redactPersonal(plainText(m.text))));
+  const documents = () =>
+    (p.documents ?? []).map((d) => block('document', d.label, neutraliseInstructions(plainText(d.text))));
+  const blocks = p.documentsFirst ? [...documents(), ...member()] : [...member(), ...documents()];
   return [stripTags(p.ask), blocks.length ? `<sources>\n${blocks.join('\n')}\n</sources>` : '']
     .filter(Boolean)
     .join('\n\n');

@@ -148,6 +148,38 @@ export class PlacementsService {
     });
   }
 
+  /**
+   * Prompt 2, G12: members' registrations on one drive (the network's candidacies follow them):
+   * the attached résumé, whether they withdrew, and the final result the college published.
+   */
+  async registrationsOn(
+    driveId: string,
+    userIds: string[],
+  ): Promise<Map<string, { resumeFileId: string | null; withdrawn: boolean; final: string }>> {
+    const rows = await DriveRegistrationModel.find({
+      driveId: new Types.ObjectId(driveId),
+      userId: { $in: userIds.map((u) => new Types.ObjectId(u)) },
+    })
+      .select('userId resumeFileId status final')
+      .lean<RegistrationDoc[]>();
+    return new Map(
+      rows.map((r) => [
+        String(r.userId),
+        {
+          resumeFileId: r.resumeFileId ? String(r.resumeFileId) : null,
+          withdrawn: r.status === 'withdrawn',
+          final: r.final ?? 'in_process',
+        },
+      ]),
+    );
+  }
+
+  /** Prompt 2, G12: a drive's title, for the network's candidacies (null when it is gone). */
+  async driveTitle(driveId: string): Promise<string | null> {
+    const d = await PlacementDriveModel.findById(driveId).select('title').lean();
+    return d?.title ?? null;
+  }
+
   async newEligibleCounts(userIds: string[], now = new Date()): Promise<Map<string, number>> {
     const wanted = new Set(userIds);
     const out = new Map<string, number>();
@@ -230,6 +262,149 @@ export class PlacementsService {
       name: c.name,
       nextDriveCloses: next.get(String(c._id)) ?? null,
     }));
+  }
+
+  /**
+   * Prompt 2, G10 (the Placement Graph): drives that started, with their rounds and every
+   * registration's results as the placement cell entered them, for aggregates only.
+   */
+  async graphRounds(): Promise<
+    {
+      driveId: string;
+      companyKey: string;
+      companyName: string;
+      driveDate: Date;
+      rounds: string[];
+      registrations: {
+        userId: string | null;
+        branch: string | null;
+        results: { round: number; result: string }[];
+        final: string;
+      }[];
+    }[]
+  > {
+    const drives = await PlacementDriveModel.find({ status: { $in: ['in_progress', 'completed'] } })
+      .select('companyId driveDate rounds')
+      .sort({ driveDate: -1 })
+      .limit(2000)
+      .lean<DriveDoc[]>();
+    if (!drives.length) return [];
+    const [companies, regs] = await Promise.all([
+      PlacementCompanyModel.find({ _id: { $in: drives.map((d) => d.companyId) } })
+        .select('name companyKey')
+        .lean<PlacementCompanyDoc[]>(),
+      DriveRegistrationModel.find({
+        driveId: { $in: drives.map((d) => d._id) },
+        status: { $ne: 'withdrawn' },
+      })
+        .select('driveId userId branch roundResults final')
+        .limit(200_000)
+        .lean<RegistrationDoc[]>(),
+    ]);
+    const company = new Map(companies.map((c) => [String(c._id), c]));
+    const byDrive = new Map<string, RegistrationDoc[]>();
+    for (const r of regs) byDrive.set(String(r.driveId), [...(byDrive.get(String(r.driveId)) ?? []), r]);
+    return drives.flatMap((d) => {
+      const c = company.get(String(d.companyId));
+      if (!c) return [];
+      return [
+        {
+          driveId: String(d._id),
+          companyKey: c.companyKey,
+          companyName: c.name,
+          driveDate: d.driveDate,
+          rounds: d.rounds.map((r) => r.kind),
+          registrations: (byDrive.get(String(d._id)) ?? []).map((r) => ({
+            userId: r.userId ? String(r.userId) : null,
+            branch: r.branch ?? null,
+            results: r.roundResults.map((x) => ({ round: x.round ?? 0, result: x.result ?? 'pending' })),
+            final: r.final,
+          })),
+        },
+      ];
+    });
+  }
+
+  /** Prompt 2, G10: companies whose drive the member sat (it started), for the Experience Bank. */
+  async companiesSat(userId: string): Promise<{ key: string; name: string }[]> {
+    const regs = await DriveRegistrationModel.find({
+      userId: new Types.ObjectId(userId),
+      status: { $ne: 'withdrawn' },
+    })
+      .select('driveId')
+      .limit(500)
+      .lean<RegistrationDoc[]>();
+    if (!regs.length) return [];
+    const drives = await PlacementDriveModel.find({
+      _id: { $in: regs.map((r) => r.driveId) },
+      status: { $in: ['in_progress', 'completed'] },
+    })
+      .select('companyId')
+      .lean<DriveDoc[]>();
+    const companies = await PlacementCompanyModel.find({ _id: { $in: drives.map((d) => d.companyId) } })
+      .select('name companyKey')
+      .lean<PlacementCompanyDoc[]>();
+    return companies.map((c) => ({ key: c.companyKey, name: c.name }));
+  }
+
+  /**
+   * Prompt 2, G11 (the Career Copilot's index): drives students can see, as text (roles, pay range,
+   * rounds and who can apply). Who may read each one is checked again on every answer (`list`).
+   */
+  async copilotDrives(): Promise<{ id: string; companyKey: string; title: string; text: string }[]> {
+    const drives = await PlacementDriveModel.find({
+      status: { $in: VISIBLE },
+      driveDate: { $gte: new Date(Date.now() - 540 * 86_400_000) },
+    })
+      .sort({ driveDate: -1 })
+      .limit(300)
+      .lean<DriveDoc[]>();
+    const companies = new Map(
+      (
+        await PlacementCompanyModel.find({ _id: { $in: drives.map((d) => d.companyId) } })
+          .select('name companyKey')
+          .lean<PlacementCompanyDoc[]>()
+      ).map((c) => [String(c._id), c]),
+    );
+    return drives.flatMap((d) => {
+      const c = companies.get(String(d.companyId));
+      if (!c) return [];
+      const e = {
+        branches: d.eligibility?.branches ?? [],
+        gradYears: d.eligibility?.gradYears ?? [],
+        minCgpa: d.eligibility?.minCgpa ?? null,
+        maxActiveBacklogs: d.eligibility?.maxActiveBacklogs ?? null,
+        minTenthPct: d.eligibility?.minTenthPct ?? null,
+        minTwelfthPct: d.eligibility?.minTwelfthPct ?? null,
+      };
+      const rules = [
+        e.branches.length ? `branches ${e.branches.join(', ')}` : 'any branch',
+        e.gradYears.length ? `batches ${e.gradYears.join(', ')}` : '',
+        e.minCgpa !== null ? `CGPA at least ${e.minCgpa}` : '',
+        e.maxActiveBacklogs !== null ? `at most ${e.maxActiveBacklogs} active backlogs` : '',
+        e.minTenthPct !== null ? `10th at least ${e.minTenthPct}%` : '',
+        e.minTwelfthPct !== null ? `12th at least ${e.minTwelfthPct}%` : '',
+      ].filter(Boolean);
+      return [
+        {
+          id: String(d._id),
+          companyKey: c.companyKey,
+          title: `${c.name}: ${d.title}`,
+          text: [
+            `Campus drive: ${c.name}, ${d.title} (${d.status}), drive date ${d.driveDate.toISOString().slice(0, 10)}, registration closes ${d.registrationCloseAt.toISOString().slice(0, 10)}.`,
+            d.description,
+            ...d.roles.map(
+              (r) =>
+                `Role: ${r.title} (${r.type})${r.ctcMinLpa !== null && r.ctcMinLpa !== undefined ? `, CTC ${r.ctcMinLpa}–${r.ctcMaxLpa ?? r.ctcMinLpa} LPA as announced` : ''}${r.location ? `, ${r.location}` : ''}.`,
+            ),
+            d.rounds.length ? `Rounds: ${d.rounds.map((r) => `${r.name} (${r.kind})`).join(', ')}.` : '',
+            `Who can apply: ${rules.join('; ')}.`,
+          ]
+            .filter(Boolean)
+            .join('\n'),
+        },
+      ];
+    });
   }
 
   async upsertCompany(body: { name: string; website: string | null; sector: string; notes: string }) {
@@ -1061,6 +1236,50 @@ export class PlacementsService {
   }
 
   /** People of these batches who registered for a drive (B8 reports: "seeking placement"). */
+  /**
+   * Prompt 2, G13 (YC metrics): drives held in a range (started or finished), and their
+   * registrations against the students each was for: Σ registered eligible students / Σ eligible
+   * students, over the drives. The batches a drive was for may have graduated since, so alumni of
+   * those batches count too. Counts only.
+   */
+  async driveFacts(from: Date, to: Date): Promise<{ drives: number; eligible: number; registered: number }> {
+    const drives = await PlacementDriveModel.find({
+      status: { $in: ['in_progress', 'completed'] },
+      driveDate: { $gte: from, $lt: to },
+    })
+      .limit(5_000)
+      .lean<DriveDoc[]>();
+    if (!drives.length) return { drives: 0, eligible: 0, registered: 0 };
+    const regs = await DriveRegistrationModel.find({
+      driveId: { $in: drives.map((d) => d._id) },
+      status: { $ne: 'withdrawn' },
+      userId: { $ne: null },
+    })
+      .select('driveId userId')
+      .limit(200_000)
+      .lean<RegistrationDoc[]>();
+    let eligible = 0;
+    let registered = 0;
+    for (const d of drives) {
+      const ids = await this.d.profiles.idsForAudience({
+        branches: d.eligibility?.branches ?? [],
+        gradYears: d.eligibility?.gradYears ?? [],
+        roles: ['STUDENT', 'ALUMNI'],
+      });
+      const check = await this.eligibilityOf(ids);
+      const pool = new Set([
+        ...ids.filter((u) => check(d, u).eligible),
+        ...d.overrides.map((o) => String(o.userId)),
+      ]);
+      const signed = new Set(
+        regs.filter((r) => String(r.driveId) === String(d._id) && r.userId).map((r) => String(r.userId)),
+      );
+      eligible += pool.size;
+      registered += [...signed].filter((u) => pool.has(u)).length;
+    }
+    return { drives: drives.length, eligible, registered };
+  }
+
   async seekersFor(gradYears: number[]) {
     const rows = await DriveRegistrationModel.find({
       gradYear: { $in: gradYears },

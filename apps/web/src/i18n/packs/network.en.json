@@ -1,0 +1,394 @@
+{
+  "network": {
+    "title": "Network",
+    "intro": "Alumni of other colleges on {{app}}, your intros, your verified credentials and what you share with employers. Only what you choose, only while you choose.",
+    "minor": "The network is for members aged 18 and over.",
+    "paused": "Your network access is paused",
+    "pausedBody": "Two alumni reported intros from you. Your college will review it and can turn it back on.",
+    "tabs": {
+      "alumni": "Alumni",
+      "intros": "Intros",
+      "credentials": "Credentials",
+      "employers": "Employers",
+      "settings": "Settings"
+    },
+    "alumni": {
+      "collegeOff": "Your college has not joined the network",
+      "collegeOffBody": "When your college turns on alumni discovery, you can find alumni of other colleges here.",
+      "joinTitle": "Be part of the network",
+      "joinBody": "Turn on “Be found by other colleges” in Settings. Then you can find alumni of other colleges and ask them for help.",
+      "joinAction": "Open settings",
+      "company": "Company",
+      "companyHint": "For example, Infosys",
+      "text": "Name, role or skill",
+      "search": "Search",
+      "results": "Alumni of other colleges",
+      "none": "No one found",
+      "noneBody": "Try another company, or fewer words.",
+      "noCompany": "Company not shown",
+      "ask": "Ask for help",
+      "more": "Show more"
+    },
+    "ask": {
+      "title": "Ask {{name}}",
+      "description": "Your name, college, branch and batch go with the request. No contact details.",
+      "helpWith": "What would help",
+      "goal": "Your goal",
+      "note": "A short note (optional)",
+      "noteHint": "At most {{n}} characters. Only the alumnus reads it.",
+      "send": "Send request",
+      "sent": "Sent to {{name}}. You will hear when they answer."
+    },
+    "goals": {
+      "career_advice": "Career advice",
+      "interview_prep": "Interview preparation",
+      "resume_feedback": "Feedback on my résumé",
+      "company_insight": "What it is like at the company",
+      "higher_studies": "Higher studies"
+    },
+    "status": {
+      "pending": "Waiting",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "expired": "Expired",
+      "withdrawn": "Closed"
+    },
+    "declines": {
+      "busy": "Busy right now",
+      "not_my_area": "Not my area",
+      "not_now": "Not now"
+    },
+    "intros": {
+      "box": "Show",
+      "received": "Received",
+      "sent": "Sent",
+      "left": "You can send {{n}} more this week.",
+      "none": {
+        "received": "No requests yet",
+        "sent": "You have not asked anyone yet"
+      },
+      "accept": "Accept",
+      "acceptTitle": "Accept and share a contact",
+      "acceptBody": "Choose what this one student may see. Nothing else about you is shared.",
+      "share": {
+        "linkedin": "My LinkedIn link",
+        "email": "My email address"
+      },
+      "decline": "Decline…",
+      "report": "Report",
+      "sharedWithYou": "Shared with you:"
+    },
+    "credentials": {
+      "intro": "Signed by your college and checkable by anyone with the link: share them on LinkedIn or with an employer. They show only what the college verified, never a salary or contact details.",
+      "off": "Your college has not turned on verified credentials",
+      "offBody": "When it does, you can turn your verified offers, readiness milestones and certificates into credentials.",
+      "none": "No credentials yet",
+      "available": "You can get",
+      "get": "Get credential",
+      "issued": "Your college signed the credential.",
+      "issuedOn": "Issued {{date}}",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "open": "Open the check page",
+      "revoke": "Revoke",
+      "status": {
+        "active": "Valid",
+        "revoked": "Revoked"
+      }
+    },
+    "credentialTypes": {
+      "PlacementOfferCredential": "Verified placement offer",
+      "ReadinessMilestoneCredential": "Readiness milestone",
+      "MentorCertificateCredential": "Certificate of mentorship",
+      "MentorshipRecognitionCredential": "Mentorship recognition"
+    },
+    "employers": {
+      "intro": "Employer drives your college approved. Share your résumé and readiness with an employer only if you want to; you can stop at any time.",
+      "collegeOff": "Your college has not turned on employer access",
+      "collegeOffBody": "When it does, drives from employers your college approved appear in Placements.",
+      "consentFirst": "To share with employers, turn on “Employers my college approved can see what I share” in Settings.",
+      "none": "Nothing to share yet",
+      "noneBody": "Register for a drive from an employer posting in Placements, then share it here.",
+      "share": "Share with {{name}}",
+      "stop": "Stop sharing"
+    },
+    "stages": {
+      "shared": "Shared",
+      "shortlisted": "Shortlisted",
+      "not_selected": "Not selected",
+      "selected": "Selected",
+      "withdrawn": "Not shared"
+    },
+    "seeking": {
+      "internship": "An internship",
+      "full_time": "A full-time job"
+    },
+    "settings": {
+      "consentTitle": "Your consent",
+      "discovery": "Be found by other colleges",
+      "discoveryBody": "Students and alumni of other colleges that joined the network can find the fields below and ask you for help.",
+      "employers": "Employers my college approved can see what I share",
+      "employersBody": "Employers see counts that include you, and your résumé and readiness only for drives where you share them.",
+      "revocable": "You can turn these off at any time: you disappear at once. Never available under 18.",
+      "showTitle": "What others see",
+      "nameStyle": "Name",
+      "nameFull": "Full name",
+      "nameFirst": "First name and initial",
+      "showCompany": "Show my company and role",
+      "showCity": "Show my city",
+      "showSkills": "Show my skills",
+      "linkedin": "LinkedIn link (optional)",
+      "linkedinHint": "Shown on your card, and offered when you accept an intro.",
+      "seeking": "Looking for",
+      "seekingNone": "Not looking",
+      "helpWith": "I can help with",
+      "accepting": "I take intros",
+      "perWeek": "Intros a week, at most",
+      "save": "Save",
+      "saved": "Saved",
+      "viewedTitle": "Who opened what you shared",
+      "viewedNone": "No employer has opened your résumé or readiness.",
+      "viewed": {
+        "resume": "{{employer}} opened your résumé on {{date}}",
+        "readiness": "{{employer}} viewed your readiness on {{date}}"
+      }
+    },
+    "decisions": {
+      "pending": "Waiting",
+      "approved": "Approved",
+      "declined": "Declined",
+      "withdrawn": "Withdrawn",
+      "hidden": "Hidden after reports"
+    },
+    "postingTypes": {
+      "internship": "Internship",
+      "full_time": "Full time"
+    },
+    "postingDeclines": {
+      "not_relevant": "Not relevant to our students",
+      "timing": "Bad timing",
+      "eligibility": "Eligibility does not fit",
+      "already_partnered": "Already working with them",
+      "other": "Other"
+    },
+    "admin": {
+      "intro": "The network connects your college with other colleges and with employers you approve. Nothing is shared until you turn it on, and you can turn it off at any time.",
+      "switchesTitle": "What the college takes part in",
+      "terms": "I accept the network terms (version {{v}}) on behalf of the college.",
+      "switches": {
+        "alumniDiscovery": "Alumni discovery across colleges",
+        "alumniDiscoveryBody": "Students and alumni who opt in can find, and be found by, members of other colleges.",
+        "employerAccess": "Employer access",
+        "employerAccessBody": "Verified employers can offer postings to the college; you approve each one before students see it.",
+        "credentials": "Verified credentials",
+        "credentialsBody": "The college signs credentials members ask for: offers, readiness milestones, certificates."
+      },
+      "changedOn": "Last changed {{date}}",
+      "members": "Members who opted in: {{discoverable}} findable by other colleges, {{employers}} visible to employers.",
+      "saved": "Saved",
+      "postingsTitle": "Postings offered to the college",
+      "noPostings": "No employer has offered a posting yet.",
+      "closes": "Closes {{date}}",
+      "reports": "{{n}} reports",
+      "approve": "Approve as a drive",
+      "approveTitle": "Approve “{{title}}”",
+      "approveBody": "Approving creates a placement drive in the college. You run it as usual: eligibility, registrations, rounds and offers.",
+      "registrationClose": "Registration closes",
+      "driveDate": "Drive date",
+      "approved": "Approved: the drive is in Admin › Placement drives.",
+      "decline": "Decline…",
+      "keep": "Show it again",
+      "remove": "Remove it",
+      "block": "Block {{name}}",
+      "blockedTitle": "Blocked employers",
+      "unblock": "Unblock",
+      "pausedTitle": "Members paused after reports",
+      "pausedBody": "Two alumni of other colleges reported their intros. Review it with them, then turn access back on.",
+      "resume": "Turn access back on",
+      "activityTitle": "Who looked (last 30 days)",
+      "activityNone": "Nobody outside the college has read anything yet.",
+      "keysTitle": "Credential signing key",
+      "keysBody": "{{issued}} valid credentials, {{revoked}} revoked. Old keys keep checking the credentials they signed.",
+      "keyStatus": {
+        "active": "In use",
+        "retired": "Retired",
+        "compromised": "Withdrawn"
+      },
+      "rotate": "Rotate the key",
+      "rotated": "Done",
+      "compromised": "Report leaked"
+    },
+    "paths": {
+      "alumni-search": "Alumni searches by other colleges",
+      "alumni-card": "Alumni cards opened",
+      "intro-send": "Intros received",
+      "intro-reply": "Intro answers",
+      "intro-expire": "Intros expired",
+      "intro-report": "Intros reported",
+      "pool-size": "Employer pool counts",
+      "posting-offer": "Postings offered",
+      "posting-decision": "Posting decisions",
+      "posting-withdraw": "Postings withdrawn",
+      "candidates": "Candidate lists read by employers",
+      "candidate-resume": "Résumés opened by employers",
+      "candidate-readiness": "Readiness viewed by employers",
+      "shortlist": "Shortlist proposals",
+      "hire-billing": "Hires billed",
+      "employer-review": "Employer reviews",
+      "revenue-statement": "Revenue statements"
+    }
+  },
+  "recruiter": {
+    "title": "Recruiting",
+    "tabs": {
+      "postings": "Postings",
+      "pool": "Pool",
+      "company": "Company"
+    },
+    "pending": {
+      "applied": "Confirm your email and your domain (Company tab). A person then checks your GSTIN and approves you.",
+      "verified": "Your email and domain are confirmed. A person is checking your GSTIN; you will hear when you are approved.",
+      "suspended": "Your company is suspended. Postings and candidates are hidden. Write to the platform to ask why.",
+      "rejected": "Your application was not approved."
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Offered",
+      "closed": "Closed"
+    },
+    "employerStatus": {
+      "applied": "Applied",
+      "verified": "Verified",
+      "approved": "Approved",
+      "suspended": "Suspended",
+      "rejected": "Rejected"
+    },
+    "new": {
+      "open": "New posting",
+      "title": "New posting",
+      "body": "Colleges approve each posting before their students see it.",
+      "titleField": "Title",
+      "role": "Role",
+      "type": "Type",
+      "location": "Location",
+      "ctc": "CTC range (optional)",
+      "ctcHint": "As you want students to see it, for example “6 to 8 LPA”.",
+      "description": "Description",
+      "branches": "Branches",
+      "years": "Graduating years",
+      "yearsHint": "Separate with commas, for example 2026, 2027.",
+      "closes": "Closes on",
+      "save": "Save draft"
+    },
+    "postings": {
+      "none": "No postings yet",
+      "colleges": "Colleges",
+      "candidates": "Candidates",
+      "close": "Close"
+    },
+    "publish": {
+      "open": "Offer to colleges",
+      "title": "Offer to colleges",
+      "body": "Each college decides. Approved postings become drives the college runs.",
+      "mode": "Offer to",
+      "colleges": "Chosen colleges",
+      "cluster": "A cluster",
+      "noColleges": "No college takes postings from you right now.",
+      "send": "Offer",
+      "done": "Offered. Each college decides."
+    },
+    "pool": {
+      "intro": "How many students who opted in fit, college by college. Counts only: under five shows as “<5”, larger counts are rounded down to five.",
+      "branch": "Branch",
+      "year": "Graduating year",
+      "seeking": "Looking for",
+      "skills": "Skills (up to 3, commas)",
+      "any": "Any",
+      "count": "Count",
+      "total": "{{n}} students",
+      "privacy": "No names or profiles: students share their résumé only when they apply to your drive."
+    },
+    "company": {
+      "status": "Status",
+      "emailOk": "Work email confirmed.",
+      "emailPending": "Work email not confirmed yet: use the link we emailed.",
+      "dns": "Add this TXT record to {{domain}}, then check it:",
+      "check": "Check the domain",
+      "domainOk": "Domain confirmed on {{date}}.",
+      "prices": "Prices: {{posting}} a posting, {{drive}} a drive, {{hire}} a hire.",
+      "recruiters": "Recruiters ({{n}} of {{max}})",
+      "admin": "admin",
+      "remove": "Remove",
+      "name": "Name",
+      "email": "Work email",
+      "add": "Add recruiter",
+      "added": "We emailed them a link to set a password."
+    },
+    "candidates": {
+      "title": "Candidates",
+      "intro": "Students who applied through their college and chose to share with you. Contact them through the college’s placement cell.",
+      "none": "No one has shared yet",
+      "withdrawn": "{{n}} stopped sharing.",
+      "resume": "Résumé",
+      "readiness": "Readiness",
+      "readinessOf": "Readiness: {{name}}",
+      "score": "{{n}} of 100",
+      "readinessNote": "Worked out now by the college; not stored.",
+      "shortlist": "Shortlist",
+      "notSelected": "Not selected"
+    },
+    "components": {
+      "resume": "Résumé",
+      "interviews": "Mock interviews",
+      "practice": "Practice",
+      "roadmap": "Roadmap",
+      "mentorship": "Mentorship",
+      "eligibility": "Eligibility"
+    },
+    "apply": {
+      "title": "Hire through {{app}}",
+      "intro": "Reach students who opted in, through their colleges. We confirm your work email and domain, and a person checks your GSTIN before you are approved.",
+      "fields": {
+        "companyName": "Company name",
+        "legalName": "Legal name (as on the GST registration)",
+        "domain": "Company domain",
+        "gstin": "GSTIN",
+        "slug": "Your address",
+        "name": "Your name",
+        "email": "Your work email"
+      },
+      "gstinHint": "15 characters, for example 36AABCA1234B1Z5.",
+      "slugHint": "Your portal’s address: emp-yourcompany.",
+      "freeMail": "Use your company’s own domain, not a mail provider.",
+      "badGstin": "This is not a valid GSTIN.",
+      "emailDomain": "Use your work email at {{domain}}.",
+      "slug": "The address starts with {{prefix}}",
+      "privacy": "We keep what you enter to check your company and to bill you. Students’ contact details are never shared with employers.",
+      "submit": "Apply",
+      "doneTitle": "Check your email",
+      "doneBody": "We sent a link to {{email}} to set your password. Then sign in at {{host}}, turn on two-factor sign-in and confirm your domain."
+    },
+    "platform": {
+      "title": "Employers",
+      "intro": "Approve employers after checking their GSTIN on the GST portal. Suspended employers lose access at once.",
+      "none": "No employers in this list",
+      "review": "Review",
+      "domainPending": "Domain not confirmed",
+      "gstCheck": "Check the legal name and GSTIN on the GST portal before approving.",
+      "blocks": "Blocked by {{n}} colleges in 90 days",
+      "note": "Note",
+      "approve": "Approve",
+      "reject": "Reject",
+      "suspend": "Suspend",
+      "reinstate": "Reinstate",
+      "clusters": "College clusters",
+      "clusterName": "Cluster name",
+      "addCluster": "Add cluster",
+      "deleteCluster": "Delete",
+      "revenue": "Colleges’ share",
+      "month": "Month",
+      "noRevenue": "Nothing billed this month.",
+      "revenueRow": "{{name}}: {{postings}} postings, {{drives}} drives, {{hires}} hires; share {{share}}"
+    }
+  }
+}

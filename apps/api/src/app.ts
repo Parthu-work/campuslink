@@ -87,15 +87,35 @@ import { REFERRAL_OUTCOME_JOB } from './modules/referrals/referrals.service.js';
 import { SHARE_MODULE } from './http/openapi.js';
 import { backgroundAuth as backgroundAuthOf } from './modules/users/users.service.js';
 import { findTenantById as tenantById } from './modules/tenants/tenant.cache.js';
-// [slot: G9]
 import { CalendarService } from './modules/calendar/calendar.service.js';
 import { calendarRoutes } from './modules/calendar/calendar.routes.js';
 import { ROSTER_SYNC_JOB, RosterSyncService } from './modules/imports/roster-sync.service.js';
 import { rosterSyncRoutes } from './modules/imports/roster-sync.routes.js';
 import { SsoService } from './modules/auth/sso/sso.service.js';
 import { ssoRoutes } from './modules/auth/sso/sso.routes.js';
-// [slot: A G10 G11 G13]
-// [slot: B G12]
+import { EXPERIENCE_PROMPT_JOB, GRAPH_JOB, GraphService } from './modules/graph/graph.service.js';
+import { ExperiencesService } from './modules/graph/experiences.service.js';
+import { graphRoutes } from './modules/graph/graph.routes.js';
+import { eventsQuery, mentorsQuery, roadmapsQuery } from '@campuslink/shared';
+import { COPILOT_INDEX_JOB, CopilotIndexService } from './modules/copilot/copilot-index.service.js';
+import { CopilotService, type LiveSource } from './modules/copilot/copilot.service.js';
+import { copilotRoutes } from './modules/copilot/copilot.routes.js';
+import { companyKey as companyKeyOf } from './lib/company.js';
+import { resolveTxt } from 'node:dns/promises';
+import { READINESS_MILESTONES } from '@campuslink/shared';
+import { NETWORK_RECONCILE_JOB, NetworkService, collegeNames } from './modules/network/network.service.js';
+import { networkRoutes } from './modules/network/network.routes.js';
+import { EmployersService } from './modules/employers/employers.service.js';
+import { CollegePostingsService } from './modules/employers/college-postings.service.js';
+import { employerRoutes } from './modules/employers/employers.routes.js';
+import { CredentialsService, type CredentialSourceFacts } from './modules/credentials/credentials.service.js';
+import {
+  CREDENTIALS_PUBLIC_MODULE,
+  credentialPublicRoutes,
+  credentialRoutes,
+  credentialTenantFromPath,
+} from './modules/credentials/credentials.routes.js';
+import { audit as networkAudit } from './modules/audit/audit.service.js';
 import {
   DisabledCodeRunner,
   JUDGE0_LANGUAGE_IDS,
@@ -186,6 +206,7 @@ import { PrivacyService } from './modules/privacy/privacy.service.js';
 import { privacyRoutes } from './modules/privacy/privacy.routes.js';
 import { consentService } from './modules/consent/consent.service.js';
 import { InsightsService } from './modules/insights/insights.service.js';
+import { YcMetricsService } from './modules/insights/yc-metrics.service.js';
 import { insightsRoutes } from './modules/insights/insights.routes.js';
 import { SupportService } from './modules/support/support.service.js';
 import { supportRoutes } from './modules/support/support.routes.js';
@@ -1224,7 +1245,6 @@ export function createApp({
     }),
   );
 
-  // [slot: G9]
   // ── Reach (prompt 2, G9) ─────────────────────────────
   // The calendar feed: sessions, events the member is going to, and drive dates and deadlines.
   const calendarService = new CalendarService({
@@ -1281,8 +1301,355 @@ export function createApp({
     cipher,
     tenantUrl: (tenant, p) => authService.tenantUrl(tenant, p),
   });
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
+  // ── The moat data (prompt 2, G10) ─────────────────────────────
+  // The Interview Experience Bank: verified authors, reviewed, then moderated like any content.
+  const experiencesService = new ExperiencesService({
+    notifications: notificationsService,
+    verifiedOffers: (id) => offersService.verifiedOf(id),
+    companiesSat: (id) => placementsService.companiesSat(id),
+    cohortOf: (ids) => profilesService.cohortOf(ids),
+    suggestInterviewQuestions: (qs) => interviewsService.suggestFromExperience(qs),
+  });
+  moderationService.register('experience', experiencesService.handler);
+  safetyService.registerTarget('experience', (viewer, id) =>
+    moderationService.reportTarget('experience', viewer, id),
+  );
+  // The Placement Graph, rebuilt nightly per college from each owning module's verified records.
+  const graphService = new GraphService({
+    logger,
+    jobs: queue,
+    notifications: notificationsService,
+    experiences: experiencesService,
+    offers: () => offersService.graphRows(),
+    drives: () => placementsService.graphRounds(),
+    referrals: () => referralsService.outcomeRows(),
+    alumni: () => profilesService.alumniCompanies(),
+    mentors: () => mentorsService.acceptingIds(),
+    sessions: async () => (await sessionsService.completedSince(new Date(0))).sessions,
+    companies: async () =>
+      (await placementsService.recruitingCompanies()).map((c) => ({ key: c.key, name: c.name })),
+    branchOf: async (ids) =>
+      new Map([...(await profilesService.cohortOf(ids))].map(([id, c]) => [id, c.branch])),
+    ownBranch: async (id) => (await profilesService.own(id)).branch,
+  });
+  queue.register(
+    GRAPH_JOB,
+    gatedJob('placements', async (data) => {
+      await graphService.run(data);
+    }),
+  );
+  queue.register(
+    EXPERIENCE_PROMPT_JOB,
+    gatedJob('placements', (data) => graphService.onPrompt(data)),
+  );
+  // Outcome-proven matching: last night's mentor outcomes, only while placements are on.
+  mentorsService.outcomeEvidence = async (_viewer, mentee, ids) =>
+    (await featureEnabled('placements')) ? graphService.evidence(mentee, ids) : new Map();
+  // ── The Career Copilot (prompt 2, G11) ─────────────────────────────
+  // Its index: college-wide sources from their owning modules, rebuilt daily after the graph.
+  const copilotIndexService = new CopilotIndexService({
+    logger,
+    ai: aiSettingsService,
+    usage: aiUsageService,
+    vectors: vectorIndex,
+    sources: {
+      company: async () =>
+        (await graphService.copilotTexts()).map((c) => ({
+          sourceId: c.key,
+          companyKey: c.key,
+          title: `${c.name}: company page`,
+          text: c.text,
+          href: `/companies/${encodeURIComponent(c.key)}`,
+        })),
+      experience: async () =>
+        (await experiencesService.copilotTexts()).map((e) => ({
+          sourceId: e.id,
+          companyKey: e.companyKey,
+          title: e.title,
+          text: e.text,
+          href: `/companies/${encodeURIComponent(e.companyKey)}`,
+        })),
+      roadmap: async () =>
+        (await roadmapsService.copilotTexts()).map((r) => ({
+          sourceId: r.id,
+          companyKey: null,
+          title: `${r.title}: roadmap`,
+          text: r.text,
+          href: `/roadmaps/${r.slug}`,
+        })),
+      drive: async () =>
+        (await placementsService.copilotDrives()).map((d) => ({
+          sourceId: d.id,
+          companyKey: d.companyKey,
+          title: d.title,
+          text: d.text,
+          href: `/placements/${d.id}`,
+        })),
+    },
+  });
+  queue.register(
+    COPILOT_INDEX_JOB,
+    gatedJob('placements', async (data) => {
+      await copilotIndexService.run(data);
+    }),
+  );
+  const mentorSource = (c: Awaited<ReturnType<typeof mentorsService.list>>['items'][number]): LiveSource => ({
+    kind: 'mentor',
+    id: `mentor-${c.userId}`,
+    title: `${c.name}: mentor card`,
+    text: [
+      `${c.name}${c.jobTitle ? `, ${c.jobTitle}` : ''}${c.company ? ` at ${c.company}` : ''}${c.branch ? `, ${c.branch}` : ''}${c.gradYear ? ` ${c.gradYear}` : ''}.`,
+      c.topics.length ? `Guides on: ${c.topics.join(', ')}.` : '',
+      c.stats?.medianReplyHours != null
+        ? `Usually replies in about ${Math.round(c.stats.medianReplyHours)} hours.`
+        : '',
+      c.open ? 'Taking requests now.' : 'Requests are full this week.',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    href: `/mentors/${c.userId}`,
+    mentor: {
+      userId: c.userId,
+      name: c.name,
+      company: c.company,
+      replyHours: c.stats?.medianReplyHours ?? null,
+    },
+  });
+  const eligibleDrives = async (viewer: Parameters<typeof placementsService.list>[0]) =>
+    viewer.permissions.has('placements:view')
+      ? (await placementsService.list(viewer, 'eligible'))
+          .filter((d) => d.registrationOpen && !d.myRegistration)
+          .map((d) => ({
+            id: d.id,
+            company: d.company.name,
+            companyKey: companyKeyOf(d.company.name),
+            title: d.title,
+            closesAt: d.registrationCloseAt,
+          }))
+      : [];
+  const copilotService = new CopilotService({
+    logger,
+    aiTasks: aiTasksService,
+    ai: aiSettingsService,
+    usage: aiUsageService,
+    vectors: vectorIndex,
+    index: copilotIndexService,
+    // Every indexed source is re-checked with the viewer's rights, by the module that owns it.
+    readable: {
+      company: async (viewer, ids) =>
+        viewer.permissions.has('companies:view') ? graphService.hasCompanies(ids) : new Set(),
+      experience: async (viewer, ids) =>
+        viewer.permissions.has('companies:view') ? experiencesService.publishedAmong(ids) : new Set(),
+      roadmap: async (viewer, ids) => {
+        if (!viewer.permissions.has('roadmaps:read')) return new Set();
+        const seen = new Set((await roadmapsService.list(viewer, roadmapsQuery.parse({}))).map((r) => r.id));
+        return new Set(ids.filter((id) => seen.has(id)));
+      },
+      drive: async (viewer, ids) => {
+        if (!viewer.permissions.has('placements:view')) return new Set();
+        const seen = new Set((await placementsService.list(viewer, 'all')).map((d) => d.id));
+        return new Set(ids.filter((id) => seen.has(id)));
+      },
+    },
+    // The member's own facts, private to them (no readiness for minors: no personal ranking).
+    me: async (viewer, personal) => {
+      const out: LiveSource[] = [];
+      if (viewer.permissions.has('resumes:manage')) {
+        const r = (await resumesService.list(viewer))[0];
+        if (r)
+          out.push({
+            kind: 'me',
+            id: 'me-resume',
+            title: 'Your résumé',
+            text: `Your latest résumé is “${r.title}”${r.atsScore === null ? ', not yet checked against a role' : `, with an ATS check score of ${r.atsScore} out of 100`}.`,
+            href: `/resume/${r.id}`,
+          });
+      }
+      if (viewer.permissions.has('placements:view')) {
+        const f = (await academicsService.factsFor([viewer.userId])).get(viewer.userId);
+        if (f)
+          out.push({
+            kind: 'me',
+            id: 'me-record',
+            title: 'Your academic record',
+            text: `Your CGPA on the college’s record: ${f.cgpa ?? 'not recorded'}; active backlogs: ${f.activeBacklogs ?? 'not recorded'}${f.verified ? '' : ' (not verified yet)'}.`,
+            href: '/placements',
+          });
+        const open = await eligibleDrives(viewer);
+        out.push({
+          kind: 'me',
+          id: 'me-eligible',
+          title: 'Drives you can register for',
+          text: open.length
+            ? `Open drives you are eligible for: ${open.map((d) => `${d.company}, ${d.title} (registration closes ${d.closesAt.slice(0, 10)})`).join('; ')}.`
+            : 'There is no open campus drive you are eligible for right now.',
+          href: '/placements',
+        });
+      }
+      if (personal && viewer.permissions.has('readiness:view') && (await featureEnabled('placements'))) {
+        const r = await readinessService.mine(viewer);
+        out.push({
+          kind: 'me',
+          id: 'me-readiness',
+          title: 'Your readiness',
+          text: `Your placement readiness score is ${r.score} out of 100 (${r.components
+            .filter((c) => c.status === 'scored')
+            .map((c) => `${c.id.replace('_', ' ')} ${c.points} of ${c.max}`)
+            .join(', ')}).`,
+          href: '/readiness',
+        });
+      }
+      return out;
+    },
+    // Mentor cards with the viewer's visibility (public fields only); minors get no personal ranking.
+    mentors: async (viewer, company, personal) => {
+      if (!viewer.permissions.has('mentorship:request')) return [];
+      const cards = company
+        ? (await mentorsService.list(viewer, mentorsQuery.parse({ q: company.name, limit: 3 }))).items
+        : personal
+          ? (await mentorsService.match(viewer)).slice(0, 3).map((m) => m.mentor)
+          : [];
+      return cards
+        .filter((c) => !c.peer)
+        .slice(0, 2)
+        .map(mentorSource);
+    },
+    companies: () => graphService.companyNames(),
+    eligibleDrives,
+    officeHours: async (viewer) =>
+      viewer.permissions.has('events:rsvp')
+        ? (await eventsService.list(viewer, eventsQuery.parse({ when: 'upcoming', kind: 'office_hours' })))
+            .slice(0, 1)
+            .map((e) => ({ id: e.id, title: e.title, startsAt: e.startsAt }))
+        : [],
+    plan: async (viewer) => {
+      const step = await roadmapsService.nextStepFor(viewer).catch(() => null);
+      const roadmap = step
+        ? { kind: 'roadmap' as const, title: step.title, href: `/roadmaps/${step.slug}` }
+        : { kind: 'roadmap' as const, title: '', href: '/roadmaps' };
+      const practice = { kind: 'practice' as const, title: '', href: '/practice' };
+      const mock = { kind: 'mock' as const, title: '', href: '/interviews' };
+      const mentor = { kind: 'mentor' as const, title: '', href: '/mentors' };
+      return {
+        kind: 'plan',
+        weeks: [
+          { week: 1, items: [roadmap, practice] },
+          { week: 2, items: [{ ...roadmap, title: step ? '' : roadmap.title }, practice, mock] },
+          { week: 3, items: [practice, mentor] },
+          { week: 4, items: [practice, mock] },
+        ],
+      };
+    },
+    isMinor: async (id) => (await profilesService.minorsAmong([id])).has(id),
+  });
+  // ── The network (prompt 2, G12, ADR 0014) ─────────────────────────────
+  // Cross-college discovery and intros, the college's side of the recruiter portal, employers and
+  // verified credentials. Every cross-tenant read or write is a named path (lib/network-scope.ts).
+  const collegePostingsService = new CollegePostingsService({
+    placements: placementsService,
+    offers: offersService,
+    profiles: profilesService,
+  });
+  const networkService = new NetworkService({
+    cipher,
+    profiles: profilesService,
+    notify: (id, type, data) => notificationsService.notify(id, type, data),
+    emailOf: (id) => usersService.emailOf(id),
+    logger,
+    afterRefresh: (id, state) => collegePostingsService.onMemberRefresh(id, state),
+  });
+  // A member sees which employers opened what they shared (N16), from the college's own audit rows.
+  networkService.setViewedBy(async (userId) => {
+    const refs = (await collegePostingsService.exportFor(userId)).candidacies.map((c) => c.ref);
+    const rows = await networkAudit.aboutTargets(
+      ['network.candidate-resume', 'network.candidate-readiness'],
+      'network_candidacy',
+      refs.filter(Boolean),
+    );
+    const names = await collegeNames(rows.map((r) => String(r.meta.by ?? '')).filter(Boolean));
+    return rows.map((r) => ({
+      employer: names.get(String(r.meta.by ?? '')) ?? '',
+      what: r.action === 'network.candidate-resume' ? ('resume' as const) : ('readiness' as const),
+      at: r.createdAt.toISOString(),
+    }));
+  });
+  profilesService.afterSync = (id) => networkService.refresh(id);
+  const employersService = new EmployersService({
+    sendSetPassword: (tenant, email, meta) =>
+      authService.forgotPassword(tenant, email, { ...meta, device: 'employer-invite' }),
+    resolveTxt: (domain) => resolveTxt(domain),
+    signingKey: createHmac('sha256', env.JWT_ACCESS_SECRET).update('network-resume-link-v1').digest(),
+    readFile: (fileId) => filesService.read(fileId),
+    readinessOf: async (userId, tenant) => {
+      const viewer = await backgroundAuthOf(userId, tenant);
+      if (!viewer?.permissions.has('readiness:view') || !(await featureEnabled('placements'))) return null;
+      const r = await readinessService.mine(viewer);
+      return {
+        score: r.score,
+        components: r.components.map((c) => ({ id: c.id, points: c.points, max: c.max })),
+      };
+    },
+  });
+  const credentialsService = new CredentialsService({
+    cipher,
+    webOrigin: env.WEB_ORIGIN,
+    person: (id) => profilesService.person(id),
+    viewerOf: (id, tenant) => backgroundAuthOf(id, tenant),
+    sources: async (viewer) => {
+      const out: CredentialSourceFacts[] = [];
+      for (const o of await offersService.verifiedOf(viewer.userId))
+        out.push({
+          type: 'PlacementOfferCredential',
+          sourceId: o.id,
+          milestone: null,
+          label: `${o.company} · ${o.role}`,
+          claims: { company: o.company, role: o.role, ...(o.gradYear ? { batch: o.gradYear } : {}) },
+        });
+      if (viewer.permissions.has('readiness:view') && (await featureEnabled('placements'))) {
+        const score = (await readinessService.mine(viewer).catch(() => null))?.score ?? 0;
+        for (const m of READINESS_MILESTONES)
+          if (score >= m)
+            out.push({
+              type: 'ReadinessMilestoneCredential',
+              sourceId: null,
+              milestone: m,
+              label: `Readiness ${m}+`,
+              claims: { milestone: `${m} of 100`, reachedOn: new Date().toISOString().slice(0, 10) },
+            });
+      }
+      for (const c of await recognitionService.certificates(viewer).catch(() => []))
+        if (c.status === 'issued')
+          out.push({
+            type: 'MentorCertificateCredential',
+            sourceId: c.id,
+            milestone: null,
+            label: `Mentorship ${c.academicYear}`,
+            claims: {
+              academicYear: c.academicYear,
+              sessions: c.sessions,
+              mentees: c.mentees,
+              asks: c.asks,
+              events: c.events,
+            },
+          });
+      for (const n of await recognitionService.myNominations(viewer).catch(() => []))
+        if (n.status === 'published')
+          out.push({
+            type: 'MentorshipRecognitionCredential',
+            sourceId: n.id,
+            milestone: null,
+            label: `Alumnus of the month · ${n.month}`,
+            claims: { award: 'Alumnus of the month', month: n.month },
+          });
+      return out;
+    },
+  });
+  queue.register(NETWORK_RECONCILE_JOB, async () => {
+    await networkService.reconcile();
+    await collegePostingsService.reconcile();
+    await credentialsService.reconcile();
+    await credentialsService.rotateIfDue();
+  });
 
   // Faculty insights and the admin AI dashboard (spec step 5): aggregates only.
   const insightsService = new StudyInsightsService({
@@ -1385,8 +1752,8 @@ export function createApp({
       );
     },
     roles: async () => new Map((await profilesService.cohorts()).map((p) => [p.userId, p.roles])),
-    invitedSince: (since) => onboardingService.invitedSince(since),
-    replyHoursSince: (since) => requestsService.replyHoursSince(since),
+    invitedSince: (since, until) => onboardingService.invitedSince(since, until),
+    replyHoursSince: (since, until) => requestsService.replyHoursSince(since, until),
     placement: async (gradYear) => {
       const [roster, seekers, offers] = await Promise.all([
         whitelistService.countsByCohort([gradYear]),
@@ -1426,9 +1793,13 @@ export function createApp({
     nextStepService,
     publicPagesService,
     referralsService,
-    // [slot: G9]
-    // [slot: A G10 G11 G13]
-    // [slot: B G12]
+    graphService,
+    experiencesService,
+    copilotService,
+    networkService,
+    collegePostingsService,
+    employersService,
+    credentialsService,
   ])
     svc.track = productInsights.track;
   const afterUserCreated = authService.onUserCreated;
@@ -1500,10 +1871,34 @@ export function createApp({
   privacyService.register('studyGroups', hook(studyGroupsService));
   privacyService.register('publicPages', hook(publicPagesService));
   privacyService.register('parentDigest', hook(parentDigestService));
-  // [slot: G9]
   privacyService.register('calendarFeed', hook(calendarService));
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
+  privacyService.register('interviewExperiences', hook(experiencesService));
+  privacyService.register('mentorOutcomes', hook(graphService));
+  privacyService.register('copilot', hook(copilotService));
+  // Admin › Overview: the review queues of prompt 2 (G3, G4, G10), each behind its own permission.
+  overviewService.addQueue({
+    id: 'interviewQuestions',
+    permission: 'interviews:review',
+    pending: () => interviewsService.pendingCount(),
+  });
+  overviewService.addQueue({
+    id: 'practiceBank',
+    permission: 'practice:review',
+    pending: () => practiceService.pendingCount(),
+  });
+  overviewService.addQueue({
+    id: 'experiences',
+    permission: 'experiences:review',
+    feature: 'placements',
+    pending: () => experiencesService.pendingCount(),
+  });
+  privacyService.register('network', hook(networkService));
+  privacyService.register('networkCandidacies', hook(collegePostingsService));
+  privacyService.register(
+    'employers',
+    hook({ exportFor: (u) => employersService.exportFor(u), eraseFor: () => employersService.eraseFor() }),
+  );
+  privacyService.register('credentials', hook(credentialsService));
   privacyService.register('files', hook(filesService));
 
   const extraSearch = async (auth: Parameters<typeof postsService.search>[0], q: string) => ({
@@ -1715,12 +2110,23 @@ export function createApp({
   app.use(API_PREFIX, defineModule('public-pages', publicPageRoutes(publicPagesService), pipeline));
   app.use(API_PREFIX, defineModule('member-invites', memberInviteRoutes(onboardingService), pipeline));
   app.use(API_PREFIX, defineModule('parent-digest', parentDigestRoutes(parentDigestService), pipeline));
-  // [slot: G9]
   app.use(API_PREFIX, defineModule('calendar', calendarRoutes(calendarService), pipeline));
   app.use(API_PREFIX, defineModule('roster-sync', rosterSyncRoutes(rosterSyncService), pipeline));
   app.use(API_PREFIX, defineModule('sso', ssoRoutes(ssoService, cookie), pipeline));
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
+  app.use(
+    API_PREFIX,
+    defineModule('graph', withFeature('placements', graphRoutes(graphService, experiencesService)), pipeline),
+  );
+  app.use(
+    API_PREFIX,
+    defineModule('copilot', withFeature('placements', copilotRoutes(copilotService, logger)), pipeline),
+  );
+  app.use(
+    API_PREFIX,
+    defineModule('network', networkRoutes(networkService, collegePostingsService), pipeline),
+  );
+  app.use(API_PREFIX, defineModule('employers', employerRoutes(employersService), pipeline));
+  app.use(API_PREFIX, defineModule('credentials', credentialRoutes(credentialsService), pipeline));
   app.use(API_PREFIX, defineModule('legal', legalRoutes(legalService), pipeline));
   app.use(
     API_PREFIX,
@@ -1781,12 +2187,25 @@ export function createApp({
 
   // Public pages (prompt 2, G8): their full paths start with /p/, outside the API prefix.
   app.use(defineModule(SHARE_MODULE, shareRoutes(publicPagesService), pipeline));
-  // [slot: G9]
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
+  // Verified credentials (prompt 2, G12): /{tenant}/verify/{id}, did.json and the status list, with
+  // the college taken from the path (ADR 0014 §12).
+  app.use(credentialTenantFromPath(env.APP_ROOT_DOMAIN));
+  app.use(defineModule(CREDENTIALS_PUBLIC_MODULE, credentialPublicRoutes(credentialsService), pipeline));
   app.use(notFoundHandler);
   app.use(errorHandler(logger, errorReporter));
   app.locals.registry = registry;
+  // Prompt 2, G13: the YC metrics pack (scripts/metrics-yc.ts), counts only through the owning services.
+  const ycMetrics = new YcMetricsService({
+    insights: productInsights,
+    verifiedByRole: () => usersService.verifiedByRole(),
+    drives: (from, to) => placementsService.driveFacts(from, to),
+    roster: async (gradYear) =>
+      (await whitelistService.countsByCohort([gradYear])).reduce((n, r) => n + r.n, 0),
+    jobOffers: (gradYear, asOf) => offersService.jobOffersByBatch(gradYear, asOf),
+    aiQuestions: (from, to) => aiUsageService.chatQuestionsBetween(from, to),
+    whatsapp: (from, to) => channelService.whatsappStatusesBetween(from, to),
+  });
+
   app.locals.services = {
     auth: authService,
     users: usersService,
@@ -1796,6 +2215,7 @@ export function createApp({
     files: filesService,
     imports: importsService,
     verification: verificationService,
+    onboarding: onboardingService,
     profiles: profilesService,
     queue,
     realtime,
@@ -1836,15 +2256,21 @@ export function createApp({
     studyGroups: studyGroupsService,
     publicPages: publicPagesService,
     parentDigest: parentDigestService,
-    // [slot: G9]
     calendar: calendarService,
     rosterSync: rosterSyncService,
     sso: ssoService,
-    // [slot: A G10 G11 G13]
-    // [slot: B G12]
+    graph: graphService,
+    experiences: experiencesService,
+    copilot: copilotService,
+    copilotIndex: copilotIndexService,
+    network: networkService,
+    collegePostings: collegePostingsService,
+    employers: employersService,
+    credentials: credentialsService,
     aiTasks: aiTasksService,
     inactivity: inactivityService,
     productInsights,
+    ycMetrics,
     subjects: subjectsService,
     aiSettings: aiSettingsService,
     materials: materialsService,

@@ -34,7 +34,9 @@ beforeAll(async () => {
 describe('vertical access: every permission-guarded college route × every role', () => {
   it('matches ROLE_PERMISSIONS exactly (deny by default)', async () => {
     const routes = registry().filter(
-      (r) => r.spec.access.kind === 'permission' && (r.spec.scope ?? 'college') !== 'platform',
+      // Employer routes (prompt 2, G12) are served on employer hosts only: test/employers.test.ts.
+      (r) =>
+        r.spec.access.kind === 'permission' && !['platform', 'employer'].includes(r.spec.scope ?? 'college'),
     );
     expect(routes.length).toBeGreaterThan(5);
     const mismatches: string[] = [];
@@ -45,7 +47,9 @@ describe('vertical access: every permission-guarded college route × every role'
         TENANT_ROLES.map(async (role) => {
           const r = await call(spec.method, spec.path, users[role].token);
           const allowed = (ROLE_PERMISSIONS[role] as readonly string[]).includes(perm);
-          const denied = r.status === 403;
+          // A college or member who has not joined the network is a 403 of its own (prompt 2, G12).
+          const denied =
+            r.status === 403 && !['NETWORK_NOT_ENABLED', 'NOT_FOR_MINORS'].includes(r.body?.error?.code);
           if (allowed === denied)
             mismatches.push(`${role} ${spec.method.toUpperCase()} ${spec.path} → ${r.status}`);
         }),

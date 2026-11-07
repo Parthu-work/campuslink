@@ -8,3 +8,5 @@ import { lazyPart } from '../../lib/lazy-part';
 export const LazyNextStepCard = lazyPart(() =>
   Promise.all([import('./next-step'), loadPack('habits')]).then(([m]) => m.NextStepCard),
 );
+/** Home's route loader loads the card's code and pack with the page, so it paints with it (no shift). */
+export const preloadNextStepCard = () => LazyNextStepCard.preload();

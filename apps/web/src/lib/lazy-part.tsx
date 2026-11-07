@@ -20,16 +20,25 @@ class Quiet extends Component<
  * A part of the shell whose code loads after the first screen (the palette, the account menu, the
  * sheets). When that load fails (offline before it arrived, a deploy that removed the file) the
  * fallback stays and the load is tried again when the connection returns; the shell around it,
- * and the screen, never fail with it.
+ * and the screen, never fail with it. `preload()` loads it ahead (a route loader); once loaded,
+ * the part renders the component directly, without suspending (a lazy component suspends on its
+ * first render even when its code is already there, which swaps the fallback for the part a frame
+ * later and can move the page).
  */
 export function lazyPart<P extends object>(load: () => Promise<ComponentType<P>>) {
-  const make = () => lazy(() => load().then((C) => ({ default: C })));
+  let resolved: ComponentType<P> | null = null;
+  const fetchPart = () =>
+    load().then((C) => {
+      resolved = C;
+      return C;
+    });
+  const make = () => lazy(() => fetchPart().then((C) => ({ default: C })));
   let Loaded = make();
   let attempt = 0;
   // One extra try when a load fails while already online: it failed as the connection came back,
   // after the `online` event had fired. Only one, so a file a deploy removed is not asked for in a loop.
   let spare = true;
-  return function LazyPart({ fallback = null, ...props }: P & { fallback?: ReactNode }) {
+  function LazyPart({ fallback = null, ...props }: P & { fallback?: ReactNode }) {
     const [tried, setTried] = useState(attempt);
     const [failed, setFailed] = useState(false);
     useEffect(() => {
@@ -58,7 +67,10 @@ export function lazyPart<P extends object>(load: () => Promise<ComponentType<P>>
         window.clearTimeout(timer);
       };
     }, [failed, tried]);
-    const Part = Loaded;
+    // Chosen once per mount: switching from the lazy wrapper to the loaded component mid-life
+    // would remount the part (a sheet would lose its state and its history entry).
+    const [ready] = useState(() => resolved);
+    const Part = ready ?? Loaded;
     return (
       <Quiet key={tried} fallback={fallback} onError={() => setFailed(true)}>
         <Suspense fallback={fallback}>
@@ -66,5 +78,6 @@ export function lazyPart<P extends object>(load: () => Promise<ComponentType<P>>
         </Suspense>
       </Quiet>
     );
-  };
+  }
+  return Object.assign(LazyPart, { preload: () => fetchPart().then(() => undefined) });
 }

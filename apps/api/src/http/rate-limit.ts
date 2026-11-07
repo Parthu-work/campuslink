@@ -31,7 +31,11 @@ export type LimiterName =
   | 'studyUpload'
   | 'aiChat'
   | 'support'
-  | 'telemetry';
+  | 'telemetry'
+  // Prompt 2, G12 (ADR 0014): network searches, employer applications, the public credential check.
+  | 'network'
+  | 'employerApply'
+  | 'verifyPublic';
 
 const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: boolean }> = {
   global: { windowMs: 60_000, limit: 600 },
@@ -69,6 +73,12 @@ const RULES: Record<LimiterName, { windowMs: number; limit: number; perUser?: bo
   support: { windowMs: 60 * 60_000, limit: 20, perUser: true },
   /** Error reports from browsers (B14): per address, since they may come before sign-in. */
   telemetry: { windowMs: 60_000, limit: 20 },
+  /** Cross-college alumni searches (prompt 2, G12, N22): 30 an hour. */
+  network: { windowMs: 60 * 60_000, limit: 30, perUser: true },
+  /** Employer applications: 3 a day per address (N23). */
+  employerApply: { windowMs: 24 * 60 * 60_000, limit: 3 },
+  /** The public credential check: 60 a minute per address (N35). */
+  verifyPublic: { windowMs: 60_000, limit: 60 },
 };
 
 const key = (req: Request, perUser?: boolean) =>

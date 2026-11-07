@@ -24,6 +24,11 @@ const apiProxy = {
     target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:4000',
     changeOrigin: false,
   },
+  // Prompt 2, G12: a college's credential pages and keys, served by the API at /{college}/... .
+  '^/[a-z][a-z0-9-]{1,30}[a-z0-9]/(verify/[A-Za-z0-9_-]{22}(\\.jwt)?|did\\.json|credentials/status/1)$': {
+    target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:4000',
+    changeOrigin: false,
+  },
 };
 
 /** Preloads the UI face's Latin file, the one font every first screen needs (ADR 0008). */

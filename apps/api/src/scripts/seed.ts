@@ -11,6 +11,7 @@ import {
   type Branding,
   type Branch,
   LEGACY_FEATURES,
+  gstinCheckDigit,
 } from '@campuslink/shared';
 import { loadEnv } from '../config/env.js';
 import { syncIndexes } from '../db/connect.js';
@@ -64,6 +65,8 @@ import {
   RoadmapVersionModel,
 } from '../modules/roadmaps/roadmap.model.js';
 import { studySeeder } from './seed-study.js';
+import { graphSeeder } from './seed-graph.js';
+import { yearSeeder, type YearSummary } from './seed-year.js';
 import { InvoiceCounterModel, InvoiceModel, PaymentModel } from '../modules/billing/billing.model.js';
 import { financialYearOf, gstSplit, invoiceNumber, istDay } from '@campuslink/shared';
 
@@ -1288,6 +1291,9 @@ async function main() {
   const hash = await hashPassword(password);
   const rows: string[][] = [];
   const seedStudy = studySeeder(env);
+  const seedGraph = graphSeeder(env);
+  const { seedYear, replayAi } = yearSeeder(env);
+  const years: [string, YearSummary][] = [];
 
   const platform = await TenantModel.create({
     slug: 'admin',
@@ -1310,6 +1316,40 @@ async function main() {
     'superadmin@campuslink.example',
     'SUPER_ADMIN',
     '2FA set-up on first sign-in',
+  ]);
+
+  // Prompt 2, G12 (ADR 0014): one fictional, already-approved employer for the recruiter portal.
+  const employer = await TenantModel.create({
+    slug: 'emp-demo',
+    kind: 'employer',
+    branding: {
+      displayName: 'Demo Employer (demo)',
+      shortName: 'Demo Employer',
+      primary: '#3b5bdb',
+      secondary: '#1e293b',
+      accent: '#0ea5e9',
+      monogram: 'DE',
+    },
+    employer: {
+      legalName: 'Demo Employer Private Limited (fictional)',
+      domain: 'demo-employer.example',
+      gstin: '36AABCD1234E1Z' + gstinCheckDigit('36AABCD1234E1Z'),
+      status: 'approved',
+      dnsToken: 'demo-token',
+      emailVerifiedAt: new Date(),
+      domainVerifiedAt: new Date(),
+      gstinCheckedAt: new Date(),
+      approvedAt: new Date(),
+    },
+  });
+  await runInTenant(employer._id, async () => {
+    await addUser('recruiter@demo-employer.example', 'Demo Recruiter', ['EMPLOYER_ADMIN'], hash);
+  });
+  rows.push([
+    'emp-demo.localhost',
+    'recruiter@demo-employer.example',
+    'EMPLOYER_ADMIN',
+    'DEMO employer; 2FA on first sign-in',
   ]);
 
   for (const c of COLLEGES) {
@@ -1500,6 +1540,23 @@ async function main() {
       await seedWhatsAppLog(ids, c.slug);
       await seedSupport(ids, t._id, t.branding.displayName);
       await seedStudy(t._id, ids.get('faculty') as Types.ObjectId, { material: studyMaterial });
+      // Prompt 2, G13: a full demo year (people, seasons, sessions, write-ups, readiness, habits, events).
+      years.push([
+        c.slug,
+        await seedYear({
+          tenantId: t._id,
+          slug: c.slug,
+          prefix: c.slug.slice(0, 2).toUpperCase(),
+          domain: c.domain,
+          ids,
+          cipher,
+          addUser: (email, name, roles) => addUser(email, name, roles, hash),
+        }),
+      ]);
+      // Prompt 2, G10: company pages from the seeded DEMO drives, offers and alumni.
+      await seedGraph();
+      // The year's AI usage, measured on real Copilot and study questions once the index exists.
+      await replayAi({ tenantId: t._id });
       await AuditModel.create({ action: 'seed.created', meta: { kind: 'college' } });
     });
   }
@@ -1507,6 +1564,12 @@ async function main() {
   console.warn(
     `\nSeeded ${COLLEGES.length} demo colleges + platform. Password for every account: ${password}\n`,
   );
+  for (const [slug, y] of years)
+    console.warn(
+      `DEMO year at ${slug}: ${Object.entries(y)
+        .map(([k, v]) => `${k} ${v}`)
+        .join(', ')}`,
+    );
   console.warn(['Host', 'Email', 'Role', 'Notes'].join(' | '));
   for (const r of rows) console.warn(r.join(' | '));
   console.warn(

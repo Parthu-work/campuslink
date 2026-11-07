@@ -321,22 +321,24 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
   );
 
   // J3: tab switching (first visits, second visits, then four taps in quick succession). Study took
-  // Roadmaps' tab (Roadmaps moved to the account menu).
+  // Roadmaps' tab (Roadmaps moved to the account menu). Ananya (batch 2027) is in her final year
+  // from June 2026, so Placements (B7) has taken Jobs' tab; Jobs is in the account menu.
+  const TABS = ['Home', 'Study', 'Mentors', 'Placements'];
   const TAB_READY: Record<string, { sel: string; path: string }> = {
     Home: FEED,
-    Jobs: { sel: JOBS_LINK, path: '^/jobs$' },
     Study: { sel: 'main h1', path: '^/study$' },
     Mentors: { sel: 'main a[href^="/mentors/"]', path: '^/mentors$' },
+    Placements: { sel: 'main h1', path: '^/placements$' },
   };
   for (const round of ['r0', 'r1'])
-    for (const name of ['Home', 'Jobs', 'Study', 'Mentors'])
+    for (const name of TABS)
       await m('03-tabs', `${round}-${name.toLowerCase()}`, TAB_READY[name] ?? FEED, () => tapTab(page, name));
   await m('03-tabs', 'rapid-fire', TAB_READY.Mentors ?? FEED, async () => {
-    for (const name of ['Home', 'Jobs', 'Study', 'Mentors']) await tapTab(page, name);
+    for (const name of ['Home', 'Study', 'Placements', 'Mentors']) await tapTab(page, name);
   });
 
   // J4: Jobs (scrolled) → job → back.
-  await tapTab(page, 'Jobs');
+  await fromMenu(page, 'Jobs');
   await page.locator(JOBS_LINK).first().waitFor();
   await scroll(page, 1400);
   await m('04-jobs', 'open-job', { sel: 'main h1', path: '^/jobs/[a-f0-9]{24}$' }, async () => {
@@ -393,6 +395,26 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
   await m('09-history', 'back-to-events', { sel: 'main h1', path: '^/events$' }, () => page.goBack());
   await m('09-history', 'forward-to-progress', { sel: 'main h1', path: '^/progress$' }, () =>
     page.goForward(),
+  );
+
+  // J10 (G13): Prompt 2 screens, first visits from the menu, a company page and back.
+  for (const [name, slug, path] of [
+    ['Companies', 'companies', '^/companies$'],
+    ['Career Copilot', 'copilot', '^/copilot$'],
+    ['Résumé', 'resume', '^/resume$'],
+    ['Practice', 'practice', '^/practice$'],
+  ] as const)
+    await m('10-prompt2', `${slug}-first-visit`, { sel: 'main h1', path }, () => fromMenu(page, name));
+  await fromMenu(page, 'Companies');
+  await page.locator('main a[href^="/companies/"]').first().waitFor();
+  await m('10-prompt2', 'open-company', { sel: 'main h1', path: '^/companies/.+' }, () =>
+    page.locator('main a[href^="/companies/"]').first().click(),
+  );
+  await m(
+    '10-prompt2',
+    'back-to-companies',
+    { sel: 'main a[href^="/companies/"]', path: '^/companies$' },
+    () => page.goBack(),
   );
   await ctx.close();
 

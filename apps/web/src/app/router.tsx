@@ -133,12 +133,17 @@ const load = {
   // Prompt 2, G8: growth loops, strings in the `share` pack.
   share: withPack('share', () => import('../features/share/share')),
   growthAdmin: withPack('share', () => import('../features/share/growth-admin')),
-  // [slot: G9]
   // Prompt 2, G9: reach, strings in the `reach` pack.
   ssoComplete: withPack('reach', () => import('../features/reach/sso-complete')),
   signInAdmin: withPack('reach', () => import('../features/reach/sign-in-admin')),
-  // [slot: A G10 G11 G13]
-  // [slot: B G12]
+  // Prompt 2, G10: company pages and the Interview Experience Bank, strings in the `moat` pack.
+  companies: withPack('moat', () => import('../features/companies/companies')),
+  shareExperience: withPack('moat', () => import('../features/companies/share-experience')),
+  experiencesAdmin: withPack('moat', () => import('../features/companies/experiences-admin')),
+  // Prompt 2, G11: the Career Copilot, strings in the `copilot` pack.
+  copilot: withPack('copilot', () => import('../features/copilot/copilot')),
+  // Prompt 2, G12: the network, the recruiter portal and the registry (one module), `network` pack.
+  network: withPack('network', () => import('../features/network/screens')),
   reports: () => import('../features/reports/reports'),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
@@ -349,10 +354,7 @@ function collegeRoutes(): RouteObject[] {
         publicScreen(load.legal, 'LegalPage', '/legal/:doc'),
         // Anyone checks a certificate of mentorship by its code (prompt 2, G6).
         publicScreen(load.verifyCertificate, 'VerifyCertificatePage', '/verify-certificate/:code'),
-        // [slot: G9]
         publicScreen(load.ssoComplete, 'SsoCompletePage', '/sign-up/sso', '/home'),
-        // [slot: A G10 G11 G13]
-        // [slot: B G12]
         ...auth('/home'),
         // The living style guide (revamp phase 6): development builds only; production leaves it out.
         ...(import.meta.env.DEV
@@ -364,6 +366,20 @@ function collegeRoutes(): RouteObject[] {
               q.homeFeed(url.searchParams.get('tab') === 'following' ? 'following' : 'for_you'),
             ),
             qc.ensureQueryData(q.oneUsefulThing()),
+            // Prompt 2, G7: the weekly Next Step card's data and code with the page, so it paints with
+            // Home instead of pushing the feed down. A widget: a failure here never fails Home.
+            qc
+              .ensureQueryData(q.me())
+              .then((me) =>
+                me.permissions.includes('nextstep:view')
+                  ? Promise.all([
+                      qc.ensureQueryData(q.nextStep()),
+                      // Imported here, not at the top: the initial bundle has no room to spare.
+                      import('../features/habits/lazy-next-step').then((m) => m.preloadNextStepCard()),
+                    ])
+                  : null,
+              )
+              .catch(() => null),
             // Stories only when the college has them on (Admin › Features).
             ...(qc.getQueryData<PublicTenant>(q.tenant().queryKey)?.features.stories === false
               ? []
@@ -570,9 +586,39 @@ function collegeRoutes(): RouteObject[] {
           screen(load.share, 'CaptainPage', 'captains:class', at('/captain'), () => [
             qc.ensureQueryData(q.captainClass()),
           ]),
-          // [slot: G9]
-          // [slot: A G10 G11 G13]
-          // [slot: B G12]
+          // The moat data (prompt 2, G10): company pages and seniors' interview write-ups.
+          screen(
+            load.companies,
+            'CompaniesPage',
+            inFeature('placements', 'companies:view'),
+            at('/companies'),
+            () => [qc.ensureQueryData(q.companies())],
+          ),
+          screen(
+            load.companies,
+            'CompanyPage',
+            inFeature('placements', 'companies:view'),
+            at('/companies/:key'),
+            ({ key }) => (key ? [qc.ensureQueryData(q.company(key))] : []),
+          ),
+          still(
+            screen(
+              load.shareExperience,
+              'ShareExperiencePage',
+              inFeature('placements', 'experiences:share'),
+              at('/experiences/new'),
+            ),
+          ),
+          screen(
+            load.shareExperience,
+            'MyExperiencesPage',
+            inFeature('placements', 'experiences:share'),
+            at('/experiences'),
+          ),
+          // The Career Copilot (prompt 2, G11): a conversation, so no pull to refresh.
+          still(screen(load.copilot, 'CopilotPage', inFeature('placements', 'copilot:use'), at('/copilot'))),
+          // The network (prompt 2, G12): alumni of other colleges, intros, credentials, sharing with employers.
+          screen(load.network, 'NetworkPage', 'network:discover', at('/network')),
           screen(
             load.studyGroups,
             'StudyGroupPage',
@@ -740,11 +786,17 @@ function collegeRoutes(): RouteObject[] {
             screen(load.growthAdmin, 'GrowthAdmin', 'onboarding:manage', at('growth'), () => [
               qc.ensureQueryData(q.adminGrowth()),
             ]),
-            // [slot: G9]
             // Single sign-on settings (prompt 2, G9).
             screen(load.signInAdmin, 'SignInAdmin', 'tenant:settings', at('sign-in')),
-            // [slot: A G10 G11 G13]
-            // [slot: B G12]
+            // Interview write-ups waiting for review (prompt 2, G10).
+            screen(
+              load.experiencesAdmin,
+              'ExperiencesAdmin',
+              inFeature('placements', 'experiences:review'),
+              at('experiences'),
+            ),
+            // Cross-college network and employer postings (prompt 2, G12).
+            screen(load.network, 'NetworkAdmin', 'network:manage', at('network')),
             screen(
               load.reports,
               'ReportsDashboard',
@@ -791,6 +843,8 @@ function platformRoutes(): RouteObject[] {
       children: [
         { path: '/', element: <Navigate to="/platform" replace /> },
         ...auth('/platform'),
+        // Companies apply to recruit here (prompt 2, G12); a person approves them.
+        publicScreen(load.network, 'EmployerApplyPage', '/employers/apply'),
         shell(true, [
           screen(load.platform, 'PlatformTenants', 'platform:tenants', at('/platform')),
           screen(load.traction, 'PlatformTraction', 'platform:tenants', at('/platform/traction'), () => [
@@ -809,6 +863,8 @@ function platformRoutes(): RouteObject[] {
             ),
           ),
           screen(load.platform, 'PlatformHealth', 'platform:health', at('/platform/health')),
+          // The employer registry, clusters and the colleges' share (prompt 2, G12).
+          screen(load.network, 'PlatformEmployers', 'platform:employers', at('/platform/employers')),
           still(
             screen(
               load.platformSupport,
@@ -825,11 +881,37 @@ function platformRoutes(): RouteObject[] {
   ];
 }
 
+/** An employer's host (prompt 2, G12, ADR 0014): the recruiter portal only. */
+function employerRoutes(): RouteObject[] {
+  const portal = <Navigate to="/recruiter" replace />;
+  return [
+    {
+      errorElement: <RouteError fullPage />,
+      hydrateFallbackElement: <Splash />,
+      children: [
+        { path: '/', element: portal },
+        ...auth('/recruiter'),
+        shell(true, [
+          // Shared screens link "home" to /home or /platform: both are the portal here.
+          { path: '/home', element: portal },
+          { path: '/platform', element: portal },
+          screen(load.network, 'RecruiterPage', 'employer:post', at('/recruiter')),
+          screen(load.network, 'RecruiterPostingPage', 'employer:candidates', at('/recruiter/postings/:id')),
+          settingsRoutes,
+        ]),
+      ],
+    },
+  ];
+}
+
 // Lets `warmLanding` (lib/preload.ts) match the opened URL before the router exists.
-registerRouteTables((kind) => (kind === 'platform' ? platformRoutes() : collegeRoutes()));
+registerRouteTables((kind) =>
+  kind === 'platform' ? platformRoutes() : kind === 'employer' ? employerRoutes() : collegeRoutes(),
+);
 
 let collegeInstance: ReturnType<typeof createBrowserRouter> | null = null;
 let platformInstance: ReturnType<typeof createBrowserRouter> | null = null;
+let employerInstance: ReturnType<typeof createBrowserRouter> | null = null;
 
 type AppRouterInstance = ReturnType<typeof createBrowserRouter>;
 const animated = new WeakSet<AppRouterInstance>();
@@ -860,7 +942,9 @@ export function AppRouter() {
   const router = withViewTransitions(
     tenant.kind === 'platform'
       ? (platformInstance ??= createBrowserRouter(platformRoutes()))
-      : (collegeInstance ??= createBrowserRouter(collegeRoutes())),
+      : tenant.kind === 'employer'
+        ? (employerInstance ??= createBrowserRouter(employerRoutes()))
+        : (collegeInstance ??= createBrowserRouter(collegeRoutes())),
   );
   registerPreloadRoutes(router.routes);
   registerRouterState(() => ({ navigating: router.state.navigation.state !== 'idle' }));

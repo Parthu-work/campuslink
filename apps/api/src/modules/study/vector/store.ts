@@ -1,12 +1,18 @@
-import type { MaterialType, MaterialVisibility } from '@campuslink/shared';
+import type { CopilotIndexedKind, MaterialType, MaterialVisibility } from '@campuslink/shared';
 import { requireTenantId } from '../../../lib/context.js';
+
+/**
+ * What a vector indexes: a study material's passage, or (prompt 2, G11) a Career Copilot source,
+ * whose `subjectId` is the college's scope id for that kind of source.
+ */
+export type IndexedType = MaterialType | `copilot_${CopilotIndexedKind}`;
 
 /** What is stored with every vector; every search filters on `tenantId`, `subjectId` and `model`. */
 export interface VectorPayload {
   tenantId: string;
   subjectId: string;
   materialId: string;
-  materialType: MaterialType;
+  materialType: IndexedType;
   unitId: string | null;
   topicIds: string[];
   visibility: MaterialVisibility;
@@ -37,7 +43,7 @@ export interface ScopedFilter {
   unitId?: string | undefined;
   topicId?: string | undefined;
   materialIds?: string[] | undefined;
-  materialTypes?: MaterialType[] | undefined;
+  materialTypes?: IndexedType[] | undefined;
 }
 
 /**
@@ -206,7 +212,7 @@ export interface IndexScope {
   unitId?: string | undefined;
   topicId?: string | undefined;
   materialIds?: string[] | undefined;
-  materialTypes?: MaterialType[] | undefined;
+  materialTypes?: IndexedType[] | undefined;
 }
 
 /**

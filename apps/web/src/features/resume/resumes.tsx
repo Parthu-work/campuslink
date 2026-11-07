@@ -198,6 +198,7 @@ export function ResumesPage() {
       {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
       {list.isSuccess && !list.data.length && (
         <EmptyState
+          level={2}
           art={<Illustration kind="empty" />}
           title={t('resume.emptyTitle')}
           action={

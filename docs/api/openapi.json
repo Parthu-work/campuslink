@@ -400,6 +400,18 @@
                               "captains:class",
                               "share:pages",
                               "parents:digest",
+                              "companies:view",
+                              "experiences:share",
+                              "experiences:review",
+                              "copilot:use",
+                              "network:discover",
+                              "network:manage",
+                              "credentials:own",
+                              "credentials:manage",
+                              "employer:post",
+                              "employer:candidates",
+                              "employer:manage",
+                              "platform:employers",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -511,6 +523,18 @@
                               "captains:class",
                               "share:pages",
                               "parents:digest",
+                              "companies:view",
+                              "experiences:share",
+                              "experiences:review",
+                              "copilot:use",
+                              "network:discover",
+                              "network:manage",
+                              "credentials:own",
+                              "credentials:manage",
+                              "employer:post",
+                              "employer:candidates",
+                              "employer:manage",
+                              "platform:employers",
                               "platform:tenants",
                               "platform:health",
                               "platform:billing",
@@ -7756,6 +7780,7 @@
                       "roadmap_comment",
                       "event",
                       "event_question",
+                      "experience",
                       "review"
                     ]
                   },
@@ -26839,6 +26864,3278 @@
         "x-permission": "tenant:settings"
       }
     },
+    "/api/v1/companies": {
+      "get": {
+        "tags": [
+          "Companies"
+        ],
+        "summary": "Companies that recruit from the college or employ its alumni (aggregates, suppressed)",
+        "description": "Requires permission `companies:view` (See company pages: where seniors were placed, rounds, alumni there and interview write-ups). Host scope: college. Rate limit: search.",
+        "operationId": "graph_get_companies",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "companies:view"
+      }
+    },
+    "/api/v1/companies/{key}": {
+      "get": {
+        "tags": [
+          "Companies"
+        ],
+        "summary": "A company page: batches, branches, CTC bands, rounds, alumni there and interview write-ups",
+        "description": "Requires permission `companies:view` (See company pages: where seniors were placed, rounds, alumni there and interview write-ups). Host scope: college.",
+        "operationId": "graph_get_companies_key",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "companies:view"
+      }
+    },
+    "/api/v1/me/experiences": {
+      "get": {
+        "tags": [
+          "Companies"
+        ],
+        "summary": "My interview write-ups and the companies I may write about",
+        "description": "Requires permission `experiences:share` (Share one’s own interview experience (with a verified offer, a drive or as an alumnus)). Host scope: college.",
+        "operationId": "graph_get_me_experiences",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "experiences:share"
+      },
+      "post": {
+        "tags": [
+          "Companies"
+        ],
+        "summary": "Share an interview experience (reviewed before it is published)",
+        "description": "Requires permission `experiences:share` (Share one’s own interview experience (with a verified offer, a drive or as an alumnus)). Host scope: college. Rate limit: posting.",
+        "operationId": "graph_post_me_experiences",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "company": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "role": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "year": {
+                    "type": "integer",
+                    "minimum": 2000,
+                    "maximum": 2100
+                  },
+                  "rounds": {
+                    "minItems": 1,
+                    "maxItems": 8,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "aptitude",
+                            "coding",
+                            "technical",
+                            "hr",
+                            "group_discussion",
+                            "other"
+                          ]
+                        },
+                        "name": {
+                          "default": "",
+                          "type": "string",
+                          "minLength": 0,
+                          "maxLength": 60
+                        },
+                        "questions": {
+                          "default": [],
+                          "maxItems": 10,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 5,
+                            "maxLength": 400
+                          }
+                        },
+                        "notes": {
+                          "default": "",
+                          "type": "string",
+                          "minLength": 0,
+                          "maxLength": 1000
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "tips": {
+                    "default": "",
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 2000
+                  },
+                  "difficulty": {
+                    "type": "string",
+                    "enum": [
+                      "easy",
+                      "medium",
+                      "hard"
+                    ]
+                  },
+                  "result": {
+                    "type": "string",
+                    "enum": [
+                      "selected",
+                      "not_selected",
+                      "waiting"
+                    ]
+                  },
+                  "named": {
+                    "default": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "company",
+                  "role",
+                  "year",
+                  "rounds",
+                  "difficulty",
+                  "result"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "experiences:share"
+      }
+    },
+    "/api/v1/me/experiences/{id}": {
+      "delete": {
+        "tags": [
+          "Companies"
+        ],
+        "summary": "Withdraw a write-up that is not published yet",
+        "description": "Requires permission `experiences:share` (Share one’s own interview experience (with a verified offer, a drive or as an alumnus)). Host scope: college.",
+        "operationId": "graph_delete_me_experiences_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "experiences:share"
+      }
+    },
+    "/api/v1/admin/experiences": {
+      "get": {
+        "tags": [
+          "Companies"
+        ],
+        "summary": "Interview write-ups by review status",
+        "description": "Requires permission `experiences:review` (Review interview write-ups before they are published and send their questions to the question banks). Host scope: college.",
+        "operationId": "graph_get_admin_experiences",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "default": "pending",
+              "type": "string",
+              "enum": [
+                "pending",
+                "published",
+                "rejected"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "experiences:review"
+      }
+    },
+    "/api/v1/admin/experiences/{id}/decision": {
+      "post": {
+        "tags": [
+          "Companies"
+        ],
+        "summary": "Publish a write-up (sending picked questions to the interview bank) or send it back",
+        "description": "Requires permission `experiences:review` (Review interview write-ups before they are published and send their questions to the question banks). Host scope: college.",
+        "operationId": "graph_post_admin_experiences_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 300
+                  },
+                  "bank": {
+                    "default": [],
+                    "maxItems": 80,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "round": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "question": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "round",
+                        "question"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "experiences:review"
+      }
+    },
+    "/api/v1/admin/experiences/{id}/practice": {
+      "post": {
+        "tags": [
+          "Companies"
+        ],
+        "summary": "Mark a question of a published write-up as written up as a practice question",
+        "description": "Requires permission `experiences:review` (Review interview write-ups before they are published and send their questions to the question banks). Host scope: college.",
+        "operationId": "graph_post_admin_experiences_id_practice",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "round": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "question": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "round",
+                  "question"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "experiences:review"
+      }
+    },
+    "/api/v1/copilot": {
+      "get": {
+        "tags": [
+          "Career Copilot"
+        ],
+        "summary": "My Career Copilot conversations and today’s questions left",
+        "description": "Requires permission `copilot:use` (Ask the Career Copilot: cited answers from the college’s own placement data, then a human to talk to). Host scope: college.",
+        "operationId": "copilot_get_copilot",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "copilot:use"
+      }
+    },
+    "/api/v1/copilot/chat": {
+      "post": {
+        "tags": [
+          "Career Copilot"
+        ],
+        "summary": "Ask the Career Copilot or run a command; cited answers stream as server-sent events",
+        "description": "Requires permission `copilot:use` (Ask the Career Copilot: cited answers from the college’s own placement data, then a human to talk to). Host scope: college. Rate limit: aiChat.",
+        "operationId": "copilot_post_copilot_chat",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 600
+                  },
+                  "sessionId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "question"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "copilot:use"
+      }
+    },
+    "/api/v1/copilot/sessions/{id}": {
+      "get": {
+        "tags": [
+          "Career Copilot"
+        ],
+        "summary": "One of my Career Copilot conversations",
+        "description": "Requires permission `copilot:use` (Ask the Career Copilot: cited answers from the college’s own placement data, then a human to talk to). Host scope: college.",
+        "operationId": "copilot_get_copilot_sessions_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "copilot:use"
+      },
+      "delete": {
+        "tags": [
+          "Career Copilot"
+        ],
+        "summary": "Delete one of my Career Copilot conversations",
+        "description": "Requires permission `copilot:use` (Ask the Career Copilot: cited answers from the college’s own placement data, then a human to talk to). Host scope: college.",
+        "operationId": "copilot_delete_copilot_sessions_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "copilot:use"
+      }
+    },
+    "/api/v1/copilot/handoff": {
+      "post": {
+        "tags": [
+          "Career Copilot"
+        ],
+        "summary": "Record that a human next step under an answer was opened",
+        "description": "Requires permission `copilot:use` (Ask the Career Copilot: cited answers from the college’s own placement data, then a human to talk to). Host scope: college.",
+        "operationId": "copilot_post_copilot_handoff",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "messageId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "ask_alumnus",
+                      "drive",
+                      "office_hours"
+                    ]
+                  }
+                },
+                "required": [
+                  "messageId",
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "copilot:use"
+      }
+    },
+    "/api/v1/network/me": {
+      "get": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "My network settings, consents and who opened what I shared",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college.",
+        "operationId": "network_get_network_me",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      },
+      "put": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "What other colleges and employers may see of me (the projection follows at once)",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college.",
+        "operationId": "network_put_network_me",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "nameStyle": {
+                    "type": "string",
+                    "enum": [
+                      "full",
+                      "first"
+                    ]
+                  },
+                  "showCompany": {
+                    "type": "boolean"
+                  },
+                  "showCity": {
+                    "type": "boolean"
+                  },
+                  "showSkills": {
+                    "type": "boolean"
+                  },
+                  "linkedinUrl": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 200,
+                        "pattern": "^https:\\/\\/(www\\.|[a-z]{2}\\.)?linkedin\\.com\\/in\\/[A-Za-z0-9\\-_%]{2,100}\\/?$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "helpWith": {
+                    "maxItems": 4,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "quick_chat",
+                        "video_1on1",
+                        "mock_interview",
+                        "resume_review"
+                      ]
+                    }
+                  },
+                  "acceptingIntros": {
+                    "type": "boolean"
+                  },
+                  "introsPerWeek": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "seeking": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "internship",
+                          "full_time"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "nameStyle",
+                  "showCompany",
+                  "showCity",
+                  "showSkills",
+                  "linkedinUrl",
+                  "helpWith",
+                  "acceptingIntros",
+                  "introsPerWeek",
+                  "seeking"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/network/consents": {
+      "put": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Grant or withdraw network_discovery or employer_visibility (never for minors)",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college.",
+        "operationId": "network_put_network_consents",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "purpose": {
+                    "type": "string",
+                    "enum": [
+                      "network_discovery",
+                      "employer_visibility"
+                    ]
+                  },
+                  "granted": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "purpose",
+                  "granted"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/network/alumni": {
+      "get": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Alumni of other opted-in colleges (P1; the projection only)",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college. Rate limit: network.",
+        "operationId": "network_get_network_alumni",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "company",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 80
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 60
+            }
+          },
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{1,4}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/network/alumni/{ref}": {
+      "get": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "One alumnus of another college (P2)",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college. Rate limit: network.",
+        "operationId": "network_get_network_alumni_ref",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{22}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/network/intros": {
+      "get": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Intros I sent and received",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college.",
+        "operationId": "network_get_network_intros",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      },
+      "post": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Ask an alumnus of another college for help (P3; weekly caps)",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college. Rate limit: requests.",
+        "operationId": "network_post_network_intros",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{22}$"
+                  },
+                  "helpWith": {
+                    "type": "string",
+                    "enum": [
+                      "quick_chat",
+                      "video_1on1",
+                      "mock_interview",
+                      "resume_review"
+                    ]
+                  },
+                  "goal": {
+                    "type": "string",
+                    "enum": [
+                      "career_advice",
+                      "interview_prep",
+                      "resume_feedback",
+                      "company_insight",
+                      "higher_studies"
+                    ]
+                  },
+                  "note": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 300
+                  }
+                },
+                "required": [
+                  "ref",
+                  "helpWith",
+                  "goal"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/network/intros/{id}/accept": {
+      "post": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Accept an intro and share a contact with that one student (P4)",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college.",
+        "operationId": "network_post_network_intros_id_accept",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "share": {
+                    "minItems": 1,
+                    "maxItems": 2,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "linkedin",
+                        "email"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "share"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/network/intros/{id}/decline": {
+      "post": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Decline an intro (P4)",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college.",
+        "operationId": "network_post_network_intros_id_decline",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "busy",
+                      "not_my_area",
+                      "not_now"
+                    ]
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/network/intros/{id}/report": {
+      "post": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Report an intro to the sender’s college (P6)",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college. Rate limit: reports.",
+        "operationId": "network_post_network_intros_id_report",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/network/candidacies": {
+      "get": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Employer drives I registered for, and what I shared with each employer",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college.",
+        "operationId": "network_get_network_candidacies",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      },
+      "post": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Share my résumé and readiness with the employer of a drive I registered for",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college.",
+        "operationId": "network_post_network_candidacies",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "driveId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "driveId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/network/candidacies/{ref}": {
+      "delete": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Stop sharing with an employer (at once)",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college.",
+        "operationId": "network_delete_network_candidacies_ref",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{22}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/network/postings/{id}/report": {
+      "post": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Report an employer posting (three reports hide it until a moderator decides)",
+        "description": "Requires permission `network:discover` (Find alumni of other colleges that opted in, and ask them for help (both colleges and both members opted in)). Host scope: college. Rate limit: reports.",
+        "operationId": "network_post_network_postings_id_report",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:discover"
+      }
+    },
+    "/api/v1/admin/network": {
+      "get": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "The network switches, postings offered to the college, blocks and who looked",
+        "description": "Requires permission `network:manage` (Review employer postings offered to the college, block employers, see who looked (the network)). Host scope: college.",
+        "operationId": "network_get_admin_network",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:manage"
+      }
+    },
+    "/api/v1/admin/network/switches": {
+      "put": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Turn the network on or off for the college (admin with TOTP; accepting the terms)",
+        "description": "Requires permission `tenant:settings` (Change features, limits and permission overrides). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "network_put_admin_network_switches",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "alumniDiscovery": {
+                    "type": "boolean"
+                  },
+                  "employerAccess": {
+                    "type": "boolean"
+                  },
+                  "credentials": {
+                    "type": "boolean"
+                  },
+                  "acceptTerms": {
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "tenant:settings"
+      }
+    },
+    "/api/v1/admin/network/postings/{id}/decision": {
+      "post": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Approve a posting (it becomes a drive) or decline it",
+        "description": "Requires permission `network:manage` (Review employer postings offered to the college, block employers, see who looked (the network)). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "network_post_admin_network_postings_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "decision": {
+                        "type": "string",
+                        "const": "approved"
+                      },
+                      "registrationCloseAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "driveDate": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "decision",
+                      "registrationCloseAt",
+                      "driveDate"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "decision": {
+                        "type": "string",
+                        "const": "declined"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "enum": [
+                          "not_relevant",
+                          "timing",
+                          "eligibility",
+                          "already_partnered",
+                          "other"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "decision",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:manage"
+      }
+    },
+    "/api/v1/admin/network/postings/{id}/moderate": {
+      "post": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Keep or remove a posting hidden by reports",
+        "description": "Requires permission `network:manage` (Review employer postings offered to the college, block employers, see who looked (the network)). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "network_post_admin_network_postings_id_moderate",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "keep": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "keep"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:manage"
+      }
+    },
+    "/api/v1/admin/network/blocks": {
+      "post": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Block an employer from the college",
+        "description": "Requires permission `network:manage` (Review employer postings offered to the college, block employers, see who looked (the network)). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "network_post_admin_network_blocks",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "employerId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "employerId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:manage"
+      }
+    },
+    "/api/v1/admin/network/blocks/{id}": {
+      "delete": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Unblock an employer",
+        "description": "Requires permission `network:manage` (Review employer postings offered to the college, block employers, see who looked (the network)). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "network_delete_admin_network_blocks_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:manage"
+      }
+    },
+    "/api/v1/admin/network/paused/{userId}/resume": {
+      "post": {
+        "tags": [
+          "Network"
+        ],
+        "summary": "Give network access back to a member paused by reports",
+        "description": "Requires permission `network:manage` (Review employer postings offered to the college, block employers, see who looked (the network)). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "network_post_admin_network_paused_userId_resume",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "network:manage"
+      }
+    },
+    "/api/v1/employers/apply": {
+      "post": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Apply as an employer (work email at the company’s domain, GSTIN; approved by a person)",
+        "description": "Public. Host scope: platform. Rate limit: employerApply.",
+        "operationId": "employers_post_employers_apply",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "companyName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "legalName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 160
+                  },
+                  "domain": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "pattern": "^(?=.{4,100}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,24}$"
+                  },
+                  "gstin": {
+                    "type": "string"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "pattern": "^emp-[a-z0-9][a-z0-9-]{0,26}[a-z0-9]$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80,
+                    "pattern": "^[^<>{}$]*$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  }
+                },
+                "required": [
+                  "companyName",
+                  "legalName",
+                  "domain",
+                  "gstin",
+                  "slug",
+                  "name",
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/employer": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "The employer’s verification state, recruiters, limits and prices",
+        "description": "Requires permission `employer:post` (Write postings and offer them to colleges (employer tenants)). Host scope: employer.",
+        "operationId": "employers_get_employer",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:post"
+      }
+    },
+    "/api/v1/employer/verify-domain": {
+      "post": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Check the DNS TXT record on the company’s domain",
+        "description": "Requires permission `employer:manage` (Manage the employer’s recruiters and verification (employer tenants)). Host scope: employer. Rate limit: verify.",
+        "operationId": "employers_post_employer_verify_domain",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:manage"
+      }
+    },
+    "/api/v1/employer/recruiters": {
+      "post": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Add a recruiter at the verified domain (10 seats)",
+        "description": "Requires permission `employer:manage` (Manage the employer’s recruiters and verification (employer tenants)). Host scope: employer. Rate limit: adminWrite.",
+        "operationId": "employers_post_employer_recruiters",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80,
+                    "pattern": "^[^<>{}$]*$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:manage"
+      }
+    },
+    "/api/v1/employer/recruiters/{id}": {
+      "delete": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Remove a recruiter",
+        "description": "Requires permission `employer:manage` (Manage the employer’s recruiters and verification (employer tenants)). Host scope: employer. Rate limit: adminWrite.",
+        "operationId": "employers_delete_employer_recruiters_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:manage"
+      }
+    },
+    "/api/v1/employer/colleges": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Colleges that take postings from this employer, and the clusters",
+        "description": "Requires permission `employer:post` (Write postings and offer them to colleges (employer tenants)). Host scope: employer.",
+        "operationId": "employers_get_employer_colleges",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:post"
+      }
+    },
+    "/api/v1/employer/postings": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "The employer’s postings and each college’s decision",
+        "description": "Requires permission `employer:post` (Write postings and offer them to colleges (employer tenants)). Host scope: employer.",
+        "operationId": "employers_get_employer_postings",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:post"
+      },
+      "post": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Write a posting (a draft until it is offered to colleges)",
+        "description": "Requires permission `employer:post` (Write postings and offer them to colleges (employer tenants)). Host scope: employer. Rate limit: posting.",
+        "operationId": "employers_post_employer_postings",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 120
+                  },
+                  "role": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "internship",
+                      "full_time"
+                    ]
+                  },
+                  "location": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "ctcRange": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 4000
+                  },
+                  "branches": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "CSE",
+                        "IT",
+                        "ECE",
+                        "EEE",
+                        "MECH",
+                        "CIVIL",
+                        "CHEM",
+                        "AIML",
+                        "DS",
+                        "OTHER"
+                      ]
+                    }
+                  },
+                  "gradYears": {
+                    "default": [],
+                    "maxItems": 4,
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1950,
+                      "maximum": 2100
+                    }
+                  },
+                  "closesAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "title",
+                  "role",
+                  "type",
+                  "location",
+                  "description",
+                  "closesAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:post"
+      }
+    },
+    "/api/v1/employer/postings/{id}": {
+      "put": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Edit a posting (colleges approve it again)",
+        "description": "Requires permission `employer:post` (Write postings and offer them to colleges (employer tenants)). Host scope: employer. Rate limit: posting.",
+        "operationId": "employers_put_employer_postings_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 120
+                  },
+                  "role": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "internship",
+                      "full_time"
+                    ]
+                  },
+                  "location": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "ctcRange": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 4000
+                  },
+                  "branches": {
+                    "default": [],
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "CSE",
+                        "IT",
+                        "ECE",
+                        "EEE",
+                        "MECH",
+                        "CIVIL",
+                        "CHEM",
+                        "AIML",
+                        "DS",
+                        "OTHER"
+                      ]
+                    }
+                  },
+                  "gradYears": {
+                    "default": [],
+                    "maxItems": 4,
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1950,
+                      "maximum": 2100
+                    }
+                  },
+                  "closesAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  }
+                },
+                "required": [
+                  "title",
+                  "role",
+                  "type",
+                  "location",
+                  "description",
+                  "closesAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:post"
+      }
+    },
+    "/api/v1/employer/postings/{id}/publish": {
+      "post": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Offer a posting to chosen colleges or a cluster (P8)",
+        "description": "Requires permission `employer:post` (Write postings and offer them to colleges (employer tenants)). Host scope: employer. Rate limit: posting.",
+        "operationId": "employers_post_employer_postings_id_publish",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "colleges": {
+                        "minItems": 1,
+                        "maxItems": 50,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{24}$"
+                        }
+                      }
+                    },
+                    "required": [
+                      "colleges"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "clusterId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      }
+                    },
+                    "required": [
+                      "clusterId"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:post"
+      }
+    },
+    "/api/v1/employer/postings/{id}/close": {
+      "post": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Close a posting (pending offers are withdrawn; P10)",
+        "description": "Requires permission `employer:post` (Write postings and offer them to colleges (employer tenants)). Host scope: employer.",
+        "operationId": "employers_post_employer_postings_id_close",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:post"
+      }
+    },
+    "/api/v1/employer/pool": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "How many opted-in students fit (counts only, suppressed and rounded; P7)",
+        "description": "Requires permission `employer:candidates` (See pool sizes and the résumés and readiness that candidates shared (employer tenants)). Host scope: employer.",
+        "operationId": "employers_get_employer_pool",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "colleges",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}(,[a-f0-9]{24}){0,49}$"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CSE",
+                "IT",
+                "ECE",
+                "EEE",
+                "MECH",
+                "CIVIL",
+                "CHEM",
+                "AIML",
+                "DS",
+                "OTHER"
+              ]
+            }
+          },
+          {
+            "name": "gradYear",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1950,
+              "maximum": 2100
+            }
+          },
+          {
+            "name": "seeking",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "internship",
+                "full_time"
+              ]
+            }
+          },
+          {
+            "name": "skills",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 130
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:candidates"
+      }
+    },
+    "/api/v1/employer/postings/{id}/candidates": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Students who applied and shared with this posting (P11; no contact details)",
+        "description": "Requires permission `employer:candidates` (See pool sizes and the résumés and readiness that candidates shared (employer tenants)). Host scope: employer.",
+        "operationId": "employers_get_employer_postings_id_candidates",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:candidates"
+      }
+    },
+    "/api/v1/employer/candidates/{ref}/resume-link": {
+      "post": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "A five-minute link to a candidate’s shared résumé (P12)",
+        "description": "Requires permission `employer:candidates` (See pool sizes and the résumés and readiness that candidates shared (employer tenants)). Host scope: employer.",
+        "operationId": "employers_post_employer_candidates_ref_resume_link",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{22}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:candidates"
+      }
+    },
+    "/api/v1/employer/resume/{token}": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Read a shared résumé through its link (candidacy and consent checked again)",
+        "description": "Requires permission `employer:candidates` (See pool sizes and the résumés and readiness that candidates shared (employer tenants)). Host scope: employer.",
+        "operationId": "employers_get_employer_resume_token",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{10,400}\\.[A-Za-z0-9_-]{43}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:candidates"
+      }
+    },
+    "/api/v1/employer/candidates/{ref}/readiness": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "A candidate’s readiness, computed now by their college (P13; never stored)",
+        "description": "Requires permission `employer:candidates` (See pool sizes and the résumés and readiness that candidates shared (employer tenants)). Host scope: employer.",
+        "operationId": "employers_get_employer_candidates_ref_readiness",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{22}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:candidates"
+      }
+    },
+    "/api/v1/employer/candidates/{ref}/stage": {
+      "put": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Propose a shortlist decision (P14; the college publishes results)",
+        "description": "Requires permission `employer:candidates` (See pool sizes and the résumés and readiness that candidates shared (employer tenants)). Host scope: employer.",
+        "operationId": "employers_put_employer_candidates_ref_stage",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{22}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "stage": {
+                    "type": "string",
+                    "enum": [
+                      "shortlisted",
+                      "not_selected"
+                    ]
+                  }
+                },
+                "required": [
+                  "stage"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:candidates"
+      }
+    },
+    "/api/v1/employer/billing": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Billable postings, drives and hires",
+        "description": "Requires permission `employer:manage` (Manage the employer’s recruiters and verification (employer tenants)). Host scope: employer.",
+        "operationId": "employers_get_employer_billing",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "employer:manage"
+      }
+    },
+    "/api/v1/platform/employers": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Employers by status (the registry)",
+        "description": "Requires permission `platform:employers` (Approve, reject and suspend employers; manage college clusters). Host scope: platform.",
+        "operationId": "employers_get_platform_employers",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "applied",
+                "verified",
+                "approved",
+                "suspended",
+                "rejected"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:employers"
+      }
+    },
+    "/api/v1/platform/employers/{id}": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "One employer’s application (P16)",
+        "description": "Requires permission `platform:employers` (Approve, reject and suspend employers; manage college clusters). Host scope: platform.",
+        "operationId": "employers_get_platform_employers_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:employers"
+      }
+    },
+    "/api/v1/platform/employers/{id}/decision": {
+      "post": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Approve, reject, suspend or reinstate an employer",
+        "description": "Requires permission `platform:employers` (Approve, reject and suspend employers; manage college clusters). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "employers_post_platform_employers_id_decision",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject",
+                      "suspend",
+                      "reinstate"
+                    ]
+                  },
+                  "note": {
+                    "default": "",
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:employers"
+      }
+    },
+    "/api/v1/platform/network/clusters": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "College clusters employers may post to",
+        "description": "Requires permission `platform:employers` (Approve, reject and suspend employers; manage college clusters). Host scope: platform.",
+        "operationId": "employers_get_platform_network_clusters",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:employers"
+      },
+      "post": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Create a cluster",
+        "description": "Requires permission `platform:employers` (Approve, reject and suspend employers; manage college clusters). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "employers_post_platform_network_clusters",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "colleges": {
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "colleges"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:employers"
+      }
+    },
+    "/api/v1/platform/network/clusters/{id}": {
+      "put": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Change a cluster",
+        "description": "Requires permission `platform:employers` (Approve, reject and suspend employers; manage college clusters). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "employers_put_platform_network_clusters_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "colleges": {
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "colleges"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:employers"
+      },
+      "delete": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Delete a cluster",
+        "description": "Requires permission `platform:employers` (Approve, reject and suspend employers; manage college clusters). Host scope: platform. Rate limit: adminWrite.",
+        "operationId": "employers_delete_platform_network_clusters_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:employers"
+      }
+    },
+    "/api/v1/platform/network/revenue": {
+      "get": {
+        "tags": [
+          "Employers"
+        ],
+        "summary": "Each college’s share of a month’s billable events (P17)",
+        "description": "Requires permission `platform:employers` (Approve, reject and suspend employers; manage college clusters). Host scope: platform.",
+        "operationId": "employers_get_platform_network_revenue",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "platform:employers"
+      }
+    },
+    "/api/v1/credentials": {
+      "get": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "My verified credentials and what I could have one for",
+        "description": "Requires permission `credentials:own` (Request, share and revoke one’s own verified credentials). Host scope: college.",
+        "operationId": "credentials_get_credentials",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "credentials:own"
+      },
+      "post": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "Ask the college to sign a credential for a verified record (never for minors)",
+        "description": "Requires permission `credentials:own` (Request, share and revoke one’s own verified credentials). Host scope: college. Rate limit: posting.",
+        "operationId": "credentials_post_credentials",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "PlacementOfferCredential"
+                      },
+                      "sourceId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "nameStyle": {
+                        "type": "string",
+                        "enum": [
+                          "full",
+                          "first"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "sourceId",
+                      "nameStyle"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "ReadinessMilestoneCredential"
+                      },
+                      "milestone": {
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "const": 60
+                          },
+                          {
+                            "type": "number",
+                            "const": 80
+                          }
+                        ]
+                      },
+                      "nameStyle": {
+                        "type": "string",
+                        "enum": [
+                          "full",
+                          "first"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "milestone",
+                      "nameStyle"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "MentorCertificateCredential"
+                      },
+                      "sourceId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "nameStyle": {
+                        "type": "string",
+                        "enum": [
+                          "full",
+                          "first"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "sourceId",
+                      "nameStyle"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "MentorshipRecognitionCredential"
+                      },
+                      "sourceId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "nameStyle": {
+                        "type": "string",
+                        "enum": [
+                          "full",
+                          "first"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "sourceId",
+                      "nameStyle"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "credentials:own"
+      }
+    },
+    "/api/v1/credentials/{id}": {
+      "delete": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "Revoke one of my credentials (its page says so at once)",
+        "description": "Requires permission `credentials:own` (Request, share and revoke one’s own verified credentials). Host scope: college.",
+        "operationId": "credentials_delete_credentials_id",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{22}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "credentials:own"
+      }
+    },
+    "/api/v1/admin/credentials": {
+      "get": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "The college’s issuer keys and how many credentials are live",
+        "description": "Requires permission `credentials:manage` (Rotate the college’s credential signing key and revoke credentials). Host scope: college.",
+        "operationId": "credentials_get_admin_credentials",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "credentials:manage"
+      }
+    },
+    "/api/v1/admin/credentials/rotate": {
+      "post": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "Rotate the signing key (old credentials keep verifying)",
+        "description": "Requires permission `credentials:manage` (Rotate the college’s credential signing key and revoke credentials). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "credentials_post_admin_credentials_rotate",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "credentials:manage"
+      }
+    },
+    "/api/v1/admin/credentials/keys/{kid}/compromised": {
+      "post": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "Withdraw a leaked key and re-sign its live credentials with a new one",
+        "description": "Requires permission `credentials:manage` (Rotate the college’s credential signing key and revoke credentials). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "credentials_post_admin_credentials_keys_kid_compromised",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "kid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{8,64}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "credentials:manage"
+      }
+    },
+    "/api/v1/admin/credentials/{id}/revoke": {
+      "post": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "Revoke a credential",
+        "description": "Requires permission `credentials:manage` (Rotate the college’s credential signing key and revoke credentials). Host scope: college. Rate limit: adminWrite.",
+        "operationId": "credentials_post_admin_credentials_id_revoke",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{22}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "credentials:manage"
+      }
+    },
     "/api/v1/legal/{doc}": {
       "get": {
         "tags": [
@@ -31460,6 +34757,7 @@
                       "event",
                       "event_question",
                       "review",
+                      "experience",
                       "resume_comment"
                     ]
                   },
@@ -31551,6 +34849,7 @@
                 "event",
                 "event_question",
                 "review",
+                "experience",
                 "resume_comment"
               ]
             }
@@ -31930,6 +35229,7 @@
                       "event",
                       "event_question",
                       "review",
+                      "experience",
                       "resume_comment"
                     ]
                   },
@@ -32043,6 +35343,105 @@
             "schema": {
               "type": "string",
               "pattern": "^[a-z0-9][a-z0-9-]{2,79}$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/{slug}/verify/{id}": {
+      "get": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "Check a credential: the claims, the signature and whether it was revoked",
+        "description": "Public. Host scope: college. Rate limit: verifyPublic.",
+        "operationId": "credentials-public_get_slug_verify_id",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{1,30}[a-z0-9]$"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{22}(\\.jwt)?$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/{slug}/did.json": {
+      "get": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "The college’s DID document (did:web): its credential signing keys",
+        "description": "Public. Host scope: college. Rate limit: verifyPublic.",
+        "operationId": "credentials-public_get_slug_did.json",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{1,30}[a-z0-9]$"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
+    "/api/v1/{slug}/credentials/status/1": {
+      "get": {
+        "tags": [
+          "Credentials"
+        ],
+        "summary": "The college’s revocation list (W3C Bitstring Status List, signed)",
+        "description": "Public. Host scope: college. Rate limit: verifyPublic.",
+        "operationId": "credentials-public_get_slug_credentials_status_1",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{1,30}[a-z0-9]$"
             }
           }
         ],
