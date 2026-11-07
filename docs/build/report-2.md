@@ -116,6 +116,13 @@ The full list is in `progress.md` under each phase and in ADR 0014's implementat
 - **Offers per 100 final-years counts offers**, as Admin › Analytics does (a student with two offers counts twice); the JSON also has students placed. The year-on-year change compares the previous batch at the same date, not its final figure.
 - **Registration rate counts graduated batches too:** a drive held in the range was for a batch that may be alumni now.
 - **End-to-end specs updated for the larger seed:** five checks assumed the small seed (the members and alumni lists fit one page; a company with one offer; member invites off). They now search by name, check that pay appears only as a band, and expect invites on.
+- **The seed's demo invites are the placement cell's CSV links**, not members' WhatsApp invites: CI seeds without WhatsApp, where member invites refuse to send (the first CI run on the seed failed on exactly that).
+- **Fixed what the re-audit found** (G13 owns the re-audit, so its findings were fixed here rather than listed):
+  - Companies, the Career Copilot, Share and Campus Captain were never in the web's shipped destinations, so the account menu, the desktop rail and the command palette did not offer them (G8, G10, G11); they do now.
+  - Home's weekly Next Step card (G7) loaded after Home painted and pushed the feed down (Lighthouse layout shift 0.309, was 0.089); Home's loader now prefetches it and Home keeps its space while it loads.
+  - Targets under 44 px on Prompt 2 screens: the tag input's remove buttons and field, the checkbox label (Admin › Readiness rows), the quick-ask and practice look-back links (19 px tall, under WCAG's 24 px too), the Next Step card's link, the sign-in copy button and a write-up's options button.
+  - "Updated 7 Nov" ran into the next sentence on company pages (a missing full stop, en, te, hi).
+- **The audit scripts follow the demo student into her final year:** since June 2026 Ananya (batch 2027) has Placements in place of Jobs on her bar, so the journeys and the scroll-memory check tap Placements and open Jobs from the menu.
 
 ## New environment variables (Prompt 2)
 
@@ -158,7 +165,9 @@ All optional; `config/env.ts` refuses to boot on a malformed value.
 - **Translated legal texts** stay unpublished until the native-speaker review (prompt 1b R13).
 - **No real AI provider** was called in Prompt 2; every AI path was tested with the mock provider and injection traps.
 - **From earlier phases** (`security-review.md` › Gaps): `style-src 'unsafe-inline'` in the CSP and no external penetration test.
-- **The initial bundle is at 169.7 KiB of 170 KiB**: the next screen-shell change must be paid for elsewhere.
+- **The initial bundle is at 169.8 KiB of 170 KiB**: the next screen-shell change must be paid for elsewhere.
+- **Prompt 1 screens with targets under 44 px** (unchanged from the earlier audits, WCAG 2.5.8's 24 px met): member-name links on Home and a job (24 px), job titles in the jobs list (39 px), the roadmap review queue and others listed in `after-2/data-after/touch-targets-360.json`. The demo year's larger lists show more of the same links.
+- **`pnpm audit` (all dependencies)** reports 5 low or moderate advisories in build and export tooling (glob and minimatch through eslint, workbox and write-excel-file's archiver; deepmerge through workbox); the gate (`--prod --audit-level=high`) is clean. No dependency changed in Prompt 2's G13.
 
 ## Gates
 
