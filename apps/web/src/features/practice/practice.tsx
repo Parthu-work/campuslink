@@ -76,7 +76,7 @@ function Today({ home, start }: { home: PracticeHomeView; start: ReturnType<type
           <>
             <p className="font-semibold text-success-ink">{t('practice.today.done')}</p>
             <Link
-              className="text-meta font-semibold text-brand-ink underline"
+              className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink underline"
               to={`/practice/sets/${today.setId}`}
             >
               {t('practice.today.review')}

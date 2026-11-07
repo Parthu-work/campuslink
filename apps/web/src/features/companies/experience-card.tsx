@@ -41,14 +41,16 @@ export function ExperienceCard({
           </p>
         </div>
         {!e.mine && !reviewer && e.status === 'published' && !e.removed && (
-          <ContentMenu
-            targetType="experience"
-            targetId={e.id}
-            authorId=""
-            authorName={who}
-            isMine={false}
-            blockable={false}
-          />
+          <div className="shrink-0">
+            <ContentMenu
+              targetType="experience"
+              targetId={e.id}
+              authorId=""
+              authorName={who}
+              isMine={false}
+              blockable={false}
+            />
+          </div>
         )}
       </div>
       <ol className="grid gap-3">
