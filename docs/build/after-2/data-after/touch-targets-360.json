@@ -1,0 +1,103 @@
+{
+  "public:/": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 4,
+    "under44": 0,
+    "under24": 0,
+    "under44NotExempt": 0,
+    "under24NotExempt": 0,
+    "under44Examples": [],
+    "under24Examples": [],
+    "fontSizes": {
+      "12px": 4,
+      "13px": 6,
+      "36px": 2,
+      "16px": 3,
+      "15px": 3
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "public:/sign-in": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 6,
+    "under44": 1,
+    "under24": 0,
+    "under44NotExempt": 1,
+    "under24NotExempt": 0,
+    "under44Examples": [
+      {
+        "label": "DPDeccan Plateau Institute of Technology",
+        "w": 328,
+        "h": 40,
+        "exempt": false
+      }
+    ],
+    "under24Examples": [],
+    "fontSizes": {
+      "12px": 3,
+      "15px": 3,
+      "28px": 1,
+      "13px": 5,
+      "16px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "public:/sign-up": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 16,
+    "under44": 2,
+    "under24": 1,
+    "under44NotExempt": 1,
+    "under24NotExempt": 0,
+    "under44Examples": [
+      {
+        "label": "DPDeccan Plateau Institute of Technology",
+        "w": 328,
+        "h": 40,
+        "exempt": false
+      }
+    ],
+    "under24Examples": [],
+    "fontSizes": {
+      "12px": 5,
+      "15px": 3,
+      "28px": 1,
+      "13px": 19,
+      "16px": 1
+    },
+    "imagesWithoutDimensions": 0
+  },
+  "public:/forgot-password": {
+    "docScrollWidth": 360,
+    "viewportWidth": 360,
+    "overflow": [],
+    "targets": 4,
+    "under44": 1,
+    "under24": 0,
+    "under44NotExempt": 1,
+    "under24NotExempt": 0,
+    "under44Examples": [
+      {
+        "label": "DPDeccan Plateau Institute of Technology",
+        "w": 328,
+        "h": 40,
+        "exempt": false
+      }
+    ],
+    "under24Examples": [],
+    "fontSizes": {
+      "12px": 2,
+      "15px": 2,
+      "28px": 1,
+      "13px": 2,
+      "16px": 1
+    },
+    "imagesWithoutDimensions": 0
+  }
+}

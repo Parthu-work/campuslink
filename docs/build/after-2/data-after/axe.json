@@ -1,0 +1,42 @@
+[
+  {
+    "screen": "public-landing-360-light-dpit",
+    "url": "http://dpit.localhost:4173/",
+    "violations": []
+  },
+  {
+    "screen": "public-sign-in-360-light-dpit",
+    "url": "http://dpit.localhost:4173/sign-in",
+    "violations": []
+  },
+  {
+    "screen": "public-sign-up-360-light-dpit",
+    "url": "http://dpit.localhost:4173/sign-up",
+    "violations": []
+  },
+  {
+    "screen": "public-forgot-password-360-light-dpit",
+    "url": "http://dpit.localhost:4173/forgot-password",
+    "violations": []
+  },
+  {
+    "screen": "public-landing-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/",
+    "violations": []
+  },
+  {
+    "screen": "public-sign-in-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/sign-in",
+    "violations": []
+  },
+  {
+    "screen": "public-sign-up-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/sign-up",
+    "violations": []
+  },
+  {
+    "screen": "public-forgot-password-360-dark-dpit",
+    "url": "http://dpit.localhost:4173/forgot-password",
+    "violations": []
+  }
+]
