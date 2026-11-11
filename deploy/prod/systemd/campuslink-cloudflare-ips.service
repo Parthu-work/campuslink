@@ -1,0 +1,12 @@
+[Unit]
+Description=Refresh Cloudflare's address ranges for nginx and the firewall
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/srv/campuslink/deploy/prod
+# nginx's includes (as the deploy user), then the firewall's allowlist (root).
+ExecStart=/usr/sbin/runuser -u deploy -- /srv/campuslink/deploy/prod/cloudflare-ips.sh
+ExecStart=/srv/campuslink/deploy/prod/firewall.sh

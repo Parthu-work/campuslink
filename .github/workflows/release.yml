@@ -1,0 +1,174 @@
+# Images and deployment (prompt 4, P6).
+#
+# After CI is green on main (or by hand), builds the api, worker and web images for linux/arm64
+# (the Oracle A1 server, on GitHub's Arm runners) and linux/amd64 (portability), pushes them to
+# GitHub Container Registry tagged with the commit SHA and `main`, with an SBOM and provenance.
+# Then the `deploy` job waits for the owner's approval (the `production` environment's required
+# reviewer) and runs deploy/prod/deploy.sh <sha> on the server over SSH: pull, replace, wait for
+# readiness, smoke test, and roll back to the previous tag by itself if anything fails.
+#
+# Secrets (only in the `production` environment, never in the repository or the logs):
+#   DEPLOY_HOST          the server's address        DEPLOY_SSH_KEY   the deploy key (private part)
+#   DEPLOY_KNOWN_HOSTS   `ssh-keyscan <host>` output  (pins the server's host key)
+# Variables: ARM_RUNNER (default ubuntu-24.04-arm). See docs/deploy-oracle.md › Continuous deployment.
+name: Release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy after building (owner approval still required)
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  # GHCR paths must be lower case.
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/campuslink
+
+jobs:
+  build:
+    # Only a green CI run on main (or a manual run) builds anything.
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    strategy:
+      fail-fast: true
+      matrix:
+        image: [api, worker, web]
+        platform: [linux/amd64, linux/arm64]
+    runs-on: ${{ matrix.platform == 'linux/arm64' && (vars.ARM_RUNNER || 'ubuntu-24.04-arm') || 'ubuntu-24.04' }}
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      sha: ${{ steps.meta.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The commit CI tested, not whatever main is now.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - id: meta
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >>"$GITHUB_OUTPUT"
+          echo "prefix=${IMAGE_PREFIX,,}" >>"$GITHUB_OUTPUT"
+          echo "arch=${PLATFORM#linux/}" >>"$GITHUB_OUTPUT"
+        env:
+          PLATFORM: ${{ matrix.platform }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push (by digest)
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/${{ matrix.image }}.Dockerfile
+          platforms: ${{ matrix.platform }}
+          sbom: true
+          provenance: mode=max
+          outputs: type=image,name=${{ steps.meta.outputs.prefix }}-${{ matrix.image }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=${{ matrix.image }}-${{ steps.meta.outputs.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ steps.meta.outputs.arch }}
+      # The worker's tools must run on this architecture: ffmpeg, pdftoppm, and Tesseract with the
+      # English, Telugu and Hindi language packs (OCR of a Devanagari line rendered right here).
+      - name: Check the worker's media tools on ${{ matrix.platform }}
+        if: matrix.image == 'worker'
+        run: |
+          ref="${{ steps.meta.outputs.prefix }}-worker@${{ steps.build.outputs.digest }}"
+          docker run --rm --platform "${{ matrix.platform }}" --entrypoint sh "$ref" -c '
+            set -e
+            ffmpeg -hide_banner -version | head -n 1
+            pdftoppm -v 2>&1 | head -n 1
+            langs=$(tesseract --list-langs 2>/dev/null)
+            for l in eng tel hin; do echo "$langs" | grep -qx "$l" || { echo "missing tesseract language: $l"; exit 1; }; done
+            echo "tesseract languages: $(echo $langs | tr "\n" " ")"'
+          sudo apt-get install -y -q fonts-noto-core imagemagick >/dev/null
+          convert -size 900x140 xc:white -font "Noto-Sans-Devanagari-Regular" -pointsize 64 -fill black \
+            -annotate +20+95 'नमस्ते दुनिया' /tmp/hin.png
+          out=$(docker run --rm --platform "${{ matrix.platform }}" -v /tmp/hin.png:/in.png:ro --entrypoint tesseract "$ref" /in.png - -l hin 2>/dev/null)
+          echo "OCR read: $out"
+          echo "$out" | grep -q 'नमस्ते' || { echo "Hindi OCR did not read the test line"; exit 1; }
+      - name: Record the digest
+        run: |
+          mkdir -p /tmp/digests
+          echo "${{ steps.build.outputs.digest }}" >"/tmp/digests/${{ matrix.image }}-${{ steps.meta.outputs.arch }}"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: digest-${{ matrix.image }}-${{ steps.meta.outputs.arch }}
+          path: /tmp/digests/*
+          retention-days: 1
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      sha: ${{ needs.build.outputs.sha }}
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: digest-*
+          merge-multiple: true
+          path: /tmp/digests
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tag the multi-architecture images with the commit and main
+        env:
+          SHA: ${{ needs.build.outputs.sha }}
+        run: |
+          prefix=${IMAGE_PREFIX,,}
+          for image in api worker web; do
+            docker buildx imagetools create \
+              -t "$prefix-$image:$SHA" -t "$prefix-$image:main" \
+              "$prefix-$image@$(cat /tmp/digests/$image-amd64)" "$prefix-$image@$(cat /tmp/digests/$image-arm64)"
+            docker buildx imagetools inspect "$prefix-$image:$SHA" | grep -E 'Name:|Platform:' | head -n 6
+          done
+
+  deploy:
+    needs: publish
+    if: github.event_name != 'workflow_dispatch' || inputs.deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    # The owner approves each deploy here (environment protection rule: required reviewer).
+    environment:
+      name: production
+    steps:
+      - name: Deploy ${{ needs.publish.outputs.sha }} on the server
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          SHA: ${{ needs.publish.outputs.sha }}
+        run: |
+          if [ -z "$HOST" ] || [ -z "$KEY" ] || [ -z "$KNOWN_HOSTS" ]; then
+            echo "The production environment has no DEPLOY_HOST, DEPLOY_SSH_KEY or DEPLOY_KNOWN_HOSTS: nothing deployed."
+            exit 1
+          fi
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$KNOWN_HOSTS" >~/.ssh/known_hosts
+          printf '%s\n' "$KEY" >~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          # The server's authorized_keys pins this key to `deploy-from-ci <sha>` (docs/deploy-oracle.md),
+          # so the key can run nothing else; the command below is what it receives as the SHA.
+          ssh -i ~/.ssh/deploy -o BatchMode=yes -o StrictHostKeyChecking=yes "deploy@$HOST" "$SHA"
+          rm -f ~/.ssh/deploy

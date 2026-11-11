@@ -1,0 +1,12 @@
+[Unit]
+Description=CampusLink monthly restore drill (deploy/prod/drill.sh)
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/campuslink/deploy/prod
+ExecStart=/srv/campuslink/deploy/prod/drill.sh
+Nice=10

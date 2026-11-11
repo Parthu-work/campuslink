@@ -1,0 +1,371 @@
+# Production on ONE server (prompt 4, P2): the pilot topology, Oracle Always Free Ampere A1
+# (2 OCPU, 12 GB, arm64) behind Cloudflare. Everything runs from containers and one env file, so
+# moving to a bigger server or a managed database is a config change plus a restore
+# (docs/deployment.md). Set-up: docs/deploy-oracle.md. What each service is: README.md.
+#
+#   Cloudflare → edge (nginx, TLS; the ONLY published ports) → web (nginx, static + headers)
+#                                                            → api (Node, PROCESS_ROLE=api)
+#   worker (PROCESS_ROLE=worker: jobs, the scheduler, ffmpeg and Tesseract)
+#   mongo (replica set rs0, keyfile, authentication) · redis (password, AOF) · qdrant (API key)
+#   clamav · seaweedfs (S3, access keys, encrypted at rest) · ollama (free embeddings)
+#
+# Settings come from `.env` next to this file (see .env.production.example); the secrets only the
+# databases need (root passwords, the keyfile, the storage key) are files in ./secrets, created by
+# gen-secrets.sh, and never reach the application containers.
+#
+# Memory: limits sum to 11.25 GB of the server's 12 GB; with the measured idle use (README.md)
+# the host keeps well over 1 GB free, and a 4 GB swap file absorbs a ClamAV signature reload.
+name: campuslink
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '5'
+
+x-hardening: &hardening
+  restart: unless-stopped
+  logging: *logging
+  networks: [internal]
+  security_opt: ['no-new-privileges:true']
+
+x-app: &app
+  <<: *hardening
+  # Every application setting comes from the one env file. Nothing in it is a database root secret.
+  env_file: [.env]
+  user: node
+  read_only: true
+  tmpfs: ['/tmp:size=512m,mode=1777']
+  cap_drop: [ALL]
+  depends_on:
+    mongo-init: { condition: service_completed_successfully }
+    redis: { condition: service_healthy }
+    qdrant: { condition: service_healthy }
+    clamav: { condition: service_healthy }
+    seaweedfs-init: { condition: service_completed_successfully }
+
+services:
+  edge:
+    <<: *hardening
+    image: mirror.gcr.io/library/nginx:1.28-alpine
+    # The only ports this server publishes. The host firewall and the Oracle security list admit
+    # them from Cloudflare's ranges only (docs/deploy-oracle.md).
+    ports: ['80:8080', '443:8443']
+    environment:
+      APP_ROOT_DOMAIN: ${APP_ROOT_DOMAIN:?set APP_ROOT_DOMAIN in .env}
+    user: '101:101'
+    read_only: true
+    cap_drop: [ALL]
+    tmpfs:
+      - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
+      - /var/cache/nginx:uid=101,gid=101
+      - /run:uid=101,gid=101
+      - /tmp:uid=101,gid=101
+    volumes:
+      - ../nginx/campuslink.conf:/etc/nginx/templates/default.conf.template:ro
+      # fullchain.pem and privkey.pem: the Cloudflare Origin CA certificate (readable by uid 101).
+      - ${TLS_DIR:-./tls}:/etc/ssl/campuslink:ro
+      # real-ip.conf and origin-lock.conf, written by cloudflare-ips.sh.
+      - ${CLOUDFLARE_DIR:-./cloudflare}:/etc/nginx/cloudflare:ro
+    depends_on:
+      web: { condition: service_started }
+      api: { condition: service_healthy }
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget -q -O /dev/null --header "Host: health.invalid" http://127.0.0.1:8080/ 2>&1 | grep -q 301 || nc -z 127.0.0.1 8443',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    mem_limit: 128m
+
+  web:
+    <<: *hardening
+    image: ${IMAGE_PREFIX:-ghcr.io/parthu-work/campuslink}-web:${IMAGE_TAG:-main}
+    user: '101:101'
+    read_only: true
+    cap_drop: [ALL]
+    tmpfs:
+      - /var/cache/nginx:uid=101,gid=101
+      - /run:uid=101,gid=101
+      - /tmp:uid=101,gid=101
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    mem_limit: 128m
+
+  api:
+    <<: *app
+    image: ${IMAGE_PREFIX:-ghcr.io/parthu-work/campuslink}-api:${IMAGE_TAG:-main}
+    environment:
+      PROCESS_ROLE: api
+      NODE_OPTIONS: --max-old-space-size=768
+    volumes:
+      # The nightly backup's status file only (costs:report reads it); never the backups.
+      - ${STATE_DIR:-/var/lib/campuslink}/status:/var/lib/campuslink/status:ro
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4000/api/v1/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    mem_limit: 1g
+
+  worker:
+    <<: *app
+    image: ${IMAGE_PREFIX:-ghcr.io/parthu-work/campuslink}-worker:${IMAGE_TAG:-main}
+    environment:
+      PROCESS_ROLE: worker
+      NODE_OPTIONS: --max-old-space-size=1100
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4000/api/v1/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    mem_limit: 1536m
+
+  # MongoDB 8: a single-member replica set (transactions, change streams) with a keyfile and
+  # authentication. The image creates the root user on the first start; mongo-init then starts the
+  # replica set and creates the application user. The root user is used by nothing else.
+  mongo:
+    <<: *hardening
+    image: mirror.gcr.io/library/mongo:8.0
+    # The keyfile must belong to mongodb with mode 400, which a bind mount cannot promise, so it is
+    # copied into place first. The image's entrypoint then drops from root to the mongodb user.
+    entrypoint:
+      - bash
+      - -c
+      - |
+        install -o mongodb -g mongodb -m 0400 /run/secrets/mongo_keyfile /data/configdb/keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /data/configdb/keyfile \
+          --wiredTigerCacheSizeGB 1.5 --quiet
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo_root_password
+      # Kernels 6.19 to 7.0.13 make mongod refuse to start (SERVER-121912) unless glibc owns rseq.
+      GLIBC_TUNABLES: glibc.pthread.rseq=1
+    secrets: [mongo_keyfile, mongo_root_password]
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    healthcheck:
+      # ping needs no credentials; whether the replica set has a primary is mongo-init's job.
+      test: ['CMD-SHELL', 'mongosh --quiet --eval "db.adminCommand({ ping: 1 }).ok" | grep -q 1']
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+    mem_limit: 3g
+    ulimits:
+      nofile: { soft: 64000, hard: 64000 }
+
+  # One-shot, safe to run on every `up`: starts the replica set if it has none and creates or
+  # updates the least-privilege application user (readWrite on the application database only) and
+  # the backup user (the built-in backup role). The only user of the root password.
+  mongo-init:
+    image: mirror.gcr.io/library/mongo:8.0
+    restart: 'no'
+    logging: *logging
+    networks: [internal]
+    security_opt: ['no-new-privileges:true']
+    depends_on:
+      mongo: { condition: service_healthy }
+    environment:
+      MONGO_APP_DB: ${MONGO_APP_DB:-campuslink}
+      MONGO_APP_USER: ${MONGO_APP_USER:-campuslink_app}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?run gen-secrets.sh}
+      MONGO_BACKUP_USER: campuslink_backup
+      HOME: /tmp
+    secrets: [mongo_root_password, mongo_backup_password]
+    volumes:
+      - ./mongo-init.sh:/mongo-init.sh:ro
+    entrypoint: ['bash', '/mongo-init.sh']
+
+  redis:
+    <<: *hardening
+    image: mirror.gcr.io/library/redis:7.4-alpine
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?run gen-secrets.sh}
+      # redis-cli reads this for the health check (never on a command line).
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    # Queues and rate limits: never evict (BullMQ needs noeviction), persist with AOF.
+    command:
+      - sh
+      - -c
+      - exec redis-server --requirepass "$$REDIS_PASSWORD" --appendonly yes --maxmemory 400mb --maxmemory-policy noeviction
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli ping | grep -q PONG']
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    mem_limit: 512m
+
+  # Vector index for study passages and the Career Copilot. Only an index: vectors also live on the
+  # passages in MongoDB, so it is rebuilt (Admin › AI › Rebuild the index), never backed up.
+  qdrant:
+    <<: *hardening
+    image: qdrant/qdrant:v1.19.2
+    environment:
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:?run gen-secrets.sh}
+      QDRANT__TELEMETRY_DISABLED: 'true'
+    volumes: [qdrant-data:/qdrant/storage]
+    healthcheck:
+      # The image has no curl or wget; bash opens the port itself.
+      test: ['CMD-SHELL', 'bash -c ":> /dev/tcp/127.0.0.1/6333"']
+      interval: 10s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    mem_limit: 1g
+
+  # ClamAV: every upload is scanned before it is stored, and the API refuses uploads while this is
+  # down (fail closed). freshclam keeps the signatures current (its only outbound traffic).
+  clamav:
+    <<: *hardening
+    # The Debian build: clamav/clamav (Alpine) publishes no arm64 image for 1.5.4; this one does.
+    image: clamav/clamav-debian:1.5.4
+    environment:
+      # Above the largest upload (200 MB study videos). Files over a limit are reported, not
+      # skipped (AlertExceedsMax), so the API refuses them: scanning stays fail-closed.
+      CLAMD_CONF_StreamMaxLength: 210M
+      CLAMD_CONF_MaxFileSize: 210M
+      CLAMD_CONF_MaxScanSize: 420M
+      CLAMD_CONF_MaxScanTime: 170000
+      CLAMD_CONF_AlertExceedsMax: 'yes'
+      # A signature update loads the new set and then swaps: without this, clamd holds two copies
+      # for a moment (over 2 GB). Scans wait a few seconds during the reload instead.
+      CLAMD_CONF_ConcurrentDatabaseReload: 'no'
+      FRESHCLAM_CHECKS: '2'
+    volumes: [clamav-data:/var/lib/clamav]
+    healthcheck:
+      test: ['CMD-SHELL', 'clamdscan --ping 1']
+      interval: 15s
+      timeout: 10s
+      retries: 40
+      start_period: 120s
+    mem_limit: 1536m
+
+  # S3-compatible object storage for every stored file. Access keys are required (s3.json), and
+  # objects written with SSE-S3 (the API sends S3_SSE=AES256) are encrypted at rest with the key
+  # below. deploy-check.js proves it with a real upload and HEAD.
+  seaweedfs:
+    <<: *hardening
+    image: chrislusf/seaweedfs:4.48
+    # The entrypoint reads the key-encryption key from its secret file into the environment.
+    entrypoint:
+      - sh
+      - -c
+      - |
+        export WEED_S3_SSE_KEK="$$(cat /run/secrets/seaweedfs_kek)"
+        exec weed server -dir=/data -ip=seaweedfs -ip.bind=0.0.0.0 -s3 -s3.port=8333 \
+          -s3.config=/run/secrets/seaweedfs_s3 -master.volumeSizeLimitMB=1024 -volume.max=100
+    secrets: [seaweedfs_s3, seaweedfs_kek]
+    volumes: [seaweedfs-data:/data]
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1:8333/healthz || exit 1']
+      interval: 10s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
+    mem_limit: 512m
+
+  # One-shot: the bucket must exist before the API is ready (readiness checks it).
+  seaweedfs-init:
+    image: chrislusf/seaweedfs:4.48
+    restart: 'no'
+    logging: *logging
+    networks: [internal]
+    security_opt: ['no-new-privileges:true']
+    depends_on:
+      seaweedfs: { condition: service_healthy }
+    environment:
+      S3_BUCKET: ${S3_BUCKET:-campuslink-files}
+    entrypoint:
+      - sh
+      - -c
+      - |
+        out=$$(echo "s3.bucket.create -name $$S3_BUCKET" | weed shell -master=seaweedfs:9333 2>&1) || true
+        if echo "$$out" | grep -qi error && ! echo "$$out" | grep -q 'already exists'; then
+          echo "$$out" >&2
+          exit 1
+        fi
+        echo "bucket $$S3_BUCKET is there"
+
+  # Free embeddings (prompt 4, P4): a small open embedding model served on this server. The API
+  # reaches it only because AI_PRIVATE_ENDPOINTS lists http://ollama:11434. The model unloads after
+  # five idle minutes, so an idle server holds almost no memory here.
+  ollama:
+    <<: *hardening
+    image: ollama/ollama:${OLLAMA_VERSION:-0.12.6}
+    environment:
+      OLLAMA_KEEP_ALIVE: 5m
+      OLLAMA_NUM_PARALLEL: '1'
+      OLLAMA_MAX_LOADED_MODELS: '1'
+      OLLAMA_NO_CLOUD: '1'
+    volumes: [ollama-data:/root/.ollama]
+    healthcheck:
+      test: ['CMD', 'ollama', 'list']
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    mem_limit: 1536m
+
+  # One-shot: downloads the pinned embedding model once (about 270 MB); later runs find it there.
+  ollama-init:
+    image: ollama/ollama:${OLLAMA_VERSION:-0.12.6}
+    restart: 'no'
+    logging: *logging
+    networks: [internal]
+    security_opt: ['no-new-privileges:true']
+    depends_on:
+      ollama: { condition: service_healthy }
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      MODEL: ${AI_DEFAULT_EMBEDDING_MODEL:-nomic-embed-text}
+    entrypoint: ['sh', '-c', 'ollama pull "$$MODEL"']
+
+networks:
+  # One private network. Nothing but the edge publishes a port; the application containers reach
+  # the internet through it (mail, the AI provider, WhatsApp), nothing reaches in.
+  internal:
+
+volumes:
+  # Named volumes live under Docker's data root, which provision.sh puts on the block volume.
+  mongo-data:
+  mongo-config:
+  redis-data:
+  qdrant-data:
+  clamav-data:
+  seaweedfs-data:
+  ollama-data:
+
+secrets:
+  mongo_keyfile:
+    file: ./secrets/mongo-keyfile
+  mongo_root_password:
+    file: ./secrets/mongo-root-password
+  mongo_backup_password:
+    file: ./secrets/mongo-backup-password
+  seaweedfs_s3:
+    file: ./secrets/seaweedfs-s3.json
+  seaweedfs_kek:
+    file: ./secrets/seaweedfs-kek

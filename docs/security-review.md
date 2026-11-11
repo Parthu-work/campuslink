@@ -156,7 +156,7 @@ The control-by-control list is in [`security-checklist.md`](security-checklist.m
   - Tests: `test/lib.test.ts` › "round-trips and uses a fresh IV each time", "detects tampering and unknown formats".
   - **Key rotation:** a key ring (current plus `FIELD_ENCRYPTION_KEYS_PREVIOUS`). Values are tagged `v2.<keyId>`, with the key id as authenticated data. Lookups match every configured key's blind index. `rotate-field-key` re-encrypts and re-indexes every college, guarded against concurrent writes, with `--check` for completion. Procedure: [`runbook.md`](runbook.md#rotating-the-field-encryption-key).
     - Tests: `test/field-rotation.test.ts`. It covers legacy `v1` values, relabelling and tampering, a dry run, a full rotation, idempotence, removing the old key, undecryptable values that are reported and never overwritten, and a guard that every `…Enc` schema field is covered.
-- **Transport:** TLS is enforced in production by HSTS (API and web), the ALB HTTPS listener (TLS 1.2+) and the HTTP-to-HTTPS redirect. Cookies are `Secure` in production. See [`deployment.md`](deployment.md).
+- **Transport:** TLS is enforced in production by HSTS (API and web), TLS 1.2+ at the edge (Cloudflare "Full (strict)" to nginx with an Origin CA certificate on the pilot server; the ALB HTTPS listener on the AWS path) and the HTTP-to-HTTPS redirect. Cookies are `Secure` in production. See [`deployment.md`](deployment.md).
 - **Backups:** `scripts/backup/backup.sh` uses age (X25519 + ChaCha20-Poly1305) with public-key recipients, so the backup host cannot decrypt.
   - `restore.sh` decrypts fully before restoring and refuses to overwrite the source.
   - The drill restored 61 collections and 40,342 documents with 0 mismatches. A tampered file is refused.
@@ -197,6 +197,94 @@ The control-by-control list is in [`security-checklist.md`](security-checklist.m
 | Errors and metrics                                                            | Met                | `scrub()` before any report leaves; metric labels are patterns and enums (`test/observability.test.ts`)                                                                                                                                                                                                                               |
 
 **Findings fixed during the builds:** server notification texts left `{percent}` unfilled (B3); a seeded consent version would have shown every demo member the notice gate (B14); restored offline reads counted as fresh and hid changes (B13). Each is recorded in `docs/build/progress.md`.
+
+## Master prompt 4 (deployment, P0 and P12)
+
+### Dependency advisories (P0)
+
+`pnpm audit --prod` reports **no known vulnerabilities** (11 Nov 2026). Fixed in this prompt:
+
+| Advisory                                                   | Severity       | Fix                                                                                                                                                                                                            |
+| ---------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mongoose < 9.11.4 (GHSA-6972-9mcm-vhwj and three others)   | high, moderate | `mongoose` ^9.12.1. Full API suite green.                                                                                                                                                                      |
+| fast-xml-parser ≤ 5.11.2 (GHSA-474x-hrwr-fgx4)             | low            | `fast-xml-parser` ^5.12.0                                                                                                                                                                                      |
+| glob and minimatch through `write-excel-file` → `archiver` | moderate       | `write-excel-file` ^4.1.1, which zips with `fflate` and no longer depends on `archiver`; the three export call sites moved to its `.toBuffer()` API; export tests (`placements`, `readiness`, `reports`) green |
+
+Also found while building the production image: `fflate` was a devDependency although
+`modules/study/extract/office.ts` imports it at run time, so the production API image would not
+start. It is now a dependency; a check of every runtime import against `dependencies` found no other.
+
+### Pen-test focus areas: the network (P0)
+
+ADR 0014 is the one place where member data may cross a college. A tester should start here.
+
+| Area                                                                     | What must hold                                                                                                                                                    | Tests that cover it today                                                                                                                               |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/api/src/db/tenant-plugin.ts`: the network-path allowlist           | Inside a named path, platform scope reaches only that path's models; any other model and every join (`$lookup`, `$unionWith`) is refused                          | `test/network.test.ts` › "the closed list of paths (N11 to N13)"; `test/isolation/plugin.test.ts` › "platform scope", "reads/writes/deletes are scoped" |
+| `apps/api/src/lib/network-scope.ts` (`networkScope`, `networkInTenant`)  | Only names in `NETWORK_PATHS`; an audit row in both tenants for every use; never a member named to the other college                                              | `test/network.test.ts` › "writes an audit row on both sides, never naming members to the other college"                                                 |
+| The employer host boundary (`emp-` hosts, `scope: 'employer'`)           | Every college route is a 404 on an employer host and the reverse; tokens never cross kinds or employers; employer roles need TOTP                                 | `test/employers.test.ts` › "(N1)", "(N2)", "(N3)"; `test/isolation/network.test.ts` › "tokens across kinds"                                             |
+| What an employer sees                                                    | Counts below five as "<5"; never contact, CTC, other offers, or the readiness of anyone who did not share; résumé links five minutes, re-checked, audited         | `test/employers.test.ts` › "(N29)", "(N30)", "(N16)", "(N17)"                                                                                           |
+| Credential routes (`/{tenant}/verify/{id}`, `did.json`, the status list) | The college comes from the path; the page shows claims and status only; the private key is encrypted and never returned; revocation shows at once                 | `test/credentials.test.ts` › "(N32)" to "(N35)", "the private key is encrypted…", "revocation…"                                                         |
+| The platform switch `NETWORK_ENABLED` (prompt 4)                         | Off by default in production: employer hosts do not resolve, every network/employer/credential route is a 404 (even to a super admin), no network permission held | `test/network-switch.test.ts`; `packages/shared/src/navigation.test.ts` › "the network switch"                                                          |
+
+### Deployment hardening (P2 to P9)
+
+- **Nothing internal is reachable from the internet.** Only `edge` publishes ports (80, 443), checked
+  by `deploy/prod/smoke.sh` and the `deploy-config` CI job. 80/443 accept Cloudflare's ranges only at
+  three layers: the Oracle security list, the host firewall (`DOCKER-USER`, `firewall.sh`) and nginx
+  (`$from_edge`, closes other connections with 444). SSH accepts the owner's address only.
+- **Client addresses** are believed only from Cloudflare's ranges (`real_ip_header CF-Connecting-IP`),
+  and the API trusts exactly one hop. Tests: `test/trust-proxy.test.ts` (no trust by default; one hop
+  takes the edge's address; a client-typed address in front is ignored).
+- **Credentials:** MongoDB with a keyfile, authentication, a `readWrite`-only application user and a
+  `backup`-only backup user (the root password is used by `mongo-init` alone); Redis `requirepass`;
+  Qdrant API key; SeaweedFS access keys (the backup's key is read-only) and SSE-S3 at rest. All are
+  generated by `gen-secrets.sh` (mode 600/700; refuses to overwrite) and never printed.
+  `deploy-check.js` proves at every deploy that an object is stored encrypted (HEAD), ClamAV flags
+  EICAR, a vector is found only in its own college, and the application user cannot reach another
+  database or the user list.
+- **Production refusals added:** `APP_ROOT_DOMAIN=localhost`, a `MONGODB_URI` without credentials, and
+  `VECTOR_STORE=memory` with `PROCESS_ROLE=api` (`test/env.test.ts` › "production deployment checks").
+- **Containers:** the application and nginx containers run as non-root users with read-only root
+  filesystems, all capabilities dropped and `no-new-privileges`; every service has a memory limit,
+  a health check and rotated logs.
+- **Logs:** the edge's access log has no client address, user agent, referrer or query string; the
+  smoke test fails if the API or worker log contains request headers, client details or an email.
+- **Releases:** images are built from the commit CI tested, with an SBOM and provenance; deploying
+  needs the owner's approval; the release key on the server is pinned to `deploy-from-ci.sh`, which
+  accepts only a commit SHA on `main`.
+- **Backups** are encrypted before they touch the disk (age, public key only on the server) and the
+  file copy through `rclone crypt`; the R2 token is scoped to one bucket.
+
+### Pen-test pack (P12)
+
+**Scope** (the demo college on the real server; demo data only, clearly labelled):
+
+| Target                                                                       | Address                                           | Accounts the tester receives (owner creates them on the day)                                                  |
+| ---------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| The demo college                                                             | `https://<demo>.<domain>`                         | a student, an alumnus, faculty, the TPO, a college admin (TOTP)                                               |
+| A second demo college                                                        | `https://<demo2>.<domain>`                        | a student and a college admin, to test isolation between colleges                                             |
+| The platform host                                                            | `https://admin.<domain>`                          | none by default (super admin is out of scope for credential attacks; in scope for authorization from outside) |
+| An employer host (only if the owner turns `NETWORK_ENABLED` on for the test) | `https://emp-demo.<domain>`                       | a recruiter and an employer admin (TOTP)                                                                      |
+| Public pages and credentials                                                 | `https://<demo>.<domain>/p/…`, `/<demo>/verify/…` | none                                                                                                          |
+
+**Focus:** tenant isolation (every route with a second college's token; IDs from one college used in
+another), the network paths above, authentication (refresh rotation and reuse detection, the MFA
+ticket, password reset and invite links, phone codes and their caps), authorization (each role against
+`docs/permissions.md`, object-level access), uploads (type sniffing, polyglots, EICAR, size limits,
+the plan's storage limit, signed links expiring and re-checked), webhooks (signature checks on Meta and
+Razorpay, replay), SSRF (roster sources, RSS, AI endpoints set by a college: never a private address),
+the employer host boundary, and the edge (host header, origin bypass, TLS).
+
+**Rules of engagement:** test only the hosts above, on dates the owner sets in writing; no denial of
+service, load or volumetric tests (the server is a free 2-core machine; the app's rate limits will
+block); no social engineering of the owner, Oracle, Cloudflare or any college; no attempt on other
+tenants of Oracle or Cloudflare; stop and report at once on finding real (non-demo) personal data or a
+way to reach the server's shell; findings go to the owner only, encrypted; the owner resets every test
+account and rotates any secret the tester saw afterwards.
+
+**Reporting:** each finding with steps, the request ids from responses (`requestId`) so they can be
+found in the logs, severity, and the fix retest window.
 
 ## Gaps and owners
 

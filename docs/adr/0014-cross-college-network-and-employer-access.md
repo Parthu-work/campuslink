@@ -1,6 +1,6 @@
 # ADR 0014: Cross-college network and employer access
 
-- Status: proposed (prompt 2, G12; waiting for the owner's approval under E5 and E7)
+- Status: proposed (prompt 2, G12; waiting for the owner's approval under E5 and E7). Built behind the platform switch `NETWORK_ENABLED` (prompt 4, P0): off by default in production until this status reads accepted.
 - Date: 2026-11-06
 
 ## Context
