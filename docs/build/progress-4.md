@@ -277,9 +277,13 @@ pen-test pack is written (`docs/security-review.md` › Pen-test pack).
 
 ## Gate results
 
-| Push | Format                              | Lint | Typecheck | Tests (shared / web / API) | Build | Budget | Coverage | Secret scan | e2e | CI  |
-| ---- | ----------------------------------- | ---- | --------- | -------------------------- | ----- | ------ | -------- | ----------- | --- | --- |
-| 1    | see the latest row in `report-4.md` |
+| Push (commits)          | Format | Lint | Typecheck | Tests (shared / web / API)    | Build | Budget          | Coverage | Secret scan | e2e (local)                          | CI                                                                                                         |
+| ----------------------- | ------ | ---- | --------- | ----------------------------- | ----- | --------------- | -------- | ----------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| 1 (`4b886bd`…`c89378f`) | pass   | pass | pass      | 193 / 132 / 1,363 (6 skipped) | pass  | 160.6 of 170 KB | pass     | clean       | 230 passed, 16 skipped, 2 failed (²) | [run 43012255483](https://github.com/Parthu-work/campuslink/actions/runs/43012255483): green, e2e included |
+
+(²) `e2e/reach.spec.ts` › the calendar link, on both projects: the test fetches the feed from Node,
+and this session's resolver does not resolve `mrce.localhost` (`getaddrinfo ENOTFOUND`); browsers
+resolve `*.localhost` themselves. It passes in CI. Not related to prompt 4's changes.
 
 ## Cost impact
 
