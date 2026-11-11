@@ -23,11 +23,12 @@ export const PASSWORD = 'Correct-Horse-Battery-Staple-42';
 let cachedHash: Promise<string> | undefined;
 const passwordHash = () => (cachedHash ??= hashPassword(PASSWORD));
 
-export function testApp(overrides: Partial<AppDeps> = {}) {
+export function testApp(overrides: Partial<AppDeps> = {}, envOverrides: Record<string, string> = {}) {
   const env = loadEnv({
     NODE_ENV: 'test',
     CORS_ALLOWED_ORIGINS: 'http://localhost:5173,http://*.localhost:5173',
     HIBP_ENABLED: 'false',
+    ...envOverrides,
   });
   const mailer = new MemoryMailProvider();
   const storage = new MemoryStorage();

@@ -90,6 +90,9 @@ describe('S3Storage', () => {
     ).toThrow(/S3_SECRET_ACCESS_KEY/);
     const prod = {
       NODE_ENV: 'production',
+      // Prompt 4 (P9): production needs a real domain and database credentials.
+      APP_ROOT_DOMAIN: 'campus.example',
+      MONGODB_URI: 'mongodb://app:pw@mongo:27017/campuslink',
       JWT_ACCESS_SECRET: 'a'.repeat(40),
       JWT_TICKET_SECRET: 'b'.repeat(40),
       FIELD_ENCRYPTION_KEY: Buffer.alloc(32, 9).toString('base64'),

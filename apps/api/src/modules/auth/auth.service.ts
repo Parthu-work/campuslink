@@ -19,7 +19,7 @@ import { AuthTokenModel } from './auth-token.model.js';
 import { AppError, tooMany, unauthenticated, badRequest } from '../../lib/errors.js';
 import { hashPassword, verifyPassword, dummyVerify, checkStrength, isBreached } from '../../lib/passwords.js';
 import { randomToken, sha256, type FieldCipher } from '../../lib/crypto.js';
-import { requireTenantId } from '../../lib/context.js';
+import { requireTenantId, withPlatformScope } from '../../lib/context.js';
 import type { TokenService } from '../../lib/jwt.js';
 import { renderEmail, type MailProvider } from '../../lib/mailer.js';
 import type { Logger } from '../../lib/logger.js';
@@ -773,6 +773,16 @@ export class AuthService {
     );
   }
 
+  /**
+   * Prompt 4, P1: the first platform administrator's set-password link. The same single-use,
+   * hashed reset token as "forgot password" (30 minutes), returned to the bootstrap command, which
+   * prints it on the server's own terminal; it is never mailed or logged.
+   */
+  async setupLink(tenant: TenantRecord, userId: Types.ObjectId): Promise<string> {
+    const token = await this.issueToken(userId, 'password_reset', RESET_TTL_MS);
+    return this.tenantUrl(tenant, `/reset-password?token=${token}`);
+  }
+
   /** Invitation for a newly created college admin: a long-lived reset token, sent as "set your password". */
   async sendInvite(tenant: TenantRecord, userId: Types.ObjectId, email: string, name: string): Promise<void> {
     const token = await this.issueToken(userId, 'password_reset', INVITE_TTL_MS);
@@ -908,6 +918,14 @@ export class AuthService {
       { action: 'auth.mfa_disabled', actorId: userId, targetType: 'user', targetId: userId },
       meta,
     );
+  }
+
+  /** The scheduler (prompt 4, P5): colleges where any member used a session since a date. */
+  static async activeTenantIds(since: Date): Promise<Set<string>> {
+    const ids = await withPlatformScope('scheduler:active-colleges', () =>
+      SessionModel.distinct('tenantId', { lastUsedAt: { $gte: since } }),
+    );
+    return new Set(ids.map(String));
   }
 
   /** B6 onboarding progress: which of these members used a session since a date. */

@@ -1,6 +1,7 @@
 import {
   FEATURE_KEYS,
   PLANS,
+  PLAN_STORAGE,
   allowanceStudents,
   mergeTerms,
   type Feature,
@@ -17,7 +18,7 @@ import type { TenantRecord } from '../tenants/tenant.cache.js';
  * when the plan includes them and the college has them on; the tenant cache resolves that once
  * per lookup, so routes, jobs, navigation and permissions all see the same answer.
  */
-export type Meter = 'seats' | 'whatsapp' | 'aiTokens';
+export type Meter = 'seats' | 'whatsapp' | 'aiTokens' | 'storageMb' | 'studyMediaMb';
 
 const TTL_MS = 30_000;
 let cache: { at: number; value: Promise<Record<PlanId, PlanTerms>> } | null = null;
@@ -74,8 +75,16 @@ export class EntitlementsService {
   /**
    * A meter's limit. Seats: the contracted number (never enforced: going over shows admins a
    * banner). WhatsApp and AI tokens: per student per month, for the students the plan is sized for.
+   * Storage: MB for the whole college, and MB for one study video or audio file.
    */
   limit(tenant: TenantRecord, meter: Meter): number {
+    // Storage (prompt 4, P7), in MB: the college's own limit, else its plan's; 0 is "no limit".
+    if (meter === 'storageMb' || meter === 'studyMediaMb') {
+      if (tenant.kind !== 'college') return 0;
+      const own = tenant.limits?.[meter];
+      const plan = (tenant.subscription?.plan ?? 'pilot') as PlanId;
+      return typeof own === 'number' ? own : (PLAN_STORAGE[plan] ?? PLAN_STORAGE.pilot)[meter];
+    }
     const terms = tenant.terms;
     const seats = tenant.subscription?.seats ?? 0;
     if (!terms) return 0;

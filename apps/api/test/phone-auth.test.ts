@@ -383,6 +383,9 @@ describe('development outbox', () => {
   it('production refuses the console providers', () => {
     const prod = {
       NODE_ENV: 'production',
+      // Prompt 4 (P9): production needs a real domain and database credentials.
+      APP_ROOT_DOMAIN: 'campus.example',
+      MONGODB_URI: 'mongodb://app:pw@mongo:27017/campuslink',
       JWT_ACCESS_SECRET: 'a'.repeat(64),
       JWT_TICKET_SECRET: 'b'.repeat(64),
       FIELD_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64'),

@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import type { ParentDigestView, ParentLanguage, parentDigestBody } from '@campuslink/shared';
 import type { AuthState } from '../../types.js';
 import { badRequest, notFound } from '../../lib/errors.js';
-import { requireTenantId } from '../../lib/context.js';
+import { requireTenantId, withPlatformScope } from '../../lib/context.js';
 import type { FieldCipher } from '../../lib/crypto.js';
 import type { JobQueue, TenantJob } from '../../lib/jobs.js';
 import type { Logger } from '../../lib/logger.js';
@@ -157,10 +157,20 @@ export class ParentDigestService {
     return this.view(null);
   }
 
+  /** The scheduler (prompt 4, P5): colleges with at least one confirmed parent digest. */
+  static async activeTenantIds(): Promise<Set<string>> {
+    const ids = await withPlatformScope('scheduler:parent-digest-active', () =>
+      ParentDigestModel.distinct('tenantId', { status: 'active' }),
+    );
+    return new Set(ids.map(String));
+  }
+
   /** Queues this month's run per college (from the 1st, India time; job ids dedupe per month). */
-  static async enqueueMonthly(jobs: JobQueue, now = new Date()): Promise<number> {
+  static async enqueueMonthly(jobs: JobQueue, now = new Date(), only?: ReadonlySet<string>): Promise<number> {
     const month = monthOf(now);
-    const tenants = await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean();
+    const tenants = (
+      await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean()
+    ).filter((t) => !only || only.has(String(t._id)));
     for (const t of tenants)
       await jobs.enqueue(
         PARENT_DIGEST_JOB,

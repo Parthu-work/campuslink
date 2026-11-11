@@ -93,10 +93,12 @@ export class GraphService {
   constructor(private readonly d: GraphDeps) {}
 
   /** Queues today's run per active college once it is due; ids dedupe per college and day. */
-  static async enqueueNightly(jobs: JobQueue, now = new Date()): Promise<number> {
+  static async enqueueNightly(jobs: JobQueue, now = new Date(), only?: ReadonlySet<string>): Promise<number> {
     if (!graphDue(now)) return 0;
     const day = graphDay(now);
-    const tenants = await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean();
+    const tenants = (
+      await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean()
+    ).filter((t) => !only || only.has(String(t._id)));
     for (const t of tenants)
       await jobs.enqueue(
         GRAPH_JOB,

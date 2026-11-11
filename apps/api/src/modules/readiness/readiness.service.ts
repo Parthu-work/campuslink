@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import type { z } from 'zod';
-import writeXlsxFile from 'write-excel-file/node';
+import writeXlsxFile, { type SheetData } from 'write-excel-file/node';
 import {
   DEFAULT_READINESS_CLOSING_DAYS,
   DEFAULT_READINESS_THRESHOLD,
@@ -424,7 +424,7 @@ export class ReadinessService {
         })),
       ),
     ];
-    const body = (await writeXlsxFile(sheet as never, { buffer: true })) as Buffer;
+    const body = await writeXlsxFile(sheet as SheetData).toBuffer();
     return {
       body,
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

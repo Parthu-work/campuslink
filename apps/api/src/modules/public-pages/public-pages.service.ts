@@ -294,6 +294,17 @@ export class PublicPagesService {
     };
   }
 
+  /** The pilot preset (prompt 4, P11) reads and switches off the public outcomes page. */
+  async outcomesPageEnabled(): Promise<boolean> {
+    return !!(await this.settingsDoc())?.outcomesPage.enabled;
+  }
+  async switchOutcomesPageOff(): Promise<void> {
+    await GrowthSettingsModel.updateOne(
+      { key: 'growth', 'outcomesPage.enabled': true },
+      { $set: { 'outcomesPage.enabled': false, 'outcomesPage.at': new Date() } },
+    );
+  }
+
   async memberInvitesEnabled(): Promise<boolean> {
     return !!(await this.settingsDoc())?.memberInvites.enabled;
   }

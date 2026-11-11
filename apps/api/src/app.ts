@@ -16,6 +16,7 @@ import { createLimiters } from './http/rate-limit.js';
 import { authenticate, csrfProtection } from './http/auth.middleware.js';
 import { defineModule, type RouteRegistry, type PipelineDeps } from './http/registry.js';
 import { featureEnabled, gatedJob, withFeature } from './modules/tenants/features.js';
+import { networkEnabled, setNetworkEnabled } from './lib/network-switch.js';
 import { buildOpenApi } from './http/openapi.js';
 import { TokenService } from './lib/jwt.js';
 import { FieldCipher } from './lib/crypto.js';
@@ -175,7 +176,7 @@ import { OutcomesService } from './modules/placements/outcomes.service.js';
 import { outcomeRoutes } from './modules/placements/outcomes.routes.js';
 import { ReportsService } from './modules/reports/reports.service.js';
 import { reportRoutes } from './modules/reports/reports.routes.js';
-import { findTenantById } from './modules/tenants/tenant.cache.js';
+import { clearTenantCache, findTenantById } from './modules/tenants/tenant.cache.js';
 import { placementRoutes } from './modules/placements/placements.routes.js';
 import { mentorshipRoutes } from './modules/mentorship/mentorship.routes.js';
 import { ModerationService } from './modules/moderation/moderation.service.js';
@@ -239,6 +240,8 @@ import { createHmac } from 'node:crypto';
 import { BILLING_DAILY_JOB, BillingService } from './modules/billing/billing.service.js';
 import { billingRoutes, stubPayRoutes } from './modules/billing/billing.routes.js';
 import { EntitlementsService } from './modules/billing/entitlements.js';
+import { CostsService } from './modules/billing/costs.service.js';
+import { PilotPresetService } from './modules/platform/pilot-preset.service.js';
 import {
   DisabledPaymentProvider,
   RazorpayPaymentProvider,
@@ -350,6 +353,9 @@ export function createApp({
   app.disable('x-powered-by');
   app.set('trust proxy', env.TRUST_PROXY_HOPS);
   app.set('query parser', 'simple');
+  // The network (ADR 0014) is a platform switch (prompt 4, P0): see lib/network-switch.ts.
+  setNetworkEnabled(env.NETWORK_ENABLED === true);
+  clearTenantCache();
 
   const isAllowedOrigin = buildOriginMatcher(env.CORS_ALLOWED_ORIGINS);
   const tokens = new TokenService(env.JWT_ACCESS_SECRET, env.JWT_TICKET_SECRET, env.JWT_ACCESS_TTL_SECONDS);
@@ -422,6 +428,14 @@ export function createApp({
     // Signed file links (owner decision Q9): a key derived from a server secret, never stored.
     createHmac('sha256', env.JWT_TICKET_SECRET).update('signed-files-v1').digest(),
   );
+  // Storage limits (prompt 4, P7): the college's own, else its plan's (EntitlementsService.limit).
+  filesService.limits = async () => {
+    const t = await tenantById(requireTenantId());
+    return {
+      storageBytes: t ? entitlements.limit(t, 'storageMb') * 1048576 : 0,
+      studyMediaBytes: t ? entitlements.limit(t, 'studyMediaMb') * 1048576 : 0,
+    };
+  };
   const profilesService = new ProfilesService(cipher, filesService);
   const usersService = new UsersService(authService, profilesService, cipher);
   const phoneAuthService = new PhoneAuthService({ auth: authService, otp: otpService, cipher, tokens });
@@ -1645,6 +1659,7 @@ export function createApp({
     },
   });
   queue.register(NETWORK_RECONCILE_JOB, async () => {
+    if (!networkEnabled()) return;
     await networkService.reconcile();
     await collegePostingsService.reconcile();
     await credentialsService.reconcile();
@@ -1740,6 +1755,23 @@ export function createApp({
       currency: env.AI_PLATFORM_PRICE_CURRENCY,
     },
     tenantUrl,
+  });
+  // The cost report and the pilot preset (prompt 4, P5 and P11): commands today, console screens later.
+  const costsService = new CostsService({
+    entitlements,
+    aiTokens: (month) => aiUsageService.tokensInMonth(month),
+    channelCounts: (month) => channelService.countsInMonth(month),
+    storedBytes: () => filesService.storedBytes(),
+    aiPrices: () => billingService.aiPrices(),
+    rates: {
+      whatsappPaise: env.COST_WHATSAPP_MESSAGE_PAISE ?? null,
+      smsPaise: env.COST_SMS_MESSAGE_PAISE ?? null,
+      usdInr: env.COST_USD_INR ?? null,
+    },
+  });
+  const pilotPresetService = new PilotPresetService({
+    outcomesPageEnabled: () => publicPagesService.outcomesPageEnabled(),
+    switchOutcomesPageOff: () => publicPagesService.switchOutcomesPageOff(),
   });
   queue.register(BILLING_DAILY_JOB, () => billingService.daily());
 
@@ -2210,6 +2242,8 @@ export function createApp({
     auth: authService,
     users: usersService,
     platform: platformService,
+    costs: costsService,
+    pilotPreset: pilotPresetService,
     tokens,
     cipher,
     files: filesService,

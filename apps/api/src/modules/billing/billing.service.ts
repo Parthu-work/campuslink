@@ -1134,9 +1134,33 @@ export class BillingService {
 
   // ── The daily run (per college) ─────────────────────────────
 
+  /**
+   * The scheduler (prompt 4, P5): colleges whose daily billing run has something to do: an invoice
+   * waiting for payment, a read-only state to lift, or seats not counted for a week.
+   */
+  static async dueTenantIds(now = new Date()): Promise<Set<string>> {
+    const open = await withPlatformScope('scheduler:billing-open-invoices', () =>
+      InvoiceModel.distinct('tenantId', { status: { $in: ['issued', 'overdue'] } }),
+    );
+    const stale = await TenantModel.find({
+      kind: 'college',
+      status: 'active',
+      $or: [
+        { 'billing.readOnlyAt': { $ne: null } },
+        { 'billing.seatsCountedAt': null },
+        { 'billing.seatsCountedAt': { $lt: new Date(now.getTime() - 7 * 86_400_000) } },
+      ],
+    })
+      .select('_id')
+      .lean();
+    return new Set([...open, ...stale.map((t) => t._id)].map(String));
+  }
+
   /** Queues one daily billing run per active college (job ids dedupe per day). */
-  static async enqueueDaily(jobs: JobQueue, now = new Date()) {
-    const tenants = await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean();
+  static async enqueueDaily(jobs: JobQueue, now = new Date(), only?: ReadonlySet<string>) {
+    const tenants = (
+      await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean()
+    ).filter((t) => !only || only.has(String(t._id)));
     const day = istDay(now).replaceAll('-', '');
     for (const t of tenants)
       await jobs.enqueue(

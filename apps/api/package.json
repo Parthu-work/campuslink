@@ -24,7 +24,11 @@
     "rotate-field-key": "tsx --env-file-if-exists=../../.env src/scripts/rotate-field-key.ts",
     "docs:whatsapp": "tsx src/scripts/gen-whatsapp-doc.ts && prettier --write ../../docs/whatsapp-templates.md",
     "ai:smoke": "tsx --env-file-if-exists=../../.env src/scripts/ai-smoke.ts",
-    "metrics:yc": "tsx --env-file-if-exists=../../.env src/scripts/metrics-yc.ts"
+    "metrics:yc": "tsx --env-file-if-exists=../../.env src/scripts/metrics-yc.ts",
+    "platform:bootstrap": "tsx --env-file-if-exists=../../.env src/scripts/platform-bootstrap.ts",
+    "costs:report": "tsx --env-file-if-exists=../../.env src/scripts/costs-report.ts",
+    "deploy:check": "tsx --env-file-if-exists=../../.env src/scripts/deploy-check.ts",
+    "college:pilot-preset": "tsx --env-file-if-exists=../../.env src/scripts/pilot-preset.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1152.0",
@@ -41,13 +45,14 @@
     "csv-parse": "^7.0.3",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.1",
-    "fast-xml-parser": "^5.11.2",
+    "fast-xml-parser": "^5.12.0",
+    "fflate": "^0.8.3",
     "file-type": "^22.2.0",
     "helmet": "^8.3.0",
     "ioredis": "^6.0.0",
     "ipaddr.js": "^2.5.0",
     "jose": "^6.2.12",
-    "mongoose": "^9.11.2",
+    "mongoose": "^9.12.1",
     "multer": "^2.5.0",
     "nodemailer": "^10.2.1",
     "otplib": "^13.5.0",
@@ -63,7 +68,7 @@
     "socket.io": "^4.8.4",
     "undici": "^8.12.3",
     "web-push": "^3.6.7",
-    "write-excel-file": "^2.3.10",
+    "write-excel-file": "^4.1.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -80,7 +85,6 @@
     "@types/web-push": "^3.6.4",
     "@vitest/coverage-v8": "5.0.4",
     "autocannon": "^8.0.0",
-    "fflate": "^0.8.3",
     "socket.io-client": "^4.8.4",
     "supertest": "^7.3.1",
     "tsx": "^4.23.15",

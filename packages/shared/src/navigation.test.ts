@@ -265,3 +265,38 @@ describe('alumni engagement (prompt 2, G6)', () => {
     expect(admin([Role.FACULTY])).not.toContain('giving');
   });
 });
+
+// Prompt 4, P0: the platform's NETWORK_ENABLED switch. Keep this rule through navigation rewrites.
+describe('the network switch (NETWORK_ENABLED, ADR 0014)', () => {
+  const ids = (roles: Role[], networkEnabled?: boolean) => {
+    const nav = buildNav(
+      {
+        roles,
+        permissions: perms(roles),
+        verified: true,
+        ...(networkEnabled === undefined ? {} : { networkEnabled }),
+      },
+      today,
+    );
+    return [
+      ...nav.tabs.map((t) => t.id),
+      ...nav.menu.flatMap((g) => g.items.map((i) => i.id)),
+      ...nav.admin.flatMap((g) => g.items.map((i) => `admin:${i.id}`)),
+    ];
+  };
+  it('shows the network destinations while the switch is on or not stated', () => {
+    expect(ids([Role.STUDENT])).toContain('network');
+    expect(ids([Role.TPO], true)).toContain('admin:network');
+    expect(ids([Role.RECRUITER], true)).toContain('recruiter');
+  });
+  it('hides every network destination when the switch is off, whatever the permissions', () => {
+    expect(ids([Role.STUDENT], false)).not.toContain('network');
+    expect(ids([Role.ALUMNI], false)).not.toContain('network');
+    expect(ids([Role.TPO], false)).not.toContain('admin:network');
+    expect(ids([Role.COLLEGE_ADMIN], false)).not.toContain('admin:network');
+    expect(ids([Role.RECRUITER], false)).not.toContain('recruiter');
+    expect(ids([Role.SUPER_ADMIN], false)).not.toContain('employers');
+    // Nothing else moves.
+    expect(ids([Role.STUDENT], false)).toEqual(ids([Role.STUDENT]).filter((id) => id !== 'network'));
+  });
+});

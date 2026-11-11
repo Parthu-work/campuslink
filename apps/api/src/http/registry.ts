@@ -3,6 +3,7 @@ import type { z } from 'zod';
 import { type ZodType } from 'zod';
 import { APP_NAME, ErrorCode, type Feature, type Permission, type ApiSuccess } from '@campuslink/shared';
 import { AppError } from '../lib/errors.js';
+import { NETWORK_MODULES, networkEnabled } from '../lib/network-switch.js';
 import type { LimiterName } from './rate-limit.js';
 import { featureGate, readOnlyGate } from '../modules/tenants/features.js';
 import type { IdempotencyService } from '../modules/idempotency/idempotency.service.js';
@@ -101,6 +102,8 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
   for (const spec of specs) {
     deps.registry.push({ module, spec });
     const chain: RequestHandler[] = [];
+    // The network is off (NETWORK_ENABLED): its modules and every employer route answer 404.
+    if (NETWORK_MODULES.has(module) || spec.scope === 'employer') chain.push(networkGate);
     if (spec.limiter) chain.push(deps.limiters[spec.limiter]);
     chain.push(requireScope(spec.scope ?? 'college'));
     if (spec.feature) chain.push(featureGate(spec.feature));
@@ -163,6 +166,11 @@ export function defineModule(module: string, specs: AnyRouteSpec[], deps: Pipeli
   }
   return router;
 }
+
+const networkGate: RequestHandler = (_req, _res, next) => {
+  if (networkEnabled()) return next();
+  next(new AppError(404, ErrorCode.NOT_FOUND, 'Not found'));
+};
 
 export function requireScope(scope: 'college' | 'platform' | 'employer' | 'any'): RequestHandler {
   return (req, _res, next) => {

@@ -140,6 +140,16 @@ export class ChannelService {
     return Object.fromEntries(rows.map((r) => [r._id, r.n]));
   }
 
+  /** One calendar month's messages by channel (`YYYY-MM`), every category, for the cost report. */
+  async countsInMonth(m: string): Promise<{ whatsapp: number; sms: number }> {
+    const rows = await ChannelUsageModel.find({ day: { $gte: `${m}-01`, $lte: `${m}-31` } })
+      .select('channel count')
+      .lean<{ channel: 'whatsapp' | 'sms'; count: number }[]>();
+    const out = { whatsapp: 0, sms: 0 };
+    for (const r of rows) out[r.channel] += r.count;
+    return out;
+  }
+
   async monthCount(): Promise<number> {
     const m = month();
     const rows = await ChannelUsageModel.find({ ...METERED, day: { $regex: `^${m}-\\d` } })

@@ -80,10 +80,12 @@ export class CopilotIndexService {
 
   constructor(private readonly d: CopilotIndexDeps) {}
 
-  static async enqueueDaily(jobs: JobQueue, now = new Date()): Promise<number> {
+  static async enqueueDaily(jobs: JobQueue, now = new Date(), only?: ReadonlySet<string>): Promise<number> {
     if (new Date(now.getTime() + IST_MS).getUTCHours() < COPILOT_INDEX_HOUR_IST) return 0;
     const day = graphDay(now);
-    const tenants = await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean();
+    const tenants = (
+      await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean()
+    ).filter((t) => !only || only.has(String(t._id)));
     for (const t of tenants)
       await jobs.enqueue(
         COPILOT_INDEX_JOB,

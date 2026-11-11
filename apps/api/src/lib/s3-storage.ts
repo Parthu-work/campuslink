@@ -2,6 +2,7 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
+  HeadObjectCommand,
   NoSuchKey,
   PutObjectCommand,
   S3Client,
@@ -104,6 +105,17 @@ export class S3Storage implements StorageProvider {
   async delete(key: string): Promise<void> {
     // Idempotent in S3: deleting a missing key succeeds.
     await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: this.objectKey(key) }));
+  }
+
+  /**
+   * How the store says an object is encrypted at rest (`AES256`, `aws:kms`), or null when it is
+   * not. The deployment check (prompt 4, P2) proves `S3_SSE` is honoured with a real upload.
+   */
+  async encryptionOf(key: string): Promise<string | null> {
+    const res = await this.client.send(
+      new HeadObjectCommand({ Bucket: this.bucket, Key: this.objectKey(key) }),
+    );
+    return res.ServerSideEncryption ?? null;
   }
 
   /** Readiness: the bucket exists and these credentials can reach it. */

@@ -12,6 +12,7 @@ import {
 } from '@campuslink/shared';
 import { TenantModel } from './tenant.model.js';
 import { entitledFeatures, planCatalogue, termsOf } from '../billing/entitlements.js';
+import { networkEnabled, withoutNetwork } from '../../lib/network-switch.js';
 
 export interface TenantRecord {
   _id: Types.ObjectId;
@@ -64,7 +65,12 @@ export interface TenantRecord {
     readOnlyAt: Date | null;
   };
   allowedEmailDomains: string[];
-  limits: { mentorshipRequestsPerWeek: number; referralRequestsPerWeek: number };
+  limits: {
+    mentorshipRequestsPerWeek: number;
+    referralRequestsPerWeek: number;
+    storageMb?: number | null;
+    studyMediaMb?: number | null;
+  };
   permissionOverrides: PermissionOverrides;
   retention?: {
     inactiveAccountDays: number;
@@ -88,6 +94,12 @@ const TTL_MS = 30_000;
  */
 async function normalise(doc: TenantRecord | null): Promise<TenantRecord | null> {
   if (!doc) return null;
+  // The network is off (NETWORK_ENABLED, prompt 4 P0): employer hosts do not exist, and nobody in a
+  // college or on the platform host holds a network permission.
+  if (!networkEnabled()) {
+    if (doc.kind === 'employer') return null;
+    doc = { ...doc, permissionOverrides: withoutNetwork(doc.permissionOverrides) };
+  }
   const chosen = resolveFeatures(doc.features);
   const terms = doc.kind === 'college' ? termsOf(doc.subscription, await planCatalogue()) : null;
   return { ...doc, features: entitledFeatures(chosen, terms), chosenFeatures: chosen, terms };

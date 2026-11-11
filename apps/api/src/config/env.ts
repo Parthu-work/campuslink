@@ -180,6 +180,20 @@ export const envSchema = z.object({
   /** Adzuna job search API (free tier, your own keys; off when unset). Terms require "Jobs by Adzuna". */
   ADZUNA_APP_ID: z.string().min(1).max(100).optional(),
   ADZUNA_APP_KEY: z.string().min(1).max(200).optional(),
+  /**
+   * The network (ADR 0014): employer hosts, the recruiter portal, cross-college discovery and
+   * verified credentials. Unset means off in production and on elsewhere (development and tests
+   * exercise the code); production turns it on only once the owner has approved ADR 0014.
+   */
+  NETWORK_ENABLED: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === 'true')),
+  /**
+   * Staging rehearsal only (deploy/staging): allows the production checks that need a real domain
+   * and database credentials to pass on one machine. Never set it on a server.
+   */
+  REHEARSAL: bool,
   /** Content ingestion scheduler (off in tests and end-to-end runs). */
   INGESTION_ENABLED: z
     .enum(['true', 'false'])
@@ -203,11 +217,24 @@ export const envSchema = z.object({
   AI_PLATFORM_PRICE_OUTPUT: z.coerce.number().min(0).max(10_000).optional(),
   AI_PLATFORM_PRICE_EMBEDDING: z.coerce.number().min(0).max(10_000).optional(),
   AI_PLATFORM_PRICE_CURRENCY: z.enum(PRICE_CURRENCIES).default('USD'),
+  /**
+   * The cost report (`costs:report`, prompt 4 P5): what one WhatsApp message and one SMS cost the
+   * platform, in paise, and rupees per dollar for AI prices kept in dollars. Estimates the owner
+   * sets from the providers' current price lists; unset: counts are shown without an amount.
+   */
+  COST_WHATSAPP_MESSAGE_PAISE: z.coerce.number().min(0).max(10_000).optional(),
+  COST_SMS_MESSAGE_PAISE: z.coerce.number().min(0).max(10_000).optional(),
+  COST_USD_INR: z.coerce.number().min(1).max(1000).optional(),
   AI_DEFAULT_BASE_URL: z.url({ protocol: /^https?$/ }).optional(),
   AI_DEFAULT_EMBEDDING_PROVIDER: z.enum(EMBEDDING_PROVIDERS).optional(),
   AI_DEFAULT_EMBEDDING_API_KEY: z.string().min(8).max(500).optional(),
   AI_DEFAULT_EMBEDDING_MODEL: z.string().min(1).max(120).optional(),
   AI_DEFAULT_EMBEDDING_BASE_URL: z.url({ protocol: /^https?$/ }).optional(),
+  /**
+   * The vector size of the pinned platform embedding model (768 for nomic-embed-text). The
+   * deployment check fails when the model answers with another size (a changed or wrong model).
+   */
+  AI_EMBEDDING_DIMENSIONS: z.coerce.number().int().min(8).max(8192).optional(),
   /**
    * Origins (`http://ollama:11434`, comma-separated) that may be private or plain http, such as a
    * local Ollama or LM Studio. Only the platform owner sets this; college admins enter public https only.
@@ -296,14 +323,26 @@ export type Env = z.infer<typeof envSchema>;
 
 const INSECURE_DEFAULT_MARKERS = ['change-me', 'test-only', 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY='];
 
+/** `mongodb://user:password@host/...` (or `mongodb+srv`): both parts present. The value is never echoed. */
+function mongoHasCredentials(uri: string): boolean {
+  const m = /^mongodb(?:\+srv)?:\/\/([^/?#]*)@/.exec(uri);
+  if (!m?.[1]) return false;
+  const [user, pass] = m[1].split(':');
+  return !!user && !!pass;
+}
+
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const parsed = envSchema.safeParse(source);
+  // A setting left empty (`KEY=` in an env file, as deploy/prod/.env.production.example has for
+  // everything optional) is the same as not setting it: the default applies, or it stays unset.
+  const given = Object.fromEntries(Object.entries(source).filter(([, v]) => v !== ''));
+  const parsed = envSchema.safeParse(given);
   if (!parsed.success) {
     // Print only variable names and reasons; never echo values (they may be secrets).
     const issues = parsed.error.issues.map((i) => `  ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid environment configuration:\n${issues}`);
   }
   const env = parsed.data;
+  env.NETWORK_ENABLED ??= env.NODE_ENV !== 'production';
   if (!!env.JITSI_APP_ID !== !!env.JITSI_APP_SECRET)
     throw new Error('Set both JITSI_APP_ID and JITSI_APP_SECRET, or neither');
   if (env.BOT_PROTECTION === 'turnstile' && (!env.TURNSTILE_SECRET || !env.TURNSTILE_SITE_KEY))
@@ -371,6 +410,17 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     if (env.MALWARE_SCANNER === 'none')
       throw new Error(
         'MALWARE_SCANNER=clamav is required in production (uploads are scanned before storage)',
+      );
+    // Prompt 4 (P3, P9): a real domain, database credentials, and one vector index for every process.
+    if (!env.REHEARSAL) {
+      if (env.APP_ROOT_DOMAIN === 'localhost' || env.APP_ROOT_DOMAIN.endsWith('.localhost'))
+        throw new Error('APP_ROOT_DOMAIN=localhost is not allowed in production (set the real domain)');
+      if (!mongoHasCredentials(env.MONGODB_URI))
+        throw new Error('MONGODB_URI needs a username and password in production');
+    }
+    if (env.VECTOR_STORE === 'memory' && env.PROCESS_ROLE === 'api')
+      throw new Error(
+        'VECTOR_STORE=memory is not allowed with PROCESS_ROLE=api in production (the worker would keep a different index)',
       );
   }
   return env;

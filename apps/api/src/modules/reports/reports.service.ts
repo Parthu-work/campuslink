@@ -1,4 +1,4 @@
-import writeXlsxFile from 'write-excel-file/node';
+import writeXlsxFile, { type SheetData } from 'write-excel-file/node';
 import {
   APP_NAME,
   currentGradYear,
@@ -194,10 +194,10 @@ export class ReportsService {
     const data = sheets.map((rows) =>
       rows.map((r) => r.map((v) => ({ value: v, type: typeof v === 'number' ? Number : String }))),
     );
-    return (await writeXlsxFile(
-      data as never,
-      { buffer: true, sheets: names } as never,
-    )) as unknown as Buffer;
+    // One workbook, one named sheet per table (write-excel-file 4: an array of sheets).
+    return writeXlsxFile(
+      data.map((rows, i) => ({ data: rows as SheetData, sheet: names[i] ?? `Sheet${i + 1}` })),
+    ).toBuffer();
   }
 
   /**

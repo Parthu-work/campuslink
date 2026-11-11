@@ -67,9 +67,11 @@ export class PeersService {
   constructor(private readonly d: PeersDeps) {}
 
   /** Queues today's buddy matching per active college (job ids dedupe per college and day). */
-  static async enqueueDaily(jobs: JobQueue, now = new Date()): Promise<number> {
+  static async enqueueDaily(jobs: JobQueue, now = new Date(), only?: ReadonlySet<string>): Promise<number> {
     const day = new Date(now.getTime() + IST_MS).toISOString().slice(0, 10).replaceAll('-', '');
-    const tenants = await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean();
+    const tenants = (
+      await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean()
+    ).filter((t) => !only || only.has(String(t._id)));
     for (const t of tenants)
       await jobs.enqueue(
         BUDDY_MATCH_JOB,
