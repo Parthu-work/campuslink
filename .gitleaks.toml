@@ -3,7 +3,7 @@ useDefault = true
 
 [[allowlists]]
 description = "Documented local-only placeholder values"
-paths = ['''\.env\.example''', '''apps/api/src/config/env\.ts''']
+paths = ['''\.env\.example''', '''apps/api/src/config/env\.ts''', '''^deploy/prod/\.env\.production\.example$''']
 
 [[allowlists]]
 # Fictional passphrases used as test fixtures (word-word-word[-word]-NN). Scoped to test
