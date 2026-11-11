@@ -124,8 +124,9 @@ it refuses to overwrite). **Copy all three into your password manager now**: wit
 encryption key and the rclone crypt passwords, backups cannot be read. Then edit `.env` and fill in
 the settings marked `owner`: the SMTP account, `MAIL_FROM`, the Anthropic key (or leave chat off),
 the AI prices for the cost report, the billing seller details, the Sentry DSN (`ERROR_REPORTER=sentry`).
-Leave WhatsApp, SMS and payments `disabled` until their accounts are ready. Leave
-`NETWORK_ENABLED=false` until you approve ADR 0014.
+Leave WhatsApp, SMS and payments `disabled` until their accounts are ready.
+`NETWORK_ENABLED=true` (ADR 0014, accepted) turns the network on; colleges and members still opt in,
+and `false` turns it all off at once.
 
 If the images are private on GitHub, let the server read them:
 

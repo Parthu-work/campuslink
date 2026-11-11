@@ -9,7 +9,7 @@ after each green push). **Started:** 10 Nov 2026.
 | Phase | Title                                | Status                                     |
 | ----- | ------------------------------------ | ------------------------------------------ |
 | 0     | Set-up, merge of prompt 3            | Done                                       |
-| P0    | Carry-over check                     | Done (ADR 0014 question open to the owner) |
+| P0    | Carry-over check                     | Done (ADR 0014 accepted by the owner)      |
 | P1    | Production bootstrap                 | Done                                       |
 | P2    | Production compose for one server    | Done (rehearsed on x86; arm64 in CI)       |
 | P3    | Edge: Cloudflare and nginx           | Done (Cloudflare side: owner, step 3)      |
@@ -26,20 +26,20 @@ after each green push). **Started:** 10 Nov 2026.
 
 ## Owner inputs needed (start the slow ones now)
 
-| Input                                                                                   | Needed for            | Lead time        | Without it                                          |
-| --------------------------------------------------------------------------------------- | --------------------- | ---------------- | --------------------------------------------------- |
-| **Answer: did you approve ADR 0014?**                                                   | the network           | none             | `NETWORK_ENABLED=false` in production (the default) |
-| Oracle Cloud account (Pay As You Go), SSH public key                                    | P10, P12              | a day (capacity) | nothing to deploy on; rehearse locally              |
-| Domain with DNS on Cloudflare                                                           | P3, P10               | a day            | placeholders                                        |
-| SMTP account (free tier)                                                                | production mail       | an hour          | the API refuses to start in production              |
-| Sentry DSN, uptime monitor account                                                      | P8                    | an hour          | errors only in the server log                       |
-| R2 bucket and scoped token; your age public key                                         | P7                    | an hour          | local backups only                                  |
-| Anthropic key with a monthly spend limit                                                | chat answers          | an hour          | the assistant answers with passages                 |
-| Meta WhatsApp business verification, approved templates, phone number id, token, secret | WhatsApp              | **days–weeks**   | WhatsApp off; email and push                        |
-| Legal entity; DLT entity, header and templates; MSG91 prepaid account                   | SMS                   | **weeks**        | SMS off; phone sign-in by WhatsApp or email         |
-| Grievance officer; seller GSTIN or unregistered; SAC code (chartered accountant)        | legal pages, invoices | days             | legal notice and invoices stay in draft             |
-| Razorpay (only if a college wants to pay online)                                        | online payments       | days             | bank transfer                                       |
-| Pen-test vendor                                                                         | before real students  | weeks            | go-live waits                                       |
+| Input                                                                                   | Needed for            | Lead time        | Without it                                  |
+| --------------------------------------------------------------------------------------- | --------------------- | ---------------- | ------------------------------------------- |
+| ~~Answer: did you approve ADR 0014?~~ **Yes, 11 Nov 2026**                              | the network           | none             | (answered)                                  |
+| Oracle Cloud account (Pay As You Go), SSH public key                                    | P10, P12              | a day (capacity) | nothing to deploy on; rehearse locally      |
+| Domain with DNS on Cloudflare                                                           | P3, P10               | a day            | placeholders                                |
+| SMTP account (free tier)                                                                | production mail       | an hour          | the API refuses to start in production      |
+| Sentry DSN, uptime monitor account                                                      | P8                    | an hour          | errors only in the server log               |
+| R2 bucket and scoped token; your age public key                                         | P7                    | an hour          | local backups only                          |
+| Anthropic key with a monthly spend limit                                                | chat answers          | an hour          | the assistant answers with passages         |
+| Meta WhatsApp business verification, approved templates, phone number id, token, secret | WhatsApp              | **days–weeks**   | WhatsApp off; email and push                |
+| Legal entity; DLT entity, header and templates; MSG91 prepaid account                   | SMS                   | **weeks**        | SMS off; phone sign-in by WhatsApp or email |
+| Grievance officer; seller GSTIN or unregistered; SAC code (chartered accountant)        | legal pages, invoices | days             | legal notice and invoices stay in draft     |
+| Razorpay (only if a college wants to pay online)                                        | online payments       | days             | bank transfer                               |
+| Pen-test vendor                                                                         | before real students  | weeks            | go-live waits                               |
 
 ## Step 0: set-up
 
@@ -56,8 +56,10 @@ after each green push). **Started:** 10 Nov 2026.
 
 **Shipped.**
 
-1. **ADR 0014.** The ADR's status reads "proposed" while `progress.md` and `report-2.md` said
-   "approved". The owner's answer is not recorded, so: `NETWORK_ENABLED` (env; unset means **off in
+1. **ADR 0014.** The ADR's status read "proposed" while `progress.md` and `report-2.md` said
+   "approved". **The owner accepted it on 11 Nov 2026**: the ADR now reads `accepted (owner,
+2026-11-11)` and the production template sets `NETWORK_ENABLED=true`. Before the answer, this phase
+   added `NETWORK_ENABLED`, which stays as an off switch: (env; unset means **off in
    production**, on in development and tests). While off: an employer host resolves to no tenant (404
    on every request), every route of the `network`, `employers`, `credentials` and `credentials-public`
    modules and every `scope: 'employer'` route answers 404 (even to a super admin), the tenant cache

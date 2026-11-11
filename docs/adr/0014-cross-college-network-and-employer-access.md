@@ -1,6 +1,6 @@
 # ADR 0014: Cross-college network and employer access
 
-- Status: proposed (prompt 2, G12; waiting for the owner's approval under E5 and E7). Built behind the platform switch `NETWORK_ENABLED` (prompt 4, P0): off by default in production until this status reads accepted.
+- Status: accepted (owner, 2026-11-11). Proposed in prompt 2, G12, under E5 and E7. The platform switch `NETWORK_ENABLED` (prompt 4, P0) stays as an off switch: production enables the network explicitly (`NETWORK_ENABLED=true` in `deploy/prod/.env.production.example`), and unset still means off.
 - Date: 2026-11-06
 
 ## Context

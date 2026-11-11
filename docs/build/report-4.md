@@ -9,13 +9,13 @@ bootstrap, the one-server compose, the edge, the scheduler and idle rules, the c
 release and deploy workflow, backups and the restore drill, alerts, settings and secrets, provisioning,
 the pilot preset and the launch checklist. The production compose came up on this machine from
 generated secrets and passed the full smoke test. What remains needs the owner: an Oracle account and
-a domain (P10, P12), the provider accounts (§4 of the brief), and one answer (ADR 0014).
+a domain (P10, P12) and the provider accounts (§4 of the brief). ADR 0014 was accepted on 11 Nov 2026.
 
 ## Built, per phase
 
 | Phase | What                                                                                                                                                                                                             |
 | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P0    | `NETWORK_ENABLED` (off in production until ADR 0014 is accepted); `pnpm audit --prod` clean (Mongoose high advisories fixed; `archiver` gone); pen-test focus areas                                              |
+| P0    | `NETWORK_ENABLED` (ADR 0014 accepted on 11 Nov 2026; on in production by setting, off when unset); `pnpm audit --prod` clean (Mongoose high advisories fixed; `archiver` gone); pen-test focus areas             |
 | P1    | `platform:bootstrap`: the platform tenant and one super admin, a single-use 30-minute link, two-factor at first sign-in                                                                                          |
 | P2    | `deploy/prod/compose.yml` (authenticated MongoDB replica set, Redis password, Qdrant key, ClamAV, encrypted S3, Ollama; limits, health checks, log rotation, non-root, read-only); `smoke.sh`; `deploy-check.js` |
 | P3    | the edge template on `APP_ROOT_DOMAIN`; Origin CA TLS; `CF-Connecting-IP` from Cloudflare only; one trusted hop; origin locked at three layers; minimal access log                                               |
@@ -73,8 +73,7 @@ at the provider and in the application.
 
 ## The owner's remaining actions
 
-1. Answer: **did you approve ADR 0014?** (Yes: set its status to `accepted (owner, <date>)` and
-   `NETWORK_ENABLED=true`; no: nothing to do.)
+1. ~~Answer on ADR 0014~~: accepted on 11 Nov 2026; the ADR and the production template are updated.
 2. Merge this branch into `main` (after its CI run is green). Turn on the `production` environment
    with yourself as the required reviewer.
 3. Start the slow accounts now: Meta WhatsApp business verification and templates; the DLT entity,
