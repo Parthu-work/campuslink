@@ -97,11 +97,13 @@ jobs:
             for l in eng tel hin; do echo "$langs" | grep -qx "$l" || { echo "missing tesseract language: $l"; exit 1; }; done
             echo "tesseract languages: $(echo $langs | tr "\n" " ")"'
           sudo apt-get install -y -q fonts-noto-core imagemagick >/dev/null
+          # Words with no conjuncts and no pre-base vowel signs: ImageMagick draws text without
+          # Devanagari shaping, so a line like नमस्ते would be drawn wrongly and read as drawn.
           convert -size 900x140 xc:white -font "Noto-Sans-Devanagari-Regular" -pointsize 64 -fill black \
-            -annotate +20+95 'नमस्ते दुनिया' /tmp/hin.png
+            -annotate +20+95 'भारत कमल नगर' /tmp/hin.png
           out=$(docker run --rm --platform "${{ matrix.platform }}" -v /tmp/hin.png:/in.png:ro --entrypoint tesseract "$ref" /in.png - -l hin 2>/dev/null)
           echo "OCR read: $out"
-          echo "$out" | grep -q 'नमस्ते' || { echo "Hindi OCR did not read the test line"; exit 1; }
+          echo "$out" | grep -q 'भारत' && echo "$out" | grep -q 'नगर' || { echo "Hindi OCR did not read the test line"; exit 1; }
       - name: Record the digest
         run: |
           mkdir -p /tmp/digests

@@ -391,7 +391,15 @@ describe('AI settings', () => {
         ]),
       );
       expect(JSON.stringify(audits)).not.toContain(GOOD_KEY);
-      expect(JSON.stringify(audits)).not.toContain('4444');
+      // The key's last four characters, searched only where an audit row could carry them (its
+      // action, target and meta): random ids and times may contain "4444" by chance.
+      const recorded = audits.map((a) => ({
+        action: a.action,
+        target: a.targetType,
+        id: a.targetId,
+        meta: a.meta,
+      }));
+      expect(JSON.stringify(recorded)).not.toContain('4444');
     });
   });
 
