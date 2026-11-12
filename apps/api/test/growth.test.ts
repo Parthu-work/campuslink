@@ -115,7 +115,8 @@ describe('public pages (prompt 2, G8, E4)', () => {
     expect(html.text).toContain('Placed at Nimbus Labs');
     expect(html.text).toContain('og:image');
     expect(html.text).toContain('noindex'); // not indexable unless they chose it
-    expect(html.text).not.toContain('7.25');
+    // The exact CTC as a figure on its own (a time such as 07.250Z must not count).
+    expect(html.text).not.toMatch(/(?<![\d.])7\.25(?![\d])/);
     expect(html.text).not.toContain('Lakshmi'); // first name only, as chosen
     expect(html.text).not.toContain(placed.email);
     const img = await page(T.host, `/p/${live.slug}/og.png`);

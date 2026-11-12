@@ -177,7 +177,8 @@ describe('the copilot index (G11)', () => {
     // Nothing about members is indexed: no names, no résumé, no readiness.
     const text = (await inT(() => CopilotChunkModel.find().lean())).map((c) => c.text).join('\n');
     expect(text).not.toContain('Test Person');
-    expect(text).not.toContain('6.5');
+    // The exact CTC as a figure on its own (a time such as 06.512 must not count).
+    expect(text).not.toMatch(/(?<![\d.])6\.5(?![\d])/);
     const at = new Date();
     at.setUTCHours(20, 0, 0, 0); // 01:30 IST
     expect(await CopilotIndexService.enqueueDaily(ctx.queue, at)).toBe(0);
