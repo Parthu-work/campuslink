@@ -58,16 +58,17 @@ function Links({ items, label }: { items: SourceRef[]; label: string }) {
   return (
     <div className="grid gap-1">
       <h4 className="text-caption font-semibold tracking-wide text-fg-3 uppercase">{label}</h4>
-      <ul className="grid gap-1">
+      {/* Each link is a full-width row at least 44 px tall (prompt 3, F4). */}
+      <ul className="grid">
         {items.map((s) => (
           <li key={s.url}>
             <a
               href={s.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-start gap-1.5 text-callout text-brand-ink underline-offset-2 hover:underline"
+              className="flex min-h-11 items-center gap-1.5 py-1 text-callout text-brand-ink underline-offset-2 hover:underline"
             >
-              <ExternalLink className="mt-0.5 size-3.5 flex-none" aria-hidden />
+              <ExternalLink className="size-3.5 flex-none" aria-hidden />
               <span>{s.title}</span>
             </a>
           </li>
@@ -428,8 +429,8 @@ function StepList({ roadmap, onOpen }: { roadmap: RoadmapView; onOpen: (n: Roadm
             type="button"
             onClick={() => onOpen(n)}
             className={cn(
-              'grid w-full grid-cols-[32px_1fr] items-start gap-3 rounded-[var(--radius-md)] border border-line bg-surface-1 p-3 text-left hover:border-line-strong',
-              done.has(n.id) && 'border-[color-mix(in_srgb,var(--success)_50%,transparent)]',
+              'grid w-full grid-cols-[32px_1fr] items-start gap-3 rounded-[var(--radius-md)] border bg-surface-1 p-3 text-left hover:border-line-strong',
+              done.has(n.id) ? 'border-[color-mix(in_srgb,var(--success)_50%,transparent)]' : 'border-line',
             )}
           >
             <span

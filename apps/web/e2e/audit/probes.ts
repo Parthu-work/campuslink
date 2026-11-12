@@ -44,8 +44,9 @@ export async function axe(page: Page, screen: string): Promise<AxeResult> {
  * (links inside running text, skip links that are visually hidden until focused, and chart columns,
  * whose values the chart's table view offers as an equivalent control) and focusable panels that
  * are not pointer targets (tab panels, scrollable text regions). A checkbox or radio inside its
- * `<label>` is measured by the label, and a link stretched over its card (`::after` overlay) by the
- * card: that is what a finger hits.
+ * `<label>` is measured by the label, a link stretched over its card (`::after` overlay) by the
+ * card, and a target with a hit area (`hit`: an absolutely placed `::before`) by the larger of the
+ * two: that is what a finger hits.
  */
 export function measure(page: Page) {
   return page.evaluate(() => {
@@ -71,7 +72,16 @@ export function measure(page: Page) {
         e instanceof HTMLElement && getComputedStyle(e, '::after').position === 'absolute'
           ? e.offsetParent
           : null;
-      return (l ?? stretched ?? e).getBoundingClientRect();
+      const r = (l ?? stretched ?? e).getBoundingClientRect();
+      // A hit area (`hit`): an absolutely placed ::before, centred on the target (F4).
+      // It counts only when the target does not clip it (`truncate` and other overflow: hidden).
+      const hit = getComputedStyle(e, '::before');
+      const own = getComputedStyle(e);
+      const clips = [own.overflowX, own.overflowY].some((o) => o !== 'visible');
+      if (hit.position !== 'absolute' || hit.content === 'none' || clips) return r;
+      const w = Math.max(r.width, parseFloat(hit.width) || 0);
+      const h = Math.max(r.height, parseFloat(hit.height) || 0);
+      return { width: w, height: h } as DOMRect;
     };
     const under = (n: number) =>
       targets.filter((e) => {

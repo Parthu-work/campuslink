@@ -40,7 +40,7 @@ export function NotificationsPage() {
           <>
             <Link
               to="/settings/notifications"
-              className="rounded-full px-3 py-2 text-callout font-semibold text-brand-ink hover:bg-surface-2"
+              className="inline-flex min-h-11 items-center rounded-full px-3 text-callout font-semibold text-brand-ink hover:bg-surface-2"
             >
               {t('notifications.settings')}
             </Link>

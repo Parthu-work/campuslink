@@ -164,7 +164,7 @@ export function ColumnChart({
         )}
       </div>
       <details className="text-callout">
-        <summary className="cursor-pointer py-3 text-fg-2">{t('common.showTable')}</summary>
+        <summary className="min-h-11 cursor-pointer py-3 text-fg-2">{t('common.showTable')}</summary>
         <Table label={title} className="mt-2">
           <THead>
             <tr>

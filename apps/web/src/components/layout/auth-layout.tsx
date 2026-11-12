@@ -37,7 +37,7 @@ export function AuthLayout({
         id="main"
         className="gutter grid content-start gap-7 py-[calc(28px+env(safe-area-inset-top,0px))] lg:content-center lg:px-14"
       >
-        <Link to="/" className="flex items-center gap-3 self-start rounded-md">
+        <Link to="/" className="flex min-h-11 items-center gap-3 self-start rounded-md">
           <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} />
           <span className="font-display text-body leading-tight font-semibold">
             {tenant.branding.displayName}

@@ -31,7 +31,7 @@ export function LandingPage() {
             <button
               key={l}
               type="button"
-              className="min-h-11 rounded-full px-3 text-callout font-semibold text-fg-2 hover:bg-hover hover:text-fg"
+              className="min-h-11 rounded-full px-3 font-native text-callout font-semibold text-fg-2 hover:bg-hover hover:text-fg"
               onClick={() => setLanguage(l)}
               lang={l}
             >

@@ -648,6 +648,8 @@ export function ChatPanel({
               <Button
                 variant="outline"
                 size="icon"
+                // Never squeezed below 44 px by a long draft (prompt 3, F4).
+                className="flex-none"
                 aria-label={t('study.chat.stop')}
                 onClick={() => stop.current?.abort()}
               >
@@ -657,6 +659,7 @@ export function ChatPanel({
               <Button
                 variant="primary"
                 size="icon"
+                className="flex-none"
                 aria-label={t('study.chat.send')}
                 disabled={!input.trim()}
                 onClick={() => send(input)}

@@ -168,6 +168,7 @@ Everything runs on localhost with free, open-source tools. Any paid or external 
 ## Git workflow (owner's instruction)
 
 - Work directly on `main` for every phase; no feature branches or pull requests.
+- The one exception so far: Prompt 2 ran G10–G11 and G12 in parallel sessions on `feat/prompt-2-g10` and `feat/prompt-2-g12` (one marker line per session in each shared file), merged into `feat/prompt-2` (G13 through pull request #5) and fast-forwarded into `main`. Parallel work does that again only when the owner asks for it; otherwise everything is on `main`.
 - Before every push, run locally: `pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build`, the API coverage gate (`pnpm --filter @campuslink/api exec vitest run --coverage`) and the secret scan (`docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --config /repo/.gitleaks.toml --redact`; the same pinned version runs in CI).
 - Push with `git push origin main`, then run the end-to-end suite (`pnpm test:e2e`) and confirm the GitHub Actions run for that commit is green (`gh run watch`). A red run is fixed immediately with a follow-up commit on `main`.
 

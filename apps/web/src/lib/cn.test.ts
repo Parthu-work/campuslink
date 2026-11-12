@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { compile } from 'tailwindcss';
 import { extendTailwindMerge } from 'tailwind-merge';
@@ -29,7 +30,7 @@ const files = (dir: string): string[] =>
 /** CSS.escape (the selector Tailwind writes for a class). */
 const escape = (s: string) => s.replace(/^\d/, (d) => `\\3${d} `).replace(/[^a-zA-Z0-9_-]/g, (c) => `\\${c}`);
 
-const styles = new URL('../styles/', import.meta.url).pathname;
+const styles = fileURLToPath(new URL('../styles/', import.meta.url));
 const require = createRequire(import.meta.url);
 
 /** The tokens Tailwind turns into a rule with our theme: real classes, not test ids or keys. */
@@ -55,7 +56,7 @@ const DELIBERATE = [/(^| )bg-gradient-to-/];
 /** Every class-like token inside string literals in src/ (variants stripped, so pairs compare). */
 function corpus(): string[] {
   const out = new Set<string>();
-  const src = new URL('..', import.meta.url).pathname;
+  const src = fileURLToPath(new URL('..', import.meta.url));
   for (const file of files(src)) {
     const text = readFileSync(file, 'utf8');
     for (const lit of text.matchAll(/'([^'\n]*)'|"([^"\n]*)"|`([^`]*)`/g)) {

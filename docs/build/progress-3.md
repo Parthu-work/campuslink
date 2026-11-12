@@ -119,3 +119,77 @@ Local, on this branch's head (interim; updated when the remaining runs finish):
 | Secret scan (gitleaks v8.30.1)                           | No leaks                                                                                  |
 | API tests with coverage                                  | Running                                                                                   |
 | End-to-end                                               | Not yet run (the ports were busy with the before-set capture)                             |
+
+## Part F · The open issues (F1–F8)
+
+Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.
+
+| Item                         | Status                               | Where                                                                                                                                     |
+| ---------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| F1 G12 governance            | Done                                 | Prompt 4, P0: the owner accepted ADR 0014 on 11 Nov 2026; `NETWORK_ENABLED` stays as an off switch with its 404 tests                     |
+| F2 Pen-test notes            | Done                                 | Prompt 4, P0: `docs/security-review.md` › Master prompt 4                                                                                 |
+| F3 Dependency advisories     | Done                                 | Prompt 4, P0: `pnpm audit --prod` is clean (`write-excel-file` 4.1.1, `mongoose` 9.12.1, `fast-xml-parser` 5.12.0)                        |
+| F4 Touch targets             | Done here (re-measure due, below)    | This section                                                                                                                              |
+| F5 Landing and sign-in fonts | Fonts done; the 2.0 s target is open | This section                                                                                                                              |
+| F6 Bundle headroom           | 10.1 of 15 KB                        | U0.3 above; the rest comes with U2 (nav icons and the route split)                                                                        |
+| F7 Stale records             | Done                                 | Prompt 4, P0 (ADR, `progress.md`, `report-2.md`, README); `CLAUDE.md` › Git workflow now records the one time parallel sessions were used |
+| F8 Partly met items          | Recorded                             | The table at the end of this section                                                                                                      |
+
+### F4 · Touch targets
+
+**Shipped.** Every target the before set listed under 44 × 44 px (90 on 23 screens) is raised, with no visible text enlarged:
+
+| Target                                                            | Was     | Fix                                                                                              |
+| ----------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------ |
+| Member-name links on Home, a post, questions and a job's referrer | 24 px   | the new `hit` utility: a centred, invisible `::before` of at least 44 × 44 px around the link    |
+| Job titles in the jobs list; question titles                      | 39 px   | the title's link is stretched over its card (`after:absolute after:inset-0`); Save sits above it |
+| Roadmap resource links                                            | 38 px   | one link per row, 44 px tall                                                                     |
+| The roadmap review queue's links                                  | 24 px   | `hit`                                                                                            |
+| The college link on the sign-in pages                             | 40 px   | 44 px tall                                                                                       |
+| "Show as a table" (charts) and "Text of this page" (PDFs)         | 43 px   | 44 px tall                                                                                       |
+| Notification settings                                             | 35 px   | a 44 px pill                                                                                     |
+| The chat's Send and Stop buttons                                  | 38 × 44 | they no longer shrink beside the text box                                                        |
+
+The audit now fails on any target under 44 px: `audit:capture`'s summary asserts that `touch-targets-360.json` lists none. Its probe counts a hit area the way a finger meets it: an absolutely positioned `::before` with content extends the target, unless the element clips its overflow.
+
+**Measured** on the F-phase build before it was moved onto this `main` (DPIT, every role, the platform console and the employer portal): 134 screens, 3,313 targets, none under 44 × 44 px; 288 axe scans without a violation; no sideways overflow. **Not yet measured on this `main`**, where U1 changed button and input sizes: the next capture (U2's) runs the assertion on every screen and reports here.
+
+### F5 · Landing and sign-in fonts
+
+**Shipped.** The language switcher's native names ("తెలుగు", "हिन्दी") use the device's fonts (`font-native`: `ui-sans-serif, system-ui`), on the landing and sign-in pages and in Settings' language chips, so an English page no longer downloads Anek Telugu (138 KB) and Anek Devanagari (253 KB) to draw two words. `unicode-range` subsetting is unchanged.
+
+Measured with `audit:lighthouse` on the owner's machine (mobile emulation, simulated throttling, DPIT; that machine is slow, so compare only with its own before figures):
+
+| Page    | Fonts downloaded                                                          | Page weight   | LCP before | LCP after |
+| ------- | ------------------------------------------------------------------------- | ------------- | ---------- | --------- |
+| Landing | Geist 30 KB, Bricolage 41 KB, Geist Mono 24 KB (no Telugu, no Devanagari) | 795 → 400 KiB | 5.9 s      | 4.2 s     |
+| Sign-in | the same three                                                            | 477 → 472 KiB | 4.7 s      | 4.8 s     |
+
+**Not met: landing LCP ≤ 2.0 s.** The fonts were the regression (3.7 s in the first audit, 5.8 s after B12), and removing them takes 1.7 s off, but the page was never at 2.0 s. What is left is the path to the first screen: the headline is drawn by the app after five requests in a row (the page, the script files, the college and the language pack, the screen, then its display font), and the simulated connection charges each step. Sign-in did not change because its largest paint is a line of small text that never used those fonts. Rule X6 sets the same target for the whole prompt, so this is carried to U4 (the landing's headline) and U10 (font preloading and the load path); F5 stays open until landing measures 2.0 s.
+
+### F8 · Partly met items (each waits on the owner)
+
+| Item                                       | Where it stands                                                                                          | What it needs from the owner                                                                                                                                |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Android build and Play listing (G9)        | `apps/android/twa-manifest.json` and `docs/android.md` are ready; no app has been built or published     | A Play Console developer account, the upload keystore, the real root domain, and the Play app signing SHA-256 (then `ANDROID_CERT_SHA256` in the web build) |
+| WhatsApp one-tap autofill                  | The template registration is documented; the app's handshake is documented, not built                    | The signed Android package (its app hash for the template) and the go-ahead to add the native handshake to the generated project                            |
+| Employer invoicing and revenue share (G12) | Billable events are recorded; invoices to employers and payouts to colleges are hooks only               | The commercial terms: price per posting, drive or hire, and each college's share                                                                            |
+| NAAC definitions against the manual (R12)  | NBA and NIRF checked; NAAC unchecked because naac.gov.in serves a revoked TLS certificate (not bypassed) | A copy of the current NAAC manual (PDF) from the owner, or the site fixed                                                                                   |
+| Translated legal texts (R13)               | Telugu and Hindi texts are written and held back                                                         | A native speaker's review of each (O7), after the lawyer's review of the English                                                                            |
+
+### Audit scripts (for U13)
+
+- `audit:tasks` (new) walks the seven U0.2 tasks on a 360 px phone and counts taps and fields by fixed rules (a select is two taps; a one-time code is one tap and one field), so U13 can count the same way again. Its counts on the before build are in `docs/build/before-3/data-after/tasks.json`; they are higher than the hand counts in U0.2 because of those rules, so compare script with script.
+- `audit:lighthouse` runs on Windows (it starts `npx` through Node) and measures signed-in pages in a Chrome it starts itself and prepares over the debugging port; a signed-in run that ends on the sign-in screen is now a failure, not a result.
+
+### Gate results (Part F)
+
+| Gate                                               | Result                                                                                                                                                                                                                                 |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                                                   |
+| Shared tests                                       | 193 passed                                                                                                                                                                                                                             |
+| Web tests                                          | 132 passed (`cn.test.ts` read its folders through a URL path, which fails on Windows; it now uses `fileURLToPath`)                                                                                                                     |
+| `pnpm build` and bundle budget                     | Pass                                                                                                                                                                                                                                   |
+| API tests with coverage                            | No API code changes in this push. On the F-phase build before the move: 1,290 passed and one (`permissions.test.ts`, the route × role matrix) timed out at its 60 s limit under local load; it passes alone in 45 s. CI runs the suite |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                               |
+| End-to-end                                         | Run by CI on this push                                                                                                                                                                                                                 |

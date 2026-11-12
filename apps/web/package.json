@@ -15,7 +15,8 @@
     "audit:capture": "playwright test -c e2e/audit/playwright.config.ts capture",
     "audit:journeys": "playwright test -c e2e/audit/playwright.config.ts journeys",
     "audit:extras": "playwright test -c e2e/audit/playwright.config.ts extras",
-    "audit:lighthouse": "playwright test -c e2e/audit/playwright.config.ts lighthouse"
+    "audit:lighthouse": "playwright test -c e2e/audit/playwright.config.ts lighthouse",
+    "audit:tasks": "playwright test -c e2e/audit/playwright.config.ts tasks"
   },
   "dependencies": {
     "@campuslink/shared": "workspace:*",

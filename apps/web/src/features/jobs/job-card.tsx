@@ -102,7 +102,8 @@ export function JobCard({ job, compact = false }: { job: JobView; compact?: bool
   return (
     <Card
       variant="interactive"
-      className={cn('flex h-full flex-col gap-2.5 p-4', compact && 'w-[min(300px,80vw)] flex-none')}
+      // relative: the title's link covers the whole card (one large target, prompt 3, F4).
+      className={cn('relative flex h-full flex-col gap-2.5 p-4', compact && 'w-[min(300px,80vw)] flex-none')}
     >
       <article
         className="flex h-full flex-col gap-2.5"
@@ -117,13 +118,14 @@ export function JobCard({ job, compact = false }: { job: JobView; compact?: bool
               // The list card's title morphs into the job page's heading (view transition).
               style={compact ? undefined : { viewTransitionName: `job-${job.id}` }}
             >
-              <IntentLink to={`/jobs/${job.id}`} className="hover:underline">
+              <IntentLink to={`/jobs/${job.id}`} className="hover:underline after:absolute after:inset-0">
                 {job.title}
               </IntentLink>
             </h3>
             <p className="truncate text-callout text-fg-2">{job.company}</p>
           </div>
-          <SaveJobButton job={job} />
+          {/* Above the title's card-wide link. */}
+          <SaveJobButton job={job} className="relative z-10" />
         </div>
         <JobFacts job={job} />
         <p className="flex flex-wrap gap-1.5">

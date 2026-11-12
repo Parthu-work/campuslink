@@ -1,7 +1,7 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { chromium, test } from '@playwright/test';
 import { signIn } from '../helpers';
@@ -9,12 +9,21 @@ import { signIn } from '../helpers';
 /**
  * Lighthouse 12.8.2 (the audit's version, fetched with npx and not a dependency) on the same pages
  * as the audit plus Study, in Lighthouse's default mobile emulation and simulated throttling.
- * Signed-in pages use a persistent Chromium profile with a fresh sign-in before each run; "cold"
- * runs clear the service worker, Cache Storage and HTTP cache first, "warm" ones visit the page once.
+ * Each run gets its own Chromium, signed in afresh where the page needs it, which Lighthouse drives
+ * through its debugging port; "cold" runs clear the service worker, Cache Storage and HTTP cache
+ * first, "warm" ones visit the page once.
  * Writes `data-after/lighthouse/<name>.json.gz` and `lighthouse-summary.json`.
  * Run: `pnpm --filter @campuslink/web audit:lighthouse` (needs PW_CHROMIUM_PATH or Playwright's Chromium).
  */
 const OUT = join(process.env.AUDIT_OUT ?? '../../docs/design/revamp', 'data-after', 'lighthouse');
+/**
+ * npx itself. On Windows it is a .cmd file, which Node runs only through a shell (and then every
+ * argument would need quoting), so run npm's own script with this Node instead.
+ */
+const NPX =
+  process.platform === 'win32'
+    ? [process.execPath, join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npx-cli.js')]
+    : ['npx'];
 mkdirSync(OUT, { recursive: true });
 const BASE = 'http://dpit.localhost:4173';
 const CHROME = process.env.PW_CHROMIUM_PATH ?? chromium.executablePath();
@@ -40,43 +49,89 @@ const RUNS: { name: string; path: string; signedIn: boolean; warm?: boolean }[] 
   { name: 'sign-in', path: '/sign-in', signedIn: false },
 ];
 
-/** A profile signed in as the demo student, primed (warm) or emptied (cold). */
-async function profile(run: (typeof RUNS)[number]): Promise<string> {
+/**
+ * A browser for one run, signed in as the demo student and primed (warm) or emptied (cold), left open
+ * for Lighthouse to drive through its debugging port. Chrome is started here, Playwright connects
+ * only to prepare it and then lets go, so Lighthouse has the tab to itself. (Lighthouse launching its
+ * own Chrome on a prepared profile lost the session on Windows; a Playwright-owned browser closed
+ * Lighthouse's tab under it.)
+ */
+let nextPort = 9330;
+async function browserFor(run: (typeof RUNS)[number]) {
   const dir = mkdtempSync(join(tmpdir(), 'lh-'));
-  if (!run.signedIn) return dir;
-  const ctx = await chromium.launchPersistentContext(dir, { executablePath: CHROME, args: [RESOLVE] });
-  const page = ctx.pages()[0] ?? (await ctx.newPage());
-  await signIn(page, 'ananya@dpit.example');
-  if (run.path === '/people') {
-    // The profile view: a member's page (the first one in the directory).
-    await page.goto(`${BASE}/people`);
-    const href = await page.locator('main a[href^="/people/"]').first().getAttribute('href');
-    run.path = href ?? '/people';
+  const port = nextPort++;
+  const chrome = spawn(
+    CHROME,
+    [
+      '--headless=new',
+      `--remote-debugging-port=${port}`,
+      `--user-data-dir=${dir}`,
+      '--no-first-run',
+      '--no-default-browser-check',
+      RESOLVE,
+      'about:blank',
+    ],
+    { stdio: 'ignore' },
+  );
+  const close = async () => {
+    chrome.kill();
+    await new Promise((r) => setTimeout(r, 500));
+    rmSync(dir, { recursive: true, force: true });
+  };
+  try {
+    const browser = await connect(port);
+    const ctx = browser.contexts()[0] ?? (await browser.newContext());
+    const page = ctx.pages()[0] ?? (await ctx.newPage());
+    if (run.signedIn) {
+      await signIn(page, 'ananya@dpit.example');
+      if (run.path === '/people') {
+        // The profile view: a member's page (the first one in the directory).
+        await page.goto(`${BASE}/people`);
+        const href = await page.locator('main a[href^="/people/"]').first().getAttribute('href');
+        run.path = href ?? '/people';
+      }
+    }
+    if (run.warm) {
+      // The installed app: the service worker has installed (it precaches every screen's code) and
+      // controls the page, which has been visited before.
+      await page.goto(`${BASE}${run.path}`);
+      await page.waitForLoadState('networkidle');
+      await page.waitForFunction(
+        async () => !!(await navigator.serviceWorker?.getRegistration())?.active,
+        undefined,
+        { timeout: 60_000, polling: 500 },
+      );
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+      await page.waitForFunction(() => !!navigator.serviceWorker?.controller, undefined, { timeout: 30_000 });
+      await page.waitForTimeout(1000);
+    } else if (run.signedIn) {
+      await page.evaluate(async () => {
+        for (const r of (await navigator.serviceWorker?.getRegistrations()) ?? []) await r.unregister();
+        for (const k of await caches.keys()) await caches.delete(k);
+      });
+      const cdp = await ctx.newCDPSession(page);
+      await cdp.send('Network.clearBrowserCache');
+    }
+    // Nothing of ours keeps running beside the measured tab, and Playwright lets go of the browser.
+    await page.goto('about:blank');
+    await browser.close();
+  } catch (e) {
+    await close();
+    throw e;
   }
-  if (run.warm) {
-    // The installed app: the service worker has installed (it precaches every screen's code) and
-    // controls the page, which has been visited before.
-    await page.goto(`${BASE}${run.path}`);
-    await page.waitForLoadState('networkidle');
-    await page.waitForFunction(
-      async () => !!(await navigator.serviceWorker?.getRegistration())?.active,
-      undefined,
-      { timeout: 60_000, polling: 500 },
-    );
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-    await page.waitForFunction(() => !!navigator.serviceWorker?.controller, undefined, { timeout: 30_000 });
-    await page.waitForTimeout(1000);
-  } else {
-    await page.evaluate(async () => {
-      for (const r of (await navigator.serviceWorker?.getRegistrations()) ?? []) await r.unregister();
-      for (const k of await caches.keys()) await caches.delete(k);
-    });
-    const cdp = await ctx.newCDPSession(page);
-    await cdp.send('Network.clearBrowserCache');
-  }
-  await ctx.close();
-  return dir;
+  return { port, close };
+}
+
+/** Playwright over the debugging port, once Chrome is listening on it. */
+async function connect(port: number) {
+  for (let i = 0; ; i++)
+    try {
+      return await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
+    } catch (e) {
+      if (i >= 40) throw e;
+      await new Promise((r) => setTimeout(r, 250));
+    }
 }
 
 const display = (a: Record<string, { displayValue?: string; score?: number | null }>, id: string) =>
@@ -88,7 +143,9 @@ test('lighthouse', async () => {
   const summary: Record<string, unknown>[] = [];
   // Lighthouse occasionally fails to record a trace (NO_NAVSTART): each page gets three tries, and
   // a page that still fails is recorded as such while the others carry on.
-  for (const run of RUNS)
+  // LH_RUNS=landing,sign-in measures only those pages (a quick check); the summary then holds only those.
+  const only = process.env.LH_RUNS?.split(',');
+  for (const run of RUNS.filter((r) => !only || only.includes(r.name)))
     for (let attempt = 1; attempt <= 3; attempt++)
       try {
         await audit(run);
@@ -99,24 +156,24 @@ test('lighthouse', async () => {
   writeFileSync(join(resolve(OUT), 'lighthouse-summary.json'), `${JSON.stringify(summary, null, 1)}\n`);
 
   async function audit(run: (typeof RUNS)[number]) {
-    const dir = await profile(run);
+    const browser = await browserFor(run);
     const out = join(tmpdir(), `lh-${run.name}.json`);
     try {
       execFileSync(
-        'npx',
+        NPX[0] ?? 'npx',
         [
+          ...NPX.slice(1),
           '-y',
           'lighthouse@12.8.2',
           `${BASE}${run.path}`,
           '--quiet',
           '--output=json',
           `--output-path=${out}`,
-          `--chrome-flags=--headless=new --no-sandbox --user-data-dir=${dir} ${RESOLVE}`,
+          `--port=${browser.port}`,
           '--only-categories=performance,accessibility,best-practices',
           '--disable-storage-reset',
         ],
-        // Lighthouse finds Chromium through CHROME_PATH (it has no flag for it).
-        { stdio: 'inherit', timeout: 240_000, env: { ...process.env, CHROME_PATH: CHROME } },
+        { stdio: 'inherit', timeout: 240_000 },
       );
       const lhr = JSON.parse(readFileSync(out, 'utf8')) as {
         finalDisplayedUrl: string;
@@ -126,6 +183,9 @@ test('lighthouse', async () => {
           { displayValue?: string; score?: number | null; details?: { items?: Record<string, unknown>[] } }
         >;
       };
+      // A signed-in page measured as the sign-in screen is a failed run, not a result.
+      if (run.signedIn && new URL(lhr.finalDisplayedUrl).pathname === '/sign-in')
+        throw new Error(`${run.name} ended on the sign-in page`);
       writeFileSync(join(OUT, `lighthouse-${run.name}.json.gz`), gzipSync(readFileSync(out)));
       const a = lhr.audits;
       const items = (id: string) => a[id]?.details?.items ?? [];
@@ -157,7 +217,7 @@ test('lighthouse', async () => {
         criticalChains: display(a, 'critical-request-chains'),
       });
     } finally {
-      rmSync(dir, { recursive: true, force: true });
+      await browser.close();
       rmSync(out, { force: true });
     }
   }

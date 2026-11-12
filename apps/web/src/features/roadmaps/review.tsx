@@ -57,7 +57,7 @@ function LibraryPanel() {
                   {l.slug ? (
                     <Link
                       to={`/roadmaps/${l.slug}`}
-                      className="inline-flex min-h-6 items-center font-semibold hover:underline"
+                      className="hit inline-flex min-h-6 items-center font-semibold hover:underline"
                     >
                       {l.title}
                     </Link>
@@ -130,7 +130,7 @@ export function RoadmapReviewPage() {
                   <div>
                     <Link
                       to={`/roadmaps/${i.slug}/history`}
-                      className="inline-flex min-h-6 items-center font-semibold hover:underline"
+                      className="hit inline-flex min-h-6 items-center font-semibold hover:underline"
                     >
                       {i.title} · v{i.version}
                     </Link>

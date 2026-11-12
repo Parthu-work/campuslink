@@ -107,6 +107,7 @@
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
   --font-mono: var(--font-mono);
+  --font-native: var(--font-native);
   /* Type scale (tokens.css, ADR 0015): text-caption … text-display, each with its line height. */
   --text-caption: var(--text-caption);
   --text-caption--line-height: var(--lh-caption);
@@ -318,6 +319,21 @@
 }
 @utility tabular {
   font-variant-numeric: tabular-nums;
+}
+/* A target smaller than a fingertip (a name in a line of text): its hit area grows to at least
+   44 × 44 px around it, without moving anything or enlarging the text (prompt 3, F4; WCAG 2.5.8).
+   Keep a target with `hit` 44 px from the next one, or the areas overlap. */
+@utility hit {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
 }
 
 @keyframes screen-in {

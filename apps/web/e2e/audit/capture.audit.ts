@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { test, type Browser, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from '@playwright/test';
 import { signIn } from '../helpers';
 import { adminSignIn } from '../admin';
 import { axe, measure, settle, type AxeResult } from './probes';
@@ -190,4 +190,17 @@ test('summary', () => {
       1,
     )}\n`,
   );
+  // After the axe summary is written, so a failure here still leaves the full report.
+  // Prompt 3, F4: every pointer target on every screen is at least 44 × 44 px (WCAG 2.5.8 and our
+  // own bar); targets WCAG exempts (links in running text, chart columns) are listed but allowed.
+  const touch = JSON.parse(readFileSync(join(DATA, 'touch-targets-360.json'), 'utf8')) as Record<
+    string,
+    { under44NotExempt: number; under44Examples: { label: string; w: number; h: number }[] }
+  >;
+  const small = Object.entries(touch)
+    .filter(([, m]) => m.under44NotExempt > 0)
+    .map(
+      ([screen, m]) => `${screen}: ${m.under44Examples.map((x) => `"${x.label}" ${x.w}×${x.h}`).join(', ')}`,
+    );
+  expect(small, 'targets under 44 × 44 px').toEqual([]);
 });

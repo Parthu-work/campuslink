@@ -65,9 +65,9 @@ export function AuthorLine({
           {author.name ? (
             <Link
               to={`/people/${author.userId}`}
-              className="inline-flex min-h-6 max-w-full items-center truncate font-semibold hover:underline"
+              className="hit inline-flex min-h-6 max-w-full items-center font-semibold hover:underline"
             >
-              {author.name}
+              <span className="truncate">{author.name}</span>
             </Link>
           ) : (
             <span className="text-fg-3">{t('feed.memberHidden')}</span>

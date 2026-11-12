@@ -100,9 +100,10 @@ function QuestionRow({ q }: { q: QuestionView }) {
   const { t } = useTranslation();
   return (
     <li>
-      <Card variant="interactive" className="grid gap-2 p-4">
+      {/* relative: the title's link covers the whole card (one large target, prompt 3, F4). */}
+      <Card variant="interactive" className="relative grid gap-2 p-4">
         <h2 className="text-body leading-snug font-semibold">
-          <Link to={`/questions/${q.id}`} className="hover:underline">
+          <Link to={`/questions/${q.id}`} className="hover:underline after:absolute after:inset-0">
             {q.title}
           </Link>
         </h2>

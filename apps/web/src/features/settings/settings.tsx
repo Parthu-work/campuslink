@@ -311,7 +311,15 @@ export function PreferenceSettings() {
             setLanguage(l);
             void api.patch('/me', { locale: l }).catch(() => undefined);
           }}
-          options={SUPPORTED_LOCALES.map((l) => ({ value: l, label: LOCALE_NAMES[l] }))}
+          // Each name in the device's fonts: no Telugu or Devanagari download on an English page (F5).
+          options={SUPPORTED_LOCALES.map((l) => ({
+            value: l,
+            label: (
+              <span lang={l} className="font-native">
+                {LOCALE_NAMES[l]}
+              </span>
+            ),
+          }))}
         />
       </fieldset>
       <fieldset className="grid gap-2">

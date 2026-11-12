@@ -21,6 +21,9 @@
     'Geist Variable', 'Anek Telugu Variable', 'Anek Devanagari Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     'Geist Mono Variable', 'Anek Telugu Variable', 'Anek Devanagari Variable', ui-monospace, monospace;
+  /* A language's own name in another language's page ("తెలుగు" on an English page): the device's
+     fonts, so showing it never downloads that script's web font (prompt 3, F5). */
+  --font-native: ui-sans-serif, system-ui, sans-serif;
 
   /*
    * Type (ADR 0015): six steps, px at 360 wide growing 15% by 1280. Bricolage only for Display and

@@ -239,7 +239,9 @@ export function PdfViewer({
       </Card>
       {text && (
         <details className="rounded-[var(--radius-md)] border border-line p-3 text-callout">
-          <summary className="cursor-pointer py-3 font-semibold">{t('study.viewer.pageText')}</summary>
+          <summary className="min-h-11 cursor-pointer py-3 font-semibold">
+            {t('study.viewer.pageText')}
+          </summary>
           <p className="mt-2 whitespace-pre-line text-fg-2">{text}</p>
         </details>
       )}
