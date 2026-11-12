@@ -194,9 +194,11 @@ describe('the Placement Graph (G10)', () => {
     ]);
     // Referrals: one, so the count is "<5" and no rate.
     expect(page.referrals).toEqual({ referred: '<5', converted: '<5', rate: null });
-    // Never the exact CTC, never a member id.
-    const text = JSON.stringify(page);
+    // Never the exact CTC, never a member id. The timestamp is left out of the searched text: a
+    // time such as 05:58:06.557Z contains "6.5" and made this check depend on the clock.
+    const text = JSON.stringify({ ...page, computedAt: undefined });
     expect(text).not.toContain('6.5');
+    expect(text).not.toMatch(/ctc/i);
     for (const p of placed) expect(text).not.toContain(p.id);
     expect((await as(viewer).get('/companies/unknown%20co')).status).toBe(404);
   });
