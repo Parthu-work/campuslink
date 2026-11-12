@@ -305,7 +305,7 @@ export function GalaxyCanvas({ roadmaps }: { roadmaps: RoadmapSummaryView[] }) {
       </p>
       {focus && (
         <p
-          className="glass pointer-events-none absolute inset-x-3 bottom-11 rounded-[var(--radius-md)] border border-line p-3 text-meta text-fg shadow-elev-3 sm:right-auto sm:max-w-[420px]"
+          className="glass pointer-events-none absolute inset-x-3 bottom-11 rounded-[var(--radius-md)] border border-line p-3 text-callout text-fg shadow-elev-3 sm:right-auto sm:max-w-[420px]"
           aria-live="polite"
         >
           <span className="font-semibold">{focus.title}</span> · {focus.summary.slice(0, 140)}

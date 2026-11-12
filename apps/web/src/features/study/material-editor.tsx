@@ -54,7 +54,7 @@ function FileAction({
   };
   return (
     <div className="grid gap-2">
-      <label className="inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-full border border-line-strong px-4 text-meta font-semibold hover:bg-hover">
+      <label className="inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-full border border-line-strong px-4 text-callout font-semibold hover:bg-hover">
         {icon} {label}
         <input
           type="file"
@@ -275,8 +275,8 @@ export function MaterialEditor({
           <h3 id="takedown-h" className="flex items-center gap-2 font-semibold">
             <TriangleAlert className="size-4 text-warning" aria-hidden /> {t('study.editor2.takedown')}
           </h3>
-          <p className="text-meta text-fg-2">{t('study.editor2.takedownBody')}</p>
-          <label htmlFor={reasonId} className="text-meta font-semibold">
+          <p className="text-callout text-fg-2">{t('study.editor2.takedownBody')}</p>
+          <label htmlFor={reasonId} className="text-callout font-semibold">
             {t('study.editor2.reason')}
           </label>
           <Input id={reasonId} value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} />
@@ -295,7 +295,7 @@ export function MaterialEditor({
       <section className="grid gap-2 border-t border-line pt-4">
         {confirm ? (
           <div className="grid gap-2 rounded-[var(--radius-md)] bg-danger-surface p-3" role="alert">
-            <p className="text-meta">{t('study.editor2.deleteConfirm')}</p>
+            <p className="text-callout">{t('study.editor2.deleteConfirm')}</p>
             <div className="flex flex-wrap gap-2">
               <Button variant="danger" loading={remove.isPending} onClick={() => remove.mutate()}>
                 {t('study.editor2.deleteYes')}

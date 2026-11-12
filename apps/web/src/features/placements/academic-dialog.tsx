@@ -113,7 +113,7 @@ export function AcademicDialog({
           </Field>
         ))}
         {error && (
-          <p role="alert" className="text-meta font-medium text-danger sm:col-span-2">
+          <p role="alert" className="text-callout font-medium text-danger sm:col-span-2">
             {error}
           </p>
         )}

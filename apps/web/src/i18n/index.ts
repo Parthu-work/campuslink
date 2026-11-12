@@ -100,6 +100,15 @@ const PACKS = {
       hi: () => import('./packs/copilot.hi.json'),
     },
   },
+  /** The living style guide (/design, development builds only; prompt 3, U1): kept out of every language. */
+  design: {
+    sections: ['design'],
+    load: {
+      en: () => import('./packs/design.en.json'),
+      te: () => import('./packs/design.te.json'),
+      hi: () => import('./packs/design.hi.json'),
+    },
+  },
   /** The network (prompt 2, G12): alumni across colleges, credentials, the recruiter portal and registry. */
   network: {
     sections: ['network', 'recruiter'],

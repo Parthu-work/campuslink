@@ -140,9 +140,9 @@ function ProfileForm({ initial }: { initial: Mine }) {
         <PersonAvatar name={p.name} fileId={p.avatarFileId} size={72} verified={p.verified} />
         {/* A real basis, so on phones the button wraps below instead of crushing the name (TY-1). */}
         <div className="min-w-0 flex-1 basis-48">
-          <b className="block text-title">{p.name}</b>
+          <b className="block text-headline">{p.name}</b>
           {(p.fields.branch || p.fields.gradYear) && (
-            <p className="text-meta text-fg-2">
+            <p className="text-callout text-fg-2">
               {[p.fields.branch, p.fields.gradYear].filter(Boolean).join(' · ')}{' '}
               <span className="text-fg-3">({t('profile.fromList')})</span>
             </p>
@@ -253,7 +253,7 @@ function ProfileForm({ initial }: { initial: Mine }) {
             </div>
           ))}
           <fieldset className="grid gap-2">
-            <legend className="mb-1.5 text-meta font-semibold">{t('profile.links')}</legend>
+            <legend className="mb-1.5 text-callout font-semibold">{t('profile.links')}</legend>
             {form.links.map((l, i) => (
               <div key={i} className="flex gap-2">
                 <label className="sr-only" htmlFor={`link-${i}`}>
@@ -355,10 +355,10 @@ function CompanyBadge({ current }: { current: PublicProfile['companyVerified'] }
   };
   return (
     <Card className="grid gap-3 p-5">
-      <h2 className="text-title font-semibold">{t('profile.companyTitle')}</h2>
-      <p className="text-meta text-fg-2">{t('profile.companyBody')}</p>
+      <h2 className="text-headline font-semibold">{t('profile.companyTitle')}</h2>
+      <p className="text-callout text-fg-2">{t('profile.companyBody')}</p>
       {current && (
-        <p className="text-meta font-semibold text-success">
+        <p className="text-callout font-semibold text-success">
           {t('profile.companyDone', { company: current.company })}
         </p>
       )}
@@ -410,7 +410,7 @@ function CompanyBadge({ current }: { current: PublicProfile['companyVerified'] }
             });
           }}
         >
-          <p className="text-meta" role="status">
+          <p className="text-callout" role="status">
             {t('verify.codeSent', { destination: challenge.destination })}
           </p>
           <OtpInput value={code} onChange={setCode} label={t('verify.codeTitle')} />

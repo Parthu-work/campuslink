@@ -66,9 +66,9 @@ function ComponentCard({ c }: { c: ReadinessComponentView }) {
     <li>
       <Card className="grid gap-3 p-4">
         <div className="flex items-baseline justify-between gap-3">
-          <h3 className="text-lead font-semibold">{name}</h3>
+          <h3 className="text-body font-semibold">{name}</h3>
           {scored ? (
-            <span className="text-meta font-semibold tabular-nums">
+            <span className="text-callout font-semibold tabular-nums">
               {t('readiness.points', { points: c.points, max: c.max })}
             </span>
           ) : (
@@ -83,7 +83,7 @@ function ComponentCard({ c }: { c: ReadinessComponentView }) {
             valueText={t('readiness.points', { points: c.points, max: c.max })}
           />
         )}
-        <p className="text-meta text-fg-2">{fact}</p>
+        <p className="text-callout text-fg-2">{fact}</p>
         {c.next && <ActionLink a={c.next} />}
       </Card>
     </li>
@@ -116,13 +116,13 @@ export function ReadinessPage() {
               valueText={t('readiness.outOf', { score: v.score })}
               className="justify-self-center"
             >
-              <span className="text-headline font-bold tabular-nums">{v.score}</span>
+              <span className="text-title font-bold tabular-nums">{v.score}</span>
             </ProgressRing>
             <div className="grid gap-3">
-              <h2 className="text-title font-semibold">{t('readiness.headline', { score: v.score })}</h2>
+              <h2 className="text-headline font-semibold">{t('readiness.headline', { score: v.score })}</h2>
               {v.next.length ? (
                 <>
-                  <p className="text-meta text-fg-2">{t('readiness.nextIntro')}</p>
+                  <p className="text-callout text-fg-2">{t('readiness.nextIntro')}</p>
                   <ol className="grid gap-2">
                     {v.next.map((a) => (
                       <li key={`${a.component}-${a.id}`}>
@@ -137,24 +137,24 @@ export function ReadinessPage() {
             </div>
           </Card>
           {v.renormalised && skipped && skipped.length > 0 && (
-            <p className="rounded-[var(--radius-md)] bg-surface-2 px-4 py-3 text-meta text-fg-2">
+            <p className="rounded-[var(--radius-md)] bg-surface-2 px-4 py-3 text-callout text-fg-2">
               {t('readiness.renormalised', {
                 parts: skipped.map((c) => t(`readiness.component.${c.id}`)).join(', '),
               })}
             </p>
           )}
           <section aria-labelledby="readiness-parts" className="grid gap-3">
-            <h2 id="readiness-parts" className="text-title font-semibold">
+            <h2 id="readiness-parts" className="text-headline font-semibold">
               {t('readiness.parts')}
             </h2>
-            <p className="text-meta text-fg-2">{t('readiness.how')}</p>
+            <p className="text-callout text-fg-2">{t('readiness.how')}</p>
             <ul className="grid gap-3 md:grid-cols-2">
               {v.components.map((c) => (
                 <ComponentCard key={c.id} c={c} />
               ))}
             </ul>
           </section>
-          <p className="flex items-start gap-2 text-meta text-fg-2">
+          <p className="flex items-start gap-2 text-callout text-fg-2">
             <Lock className="mt-0.5 size-4 flex-none" aria-hidden />
             {t('readiness.private')}
           </p>

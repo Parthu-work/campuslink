@@ -41,7 +41,7 @@ export function Switch({
           {label}
         </span>
         {description && (
-          <span id={`${id}-description`} className="text-meta text-fg-2">
+          <span id={`${id}-description`} className="text-callout text-fg-2">
             {description}
           </span>
         )}

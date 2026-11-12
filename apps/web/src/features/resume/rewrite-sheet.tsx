@@ -51,7 +51,7 @@ export function RewriteSheet({
           <>
             <div className="grid gap-1">
               <p className="text-caption text-fg-3">{t('resume.rewrite.yours')}</p>
-              <p className="rounded-[var(--radius-md)] bg-surface-2 p-3 text-meta">{r.original}</p>
+              <p className="rounded-[var(--radius-md)] bg-surface-2 p-3 text-callout">{r.original}</p>
             </div>
             <div className="flex items-center gap-2">
               <h3 className="font-semibold">{t('resume.rewrite.options')}</h3>
@@ -64,7 +64,7 @@ export function RewriteSheet({
                 {r.alternatives.map((a) => (
                   <li key={a}>
                     <Card variant="raised" className="grid gap-2 p-3">
-                      <p className="text-meta">
+                      <p className="text-callout">
                         {wordDiff(r.original, a)
                           .map((part, i) =>
                             part.added ? (
@@ -90,12 +90,12 @@ export function RewriteSheet({
                 ))}
               </ul>
             ) : (
-              <p className="text-meta text-fg-2">{t('resume.rewrite.none')}</p>
+              <p className="text-callout text-fg-2">{t('resume.rewrite.none')}</p>
             )}
             {!!r.tips.length && (
               <div className="grid gap-1.5">
                 <h3 className="font-semibold">{t('resume.rewrite.tips')}</h3>
-                <ul className="grid list-disc gap-1 pl-5 text-meta">
+                <ul className="grid list-disc gap-1 pl-5 text-callout">
                   {r.tips.map((tip) => (
                     <li key={tip}>{tip}</li>
                   ))}

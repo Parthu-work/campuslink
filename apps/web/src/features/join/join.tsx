@@ -164,7 +164,7 @@ function ClaimFlow({
         <Button type="submit" variant="primary" size="lg" loading={isSubmitting}>
           {t('join.sendCode')}
         </Button>
-        <p className="text-center text-meta text-fg-2">
+        <p className="text-center text-callout text-fg-2">
           {t('auth.haveAccount')}{' '}
           <Link to="/sign-in" className="font-semibold text-brand-ink hover:underline">
             {t('auth.signInCta')}
@@ -223,10 +223,10 @@ export function InvitePage() {
             <BadgeCheck className="size-5 flex-none text-brand-ink" aria-hidden />
             {t(v.kind === 'alumni' ? 'join.inviteAlumni' : 'join.inviteStudent')}
           </p>
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {t('join.rollOnRecord')} <span className="font-mono">{v.rollNumber}</span>
           </p>
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {t(v.contact === 'phone' ? 'join.codeToPhone' : 'join.codeToEmail')}
           </p>
         </div>

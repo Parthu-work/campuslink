@@ -10,9 +10,11 @@ docs/api/openapi.json
 # Raw re-audit measurements, written by apps/web/e2e/audit
 docs/design/revamp/data-after
 docs/build/after-2/data-after
+docs/build/before-3/data-after
 # Verbatim copies of the owner's brief; formatting must not change them
 docs/design/revamp/master-prompt.md
 docs/build/master-prompt-1.md
 docs/build/master-prompt-2.md
+docs/build/master-prompt-3.md
 docs/specs/ai-study-assistant.md
 apps/web/src/styles/palette.css

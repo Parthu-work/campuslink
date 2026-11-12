@@ -156,8 +156,10 @@ export function FollowingPage() {
       </Card>
       <Card className="grid gap-3 p-4">
         <h2 className="font-semibold">{t('feed.sourcesTitle')}</h2>
-        <p className="text-meta text-fg-2">{t('feed.sourcesIntro')}</p>
-        {sources.data && !sources.data.length && <p className="text-meta text-fg-3">{t('feed.noSources')}</p>}
+        <p className="text-callout text-fg-2">{t('feed.sourcesIntro')}</p>
+        {sources.data && !sources.data.length && (
+          <p className="text-callout text-fg-3">{t('feed.noSources')}</p>
+        )}
         <ul className="grid gap-2">
           {sources.data?.map((s) => {
             const on = !!f?.sources.includes(s.id);
@@ -170,7 +172,7 @@ export function FollowingPage() {
                   <Rss className="size-4" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <b className="block truncate text-meta">{s.name}</b>
+                  <b className="block truncate text-callout">{s.name}</b>
                   <span className="block truncate text-caption text-fg-3">
                     {s.host}
                     {s.topics.length > 0 && ` · ${s.topics.map((x) => t(`topics.${x}`)).join(', ')}`}
@@ -193,7 +195,7 @@ export function FollowingPage() {
       <Card className="grid gap-3 p-4">
         <h2 className="font-semibold">{t('feed.peopleTitle')}</h2>
         {f && !f.users.length && (
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {t('feed.noPeople')}{' '}
             <Link to="/people" className="font-semibold text-brand-ink hover:underline">
               {t('nav.people')}
@@ -209,7 +211,7 @@ export function FollowingPage() {
                 <PersonAvatar name={d?.name ?? '?'} fileId={d?.avatarFileId ?? null} size={36} />
                 <Link
                   to={`/people/${id}`}
-                  className="min-w-0 flex-1 truncate text-meta font-semibold hover:underline"
+                  className="min-w-0 flex-1 truncate text-callout font-semibold hover:underline"
                 >
                   {d?.name ?? t('feed.memberHidden')}
                 </Link>

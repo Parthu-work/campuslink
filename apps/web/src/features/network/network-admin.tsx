@@ -104,7 +104,7 @@ function Postings({ items }: { items: CollegePostingView[] }) {
     onSuccess: done,
     onError: fail,
   });
-  if (!items.length) return <p className="text-meta text-fg-2">{t('network.admin.noPostings')}</p>;
+  if (!items.length) return <p className="text-callout text-fg-2">{t('network.admin.noPostings')}</p>;
   return (
     <ul className="grid gap-3">
       {items.map((p) => (
@@ -120,7 +120,7 @@ function Postings({ items }: { items: CollegePostingView[] }) {
                 {t(`network.decisions.${p.decision}`)}
               </Badge>
             </div>
-            <p className="text-meta text-fg-2">
+            <p className="text-callout text-fg-2">
               {[p.role, p.location, p.ctcRange, t(`network.postingTypes.${p.type}`)]
                 .filter(Boolean)
                 .join(' · ')}
@@ -131,7 +131,7 @@ function Postings({ items }: { items: CollegePostingView[] }) {
               {p.gradYears.length ? ` · ${p.gradYears.join(', ')}` : ''}
               {p.reports ? ` · ${t('network.admin.reports', { n: p.reports })}` : ''}
             </p>
-            <p className="line-clamp-3 text-meta whitespace-pre-line">{p.description}</p>
+            <p className="line-clamp-3 text-callout whitespace-pre-line">{p.description}</p>
             <div className="flex flex-wrap gap-2">
               {p.decision === 'pending' && (
                 <>
@@ -202,16 +202,16 @@ function CredentialKeys() {
   const d = v.data;
   return (
     <Card variant="raised" className="grid gap-3 p-4 sm:p-6">
-      <h2 className="flex items-center gap-2 text-title font-semibold">
+      <h2 className="flex items-center gap-2 text-headline font-semibold">
         <KeyRound className="size-5 text-brand-ink" aria-hidden /> {t('network.admin.keysTitle')}
       </h2>
-      <p className="text-meta text-fg-2">
+      <p className="text-callout text-fg-2">
         {t('network.admin.keysBody', { issued: d.issued, revoked: d.revoked })}
       </p>
       <p className="text-caption break-all text-fg-3">{d.did}</p>
       <ul className="grid gap-2">
         {d.keys.map((k) => (
-          <li key={k.kid} className="flex flex-wrap items-center justify-between gap-2 text-meta">
+          <li key={k.kid} className="flex flex-wrap items-center justify-between gap-2 text-callout">
             <span className="font-mono">{k.kid.slice(0, 12)}…</span>
             <Badge tone={k.status === 'active' ? 'success' : k.status === 'retired' ? 'neutral' : 'danger'}>
               {t(`network.admin.keyStatus.${k.status}`)}
@@ -269,9 +269,9 @@ export function NetworkAdmin() {
   const anyOff = SWITCHES.some((k) => !d.switches[k]);
   return (
     <div className="grid gap-5">
-      <p className="text-meta text-fg-2">{t('network.admin.intro')}</p>
+      <p className="text-callout text-fg-2">{t('network.admin.intro')}</p>
       <Card variant="raised" className="grid gap-3 p-4 sm:p-6">
-        <h2 className="text-title font-semibold">{t('network.admin.switchesTitle')}</h2>
+        <h2 className="text-headline font-semibold">{t('network.admin.switchesTitle')}</h2>
         {canSwitch && anyOff && (
           <Checkbox id="network-terms" checked={terms} onChange={setTerms}>
             {t('network.admin.terms', { v: NETWORK_TERMS_VERSION })}
@@ -292,7 +292,7 @@ export function NetworkAdmin() {
             {t('network.admin.changedOn', { date: formatDay(d.changedAt) })}
           </p>
         )}
-        <p className="text-meta">
+        <p className="text-callout">
           {t('network.admin.members', {
             discoverable: d.members.discoverable,
             employers: d.members.employerVisible,
@@ -300,17 +300,17 @@ export function NetworkAdmin() {
         </p>
       </Card>
       <section className="grid gap-3" aria-labelledby="postings-title">
-        <h2 id="postings-title" className="text-title font-semibold">
+        <h2 id="postings-title" className="text-headline font-semibold">
           {t('network.admin.postingsTitle')}
         </h2>
         <Postings items={d.postings} />
       </section>
       {d.blocked.length > 0 && (
         <Card className="grid gap-2 p-4">
-          <h2 className="text-title font-semibold">{t('network.admin.blockedTitle')}</h2>
+          <h2 className="text-headline font-semibold">{t('network.admin.blockedTitle')}</h2>
           <ul className="grid gap-2">
             {d.blocked.map((b) => (
-              <li key={b.id} className="flex items-center justify-between gap-2 text-meta">
+              <li key={b.id} className="flex items-center justify-between gap-2 text-callout">
                 {b.name}
                 <Button size="sm" variant="ghost" onClick={() => unblock.mutate(b.id)}>
                   {t('network.admin.unblock')}
@@ -322,11 +322,11 @@ export function NetworkAdmin() {
       )}
       {d.paused.length > 0 && (
         <Card className="grid gap-2 p-4">
-          <h2 className="text-title font-semibold">{t('network.admin.pausedTitle')}</h2>
-          <p className="text-meta text-fg-2">{t('network.admin.pausedBody')}</p>
+          <h2 className="text-headline font-semibold">{t('network.admin.pausedTitle')}</h2>
+          <p className="text-callout text-fg-2">{t('network.admin.pausedBody')}</p>
           <ul className="grid gap-2">
             {d.paused.map((p) => (
-              <li key={p.userId} className="flex items-center justify-between gap-2 text-meta">
+              <li key={p.userId} className="flex items-center justify-between gap-2 text-callout">
                 {p.name}
                 <Button size="sm" variant="outline" onClick={() => resume.mutate(p.userId)}>
                   {t('network.admin.resume')}
@@ -337,11 +337,11 @@ export function NetworkAdmin() {
         </Card>
       )}
       <Card className="grid gap-2 p-4">
-        <h2 className="text-title font-semibold">{t('network.admin.activityTitle')}</h2>
+        <h2 className="text-headline font-semibold">{t('network.admin.activityTitle')}</h2>
         {d.activity.length === 0 ? (
-          <p className="text-meta text-fg-2">{t('network.admin.activityNone')}</p>
+          <p className="text-callout text-fg-2">{t('network.admin.activityNone')}</p>
         ) : (
-          <ul className="grid gap-1 text-meta">
+          <ul className="grid gap-1 text-callout">
             {d.activity.map((a) => (
               <li key={a.reason}>
                 {t(`network.paths.${a.reason.replace('network.', '')}`)}: {a.count}

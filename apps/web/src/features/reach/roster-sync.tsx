@@ -85,10 +85,10 @@ export function SyncOffer({ source, jobId }: { source: ImportSourceBody; jobId: 
   if (save.isSuccess) return null;
   return (
     <Card variant="raised" className="grid gap-3 p-5" role="region" aria-labelledby="sync-offer-title">
-      <h2 id="sync-offer-title" className="flex items-center gap-2 text-title font-semibold">
+      <h2 id="sync-offer-title" className="flex items-center gap-2 text-headline font-semibold">
         <RefreshCw className="size-5 text-brand-ink" aria-hidden /> {t('reach.sync.offerTitle')}
       </h2>
-      <p className="text-meta text-fg-2">{t('reach.sync.offerBody')}</p>
+      <p className="text-callout text-fg-2">{t('reach.sync.offerBody')}</p>
       <Schedule frequency={frequency} weekday={weekday} onFrequency={setFrequency} onWeekday={setWeekday} />
       <div>
         <Button variant="primary" loading={save.isPending} onClick={() => save.mutate()}>
@@ -142,14 +142,14 @@ export function RosterSyncCard() {
   return (
     <Card className="grid gap-4 p-5" role="region" aria-labelledby="roster-sync-title">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="roster-sync-title" className="flex items-center gap-2 text-title font-semibold">
+        <h2 id="roster-sync-title" className="flex items-center gap-2 text-headline font-semibold">
           <RefreshCw className="size-5 text-brand-ink" aria-hidden /> {t('reach.sync.title')}
         </h2>
         {!s.enabled && <Badge tone="warning">{t('reach.sync.paused')}</Badge>}
       </div>
-      <p className="text-meta text-fg-2">{t('reach.sync.intro')}</p>
-      <p className="text-meta">{t('reach.sync.source', { source: s.source?.label ?? '' })}</p>
-      <p className="text-meta">
+      <p className="text-callout text-fg-2">{t('reach.sync.intro')}</p>
+      <p className="text-callout">{t('reach.sync.source', { source: s.source?.label ?? '' })}</p>
+      <p className="text-callout">
         {s.lastRunAt && s.lastStatus
           ? t('reach.sync.last', {
               when: formatRelative(s.lastRunAt),
@@ -158,7 +158,7 @@ export function RosterSyncCard() {
           : t('reach.sync.never')}
       </p>
       {s.lastStatus === 'failed' && s.lastError && (
-        <p className="text-meta text-danger-ink">{t('reach.sync.error', { error: s.lastError })}</p>
+        <p className="text-callout text-danger-ink">{t('reach.sync.error', { error: s.lastError })}</p>
       )}
       {p && (
         <section
@@ -168,14 +168,14 @@ export function RosterSyncCard() {
           <h3 id="sync-pending-title" className="font-semibold">
             {t('reach.sync.pendingTitle')}
           </h3>
-          <p className="text-meta">
+          <p className="text-callout">
             {t('reach.sync.pendingBody', {
               changed: p.created + p.updated,
               total: p.total,
               pct: Math.round(p.changedShare * 1000) / 10,
             })}
           </p>
-          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-meta">
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-callout">
             <li>{t('reach.sync.created', { n: p.created })}</li>
             <li>{t('reach.sync.updated', { n: p.updated })}</li>
             <li>{t('reach.sync.unchanged', { n: p.unchanged })}</li>
@@ -184,7 +184,7 @@ export function RosterSyncCard() {
           </ul>
           {p.sample.length > 0 && (
             <details>
-              <summary className="min-h-11 cursor-pointer content-center text-meta font-semibold">
+              <summary className="min-h-11 cursor-pointer content-center text-callout font-semibold">
                 {t('reach.sync.sample')}
               </summary>
               <ul className="grid gap-1 font-mono text-caption">

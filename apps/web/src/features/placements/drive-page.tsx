@@ -49,7 +49,7 @@ function PdfButton({
   });
   return (
     <div className="grid gap-1.5">
-      <span className="text-meta font-semibold">{label}</span>
+      <span className="text-callout font-semibold">{label}</span>
       <input
         ref={ref}
         type="file"
@@ -64,7 +64,7 @@ function PdfButton({
           <FileText className="size-4" aria-hidden />{' '}
           {value ? t('placements.replacePdf') : t('placements.addPdf')}
         </Button>
-        <span className="text-meta text-fg-2" aria-live="polite">
+        <span className="text-callout text-fg-2" aria-live="polite">
           {value ? value.name : t('placements.pdfHint')}
         </span>
       </div>
@@ -215,7 +215,7 @@ function RegisterSheet({
           ),
         )}
         {error && (
-          <p role="alert" className="text-meta font-medium text-danger">
+          <p role="alert" className="text-callout font-medium text-danger">
             {error}
           </p>
         )}
@@ -276,11 +276,13 @@ function RegistrationPanel({ drive: d }: { drive: DriveView }) {
                   ? t('placements.final.not_selected')
                   : t('placements.youAreRegistered')}
             </p>
-            {reg.status === 'tpo_override' && <p className="text-meta text-fg-2">{t('placements.letIn')}</p>}
+            {reg.status === 'tpo_override' && (
+              <p className="text-callout text-fg-2">{t('placements.letIn')}</p>
+            )}
             {reg.final === 'selected' && (
               <Link
                 to="/placements?tab=offers"
-                className="text-meta font-semibold text-brand-ink hover:underline"
+                className="text-callout font-semibold text-brand-ink hover:underline"
               >
                 {t('placements.seeOffer')}
               </Link>
@@ -301,7 +303,7 @@ function RegistrationPanel({ drive: d }: { drive: DriveView }) {
                   ? t('placements.letInCanRegister')
                   : t('placements.youAreEligible')}
               </p>
-              <p className="text-meta text-fg-2">
+              <p className="text-callout text-fg-2">
                 {t('placements.closesAt', { when: formatDateTime(d.registrationCloseAt) })} ·{' '}
                 {formatRelative(d.registrationCloseAt)}
               </p>
@@ -320,7 +322,7 @@ function RegistrationPanel({ drive: d }: { drive: DriveView }) {
               <p className="flex items-center gap-2 font-semibold">
                 <CircleAlert className="size-5 text-warning" aria-hidden /> {t('placements.notEligibleTitle')}
               </p>
-              <ul className="ml-5 grid list-disc gap-1 text-meta text-fg-2">
+              <ul className="ml-5 grid list-disc gap-1 text-callout text-fg-2">
                 {d.reasons.map((r, i) => (
                   <li key={i}>{reasonText(t, r)}</li>
                 ))}
@@ -329,7 +331,7 @@ function RegistrationPanel({ drive: d }: { drive: DriveView }) {
             </>
           )
         ) : (
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {d.status === 'cancelled' ? t('placements.cancelledNote') : t('placements.registrationClosed')}
           </p>
         )}
@@ -381,7 +383,7 @@ function Criteria({ drive: d }: { drive: DriveView }) {
   ].filter(Boolean);
   return (
     <section aria-labelledby="drive-criteria" className="grid gap-2">
-      <h2 id="drive-criteria" className="text-title font-semibold">
+      <h2 id="drive-criteria" className="text-headline font-semibold">
         {t('placements.criteria')}
       </h2>
       {rows.length ? (
@@ -441,7 +443,7 @@ export function DrivePage() {
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="grid min-w-0 gap-6">
           <section aria-labelledby="drive-roles" className="grid gap-2">
-            <h2 id="drive-roles" className="text-title font-semibold">
+            <h2 id="drive-roles" className="text-headline font-semibold">
               {t('placements.roles')}
             </h2>
             <ul className="grid gap-2">
@@ -450,7 +452,7 @@ export function DrivePage() {
                   <Card className="flex flex-wrap items-center justify-between gap-2 p-3.5">
                     <div className="min-w-0">
                       <p className="font-semibold">{r.title}</p>
-                      <p className="text-meta text-fg-2">
+                      <p className="text-callout text-fg-2">
                         {[t(`placements.roleType.${r.type}`), r.location].filter(Boolean).join(' · ')}
                       </p>
                     </div>
@@ -462,7 +464,7 @@ export function DrivePage() {
           </section>
           {d.description && (
             <section aria-labelledby="drive-about" className="grid gap-2">
-              <h2 id="drive-about" className="text-title font-semibold">
+              <h2 id="drive-about" className="text-headline font-semibold">
                 {t('placements.about')}
               </h2>
               <RichText text={d.description} />
@@ -471,7 +473,7 @@ export function DrivePage() {
           <Criteria drive={d} />
           {d.rounds.length > 0 && (
             <section aria-labelledby="drive-rounds" className="grid gap-2">
-              <h2 id="drive-rounds" className="text-title font-semibold">
+              <h2 id="drive-rounds" className="text-headline font-semibold">
                 {t('placements.rounds')}
               </h2>
               <ol className="grid gap-2">
@@ -486,7 +488,7 @@ export function DrivePage() {
                         <b className="font-semibold">
                           {i + 1}. {r.name}
                         </b>{' '}
-                        <span className="text-meta text-fg-2">
+                        <span className="text-callout text-fg-2">
                           · {t(`placements.roundKind.${r.kind}`)}
                           {r.at ? ` · ${formatDateTime(r.at)}` : ''}
                         </span>
@@ -506,7 +508,7 @@ export function DrivePage() {
           {d.linkedEventId && (
             <Link
               to={`/events/${d.linkedEventId}`}
-              className="text-meta font-semibold text-brand-ink hover:underline"
+              className="text-callout font-semibold text-brand-ink hover:underline"
             >
               {t('placements.seeEvent')}
             </Link>

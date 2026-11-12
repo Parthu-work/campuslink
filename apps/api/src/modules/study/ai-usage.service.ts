@@ -149,6 +149,37 @@ export class AiUsageService {
     };
   }
 
+  /**
+   * One calendar month's tokens (`YYYY-MM`, UTC days) for the cost report (prompt 4, P5): the
+   * platform's by price class, and the college's own key in total. Counts only, never members.
+   */
+  async tokensInMonth(month: string) {
+    const rows = await AiUsageModel.aggregate<{
+      _id: { platform: boolean; embedding: boolean };
+      input: number;
+      output: number;
+    }>([
+      { $match: { day: { $gte: `${month}-01`, $lte: `${month}-31` } } },
+      {
+        $group: {
+          _id: { platform: '$platform', embedding: { $eq: ['$kind', 'embedding'] } },
+          input: { $sum: '$inputTokens' },
+          output: { $sum: '$outputTokens' },
+        },
+      },
+    ]);
+    const out = { chatInput: 0, chatOutput: 0, embedding: 0, own: 0 };
+    for (const r of rows) {
+      if (!r._id.platform) out.own += r.input + r.output;
+      else if (r._id.embedding) out.embedding += r.input + r.output;
+      else {
+        out.chatInput += r.input;
+        out.chatOutput += r.output;
+      }
+    }
+    return out;
+  }
+
   /** Model requests of one kind a member made today (the per-member daily limit). */
   /** A member's AI calls today for one feature (prompt 2, G1: `AI_FEATURE_LIMITS`). */
   async requestsTodayFor(userId: string, feature: AiUsageFeature): Promise<number> {

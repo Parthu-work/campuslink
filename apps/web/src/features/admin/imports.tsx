@@ -111,7 +111,7 @@ function SourceStep({
   ];
   return (
     <Card className="grid gap-4 p-5">
-      <h2 className="text-title font-semibold">{t('admin.source')}</h2>
+      <h2 className="text-headline font-semibold">{t('admin.source')}</h2>
       <div role="group" aria-label={t('admin.source')} className="flex flex-wrap gap-2">
         {tabs.map(([k, label, Icon]) => (
           <Chip key={k} pressed={source === k} onClick={() => setSource(k)}>
@@ -298,7 +298,7 @@ function MappingStep({
   return (
     <Card className="grid gap-5 p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-title font-semibold">{t('admin.mapTitle')}</h2>
+        <h2 className="text-headline font-semibold">{t('admin.mapTitle')}</h2>
         <Badge>{t('admin.rows', { count: preview.totalRows })}</Badge>
       </div>
       {placements && (
@@ -312,7 +312,9 @@ function MappingStep({
           ]}
         />
       )}
-      <p className="text-meta text-fg-2">{academics ? t('admin.mapIntroAcademics') : t('admin.mapIntro')}</p>
+      <p className="text-callout text-fg-2">
+        {academics ? t('admin.mapIntroAcademics') : t('admin.mapIntro')}
+      </p>
       <FormError message={error} />
       <div className="grid gap-3 sm:grid-cols-2">
         {academics
@@ -369,7 +371,7 @@ function MappingStep({
           role="region"
           aria-label={t('admin.previewRows')}
         >
-          <table className="w-full min-w-[560px] text-left text-meta">
+          <table className="w-full min-w-[560px] text-left text-callout">
             <thead className="border-b border-line bg-surface-2 text-caption text-fg-2">
               <tr>
                 {mapped.map((m) => (
@@ -461,7 +463,7 @@ function JobView({ id, remote, onNew }: { id: string; remote: ImportSourceBody |
     <Card className="grid gap-5 p-5">
       <div className="flex flex-wrap items-center gap-3">
         {done && j.status === 'completed' && <CheckCircle2 className="size-6 text-success" aria-hidden />}
-        <h2 className="text-title font-semibold" role="status">
+        <h2 className="text-headline font-semibold" role="status">
           {title}
         </h2>
         <Badge className="ml-auto">{j.sourceLabel}</Badge>
@@ -486,7 +488,7 @@ function JobView({ id, remote, onNew }: { id: string; remote: ImportSourceBody |
           role="region"
           aria-label={t('admin.errorsCount')}
         >
-          <table className="w-full min-w-[420px] text-left text-meta">
+          <table className="w-full min-w-[420px] text-left text-callout">
             <thead className="border-b border-line bg-surface-2 text-caption text-fg-2">
               <tr>
                 <th scope="col" className="px-3 py-2 font-medium">
@@ -582,7 +584,7 @@ function History({ onOpen, current }: { onOpen: (id: string) => void; current: s
               type="button"
               onClick={() => onOpen(j.id)}
               aria-current={current === j.id}
-              className="flex w-full flex-wrap items-center gap-2 rounded-[var(--radius-md)] border border-line bg-surface-1 p-3 text-left text-meta hover:border-line-strong aria-[current=true]:border-brand"
+              className="flex w-full flex-wrap items-center gap-2 rounded-[var(--radius-md)] border border-line bg-surface-1 p-3 text-left text-callout hover:border-line-strong aria-[current=true]:border-brand"
             >
               <b className="min-w-0 flex-1 truncate">{j.sourceLabel}</b>
               {j.dryRun && <Badge>dry run</Badge>}

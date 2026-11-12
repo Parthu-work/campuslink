@@ -175,7 +175,7 @@ function OverrideDialog({ drive: d, onClose }: { drive: DriveView; onClose: () =
           )}
         </Field>
         {error && (
-          <p role="alert" className="text-meta font-medium text-danger">
+          <p role="alert" className="text-callout font-medium text-danger">
             {error}
           </p>
         )}
@@ -241,7 +241,7 @@ function ExportDialog({ drive: d, onClose }: { drive: DriveView; onClose: () => 
           ]}
         />
         <fieldset className="grid gap-1 sm:grid-cols-2">
-          <legend className="mb-1.5 text-meta font-semibold">{t('placements.admin.columns')}</legend>
+          <legend className="mb-1.5 text-callout font-semibold">{t('placements.admin.columns')}</legend>
           {EXPORT_COLUMNS.map((c) => (
             <Checkbox
               key={c}
@@ -468,7 +468,7 @@ function Registrants({ drive: d }: { drive: DriveView }) {
         </div>
       )}
       {imported && (
-        <Card className="grid gap-1 p-3 text-meta" role="status">
+        <Card className="grid gap-1 p-3 text-callout" role="status">
           <p>
             {t('placements.admin.imported', { updated: imported.updated, unchanged: imported.unchanged })}
           </p>
@@ -595,8 +595,8 @@ export function DriveManage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="grid gap-1">
           <p className="eyebrow">{d.company.name}</p>
-          <h2 className="text-title font-semibold">{d.title}</h2>
-          <p className="text-meta text-fg-2">
+          <h2 className="text-headline font-semibold">{d.title}</h2>
+          <p className="text-callout text-fg-2">
             {t(`placements.mode.${d.mode}`)} · {formatDateTime(d.driveDate)}
           </p>
         </div>
@@ -612,13 +612,13 @@ export function DriveManage() {
       </StatGrid>
       {d.company.notes && (
         <Card className="grid gap-1 p-4">
-          <h3 className="text-meta font-semibold">{t('placements.admin.notes')}</h3>
-          <p className="text-meta whitespace-pre-line text-fg-2">{d.company.notes}</p>
+          <h3 className="text-callout font-semibold">{t('placements.admin.notes')}</h3>
+          <p className="text-callout whitespace-pre-line text-fg-2">{d.company.notes}</p>
         </Card>
       )}
       <section aria-labelledby="dm-registrants" className="grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 id="dm-registrants" className="text-title font-semibold">
+          <h3 id="dm-registrants" className="text-headline font-semibold">
             {t('placements.admin.registrants')}
           </h3>
           <div className="flex flex-wrap gap-2">

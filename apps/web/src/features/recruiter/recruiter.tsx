@@ -167,7 +167,7 @@ function NewPosting({ onClose }: { onClose: () => void }) {
           )}
         </Field>
         <fieldset className="grid gap-1">
-          <legend className="text-meta font-semibold">{t('recruiter.new.branches')}</legend>
+          <legend className="text-callout font-semibold">{t('recruiter.new.branches')}</legend>
           <div className="grid grid-cols-2 gap-x-3 sm:grid-cols-3">
             {BRANCHES.map((b) => (
               <Checkbox
@@ -288,7 +288,7 @@ function PublishDialog({ p, onClose }: { p: PostingView; onClose: () => void }) 
               )}
             </Field>
           ) : c.data.colleges.length === 0 ? (
-            <p className="text-meta text-fg-2">{t('recruiter.publish.noColleges')}</p>
+            <p className="text-callout text-fg-2">{t('recruiter.publish.noColleges')}</p>
           ) : (
             <div className="grid gap-1">
               {c.data.colleges.map((x) => (
@@ -342,7 +342,7 @@ function Postings({ approved }: { approved: boolean }) {
                   {t(`recruiter.status.${p.status}`)}
                 </Badge>
               </div>
-              <p className="text-meta text-fg-2">
+              <p className="text-callout text-fg-2">
                 {[p.role, p.location, p.ctcRange].filter(Boolean).join(' · ')}
               </p>
               <p className="text-caption text-fg-3">
@@ -376,7 +376,7 @@ function Postings({ approved }: { approved: boolean }) {
                 {p.colleges.some((c) => c.decision === 'approved') && (
                   <IntentLink
                     to={`/recruiter/postings/${p.id}`}
-                    className="inline-flex min-h-11 items-center gap-1.5 text-meta font-semibold text-brand-ink underline"
+                    className="inline-flex min-h-11 items-center gap-1.5 text-callout font-semibold text-brand-ink underline"
                   >
                     <Users className="size-4" aria-hidden /> {t('recruiter.postings.candidates')}
                   </IntentLink>
@@ -410,7 +410,7 @@ function Pool() {
   };
   return (
     <div className="grid gap-4">
-      <p className="text-meta text-fg-2">{t('recruiter.pool.intro')}</p>
+      <p className="text-callout text-fg-2">{t('recruiter.pool.intro')}</p>
       <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
         <Field label={t('recruiter.pool.branch')}>
           {({ id, describedBy, invalid }) => (
@@ -478,8 +478,10 @@ function Pool() {
       {v.isError && <ErrorState error={v.error} onRetry={() => void v.refetch()} />}
       {v.data && (
         <Card variant="raised" className="grid gap-2 p-4">
-          <p className="text-title font-semibold">{t('recruiter.pool.total', { n: String(v.data.total) })}</p>
-          <ul className="grid gap-1 text-meta">
+          <p className="text-headline font-semibold">
+            {t('recruiter.pool.total', { n: String(v.data.total) })}
+          </p>
+          <ul className="grid gap-1 text-callout">
             {v.data.byCollege.map((c) => (
               <li key={c.id} className="flex justify-between gap-3">
                 <span>{c.name}</span>
@@ -523,22 +525,22 @@ function Company({ e }: { e: EmployerView }) {
   return (
     <div className="grid gap-4">
       <Card variant="raised" className="grid gap-2 p-4 sm:p-6">
-        <h2 className="text-title font-semibold">{e.legalName}</h2>
-        <p className="text-meta">
+        <h2 className="text-headline font-semibold">{e.legalName}</h2>
+        <p className="text-callout">
           {t('recruiter.company.status')}:{' '}
           <Badge tone={e.status === 'approved' ? 'success' : 'warning'}>
             {t(`recruiter.employerStatus.${e.status}`)}
           </Badge>
         </p>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {e.domain} · GSTIN {e.gstin}
         </p>
-        <p className="text-meta">
+        <p className="text-callout">
           {e.emailVerified ? t('recruiter.company.emailOk') : t('recruiter.company.emailPending')}
         </p>
         {!e.domainVerifiedAt ? (
           <div className="grid gap-2">
-            <p className="text-meta">{t('recruiter.company.dns', { domain: e.domain })}</p>
+            <p className="text-callout">{t('recruiter.company.dns', { domain: e.domain })}</p>
             <code className="rounded-[var(--radius-sm)] bg-surface-2 p-2 text-caption break-all">
               {e.dnsToken}
             </code>
@@ -551,7 +553,7 @@ function Company({ e }: { e: EmployerView }) {
             )}
           </div>
         ) : (
-          <p className="text-meta">
+          <p className="text-callout">
             {t('recruiter.company.domainOk', { date: formatDay(e.domainVerifiedAt) })}
           </p>
         )}
@@ -564,12 +566,12 @@ function Company({ e }: { e: EmployerView }) {
         </p>
       </Card>
       <Card variant="raised" className="grid gap-3 p-4 sm:p-6">
-        <h2 className="text-title font-semibold">
+        <h2 className="text-headline font-semibold">
           {t('recruiter.company.recruiters', { n: e.recruiters.length, max: e.limits.seats })}
         </h2>
         <ul className="grid gap-2">
           {e.recruiters.map((u) => (
-            <li key={u.id} className="flex flex-wrap items-center justify-between gap-2 text-meta">
+            <li key={u.id} className="flex flex-wrap items-center justify-between gap-2 text-callout">
               <span>
                 {u.name} · {u.email}
                 {u.admin ? ` · ${t('recruiter.company.admin')}` : ''}
@@ -639,7 +641,7 @@ export function RecruiterPage() {
       <PageHeader title={t('recruiter.title')} icon={<Building2 />} intro={e ? e.name : undefined} />
       {!e && <Skeleton className="h-48" />}
       {e && e.status !== 'approved' && (
-        <Card variant="raised" className="p-4 text-meta">
+        <Card variant="raised" className="p-4 text-callout">
           {t(`recruiter.pending.${e.status}`)}
         </Card>
       )}
@@ -658,7 +660,7 @@ export function RecruiterPage() {
               (e.status === 'approved' ? (
                 <Pool />
               ) : (
-                <p className="text-meta">{t('recruiter.pending.applied')}</p>
+                <p className="text-callout">{t('recruiter.pending.applied')}</p>
               ))}
             {tab === 'company' && <Company e={e} />}
           </TabPanel>
@@ -684,8 +686,10 @@ function ReadinessDialog({ c, onClose }: { c: CandidateView; onClose: () => void
       {!v.data && !v.isError && <Skeleton className="h-24" />}
       {v.data && (
         <div className="grid gap-2">
-          <p className="text-title font-semibold">{t('recruiter.candidates.score', { n: v.data.score })}</p>
-          <ul className="grid gap-1 text-meta">
+          <p className="text-headline font-semibold">
+            {t('recruiter.candidates.score', { n: v.data.score })}
+          </p>
+          <ul className="grid gap-1 text-callout">
             {v.data.components.map((x) => (
               <li key={x.id} className="flex justify-between gap-3">
                 <span>{t(`recruiter.components.${x.id}`)}</span>
@@ -738,7 +742,9 @@ export function RecruiterPostingPage() {
         <EmptyState icon={<Users />} title={t('recruiter.candidates.none')} />
       )}
       {v.data && v.data.withdrawn > 0 && (
-        <p className="text-meta text-fg-2">{t('recruiter.candidates.withdrawn', { n: v.data.withdrawn })}</p>
+        <p className="text-callout text-fg-2">
+          {t('recruiter.candidates.withdrawn', { n: v.data.withdrawn })}
+        </p>
       )}
       <ul className="grid gap-3">
         {v.data?.items.map((c) => (

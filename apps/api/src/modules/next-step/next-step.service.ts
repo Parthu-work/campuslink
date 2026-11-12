@@ -48,10 +48,12 @@ export class NextStepService {
   constructor(private readonly d: NextStepDeps) {}
 
   /** Queues this week's run per active college once it is due; ids dedupe per college and week. */
-  static async enqueueWeekly(jobs: JobQueue, now = new Date()): Promise<number> {
+  static async enqueueWeekly(jobs: JobQueue, now = new Date(), only?: ReadonlySet<string>): Promise<number> {
     if (!nextStepDue(now)) return 0;
     const week = isoWeek(now);
-    const tenants = await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean();
+    const tenants = (
+      await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean()
+    ).filter((t) => !only || only.has(String(t._id)));
     for (const t of tenants)
       await jobs.enqueue(
         NEXT_STEP_JOB,

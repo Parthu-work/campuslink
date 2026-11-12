@@ -20,12 +20,13 @@ RUN pnpm --filter @campuslink/shared build \
 FROM mirror.gcr.io/library/node:22-slim
 ENV NODE_ENV=production
 # Study material processing (MEDIA_TOOLS=auto, OCR_PROVIDER=auto): ffmpeg and ffprobe for video
-# length, poster frames and audio; pdftoppm and Tesseract (English and Telugu) for scanned pages.
+# length, poster frames and audio; pdftoppm and Tesseract (English, Telugu and Hindi, prompt 4 P6)
+# for scanned pages (OCR_LANGUAGES=eng+tel+hin).
 # Whisper runs as its own service (WHISPER_URL), never in this image.
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ffmpeg poppler-utils tesseract-ocr tesseract-ocr-eng tesseract-ocr-tel \
+  && apt-get install -y --no-install-recommends ffmpeg poppler-utils tesseract-ocr tesseract-ocr-eng tesseract-ocr-tel tesseract-ocr-hin \
   && rm -rf /var/lib/apt/lists/*
-ENV PROCESS_ROLE=worker
+ENV PROCESS_ROLE=worker OCR_LANGUAGES=eng+tel+hin
 WORKDIR /app
 COPY --from=build --chown=node:node /out ./
 USER node

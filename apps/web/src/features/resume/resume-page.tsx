@@ -106,7 +106,7 @@ function Entries<T>({
   const { t } = useTranslation();
   return (
     <section className="grid gap-3" aria-label={title}>
-      <h2 className="text-title font-semibold">{title}</h2>
+      <h2 className="text-headline font-semibold">{title}</h2>
       {items.map((item, i) => (
         <Card key={i} variant="flat" className="grid gap-3 p-4">
           {render(item, (patch) => onChange(items.map((x, j) => (j === i ? { ...x, ...patch } : x))), i)}
@@ -148,7 +148,7 @@ function BulletsEditor({
   const { t } = useTranslation();
   return (
     <fieldset className="grid gap-2">
-      <legend className="mb-1 text-meta font-semibold">{label}</legend>
+      <legend className="mb-1 text-callout font-semibold">{label}</legend>
       {items.map((b, i) => (
         <div key={i} className="grid gap-2 sm:grid-cols-[1fr_auto_auto] sm:items-start">
           <Textarea
@@ -276,14 +276,14 @@ function Editor({ resume: r }: { resume: ResumeView }) {
         <Button variant="primary" loading={save.isPending} disabled={!dirty} onClick={onSave}>
           {t('common.save')}
         </Button>
-        <span className="text-meta text-fg-2" aria-live="polite">
+        <span className="text-callout text-fg-2" aria-live="polite">
           {dirty ? t('resume.unsaved') : t('resume.allSaved')}
         </span>
       </div>
       {problem && (
         <p
           role="alert"
-          className="rounded-[var(--radius-md)] bg-danger-surface p-3 text-meta text-danger-ink"
+          className="rounded-[var(--radius-md)] bg-danger-surface p-3 text-callout text-danger-ink"
         >
           {problem}
         </p>
@@ -303,7 +303,7 @@ function Editor({ resume: r }: { resume: ResumeView }) {
       {tab === 'edit' && (
         <TabPanel idBase="resume" id="edit">
           <div className="grid gap-8">
-            <p className="text-meta text-fg-2">{t('resume.english')}</p>
+            <p className="text-callout text-fg-2">{t('resume.english')}</p>
             <section className="grid gap-3 sm:grid-cols-2" aria-label={t('resume.section.basics')}>
               <Text
                 label={t('resume.name')}
@@ -624,7 +624,7 @@ function Editor({ resume: r }: { resume: ResumeView }) {
                 </div>
               )}
             />
-            {dirty && <p className="text-meta text-fg-2">{t('resume.improveAfterSave')}</p>}
+            {dirty && <p className="text-callout text-fg-2">{t('resume.improveAfterSave')}</p>}
           </div>
         </TabPanel>
       )}

@@ -111,7 +111,7 @@ export function ForgotPasswordPage() {
       )}
       <Link
         to="/sign-in"
-        className="inline-flex min-h-11 items-center justify-center text-meta font-semibold text-brand-ink hover:underline"
+        className="inline-flex min-h-11 items-center justify-center text-callout font-semibold text-brand-ink hover:underline"
       >
         {t('common.back')}
       </Link>

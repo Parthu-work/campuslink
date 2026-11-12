@@ -34,7 +34,7 @@ function GroupCard({ g }: { g: StudyGroupView }) {
         <Link to={`/study-groups/${g.id}`} className="font-semibold after:absolute after:inset-0">
           {g.name}
         </Link>
-        <p className="text-meta text-fg-2">{g.subject.name}</p>
+        <p className="text-callout text-fg-2">{g.subject.name}</p>
         <p className="flex flex-wrap items-center gap-2 text-caption text-fg-3">
           <span>{t('habits.groups.members', { n: g.members.length, max: STUDY_GROUP_MAX })}</span>
           {g.joined && <Badge tone="brand">{t('habits.groups.yours')}</Badge>}
@@ -174,7 +174,7 @@ function Quiz({ group, quiz }: { group: StudyGroupView; quiz: StudyGroupQuizView
           </p>
           <ol className="grid gap-2">
             {quiz.questions.map((x, i) => (
-              <li key={i} className="grid gap-1 text-meta">
+              <li key={i} className="grid gap-1 text-callout">
                 <span className="font-semibold">{x.q}</span>
                 <span className="text-fg-2">
                   {t('habits.groups.answerWas')}{' '}
@@ -198,7 +198,7 @@ function Quiz({ group, quiz }: { group: StudyGroupView; quiz: StudyGroupQuizView
           {quiz.questions.map((x, i) =>
             x.kind === 'mcq' ? (
               <fieldset key={i} className="grid gap-2">
-                <legend className="mb-1 text-meta font-semibold">{x.q}</legend>
+                <legend className="mb-1 text-callout font-semibold">{x.q}</legend>
                 <ChoiceGroup
                   label={x.q}
                   value={String(answers[i])}
@@ -268,7 +268,7 @@ function ShareQuiz({ group, onClose }: { group: StudyGroupView; onClose: () => v
     >
       {mine.isLoading && <Skeleton className="h-24" />}
       {mine.isSuccess && !mine.data.length && (
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {t('habits.groups.noQuizzes')}{' '}
           <Link to={`/study/${group.subject.id}`} className="font-semibold text-brand-ink underline">
             {t('habits.groups.openSubject')}
@@ -364,7 +364,7 @@ export function StudyGroupPage() {
         <h2 className="font-semibold">
           {t('habits.groups.membersTitle', { n: v.members.length, max: STUDY_GROUP_MAX })}
         </h2>
-        <p className="text-meta text-fg-2">{v.members.map((m) => m.name).join(', ')}</p>
+        <p className="text-callout text-fg-2">{v.members.map((m) => m.name).join(', ')}</p>
         {!v.formed && (
           <p className="text-caption text-fg-3">{t('habits.groups.formingBody', { n: STUDY_GROUP_MIN })}</p>
         )}
@@ -374,12 +374,12 @@ export function StudyGroupPage() {
           <Card className="grid gap-3 p-4">
             <h2 className="font-semibold">{t('habits.groups.next')}</h2>
             {v.slot ? (
-              <p className="text-meta">
+              <p className="text-callout">
                 {formatDateTime(v.slot.at)}
                 {v.slot.place ? ` · ${v.slot.place}` : ''}
               </p>
             ) : (
-              <p className="text-meta text-fg-2">{t('habits.groups.noSlot')}</p>
+              <p className="text-callout text-fg-2">{t('habits.groups.noSlot')}</p>
             )}
             <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
               <Field label={t('habits.groups.when')}>
@@ -408,7 +408,7 @@ export function StudyGroupPage() {
             </div>
           </Card>
           <section aria-labelledby="group-questions" className="grid gap-3">
-            <h2 id="group-questions" className="text-title font-semibold">
+            <h2 id="group-questions" className="text-headline font-semibold">
               {t('habits.groups.questionsTitle')}
             </h2>
             <div className="flex flex-wrap items-end gap-2">
@@ -433,7 +433,9 @@ export function StudyGroupPage() {
                 {t('habits.groups.add')}
               </Button>
             </div>
-            {!v.questions.length && <p className="text-meta text-fg-2">{t('habits.groups.noQuestions')}</p>}
+            {!v.questions.length && (
+              <p className="text-callout text-fg-2">{t('habits.groups.noQuestions')}</p>
+            )}
             <ul className="grid gap-1">
               {v.questions.map((x) => (
                 <li key={x.id}>
@@ -457,14 +459,14 @@ export function StudyGroupPage() {
           </section>
           <section aria-labelledby="group-quizzes" className="grid gap-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 id="group-quizzes" className="text-title font-semibold">
+              <h2 id="group-quizzes" className="text-headline font-semibold">
                 {t('habits.groups.quizzes')}
               </h2>
               <Button variant="secondary" onClick={() => setSharing(true)}>
                 {t('habits.groups.shareQuiz')}
               </Button>
             </div>
-            {!v.quizzes.length && <p className="text-meta text-fg-2">{t('habits.groups.noQuizShared')}</p>}
+            {!v.quizzes.length && <p className="text-callout text-fg-2">{t('habits.groups.noQuizShared')}</p>}
             {v.quizzes.map((z) => (
               <Quiz key={z.id} group={v} quiz={z} />
             ))}

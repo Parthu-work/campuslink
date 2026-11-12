@@ -9,6 +9,7 @@ import { Types } from 'mongoose';
 import { ErrorCode, LOGO_TYPES, type Permission } from '@campuslink/shared';
 import { FileModel, type FilePurpose } from './file.model.js';
 import type { StorageProvider } from '../../lib/storage.js';
+import { requireTenantId } from '../../lib/context.js';
 import { AppError, notFound } from '../../lib/errors.js';
 import type { AuthState } from '../../types.js';
 
@@ -400,6 +401,9 @@ export class FilesService {
   }> {
     const checksum = createHash('sha256').update(data).digest('hex');
     const type = await fileTypeFromBuffer(data);
+    // The plan's cap on one study video or audio file (prompt 4, P7), when it is lower.
+    const planMedia = (await this.limits?.())?.studyMediaBytes ?? 0;
+    if (planMedia > 0) caps = { ...caps, mediaBytes: Math.min(caps.mediaBytes, planMedia) };
     const tooBig = (limit: number) =>
       new AppError(
         413,
@@ -595,6 +599,42 @@ export class FilesService {
     if (scan === 'infected') throw unsupported('This file was flagged by the malware scanner');
   }
 
+  /**
+   * Storage limits (prompt 4, P7), set by the app from `EntitlementsService.limit()`: bytes for the
+   * whole college and for one study video or audio file; 0 or unset means no limit.
+   */
+  limits: (() => Promise<{ storageBytes: number; studyMediaBytes: number }>) | null = null;
+  private readonly usedCache = new Map<string, { at: number; bytes: number }>();
+
+  /** Bytes this college has stored (every file, every purpose). */
+  async storedBytes(): Promise<number> {
+    const [row] = await FileModel.aggregate<{ bytes: number }>([
+      { $group: { _id: null, bytes: { $sum: '$size' } } },
+    ]);
+    return row?.bytes ?? 0;
+  }
+
+  /** Refuses a member's upload that would take the college over its storage limit. */
+  private async assertRoom(bytes: number): Promise<void> {
+    const limit = (await this.limits?.())?.storageBytes ?? 0;
+    if (limit <= 0) return;
+    const key = String(requireTenantId());
+    const hit = this.usedCache.get(key);
+    // The total is re-read at most once a minute per college, and at once when a refusal is near.
+    let used = hit && Date.now() - hit.at < 60_000 ? hit.bytes : null;
+    if (used === null || used + bytes > limit) {
+      used = await this.storedBytes();
+      if (this.usedCache.size > 2000) this.usedCache.clear();
+    }
+    if (used + bytes > limit)
+      throw new AppError(
+        413,
+        ErrorCode.VALIDATION_FAILED,
+        `Your college’s storage is full (${Math.round(limit / 1048576)} MB). Ask your administrator to remove old files or to raise the limit.`,
+      );
+    this.usedCache.set(key, { at: hit && used === hit.bytes ? hit.at : Date.now(), bytes: used + bytes });
+  }
+
   /** `ownerId` null: the college's own file (its logo). */
   private async store(
     ownerId: string | null,
@@ -615,6 +655,8 @@ export class FilesService {
       throw e;
     });
     if (scan === 'infected') throw unsupported('This file was flagged by the malware scanner');
+    // The college's own files (logo, invoices) always fit; members' uploads count against the limit.
+    if (ownerId) await this.assertRoom(data.length);
     const storageKey = newKey();
     await this.storage.put(storageKey, data);
     const doc = await FileModel.create({

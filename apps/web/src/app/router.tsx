@@ -12,7 +12,6 @@ import {
 import { RouterProvider } from 'react-router/dom';
 import { useTranslation } from '../i18n/react';
 import { loadPack, type Pack } from '../i18n';
-import { Compass } from 'lucide-react';
 import {
   ADMIN_PERMISSIONS,
   currentGradYear,
@@ -31,7 +30,7 @@ import { AppShell } from '../components/layout/app-shell';
 import { RouteError } from '../components/layout/route-error';
 import { PageSkeleton } from '../components/layout/skeletons';
 import { buttonVariants } from '../components/ui/button-variants';
-import { EmptyState } from '../components/ui/misc';
+import { PageHeader } from '../components/ui/page-header';
 import { PublicOnly, RequireAuth, RequirePermission, Splash } from './guards';
 
 /**
@@ -277,17 +276,17 @@ function publicScreen<M>(importer: () => Promise<M>, name: keyof M & string, pat
   } satisfies RouteObject;
 }
 
+/** An address that matches no screen: a titled screen (its h1 is the message) and the way home. */
 function NotFound() {
   const { t } = useTranslation();
   const tenant = useTenant();
   return (
-    <EmptyState
-      icon={<Compass className="size-6" />}
+    <PageHeader
       title={t('errors.notFound')}
-      action={
+      primary={
         <Link
           to={tenant.kind === 'platform' ? '/platform' : '/home'}
-          className={buttonVariants({ variant: 'ghost' })}
+          className={buttonVariants({ variant: 'primary' })}
         >
           {t('errors.goHome')}
         </Link>
@@ -358,7 +357,13 @@ function collegeRoutes(): RouteObject[] {
         ...auth('/home'),
         // The living style guide (revamp phase 6): development builds only; production leaves it out.
         ...(import.meta.env.DEV
-          ? [publicScreen(() => import('../features/design/style-guide'), 'StyleGuidePage', '/design')]
+          ? [
+              publicScreen(
+                withPack('design', () => import('../features/design/style-guide')),
+                'StyleGuidePage',
+                '/design',
+              ),
+            ]
           : []),
         shell(false, [
           screen(load.home, 'HomePage', undefined, at('/home'), (_, url) => [

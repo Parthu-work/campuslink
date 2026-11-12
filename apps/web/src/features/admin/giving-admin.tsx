@@ -292,7 +292,7 @@ export function GivingAdmin() {
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="max-w-[60ch] text-meta text-fg-2">{t('alumniAdmin.givingIntro')}</p>
+        <p className="max-w-[60ch] text-callout text-fg-2">{t('alumniAdmin.givingIntro')}</p>
         <Button variant="primary" onClick={() => setEditing('new')}>
           <Plus className="size-4" aria-hidden /> {t('alumniAdmin.giving.newFund')}
         </Button>
@@ -310,7 +310,7 @@ export function GivingAdmin() {
                 </Badge>
               </div>
               {f.targetPaise ? <ProgressBar value={f.receivedPaise} max={f.targetPaise} /> : null}
-              <p className="text-meta text-fg-2">
+              <p className="text-callout text-fg-2">
                 {t('alumniAdmin.giving.totals', {
                   received: rupees(f.receivedPaise),
                   pledged: rupees(f.pledgedPaise),
@@ -326,7 +326,7 @@ export function GivingAdmin() {
       </ul>
       <section aria-labelledby="pledges" className="grid gap-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 id="pledges" className="text-title font-semibold">
+          <h2 id="pledges" className="text-headline font-semibold">
             {t('alumniAdmin.giving.pledges')}
           </h2>
           <Field label={t('alumniAdmin.giving.filter')}>
@@ -343,7 +343,7 @@ export function GivingAdmin() {
           </Field>
         </div>
         {pledges.data && !pledges.data.length ? (
-          <p className="text-meta text-fg-2">{t('alumniAdmin.giving.noPledges')}</p>
+          <p className="text-callout text-fg-2">{t('alumniAdmin.giving.noPledges')}</p>
         ) : (
           <Table label={t('alumniAdmin.giving.pledges')}>
             <THead>
@@ -389,7 +389,7 @@ export function GivingAdmin() {
         )}
       </section>
       <section aria-labelledby="giving-settings" className="grid gap-3">
-        <h2 id="giving-settings" className="text-title font-semibold">
+        <h2 id="giving-settings" className="text-headline font-semibold">
           {t('alumniAdmin.giving.settings')}
         </h2>
         {settings.data && <SettingsCard s={settings.data} />}

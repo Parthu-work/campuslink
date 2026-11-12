@@ -29,14 +29,14 @@ export function TagInput({
   };
   return (
     <div className="grid gap-1.5">
-      <label htmlFor={id} className="text-meta font-semibold">
+      <label htmlFor={id} className="text-callout font-semibold">
         {label}
       </label>
       <div className="flex min-h-[50px] flex-wrap items-center gap-1.5 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 px-2 py-0.5 focus-within:border-brand focus-within:ring-4 focus-within:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)]">
         {value.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-1 pr-1 pl-3 text-meta"
+            className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-1 pr-1 pl-3 text-callout"
           >
             {tag}
             {/* A 44 px target (negative margins keep the chip's height); the circle shows on hover. */}

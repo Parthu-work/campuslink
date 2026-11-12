@@ -80,9 +80,9 @@ function StartForm({ history }: { history: InterviewHistoryView }) {
   const ready = left > 0 && (track !== 'drive' || !!driveId);
   return (
     <Card variant="raised" className="grid gap-5 p-4 sm:p-6">
-      <h2 className="text-title font-semibold">{t('interviews.start.title')}</h2>
+      <h2 className="text-headline font-semibold">{t('interviews.start.title')}</h2>
       <fieldset className="grid gap-2">
-        <legend className="mb-2 text-meta font-semibold">{t('interviews.start.track')}</legend>
+        <legend className="mb-2 text-callout font-semibold">{t('interviews.start.track')}</legend>
         <ChoiceGroup
           label={t('interviews.start.track')}
           value={track}
@@ -142,7 +142,7 @@ function StartForm({ history }: { history: InterviewHistoryView }) {
       )}
       <div className="grid gap-4 sm:grid-cols-2">
         <fieldset className="grid gap-2">
-          <legend className="mb-1 text-meta font-semibold">{t('interviews.start.difficulty')}</legend>
+          <legend className="mb-1 text-callout font-semibold">{t('interviews.start.difficulty')}</legend>
           <ChoiceGroup
             label={t('interviews.start.difficulty')}
             variant="chip"
@@ -155,7 +155,7 @@ function StartForm({ history }: { history: InterviewHistoryView }) {
           />
         </fieldset>
         <fieldset className="grid gap-2">
-          <legend className="mb-1 text-meta font-semibold">{t('interviews.start.language')}</legend>
+          <legend className="mb-1 text-callout font-semibold">{t('interviews.start.language')}</legend>
           <ChoiceGroup
             label={t('interviews.start.language')}
             variant="chip"
@@ -165,7 +165,7 @@ function StartForm({ history }: { history: InterviewHistoryView }) {
           />
         </fieldset>
         <fieldset className="grid gap-2">
-          <legend className="mb-1 text-meta font-semibold">{t('interviews.start.mode')}</legend>
+          <legend className="mb-1 text-callout font-semibold">{t('interviews.start.mode')}</legend>
           <ChoiceGroup
             label={t('interviews.start.mode')}
             variant="chip"
@@ -200,7 +200,7 @@ function StartForm({ history }: { history: InterviewHistoryView }) {
       </div>
       {track !== 'hr' && <p className="text-caption text-fg-3">{t('interviews.start.englishTechnical')}</p>}
       {error && (
-        <p role="alert" className="text-meta font-medium text-danger">
+        <p role="alert" className="text-callout font-medium text-danger">
           {error}
         </p>
       )}
@@ -214,7 +214,7 @@ function StartForm({ history }: { history: InterviewHistoryView }) {
         >
           <PlayCircle className="size-5" aria-hidden /> {t('interviews.start.go')}
         </Button>
-        <span className="text-meta text-fg-2">
+        <span className="text-callout text-fg-2">
           {left ? t('interviews.start.left', { count: left }) : t('interviews.start.none')}
         </span>
       </div>
@@ -230,10 +230,10 @@ function Progress({ history: h }: { history: InterviewHistoryView }) {
   return (
     <section aria-labelledby="interview-progress" className="grid gap-4">
       <div className="grid gap-1">
-        <h2 id="interview-progress" className="text-title font-semibold">
+        <h2 id="interview-progress" className="text-headline font-semibold">
           {t('interviews.progress.title')}
         </h2>
-        <p className="text-meta text-fg-2">{t('interviews.progress.intro')}</p>
+        <p className="text-callout text-fg-2">{t('interviews.progress.intro')}</p>
       </div>
       <StatGrid>
         {RUBRIC_DIMENSIONS.map((d) => {
@@ -288,7 +288,7 @@ export function InterviewsPage() {
           <StartForm history={h.data} />
           <Progress history={h.data} />
           <section aria-labelledby="interview-history" className="grid gap-3">
-            <h2 id="interview-history" className="text-title font-semibold">
+            <h2 id="interview-history" className="text-headline font-semibold">
               {t('interviews.history')}
             </h2>
             {!h.data.sessions.length ? (
@@ -305,7 +305,7 @@ export function InterviewsPage() {
                           ? t('interviews.forCompany', { company: s.company })
                           : t(`interviews.track.${s.track}`)}
                       </Link>
-                      <p className="text-meta text-fg-2">
+                      <p className="text-callout text-fg-2">
                         {formatDay(s.createdAt)} · {t(`interviews.difficulty.${s.difficulty}`)}
                       </p>
                       <div>

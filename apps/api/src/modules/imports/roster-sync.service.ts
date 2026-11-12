@@ -14,7 +14,7 @@ import { defineTenantModel, baseSchemaOptions } from '../../db/models.js';
 import type { FieldCipher } from '../../lib/crypto.js';
 import { AppError, badRequest, notFound } from '../../lib/errors.js';
 import type { JobQueue, TenantJob } from '../../lib/jobs.js';
-import { requireTenantId } from '../../lib/context.js';
+import { requireTenantId, withPlatformScope } from '../../lib/context.js';
 import type { Logger } from '../../lib/logger.js';
 import { audit, type RequestMetaLite } from '../audit/audit.service.js';
 import { TenantModel } from '../tenants/tenant.model.js';
@@ -268,11 +268,21 @@ export class RosterSyncService {
     return this.get();
   }
 
+  /** The scheduler (prompt 4, P5): colleges that configured a roster source and turned it on. */
+  static async enabledTenantIds(): Promise<Set<string>> {
+    const ids = await withPlatformScope('scheduler:roster-sync-enabled', () =>
+      RosterSyncModel.distinct('tenantId', { enabled: true }),
+    );
+    return new Set(ids.map(String));
+  }
+
   /** Queues today's run per college from 02:00 India time (job ids dedupe per day). */
-  static async enqueueDue(jobs: JobQueue, now = new Date()): Promise<number> {
+  static async enqueueDue(jobs: JobQueue, now = new Date(), only?: ReadonlySet<string>): Promise<number> {
     if (new Date(now.getTime() + IST_MS).getUTCHours() < 2) return 0;
     const day = istDay(now);
-    const tenants = await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean();
+    const tenants = (
+      await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean()
+    ).filter((t) => !only || only.has(String(t._id)));
     for (const t of tenants)
       await jobs.enqueue(
         ROSTER_SYNC_JOB,

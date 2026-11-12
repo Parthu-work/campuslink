@@ -72,6 +72,9 @@ const tenantSchema = new Schema(
     limits: {
       mentorshipRequestsPerWeek: { type: Number, default: 5 },
       referralRequestsPerWeek: { type: Number, default: 3 },
+      /** Storage limits in MB (prompt 4, P7), set by the platform; null: the plan's (PLAN_STORAGE). */
+      storageMb: { type: Number, default: null, min: 0 },
+      studyMediaMb: { type: Number, default: null, min: 0 },
     },
     permissionOverrides: {
       grant: { type: Schema.Types.Mixed, default: {} },

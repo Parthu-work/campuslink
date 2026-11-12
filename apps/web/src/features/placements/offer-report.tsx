@@ -175,12 +175,12 @@ export function OfferReportDialog({ onClose }: { onClose: () => void }) {
             <FileText className="size-4" aria-hidden />{' '}
             {proof ? t('placements.replaceProof') : t('placements.addProof')}
           </Button>
-          <span className="text-meta text-fg-2" aria-live="polite">
+          <span className="text-callout text-fg-2" aria-live="polite">
             {proof ? proof.name : t('placements.proofHint')}
           </span>
         </div>
         {error && (
-          <p role="alert" className="text-meta font-medium text-danger">
+          <p role="alert" className="text-callout font-medium text-danger">
             {error}
           </p>
         )}

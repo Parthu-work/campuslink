@@ -65,7 +65,7 @@ export function ChoiceGroup<T extends string>({
             'transition-[background-color,border-color,color,scale] duration-[var(--dur-fast)] ease-snappy active:scale-[var(--press-scale)] disabled:cursor-not-allowed disabled:opacity-50',
             'aria-checked:border-brand aria-checked:bg-brand-surface aria-checked:text-fg',
             variant === 'chip'
-              ? 'inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line-strong px-4 text-meta font-semibold text-fg-2 hover:border-[color-mix(in_oklch,var(--line-strong),var(--fg)_25%)]'
+              ? 'inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line-strong px-4 text-callout font-semibold text-fg-2 hover:border-[color-mix(in_oklch,var(--line-strong),var(--fg)_25%)]'
               : // Wraps: a short detail sits on the right, a long one drops below the label.
                 'flex min-h-14 flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 px-4 py-2.5 text-left hover:bg-surface-2',
           )}
@@ -85,7 +85,10 @@ export function ChoiceGroup<T extends string>({
           </span>
           {o.detail && (
             <span
-              className={cn('text-fg-2', variant === 'card' ? 'min-w-0 text-meta' : 'flex-none text-caption')}
+              className={cn(
+                'text-fg-2',
+                variant === 'card' ? 'min-w-0 text-callout' : 'flex-none text-caption',
+              )}
             >
               {o.detail}
             </span>

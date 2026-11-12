@@ -1,0 +1,2169 @@
+[
+ {
+  "journey": "00-cold",
+  "step": "reload-home",
+  "actError": null,
+  "tapAt": 0,
+  "ms": 569,
+  "firstChange": 284,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 13,
+  "blankFrames": 22,
+  "totalFrames": 27,
+  "shellRemounted": true,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "BODY",
+  "pathAfter": "/home",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "boot.js",
+    "start": 22,
+    "end": 24
+   },
+   {
+    "file": "index-CQkCY0AU.js",
+    "start": 22,
+    "end": 26
+   },
+   {
+    "file": "rolldown-runtime-XKyaHtl9.js",
+    "start": 22,
+    "end": 27
+   },
+   {
+    "file": "react-DlmbjZJV.js",
+    "start": 22,
+    "end": 28
+   },
+   {
+    "file": "core-C8NQKOeF.js",
+    "start": 22,
+    "end": 29
+   },
+   {
+    "file": "locales-DHo5e64t.js",
+    "start": 22,
+    "end": 31
+   },
+   {
+    "file": "storage-BNQupCKC.js",
+    "start": 22,
+    "end": 32
+   },
+   {
+    "file": "preload-helper-BLdHbfdN.js",
+    "start": 22,
+    "end": 33
+   },
+   {
+    "file": "i18n-Bkk2bF5e.js",
+    "start": 22,
+    "end": 33
+   },
+   {
+    "file": "react-B_RG2_Pj.js",
+    "start": 22,
+    "end": 34
+   },
+   {
+    "file": "bot-check-config-BD8U1lbX.js",
+    "start": 22,
+    "end": 40
+   },
+   {
+    "file": "api-Cg3l83SU.js",
+    "start": 22,
+    "end": 35
+   },
+   {
+    "file": "offline-CtgOJ38J.js",
+    "start": 22,
+    "end": 40
+   },
+   {
+    "file": "preferences-BtTLirZz.js",
+    "start": 22,
+    "end": 40
+   },
+   {
+    "file": "jsx-runtime-LKYXHABd.js",
+    "start": 22,
+    "end": 41
+   },
+   {
+    "file": "QueryClientProvider-BUorxAbp.js",
+    "start": 22,
+    "end": 41
+   },
+   {
+    "file": "removable-6X-MOwf-.js",
+    "start": 22,
+    "end": 41
+   },
+   {
+    "file": "query-CzLKR4jR.js",
+    "start": 22,
+    "end": 43
+   },
+   {
+    "file": "useQuery-u93IKwpQ.js",
+    "start": 23,
+    "end": 43
+   },
+   {
+    "file": "queryOptions-Dfvzj6n2.js",
+    "start": 23,
+    "end": 44
+   },
+   {
+    "file": "createLucideIcon-CGSCXUn7.js",
+    "start": 23,
+    "end": 44
+   },
+   {
+    "file": "clsx-DB0hHKMi.js",
+    "start": 23,
+    "end": 44
+   },
+   {
+    "file": "hooks-CtMQkaSl.js",
+    "start": 23,
+    "end": 44
+   },
+   {
+    "file": "offline-rules-0Kqca1dq.js",
+    "start": 23,
+    "end": 46
+   },
+   {
+    "file": "offline-cache-BSjcLlM9.js",
+    "start": 60,
+    "end": 71
+   },
+   {
+    "file": "en-D_nW8Gzm.js",
+    "start": 62,
+    "end": 80
+   },
+   {
+    "file": "home-CfRlOYWO.js",
+    "start": 118,
+    "end": 120
+   },
+   {
+    "file": "feed-u07CUYve.js",
+    "start": 119,
+    "end": 121
+   },
+   {
+    "file": "useMutation-DSuGWPqw.js",
+    "start": 125,
+    "end": 133
+   },
+   {
+    "file": "tab-nav-C_lVugC8.js",
+    "start": 125,
+    "end": 134
+   },
+   {
+    "file": "chevron-right-CToCx7K8.js",
+    "start": 125,
+    "end": 134
+   },
+   {
+    "file": "reveal-in-row-DObzBKHT.js",
+    "start": 125,
+    "end": 135
+   },
+   {
+    "file": "image-plus-Bbv2s73K.js",
+    "start": 125,
+    "end": 135
+   },
+   {
+    "file": "lock-VzaM7579.js",
+    "start": 125,
+    "end": 144
+   },
+   {
+    "file": "post-card-C-7JaoKl.js",
+    "start": 125,
+    "end": 146
+   },
+   {
+    "file": "bookmark-check-CUNhHuz3.js",
+    "start": 125,
+    "end": 147
+   },
+   {
+    "file": "external-link-DBXdbMD5.js",
+    "start": 126,
+    "end": 147
+   },
+   {
+    "file": "lightbulb-FQoj9lWW.js",
+    "start": 126,
+    "end": 147
+   },
+   {
+    "file": "megaphone-LsOOf0mr.js",
+    "start": 126,
+    "end": 152
+   },
+   {
+    "file": "message-circle-RnrRkRSb.js",
+    "start": 126,
+    "end": 158
+   },
+   {
+    "file": "celebrate-DGNXgofh.js",
+    "start": 126,
+    "end": 159
+   },
+   {
+    "file": "intent-link-em_Pn8sk.js",
+    "start": 126,
+    "end": 159
+   },
+   {
+    "file": "progress-DFaVyR30.js",
+    "start": 126,
+    "end": 159
+   },
+   {
+    "file": "announcements-AyuQxDjI.js",
+    "start": 126,
+    "end": 160
+   },
+   {
+    "file": "content-menu-tQw1R5EL.js",
+    "start": 131,
+    "end": 165
+   },
+   {
+    "file": "messaging-_aWrX1Dj.js",
+    "start": 131,
+    "end": 166
+   },
+   {
+    "file": "ban-DxKJEd0T.js",
+    "start": 132,
+    "end": 166
+   },
+   {
+    "file": "field-CuXC7gEv.js",
+    "start": 132,
+    "end": 168
+   },
+   {
+    "file": "ellipsis-BIFULlQf.js",
+    "start": 132,
+    "end": 168
+   },
+   {
+    "file": "trash-b7jmFzOm.js",
+    "start": 132,
+    "end": 168
+   },
+   {
+    "file": "dist-BLskJv9c.js",
+    "start": 132,
+    "end": 170
+   },
+   {
+    "file": "use-dialog-history-CeGy9PUa.js",
+    "start": 137,
+    "end": 172
+   },
+   {
+    "file": "dialog-CZKKgd2_.js",
+    "start": 138,
+    "end": 173
+   },
+   {
+    "file": "rich-text-CGeok8w9.js",
+    "start": 138,
+    "end": 180
+   },
+   {
+    "file": "x-btq7uCpF.js",
+    "start": 138,
+    "end": 181
+   },
+   {
+    "file": "markdown-Bp0Z1H1T.js",
+    "start": 138,
+    "end": 183
+   },
+   {
+    "file": "user-plus-_3Bdp2-0.js",
+    "start": 138,
+    "end": 183
+   },
+   {
+    "file": "page-header-B3r0bXOh.js",
+    "start": 138,
+    "end": 183
+   },
+   {
+    "file": "feed-list-cwNsKBbm.js",
+    "start": 138,
+    "end": 184
+   },
+   {
+    "file": "useInfiniteQuery-C1tIsxxq.js",
+    "start": 138,
+    "end": 184
+   },
+   {
+    "file": "lazy-next-step-Db4rXCaM.js",
+    "start": 138,
+    "end": 185
+   },
+   {
+    "file": "celebration-host-q-VuEzi4.js",
+    "start": 193,
+    "end": 198
+   },
+   {
+    "file": "dist-BmbL2ekI.js",
+    "start": 202,
+    "end": 206
+   },
+   {
+    "file": "account-menu-C6rDQ9Q_.js",
+    "start": 271,
+    "end": 273
+   },
+   {
+    "file": "next-step-BHK671Xu.js",
+    "start": 300,
+    "end": 301
+   },
+   {
+    "file": "arrow-right-BLfc9HPu.js",
+    "start": 300,
+    "end": 305
+   },
+   {
+    "file": "briefcase-BK1rF-4q.js",
+    "start": 301,
+    "end": 306
+   },
+   {
+    "file": "map-Dp64urES.js",
+    "start": 301,
+    "end": 308
+   },
+   {
+    "file": "error-state-DZoTRGnv.js",
+    "start": 301,
+    "end": 308
+   },
+   {
+    "file": "illustration-Blcd2aNx.js",
+    "start": 301,
+    "end": 308
+   },
+   {
+    "file": "habits.en-B9S8Bh5h.js",
+    "start": 302,
+    "end": 309
+   },
+   {
+    "file": "command-palette-nrKYihXE.js",
+    "start": 317,
+    "end": 347
+   },
+   {
+    "file": "list-checks-D97hEkZu.js",
+    "start": 322,
+    "end": 334
+   },
+   {
+    "file": "newspaper-BIM7p1qM.js",
+    "start": 323,
+    "end": 365
+   },
+   {
+    "file": "create-sheet-C2R9SEnu.js",
+    "start": 324,
+    "end": 366
+   },
+   {
+    "file": "pen-line-DFoamSvF.js",
+    "start": 324,
+    "end": 366
+   },
+   {
+    "file": "calendar-plus-DRgYWprV.js",
+    "start": 324,
+    "end": 365
+   },
+   {
+    "file": "idle-parts-BLSTyVe7.js",
+    "start": 325,
+    "end": 366
+   },
+   {
+    "file": "arrow-down-DUtJ8wlh.js",
+    "start": 325,
+    "end": 366
+   },
+   {
+    "file": "use-realtime-bridge-CypGeYm6.js",
+    "start": 325,
+    "end": 369
+   },
+   {
+    "file": "material-progress-B_zcbusm.js",
+    "start": 325,
+    "end": 369
+   },
+   {
+    "file": "esm-oPlmisic.js",
+    "start": 442,
+    "end": 453
+   },
+   {
+    "file": "study-hq53hPAD.js",
+    "start": 525,
+    "end": 529
+   },
+   {
+    "file": "file-text-DaykFFak.js",
+    "start": 528,
+    "end": 532
+   },
+   {
+    "file": "layers-DLvQ1Y88.js",
+    "start": 529,
+    "end": 537
+   },
+   {
+    "file": "study-DrQR9JLQ.js",
+    "start": 531,
+    "end": 538
+   },
+   {
+    "file": "landing-DuaBcOFC.js",
+    "start": 538,
+    "end": 546
+   },
+   {
+    "file": "shield-check-vBXrO2sQ.js",
+    "start": 538,
+    "end": 546
+   },
+   {
+    "file": "mesh-BtdruDwi.js",
+    "start": 538,
+    "end": 547
+   },
+   {
+    "file": "mentors-DUs6m0Vx.js",
+    "start": 550,
+    "end": 570
+   },
+   {
+    "file": "mentorship-D-hO7JEn.js",
+    "start": 550,
+    "end": 563
+   },
+   {
+    "file": "mentor-stats-hpxGy3oZ.js",
+    "start": 550,
+    "end": 564
+   },
+   {
+    "file": "star-4e1flwxy.js",
+    "start": 550,
+    "end": 593
+   },
+   {
+    "file": "rotate-ccw-Dqxa20r6.js",
+    "start": 550,
+    "end": 564
+   },
+   {
+    "file": "sliders-horizontal-CjNwJS2x.js",
+    "start": 550,
+    "end": 571
+   },
+   {
+    "file": "video-Do5sx6Cp.js",
+    "start": 550,
+    "end": 595
+   },
+   {
+    "file": "tag-input-nRqXdBgQ.js",
+    "start": 551,
+    "end": 610
+   },
+   {
+    "file": "placements-CxUi0tDj.js",
+    "start": 554,
+    "end": 577
+   },
+   {
+    "file": "tabs-6GUYThC7.js",
+    "start": 554,
+    "end": 612
+   },
+   {
+    "file": "placements-CWUXXiJj.js",
+    "start": 554,
+    "end": 578
+   },
+   {
+    "file": "job-card-BckzMe0F.js",
+    "start": 554,
+    "end": 579
+   },
+   {
+    "file": "clock-CvZrvSBk.js",
+    "start": 554,
+    "end": 579
+   },
+   {
+    "file": "map-pin-CfPguOLa.js",
+    "start": 554,
+    "end": 588
+   },
+   {
+    "file": "offline-writes-GkJ_zO1t.js",
+    "start": 554,
+    "end": 593
+   },
+   {
+    "file": "outcomes-panel-OQrR4OAx.js",
+    "start": 554,
+    "end": 594
+   },
+   {
+    "file": "file-plus-corner-mIfGiuQp.js",
+    "start": 554,
+    "end": 594
+   },
+   {
+    "file": "outcomes-R5-dGx4u.js",
+    "start": 554,
+    "end": 594
+   },
+   {
+    "file": "sessions-CBne7rAO.js",
+    "start": 610,
+    "end": 623
+   },
+   {
+    "file": "slot-picker-ChFE-VQU.js",
+    "start": 610,
+    "end": 624
+   },
+   {
+    "file": "message-square-2kMDFyTt.js",
+    "start": 610,
+    "end": 622
+   },
+   {
+    "file": "choice-group-B9tiwHCG.js",
+    "start": 610,
+    "end": 622
+   }
+  ],
+  "api": [
+   {
+    "path": "/tenant",
+    "start": 61,
+    "end": 82
+   },
+   {
+    "path": "/auth/refresh",
+    "start": 110,
+    "end": 135
+   },
+   {
+    "path": "/me",
+    "start": 157,
+    "end": 257
+   },
+   {
+    "path": "/feed?tab=for_you&limit=15",
+    "start": 157,
+    "end": 306
+   },
+   {
+    "path": "/feed/one-useful-thing",
+    "start": 158,
+    "end": 293
+   },
+   {
+    "path": "/stories",
+    "start": 158,
+    "end": 283
+   },
+   {
+    "path": "/me/next-step",
+    "start": 259,
+    "end": 336
+   },
+   {
+    "path": "/conversations/unread",
+    "start": 274,
+    "end": 344
+   },
+   {
+    "path": "/notifications/unread-count",
+    "start": 275,
+    "end": 348
+   },
+   {
+    "path": "/bookings?when=upcoming",
+    "start": 439,
+    "end": 485
+   },
+   {
+    "path": "/feed/suggestions",
+    "start": 440,
+    "end": 492
+   },
+   {
+    "path": "/me/follows",
+    "start": 441,
+    "end": 474
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "01-post",
+  "step": "open-post",
+  "actError": null,
+  "tapAt": 93,
+  "ms": 102,
+  "firstChange": 75,
+  "spinnerFrames": 0,
+  "progressBarFrames": 4,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 6,
+  "shellRemounted": false,
+  "scrollBefore": 900,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/posts/6aef44935b6b93c4982fe88d",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [
+   {
+    "path": "/posts/6aef44935b6b93c4982fe88d",
+    "start": -1,
+    "end": 67
+   },
+   {
+    "path": "/posts/6aef44935b6b93c4982fe88d/comments",
+    "start": -1,
+    "end": 68
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "01-post",
+  "step": "back-home",
+  "actError": null,
+  "tapAt": 5,
+  "ms": 71,
+  "firstChange": 71,
+  "spinnerFrames": 0,
+  "progressBarFrames": 3,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 4,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 900,
+  "focusAfter": "A",
+  "pathAfter": "/home",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "02-mentor",
+  "step": "tab-mentors",
+  "actError": null,
+  "tapAt": 77,
+  "ms": 144,
+  "firstChange": 114,
+  "spinnerFrames": 0,
+  "progressBarFrames": 6,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 8,
+  "shellRemounted": false,
+  "scrollBefore": 900,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/mentors",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "outcome-reason-D_dO-_Ut.js",
+    "start": 121,
+    "end": 139
+   },
+   {
+    "file": "moat.en-uAbkxvf9.js",
+    "start": 122,
+    "end": 139
+   },
+   {
+    "file": "motion-features-DUFO-gOE.js",
+    "start": 128,
+    "end": 144
+   }
+  ],
+  "api": [
+   {
+    "path": "/mentors/match",
+    "start": -56,
+    "end": 98
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "02-mentor",
+  "step": "browse",
+  "actError": null,
+  "tapAt": 55,
+  "ms": 206,
+  "firstChange": 22,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 10,
+  "blankFrames": 0,
+  "totalFrames": 12,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "BUTTON",
+  "pathAfter": "/mentors?view=browse",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "mentor-page-D-DGw_cl.js",
+    "start": 213,
+    "end": 219
+   },
+   {
+    "file": "send-BtMnFGg_.js",
+    "start": 214,
+    "end": 219
+   },
+   {
+    "file": "safety-menu-C-kb8BUk.js",
+    "start": 214,
+    "end": 220
+   }
+  ],
+  "api": [
+   {
+    "path": "/mentors?",
+    "start": 25,
+    "end": 182
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "02-mentor",
+  "step": "open-mentor",
+  "actError": null,
+  "tapAt": 62,
+  "ms": 154,
+  "firstChange": 92,
+  "spinnerFrames": 0,
+  "progressBarFrames": 5,
+  "skeletonFrames": 2,
+  "blankFrames": 0,
+  "totalFrames": 9,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/mentors/6aef44925b6b93c4982fe840",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [
+   {
+    "path": "/mentors/6aef44925b6b93c4982fe840",
+    "start": -5,
+    "end": 85
+   },
+   {
+    "path": "/mentors/6aef44925b6b93c4982fe840/reviews",
+    "start": 107,
+    "end": 144
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "02-mentor",
+  "step": "send-request",
+  "actError": null,
+  "tapAt": 42,
+  "ms": 113,
+  "firstChange": null,
+  "spinnerFrames": 6,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 7,
+  "shellRemounted": false,
+  "scrollBefore": 212,
+  "scrollAfter": 212,
+  "focusAfter": "SPAN",
+  "pathAfter": "/mentors/6aef44925b6b93c4982fe840?ask=request",
+  "dialogOpenAfter": 1,
+  "scripts": [],
+  "api": [
+   {
+    "path": "/mentorship/requests",
+    "start": 5,
+    "end": 100
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "02-mentor",
+  "step": "back-after-booking",
+  "actError": null,
+  "tapAt": 16,
+  "ms": 93,
+  "firstChange": 93,
+  "spinnerFrames": 0,
+  "progressBarFrames": 3,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 4,
+  "shellRemounted": false,
+  "scrollBefore": 212,
+  "scrollAfter": 7113,
+  "focusAfter": "A",
+  "pathAfter": "/mentors?view=browse",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [
+   {
+    "path": "/mentors/6aef44925b6b93c4982fe838",
+    "start": 90,
+    "end": 118
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "03-tabs",
+  "step": "r0-home",
+  "actError": null,
+  "tapAt": 44,
+  "ms": 54,
+  "firstChange": 54,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 7113,
+  "scrollAfter": 900,
+  "focusAfter": "H1",
+  "pathAfter": "/home",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "03-tabs",
+  "step": "r0-study",
+  "actError": null,
+  "tapAt": 58,
+  "ms": 37,
+  "firstChange": 37,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 900,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/study",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "subject-page-BzXuI_BD.js",
+    "start": 45,
+    "end": 51
+   },
+   {
+    "file": "study-C4VgC-4R.js",
+    "start": 45,
+    "end": 51
+   },
+   {
+    "file": "chart-column-DrP8Xohk.js",
+    "start": 45,
+    "end": 54
+   },
+   {
+    "file": "circle-alert-RKLzl30G.js",
+    "start": 45,
+    "end": 54
+   },
+   {
+    "file": "material-icons-D-Ne7QNq.js",
+    "start": 46,
+    "end": 54
+   },
+   {
+    "file": "chat-launcher-CrqiFsLN.js",
+    "start": 46,
+    "end": 55
+   },
+   {
+    "file": "pencil-e1QTi_NP.js",
+    "start": 46,
+    "end": 55
+   }
+  ],
+  "api": [
+   {
+    "path": "/study/ai-status",
+    "start": -48,
+    "end": -21
+   },
+   {
+    "path": "/study/subjects?scope=all",
+    "start": -47,
+    "end": -10
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "03-tabs",
+  "step": "r0-mentors",
+  "actError": null,
+  "tapAt": 45,
+  "ms": 36,
+  "firstChange": 36,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 7113,
+  "focusAfter": "H1",
+  "pathAfter": "/mentors?view=browse",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "03-tabs",
+  "step": "r0-placements",
+  "actError": null,
+  "tapAt": 51,
+  "ms": 39,
+  "firstChange": 39,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 7113,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/placements",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "drive-page-D_y8a3Dv.js",
+    "start": 48,
+    "end": 53
+   },
+   {
+    "file": "circle-check-yZ4L8PFt.js",
+    "start": 48,
+    "end": 53
+   }
+  ],
+  "api": [
+   {
+    "path": "/me/academics",
+    "start": -41,
+    "end": -13
+   },
+   {
+    "path": "/placements/drives?scope=eligible",
+    "start": -40,
+    "end": -4
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "03-tabs",
+  "step": "r1-home",
+  "actError": null,
+  "tapAt": 45,
+  "ms": 48,
+  "firstChange": 48,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 900,
+  "focusAfter": "H1",
+  "pathAfter": "/home",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "03-tabs",
+  "step": "r1-study",
+  "actError": null,
+  "tapAt": 48,
+  "ms": 11,
+  "firstChange": 28,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 1,
+  "shellRemounted": false,
+  "scrollBefore": 900,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/study",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "03-tabs",
+  "step": "r1-mentors",
+  "actError": null,
+  "tapAt": 51,
+  "ms": 48,
+  "firstChange": 48,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 7113,
+  "focusAfter": "H1",
+  "pathAfter": "/mentors?view=browse",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "03-tabs",
+  "step": "r1-placements",
+  "actError": null,
+  "tapAt": 47,
+  "ms": 12,
+  "firstChange": 37,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 1,
+  "shellRemounted": false,
+  "scrollBefore": 7113,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/placements",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "03-tabs",
+  "step": "rapid-fire",
+  "actError": null,
+  "tapAt": 254,
+  "ms": 37,
+  "firstChange": 37,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 7113,
+  "focusAfter": "H1",
+  "pathAfter": "/mentors?view=browse",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "04-jobs",
+  "step": "open-job",
+  "actError": null,
+  "tapAt": 188,
+  "ms": 79,
+  "firstChange": 30,
+  "spinnerFrames": 0,
+  "progressBarFrames": 1,
+  "skeletonFrames": 2,
+  "blankFrames": 0,
+  "totalFrames": 5,
+  "shellRemounted": false,
+  "scrollBefore": 1400,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/jobs/6aef44935b6b93c4982fe89c",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [
+   {
+    "path": "/jobs/6aef44935b6b93c4982fe89c",
+    "start": -1,
+    "end": 21
+   },
+   {
+    "path": "/jobs/6aef44935b6b93c4982fe89c/referrers",
+    "start": 43,
+    "end": 65
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "04-jobs",
+  "step": "back-to-list",
+  "actError": null,
+  "tapAt": 4,
+  "ms": 32,
+  "firstChange": 32,
+  "spinnerFrames": 0,
+  "progressBarFrames": 1,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 1400,
+  "focusAfter": "A",
+  "pathAfter": "/jobs",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "05-roadmaps",
+  "step": "open-roadmaps",
+  "actError": null,
+  "tapAt": 1016,
+  "ms": 63,
+  "firstChange": 63,
+  "spinnerFrames": 0,
+  "progressBarFrames": 1,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 3,
+  "shellRemounted": false,
+  "scrollBefore": 1400,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/roadmaps",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "galaxy-CKY-xri-.js",
+    "start": 2,
+    "end": 9
+   },
+   {
+    "file": "roadmaps-fHR6KWf4.js",
+    "start": 2,
+    "end": 9
+   },
+   {
+    "file": "roadmaps-Drh_gPV9.js",
+    "start": 3,
+    "end": 10
+   },
+   {
+    "file": "roadmap-page-bjBe9pPG.js",
+    "start": 70,
+    "end": 73
+   },
+   {
+    "file": "minus-Co_MhL7j.js",
+    "start": 70,
+    "end": 77
+   }
+  ],
+  "api": [
+   {
+    "path": "/roadmaps",
+    "start": 3,
+    "end": 26
+   },
+   {
+    "path": "/roadmaps?mine=following",
+    "start": 4,
+    "end": 32
+   },
+   {
+    "path": "/roadmaps/sde-dsa",
+    "start": 254,
+    "end": 275
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "05-roadmaps",
+  "step": "open-roadmap",
+  "actError": null,
+  "tapAt": 29,
+  "ms": 35,
+  "firstChange": 35,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/roadmaps/sde-dsa",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "05-roadmaps",
+  "step": "open-step",
+  "actError": null,
+  "tapAt": 29,
+  "ms": 29,
+  "firstChange": null,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "BUTTON",
+  "pathAfter": "/roadmaps/sde-dsa?step=language",
+  "dialogOpenAfter": 1,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "05-roadmaps",
+  "step": "back-gesture-with-panel-open",
+  "actError": null,
+  "tapAt": 4,
+  "ms": 34,
+  "firstChange": null,
+  "spinnerFrames": 0,
+  "progressBarFrames": 1,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "BODY",
+  "pathAfter": "/roadmaps/sde-dsa",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "07-profile",
+  "step": "open-profile",
+  "actError": null,
+  "tapAt": 1013,
+  "ms": 52,
+  "firstChange": 33,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 1,
+  "blankFrames": 1,
+  "totalFrames": 3,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "MAIN",
+  "pathAfter": "/profile",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "profile-edit-VOhqYx26.js",
+    "start": 3,
+    "end": 7
+   },
+   {
+    "file": "camera-wIlhG09X.js",
+    "start": 3,
+    "end": 7
+   },
+   {
+    "file": "form-footer-C-rmrnHd.js",
+    "start": 3,
+    "end": 7
+   },
+   {
+    "file": "otp-Oj5o7KFM.js",
+    "start": 3,
+    "end": 7
+   }
+  ],
+  "api": [
+   {
+    "path": "/me/profile",
+    "start": 27,
+    "end": 41
+   }
+  ],
+  "waterfall": true
+ },
+ {
+  "journey": "07-profile",
+  "step": "save",
+  "actError": null,
+  "tapAt": 0,
+  "ms": 16,
+  "firstChange": null,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 1,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "BUTTON",
+  "pathAfter": "/profile",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [
+   {
+    "path": "/me/profile",
+    "start": 42,
+    "end": 66
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "08-lazy",
+  "step": "events-first-visit",
+  "actError": null,
+  "tapAt": 1013,
+  "ms": 110,
+  "firstChange": 60,
+  "spinnerFrames": 0,
+  "progressBarFrames": 5,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 7,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/events",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "events-CGEtfO4N.js",
+    "start": 3,
+    "end": 15
+   },
+   {
+    "file": "iso-Bzf5KE7l.js",
+    "start": 4,
+    "end": 17
+   },
+   {
+    "file": "people-BKVGZjTU.js",
+    "start": 4,
+    "end": 17
+   },
+   {
+    "file": "common-DE2wACJ5.js",
+    "start": 4,
+    "end": 17
+   },
+   {
+    "file": "events-DIrJlYzb.js",
+    "start": 4,
+    "end": 17
+   },
+   {
+    "file": "event-page-C30FfE-M.js",
+    "start": 127,
+    "end": 137
+   },
+   {
+    "file": "circle-x-CsgWyzH3.js",
+    "start": 127,
+    "end": 137
+   }
+  ],
+  "api": [
+   {
+    "path": "/events?when=upcoming",
+    "start": 5,
+    "end": 45
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "08-lazy",
+  "step": "progress-first-visit",
+  "actError": null,
+  "tapAt": 1007,
+  "ms": 169,
+  "firstChange": 124,
+  "spinnerFrames": 0,
+  "progressBarFrames": 7,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 9,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/progress",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "progress-page-aPxPJ2qZ.js",
+    "start": 2,
+    "end": 8
+   },
+   {
+    "file": "gamification-Cz8rkNXb.js",
+    "start": 3,
+    "end": 14
+   },
+   {
+    "file": "award-C2J1BLKO.js",
+    "start": 3,
+    "end": 15
+   },
+   {
+    "file": "download-Ci9TzdQ7.js",
+    "start": 3,
+    "end": 15
+   },
+   {
+    "file": "flame-zXWk6rto.js",
+    "start": 3,
+    "end": 15
+   },
+   {
+    "file": "stat-card-BmOiFuLF.js",
+    "start": 3,
+    "end": 15
+   },
+   {
+    "file": "burst--mdBQqxa.js",
+    "start": 163,
+    "end": 166
+   }
+  ],
+  "api": [
+   {
+    "path": "/me/progress",
+    "start": 4,
+    "end": 114
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "08-lazy",
+  "step": "people-first-visit",
+  "actError": null,
+  "tapAt": 1046,
+  "ms": 264,
+  "firstChange": 36,
+  "spinnerFrames": 0,
+  "progressBarFrames": 1,
+  "skeletonFrames": 5,
+  "blankFrames": 0,
+  "totalFrames": 8,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/people",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "directory-v0R6X7hr.js",
+    "start": 3,
+    "end": 6
+   }
+  ],
+  "api": [
+   {
+    "path": "/directory?limit=20",
+    "start": 49,
+    "end": 238
+   }
+  ],
+  "waterfall": true
+ },
+ {
+  "journey": "09-history",
+  "step": "back-to-progress",
+  "actError": null,
+  "tapAt": 6,
+  "ms": 22,
+  "firstChange": null,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 1,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/progress",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "09-history",
+  "step": "back-to-events",
+  "actError": null,
+  "tapAt": 5,
+  "ms": 22,
+  "firstChange": null,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 1,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/events",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "09-history",
+  "step": "forward-to-progress",
+  "actError": null,
+  "tapAt": 8,
+  "ms": 44,
+  "firstChange": 44,
+  "spinnerFrames": 0,
+  "progressBarFrames": 1,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/progress",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "10-prompt2",
+  "step": "companies-first-visit",
+  "actError": null,
+  "tapAt": 1069,
+  "ms": 87,
+  "firstChange": 45,
+  "spinnerFrames": 0,
+  "progressBarFrames": 3,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 5,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/companies",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "companies-CfFXvGep.js",
+    "start": 3,
+    "end": 6
+   }
+  ],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "10-prompt2",
+  "step": "copilot-first-visit",
+  "actError": null,
+  "tapAt": 1008,
+  "ms": 98,
+  "firstChange": 27,
+  "spinnerFrames": 0,
+  "progressBarFrames": 1,
+  "skeletonFrames": 2,
+  "blankFrames": 0,
+  "totalFrames": 5,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/copilot",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "10-prompt2",
+  "step": "resume-first-visit",
+  "actError": null,
+  "tapAt": 1089,
+  "ms": 77,
+  "firstChange": 77,
+  "spinnerFrames": 0,
+  "progressBarFrames": 1,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 4,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/resume",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "10-prompt2",
+  "step": "practice-first-visit",
+  "actError": null,
+  "tapAt": 1066,
+  "ms": 91,
+  "firstChange": 91,
+  "spinnerFrames": 0,
+  "progressBarFrames": 3,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 5,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/practice",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "10-prompt2",
+  "step": "open-company",
+  "actError": null,
+  "tapAt": 269,
+  "ms": 83,
+  "firstChange": 38,
+  "spinnerFrames": 0,
+  "progressBarFrames": 3,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 5,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/companies/kestrel%20analytics",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "10-prompt2",
+  "step": "back-to-companies",
+  "actError": null,
+  "tapAt": 8,
+  "ms": 37,
+  "firstChange": 37,
+  "spinnerFrames": 0,
+  "progressBarFrames": 1,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 2,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 361,
+  "focusAfter": "A",
+  "pathAfter": "/companies",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [],
+  "waterfall": false
+ },
+ {
+  "journey": "06-notifications",
+  "step": "open-notifications",
+  "actError": null,
+  "tapAt": 258,
+  "ms": 102,
+  "firstChange": 102,
+  "spinnerFrames": 0,
+  "progressBarFrames": 4,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 6,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "H1",
+  "pathAfter": "/notifications",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "account-menu-C6rDQ9Q_.js",
+    "start": -257,
+    "end": -250
+   },
+   {
+    "file": "post-page-BwkSu8na.js",
+    "start": -117,
+    "end": -88
+   },
+   {
+    "file": "back-link-DhDpReKl.js",
+    "start": -117,
+    "end": -97
+   },
+   {
+    "file": "query-seed-BsdQZPqI.js",
+    "start": -117,
+    "end": -86
+   },
+   {
+    "file": "command-palette-nrKYihXE.js",
+    "start": -51,
+    "end": -35
+   },
+   {
+    "file": "list-checks-D97hEkZu.js",
+    "start": -51,
+    "end": -40
+   },
+   {
+    "file": "newspaper-BIM7p1qM.js",
+    "start": -51,
+    "end": -39
+   },
+   {
+    "file": "create-sheet-C2R9SEnu.js",
+    "start": -51,
+    "end": -25
+   },
+   {
+    "file": "calendar-plus-DRgYWprV.js",
+    "start": -51,
+    "end": -24
+   },
+   {
+    "file": "pen-line-DFoamSvF.js",
+    "start": -50,
+    "end": -23
+   },
+   {
+    "file": "idle-parts-BLSTyVe7.js",
+    "start": -50,
+    "end": -23
+   },
+   {
+    "file": "arrow-down-DUtJ8wlh.js",
+    "start": -50,
+    "end": -23
+   },
+   {
+    "file": "material-progress-B_zcbusm.js",
+    "start": -50,
+    "end": -19
+   },
+   {
+    "file": "use-realtime-bridge-CypGeYm6.js",
+    "start": -50,
+    "end": -21
+   },
+   {
+    "file": "requests-DTEaOxXg.js",
+    "start": -37,
+    "end": -13
+   },
+   {
+    "file": "mentorship-D-hO7JEn.js",
+    "start": -36,
+    "end": -18
+   },
+   {
+    "file": "choice-group-B9tiwHCG.js",
+    "start": -36,
+    "end": -13
+   },
+   {
+    "file": "slot-picker-ChFE-VQU.js",
+    "start": -36,
+    "end": -13
+   },
+   {
+    "file": "mentor-stats-hpxGy3oZ.js",
+    "start": -36,
+    "end": -12
+   },
+   {
+    "file": "star-4e1flwxy.js",
+    "start": -36,
+    "end": -12
+   },
+   {
+    "file": "message-square-2kMDFyTt.js",
+    "start": -36,
+    "end": -12
+   },
+   {
+    "file": "send-BtMnFGg_.js",
+    "start": -36,
+    "end": -7
+   },
+   {
+    "file": "video-Do5sx6Cp.js",
+    "start": -36,
+    "end": 14
+   },
+   {
+    "file": "illustration-Blcd2aNx.js",
+    "start": -36,
+    "end": -7
+   },
+   {
+    "file": "error-state-DZoTRGnv.js",
+    "start": -36,
+    "end": -6
+   },
+   {
+    "file": "safety-menu-C-kb8BUk.js",
+    "start": -36,
+    "end": -6
+   },
+   {
+    "file": "landing-DuaBcOFC.js",
+    "start": -32,
+    "end": -6
+   },
+   {
+    "file": "arrow-right-BLfc9HPu.js",
+    "start": -31,
+    "end": -7
+   },
+   {
+    "file": "mentors-DUs6m0Vx.js",
+    "start": -30,
+    "end": 1
+   },
+   {
+    "file": "rotate-ccw-Dqxa20r6.js",
+    "start": -30,
+    "end": 1
+   },
+   {
+    "file": "sliders-horizontal-CjNwJS2x.js",
+    "start": -29,
+    "end": 4
+   },
+   {
+    "file": "tag-input-nRqXdBgQ.js",
+    "start": -29,
+    "end": 26
+   },
+   {
+    "file": "radar-DwsnCDkP.js",
+    "start": -28,
+    "end": 19
+   },
+   {
+    "file": "people-RfRpuxbf.js",
+    "start": -28,
+    "end": 5
+   },
+   {
+    "file": "jobs-BWMwkrKL.js",
+    "start": -28,
+    "end": 6
+   },
+   {
+    "file": "job-card-BckzMe0F.js",
+    "start": -28,
+    "end": 19
+   },
+   {
+    "file": "clock-CvZrvSBk.js",
+    "start": -28,
+    "end": 7
+   },
+   {
+    "file": "map-pin-CfPguOLa.js",
+    "start": -28,
+    "end": 22
+   },
+   {
+    "file": "offline-writes-GkJ_zO1t.js",
+    "start": -28,
+    "end": 23
+   },
+   {
+    "file": "notifications-bNLLLOda.js",
+    "start": 2,
+    "end": 31
+   },
+   {
+    "file": "check-check-Cdc9F2rD.js",
+    "start": 2,
+    "end": 38
+   },
+   {
+    "file": "notification-text-C0XkDIfT.js",
+    "start": 2,
+    "end": 39
+   },
+   {
+    "file": "esm-oPlmisic.js",
+    "start": 25,
+    "end": 74
+   },
+   {
+    "file": "alumni-CAwcoemk.js",
+    "start": 104,
+    "end": 126
+   },
+   {
+    "file": "billing-Vs4k7SfP.js",
+    "start": 105,
+    "end": 133
+   },
+   {
+    "file": "numbers-CiEO62C6.js",
+    "start": 105,
+    "end": 133
+   },
+   {
+    "file": "alumni-C7TrYV0W.js",
+    "start": 105,
+    "end": 133
+   },
+   {
+    "file": "upload-Q4evHYla.js",
+    "start": 105,
+    "end": 137
+   },
+   {
+    "file": "download-Ci9TzdQ7.js",
+    "start": 105,
+    "end": 140
+   },
+   {
+    "file": "switch-77vkPX3N.js",
+    "start": 105,
+    "end": 140
+   },
+   {
+    "file": "tabs-6GUYThC7.js",
+    "start": 105,
+    "end": 140
+   },
+   {
+    "file": "alumni.en-CinOomhI.js",
+    "start": 105,
+    "end": 140
+   }
+  ],
+  "api": [
+   {
+    "path": "/bookings?when=upcoming",
+    "start": -185,
+    "end": -79
+   },
+   {
+    "path": "/me/mentor/impact",
+    "start": -183,
+    "end": -50
+   },
+   {
+    "path": "/feed/suggestions",
+    "start": -181,
+    "end": -99
+   },
+   {
+    "path": "/me/follows",
+    "start": -179,
+    "end": -109
+   },
+   {
+    "path": "/conversations/unread",
+    "start": -178,
+    "end": -112
+   },
+   {
+    "path": "/notifications/unread-count",
+    "start": -176,
+    "end": -111
+   },
+   {
+    "path": "/notifications",
+    "start": 3,
+    "end": 85
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "06-notifications",
+  "step": "open-item",
+  "actError": null,
+  "tapAt": 50,
+  "ms": 107,
+  "firstChange": 26,
+  "spinnerFrames": 0,
+  "progressBarFrames": 2,
+  "skeletonFrames": 3,
+  "blankFrames": 0,
+  "totalFrames": 7,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "LI",
+  "pathAfter": "/mentorship?box=received&request=6aef44ce2e66686d2879cfb0",
+  "dialogOpenAfter": 0,
+  "scripts": [],
+  "api": [
+   {
+    "path": "/notifications/read",
+    "start": 3,
+    "end": 19
+   },
+   {
+    "path": "/notifications",
+    "start": 47,
+    "end": 63
+   },
+   {
+    "path": "/notifications/unread-count",
+    "start": 48,
+    "end": 65
+   },
+   {
+    "path": "/mentorship/requests?box=received",
+    "start": 70,
+    "end": 93
+   }
+  ],
+  "waterfall": false
+ },
+ {
+  "journey": "06-notifications",
+  "step": "accept-request",
+  "actError": null,
+  "tapAt": 0,
+  "ms": 7,
+  "firstChange": 74,
+  "spinnerFrames": 0,
+  "progressBarFrames": 0,
+  "skeletonFrames": 0,
+  "blankFrames": 0,
+  "totalFrames": 1,
+  "shellRemounted": false,
+  "scrollBefore": 0,
+  "scrollAfter": 0,
+  "focusAfter": "LI",
+  "pathAfter": "/mentorship?box=received&request=6aef44ce2e66686d2879cfb0",
+  "dialogOpenAfter": 0,
+  "scripts": [
+   {
+    "file": "burst--mdBQqxa.js",
+    "start": 188,
+    "end": 201
+   }
+  ],
+  "api": [
+   {
+    "path": "/mentorship/requests/6aef44ce2e66686d2879cfb0/respond",
+    "start": 58,
+    "end": 186
+   },
+   {
+    "path": "/mentorship/requests?box=received",
+    "start": 187,
+    "end": 207
+   }
+  ],
+  "waterfall": false
+ }
+]

@@ -24,7 +24,7 @@ function OptInHint({ field }: { field: 'showOnLeaderboard' | 'showOnWall' }) {
   const me = useQuery({ queryKey: ['progress'], queryFn: () => api.get<MyProgressView>('/me/progress') });
   if (!me.data || me.data.prefs[field]) return null;
   return (
-    <p className="text-meta text-fg-2">
+    <p className="text-callout text-fg-2">
       {t(field === 'showOnLeaderboard' ? 'progress.notOnBoard' : 'progress.notOnWall')}{' '}
       <Link to="/progress" className="font-semibold text-brand-ink underline">
         {t('progress.changeInProgress')}
@@ -51,7 +51,7 @@ function Podium({ rows }: { rows: LeaderboardRow[] }) {
             </span>
           </span>
           <span className="grid min-w-0 max-w-full">
-            <b className="truncate text-meta">
+            <b className="truncate text-callout">
               {r.person.name}
               {r.isMe && <span className="font-normal text-fg-3"> · {t('progress.you')}</span>}
             </b>
@@ -59,7 +59,7 @@ function Podium({ rows }: { rows: LeaderboardRow[] }) {
           </span>
           <span
             className={cn(
-              'grid w-full place-items-center rounded-t-[var(--radius-md)] font-display text-headline font-bold',
+              'grid w-full place-items-center rounded-t-[var(--radius-md)] font-display text-title font-bold',
               i === 0 ? 'bg-aurora text-on-aurora' : 'bg-surface-2 text-fg-2',
               height[i],
             )}
@@ -109,7 +109,7 @@ export function LeaderboardPage() {
                   variant="raised"
                   className={cn('flex items-center gap-3 p-3', r.isMe && 'border-brand bg-brand-surface')}
                 >
-                  <span className="w-8 text-center font-display text-lead font-bold tabular-nums">
+                  <span className="w-8 text-center font-display text-body font-bold tabular-nums">
                     <span aria-hidden>{r.rank}</span>
                     <span className="sr-only">{t('progress.rank', { rank: r.rank })}</span>
                   </span>
@@ -157,17 +157,17 @@ export function WallOfMentorsPage() {
             </span>
           </span>
           <div className="min-w-0">
-            <p className="flex items-center gap-1.5 text-meta font-semibold text-brand-ink">
+            <p className="flex items-center gap-1.5 text-callout font-semibold text-brand-ink">
               <Crown className="size-4" aria-hidden /> {t('progress.motm', { month: motm.month })}
             </p>
-            <p className="text-headline font-bold">{motm.person.name}</p>
-            <p className="text-meta text-fg-2">{t('progress.impactN', { impact: motm.impact })}</p>
+            <p className="text-title font-bold">{motm.person.name}</p>
+            <p className="text-callout text-fg-2">{t('progress.impactN', { impact: motm.impact })}</p>
           </div>
         </Card>
       )}
       {!!named.data?.length && (
         <section aria-labelledby="alumni-of-month" className="grid gap-3">
-          <h2 id="alumni-of-month" className="text-title font-semibold">
+          <h2 id="alumni-of-month" className="text-headline font-semibold">
             {t('progress.alumniOfMonth')}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2">
@@ -176,9 +176,9 @@ export function WallOfMentorsPage() {
                 <Card className="flex items-start gap-3 p-4">
                   <PersonAvatar name={a.person.name} fileId={a.person.avatarFileId} size={48} />
                   <div className="min-w-0">
-                    <p className="text-meta font-semibold text-brand-ink">{a.month}</p>
+                    <p className="text-callout font-semibold text-brand-ink">{a.month}</p>
                     <p className="font-semibold">{a.person.name}</p>
-                    <p className="text-meta text-fg-2">{a.citation}</p>
+                    <p className="text-callout text-fg-2">{a.citation}</p>
                   </div>
                 </Card>
               </li>

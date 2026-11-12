@@ -79,7 +79,7 @@ function Section({
 }) {
   return (
     <Card variant="raised" className="grid gap-4 p-5" aria-labelledby={id}>
-      <h2 id={id} className="flex items-center gap-2 text-title font-semibold">
+      <h2 id={id} className="flex items-center gap-2 text-headline font-semibold">
         <span className="text-brand-ink [&_svg]:size-5" aria-hidden>
           {icon}
         </span>
@@ -93,7 +93,7 @@ function Section({
 function KeyStatus({ k }: { k: AiKeyView }) {
   const { t } = useTranslation();
   return (
-    <p className="flex flex-wrap items-center gap-2 text-meta">
+    <p className="flex flex-wrap items-center gap-2 text-callout">
       <Badge tone={k.status === 'valid' ? 'success' : k.status === 'invalid' ? 'danger' : 'neutral'}>
         {t(`ai.keyStatus.${k.status}`)}
       </Badge>
@@ -136,12 +136,14 @@ function IndexPanel() {
             label={t('ai.index.progress')}
             valueText={t('ai.index.counts', { embedded: v.embedded, total: v.total })}
           />
-          <p className="text-meta">{t('ai.index.counts', { embedded: v.embedded, total: v.total })}</p>
-          {v.running && <p className="text-meta text-fg-2">{t('ai.index.running')}</p>}
+          <p className="text-callout">{t('ai.index.counts', { embedded: v.embedded, total: v.total })}</p>
+          {v.running && <p className="text-callout text-fg-2">{t('ai.index.running')}</p>}
           {v.pending > 0 && (
-            <p className="text-meta text-fg-2">{t('ai.index.pending', { count: v.pending })}</p>
+            <p className="text-callout text-fg-2">{t('ai.index.pending', { count: v.pending })}</p>
           )}
-          {v.failed > 0 && <p className="text-meta text-fg-2">{t('ai.index.failed', { count: v.failed })}</p>}
+          {v.failed > 0 && (
+            <p className="text-callout text-fg-2">{t('ai.index.failed', { count: v.failed })}</p>
+          )}
           <p className="text-caption text-fg-3">
             {[
               v.model ? t('ai.index.model', { model: v.model }) : '',
@@ -152,7 +154,7 @@ function IndexPanel() {
               .join(' · ')}
           </p>
           {v.lastError && (
-            <p className="flex items-start gap-2 text-meta text-warning-ink">
+            <p className="flex items-start gap-2 text-callout text-warning-ink">
               <CircleAlert className="mt-0.5 size-4 flex-none" aria-hidden />
               {t('ai.index.lastError', { error: v.lastError })}
             </p>
@@ -172,7 +174,7 @@ function IndexPanel() {
           </div>
         </>
       ) : (
-        <p className="text-meta text-fg-2">{t('ai.index.off')}</p>
+        <p className="text-callout text-fg-2">{t('ai.index.off')}</p>
       )}
     </div>
   );
@@ -264,7 +266,7 @@ function KeyForm({ target, k, label }: { target: AiKeyTarget; k: AiKeyView; labe
         <p
           role="status"
           className={cn(
-            'flex items-start gap-2 rounded-[var(--radius-md)] p-3 text-meta',
+            'flex items-start gap-2 rounded-[var(--radius-md)] p-3 text-callout',
             shown.ok ? 'bg-success-surface' : 'bg-danger-surface',
           )}
         >
@@ -455,7 +457,7 @@ export function AiAdmin() {
       <Card variant={v.status.answers ? 'featured' : 'raised'} className="grid gap-4 p-5">
         <div className="flex flex-wrap items-center gap-3">
           <Sparkles className="size-6 text-brand-ink" aria-hidden />
-          <h2 className="min-w-0 flex-1 text-title font-semibold">{t('ai.title')}</h2>
+          <h2 className="min-w-0 flex-1 text-headline font-semibold">{t('ai.title')}</h2>
           <Badge tone={v.status.answers ? 'success' : 'neutral'}>
             {v.status.answers
               ? v.status.demo
@@ -464,10 +466,10 @@ export function AiAdmin() {
               : t(`ai.reason.${v.status.reason ?? 'not_configured'}`)}
           </Badge>
         </div>
-        <p className="text-meta text-fg-2">{t('ai.intro')}</p>
+        <p className="text-callout text-fg-2">{t('ai.intro')}</p>
         <ol className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6" aria-label={t('ai.checklist')}>
           {checklist.map(([label, done], i) => (
-            <li key={label} className="flex items-center gap-2 text-meta">
+            <li key={label} className="flex items-center gap-2 text-callout">
               <span
                 className={cn(
                   'grid size-7 flex-none place-items-center rounded-full text-caption font-bold',
@@ -484,7 +486,9 @@ export function AiAdmin() {
             </li>
           ))}
         </ol>
-        {v.platformDefault && !savedChat && <p className="text-meta text-fg-2">{t('ai.platformDefault')}</p>}
+        {v.platformDefault && !savedChat && (
+          <p className="text-callout text-fg-2">{t('ai.platformDefault')}</p>
+        )}
       </Card>
 
       {(v.chatProvider || v.embeddingProvider || v.platformDefault) && (
@@ -514,7 +518,7 @@ export function AiAdmin() {
           }
         />
         {d.chatProvider && d.chatProvider !== savedChat && savedChat && (
-          <p className="text-meta text-warning-ink" role="note">
+          <p className="text-callout text-warning-ink" role="note">
             {t('ai.providerChangeWarning')}
           </p>
         )}
@@ -549,12 +553,12 @@ export function AiAdmin() {
           />
         )}
         {d.chatProvider && d.chatProvider !== savedChat && (
-          <p className="text-meta text-fg-2">{t('ai.saveFirst')}</p>
+          <p className="text-callout text-fg-2">{t('ai.saveFirst')}</p>
         )}
       </Section>
 
       <Section id="ai-embed" icon={<PlugZap />} title={t('ai.embeddings')}>
-        <p className="text-meta text-fg-2">{t('ai.embeddingsIntro')}</p>
+        <p className="text-callout text-fg-2">{t('ai.embeddingsIntro')}</p>
         <Field label={t('ai.embeddingProvider')}>
           {({ id }) => (
             <Select
@@ -613,13 +617,13 @@ export function AiAdmin() {
       </Section>
 
       <Section id="ai-consent" icon={<ShieldCheck />} title={t('ai.consent')}>
-        <div className="grid gap-2 rounded-[var(--radius-md)] bg-surface-2 p-4 text-meta">
+        <div className="grid gap-2 rounded-[var(--radius-md)] bg-surface-2 p-4 text-callout">
           <p className="font-semibold">{t('ai.consentTitle')}</p>
           <p className="text-fg-2">{t('ai.consentBody')}</p>
           <p className="text-fg-3">{t('ai.consentVersion', { version: v.consentVersion })}</p>
         </div>
         {consentOk && v.consent ? (
-          <p className="flex items-center gap-2 text-meta text-success-ink">
+          <p className="flex items-center gap-2 text-callout text-success-ink">
             <Check className="size-4" aria-hidden />
             {t('ai.consentAccepted', { name: v.consent.by.name, when: formatDateTime(v.consent.acceptedAt) })}
           </p>
@@ -699,7 +703,7 @@ export function AiAdmin() {
         </div>
         <div className="grid gap-3 border-t border-line pt-4">
           <p className="font-semibold">{t('ai.prices.title')}</p>
-          <p className="text-meta text-fg-2">{t('ai.prices.intro')}</p>
+          <p className="text-callout text-fg-2">{t('ai.prices.intro')}</p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Field label={t('ai.prices.currency')}>
               {({ id }) => (
@@ -760,14 +764,14 @@ export function AiAdmin() {
         </ul>
         {d.features.externalVideos && (
           <div className="grid gap-2 border-t border-line pt-4">
-            <p className="text-meta text-fg-2">{t('ai.youtubeIntro')}</p>
+            <p className="text-callout text-fg-2">{t('ai.youtubeIntro')}</p>
             <KeyForm target="youtube" k={v.keys.youtube} label={t('ai.youtubeKey')} />
           </div>
         )}
       </Section>
 
       <div className="sticky bottom-[calc(84px+env(safe-area-inset-bottom,0px))] z-10 lg:bottom-4 grid gap-2 rounded-[var(--radius-lg)] border border-line bg-surface-1/95 p-3 shadow-elev-3 backdrop-blur sm:flex sm:items-center">
-        <p className="min-w-0 flex-1 text-meta text-fg-2">{dirty ? t('ai.unsaved') : t('ai.allSaved')}</p>
+        <p className="min-w-0 flex-1 text-callout text-fg-2">{dirty ? t('ai.unsaved') : t('ai.allSaved')}</p>
         <FormError message={error} />
         {dirty && (
           <Button variant="ghost" onClick={() => setDraft(null)}>

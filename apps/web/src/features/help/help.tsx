@@ -33,7 +33,7 @@ export function HelpPage() {
     <div className="mx-auto grid w-full max-w-[960px] gap-6">
       <PageHeader icon={<LifeBuoy />} title={t('help.title')} intro={t('help.intro')} />
       <section aria-labelledby="help-guides" className="grid gap-3">
-        <h2 id="help-guides" className="text-title font-semibold">
+        <h2 id="help-guides" className="text-headline font-semibold">
           {t('help.guides')}
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2">
@@ -45,7 +45,7 @@ export function HelpPage() {
                     <BookOpenText className="size-4 text-brand-ink" aria-hidden />
                     {t(`help.article.${id}.title`)}
                   </span>
-                  <span className="text-meta text-fg-2">{t(`help.article.${id}.summary`)}</span>
+                  <span className="text-callout text-fg-2">{t(`help.article.${id}.summary`)}</span>
                 </Card>
               </IntentLink>
             </li>
@@ -55,10 +55,10 @@ export function HelpPage() {
       <section aria-labelledby="help-reports" className="grid gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="grid gap-1">
-            <h2 id="help-reports" className="text-title font-semibold">
+            <h2 id="help-reports" className="text-headline font-semibold">
               {t('help.reports')}
             </h2>
-            <p className="max-w-[60ch] text-meta text-fg-2">{t('help.reportsIntro')}</p>
+            <p className="max-w-[60ch] text-callout text-fg-2">{t('help.reportsIntro')}</p>
           </div>
           <Button variant="primary" onClick={() => setReporting(true)}>
             <MessageSquarePlus className="size-4" aria-hidden /> {t('help.report')}
@@ -66,7 +66,9 @@ export function HelpPage() {
         </div>
         {mine.isLoading && <Skeleton className="h-24 rounded-[var(--radius-lg)]" />}
         {mine.isError && <ErrorState error={mine.error} onRetry={() => void mine.refetch()} />}
-        {mine.isSuccess && !mine.data.length && <p className="text-meta text-fg-3">{t('help.noReports')}</p>}
+        {mine.isSuccess && !mine.data.length && (
+          <p className="text-callout text-fg-3">{t('help.noReports')}</p>
+        )}
         {!!mine.data?.length && (
           <ul className="grid gap-2">
             {mine.data.map((tk) => (
@@ -75,7 +77,7 @@ export function HelpPage() {
                   <Card variant="interactive" className="flex items-center justify-between gap-3 p-4">
                     <span className="min-w-0">
                       <span className="block truncate font-semibold">{tk.subject}</span>
-                      <span className="text-meta text-fg-2">
+                      <span className="text-callout text-fg-2">
                         {t(`help.category.${tk.category}`)} · {formatRelative(tk.updatedAt)}
                       </span>
                     </span>
@@ -87,7 +89,7 @@ export function HelpPage() {
           </ul>
         )}
       </section>
-      <p className="flex flex-wrap gap-4 text-meta">
+      <p className="flex flex-wrap gap-4 text-callout">
         <Link
           to="/legal/privacy"
           className="inline-flex min-h-11 items-center font-semibold text-brand-ink underline underline-offset-2"

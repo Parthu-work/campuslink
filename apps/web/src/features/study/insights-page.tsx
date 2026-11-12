@@ -35,7 +35,7 @@ function Panel({
 }) {
   return (
     <Card variant="raised" className="grid gap-4 p-5" aria-labelledby={id}>
-      <h2 id={id} className="flex items-center gap-2 text-title font-semibold">
+      <h2 id={id} className="flex items-center gap-2 text-headline font-semibold">
         <span className="text-brand-ink [&_svg]:size-5" aria-hidden>
           {icon}
         </span>
@@ -53,7 +53,7 @@ function Ranked({ rows }: { rows: { key: string; label: ReactNode; sub?: ReactNo
     <ol className="grid gap-3">
       {rows.map((r) => (
         <li key={r.key} className="grid gap-1">
-          <div className="flex items-baseline justify-between gap-3 text-meta">
+          <div className="flex items-baseline justify-between gap-3 text-callout">
             <span className="min-w-0">
               <span className="font-medium">{r.label}</span>
               {r.sub && <span className="block text-caption text-fg-3">{r.sub}</span>}
@@ -139,7 +139,7 @@ export function InsightsPage() {
                   }))}
                 />
               ) : (
-                <p className="text-meta text-fg-2">{t('study.insights.noQuestions')}</p>
+                <p className="text-callout text-fg-2">{t('study.insights.noQuestions')}</p>
               )}
             </Panel>
             <Gaps v={v} subjectId={id} canUpload={!!s.data?.can.upload} />
@@ -173,7 +173,7 @@ export function InsightsPage() {
                 </tbody>
               </Table>
             ) : (
-              <p className="text-meta text-fg-2">{t('study.insights.noMaterialUse')}</p>
+              <p className="text-callout text-fg-2">{t('study.insights.noMaterialUse')}</p>
             )}
           </Panel>
           <Panel id="ins-units" icon={<MapIcon />} title={t('study.insights.units')}>
@@ -201,7 +201,7 @@ export function InsightsPage() {
                 </tbody>
               </Table>
             ) : (
-              <p className="text-meta text-fg-2">{t('study.insights.noUnits')}</p>
+              <p className="text-callout text-fg-2">{t('study.insights.noUnits')}</p>
             )}
           </Panel>
           <p className="text-caption text-fg-3">{t('study.insights.privacy')}</p>
@@ -223,7 +223,7 @@ function Gaps({ v, subjectId, canUpload }: { v: StudyInsightsView; subjectId: st
               key={g.topicId ?? `w-${g.title}`}
               className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-line p-3"
             >
-              <span className="min-w-0 text-meta">
+              <span className="min-w-0 text-callout">
                 <span className="font-medium">{g.topicId ? g.title : `“${g.title}”`}</span>
                 <span className="block text-caption text-fg-3">
                   {g.topicId
@@ -250,7 +250,7 @@ function Gaps({ v, subjectId, canUpload }: { v: StudyInsightsView; subjectId: st
           ))}
         </ul>
       ) : (
-        <p className="text-meta text-fg-2">{t('study.insights.noGaps')}</p>
+        <p className="text-callout text-fg-2">{t('study.insights.noGaps')}</p>
       )}
     </Panel>
   );

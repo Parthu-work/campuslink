@@ -51,8 +51,8 @@ function Today({ home, start }: { home: PracticeHomeView; start: ReturnType<type
     <Card variant="raised" className="grid gap-4 p-4 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="grid gap-1">
-          <h2 className="text-title font-semibold">{t('practice.today.title')}</h2>
-          <p className="max-w-[60ch] text-meta text-fg-2">
+          <h2 className="text-headline font-semibold">{t('practice.today.title')}</h2>
+          <p className="max-w-[60ch] text-callout text-fg-2">
             {t('practice.today.body', { count: PRACTICE_SET_SIZE })}
           </p>
         </div>
@@ -76,7 +76,7 @@ function Today({ home, start }: { home: PracticeHomeView; start: ReturnType<type
           <>
             <p className="font-semibold text-success-ink">{t('practice.today.done')}</p>
             <Link
-              className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink underline"
+              className="inline-flex min-h-11 items-center text-callout font-semibold text-brand-ink underline"
               to={`/practice/sets/${today.setId}`}
             >
               {t('practice.today.review')}
@@ -106,10 +106,10 @@ function Topics({ home }: { home: PracticeHomeView }) {
   return (
     <section aria-labelledby="practice-topics" className="grid gap-4">
       <div className="grid gap-1">
-        <h2 id="practice-topics" className="text-title font-semibold">
+        <h2 id="practice-topics" className="text-headline font-semibold">
           {t('practice.topics.title')}
         </h2>
-        <p className="text-meta text-fg-2">{t('practice.topics.intro')}</p>
+        <p className="text-callout text-fg-2">{t('practice.topics.intro')}</p>
       </div>
       <StatGrid>
         <StatCard label={t('practice.stats.streak')} value={t('practice.days', { count: home.streak })} />
@@ -145,7 +145,7 @@ function Topics({ home }: { home: PracticeHomeView }) {
                     <span className="text-caption text-fg-3">{t('practice.topics.few')}</span>
                   ) : (
                     <div className="grid min-w-32 gap-1">
-                      <span className="text-meta">
+                      <span className="text-callout">
                         {t('practice.percent', { n: Math.round(x.accuracy * 100) })}
                         {x.weak && <span className="text-warning-ink"> · {t('practice.topics.weak')}</span>}
                       </span>
@@ -168,10 +168,10 @@ function Companies({ home, start }: { home: PracticeHomeView; start: ReturnType<
   return (
     <section aria-labelledby="practice-companies" className="grid gap-3">
       <div className="grid gap-1">
-        <h2 id="practice-companies" className="text-title font-semibold">
+        <h2 id="practice-companies" className="text-headline font-semibold">
           {t('practice.companies.title')}
         </h2>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {home.companySetsLeft
             ? t('practice.companies.intro', { count: home.companySetsLeft })
             : t('practice.companies.noneLeft')}
@@ -190,7 +190,7 @@ function Companies({ home, start }: { home: PracticeHomeView; start: ReturnType<
                   <p className="flex items-center gap-2 font-semibold">
                     <Building2 className="size-4 text-fg-3" aria-hidden /> {c.name}
                   </p>
-                  <p className="text-meta text-fg-2">
+                  <p className="text-callout text-fg-2">
                     {t('practice.companies.items', { count: c.items })}
                     {c.nextDriveCloses && (
                       <> · {t('practice.companies.closes', { date: formatDay(c.nextDriveCloses) })}</>
@@ -210,7 +210,7 @@ function Companies({ home, start }: { home: PracticeHomeView; start: ReturnType<
                   {seniors && (
                     <Link
                       to={`/companies/${encodeURIComponent(c.key)}`}
-                      className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink hover:underline"
+                      className="inline-flex min-h-11 items-center text-callout font-semibold text-brand-ink hover:underline"
                     >
                       {t('practice.companies.seniors', { company: c.name })}
                     </Link>
@@ -252,7 +252,7 @@ export function PracticePage() {
         <>
           <Today home={home.data} start={start} />
           {home.data.mineWaiting > 0 && (
-            <p className="text-meta text-fg-2">
+            <p className="text-callout text-fg-2">
               {t('practice.mineWaiting', { count: home.data.mineWaiting })}
             </p>
           )}

@@ -24,6 +24,7 @@ const PACK_USERS: Record<string, string[]> = {
   moat: ['/features/companies/'],
   copilot: ['/features/copilot/'],
   network: ['/features/network/', '/features/recruiter/'],
+  design: ['/features/design/'],
 };
 
 /** Flattens nested strings to "a.b.c" → value. */

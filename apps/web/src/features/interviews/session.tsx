@@ -31,7 +31,7 @@ const seconds = (ms: number) =>
 /** Scores, quotes from the answer and the tip for one answered turn. */
 function Feedback({ turn: t }: { turn: InterviewTurnView }) {
   const { t: tr } = useTranslation();
-  if (!t.scores) return <p className="text-meta text-fg-3">{tr('interviews.unscored')}</p>;
+  if (!t.scores) return <p className="text-callout text-fg-3">{tr('interviews.unscored')}</p>;
   return (
     <div className="grid gap-2">
       <ul className="flex flex-wrap gap-1.5">
@@ -47,7 +47,7 @@ function Feedback({ turn: t }: { turn: InterviewTurnView }) {
         })}
       </ul>
       {Object.entries(t.evidence).length > 0 && (
-        <ul className="grid gap-1 text-meta text-fg-2">
+        <ul className="grid gap-1 text-callout text-fg-2">
           {RUBRIC_DIMENSIONS.filter((d) => t.evidence[d]).map((d) => (
             <li key={d}>
               <span className="font-semibold">{tr(`interviews.dimension.${d}`)}:</span> “{t.evidence[d]}”
@@ -56,7 +56,7 @@ function Feedback({ turn: t }: { turn: InterviewTurnView }) {
         </ul>
       )}
       {t.tip && (
-        <p className="rounded-[var(--radius-md)] bg-surface-2 p-3 text-meta">
+        <p className="rounded-[var(--radius-md)] bg-surface-2 p-3 text-callout">
           <span className="font-semibold">{tr('interviews.tip')}:</span> {t.tip}
         </p>
       )}
@@ -73,11 +73,11 @@ function TurnCard({ turn: t, n }: { turn: InterviewTurnView; n: number }) {
       </p>
       <p className="font-semibold">{t.text}</p>
       {t.status === 'skipped' ? (
-        <p className="text-meta text-fg-3">{tr('interviews.skipped')}</p>
+        <p className="text-callout text-fg-3">{tr('interviews.skipped')}</p>
       ) : (
         t.answer && (
           <>
-            <p className="text-meta whitespace-pre-line">
+            <p className="text-callout whitespace-pre-line">
               {t.answeredBy === 'voice' && <Badge className="mr-2">{tr('interviews.byVoice')}</Badge>}
               {t.answer}
             </p>
@@ -99,7 +99,7 @@ function Report({ s }: { s: InterviewView }) {
     <div className="grid gap-5">
       {s.summary && (
         <Card variant="featured" className="grid gap-3 p-4 sm:p-6" aria-labelledby="summary-title">
-          <h2 id="summary-title" className="text-title font-semibold">
+          <h2 id="summary-title" className="text-headline font-semibold">
             {t('interviews.summary')}
           </h2>
           <p>{s.summary.overall}</p>
@@ -119,7 +119,7 @@ function Report({ s }: { s: InterviewView }) {
             {!!s.summary.strengths.length && (
               <div className="grid gap-1">
                 <h3 className="font-semibold">{t('interviews.strengths')}</h3>
-                <ul className="grid list-disc gap-1 pl-5 text-meta">
+                <ul className="grid list-disc gap-1 pl-5 text-callout">
                   {s.summary.strengths.map((x) => (
                     <li key={x}>{x}</li>
                   ))}
@@ -129,7 +129,7 @@ function Report({ s }: { s: InterviewView }) {
             {!!s.summary.improve.length && (
               <div className="grid gap-1">
                 <h3 className="font-semibold">{t('interviews.improve')}</h3>
-                <ul className="grid list-disc gap-1 pl-5 text-meta">
+                <ul className="grid list-disc gap-1 pl-5 text-callout">
                   {s.summary.improve.map((x) => (
                     <li key={x}>{x}</li>
                   ))}
@@ -146,7 +146,7 @@ function Report({ s }: { s: InterviewView }) {
       {s.mine && (
         <Card variant="raised" className="grid gap-3 p-4">
           <h2 className="font-semibold">{t('interviews.human.title')}</h2>
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {s.drive
               ? t('interviews.human.bodyCompany', { company: s.drive.company })
               : t('interviews.human.body')}
@@ -236,7 +236,9 @@ function Live({ s }: { s: InterviewView }) {
       />
       {previous && (
         <details className="rounded-[var(--radius-md)] border border-line p-3">
-          <summary className="cursor-pointer text-meta font-semibold">{t('interviews.lastFeedback')}</summary>
+          <summary className="cursor-pointer text-callout font-semibold">
+            {t('interviews.lastFeedback')}
+          </summary>
           <div className="mt-2">
             <Feedback turn={previous} />
           </div>
@@ -256,7 +258,7 @@ function Live({ s }: { s: InterviewView }) {
         <h2
           ref={heading}
           tabIndex={-1}
-          className="text-title font-semibold outline-none"
+          className="text-headline font-semibold outline-none"
           lang={s.language === 'mixed' ? undefined : s.language}
         >
           {turn.text}
@@ -264,7 +266,7 @@ function Live({ s }: { s: InterviewView }) {
         {voiceOn && (
           <div className="grid gap-2">
             {transcribing ? (
-              <p className="flex items-center gap-2 text-meta" role="status">
+              <p className="flex items-center gap-2 text-callout" role="status">
                 <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden />{' '}
                 {t('interviews.voice.transcribing')}
               </p>
@@ -285,12 +287,12 @@ function Live({ s }: { s: InterviewView }) {
               </Button>
             )}
             {voiceFailed && (
-              <p role="alert" className="text-meta text-warning-ink">
+              <p role="alert" className="text-callout text-warning-ink">
                 {t('interviews.voice.notHeard')}
               </p>
             )}
             {(recorder.state === 'denied' || recorder.state === 'failed') && (
-              <p role="alert" className="text-meta text-warning-ink">
+              <p role="alert" className="text-callout text-warning-ink">
                 {t(`interviews.voice.${recorder.state}`)}
               </p>
             )}
@@ -320,7 +322,7 @@ function Live({ s }: { s: InterviewView }) {
               )}
             </Field>
             {error && (
-              <p role="alert" className="text-meta font-medium text-danger">
+              <p role="alert" className="text-callout font-medium text-danger">
                 {error}
               </p>
             )}
@@ -340,7 +342,7 @@ function Live({ s }: { s: InterviewView }) {
           </form>
         )}
         {send.isPending && (
-          <p className="text-meta text-fg-2" role="status">
+          <p className="text-callout text-fg-2" role="status">
             {t('interviews.scoring')}
           </p>
         )}

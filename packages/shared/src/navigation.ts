@@ -417,7 +417,13 @@ export interface NavSubject {
   features?: Partial<Record<Feature, boolean>>;
   /** Students in their final two years get Placements as a main tab (B7). */
   gradYear?: number | null;
+  /** The platform's `NETWORK_ENABLED` switch (ADR 0014): `false` hides every network destination. */
+  networkEnabled?: boolean;
 }
+
+/** Destinations and admin sections that exist only for the network (ADR 0014). */
+export const NETWORK_NAV: readonly NavId[] = ['network', 'recruiter', 'employers'];
+export const NETWORK_ADMIN_SECTIONS: readonly AdminSectionId[] = ['network'];
 
 export interface NavModel {
   persona: NavPersona;
@@ -443,6 +449,8 @@ export function buildNav(subject: NavSubject, shipped: ReadonlySet<NavId>): NavM
   const usable = (id: NavId) => {
     if (id === 'create') return create.length > 0;
     if (id === 'verify') return !subject.verified;
+    // NETWORK_ENABLED=false (prompt 4, P0): the network is hidden whatever the permissions say.
+    if (subject.networkEnabled === false && NETWORK_NAV.includes(id)) return false;
     const dest = NAV_DESTINATIONS[id];
     return shipped.has(id) && may(subject.permissions, dest.permissions);
   };
@@ -476,6 +484,7 @@ export function buildNav(subject: NavSubject, shipped: ReadonlySet<NavId>): NavM
       (x) =>
         x.group === group &&
         subject.permissions.includes(x.permission) &&
+        !(subject.networkEnabled === false && NETWORK_ADMIN_SECTIONS.includes(x.id)) &&
         !(
           ADMIN_SECTION_FEATURE[x.id] && subject.features?.[ADMIN_SECTION_FEATURE[x.id] as Feature] === false
         ),

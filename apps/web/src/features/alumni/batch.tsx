@@ -59,26 +59,26 @@ export function BatchPage() {
             </Card>
           )}
           <section aria-labelledby="batch-work" className="grid gap-3">
-            <h2 id="batch-work" className="text-title font-semibold">
+            <h2 id="batch-work" className="text-headline font-semibold">
               {t('batch.work')}
             </h2>
             {b.data.companies.length ? (
               <ul className="flex flex-wrap gap-2">
                 {b.data.companies.map((c) => (
                   <li key={c.company}>
-                    <Card className="px-3 py-2 text-meta">
+                    <Card className="px-3 py-2 text-callout">
                       <b>{c.company}</b> · {c.count}
                     </Card>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-meta text-fg-2">{t('batch.workFew')}</p>
+              <p className="text-callout text-fg-2">{t('batch.workFew')}</p>
             )}
           </section>
           {b.data.reunions.length > 0 && (
             <section aria-labelledby="batch-reunions" className="grid gap-3">
-              <h2 id="batch-reunions" className="text-title font-semibold">
+              <h2 id="batch-reunions" className="text-headline font-semibold">
                 {t('batch.reunions')}
               </h2>
               <ul className="grid gap-2">
@@ -88,7 +88,7 @@ export function BatchPage() {
                       <Card variant="interactive" className="flex items-center gap-3 p-4">
                         <CalendarDays className="size-5 text-brand-ink" aria-hidden />
                         <span className="font-semibold">{r.title}</span>
-                        <span className="ml-auto text-meta text-fg-2">{formatDateTime(r.startsAt)}</span>
+                        <span className="ml-auto text-callout text-fg-2">{formatDateTime(r.startsAt)}</span>
                       </Card>
                     </IntentLink>
                   </li>
@@ -97,7 +97,7 @@ export function BatchPage() {
             </section>
           )}
           <section aria-labelledby="batch-people" className="grid gap-3">
-            <h2 id="batch-people" className="text-title font-semibold">
+            <h2 id="batch-people" className="text-headline font-semibold">
               {t('batch.people')}
             </h2>
             {b.data.members.length ? (
@@ -112,7 +112,7 @@ export function BatchPage() {
                         <PersonAvatar name={m.name} fileId={m.avatarFileId} size={48} />
                         <span className="min-w-0">
                           <b className="block truncate">{m.name}</b>
-                          <span className="block truncate text-meta text-fg-2">
+                          <span className="block truncate text-callout text-fg-2">
                             {[m.jobTitle, m.company].filter(Boolean).join(' · ') || m.headline}
                           </span>
                         </span>

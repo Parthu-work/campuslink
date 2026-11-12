@@ -40,7 +40,7 @@ export function NotificationsPage() {
           <>
             <Link
               to="/settings/notifications"
-              className="rounded-full px-3 py-2 text-meta font-semibold text-brand-ink hover:bg-surface-2"
+              className="rounded-full px-3 py-2 text-callout font-semibold text-brand-ink hover:bg-surface-2"
             >
               {t('notifications.settings')}
             </Link>
@@ -91,7 +91,7 @@ export function NotificationsPage() {
                   />
                   <div className="min-w-0 flex-1">
                     <b className="block">{text.title}</b>
-                    <p className="text-meta text-fg-2">{text.body}</p>
+                    <p className="text-callout text-fg-2">{text.body}</p>
                     <p className="text-caption text-fg-3">
                       {formatRelative(n.createdAt)}
                       {!n.readAt && <span className="sr-only"> · {t('notifications.unread')}</span>}

@@ -37,10 +37,10 @@ export function CollegePicker() {
       role="region"
       aria-labelledby="picker-title"
     >
-      <h1 id="picker-title" className="flex items-center gap-2 text-title font-semibold">
+      <h1 id="picker-title" className="flex items-center gap-2 text-headline font-semibold">
         <Building2 className="size-6 text-brand-ink" aria-hidden /> {t('reach.picker.title')}
       </h1>
-      <p className="text-meta text-fg-2">{t('reach.picker.intro')}</p>
+      <p className="text-callout text-fg-2">{t('reach.picker.intro')}</p>
       <form
         className="grid gap-3"
         onSubmit={(e) => {
@@ -63,7 +63,7 @@ export function CollegePicker() {
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
               />
-              <span className="flex-none text-meta text-fg-3">.{location.host}</span>
+              <span className="flex-none text-callout text-fg-3">.{location.host}</span>
             </div>
           )}
         </Field>
@@ -85,7 +85,7 @@ export function PickerLink() {
   if (!root) return null;
   return (
     <a
-      className="text-meta font-semibold text-brand-ink underline"
+      className="text-callout font-semibold text-brand-ink underline"
       href={`${location.protocol}//${root}/?pick=1`}
     >
       {t('reach.picker.other')}

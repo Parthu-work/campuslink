@@ -125,7 +125,7 @@ export function SyllabusEditor({
 
   return (
     <div className="grid gap-4">
-      <p className="text-meta text-fg-2">{t('study.editor.intro')}</p>
+      <p className="text-callout text-fg-2">{t('study.editor.intro')}</p>
       <Button variant="outline" size="sm" className="w-fit" onClick={() => setPaste(true)}>
         <ClipboardPaste className="size-4" aria-hidden /> {t('study.editor.pasteAgain')}
       </Button>
@@ -216,7 +216,7 @@ export function SyllabusEditor({
                         onBlur={() =>
                           setTopic(i, k, { keywords: tp.keywords.map((w) => w.trim()).filter(Boolean) })
                         }
-                        className="min-h-11 text-meta"
+                        className="min-h-11 text-callout"
                       />
                     </li>
                   );

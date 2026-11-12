@@ -183,13 +183,13 @@ export function RecognitionAdmin() {
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="max-w-[60ch] text-meta text-fg-2">{t('alumniAdmin.recognitionIntro')}</p>
+        <p className="max-w-[60ch] text-callout text-fg-2">{t('alumniAdmin.recognitionIntro')}</p>
         <Button variant="primary" onClick={() => setNominating(true)}>
           <Plus className="size-4" aria-hidden /> {t('alumniAdmin.ofMonth.nominate')}
         </Button>
       </div>
       <section aria-labelledby="of-month" className="grid gap-3">
-        <h2 id="of-month" className="text-title font-semibold">
+        <h2 id="of-month" className="text-headline font-semibold">
           {t('alumniAdmin.ofMonth.heading')}
         </h2>
         {nominations.isLoading && <Skeleton className="h-32" />}
@@ -212,7 +212,7 @@ export function RecognitionAdmin() {
                     {t(`alumniAdmin.ofMonth.status.${n.status}`)}
                   </Badge>
                 </div>
-                <p className="text-meta text-fg-2">{n.citation}</p>
+                <p className="text-callout text-fg-2">{n.citation}</p>
                 {n.status === 'published' && !n.announced && canAnnounce && (
                   <Button size="sm" className="justify-self-start" onClick={() => setAnnouncing(n)}>
                     <Megaphone className="size-4" aria-hidden /> {t('alumniAdmin.ofMonth.announce')}
@@ -224,11 +224,11 @@ export function RecognitionAdmin() {
         </ul>
       </section>
       <section aria-labelledby="certs" className="grid gap-3">
-        <h2 id="certs" className="text-title font-semibold">
+        <h2 id="certs" className="text-headline font-semibold">
           {t('alumniAdmin.certs.heading')}
         </h2>
         {certificates.data && !certificates.data.length ? (
-          <p className="text-meta text-fg-2">{t('alumniAdmin.certs.empty')}</p>
+          <p className="text-callout text-fg-2">{t('alumniAdmin.certs.empty')}</p>
         ) : (
           <Table label={t('alumniAdmin.certs.heading')}>
             <THead>

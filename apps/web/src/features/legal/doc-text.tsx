@@ -16,7 +16,7 @@ export function DocText({ text, headingLevel = 2 }: { text: string; headingLevel
         .filter((s) => s.heading || s.body.trim())
         .map((s, i) => (
           <section key={i} className="grid gap-2">
-            {s.heading && <H className="text-title font-semibold">{s.heading}</H>}
+            {s.heading && <H className="text-headline font-semibold">{s.heading}</H>}
             {s.body.trim() && <RichText text={s.body.trim()} className="text-body text-fg-2" />}
           </section>
         ))}

@@ -30,7 +30,7 @@ export function Table({
         className,
       )}
     >
-      <table className="w-full border-collapse text-left text-meta tabular-nums">
+      <table className="w-full border-collapse text-left text-callout tabular-nums">
         <caption className="sr-only">{caption ?? label}</caption>
         {children}
       </table>

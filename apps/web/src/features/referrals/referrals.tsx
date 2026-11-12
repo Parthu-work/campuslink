@@ -51,7 +51,7 @@ function Settings() {
   return (
     <Card className="grid gap-3 p-4">
       <h2 className="font-semibold">{t('referrals.settings')}</h2>
-      <p className="text-meta text-fg-2">
+      <p className="text-callout text-fg-2">
         {q.data.company ? t('referrals.settingsBody', { company: q.data.company }) : t('referrals.noCompany')}{' '}
         {!q.data.company && (
           <Link to="/profile" className="font-semibold text-brand-ink hover:underline">
@@ -225,7 +225,7 @@ function ReferralRow({ r, box }: { r: ReferralView; box: 'received' | 'sent' }) 
             <p className="font-semibold">
               {box === 'received' ? person.name : t('referrals.to', { name: person.name })}
             </p>
-            <p className="text-meta text-fg-2">
+            <p className="text-callout text-fg-2">
               <Link to={`/jobs/${r.job.id}`} className="hover:underline">
                 {r.job.title} · {r.job.company}
               </Link>
@@ -234,14 +234,14 @@ function ReferralRow({ r, box }: { r: ReferralView; box: 'received' | 'sent' }) 
           </div>
           <Badge tone={TONE[r.status]}>{t(`referrals.status.${r.status}`)}</Badge>
         </div>
-        <p className="text-meta whitespace-pre-wrap">{r.why}</p>
+        <p className="text-callout whitespace-pre-wrap">{r.why}</p>
         {r.responseNote && (
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             <b>{t('referrals.theirNote')}</b> {r.responseNote}
           </p>
         )}
         {r.declineTemplate && (
-          <p className="text-meta text-fg-2">{t(`referrals.templates.${r.declineTemplate}`)}</p>
+          <p className="text-callout text-fg-2">{t(`referrals.templates.${r.declineTemplate}`)}</p>
         )}
         {box === 'sent' && r.status === 'referred' && (
           <Suspense fallback={null}>

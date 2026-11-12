@@ -68,7 +68,7 @@ function DeletionTimeline({ purgeAt }: { purgeAt: string | null }) {
                 <span className="sr-only"> ({t('settings.data.tl.now')})</span>
               )}
             </p>
-            <p className="text-meta text-fg-2">{st.body}</p>
+            <p className="text-callout text-fg-2">{st.body}</p>
           </div>
         </li>
       ))}
@@ -117,8 +117,8 @@ export function DataSettings() {
     <div className="grid gap-4">
       <Card className="grid gap-3 p-5">
         <div>
-          <h2 className="text-title font-semibold">{t('settings.data.exportTitle')}</h2>
-          <p className="text-meta text-fg-2">{t('settings.data.exportBody')}</p>
+          <h2 className="text-headline font-semibold">{t('settings.data.exportTitle')}</h2>
+          <p className="text-callout text-fg-2">{t('settings.data.exportBody')}</p>
         </div>
         <Button className="justify-self-start" loading={busy} onClick={() => void download()}>
           <Download className="size-4" aria-hidden /> {t('settings.data.download')}
@@ -126,13 +126,13 @@ export function DataSettings() {
       </Card>
       <Card className="grid gap-3 p-5">
         <div>
-          <h2 className="text-title font-semibold">{t('settings.data.deleteTitle')}</h2>
-          <p className="text-meta text-fg-2">{t('settings.data.deleteBody')}</p>
+          <h2 className="text-headline font-semibold">{t('settings.data.deleteTitle')}</h2>
+          <p className="text-callout text-fg-2">{t('settings.data.deleteBody')}</p>
         </div>
         <DeletionTimeline purgeAt={me?.deletionPurgeAt ?? null} />
         {me?.deletionPurgeAt ? (
           <>
-            <p className="text-meta font-semibold text-danger" role="status">
+            <p className="text-callout font-semibold text-danger" role="status">
               {t('settings.data.pending', { date: formatDay(me.deletionPurgeAt) })}
             </p>
             <Button className="justify-self-start" loading={cancel.isPending} onClick={() => cancel.mutate()}>

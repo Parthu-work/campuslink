@@ -67,7 +67,7 @@ export function OnboardingAdmin() {
       <Progress />
       <section className="grid gap-4" aria-labelledby="onb-records">
         <div className="grid gap-1">
-          <h2 id="onb-records" className="text-title font-semibold">
+          <h2 id="onb-records" className="text-headline font-semibold">
             {t('onboarding.notJoined')}
           </h2>
           <p className="text-fg-2">{t('onboarding.intro')}</p>
@@ -97,7 +97,7 @@ export function OnboardingAdmin() {
             )}
           </Field>
           <fieldset className="grid gap-1.5">
-            <legend className="mb-1.5 text-meta font-semibold">{t('admin.kindField')}</legend>
+            <legend className="mb-1.5 text-callout font-semibold">{t('admin.kindField')}</legend>
             <div className="flex flex-wrap gap-2">
               {(
                 [
@@ -201,7 +201,7 @@ function Progress() {
   return (
     <section className="grid gap-4" aria-labelledby="onb-progress">
       <div className="grid gap-1">
-        <h2 id="onb-progress" className="text-title font-semibold">
+        <h2 id="onb-progress" className="text-headline font-semibold">
           {t('onboarding.progressTitle')}
         </h2>
         <p className="text-fg-2">{t('onboarding.progressIntro')}</p>
@@ -343,7 +343,7 @@ function JoinCodes() {
     <section className="grid gap-4" aria-labelledby="onb-codes">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="grid min-w-0 flex-[1_1_16rem] gap-1">
-          <h2 id="onb-codes" className="text-title font-semibold">
+          <h2 id="onb-codes" className="text-headline font-semibold">
             {t('onboarding.codesTitle')}
           </h2>
           <p className="text-fg-2">{t('onboarding.codesIntro')}</p>
@@ -449,7 +449,7 @@ function NewCodeDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v
       <div className="grid gap-4">
         <FormError message={create.error instanceof ApiError ? create.error.message : undefined} />
         <fieldset className="grid gap-1.5">
-          <legend className="mb-1.5 text-meta font-semibold">{t('admin.kindField')}</legend>
+          <legend className="mb-1.5 text-callout font-semibold">{t('admin.kindField')}</legend>
           <div className="flex gap-2">
             {(['student', 'alumni'] as const).map((k) => (
               <Chip key={k} pressed={kind === k} onClick={() => setKind(k)}>
@@ -517,8 +517,8 @@ export function JoinPosterPage() {
       </div>
       <article className="mx-auto grid w-full max-w-[640px] justify-items-center gap-5 rounded-[var(--radius-xl)] border border-line bg-surface-1 p-8 text-center print:fixed print:inset-0 print:z-[999] print:max-w-none print:rounded-none print:border-0">
         <div className="grid gap-1">
-          <h2 className="text-headline font-bold">{t('onboarding.posterTitle', { college: p.college })}</h2>
-          <p className="text-lead text-fg-2">{cls}</p>
+          <h2 className="text-title font-bold">{t('onboarding.posterTitle', { college: p.college })}</h2>
+          <p className="text-body text-fg-2">{cls}</p>
         </div>
         <img
           src={`data:image/svg+xml;base64,${btoa(p.qrSvg)}`}
@@ -527,9 +527,9 @@ export function JoinPosterPage() {
           height={280}
           className="rounded-[var(--radius-md)] bg-surface-1"
         />
-        <p className="text-meta text-fg-2">{t('onboarding.posterScan')}</p>
-        <p className="font-mono text-title tracking-[0.3em]">{p.code}</p>
-        <p className="text-meta break-all text-fg-2">{p.url}</p>
+        <p className="text-callout text-fg-2">{t('onboarding.posterScan')}</p>
+        <p className="font-mono text-headline tracking-[0.3em]">{p.code}</p>
+        <p className="text-callout break-all text-fg-2">{p.url}</p>
         <p className="text-caption text-fg-3">
           {t('onboarding.posterValid', { date: new Date(p.expiresAt).toLocaleDateString() })}
         </p>

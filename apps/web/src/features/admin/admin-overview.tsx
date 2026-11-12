@@ -61,8 +61,8 @@ function QueueCard({
           <span className="min-w-0 flex-1 font-semibold">{title}</span>
           {waiting && <Badge tone="brand">{t('admin.ov.waiting')}</Badge>}
         </div>
-        <p className="text-title font-semibold">{value}</p>
-        {children && <p className="text-meta text-fg-2">{children}</p>}
+        <p className="text-headline font-semibold">{value}</p>
+        {children && <p className="text-callout text-fg-2">{children}</p>}
       </Card>
     </IntentLink>
   );
@@ -82,7 +82,7 @@ export function AdminOverview() {
   return (
     <div className="grid gap-6">
       <section aria-labelledby="ov-queues" className="grid gap-3">
-        <h2 id="ov-queues" className="text-title font-semibold">
+        <h2 id="ov-queues" className="text-headline font-semibold">
           {t('admin.ov.title')}
         </h2>
         {!v ? (
@@ -268,7 +268,7 @@ export function AdminOverview() {
       </section>
 
       <section aria-labelledby="ov-sections" className="grid gap-4 lg:hidden">
-        <h2 id="ov-sections" className="text-title font-semibold">
+        <h2 id="ov-sections" className="text-headline font-semibold">
           {t('admin.ov.sections')}
         </h2>
         {admin.map((g) => (

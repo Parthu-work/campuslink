@@ -113,9 +113,15 @@ export class NetworkService {
   constructor(private readonly d: NetworkDeps) {}
 
   /** The timer: one reconcile per college every NETWORK_RECONCILE_MINUTES (job ids dedupe per window). */
-  static async enqueueReconcile(jobs: JobQueue, now = new Date()): Promise<number> {
+  static async enqueueReconcile(
+    jobs: JobQueue,
+    now = new Date(),
+    only?: ReadonlySet<string>,
+  ): Promise<number> {
     const window = Math.floor(now.getTime() / (NETWORK_RECONCILE_MINUTES * 60_000));
-    const tenants = await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean();
+    const tenants = (
+      await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean()
+    ).filter((t) => !only || only.has(String(t._id)));
     for (const t of tenants)
       await jobs.enqueue(
         NETWORK_RECONCILE_JOB,

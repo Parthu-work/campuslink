@@ -4,17 +4,18 @@
  */
 :root {
   --hue: 275;
-  --bg: oklch(0.16 0.012 275);
-  --surface-1: oklch(0.19 0.012 275);
-  --surface-2: oklch(0.225 0.013 275);
-  --surface-3: oklch(0.26 0.014 275);
+  --bg: oklch(0.145 0.011 275);
+  --surface-1: oklch(0.18 0.012 275);
+  --surface-2: oklch(0.215 0.013 275);
+  --surface-3: oklch(0.25 0.014 275);
+  --sunken: oklch(0.125 0.01 275);
   --line: oklch(1 0 0 / 0.08);
   --line-strong: oklch(1 0 0 / 0.16);
   --fg: oklch(0.965 0.006 275);
   --fg-2: oklch(0.8 0.012 275);
   --fg-3: oklch(0.68 0.012 275);
-  --glass: oklch(0.19 0.012 275 / 0.92);
-  --glass-solid: oklch(0.19 0.012 275);
+  --glass: oklch(0.18 0.012 275 / 0.92);
+  --glass-solid: oklch(0.18 0.012 275);
   --scrim: oklch(0.08 0.01 275 / 0.62);
   --brand: oklch(0.575 0.17 275);
   --on-brand: oklch(1 0 0);
@@ -114,6 +115,7 @@
     --surface-1: oklch(1 0 0);
     --surface-2: oklch(0.965 0.008 275);
     --surface-3: oklch(0.935 0.01 275);
+    --sunken: oklch(0.962 0.007 275);
     --line: oklch(0.91 0.01 275);
     --line-strong: oklch(0.84 0.014 275);
     --fg: oklch(0.21 0.014 275);
@@ -176,8 +178,8 @@
     --subject-8: oklch(0.64 0.127 230);
     --subject-8-surface: oklch(0.955 0.026 230);
     --subject-8-ink: oklch(0.5 0.099 230);
-    --success: oklch(0.48 0.13 150);
-    --success-ink: oklch(0.48 0.13 150);
+    --success: oklch(0.475 0.13 150);
+    --success-ink: oklch(0.475 0.13 150);
     --success-fg: oklch(0.6 0.15 150);
     --success-surface: oklch(0.96 0.035 150);
     --success-border: oklch(0.85 0.07 150);
@@ -220,6 +222,7 @@
   --surface-1: oklch(1 0 0);
   --surface-2: oklch(0.965 0.008 275);
   --surface-3: oklch(0.935 0.01 275);
+  --sunken: oklch(0.962 0.007 275);
   --line: oklch(0.91 0.01 275);
   --line-strong: oklch(0.84 0.014 275);
   --fg: oklch(0.21 0.014 275);
@@ -282,8 +285,8 @@
   --subject-8: oklch(0.64 0.127 230);
   --subject-8-surface: oklch(0.955 0.026 230);
   --subject-8-ink: oklch(0.5 0.099 230);
-  --success: oklch(0.48 0.13 150);
-  --success-ink: oklch(0.48 0.13 150);
+  --success: oklch(0.475 0.13 150);
+  --success-ink: oklch(0.475 0.13 150);
   --success-fg: oklch(0.6 0.15 150);
   --success-surface: oklch(0.96 0.035 150);
   --success-border: oklch(0.85 0.07 150);

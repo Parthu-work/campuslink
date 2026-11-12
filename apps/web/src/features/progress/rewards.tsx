@@ -59,7 +59,7 @@ export function RewardsPage() {
   return (
     <div className="grid gap-5">
       <PageHeader icon={<Gift />} title={t('rewards.title')} intro={t('rewards.intro')} />
-      <p className="text-meta" role="status">
+      <p className="text-callout" role="status">
         {t('rewards.balance', { xp: balance.xp, impact: balance.impact })}
       </p>
       {rewards.isLoading ? (
@@ -78,8 +78,8 @@ export function RewardsPage() {
                     <h2 className="font-semibold">{r.title}</h2>
                     <Badge tone="accent">{t(`rewards.kind.${r.kind}`)}</Badge>
                   </div>
-                  {r.description && <p className="text-meta text-fg-2">{r.description}</p>}
-                  <p className="text-meta">
+                  {r.description && <p className="text-callout text-fg-2">{r.description}</p>}
+                  <p className="text-callout">
                     {t('rewards.cost', { cost: r.cost, track: t(`progress.track.${r.track}`) })}
                     {r.stock !== null && (
                       <span className="text-fg-3"> · {t('rewards.stock', { count: r.stock })}</span>
@@ -102,13 +102,13 @@ export function RewardsPage() {
         </ul>
       )}
       <section aria-labelledby="my-requests" className="grid gap-2">
-        <h2 id="my-requests" className="font-display text-title font-semibold">
+        <h2 id="my-requests" className="font-display text-headline font-semibold">
           {t('rewards.mine')}
         </h2>
         {mine.isLoading ? (
           <Skeleton className="h-16" />
         ) : !mine.data?.length ? (
-          <p className="text-meta text-fg-2">{t('rewards.noneYet')}</p>
+          <p className="text-callout text-fg-2">{t('rewards.noneYet')}</p>
         ) : (
           <ul className="grid gap-2">
             {mine.data.map((r) => (
@@ -116,8 +116,8 @@ export function RewardsPage() {
                 <Card className="flex flex-wrap items-center justify-between gap-2 p-3">
                   <span>
                     <span className="font-semibold">{r.reward.title}</span>
-                    <span className="text-meta text-fg-3"> · {formatRelative(r.createdAt)}</span>
-                    {r.note && <span className="block text-meta text-fg-2">{r.note}</span>}
+                    <span className="text-callout text-fg-3"> · {formatRelative(r.createdAt)}</span>
+                    {r.note && <span className="block text-callout text-fg-2">{r.note}</span>}
                   </span>
                   <span className="flex items-center gap-2">
                     <Badge tone={tone(r.status)}>{t(`rewards.status.${r.status}`)}</Badge>
@@ -189,7 +189,7 @@ export function RewardsAdmin() {
   return (
     <div className="grid gap-6">
       <section aria-labelledby="requests" className="grid gap-2">
-        <h2 id="requests" className="font-display text-title font-semibold">
+        <h2 id="requests" className="font-display text-headline font-semibold">
           {t('rewards.admin.requests')}
         </h2>
         <Segmented
@@ -206,7 +206,7 @@ export function RewardsAdmin() {
         {reds.isLoading ? (
           <Skeleton className="h-16" />
         ) : !reds.data?.length ? (
-          <p className="text-meta text-fg-2">{t('rewards.admin.noRequests')}</p>
+          <p className="text-callout text-fg-2">{t('rewards.admin.noRequests')}</p>
         ) : (
           <ul className="grid gap-2">
             {reds.data.map((r) => (
@@ -243,7 +243,7 @@ export function RewardsAdmin() {
       </section>
 
       <section aria-labelledby="catalogue" className="grid gap-2">
-        <h2 id="catalogue" className="font-display text-title font-semibold">
+        <h2 id="catalogue" className="font-display text-headline font-semibold">
           {t('rewards.admin.catalogue')}
         </h2>
         <ul className="grid gap-2">

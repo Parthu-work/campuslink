@@ -105,7 +105,7 @@ export function PlatformBilling() {
           </>
         ) : (
           <div className="grid gap-4">
-            <p className="text-meta text-fg-2">{t('pbilling.plans.intro')}</p>
+            <p className="text-callout text-fg-2">{t('pbilling.plans.intro')}</p>
             {plans.isLoading && <Skeleton className="h-48" />}
             <div className="grid gap-4 md:grid-cols-3">
               {plans.data?.map((p) => (
@@ -121,7 +121,7 @@ export function PlatformBilling() {
                       <Pencil className="size-4" aria-hidden />
                     </Button>
                   </div>
-                  <dl className="grid gap-1 text-meta">
+                  <dl className="grid gap-1 text-callout">
                     {(
                       [
                         ['pricePerStudentPaise', rupees(p.terms.pricePerStudentPaise)],
@@ -244,7 +244,7 @@ export function PlatformCollegeBilling() {
               {v.warnings.map((w) => (
                 <li
                   key={w}
-                  className="flex gap-2 rounded-[var(--radius-md)] bg-warning-surface p-3 text-meta text-warning-ink"
+                  className="flex gap-2 rounded-[var(--radius-md)] bg-warning-surface p-3 text-callout text-warning-ink"
                 >
                   <AlertTriangle className="mt-0.5 size-4 flex-none" aria-hidden />{' '}
                   {t(`pbilling.warnings.${w}`)}
@@ -299,7 +299,7 @@ export function PlatformCollegeBilling() {
               </Button>
             </div>
             {v.invoices.length === 0 ? (
-              <p className="text-meta text-fg-2">{t('billing.noInvoices')}</p>
+              <p className="text-callout text-fg-2">{t('billing.noInvoices')}</p>
             ) : (
               <Table label={t('billing.invoices')}>
                 <THead>

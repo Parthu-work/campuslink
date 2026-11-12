@@ -44,7 +44,7 @@ export function Stepper({
                 available to screen readers. */}
             <span
               className={cn(
-                'truncate text-meta font-semibold',
+                'truncate text-callout font-semibold',
                 done || now ? 'text-fg' : 'text-fg-3',
                 !now && 'max-sm:sr-only',
               )}

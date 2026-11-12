@@ -46,7 +46,7 @@ function SessionList({
   return (
     <div className="grid content-start gap-2">
       {rows.length === 0 ? (
-        <p className="text-meta text-fg-3">{t('study.chat.noHistory')}</p>
+        <p className="text-callout text-fg-3">{t('study.chat.noHistory')}</p>
       ) : (
         <ul className="grid gap-1">
           {rows.map((s) => (
@@ -61,7 +61,7 @@ function SessionList({
                   'aria-[current=page]:bg-brand-surface',
                 )}
               >
-                <span className="truncate text-meta font-semibold">{s.title}</span>
+                <span className="truncate text-callout font-semibold">{s.title}</span>
                 <span className="text-caption text-fg-3">{formatRelative(s.lastMessageAt)}</span>
               </IntentLink>
               <Button

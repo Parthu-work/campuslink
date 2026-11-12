@@ -6,6 +6,7 @@ import { APP_NAME } from '@campuslink/shared';
 import { previewSecurityHeaders } from './security-headers';
 import { pureShared } from './pure-shared';
 import { assetLinks } from './asset-links';
+import { lucideIcons } from './lucide-icons';
 
 /** Same-origin API proxy. Sockets that close mid-flight (tab closed) are normal, not errors. */
 const apiProxy = {
@@ -62,6 +63,7 @@ export default defineConfig({
     // Android app links (prompt 2, G9): /.well-known/assetlinks.json when the build is told the app.
     assetLinks(),
     preloadUiFont(),
+    lucideIcons(),
     react(),
     tailwindcss(),
     VitePWA({

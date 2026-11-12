@@ -48,7 +48,7 @@ function OutcomeBars({ title, rows }: { title: string; rows: [string, Count][] }
       <h3 className="font-semibold">{title}</h3>
       <dl className="grid gap-3">
         {rows.map(([k, v]) => (
-          <div key={k} className="grid grid-cols-[7rem_minmax(0,1fr)_3rem] items-center gap-3 text-meta">
+          <div key={k} className="grid grid-cols-[7rem_minmax(0,1fr)_3rem] items-center gap-3 text-callout">
             <dt className="text-fg-2">{k}</dt>
             <dd>
               <ProgressBar value={num(v) ?? 0} max={max} />
@@ -90,7 +90,7 @@ function AnalyticsOverview() {
   return (
     <div className="grid gap-5 print:gap-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="max-w-[65ch] text-meta text-fg-2">{t('analytics.intro')}</p>
+        <p className="max-w-[65ch] text-callout text-fg-2">{t('analytics.intro')}</p>
         <Button variant="outline" size="sm" className="print:hidden" onClick={() => window.print()}>
           <Printer className="size-4" aria-hidden /> {t('analytics.print')}
         </Button>
@@ -244,7 +244,7 @@ function AnalyticsOverview() {
                 </tbody>
               </Table>
             ) : (
-              <p className="text-meta text-fg-2">{t('analytics.noEngagement')}</p>
+              <p className="text-callout text-fg-2">{t('analytics.noEngagement')}</p>
             )}
           </section>
           {canExport && (

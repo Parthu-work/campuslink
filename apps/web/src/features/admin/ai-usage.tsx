@@ -108,13 +108,13 @@ function Budget({ v }: { v: AiUsageView }) {
   const m = v.month;
   const resets = formatUtcDay(m.resetsAt.slice(0, 10));
   if (!m.budget)
-    return <p className="text-meta text-fg-2">{t('ai.usage.noBudget', { used: formatNumber(m.used) })}</p>;
+    return <p className="text-callout text-fg-2">{t('ai.usage.noBudget', { used: formatNumber(m.used) })}</p>;
   const pct = m.percent ?? 0;
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="font-semibold">{t('ai.usage.month')}</p>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {t('ai.usage.monthOf', {
             used: formatNumber(m.used),
             budget: formatNumber(m.budget),
@@ -154,20 +154,20 @@ function Health({ v }: { v: AiUsageView }) {
         <Activity className="size-4 text-brand-ink" aria-hidden /> {t('ai.usage.health')}
       </h3>
       {v.breaker.open && v.breaker.until && (
-        <p className="flex items-start gap-2 text-meta text-warning-ink">
+        <p className="flex items-start gap-2 text-callout text-warning-ink">
           <PauseCircle className="mt-0.5 size-4 flex-none" aria-hidden />
           {t('ai.usage.paused', { time: formatTime(v.breaker.until) })}
         </p>
       )}
       {v.lastError ? (
-        <p className="flex items-start gap-2 text-meta text-fg-2">
+        <p className="flex items-start gap-2 text-callout text-fg-2">
           <CircleAlert className="mt-0.5 size-4 flex-none text-warning-ink" aria-hidden />
           {t('ai.usage.lastError', { error: v.lastError.message, when: formatDateTime(v.lastError.at) })}
         </p>
       ) : (
-        <p className="text-meta text-fg-2">{t('ai.usage.noErrors')}</p>
+        <p className="text-callout text-fg-2">{t('ai.usage.noErrors')}</p>
       )}
-      <ul className="flex flex-wrap gap-2 text-meta">
+      <ul className="flex flex-wrap gap-2 text-callout">
         <li>
           <Badge tone={q.processing ? 'info' : 'neutral'}>
             {t('ai.usage.processing', { count: q.processing })}

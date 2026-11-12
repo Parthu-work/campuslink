@@ -124,7 +124,7 @@ export function SubjectForm({
         </Field>
       </div>
       <fieldset className="grid gap-2">
-        <legend className="mb-1 text-meta font-semibold">{t('study.form.branches')}</legend>
+        <legend className="mb-1 text-callout font-semibold">{t('study.form.branches')}</legend>
         <p className="-mt-1 text-caption text-fg-3">{t('study.form.branchesHint')}</p>
         <div className="flex flex-wrap gap-2">
           {BRANCHES.map((b) => (

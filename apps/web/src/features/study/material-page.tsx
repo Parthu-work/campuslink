@@ -48,7 +48,7 @@ function TextPages({ m, highlight }: { m: MaterialDetailView; highlight: string 
       ),
     );
   };
-  if (!m.pages.length) return <p className="text-meta text-fg-3">{t('study.viewer.noText')}</p>;
+  if (!m.pages.length) return <p className="text-callout text-fg-3">{t('study.viewer.noText')}</p>;
   return (
     <div className="grid gap-3">
       {m.pages.map((p) => (
@@ -75,7 +75,7 @@ function DownloadButton({ m }: { m: MaterialDetailView }) {
     <a
       href={file.data.url}
       download
-      className="inline-flex min-h-11 w-fit items-center gap-2 rounded-full border border-line-strong px-4 text-meta font-semibold hover:bg-hover"
+      className="inline-flex min-h-11 w-fit items-center gap-2 rounded-full border border-line-strong px-4 text-callout font-semibold hover:bg-hover"
     >
       <Download className="size-4" aria-hidden /> {t('study.viewer.download')}
     </a>
@@ -111,7 +111,7 @@ function Status({ m }: { m: MaterialDetailView }) {
   if (stage !== 'indexed' && stage !== 'failed')
     return (
       <Card className="grid gap-2 p-4" role="status">
-        <p className="flex items-center gap-2 text-meta font-semibold">
+        <p className="flex items-center gap-2 text-callout font-semibold">
           <Loader className="size-4 motion-safe:animate-spin" aria-hidden /> {t(`study.stage.${stage}`)}
         </p>
         <ProgressBar value={progress} max={100} label={t('study.viewer.processing')} />
@@ -128,7 +128,7 @@ function Status({ m }: { m: MaterialDetailView }) {
         role="status"
       >
         <CircleAlert className="size-5 flex-none" aria-hidden />
-        <p className="min-w-0 flex-1 text-meta">{error ?? t('study.status.failed')}</p>
+        <p className="min-w-0 flex-1 text-callout">{error ?? t('study.status.failed')}</p>
         {m.can.edit && (
           <Button variant="outline" size="sm" loading={again.isPending} onClick={() => again.mutate()}>
             <RotateCcw className="size-4" aria-hidden /> {t('study.viewer.reprocess')}
@@ -224,9 +224,9 @@ export function MaterialPage() {
           )
         }
       />
-      <p className="text-meta text-fg-2">{facts.join(' · ')}</p>
+      <p className="text-callout text-fg-2">{facts.join(' · ')}</p>
       {m.visibility === 'draft' && m.reviewNote && (
-        <p className="rounded-[var(--radius-md)] bg-warning-surface p-3 text-meta">
+        <p className="rounded-[var(--radius-md)] bg-warning-surface p-3 text-callout">
           {t('study.viewer.reviewNote', { note: m.reviewNote })}
         </p>
       )}

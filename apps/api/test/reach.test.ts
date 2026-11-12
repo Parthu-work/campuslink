@@ -178,9 +178,20 @@ describe('the scheduled roster sync (prompt 2, G9)', () => {
     columns: { rollNumber: 'Roll No', name: 'Student Name', gradYear: 'Batch' },
     defaultKind: 'derive',
   };
+  // Monday of this week, 06:00 UTC (the weekly case below expects day 4 to be a Friday in India).
+  const today = new Date();
+  const TODAY_6_UTC =
+    Date.UTC(
+      today.getUTCFullYear(),
+      today.getUTCMonth(),
+      today.getUTCDate() - ((today.getUTCDay() + 6) % 7),
+    ) +
+    6 * 3_600_000;
   const run = (day: number) =>
     inT(() =>
-      services().rosterSync.run({ tenantId: String(T._id) }, new Date(Date.UTC(2026, 10, 2 + day, 6))),
+      // Days from this week's Monday, not fixed dates: a change waiting for approval expires after
+      // seven days, so a fixed day in the past makes the pending diff read as expired.
+      services().rosterSync.run({ tenantId: String(T._id) }, new Date(TODAY_6_UTC + day * 86_400_000)),
     );
   let jobId = '';
 
@@ -278,7 +289,7 @@ describe('the scheduled roster sync (prompt 2, G9)', () => {
 
   it('weekly runs only on their day; paused runs do nothing', async () => {
     await as(admin).patch('/admin/roster-sync').send({ frequency: 'weekly', weekday: 0 }).expect(200);
-    // 2026-11-06 is a Friday (weekday 5) in India.
+    // Day 4 is a Friday (weekday 5) in India.
     expect(await run(4)).toBe('skipped');
     await as(admin).patch('/admin/roster-sync').send({ enabled: false }).expect(200);
     expect(await run(5)).toBe('off');

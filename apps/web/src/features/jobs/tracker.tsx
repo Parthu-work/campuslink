@@ -41,7 +41,7 @@ function TrackedRow({ row }: { row: TrackedJobView }) {
                 row.title
               )}
             </h3>
-            <p className="truncate text-meta text-fg-2">{row.company}</p>
+            <p className="truncate text-callout text-fg-2">{row.company}</p>
           </div>
         </div>
         {(!row.job || row.job.status !== 'open') && (
@@ -49,9 +49,9 @@ function TrackedRow({ row }: { row: TrackedJobView }) {
             {row.job ? t(`jobs.statusLabel.${row.job.status}`) : t('jobs.listingGone')}
           </Badge>
         )}
-        {row.note && <p className="text-meta text-fg-2">“{row.note}”</p>}
+        {row.note && <p className="text-callout text-fg-2">“{row.note}”</p>}
         {row.status === 'offer' && canReport && (
-          <Link to="/outcomes" className="text-meta font-semibold text-brand-ink hover:underline">
+          <Link to="/outcomes" className="text-callout font-semibold text-brand-ink hover:underline">
             {t('placements.reportToCell')}
           </Link>
         )}
@@ -94,14 +94,14 @@ function Alerts() {
       <h2 className="flex items-center gap-2 font-semibold">
         <BellRing className="size-5 text-accent-ink" aria-hidden /> {t('jobs.alerts')}
       </h2>
-      <p className="text-meta text-fg-2">{t('jobs.alertsIntro')}</p>
-      {q.data && !q.data.length && <p className="text-meta text-fg-3">{t('jobs.noAlerts')}</p>}
+      <p className="text-callout text-fg-2">{t('jobs.alertsIntro')}</p>
+      {q.data && !q.data.length && <p className="text-callout text-fg-3">{t('jobs.noAlerts')}</p>}
       <ul className="grid gap-2">
         {q.data?.map((a) => (
           <li key={a.id} className="flex items-center gap-2">
             <Link
               to={`/jobs?alert=${a.id}`}
-              className="min-w-0 flex-1 truncate text-meta font-semibold hover:underline"
+              className="min-w-0 flex-1 truncate text-callout font-semibold hover:underline"
             >
               {a.name}
             </Link>
@@ -155,7 +155,7 @@ export function TrackerPage() {
               >
                 <h2
                   id={`tr-${status}`}
-                  className="flex items-center justify-between px-1 text-meta font-semibold"
+                  className="flex items-center justify-between px-1 text-callout font-semibold"
                 >
                   {t(`jobs.track.${status}`)}
                   <span className="rounded-full bg-surface-1 px-2 text-caption text-fg-2 tabular-nums">

@@ -114,8 +114,10 @@ function Answer({
       {written && <AnswerText text={m.text} citations={m.citations} q={question} />}
       <ResultCard m={m} onAsk={onAsk} onUpdated={onUpdated} isAdmin={isAdmin} />
       {m.status === 'stopped' && <p className="text-caption text-fg-3">{t('study.chat.stopped')}</p>}
-      {m.status === 'refused' && <p className="text-meta text-fg-2">{t('study.chat.refused')}</p>}
-      {m.status === 'failed' && !m.result && <p className="text-meta text-fg-2">{t('study.chat.failed')}</p>}
+      {m.status === 'refused' && <p className="text-callout text-fg-2">{t('study.chat.refused')}</p>}
+      {m.status === 'failed' && !m.result && (
+        <p className="text-callout text-fg-2">{t('study.chat.failed')}</p>
+      )}
       {(written || m.result?.kind === 'passages') && (
         <SourceChips citations={written ? m.citations : []} q={question} />
       )}
@@ -170,7 +172,7 @@ function Answer({
       </div>
       {reasons && (
         <div className="grid gap-2">
-          <p className="text-meta text-fg-2">{t('study.chat.whyNot')}</p>
+          <p className="text-callout text-fg-2">{t('study.chat.whyNot')}</p>
           <div className="flex flex-wrap gap-2">
             {CHAT_FEEDBACK_REASONS.map((r) => (
               <Chip key={r} pressed={false} onClick={() => rate.mutate({ rating: 'down', reason: r })}>
@@ -469,7 +471,7 @@ export function ChatPanel({
           <Skeleton className="h-40" />
         ) : items.length === 0 ? (
           <div className="grid gap-4 py-4">
-            <p className="flex items-center gap-2 text-title font-semibold">
+            <p className="flex items-center gap-2 text-headline font-semibold">
               <Sparkles className="size-5 text-brand-ink" aria-hidden /> {t('study.chat.hello')}
             </p>
             <p className="text-fg-2">
@@ -557,7 +559,7 @@ export function ChatPanel({
                   <p className="text-caption text-fg-3">{t('study.chat.stopped')}</p>
                 )}
                 {it.state === 'error' && (
-                  <p className="rounded-[var(--radius-md)] bg-danger-surface p-3 text-meta" role="alert">
+                  <p className="rounded-[var(--radius-md)] bg-danger-surface p-3 text-callout" role="alert">
                     {it.error}
                   </p>
                 )}
@@ -614,7 +616,7 @@ export function ChatPanel({
                   }}
                   className="grid cursor-pointer gap-0.5 rounded-[var(--radius-sm)] px-3 py-2 aria-selected:bg-brand-surface"
                 >
-                  <span className="font-mono text-meta font-semibold text-brand-ink">/{c}</span>
+                  <span className="font-mono text-callout font-semibold text-brand-ink">/{c}</span>
                   <span className="text-caption text-fg-2">{t(`study.chat.cmd.${c}`)}</span>
                 </li>
               ))}

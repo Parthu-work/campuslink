@@ -49,7 +49,7 @@ export function CreateSheet() {
                 </span>
                 <span className="min-w-0">
                   <b className="block text-body">{t(`nav.createActions.${a.id}`)}</b>
-                  <span className="block text-meta text-fg-2">{t(`nav.createActions.${a.id}Hint`)}</span>
+                  <span className="block text-callout text-fg-2">{t(`nav.createActions.${a.id}Hint`)}</span>
                 </span>
               </Link>
             </li>

@@ -1,4 +1,10 @@
-import { useState, type ButtonHTMLAttributes, type HTMLAttributes, type ReactNode } from 'react';
+import {
+  useState,
+  type ButtonHTMLAttributes,
+  type CSSProperties,
+  type HTMLAttributes,
+  type ReactNode,
+} from 'react';
 import { accentOf } from '../../lib/accent';
 import { initialsOf } from '../../lib/names';
 import { cn } from '../../lib/cn';
@@ -14,7 +20,7 @@ export function Chip({
       type="button"
       aria-pressed={pressed}
       className={cn(
-        'inline-flex min-h-11 flex-none items-center gap-1.5 rounded-full border border-line-strong px-4 text-meta font-semibold text-fg-2 transition-[background-color,color,border-color,scale] duration-[var(--dur-fast)] ease-snappy hover:text-fg active:scale-[var(--press-scale)] [&_svg]:size-4',
+        'inline-flex min-h-11 flex-none items-center gap-1.5 rounded-full border border-line-strong px-4 text-callout font-semibold text-fg-2 transition-[background-color,color,border-color,scale] duration-[var(--dur-fast)] ease-snappy hover:text-fg active:scale-[var(--press-scale)] [&_svg]:size-4',
         'aria-pressed:border-brand aria-pressed:bg-brand-surface aria-pressed:text-fg',
         className,
       )}
@@ -58,10 +64,11 @@ const cardVariants: Record<CardVariant, string> = {
   flat: '',
   raised: 'shadow-elev-1',
   // A card that is (or holds) a link: lifts on hover.
+  // A card that is (or holds) a link: its border and surface answer the pointer (ADR 0015: flat).
   interactive:
-    'shadow-elev-1 transition-[box-shadow,border-color] duration-[var(--dur-base)] hover:border-line-strong hover:shadow-elev-2',
+    'transition-[background-color,border-color] duration-[var(--dur-press)] hover:border-line-strong hover:bg-surface-2',
   // The aurora hairline: for the moments ADR 0008 lists (One Useful Thing, a streak, a celebration).
-  featured: 'aurora-border shadow-elev-2',
+  featured: 'aurora-border',
 };
 export function Card({
   className,
@@ -82,10 +89,11 @@ export function Card({
 }
 
 /** A placeholder in the shape of what is coming; a soft sheen sweeps across it (transform only). */
-export function Skeleton({ className }: { className?: string }) {
+export function Skeleton({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
     <div
       aria-hidden
+      style={style}
       // Marks loading placeholders for the re-audit's frame probe (e2e/audit/journeys.audit.ts).
       data-skeleton=""
       className={cn(
@@ -97,17 +105,24 @@ export function Skeleton({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Nothing here yet (ADR 0015): a small preview of what will appear (`preview`, or an Illustration
+ * as `art`), what it is, and the one action that fills it. `icon` is drawn plain and muted, never
+ * in a tinted circle.
+ */
 export function EmptyState({
   icon,
   art,
+  preview,
   title,
   children,
   action,
   level = 3,
 }: {
-  /** A small icon in a tinted circle; `art` (an Illustration) takes its place when given. */
   icon?: ReactNode;
   art?: ReactNode;
+  /** A faded sketch of the rows or cards that will appear here (e.g. two SkeletonRows). */
+  preview?: ReactNode;
   title: string;
   children?: ReactNode;
   action?: ReactNode;
@@ -117,16 +132,22 @@ export function EmptyState({
   const Heading = level === 2 ? 'h2' : 'h3';
   return (
     <div className="grid justify-items-center gap-3 px-5 py-10 text-center">
-      {art ??
+      {preview ? (
+        <div
+          aria-hidden
+          className="w-full max-w-sm opacity-70 [mask-image:linear-gradient(to_bottom,#000_40%,transparent)]"
+        >
+          {preview}
+        </div>
+      ) : (
+        (art ??
         (icon && (
-          <span
-            className="grid size-14 place-items-center rounded-full bg-brand-surface text-brand-ink [&_svg]:size-6"
-            aria-hidden
-          >
+          <span className="text-fg-3 [&_svg]:size-6" aria-hidden>
             {icon}
           </span>
-        ))}
-      <Heading className="text-title font-semibold text-balance">{title}</Heading>
+        )))
+      )}
+      <Heading className="text-headline font-semibold text-balance">{title}</Heading>
       {children && <div className="max-w-[46ch] text-fg-2">{children}</div>}
       {action && <div className="mt-1">{action}</div>}
     </div>

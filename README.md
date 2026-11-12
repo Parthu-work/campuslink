@@ -2,7 +2,7 @@
 
 A private guidance network for a college community, connecting students with alumni from their own college. It is multi-tenant: each college gets its own branded, isolated space.
 
-> CampusLink is a private alumni, mentorship and placement network for one college, run by the college itself. Build status: [`docs/build/progress.md`](docs/build/progress.md).
+> CampusLink is a private alumni, mentorship and placement network for one college, run by the college itself. Build status: every feature is built (prompts 1, 1b, 2); the UI rebuild (prompt 3) and deployment (prompt 4: one Oracle server behind Cloudflare, [`docs/build/progress-4.md`](docs/build/progress-4.md)) are in progress. Real students arrive only after both are merged and deployed. History: [`docs/build/progress.md`](docs/build/progress.md).
 
 ## Quick start (under 5 minutes)
 
@@ -79,7 +79,7 @@ Video uses the public `meet.jit.si` locally; for production, self-host Jitsi wit
 3. **Load test:** `pnpm loadtest` seeds a separate database with 1,000 demo members and prints latency and throughput per route (`docs/performance.md`).
 4. **Backup drill:** `pnpm backup:drill` backs up, encrypts, restores and compares every collection (`docs/runbook.md`).
 5. **Staging rehearsal:** `deploy/staging/up.sh --build` then `deploy/staging/smoke.sh` runs the production images in production mode, with ClamAV, S3-compatible storage and TLS (`docs/deployment.md`).
-6. **Production:** start with `docs/deployment.md` (AWS Mumbai and Hyderabad), `docs/runbook.md` and `docs/security-review.md`.
+6. **Production:** the pilot runs on one Oracle server: [`docs/deploy-oracle.md`](docs/deploy-oracle.md) and [`deploy/prod/`](deploy/prod/README.md); the AWS scale-up path, operations and security are in `docs/deployment.md`, `docs/runbook.md` and `docs/security-review.md`.
 
 | Service             | URL                                                                                           |
 | ------------------- | --------------------------------------------------------------------------------------------- |

@@ -56,9 +56,9 @@ export function MentorTile({ m }: { m: MentorCard }) {
             {!m.open && <Badge tone="warning">{t('mentors.full')}</Badge>}
           </div>
           <div className="min-w-0">
-            <b className="block truncate text-title">{m.name}</b>
+            <b className="block truncate text-headline">{m.name}</b>
             {(m.jobTitle || m.company) && (
-              <p className="flex min-w-0 items-center gap-1 text-meta text-fg-2">
+              <p className="flex min-w-0 items-center gap-1 text-callout text-fg-2">
                 <span className="truncate">{[m.jobTitle, m.company].filter(Boolean).join(' · ')}</span>
                 {m.company && m.companyVerified && (
                   <BadgeCheck
@@ -76,7 +76,7 @@ export function MentorTile({ m }: { m: MentorCard }) {
               </p>
             )}
           </div>
-          {m.headline && <p className="line-clamp-2 text-meta text-fg-2">{m.headline}</p>}
+          {m.headline && <p className="line-clamp-2 text-callout text-fg-2">{m.headline}</p>}
           {m.stats && <MentorStatsLine stats={m.stats} />}
           {m.topics.length > 0 && (
             <div className="flex flex-wrap gap-1">
@@ -111,9 +111,9 @@ const levelOf = (score: number) => (score >= 60 ? 'strong' : score >= 30 ? 'good
 
 function ReasonList({ reasons }: { reasons: MatchReason[] }) {
   const { t } = useTranslation();
-  if (!reasons.length) return <p className="text-meta text-fg-3">{t('match.noReasons')}</p>;
+  if (!reasons.length) return <p className="text-callout text-fg-3">{t('match.noReasons')}</p>;
   return (
-    <ul className="grid gap-1.5 text-meta">
+    <ul className="grid gap-1.5 text-callout">
       {reasons.map((r) => (
         <li key={r.kind} className="flex items-start gap-2">
           <Sparkles className="mt-0.5 size-4 flex-none text-brand-ink" aria-hidden />
@@ -181,13 +181,13 @@ function MatchCard({
         <div className="relative flex items-end gap-3">
           <PersonAvatar name={m.name} fileId={m.avatarFileId} size={72} verified />
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-title font-bold">{m.name}</h2>
+            <h2 className="truncate text-headline font-bold">{m.name}</h2>
             {(m.jobTitle || m.company) && (
-              <p className="truncate text-meta text-fg-2">
+              <p className="truncate text-callout text-fg-2">
                 {[m.jobTitle, m.company].filter(Boolean).join(' · ')}
               </p>
             )}
-            {m.headline && <p className="line-clamp-2 text-meta text-fg-2">{m.headline}</p>}
+            {m.headline && <p className="line-clamp-2 text-callout text-fg-2">{m.headline}</p>}
           </div>
           {/* A ring and a word, not a bare number (MC-3: "30" read like a bad grade). */}
           <div className="grid flex-none justify-items-center gap-1">
@@ -199,7 +199,7 @@ function MatchCard({
               label={t('match.score', { score: match.score })}
               valueText={t(`match.level.${levelOf(match.score)}`)}
             >
-              <span className="text-meta font-bold tabular-nums">{match.score}</span>
+              <span className="text-callout font-bold tabular-nums">{match.score}</span>
             </ProgressRing>
             <span className="text-caption font-semibold text-fg-2" aria-hidden>
               {t(`match.level.${levelOf(match.score)}`)}
@@ -294,7 +294,7 @@ function MatchView() {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-meta text-fg-2">{t('match.intro')}</p>
+        <p className="text-callout text-fg-2">{t('match.intro')}</p>
         <Button size="sm" onClick={() => setPrefsOpen(true)}>
           <SlidersHorizontal className="size-4" aria-hidden /> {t('match.prefs')}
         </Button>

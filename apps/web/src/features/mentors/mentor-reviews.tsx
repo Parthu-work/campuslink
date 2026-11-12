@@ -22,7 +22,7 @@ export function MentorReviews({ mentorId }: { mentorId: string }) {
         {rows.map((r) => (
           <li key={r.id} className="grid gap-1.5 rounded-[var(--radius-md)] bg-surface-2 p-3.5">
             <div className="flex items-center justify-between gap-2">
-              <p className="flex items-center gap-1.5 text-meta font-semibold">
+              <p className="flex items-center gap-1.5 text-callout font-semibold">
                 <span
                   role="img"
                   className="inline-flex items-center gap-0.5"
@@ -48,7 +48,7 @@ export function MentorReviews({ mentorId }: { mentorId: string }) {
                 blockable={false}
               />
             </div>
-            <p className="text-meta whitespace-pre-line">{r.text}</p>
+            <p className="text-callout whitespace-pre-line">{r.text}</p>
           </li>
         ))}
       </ul>

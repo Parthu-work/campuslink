@@ -46,19 +46,19 @@ function OfferRow({ offer: o }: { offer: OfferView }) {
           <CompanyMark name={o.companyName} />
           <div className="min-w-0 flex-1">
             <h3 className="font-semibold">{o.companyName}</h3>
-            <p className="text-meta text-fg-2">
+            <p className="text-callout text-fg-2">
               {o.role} · {t(`placements.roleType.${o.type}`)}
             </p>
           </div>
           <Badge tone={tone[o.status]}>{t(`placements.offerStatus.${o.status}`)}</Badge>
         </div>
-        <p className="flex flex-wrap gap-x-2 text-meta">
+        <p className="flex flex-wrap gap-x-2 text-callout">
           <span className="font-semibold tabular-nums">{ctcExact(t, o.ctcLpa)}</span>
           <span className="text-fg-2">· {t(`placements.source.${o.source}`)}</span>
           <span className="text-fg-2">· {formatDay(o.offerDate)}</span>
         </p>
         {o.status === 'rejected' && o.reason && (
-          <p className="rounded-[var(--radius-md)] bg-danger-surface p-3 text-meta text-danger-ink">
+          <p className="rounded-[var(--radius-md)] bg-danger-surface p-3 text-callout text-danger-ink">
             {t('placements.rejectedBecause', { reason: o.reason })}
           </p>
         )}
@@ -92,10 +92,10 @@ function Offers() {
     <section aria-labelledby="outcomes-offers" className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="grid gap-1">
-          <h2 id="outcomes-offers" className="text-title font-semibold">
+          <h2 id="outcomes-offers" className="text-headline font-semibold">
             {t('outcomes.offers')}
           </h2>
-          <p className="max-w-[60ch] text-meta text-fg-2">{t('placements.offersIntro')}</p>
+          <p className="max-w-[60ch] text-callout text-fg-2">{t('placements.offersIntro')}</p>
         </div>
         <Button variant="primary" onClick={() => setReporting(true)}>
           <FilePlus2 className="size-4" aria-hidden /> {t('placements.reportOffer')}
@@ -140,12 +140,12 @@ function OutcomeRow({ outcome: o }: { outcome: OutcomeView }) {
           <div className="min-w-0">
             <p className="text-caption text-fg-3">{t(`outcomes.kind.${o.kind}`)}</p>
             <h3 className="font-semibold">{title}</h3>
-            <p className="text-meta text-fg-2">{outcomeDetail(t, o)}</p>
+            <p className="text-callout text-fg-2">{outcomeDetail(t, o)}</p>
           </div>
           <Badge tone={OUTCOME_TONE[o.status]}>{t(`outcomes.status.${o.status}`)}</Badge>
         </div>
         {o.status === 'rejected' && o.reason && (
-          <p className="rounded-[var(--radius-md)] bg-danger-surface p-3 text-meta text-danger-ink">
+          <p className="rounded-[var(--radius-md)] bg-danger-surface p-3 text-callout text-danger-ink">
             {t('placements.rejectedBecause', { reason: o.reason })}
           </p>
         )}
@@ -175,10 +175,10 @@ function OtherOutcomes() {
   return (
     <section aria-labelledby="outcomes-other" className="grid gap-4">
       <div className="grid gap-1">
-        <h2 id="outcomes-other" className="text-title font-semibold">
+        <h2 id="outcomes-other" className="text-headline font-semibold">
           {t('outcomes.otherTitle')}
         </h2>
-        <p className="max-w-[60ch] text-meta text-fg-2">{t('outcomes.otherIntro')}</p>
+        <p className="max-w-[60ch] text-callout text-fg-2">{t('outcomes.otherIntro')}</p>
       </div>
       <div className="flex flex-wrap gap-2">
         {kinds.map((k) => (
@@ -189,7 +189,7 @@ function OtherOutcomes() {
       </div>
       {list.isLoading && <Skeleton className="h-24 rounded-[var(--radius-lg)]" />}
       {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
-      {list.isSuccess && !list.data.length && <p className="text-meta text-fg-3">{t('outcomes.none')}</p>}
+      {list.isSuccess && !list.data.length && <p className="text-callout text-fg-3">{t('outcomes.none')}</p>}
       {!!list.data?.length && (
         <ul className="grid gap-3 sm:grid-cols-2">
           {list.data.map((o) => (

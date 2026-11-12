@@ -106,7 +106,7 @@ export function ListAdmin() {
           role="region"
           aria-label={t('admin.list')}
         >
-          <table className="w-full min-w-[640px] text-left text-meta">
+          <table className="w-full min-w-[640px] text-left text-callout">
             <thead className="border-b border-line text-caption text-fg-3">
               <tr>
                 <th scope="col" className="px-4 py-3 font-medium">
@@ -327,7 +327,7 @@ function InviteDialog({ onClose }: { onClose: () => void }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={6}
-            className="font-mono text-meta"
+            className="font-mono text-callout"
           />
         )}
       </Field>
@@ -423,7 +423,7 @@ export function VerificationAdmin() {
           >
             {t('admin.selectAll')}
           </Checkbox>
-          <span className="text-meta text-fg-2" role="status">
+          <span className="text-callout text-fg-2" role="status">
             {t('admin.selectedCount', { count: selected.length })}
           </span>
           <div className="ml-auto flex flex-wrap gap-2">
@@ -519,7 +519,7 @@ function RequestCard({
         {r.method === 'guardian_manual' ? (
           <div className="grid aspect-[4/3] w-full content-center gap-1 p-4 text-center">
             <p className="eyebrow">{t('guardian.adminLabel')}</p>
-            <p className="font-mono text-title font-semibold">{r.guardianPhone}</p>
+            <p className="font-mono text-headline font-semibold">{r.guardianPhone}</p>
             <p className="text-caption text-fg-2">{t('guardian.adminHint')}</p>
           </div>
         ) : img ? (
@@ -540,22 +540,22 @@ function RequestCard({
         )}
         <div className="flex flex-wrap items-center gap-2">
           <b>{r.user?.name}</b>
-          <span className="text-meta text-fg-2">{r.user?.email}</span>
+          <span className="text-callout text-fg-2">{r.user?.email}</span>
         </div>
-        <p className="font-mono text-meta">
+        <p className="font-mono text-callout">
           {r.rollNumber}
           {r.gradYear ? ` · ${r.gradYear}` : ''}
         </p>
-        <p className={r.listMatch ? 'text-meta text-success' : 'text-meta text-warning'}>
+        <p className={r.listMatch ? 'text-callout text-success' : 'text-callout text-warning'}>
           {r.listMatch
             ? t('admin.listMatch', { name: r.listMatch.name, year: r.listMatch.gradYear ?? '—' })
             : t('admin.noListMatch')}
         </p>
-        {r.note && <p className="rounded-[var(--radius-sm)] bg-surface-2 p-2 text-meta">“{r.note}”</p>}
+        {r.note && <p className="rounded-[var(--radius-sm)] bg-surface-2 p-2 text-callout">“{r.note}”</p>}
         <p className="font-mono text-caption text-fg-3">
           {new Date(r.createdAt).toLocaleString(i18n.language)}
         </p>
-        {r.reason && <p className="text-meta text-fg-2">{r.reason}</p>}
+        {r.reason && <p className="text-callout text-fg-2">{r.reason}</p>}
         {r.status === 'pending' && (
           <div className="flex flex-wrap gap-2 pt-1">
             <Button

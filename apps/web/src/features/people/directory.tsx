@@ -27,7 +27,7 @@ export function PersonCard({ p }: { p: PublicProfile }) {
         <PersonAvatar name={p.name} fileId={p.avatarFileId} verified={p.verified} />
         <div className="min-w-0 flex-1">
           <b className="block truncate">{p.name}</b>
-          {p.fields.headline && <p className="line-clamp-2 text-meta text-fg-2">{p.fields.headline}</p>}
+          {p.fields.headline && <p className="line-clamp-2 text-callout text-fg-2">{p.fields.headline}</p>}
           <div className="mt-2 flex flex-wrap gap-1">
             {p.roles.includes('ALUMNI') && <Badge tone="brand">{t('role.ALUMNI')}</Badge>}
             {p.companyVerified && <Badge tone="success">{p.companyVerified.company}</Badge>}

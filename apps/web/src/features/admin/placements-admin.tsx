@@ -290,7 +290,7 @@ function Companies() {
                     {t('placements.admin.edit')}
                   </Button>
                 </div>
-                {c.notes && <p className="line-clamp-2 text-meta text-fg-2">{c.notes}</p>}
+                {c.notes && <p className="line-clamp-2 text-callout text-fg-2">{c.notes}</p>}
               </Card>
             </li>
           ))}
@@ -375,7 +375,7 @@ function OfferDecision({ offer: o, onClose }: { offer: OfferView; onClose: () =>
       description={t('placements.admin.offerBody')}
     >
       <div className="grid gap-4">
-        <dl className="grid grid-cols-2 gap-3 text-meta">
+        <dl className="grid grid-cols-2 gap-3 text-callout">
           <div>
             <dt className="text-fg-3">{t('common.name')}</dt>
             <dd className="font-semibold">{o.member?.name || t('placements.admin.formerMember')}</dd>

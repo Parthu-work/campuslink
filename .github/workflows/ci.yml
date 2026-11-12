@@ -152,6 +152,41 @@ jobs:
           path: apps/web/playwright-report
           retention-days: 7
 
+  # The one-server production files (prompt 4, P2/P3/P9): the compose file resolves with generated
+  # secrets, nginx accepts the edge template, and the deploy scripts pass shellcheck.
+  deploy-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Scripts pass bash -n and shellcheck
+        run: |
+          for f in deploy/prod/*.sh scripts/backup/*.sh; do bash -n "$f"; done
+          shellcheck --severity=error deploy/prod/*.sh
+      - name: Compose file resolves with generated secrets
+        run: |
+          dir=$(mktemp -d)
+          deploy/prod/gen-secrets.sh --domain campus.example --dir "$dir"
+          # gen-secrets refuses to overwrite
+          if deploy/prod/gen-secrets.sh --domain campus.example --dir "$dir"; then exit 1; fi
+          cp -r "$dir/secrets" deploy/prod/secrets && cp "$dir/.env" deploy/prod/.env
+          docker compose --project-directory deploy/prod -f deploy/prod/compose.yml --env-file "$dir/.env" config --quiet
+          # Only the edge publishes ports.
+          docker compose --project-directory deploy/prod -f deploy/prod/compose.yml --env-file "$dir/.env" config --format json |
+            jq -e '[.services | to_entries[] | select(.value.ports != null) | .key] == ["edge"]'
+      - name: nginx accepts the edge template
+        run: |
+          mkdir -p /tmp/edge/cloudflare /tmp/edge/tls
+          printf 'geo $realip_remote_addr $from_edge { default 1; }\n' >/tmp/edge/cloudflare/origin-lock.conf
+          : >/tmp/edge/cloudflare/real-ip.conf
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=campus.example \
+            -keyout /tmp/edge/tls/privkey.pem -out /tmp/edge/tls/fullchain.pem 2>/dev/null
+          docker run --rm -e APP_ROOT_DOMAIN=campus.example \
+            -v "$PWD/deploy/nginx/campuslink.conf:/etc/nginx/templates/default.conf.template:ro" \
+            -v /tmp/edge/cloudflare:/etc/nginx/cloudflare:ro -v /tmp/edge/tls:/etc/ssl/campuslink:ro \
+            --add-host api:127.0.0.1 --add-host web:127.0.0.1 \
+            nginx:1.28-alpine sh -c '/docker-entrypoint.d/20-envsubst-on-templates.sh && nginx -t'
+
   security:
     runs-on: ubuntu-latest
     timeout-minutes: 10

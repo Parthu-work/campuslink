@@ -25,11 +25,11 @@ export function AppStatus() {
       className="pointer-events-none fixed inset-x-0 bottom-[calc(80px+env(safe-area-inset-bottom,0px))] z-[60] flex justify-center px-4 lg:bottom-6"
     >
       {online ? (
-        <span className="flex items-center gap-2 rounded-full bg-surface-2 px-4 py-2 text-meta text-fg-2 shadow-[var(--shadow)]">
+        <span className="flex items-center gap-2 rounded-full bg-surface-2 px-4 py-2 text-callout text-fg-2 shadow-[var(--shadow)]">
           <History className="size-4" aria-hidden /> {t('offline.updated', { when })}
         </span>
       ) : (
-        <span className="flex items-center gap-2 rounded-full bg-fg px-4 py-2 text-meta font-semibold text-bg shadow-[var(--shadow)]">
+        <span className="flex items-center gap-2 rounded-full bg-fg px-4 py-2 text-callout font-semibold text-bg shadow-[var(--shadow)]">
           <WifiOff className="size-4" aria-hidden />
           {when ? t('offline.offlineSaved', { when }) : t('common.offline')}
         </span>

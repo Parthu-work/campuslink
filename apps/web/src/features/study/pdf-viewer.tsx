@@ -132,7 +132,7 @@ export function PdfViewer({
   const go = (n: number) => setPage(Math.min(Math.max(1, n), count));
   const text = m.pages.find((p) => p.page === page)?.text ?? '';
 
-  if (failed) return <p className="text-meta text-danger">{t('study.viewer.pdfFailed')}</p>;
+  if (failed) return <p className="text-callout text-danger">{t('study.viewer.pdfFailed')}</p>;
   return (
     <div className="grid gap-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -145,7 +145,7 @@ export function PdfViewer({
         >
           <ChevronLeft className="size-4" aria-hidden />
         </Button>
-        <label className="flex items-center gap-1.5 text-meta">
+        <label className="flex items-center gap-1.5 text-callout">
           <span className="sr-only">{t('study.viewer.pageNumber')}</span>
           <Input
             type="number"
@@ -200,12 +200,12 @@ export function PdfViewer({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('study.viewer.searchPdf')}
-            className="min-h-11 pl-9 text-meta"
+            className="min-h-11 pl-9 text-callout"
           />
         </label>
       </div>
       {words.length > 0 && (
-        <p className="flex flex-wrap items-center gap-1.5 text-meta" aria-live="polite">
+        <p className="flex flex-wrap items-center gap-1.5 text-callout" aria-live="polite">
           {found.length ? t('study.viewer.foundOn') : t('study.viewer.noMatch')}
           {found.slice(0, 30).map((n) => (
             <button
@@ -238,7 +238,7 @@ export function PdfViewer({
         </div>
       </Card>
       {text && (
-        <details className="rounded-[var(--radius-md)] border border-line p-3 text-meta">
+        <details className="rounded-[var(--radius-md)] border border-line p-3 text-callout">
           <summary className="cursor-pointer py-3 font-semibold">{t('study.viewer.pageText')}</summary>
           <p className="mt-2 whitespace-pre-line text-fg-2">{text}</p>
         </details>

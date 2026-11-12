@@ -86,7 +86,7 @@ function NewResumeDialog({ onClose }: { onClose: () => void }) {
           )}
         </Field>
         <fieldset className="grid gap-2">
-          <legend className="mb-2 text-meta font-semibold">{t('resume.template')}</legend>
+          <legend className="mb-2 text-callout font-semibold">{t('resume.template')}</legend>
           <ChoiceGroup
             label={t('resume.template')}
             value={template}
@@ -100,7 +100,7 @@ function NewResumeDialog({ onClose }: { onClose: () => void }) {
           />
         </fieldset>
         {error && (
-          <p role="alert" className="text-meta font-medium text-danger">
+          <p role="alert" className="text-callout font-medium text-danger">
             {error}
           </p>
         )}
@@ -132,7 +132,7 @@ function ResumeRow({ resume: r }: { resume: ResumeSummaryView }) {
                 {r.title}
               </Link>
             </h2>
-            <p className="text-meta text-fg-2">
+            <p className="text-callout text-fg-2">
               {t(`resume.templates.${r.template}`)} ·{' '}
               {t('resume.edited', { when: formatRelative(r.updatedAt) })}
             </p>
@@ -168,7 +168,7 @@ function ResumeRow({ resume: r }: { resume: ResumeSummaryView }) {
             </div>
           }
         >
-          <p className="text-meta text-fg-2">{t('resume.deleteBody')}</p>
+          <p className="text-callout text-fg-2">{t('resume.deleteBody')}</p>
         </Dialog>
       )}
     </li>
@@ -193,7 +193,7 @@ export function ResumesPage() {
           </Button>
         }
       />
-      {full && <p className="text-meta text-fg-2">{t('resume.full', { n: RESUMES_PER_MEMBER })}</p>}
+      {full && <p className="text-callout text-fg-2">{t('resume.full', { n: RESUMES_PER_MEMBER })}</p>}
       {list.isLoading && <Skeleton className="h-32 rounded-[var(--radius-lg)]" />}
       {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
       {list.isSuccess && !list.data.length && (

@@ -50,7 +50,7 @@ export function PlatformSupport() {
                 <Card variant="interactive" className="flex items-center justify-between gap-3 p-4">
                   <span className="min-w-0">
                     <span className="block truncate font-semibold">{tk.subject}</span>
-                    <span className="text-meta text-fg-2">
+                    <span className="text-callout text-fg-2">
                       {tk.college?.name} · {formatRelative(tk.updatedAt)}
                     </span>
                   </span>

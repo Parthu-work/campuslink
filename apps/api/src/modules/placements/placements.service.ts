@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Types } from 'mongoose';
 import type { z } from 'zod';
-import writeXlsxFile from 'write-excel-file/node';
+import writeXlsxFile, { type SheetData } from 'write-excel-file/node';
 import {
   DRIVE_CLOSING_SOON_HOURS,
   DRIVE_REMINDER_HOURS,
@@ -1071,7 +1071,7 @@ export class PlacementsService {
         })),
       ),
     ];
-    const body = (await writeXlsxFile(sheet as never, { buffer: true })) as Buffer;
+    const body = await writeXlsxFile(sheet as SheetData).toBuffer();
     return {
       body,
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

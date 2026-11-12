@@ -20,7 +20,7 @@ export function LandingPage() {
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_50%_110%,var(--bg)_25%,transparent_70%)]" />
       <header className="gutter flex items-center gap-3 pt-[calc(18px+env(safe-area-inset-top,0px))]">
         <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} />
-        <div className="min-w-0 font-display text-meta leading-tight font-semibold">
+        <div className="min-w-0 font-display text-callout leading-tight font-semibold">
           {college}
           {tenant.branding.city && (
             <small className="block text-caption font-normal text-fg-2">{tenant.branding.city}</small>
@@ -31,7 +31,7 @@ export function LandingPage() {
             <button
               key={l}
               type="button"
-              className="min-h-11 rounded-full px-3 text-meta font-semibold text-fg-2 hover:bg-hover hover:text-fg"
+              className="min-h-11 rounded-full px-3 text-callout font-semibold text-fg-2 hover:bg-hover hover:text-fg"
               onClick={() => setLanguage(l)}
               lang={l}
             >
@@ -45,13 +45,13 @@ export function LandingPage() {
           <Crest monogram={tenant.branding.monogram} logoUrl={tenant.logoUrl} size={64} />
         </span>
         <span className="eyebrow">{t('landing.eyebrow')}</span>
-        <h1 className="text-hero leading-[0.98] font-bold tracking-[-0.035em] [:root[lang=te]_&]:text-display [:root[lang=te]_&]:leading-tight [:root[lang=te]_&]:tracking-normal">
+        <h1 className="text-display leading-[0.98] font-bold tracking-[-0.035em] [:root[lang=te]_&]:text-display [:root[lang=te]_&]:leading-tight [:root[lang=te]_&]:tracking-normal">
           {t('landing.h1a')}
           <em className="bg-gradient-to-r from-brand-ink to-accent-ink bg-clip-text not-italic text-transparent">
             {t('landing.h1b')}
           </em>
         </h1>
-        <p className="max-w-[54ch] text-lead text-fg-2">{t('landing.sub', { college })}</p>
+        <p className="max-w-[54ch] text-body text-fg-2">{t('landing.sub', { college })}</p>
         <div className="flex flex-wrap items-center gap-2.5">
           <Link to="/sign-up" className={buttonVariants({ variant: 'primary', size: 'lg' })}>
             {t('landing.join')} <ArrowRight className="size-5" aria-hidden />
@@ -72,7 +72,7 @@ export function LandingPage() {
             <li key={k} className="glass grid gap-1.5 rounded-[var(--radius-lg)] border border-line p-4">
               <Icon className="size-5 text-brand-ink" aria-hidden />
               <b className="text-body">{t(`landing.points.${k}`)}</b>
-              <span className="text-meta text-fg-2">{t(`landing.points.${k}Body`)}</span>
+              <span className="text-callout text-fg-2">{t(`landing.points.${k}Body`)}</span>
             </li>
           ))}
         </ul>

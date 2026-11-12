@@ -69,7 +69,7 @@ export function AdminBilling() {
 
   return (
     <div className="grid gap-5">
-      <p className="text-meta text-fg-2">{t('billing.intro')}</p>
+      <p className="text-callout text-fg-2">{t('billing.intro')}</p>
       {r.isLoading && <Skeleton className="h-64" />}
       {r.isError && !v && <ErrorState error={r.error} onRetry={() => void r.refetch()} />}
       {v && (
@@ -77,7 +77,7 @@ export function AdminBilling() {
           {params.get('paid') === '1' && (
             <p
               role="status"
-              className="rounded-[var(--radius-md)] bg-success-surface p-3 text-meta text-success-ink"
+              className="rounded-[var(--radius-md)] bg-success-surface p-3 text-callout text-success-ink"
             >
               {t('billing.paidReturn')}
             </p>
@@ -87,31 +87,31 @@ export function AdminBilling() {
               <Lock className="mt-0.5 size-5 flex-none text-danger-ink" aria-hidden />
               <div className="grid gap-1">
                 <p className="font-semibold text-danger-ink">{t('billing.readOnly.title')}</p>
-                <p className="text-meta text-fg-2">{t('billing.readOnly.body')}</p>
+                <p className="text-callout text-fg-2">{t('billing.readOnly.body')}</p>
               </div>
             </div>
           )}
           <Card className="grid gap-2 p-5">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-title font-semibold">{t(`billing.plan.${v.plan}`)}</h2>
+              <h2 className="text-headline font-semibold">{t(`billing.plan.${v.plan}`)}</h2>
               {v.customDeal && <Badge tone="accent">{t('billing.customDeal')}</Badge>}
             </div>
             {v.plan !== 'pilot' && (
-              <p className="text-meta text-fg-2">
+              <p className="text-callout text-fg-2">
                 {t('billing.pricePerStudent', { price: rupees(v.terms.pricePerStudentPaise) })} ·{' '}
                 {t('billing.minimum', { amount: rupees(v.terms.annualMinimumPaise, { paise: false }) })}
               </p>
             )}
             {v.plan !== 'pilot' && (
-              <p className="text-meta text-fg-2">
+              <p className="text-callout text-fg-2">
                 {t('billing.annual', { amount: rupees(v.annualPricePaise, { paise: false }) })}
               </p>
             )}
             {v.pilotEndsOn && (
-              <p className="text-meta text-fg-2">{t('billing.pilotEnds', { date: day(v.pilotEndsOn) })}</p>
+              <p className="text-callout text-fg-2">{t('billing.pilotEnds', { date: day(v.pilotEndsOn) })}</p>
             )}
             {!v.pilotEndsOn && v.renewalDate && (
-              <p className="text-meta text-fg-2">{t('billing.renews', { date: day(v.renewalDate) })}</p>
+              <p className="text-callout text-fg-2">{t('billing.renews', { date: day(v.renewalDate) })}</p>
             )}
           </Card>
           <StatGrid className="md:grid-cols-3">
@@ -179,7 +179,7 @@ export function AdminBilling() {
                         : 'border-line bg-surface-1',
                     )}
                   >
-                    <span className="text-meta">
+                    <span className="text-callout">
                       <span className="font-semibold">
                         {t('billing.toPay', { amount: rupees(inv.balancePaise), date: day(inv.dueOn) })}
                       </span>
@@ -262,7 +262,7 @@ export function AdminBilling() {
           {v.creditNotes.length > 0 && (
             <section className="grid gap-3">
               <h2 className="text-heading font-semibold">{t('billing.creditNotes')}</h2>
-              <p className="text-meta text-fg-2">{t('billing.creditNotesIntro')}</p>
+              <p className="text-callout text-fg-2">{t('billing.creditNotesIntro')}</p>
               <Table label={t('billing.creditNotes')}>
                 <THead>
                   <tr>
@@ -307,12 +307,12 @@ export function AdminBilling() {
           <section className="grid gap-1">
             <h2 className="text-heading font-semibold">{t('billing.billedTo')}</h2>
             {v.buyer ? (
-              <p className="text-meta text-fg-2">
+              <p className="text-callout text-fg-2">
                 {v.buyer.legalName}, {v.buyer.address}
                 {v.buyer.gstin ? ` · GSTIN ${v.buyer.gstin}` : ''}
               </p>
             ) : (
-              <p className="text-meta text-fg-2">{t('billing.billedToMissing')}</p>
+              <p className="text-callout text-fg-2">{t('billing.billedToMissing')}</p>
             )}
           </section>
         </>

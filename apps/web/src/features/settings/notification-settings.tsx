@@ -49,7 +49,7 @@ function PushCard() {
       <BellRing className="size-6 flex-none text-accent-ink" aria-hidden />
       <div className="min-w-0 flex-1">
         <h2 className="font-semibold">{t('notifications.push')}</h2>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {!available
             ? t('notifications.pushOff')
             : sub.data
@@ -83,7 +83,7 @@ function WhatsAppCard({ status }: { status: WhatsAppStatus }) {
       <MessageCircle className="size-6 flex-none text-accent-ink" aria-hidden />
       <div className="min-w-0 flex-1">
         <h2 className="font-semibold">{t('notifications.whatsapp')}</h2>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {!status.phone
             ? t('notifications.whatsappNoPhone')
             : status.consented
@@ -133,7 +133,7 @@ function PrefsForm({ initial, whatsapp }: { initial: NotificationPrefs; whatsapp
                 aria-labelledby={`nc-${cat}`}
                 className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4"
               >
-                <p id={`nc-${cat}`} className="text-meta font-semibold">
+                <p id={`nc-${cat}`} className="text-callout font-semibold">
                   {t(`notifications.cat.${cat}`)}
                   <span className="block text-caption font-normal text-fg-3">
                     {t(`notifications.catHint.${cat}`)}
@@ -143,7 +143,7 @@ function PrefsForm({ initial, whatsapp }: { initial: NotificationPrefs; whatsapp
                   {CHANNELS.filter((c) => c !== 'whatsapp' || whatsapp).map((c) => (
                     <label
                       key={c}
-                      className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-line px-3 text-meta font-medium has-[:checked]:border-brand has-[:checked]:bg-brand-surface"
+                      className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-line px-3 text-callout font-medium has-[:checked]:border-brand has-[:checked]:bg-brand-surface"
                     >
                       <input
                         type="checkbox"

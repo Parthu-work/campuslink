@@ -16,6 +16,7 @@ import {
   type PublicTenant,
   type Role,
   type Feature,
+  generatePalette,
 } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Field, Input, Select } from '../../components/ui/field';
@@ -43,7 +44,7 @@ const LegalDetails = lazy(() => import('./legal-admin').then((m) => ({ default: 
 function AdminMenu({ groups }: { groups: AdminNavGroup[] }) {
   const { t } = useTranslation();
   const row =
-    'relative flex min-h-11 items-center gap-3 rounded-[var(--radius-sm)] px-3 text-meta font-semibold text-fg-2 hover:bg-surface-2 hover:text-fg aria-[current=page]:bg-brand-surface aria-[current=page]:text-brand-ink';
+    'relative flex min-h-11 items-center gap-3 rounded-[var(--radius-sm)] px-3 text-callout font-semibold text-fg-2 hover:bg-surface-2 hover:text-fg aria-[current=page]:bg-brand-surface aria-[current=page]:text-brand-ink';
   return (
     <div className="grid gap-4">
       <NavLink to="/admin" end className={row} {...intentPreload('/admin')}>
@@ -206,7 +207,7 @@ export function UsersAdmin() {
             <Card className="flex flex-wrap items-center gap-3 p-3">
               <Avatar name={u.name} verified={u.verified} />
               <div className="min-w-0 flex-1">
-                <b className="block truncate text-meta">{u.name}</b>
+                <b className="block truncate text-callout">{u.name}</b>
                 <span className="block truncate text-caption text-fg-2">{u.email}</span>
                 <div className="mt-1.5 flex flex-wrap gap-1">
                   {u.roles.map((r) => (
@@ -432,7 +433,7 @@ function LogoField({ monogram, name }: { monogram: string; name: string }) {
   };
   return (
     <div className="grid gap-2">
-      <span className="text-meta font-semibold">{t('admin.logo.label')}</span>
+      <span className="text-callout font-semibold">{t('admin.logo.label')}</span>
       <div className="flex flex-wrap items-center gap-3">
         <span className="grid size-16 flex-none place-items-center rounded-[var(--radius-md)] border border-line bg-surface-2">
           <Crest monogram={monogram || '?'} logoUrl={logoUrl} size={48} label={name} />
@@ -474,10 +475,12 @@ export function BrandingAdmin() {
   const [error, setError] = useState<string>();
   // Live preview: apply as the admin edits; restore on leave if not saved.
   useEffect(() => {
-    applyBranding(b);
+    // The live preview generates here (this screen's chunk); members get the API's palette.
+    const { light, dark, chrome } = generatePalette({ primary: b.primary, accent: b.accent });
+    applyBranding({ light, dark, chrome });
   }, [b]);
   useEffect(
-    () => () => applyBranding((qc.getQueryData<PublicTenant>(['tenant']) ?? tenant).branding),
+    () => () => applyBranding((qc.getQueryData<PublicTenant>(['tenant']) ?? tenant).palette),
     [qc, tenant],
   );
   const save = useMutation({
@@ -503,7 +506,7 @@ export function BrandingAdmin() {
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
       <Card className="grid gap-4 p-5">
-        <p className="text-meta text-fg-2">{t('admin.brandingIntro')}</p>
+        <p className="text-callout text-fg-2">{t('admin.brandingIntro')}</p>
         <LogoField monogram={b.monogram} name={b.displayName} />
         <FormError message={error} />
         <Field label={t('admin.displayName')}>
@@ -605,7 +608,7 @@ export function FeaturesAdmin() {
   return (
     <div className="grid gap-5">
       <Card className="grid gap-3 p-5">
-        <p className="text-meta text-fg-2">{t('admin.featuresIntro')}</p>
+        <p className="text-callout text-fg-2">{t('admin.featuresIntro')}</p>
         <ul className="grid gap-2">
           {(Object.keys(FEATURES) as Feature[]).map((f) => {
             const inPlan = settings.data.planFeatures.includes(f);
@@ -685,7 +688,7 @@ export function AuditAdmin() {
       role="region"
       aria-label={t('admin.audit')}
     >
-      <table className="w-full min-w-[620px] text-left text-meta">
+      <table className="w-full min-w-[620px] text-left text-callout">
         <thead className="border-b border-line text-caption text-fg-3">
           <tr>
             <th className="px-4 py-3 font-medium">When</th>

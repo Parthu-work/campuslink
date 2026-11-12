@@ -11,7 +11,7 @@ import { Sheet } from '../ui/dialog';
 import { PersonAvatar } from '../ui/person-avatar';
 
 const itemClass =
-  'flex min-h-11 items-center gap-3 rounded-[var(--radius-sm)] px-3 text-meta font-semibold text-fg-2 outline-none hover:bg-surface-2 hover:text-fg focus-visible:bg-surface-2 focus-visible:text-fg data-[highlighted]:bg-surface-2 data-[highlighted]:text-fg';
+  'flex min-h-11 items-center gap-3 rounded-[var(--radius-sm)] px-3 text-callout font-semibold text-fg-2 outline-none hover:bg-surface-2 hover:text-fg focus-visible:bg-surface-2 focus-visible:text-fg data-[highlighted]:bg-surface-2 data-[highlighted]:text-fg';
 
 /** Desktop: the account button pinned to the bottom of the rail (profile, settings, sign out). */
 export function AccountMenu({ platform }: { platform: boolean }) {
@@ -29,7 +29,7 @@ export function AccountMenu({ platform }: { platform: boolean }) {
       >
         <PersonAvatar name={me.name} fileId={null} size={36} />
         <span className="hidden min-w-0 flex-1 xl:block">
-          <b className="block truncate text-meta">{me.name}</b>
+          <b className="block truncate text-callout">{me.name}</b>
           <span className="block truncate text-caption text-fg-3">{roles}</span>
         </span>
         <ChevronsUpDown className="hidden size-4 text-fg-3 xl:block" aria-hidden />
@@ -42,7 +42,7 @@ export function AccountMenu({ platform }: { platform: boolean }) {
           className="z-[80] grid min-w-60 gap-0.5 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 p-1.5 shadow-[var(--shadow)]"
         >
           <div className="px-3 py-2">
-            <b className="block truncate text-meta">{me.name}</b>
+            <b className="block truncate text-callout">{me.name}</b>
             <span className="block truncate text-caption text-fg-3">{me.email}</span>
           </div>
           <DropdownMenu.Separator className="my-1 h-px bg-line" />
@@ -108,7 +108,7 @@ export function AccountSheet() {
         <PersonAvatar name={me.name} fileId={null} size={48} />
         <div className="min-w-0">
           <b className="block truncate">{me.name}</b>
-          <span className="block truncate text-meta text-fg-3">{roles}</span>
+          <span className="block truncate text-callout text-fg-3">{roles}</span>
         </div>
       </div>
       <nav aria-label={t('nav.account')} className="grid gap-4">

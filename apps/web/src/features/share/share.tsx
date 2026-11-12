@@ -56,7 +56,7 @@ function Batchmates() {
   const n = Math.min(b.invitable, b.left, 10);
   return (
     <Card variant="raised" className="grid gap-3 p-4 sm:p-6" role="region" aria-labelledby="batch-title">
-      <h2 id="batch-title" className="flex items-center gap-2 text-title font-semibold">
+      <h2 id="batch-title" className="flex items-center gap-2 text-headline font-semibold">
         <Users className="size-5 text-brand-ink" aria-hidden /> {t('share.batch.title')}
       </h2>
       {batchLine(t, b) && <p className="text-caption text-fg-3">{batchLine(t, b)}</p>}
@@ -64,11 +64,11 @@ function Batchmates() {
         {b.notHere ? t('share.batch.notHere', { n: b.notHere }) : t('share.batch.notHereNone')}
       </p>
       {!b.enabled ? (
-        <p className="text-meta text-fg-2">{t('share.batch.off')}</p>
+        <p className="text-callout text-fg-2">{t('share.batch.off')}</p>
       ) : (
         b.notHere > 0 && (
           <div className="grid gap-2">
-            <p className="text-meta text-fg-2">{t('share.batch.how')}</p>
+            <p className="text-callout text-fg-2">{t('share.batch.how')}</p>
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 variant="primary"
@@ -124,7 +124,7 @@ function LivePage({ page }: { page: PublicPageView }) {
         href={page.url}
         target="_blank"
         rel="noreferrer"
-        className="inline-flex min-h-11 items-center gap-1.5 text-meta font-semibold text-brand-ink underline"
+        className="inline-flex min-h-11 items-center gap-1.5 text-callout font-semibold text-brand-ink underline"
       >
         <ExternalLink className="size-4" aria-hidden /> {t('share.pages.open')}
       </a>
@@ -211,11 +211,11 @@ function PublicPages() {
   const live = new Map(v.data.pages.filter((p) => p.status === 'live').map((p) => [p.id, p]));
   return (
     <section aria-labelledby="pages-title" className="grid gap-3">
-      <h2 id="pages-title" className="flex items-center gap-2 text-title font-semibold">
+      <h2 id="pages-title" className="flex items-center gap-2 text-headline font-semibold">
         <Share2 className="size-5 text-brand-ink" aria-hidden /> {t('share.pages.title')}
       </h2>
-      <p className="text-meta text-fg-2">{t('share.pages.intro')}</p>
-      {!v.data.allowed && <p className="text-meta text-fg-2">{t('share.pages.minor')}</p>}
+      <p className="text-callout text-fg-2">{t('share.pages.intro')}</p>
+      {!v.data.allowed && <p className="text-callout text-fg-2">{t('share.pages.minor')}</p>}
       {v.data.allowed && !v.data.options.length && (
         <EmptyState icon={<Share2 className="size-6" />} title={t('share.pages.title')}>
           {t('share.pages.none')}
@@ -291,10 +291,10 @@ function ParentDigest() {
   const d = v.data;
   return (
     <Card variant="raised" className="grid gap-3 p-4 sm:p-6" role="region" aria-labelledby="parent-title">
-      <h2 id="parent-title" className="text-title font-semibold">
+      <h2 id="parent-title" className="text-headline font-semibold">
         {t('share.parent.title')}
       </h2>
-      <p className="text-meta text-fg-2">{t('share.parent.intro')}</p>
+      <p className="text-callout text-fg-2">{t('share.parent.intro')}</p>
       {!d && <Skeleton className="h-24" />}
       {d?.status === 'none' && (
         <form
@@ -343,7 +343,9 @@ function ParentDigest() {
       {d?.status === 'pending' && (
         <div className="grid gap-3">
           <p className="font-semibold">{t('share.parent.codeTitle')}</p>
-          <p className="text-meta text-fg-2">{t('share.parent.codeBody', { last4: d.phoneLast4 ?? '' })}</p>
+          <p className="text-callout text-fg-2">
+            {t('share.parent.codeBody', { last4: d.phoneLast4 ?? '' })}
+          </p>
           <OtpInput
             label={t('share.parent.code')}
             value={code}
@@ -439,7 +441,7 @@ export function CaptainPage() {
       {v.isError && <ErrorState error={v.error} onRetry={() => void v.refetch()} />}
       {c && (
         <>
-          {batchLine(t, c) && <p className="text-meta font-semibold">{batchLine(t, c)}</p>}
+          {batchLine(t, c) && <p className="text-callout font-semibold">{batchLine(t, c)}</p>}
           <StatGrid>
             <StatCard label={t('share.captain.onList')} value={c.onList} />
             <StatCard label={t('share.captain.invited')} value={c.invited} />
@@ -450,9 +452,9 @@ export function CaptainPage() {
           </StatGrid>
           <Card variant="raised" className="grid gap-3 p-4">
             {!c.enabled ? (
-              <p className="text-meta text-fg-2">{t('share.captain.off')}</p>
+              <p className="text-callout text-fg-2">{t('share.captain.off')}</p>
             ) : c.invitable < 1 ? (
-              <p className="text-meta text-fg-2">{t('share.captain.allIn')}</p>
+              <p className="text-callout text-fg-2">{t('share.captain.allIn')}</p>
             ) : (
               <div className="flex flex-wrap items-center gap-3">
                 <Button

@@ -42,7 +42,7 @@ function Review({ id, onClose }: { id: string; onClose: () => void }) {
       {!e ? (
         <Skeleton className="h-32" />
       ) : (
-        <div className="grid gap-3 text-meta">
+        <div className="grid gap-3 text-callout">
           <p>
             {e.legalName} · {e.domain} · GSTIN {e.gstin}
           </p>
@@ -122,8 +122,8 @@ function Clusters() {
   });
   return (
     <Card variant="raised" className="grid gap-3 p-4 sm:p-6">
-      <h2 className="text-title font-semibold">{t('recruiter.platform.clusters')}</h2>
-      <ul className="grid gap-2 text-meta">
+      <h2 className="text-headline font-semibold">{t('recruiter.platform.clusters')}</h2>
+      <ul className="grid gap-2 text-callout">
         {clusters.data?.map((c) => (
           <li key={c.id} className="flex flex-wrap items-center justify-between gap-2">
             <span>
@@ -181,7 +181,7 @@ function Revenue() {
   });
   return (
     <Card variant="raised" className="grid gap-3 p-4 sm:p-6">
-      <h2 className="text-title font-semibold">{t('recruiter.platform.revenue')}</h2>
+      <h2 className="text-headline font-semibold">{t('recruiter.platform.revenue')}</h2>
       <Field label={t('recruiter.platform.month')}>
         {({ id, describedBy, invalid }) => (
           <Input
@@ -195,9 +195,9 @@ function Revenue() {
         )}
       </Field>
       {v.data && v.data.colleges.length === 0 && (
-        <p className="text-meta text-fg-2">{t('recruiter.platform.noRevenue')}</p>
+        <p className="text-callout text-fg-2">{t('recruiter.platform.noRevenue')}</p>
       )}
-      <ul className="grid gap-1 text-meta">
+      <ul className="grid gap-1 text-callout">
         {v.data?.colleges.map((c) => (
           <li key={c.id}>
             {t('recruiter.platform.revenueRow', {
@@ -242,7 +242,7 @@ export function PlatformEmployers() {
         {v.data?.map((e) => (
           <li key={e.id}>
             <Card variant="raised" className="flex flex-wrap items-center justify-between gap-2 p-4">
-              <span className="grid gap-1 text-meta">
+              <span className="grid gap-1 text-callout">
                 <b>{e.name}</b>
                 <span className="text-fg-2">
                   {e.domain} · {formatDay(e.createdAt)}

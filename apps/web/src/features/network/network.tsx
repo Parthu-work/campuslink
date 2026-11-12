@@ -211,7 +211,7 @@ function AlumniTab({ me, goSettings }: { me: NetworkSettingsView; goSettings: ()
           <li key={c.ref}>
             <Card variant="raised" className="grid h-full gap-2 p-4">
               <h3 className="text-body font-semibold">{c.name}</h3>
-              <p className="text-meta text-fg-2">
+              <p className="text-callout text-fg-2">
                 {[c.roleTitle, c.company].filter(Boolean).join(' · ') || t('network.alumni.noCompany')}
               </p>
               <p className="flex items-center gap-1.5 text-caption text-fg-3">
@@ -334,7 +334,7 @@ function IntrosTab() {
         ]}
         onChange={(b) => setParams((p) => (p.set('box', b), p), { replace: true })}
       />
-      {box === 'sent' && <p className="text-meta text-fg-2">{t('network.intros.left', { n: d.left })}</p>}
+      {box === 'sent' && <p className="text-callout text-fg-2">{t('network.intros.left', { n: d.left })}</p>}
       {(box === 'received' ? d.received : d.sent).length === 0 && (
         <EmptyState icon={<Handshake />} title={t(`network.intros.none.${box}`)} />
       )}
@@ -352,10 +352,10 @@ function IntrosTab() {
                 <p className="text-caption text-fg-3">
                   {[r.from.college, r.from.branch, r.from.gradYear].filter(Boolean).join(' · ')}
                 </p>
-                <p className="text-meta">
+                <p className="text-callout">
                   {t(`session.type.${r.helpWith}`)} · {t(`network.goals.${r.goal}`)}
                 </p>
-                {r.note && <p className="text-meta whitespace-pre-line text-fg-2">{r.note}</p>}
+                {r.note && <p className="text-callout whitespace-pre-line text-fg-2">{r.note}</p>}
                 {r.status === 'pending' && (
                   <div className="flex flex-wrap gap-2">
                     <Button size="sm" variant="primary" onClick={() => setAccepting(r.id)}>
@@ -404,10 +404,10 @@ function IntrosTab() {
                   {[s.to.company, s.to.college].filter(Boolean).join(' · ')}
                 </p>
                 {s.declineReason && (
-                  <p className="text-meta text-fg-2">{t(`network.declines.${s.declineReason}`)}</p>
+                  <p className="text-callout text-fg-2">{t(`network.declines.${s.declineReason}`)}</p>
                 )}
                 {s.shared && (
-                  <div className="grid gap-1 text-meta">
+                  <div className="grid gap-1 text-callout">
                     <p className="font-semibold">{t('network.intros.sharedWithYou')}</p>
                     {s.shared.email && (
                       <a className="text-brand-ink underline" href={`mailto:${s.shared.email}`}>
@@ -477,7 +477,7 @@ function CredentialsTab() {
   const open = d.sources.filter((s) => !s.issued);
   return (
     <div className="grid gap-5">
-      <p className="text-meta text-fg-2">{t('network.credentials.intro')}</p>
+      <p className="text-callout text-fg-2">{t('network.credentials.intro')}</p>
       {d.credentials.length === 0 && (
         <EmptyState icon={<BadgeCheck />} title={t('network.credentials.none')} />
       )}
@@ -491,7 +491,7 @@ function CredentialsTab() {
                   {t(`network.credentials.status.${c.status}`)}
                 </Badge>
               </div>
-              <p className="text-meta text-fg-2">{Object.values(c.claims).join(' · ')}</p>
+              <p className="text-callout text-fg-2">{Object.values(c.claims).join(' · ')}</p>
               <p className="text-caption text-fg-3">
                 {t('network.credentials.issuedOn', { date: formatDay(c.issuedAt) })}
               </p>
@@ -509,7 +509,7 @@ function CredentialsTab() {
                     <Copy className="size-4" aria-hidden /> {t('network.credentials.copy')}
                   </Button>
                   <a
-                    className="inline-flex min-h-11 items-center text-meta font-semibold text-brand-ink underline"
+                    className="inline-flex min-h-11 items-center text-callout font-semibold text-brand-ink underline"
                     href={c.url}
                     target="_blank"
                     rel="noreferrer"
@@ -532,7 +532,7 @@ function CredentialsTab() {
       </ul>
       {open.length > 0 && (
         <Card variant="raised" className="grid gap-3 p-4">
-          <h2 className="text-title font-semibold">{t('network.credentials.available')}</h2>
+          <h2 className="text-headline font-semibold">{t('network.credentials.available')}</h2>
           <ChoiceGroup
             label={t('network.settings.nameStyle')}
             variant="chip"
@@ -549,7 +549,7 @@ function CredentialsTab() {
                 key={`${s.type}-${s.sourceId ?? s.milestone}`}
                 className="flex flex-wrap items-center justify-between gap-2"
               >
-                <span className="text-meta">
+                <span className="text-callout">
                   {t(`network.credentialTypes.${s.type}`)}: {s.label}
                 </span>
                 <Button size="sm" variant="primary" loading={issue.isPending} onClick={() => issue.mutate(s)}>
@@ -592,10 +592,10 @@ function EmployersTab({ me, goSettings }: { me: NetworkSettingsView; goSettings:
   if (!v.data) return <Skeleton className="h-32" />;
   return (
     <div className="grid gap-4">
-      <p className="text-meta text-fg-2">{t('network.employers.intro')}</p>
+      <p className="text-callout text-fg-2">{t('network.employers.intro')}</p>
       {!me.visible.employers && (
         <Card variant="raised" className="grid gap-2 p-4">
-          <p className="text-meta">{t('network.employers.consentFirst')}</p>
+          <p className="text-callout">{t('network.employers.consentFirst')}</p>
           <div>
             <Button size="sm" variant="primary" onClick={goSettings}>
               {t('network.alumni.joinAction')}
@@ -612,7 +612,7 @@ function EmployersTab({ me, goSettings }: { me: NetworkSettingsView; goSettings:
         {v.data.eligible.map((c) => (
           <li key={c.driveId}>
             <Card variant="raised" className="flex flex-wrap items-center justify-between gap-2 p-4">
-              <span className="text-meta">
+              <span className="text-callout">
                 <b>{c.employer}</b> · {c.title}
               </span>
               <Button
@@ -630,7 +630,7 @@ function EmployersTab({ me, goSettings }: { me: NetworkSettingsView; goSettings:
         {v.data.shared.map((c) => (
           <li key={c.ref}>
             <Card variant="raised" className="flex flex-wrap items-center justify-between gap-2 p-4">
-              <span className="grid gap-1 text-meta">
+              <span className="grid gap-1 text-callout">
                 <span>
                   <b>{c.employer}</b> · {c.title}
                 </span>
@@ -678,7 +678,7 @@ function SettingsTab({ me }: { me: NetworkSettingsView }) {
   return (
     <div className="grid gap-5">
       <Card variant="raised" className="grid gap-3 p-4 sm:p-6">
-        <h2 className="text-title font-semibold">{t('network.settings.consentTitle')}</h2>
+        <h2 className="text-headline font-semibold">{t('network.settings.consentTitle')}</h2>
         <Switch
           checked={me.consents.network_discovery}
           disabled={consent.isPending || !me.college.alumniDiscovery}
@@ -702,7 +702,7 @@ function SettingsTab({ me }: { me: NetworkSettingsView }) {
         <p className="text-caption text-fg-3">{t('network.settings.revocable')}</p>
       </Card>
       <Card variant="raised" className="grid gap-4 p-4 sm:p-6">
-        <h2 className="text-title font-semibold">{t('network.settings.showTitle')}</h2>
+        <h2 className="text-headline font-semibold">{t('network.settings.showTitle')}</h2>
         <ChoiceGroup
           label={t('network.settings.nameStyle')}
           variant="chip"
@@ -760,7 +760,7 @@ function SettingsTab({ me }: { me: NetworkSettingsView }) {
           )}
         </Field>
         <fieldset className="grid gap-1">
-          <legend className="text-meta font-semibold">{t('network.settings.helpWith')}</legend>
+          <legend className="text-callout font-semibold">{t('network.settings.helpWith')}</legend>
           {SESSION_TYPES.map((h) => (
             <Checkbox
               key={h}
@@ -801,11 +801,11 @@ function SettingsTab({ me }: { me: NetworkSettingsView }) {
         </div>
       </Card>
       <Card variant="raised" className="grid gap-2 p-4 sm:p-6">
-        <h2 className="text-title font-semibold">{t('network.settings.viewedTitle')}</h2>
+        <h2 className="text-headline font-semibold">{t('network.settings.viewedTitle')}</h2>
         {me.viewedBy.length === 0 ? (
-          <p className="text-meta text-fg-2">{t('network.settings.viewedNone')}</p>
+          <p className="text-callout text-fg-2">{t('network.settings.viewedNone')}</p>
         ) : (
-          <ul className="grid gap-1 text-meta">
+          <ul className="grid gap-1 text-callout">
             {me.viewedBy.map((v, i) => (
               <li key={`${v.at}-${i}`}>
                 {t(`network.settings.viewed.${v.what}`, { employer: v.employer, date: formatDay(v.at) })}

@@ -19,12 +19,12 @@ function OutcomesPreview() {
   const v = useQuery(q.adminOutcomesPreview());
   if (v.isLoading) return <Skeleton className="h-32" />;
   const o = v.data;
-  if (!o || !o.years.length) return <p className="text-meta text-fg-2">{t('share.admin.noData')}</p>;
+  if (!o || !o.years.length) return <p className="text-callout text-fg-2">{t('share.admin.noData')}</p>;
   return (
     <div className="grid gap-3">
       <h3 className="text-body font-semibold">{t('share.admin.preview')}</h3>
       <div className="overflow-x-auto">
-        <table className="w-full text-meta">
+        <table className="w-full text-callout">
           <thead>
             <tr className="text-left text-fg-3">
               <th className="py-1 pr-3 font-semibold">{t('share.admin.year')}</th>
@@ -46,17 +46,17 @@ function OutcomesPreview() {
         </table>
       </div>
       {o.recruiters.length > 0 && (
-        <p className="text-meta">
+        <p className="text-callout">
           <b>{t('share.admin.recruiters')}:</b>{' '}
           {o.recruiters.map((r) => `${r.company} (${r.offers})`).join(', ')}
         </p>
       )}
       {o.alumniAt.length > 0 && (
-        <p className="text-meta">
+        <p className="text-callout">
           <b>{t('share.admin.alumniAt')}:</b> {o.alumniAt.map((r) => `${r.company} (${r.alumni})`).join(', ')}
         </p>
       )}
-      <p className="text-meta">{t('share.admin.mentoringHours', { n: o.mentoringHours })}</p>
+      <p className="text-callout">{t('share.admin.mentoringHours', { n: o.mentoringHours })}</p>
     </div>
   );
 }
@@ -91,12 +91,12 @@ export function GrowthAdmin() {
   const s = v.data;
   return (
     <div className="grid gap-5">
-      <p className="text-meta text-fg-2">{t('share.admin.intro')}</p>
+      <p className="text-callout text-fg-2">{t('share.admin.intro')}</p>
       {!s && <Skeleton className="h-48" />}
       {s && (
         <Card variant="raised" className="grid gap-3 p-4 sm:p-6">
-          <h2 className="text-title font-semibold">{t('share.admin.invitesTitle')}</h2>
-          <p className="text-meta text-fg-2">
+          <h2 className="text-headline font-semibold">{t('share.admin.invitesTitle')}</h2>
+          <p className="text-callout text-fg-2">
             {t('share.admin.invitesBody', { n: MEMBER_INVITES_PER_WEEK })}
           </p>
           {!s.memberInvites.enabled && (
@@ -119,8 +119,8 @@ export function GrowthAdmin() {
       )}
       {s && canSettings && (
         <Card variant="raised" className="grid gap-3 p-4 sm:p-6">
-          <h2 className="text-title font-semibold">{t('share.admin.outcomesTitle')}</h2>
-          <p className="text-meta text-fg-2">{t('share.admin.outcomesBody')}</p>
+          <h2 className="text-headline font-semibold">{t('share.admin.outcomesTitle')}</h2>
+          <p className="text-callout text-fg-2">{t('share.admin.outcomesBody')}</p>
           <Switch
             checked={s.outcomesPage.enabled}
             disabled={outcomes.isPending}
@@ -132,7 +132,7 @@ export function GrowthAdmin() {
               href={s.outcomesPage.url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex min-h-11 items-center gap-1.5 text-meta font-semibold text-brand-ink underline"
+              className="inline-flex min-h-11 items-center gap-1.5 text-callout font-semibold text-brand-ink underline"
             >
               <ExternalLink className="size-4" aria-hidden /> {t('share.admin.outcomesLink')}
             </a>

@@ -26,9 +26,9 @@ export function LegalPage() {
     <main id="main" className="gutter mx-auto grid w-full max-w-[760px] gap-5 py-8">
       <PageHeader icon={<ScrollText />} title={t(`legal.${which}`)} intro={t('legal.intro')} />
       {page.data?.translated ? (
-        <p className="text-meta text-fg-2">{t('legal.translatedNote')}</p>
+        <p className="text-callout text-fg-2">{t('legal.translatedNote')}</p>
       ) : (
-        i18n.language !== 'en' && <p className="text-meta text-fg-2">{t('legal.englishOnly')}</p>
+        i18n.language !== 'en' && <p className="text-callout text-fg-2">{t('legal.englishOnly')}</p>
       )}
       {page.isLoading && <Skeleton className="h-96 rounded-[var(--radius-lg)]" />}
       {page.isError && <ErrorState error={page.error} onRetry={() => void page.refetch()} />}
@@ -36,7 +36,7 @@ export function LegalPage() {
         <Card className="grid gap-4 p-5" lang={page.data.language}>
           {!page.data.complete && (
             <p
-              className="rounded-[var(--radius-md)] bg-warning-surface p-3 text-meta text-warning-ink"
+              className="rounded-[var(--radius-md)] bg-warning-surface p-3 text-callout text-warning-ink"
               lang={i18n.language}
             >
               {t('legal.incomplete')}
@@ -45,7 +45,7 @@ export function LegalPage() {
           <DocText text={page.data.body} />
         </Card>
       )}
-      <nav aria-label={t('legal.other')} className="flex flex-wrap gap-4 text-meta">
+      <nav aria-label={t('legal.other')} className="flex flex-wrap gap-4 text-callout">
         {LEGAL_DOCS.filter((d) => d !== which).map((d) => (
           <Link
             key={d}

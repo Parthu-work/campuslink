@@ -47,7 +47,7 @@ function Decision({ outcome: o, onClose }: { outcome: OutcomeView; onClose: () =
       description={t('outcomes.admin.reviewBody')}
     >
       <div className="grid gap-4">
-        <dl className="grid grid-cols-2 gap-3 text-meta">
+        <dl className="grid grid-cols-2 gap-3 text-callout">
           <div>
             <dt className="text-fg-3">{t('common.name')}</dt>
             <dd className="font-semibold">{o.member?.name || t('placements.admin.formerMember')}</dd>
@@ -126,7 +126,7 @@ export function OutcomesQueue({ kind }: { kind: OutcomeKind }) {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="max-w-[60ch] text-meta text-fg-2">{t(`outcomes.admin.intro.${kind}`)}</p>
+        <p className="max-w-[60ch] text-callout text-fg-2">{t(`outcomes.admin.intro.${kind}`)}</p>
         <input
           ref={fileRef}
           type="file"
@@ -146,7 +146,7 @@ export function OutcomesQueue({ kind }: { kind: OutcomeKind }) {
       </div>
       <p className="text-caption text-fg-3">{t(`outcomes.admin.columns.${kind}`)}</p>
       {imported && (
-        <Card className="grid gap-1 p-3 text-meta" role="status">
+        <Card className="grid gap-1 p-3 text-callout" role="status">
           <p>{t('outcomes.admin.imported', { created: imported.created, updated: imported.updated })}</p>
           {imported.unknown.length > 0 && (
             <p className="text-warning-ink">

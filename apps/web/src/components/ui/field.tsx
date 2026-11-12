@@ -33,7 +33,7 @@ export function Field({ label, hint, error, aside, children }: FieldProps) {
   return (
     <div className="grid gap-1.5">
       <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className="text-meta font-semibold text-fg">
+        <label htmlFor={id} className="text-callout font-semibold text-fg">
           {label}
         </label>
         {aside && <span className="text-caption text-fg-3">{aside}</span>}
@@ -113,7 +113,7 @@ export function Checkbox({
   return (
     <label
       htmlFor={id}
-      className="flex min-h-11 min-w-11 cursor-pointer items-start gap-3 py-1 text-meta leading-snug text-fg-2"
+      className="flex min-h-11 min-w-11 cursor-pointer items-start gap-3 py-1 text-callout leading-snug text-fg-2"
     >
       <span className="relative mt-0.5 grid size-5 flex-none place-items-center">
         <input
@@ -151,7 +151,7 @@ export function Select({
         className={cn(
           inputClass,
           'min-w-0 cursor-pointer appearance-none truncate',
-          size === 'sm' ? 'min-h-11 pr-9 pl-3 text-meta' : 'pr-11',
+          size === 'sm' ? 'min-h-11 pr-9 pl-3 text-callout' : 'pr-11',
         )}
         {...props}
       />

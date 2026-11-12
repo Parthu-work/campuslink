@@ -186,7 +186,7 @@ export function PostPage() {
           <Card className="grid gap-4 p-4">
             <h2 className="font-semibold">{t('feed.commentsTitle', { count: post.data.counts.comments })}</h2>
             {canInteract && post.data.status === 'published' && <CommentForm postId={postId} />}
-            {comments.data && !top.length && <p className="text-meta text-fg-2">{t('feed.noComments')}</p>}
+            {comments.data && !top.length && <p className="text-callout text-fg-2">{t('feed.noComments')}</p>}
             <ul className="grid gap-5">
               {top.map((c) => (
                 <CommentItem

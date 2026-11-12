@@ -39,7 +39,7 @@ function Pair({ pair }: { pair: BuddyPairView }) {
           <Link to={`/people/${pair.other.userId}`} className="font-semibold hover:underline">
             {pair.other.name}
           </Link>
-          <span className="text-meta text-fg-2">
+          <span className="text-callout text-fg-2">
             {[
               pair.other.branch,
               pair.other.gradYear ? t('habits.buddy.batch', { year: pair.other.gradYear }) : null,
@@ -120,7 +120,7 @@ export function PeersPage() {
       {status.isError && <ErrorState error={status.error} onRetry={() => void status.refetch()} />}
       {buddy.data && (
         <section aria-labelledby="buddy-title" className="grid gap-3">
-          <h2 id="buddy-title" className="text-title font-semibold">
+          <h2 id="buddy-title" className="text-headline font-semibold">
             {t('habits.buddy.title')}
           </h2>
           {buddy.data.mine && <Pair pair={buddy.data.mine} />}
@@ -137,8 +137,8 @@ export function PeersPage() {
       {s && (
         <Card variant="raised" className="grid gap-5 p-4 sm:p-6">
           <div className="grid gap-2">
-            <h2 className="text-title font-semibold">{t('habits.peers.mentorTitle')}</h2>
-            <p className="text-meta text-fg-2">
+            <h2 className="text-headline font-semibold">{t('habits.peers.mentorTitle')}</h2>
+            <p className="text-callout text-fg-2">
               {s.eligible
                 ? s.reason === 'offer'
                   ? t('habits.peers.eligibleOffer')
@@ -153,13 +153,13 @@ export function PeersPage() {
               description={t('habits.peers.mentorSwitchBody')}
             />
             {s.active && (
-              <Link to="/mentor" className="text-meta font-semibold text-brand-ink underline">
+              <Link to="/mentor" className="text-callout font-semibold text-brand-ink underline">
                 {t('habits.peers.settings')}
               </Link>
             )}
           </div>
           <div className="grid gap-2">
-            <h2 className="text-title font-semibold">{t('habits.buddy.volunteerTitle')}</h2>
+            <h2 className="text-headline font-semibold">{t('habits.buddy.volunteerTitle')}</h2>
             <Switch
               checked={s.buddy.volunteering}
               disabled={(!s.buddy.canVolunteer && !s.buddy.volunteering) || volunteer.isPending}

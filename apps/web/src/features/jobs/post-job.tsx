@@ -158,7 +158,7 @@ export function PostJobPage() {
             max={12}
           />
           <fieldset className="grid gap-1.5">
-            <legend className="mb-1.5 text-meta font-semibold">{t('jobs.fields.branches')}</legend>
+            <legend className="mb-1.5 text-callout font-semibold">{t('jobs.fields.branches')}</legend>
             <div className="flex flex-wrap gap-1.5">
               {BRANCHES.map((b) => (
                 <Chip
@@ -239,7 +239,7 @@ export function PostJobPage() {
             )}
           </Field>
           {e.root && (
-            <p role="alert" className="text-meta font-medium text-danger">
+            <p role="alert" className="text-callout font-medium text-danger">
               {e.root.message}
             </p>
           )}

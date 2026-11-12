@@ -3,6 +3,7 @@ import { NotificationPrefsModel } from './notification.model.js';
 import type { NotificationsService } from './notifications.service.js';
 import { UserModel } from '../auth/user.model.js';
 import { TenantModel } from '../tenants/tenant.model.js';
+import { withPlatformScope } from '../../lib/context.js';
 import type { JobQueue } from '../../lib/jobs.js';
 
 export const DIGEST_JOB = 'notifications.weekly_digest';
@@ -35,13 +36,23 @@ export class DigestService {
     return istDay(new Date(now.getTime() - back * 86_400_000));
   }
 
+  /** The scheduler (prompt 4, P5): colleges where at least one member turned the digest on. */
+  static async optedInTenantIds(): Promise<Set<string>> {
+    const ids = await withPlatformScope('scheduler:digest-opted-in', () =>
+      NotificationPrefsModel.distinct('tenantId', { weeklyDigest: true }),
+    );
+    return new Set(ids.map(String));
+  }
+
   /** Queues this week's run per active college, from Monday 09:00 IST (job ids dedupe per week). */
-  static async enqueueWeekly(jobs: JobQueue, now = new Date()): Promise<number> {
+  static async enqueueWeekly(jobs: JobQueue, now = new Date(), only?: ReadonlySet<string>): Promise<number> {
     const ist = new Date(now.getTime() + IST_MS);
     const monday = ist.getUTCDay() === 1;
     if (monday && ist.getUTCHours() < 9) return 0;
     const week = DigestService.weekOf(now).replaceAll('-', '');
-    const tenants = await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean();
+    const tenants = (
+      await TenantModel.find({ kind: 'college', status: 'active' }).select('_id').lean()
+    ).filter((t) => !only || only.has(String(t._id)));
     for (const t of tenants)
       await jobs.enqueue(
         DIGEST_JOB,

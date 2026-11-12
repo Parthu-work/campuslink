@@ -69,6 +69,49 @@ export const PLANS: Readonly<Record<PlanId, Readonly<PlanTerms>>> = {
   },
 };
 
+/**
+ * Storage limits per plan, in MB (prompt 4, P7). `storageMb`: everything members of one college
+ * have stored; `studyMediaMb`: one study video or audio file. 0 means no limit beyond each type's
+ * own cap. The pilot runs on one free server whose off-site backup has 10 GB, so it is capped; a
+ * college's own `limits.storageMb` / `limits.studyMediaMb` (set by the platform) override these.
+ */
+export const PLAN_STORAGE: Readonly<Record<PlanId, Readonly<{ storageMb: number; studyMediaMb: number }>>> = {
+  pilot: { storageMb: 4096, studyMediaMb: 50 },
+  connect: { storageMb: 0, studyMediaMb: 0 },
+  placement: { storageMb: 0, studyMediaMb: 0 },
+};
+
+/**
+ * The pilot preset (prompt 4, P11; `college:pilot-preset`): a focused first term on the free
+ * server. Feature switches set on and off, the permissions switched off for every college role
+ * (modules without a feature switch: circles, giving, public pages, the parent digest, member
+ * invites), and conservative allowances. Everything here is an existing switch or limit; a college
+ * admin (or the platform) can change any of it later, and nothing is deleted.
+ */
+export const PILOT_PRESET = {
+  featuresOn: ['alumniMatch', 'jobsAggregation', 'study', 'placements'],
+  featuresOff: ['stories', 'reels', 'leaderboards'],
+  revoke: [
+    'circles:join',
+    'circles:propose',
+    'circles:manage',
+    'giving:pledge',
+    'giving:manage',
+    'share:pages',
+    'parents:digest',
+    'invites:batchmates',
+  ],
+  terms: { whatsappPerStudentMonthly: 1, aiTokensPerStudentMonthly: 3000 },
+  limits: { storageMb: PLAN_STORAGE.pilot.storageMb, studyMediaMb: PLAN_STORAGE.pilot.studyMediaMb },
+} as const satisfies {
+  featuresOn: readonly Feature[];
+  featuresOff: readonly Feature[];
+  revoke: readonly string[];
+  terms: PlanTermsLayerNumbers;
+  limits: { storageMb: number; studyMediaMb: number };
+};
+type PlanTermsLayerNumbers = { whatsappPerStudentMonthly: number; aiTokensPerStudentMonthly: number };
+
 /** Some of a plan's terms (a platform setting or a custom deal). */
 export type PlanTermsLayer = { [K in keyof PlanTerms]?: PlanTerms[K] | undefined };
 

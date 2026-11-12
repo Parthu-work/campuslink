@@ -1,4 +1,30 @@
-# Deployment (AWS India)
+# Deployment
+
+## Pilot: one Oracle server (the primary path)
+
+The pilot runs on **one Oracle Cloud Always Free Ampere A1 server** (2 OCPU, 12 GB, arm64) in
+Hyderabad or Mumbai, behind Cloudflare's free plan, at ₹0 a month apart from the domain (prompt 4).
+Everything is in containers: [`deploy/prod/compose.yml`](../deploy/prod/README.md) and one env file.
+
+- **Set-up, step by step:** [`deploy-oracle.md`](deploy-oracle.md) (Oracle, Cloudflare, secrets, first
+  start, backups, the platform administrator, caps, monitoring, continuous deployment).
+- **What runs:** edge (nginx, TLS, the only published ports), web, api, worker, MongoDB (replica set of
+  one, keyfile, authentication), Redis (password), Qdrant (API key), ClamAV, SeaweedFS (S3, encrypted at
+  rest), Ollama (free embeddings). See [`deploy/prod/README.md`](../deploy/prod/README.md).
+- **TLS and addresses:** Cloudflare "Full (strict)" with an Origin CA certificate on nginx; 80/443 accept
+  only Cloudflare's ranges (Oracle security list, the host firewall and nginx itself); the member's
+  address comes from `CF-Connecting-IP` and reaches the API through exactly one trusted hop
+  (`TRUST_PROXY_HOPS=1`).
+- **Releases:** `.github/workflows/release.yml` builds arm64 and amd64 images to GHCR after CI is green
+  on `main`; deploying needs the owner's approval and rolls back by itself on a failed smoke test.
+- **Backups:** nightly `mongodump` encrypted with age to the owner's public key, and the stored files
+  through `rclone crypt`, to Cloudflare R2 (7 daily, 4 weekly, 3 monthly); a monthly restore drill.
+- **Operations:** [`runbook.md`](runbook.md) › Single server.
+
+The rest of this document is the **scale-up path**: the layout for many colleges on AWS India, used
+when the pilot outgrows one server. Moving there is a config change plus a restore (Z6).
+
+## Scale-up path: AWS India
 
 This is the production plan for one deployment that serves every college as a subdomain (`<college>.campuslink.example`, plus `admin.` for the platform console).
 
@@ -47,7 +73,7 @@ ALB (HTTPS 443, TLS 1.2+; HTTP 80 → 301)  ── AWS WAF (managed common rule 
     - rate limits and queues are in Redis;
     - Socket.io fans out through the Redis adapter and is websocket-only, so no sticky sessions are needed.
   - **Workers** run the BullMQ jobs (study processing, embeddings, email and push, ingestion, alerts) and the maintenance timers (retention, ingestion, nudges); API tasks only queue jobs. Job ids dedupe across tasks. A worker serves only `/api/v1/health` and `/api/v1/ready` (for its container check) and emits live updates to members through the Socket.io Redis adapter.
-  - The worker image carries `ffmpeg`, `poppler-utils` and Tesseract (English and Telugu); the API image has none of them. Without `PROCESS_ROLE` a process does both (`all`, the default for development and single-host installs).
+  - The worker image carries `ffmpeg`, `poppler-utils` and Tesseract (English, Telugu and Hindi); the API image has none of them. Without `PROCESS_ROLE` a process does both (`all`, the default for development and single-host installs).
 - **Load balancer:**
   - The ALB terminates TLS with an ACM wildcard certificate for `*.campuslink.example` and the apex.
   - Use the `ELBSecurityPolicy-TLS13-1-2-2021-06` policy and redirect HTTP to HTTPS on the listener.

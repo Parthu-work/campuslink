@@ -1,6 +1,6 @@
 # Runbook
 
-Operations for the production deployment described in [`deployment.md`](deployment.md). Commands assume the repository root.
+Operations for the production deployment described in [`deployment.md`](deployment.md). The pilot runs on one server: see **Single server** below. Other commands assume the repository root.
 
 Roles (fill in before launch):
 
@@ -160,6 +160,67 @@ Also checked on 2026-10-16:
 5. **Recover and review.**
    - Restore if needed (see Restore).
    - Write a blameless review within five working days: timeline, cause, what worked, and fixes with owners.
+
+## Single server (the pilot)
+
+The pilot runs on one Oracle server ([`deploy-oracle.md`](deploy-oracle.md)). Everything below runs as
+the `deploy` user in `/srv/campuslink/deploy/prod`; `docker compose` there reads `compose.yml` and
+`.env` by itself. What each service is and holds: [`deploy/prod/README.md`](../deploy/prod/README.md).
+
+### Logs
+
+- **Application:** `docker compose logs --since 1h api worker` (JSON, one line per event; the access
+  log is an allowlist: request id, method, path, status). Add `-f` to follow.
+- **Edge:** `docker compose logs edge` (time, host, method, path without query string, status; no
+  client address or user agent).
+- **Everything else:** `docker compose logs <service>`. Each container keeps 5 files of 10 MB.
+- **Timers:** `journalctl -u campuslink-backup -u campuslink-drill -u campuslink-alerts --since today`.
+- **Errors with context:** Sentry (scrubbed of personal data before sending).
+
+### Deploy and roll back
+
+- Normal path: approve the `production` deployment of a green `main` build in GitHub Actions
+  (`release.yml`). It runs `deploy.sh <sha>`: pull, replace web/api/worker, wait for readiness, smoke
+  test, and on failure `rollback.sh` to the previous tag and an email.
+- By hand: `./deploy.sh <sha>`; `./rollback.sh` (the tag before the last deploy) or `./rollback.sh <sha>`.
+- Migrations are additive (`db/migrations.ts`), so an older image runs against a newer database.
+
+### Backups
+
+- Nightly at 02:30 IST (`campuslink-backup.timer` → `backup.sh`): MongoDB through the backup user,
+  encrypted with age to the owner's public key, to R2 (7 daily, 4 weekly, 3 monthly); the stored files
+  synced to R2 through `rclone crypt`. Status: `/var/lib/campuslink/status/backup-status.json`, also
+  shown by `costs-report.js`.
+- **Not backed up, on purpose:** Qdrant (an index; rebuild with Admin › AI › Rebuild the index after a
+  restore), Redis (queues and rate limits; a lost queue is re-filled by the scheduler), ClamAV
+  signatures (downloaded again), the Ollama model (downloaded again by `ollama-init`).
+- Restore drill: monthly by timer (download and checksum); with the private key brought for the run,
+  a full restore into a throwaway database: `BACKUP_IDENTITY=<key file> ./drill.sh`.
+- Restoring for real: stop `api` and `worker`, restore the archive into a new database with
+  `scripts/backup/restore.sh` (it never overwrites the source), check it, switch `MONGO_APP_DB` and
+  `MONGODB_URI`, start again, then rebuild the vector index. Files: `rclone copy filescrypt: locals3:<bucket>`
+  with the same environment `backup.sh` sets up.
+
+### Alerts (`host-alerts.sh`, every five minutes; at most one email per alert per six hours)
+
+| Alert (key)                       | What it means                                                 | What to do                                                                                                                                                                    |
+| --------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Disk over 80% (`disk-…`)          | Logs, images, uploads or backups are filling a volume         | `docker system df`; `docker image prune -a` removes old images; check `limits.storageMb` per college; local backups keep only two                                             |
+| Memory over 90% (`memory`)        | A container grew, or the embedding model and ClamAV peaked    | `docker stats`; the limits in `compose.yml` stop one service starving the rest; lower `--wiredTigerCacheSizeGB` or the worker's concurrency before ever removing a protection |
+| Container restarting (`restarts`) | A service crashes in a loop                                   | `docker compose logs --tail 200 <service>`; a bad deploy: `./rollback.sh`                                                                                                     |
+| Certificate (`certificate`)       | The Origin CA certificate expires within 30 days              | Create a new one in Cloudflare (SSL/TLS › Origin Server), replace `tls/*.pem`, `docker compose restart edge`                                                                  |
+| API not ready (`api`)             | MongoDB, Redis, ClamAV or the object store is unreachable     | `docker compose ps`; `curl` is not needed: `docker compose exec api node dist/scripts/deploy-check.js` names the failing dependency                                           |
+| Backup FAILED                     | The nightly backup did not finish (the email says which step) | `journalctl -u campuslink-backup`; R2 token or bucket, the age recipient, disk space; run `./backup.sh` by hand once fixed                                                    |
+| R2 above 8 GB                     | The free tier (10 GB) is close                                | Lower per-college `limits.storageMb`, or shorten retention in `backup.sh`; never stop backups                                                                                 |
+| Restore drill FAILED              | A backup could not be restored                                | Treat as an incident: the backups are not proven; run `drill.sh` by hand and fix before the next night                                                                        |
+| Uptime monitor down               | The site is unreachable from outside                          | If `./smoke.sh` passes on the server, look at Cloudflare (DNS, SSL mode) and the firewall (`sudo iptables -L DOCKER-USER -n`); else the alert above that fired                |
+| Oracle budget email               | Something started costing money                               | Oracle console › Cost analysis; only Always Free shapes and 200 GB of volumes are free                                                                                        |
+
+### Restarting
+
+`docker compose restart <service>` is safe for every service (data lives in volumes). While ClamAV
+restarts (about two minutes) uploads answer "try again shortly". Never `docker compose down -v`: it
+deletes every volume.
 
 ## Common alerts
 

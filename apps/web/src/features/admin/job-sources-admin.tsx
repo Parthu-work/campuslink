@@ -141,7 +141,7 @@ function AddJobSource({ onDone }: { onDone: () => void }) {
         </Button>
       </div>
       {result && (
-        <div role="status" className="rounded-[var(--radius-sm)] border border-line p-3 text-meta">
+        <div role="status" className="rounded-[var(--radius-sm)] border border-line p-3 text-callout">
           {result.ok ? (
             <>
               <p className="flex items-center gap-1.5 font-semibold text-success">
@@ -210,14 +210,14 @@ function SourceRow({ s }: { s: JobSourceView }) {
           </Badge>
         </div>
         <p className="truncate font-mono text-caption text-fg-3">{s.target}</p>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {t('jobSources.openJobs', { count: h.openJobs })} ·{' '}
           {h.lastFetchedAt
             ? t('jobSources.fetched', { when: formatRelative(h.lastFetchedAt) })
             : t('sources.never')}
         </p>
         {h.lastError && (
-          <p className="text-meta text-danger">
+          <p className="text-callout text-danger">
             {t('sources.lastError', { error: h.lastError, count: h.consecutiveFailures })}
           </p>
         )}
@@ -302,15 +302,15 @@ export function JobSourcesAdmin() {
         ))}
       </ul>
       <section aria-labelledby="job-starter" className="grid gap-3">
-        <h2 id="job-starter" className="text-title font-semibold">
+        <h2 id="job-starter" className="text-headline font-semibold">
           {t('jobSources.starter')}
         </h2>
-        <p className="text-meta text-fg-2">{t('jobSources.starterIntro')}</p>
+        <p className="text-callout text-fg-2">{t('jobSources.starterIntro')}</p>
         <ul className="grid gap-2 sm:grid-cols-2">
           {starters.data?.map((s) => (
             <li key={s.key}>
               <Card className="grid h-full gap-1.5 p-3">
-                <b className="text-meta">{s.company}</b>
+                <b className="text-callout">{s.company}</b>
                 <p className="text-caption text-fg-3">
                   {t(`jobSources.kind.${s.kind}`)} · {s.board}
                 </p>

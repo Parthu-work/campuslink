@@ -89,7 +89,7 @@ function AddSource({ onDone }: { onDone: () => void }) {
         )}
       </Field>
       {result && (
-        <div role="status" className="rounded-[var(--radius-sm)] border border-line p-3 text-meta">
+        <div role="status" className="rounded-[var(--radius-sm)] border border-line p-3 text-callout">
           {result.ok ? (
             <>
               <p className="flex items-center gap-1.5 font-semibold text-success">
@@ -181,7 +181,7 @@ function SourceRow({ s }: { s: SourceView }) {
           </Badge>
         </div>
         <p className="truncate font-mono text-caption text-fg-3">{s.url}</p>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-meta sm:grid-cols-4">
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-callout sm:grid-cols-4">
           <div>
             <dt className="text-caption text-fg-3">{t('sources.items7d')}</dt>
             <dd className="font-mono">{h.itemsLast7d}</dd>
@@ -200,7 +200,7 @@ function SourceRow({ s }: { s: SourceView }) {
           </div>
         </dl>
         {h.lastError && (
-          <p className="text-meta text-danger">
+          <p className="text-callout text-danger">
             {t('sources.lastError', { error: h.lastError, count: h.consecutiveFailures })}
           </p>
         )}
@@ -290,15 +290,15 @@ export function SourcesAdmin() {
         ))}
       </ul>
       <section aria-labelledby="starter" className="grid gap-3">
-        <h2 id="starter" className="text-title font-semibold">
+        <h2 id="starter" className="text-headline font-semibold">
           {t('sources.starter')}
         </h2>
-        <p className="text-meta text-fg-2">{t('sources.starterIntro')}</p>
+        <p className="text-callout text-fg-2">{t('sources.starterIntro')}</p>
         <ul className="grid gap-2 sm:grid-cols-2">
           {starters.data?.map((s) => (
             <li key={s.key}>
               <Card className="grid h-full gap-1.5 p-3">
-                <b className="text-meta">{s.name}</b>
+                <b className="text-callout">{s.name}</b>
                 <p className="text-caption text-fg-3">
                   {s.publisher} · {new URL(s.url).hostname}
                 </p>

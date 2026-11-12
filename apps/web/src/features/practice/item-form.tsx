@@ -215,7 +215,7 @@ export function ItemForm({
                 )}
               </Field>
             ) : (
-              <p className="self-end text-meta text-fg-2">{t('practice.form.codingNote')}</p>
+              <p className="self-end text-callout text-fg-2">{t('practice.form.codingNote')}</p>
             )}
             <Field label={t('practice.form.language')}>
               {({ id }) => (
@@ -237,7 +237,7 @@ export function ItemForm({
         )}
         {kind === 'mcq' && (
           <fieldset className="grid gap-2">
-            <legend className="mb-1 text-meta font-semibold">{t('practice.form.options')}</legend>
+            <legend className="mb-1 text-callout font-semibold">{t('practice.form.options')}</legend>
             <p className="text-caption text-fg-3">{t('practice.form.optionsHint')}</p>
             {options.map((o, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -325,7 +325,7 @@ export function ItemForm({
         )}
         {kind === 'coding' && (
           <fieldset className="grid gap-3">
-            <legend className="mb-1 text-meta font-semibold">{t('practice.form.tests')}</legend>
+            <legend className="mb-1 text-callout font-semibold">{t('practice.form.tests')}</legend>
             <p className="text-caption text-fg-3">{t('practice.form.testsHint')}</p>
             {tests.map((x, i) => (
               <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
@@ -398,10 +398,10 @@ export function ItemForm({
           max={10}
         />
         {problem && (text || explanation) && (
-          <p className="text-meta text-warning-ink">{t(`practice.form.problem.${problem.path}`)}</p>
+          <p className="text-callout text-warning-ink">{t(`practice.form.problem.${problem.path}`)}</p>
         )}
         {error && (
-          <p role="alert" className="text-meta font-medium text-danger">
+          <p role="alert" className="text-callout font-medium text-danger">
             {error}
           </p>
         )}

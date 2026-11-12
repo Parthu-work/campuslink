@@ -66,7 +66,7 @@ function Row({
   return (
     <li className="grid gap-2 rounded-[var(--radius-md)] border border-line p-3">
       <div className="flex items-center gap-2">
-        <span className="min-w-0 flex-1 truncate text-meta font-semibold">{item.file.name}</span>
+        <span className="min-w-0 flex-1 truncate text-callout font-semibold">{item.file.name}</span>
         <span className="text-caption text-fg-3">{fmtSize(item.file.size)}</span>
         {editable && (
           <button
@@ -87,7 +87,7 @@ function Row({
             maxLength={160}
             onChange={(e) => onChange({ title: e.target.value })}
             placeholder={t('study.upload.titlePlaceholder')}
-            className="min-h-11 text-meta"
+            className="min-h-11 text-callout"
           />
           <Select
             size="sm"
@@ -134,7 +134,7 @@ function Row({
         <ProgressBar value={item.progress} label={t('study.upload.uploading')} />
       )}
       {item.status === 'sent' && (
-        <p className="flex items-center gap-2 text-meta" role="status">
+        <p className="flex items-center gap-2 text-callout" role="status">
           {live?.stage === 'failed' ? (
             <CircleAlert className="size-4 text-danger" aria-hidden />
           ) : (
@@ -147,7 +147,7 @@ function Row({
         </p>
       )}
       {item.error && (
-        <p className="text-meta font-semibold text-danger" role="alert">
+        <p className="text-callout font-semibold text-danger" role="alert">
           {item.error}{' '}
           {item.duplicateOf && (
             <Link to={`/study/${subjectId}/m/${item.duplicateOf}`} className="text-brand-ink underline">
@@ -289,7 +289,7 @@ export function UploadSheet({ subject, units }: { subject: SubjectView; units: S
               }}
             />
           </label>
-          <label className="inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-full border border-line-strong px-4 text-meta font-semibold hover:bg-hover">
+          <label className="inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-full border border-line-strong px-4 text-callout font-semibold hover:bg-hover">
             <Camera className="size-4" aria-hidden /> {t('study.upload.camera')}
             <input
               type="file"
@@ -394,7 +394,7 @@ function LinkForm({ subject, units }: { subject: SubjectView; units: SyllabusUni
   if (done)
     return (
       <p
-        className="flex items-center gap-2 rounded-[var(--radius-md)] bg-success-surface p-3 text-meta"
+        className="flex items-center gap-2 rounded-[var(--radius-md)] bg-success-surface p-3 text-callout"
         role="status"
       >
         <Check className="size-4 text-success" aria-hidden />{' '}

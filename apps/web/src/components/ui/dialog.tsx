@@ -74,7 +74,7 @@ function Overlay({
               className="mx-auto mb-2 block h-1.5 w-10 rounded-full bg-line-strong md:hidden"
             />
             <div className="flex items-start justify-between gap-4">
-              <D.Title className="pt-1.5 text-title font-semibold">{title}</D.Title>
+              <D.Title className="pt-1.5 text-headline font-semibold">{title}</D.Title>
               <D.Close
                 className="-mr-2 grid size-11 flex-none place-items-center rounded-full text-fg-2 transition-colors hover:bg-hover hover:text-fg"
                 aria-label={t('common.close')}
@@ -82,7 +82,9 @@ function Overlay({
                 <X className="size-5" aria-hidden />
               </D.Close>
             </div>
-            {description && <D.Description className="mt-1 text-meta text-fg-2">{description}</D.Description>}
+            {description && (
+              <D.Description className="mt-1 text-callout text-fg-2">{description}</D.Description>
+            )}
           </div>
           <div
             className={cn(

@@ -65,8 +65,8 @@ function WeekStrip({ streak, recent }: { streak: number; recent: MyProgressView[
     <div className="grid gap-2">
       <p className="flex items-center gap-2">
         <Flame className={cn('size-6', streak > 0 ? 'text-warning' : 'text-fg-3')} aria-hidden />
-        <b className="text-lead">{t('progress.days', { count: streak })}</b>
-        <span className="text-meta text-fg-2">{t('progress.streak')}</span>
+        <b className="text-body">{t('progress.days', { count: streak })}</b>
+        <span className="text-callout text-fg-2">{t('progress.streak')}</span>
       </p>
       <ol aria-label={t('progress.weekLabel', { n: lit })} className="flex gap-1.5">
         {days.map((d) => {
@@ -159,8 +159,8 @@ export function ProgressPage() {
         </ProgressRing>
         <div className="grid gap-4">
           <div>
-            <h2 className="text-title font-bold">{t('progress.levelN', { level: p.level.level })}</h2>
-            <p className="text-meta text-fg-2 tabular-nums">
+            <h2 className="text-headline font-bold">{t('progress.levelN', { level: p.level.level })}</h2>
+            <p className="text-callout text-fg-2 tabular-nums">
               {t('progress.xpToNext', { xp: p.xp, next: p.level.next })}
             </p>
           </div>
@@ -189,7 +189,7 @@ export function ProgressPage() {
       {(canMentor || p.impact > 0) && (
         <section aria-labelledby="impact" className="grid gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 id="impact" className="text-title font-semibold">
+            <h2 id="impact" className="text-headline font-semibold">
               {t('progress.impactTitle')}
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -226,9 +226,9 @@ export function ProgressPage() {
       )}
 
       <section aria-labelledby="badges" className="grid gap-2">
-        <h2 id="badges" className="flex items-baseline gap-2 text-title font-semibold">
+        <h2 id="badges" className="flex items-baseline gap-2 text-headline font-semibold">
           {t('progress.badges')}
-          <span className="text-meta font-normal text-fg-2 tabular-nums">
+          <span className="text-callout font-normal text-fg-2 tabular-nums">
             {t('progress.badgeCount', { n: p.badges.length, total: BADGES.length })}
           </span>
         </h2>
@@ -262,7 +262,7 @@ export function ProgressPage() {
                   <span className={cn('text-body font-semibold', !at && 'text-fg-2')}>
                     {t(`progress.badge.${b}.name`)}
                   </span>
-                  <span className="text-meta text-fg-2">{t(`progress.badge.${b}.description`)}</span>
+                  <span className="text-callout text-fg-2">{t(`progress.badge.${b}.description`)}</span>
                   <span className={cn('text-caption', at ? 'font-semibold text-brand-ink' : 'text-fg-3')}>
                     {at ? t('progress.earned', { when: formatRelative(at) }) : t('progress.locked')}
                   </span>
@@ -275,7 +275,7 @@ export function ProgressPage() {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <section aria-labelledby="recent" className="grid content-start gap-2">
-          <h2 id="recent" className="text-title font-semibold">
+          <h2 id="recent" className="text-headline font-semibold">
             {t('progress.recent')}
           </h2>
           {p.recent.length ? (
@@ -283,7 +283,7 @@ export function ProgressPage() {
               {p.recent.map((e) => (
                 <li
                   key={e.id}
-                  className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] bg-surface-1 px-3.5 py-2.5 text-meta"
+                  className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] bg-surface-1 px-3.5 py-2.5 text-callout"
                 >
                   <span>
                     {t(`progress.kind.${e.kind}`)}
@@ -300,11 +300,11 @@ export function ProgressPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-meta text-fg-2">{t('progress.nothingYet')}</p>
+            <p className="text-callout text-fg-2">{t('progress.nothingYet')}</p>
           )}
         </section>
         <section aria-labelledby="privacy" className="grid content-start gap-2">
-          <h2 id="privacy" className="text-title font-semibold">
+          <h2 id="privacy" className="text-headline font-semibold">
             {t('progress.privacy')}
           </h2>
           <Card className="grid gap-3 p-4">
@@ -328,8 +328,8 @@ export function ProgressPage() {
             )}
             <p className="text-caption text-fg-3">{t('progress.privacyHint')}</p>
           </Card>
-          <h3 className="mt-2 text-meta font-semibold">{t('progress.howTitle')}</h3>
-          <p className="text-meta text-fg-2">{t('progress.how')}</p>
+          <h3 className="mt-2 text-callout font-semibold">{t('progress.howTitle')}</h3>
+          <p className="text-callout text-fg-2">{t('progress.how')}</p>
         </section>
       </div>
     </div>

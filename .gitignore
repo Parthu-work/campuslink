@@ -24,3 +24,13 @@ apps/android/.gradle/
 
 # Staging rehearsal secrets and certificate (deploy/staging/up.sh)
 .staging/
+
+# Production secrets and generated files on the server (prompt 4; deploy/prod/gen-secrets.sh)
+deploy/prod/.env
+# The production settings template holds names and comments only, never values.
+!deploy/prod/.env.production.example
+deploy/prod/backup.env
+deploy/prod/secrets/
+deploy/prod/tls/
+deploy/prod/cloudflare/
+deploy/prod/.previous-tag

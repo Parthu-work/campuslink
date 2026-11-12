@@ -27,12 +27,12 @@ export function CircleCard({ c }: { c: CircleView }) {
         <Link to={`/circles/${c.id}`} className="font-semibold after:absolute after:inset-0">
           {c.name}
         </Link>
-        <p className="flex flex-wrap items-center gap-2 text-meta text-fg-2">
+        <p className="flex flex-wrap items-center gap-2 text-callout text-fg-2">
           <Badge>{t(`habits.circles.kind.${c.kind}`)}</Badge>
           {c.status !== 'active' && <Badge tone="warning">{t(`habits.circles.status.${c.status}`)}</Badge>}
           <span>{t('habits.circles.members', { count: c.members })}</span>
         </p>
-        {c.description && <p className="line-clamp-2 text-meta text-fg-2">{c.description}</p>}
+        {c.description && <p className="line-clamp-2 text-callout text-fg-2">{c.description}</p>}
       </Card>
     </li>
   );

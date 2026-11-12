@@ -33,10 +33,10 @@ export function ResumeComments({ resume: r }: { resume: ResumeView }) {
   return (
     <section aria-labelledby="resume-comments" className="grid gap-4">
       <div className="grid gap-1">
-        <h2 id="resume-comments" className="text-title font-semibold">
+        <h2 id="resume-comments" className="text-headline font-semibold">
           {t('resume.comments.title')}
         </h2>
-        <p className="max-w-[60ch] text-meta text-fg-2">
+        <p className="max-w-[60ch] text-callout text-fg-2">
           {r.mine
             ? t('resume.comments.introOwner')
             : t('resume.comments.introReviewer', { name: r.owner.name })}
@@ -45,7 +45,7 @@ export function ResumeComments({ resume: r }: { resume: ResumeView }) {
       {list.isLoading && <Skeleton className="h-24 rounded-[var(--radius-lg)]" />}
       {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
       {list.isSuccess && !list.data.length && (
-        <p className="text-meta text-fg-3">{t('resume.comments.none')}</p>
+        <p className="text-callout text-fg-3">{t('resume.comments.none')}</p>
       )}
       {!!list.data?.length && (
         <ul className="grid gap-2">
@@ -53,7 +53,7 @@ export function ResumeComments({ resume: r }: { resume: ResumeView }) {
             <li key={c.id}>
               <Card variant="raised" className="grid gap-2 p-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <b className="text-meta">
+                  <b className="text-callout">
                     {c.mine ? t('resume.comments.you') : (c.author?.name ?? t('resume.comments.removed'))}
                   </b>
                   <Badge tone="neutral">{t(`resume.section.${c.section}`)}</Badge>
@@ -61,7 +61,7 @@ export function ResumeComments({ resume: r }: { resume: ResumeView }) {
                     <Badge tone="warning">{t('resume.comments.older')}</Badge>
                   )}
                 </div>
-                <p className="text-meta whitespace-pre-line">{c.body}</p>
+                <p className="text-callout whitespace-pre-line">{c.body}</p>
                 <p className="text-caption text-fg-3">{formatRelative(c.createdAt)}</p>
               </Card>
             </li>

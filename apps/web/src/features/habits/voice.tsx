@@ -24,7 +24,7 @@ function Recorder({ onSend, sending }: { onSend: (audio: Blob, keep: boolean) =>
   const [audio, setAudio] = useState<Blob | null>(null);
   const recorder = useRecorder(setAudio, VOICE_MAX_SECONDS * 1000);
   if (recorder.state === 'unsupported')
-    return <p className="text-meta text-fg-2">{t('habits.voice.unsupported')}</p>;
+    return <p className="text-callout text-fg-2">{t('habits.voice.unsupported')}</p>;
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center gap-3">
@@ -42,11 +42,11 @@ function Recorder({ onSend, sending }: { onSend: (audio: Blob, keep: boolean) =>
         <span className="text-caption text-fg-3">{t('habits.voice.limit', { n: VOICE_MAX_SECONDS })}</span>
       </div>
       {(recorder.state === 'denied' || recorder.state === 'failed') && (
-        <p role="alert" className="text-meta text-warning-ink">
+        <p role="alert" className="text-callout text-warning-ink">
           {t(`habits.voice.${recorder.state}`)}
         </p>
       )}
-      {audio && recorder.state !== 'recording' && <p className="text-meta">{t('habits.voice.ready')}</p>}
+      {audio && recorder.state !== 'recording' && <p className="text-callout">{t('habits.voice.ready')}</p>}
       <Switch
         checked={keep}
         onChange={setKeep}

@@ -31,7 +31,7 @@ function Code({ code, language }: { code: string; language: CodeLanguage | null 
       {language && (
         <figcaption className="text-caption text-fg-3">{t(`practice.language.${language}`)}</figcaption>
       )}
-      <pre className="overflow-x-auto rounded-[var(--radius-md)] bg-surface-2 p-3 font-mono text-meta leading-relaxed">
+      <pre className="overflow-x-auto rounded-[var(--radius-md)] bg-surface-2 p-3 font-mono text-callout leading-relaxed">
         <code>{code}</code>
       </pre>
     </figure>
@@ -59,7 +59,9 @@ function Result({ entry }: { entry: PracticeSetItemView }) {
         {r.correct ? t('practice.set.right') : shown ? t('practice.set.notQuite') : t('practice.set.shown')}
       </p>
       {r.run && r.run.total > 0 && (
-        <p className="text-meta">{t('practice.set.tests', { passed: r.run.passed, total: r.run.total })}</p>
+        <p className="text-callout">
+          {t('practice.set.tests', { passed: r.run.passed, total: r.run.total })}
+        </p>
       )}
       {r.run?.message && (
         <pre className="overflow-x-auto whitespace-pre-wrap rounded-[var(--radius-sm)] bg-surface-1 p-2 font-mono text-caption">
@@ -67,12 +69,12 @@ function Result({ entry }: { entry: PracticeSetItemView }) {
         </pre>
       )}
       {!r.correct && r.answer && (
-        <p className="text-meta">
+        <p className="text-callout">
           {t('practice.set.answerWas')}{' '}
           <span className="whitespace-pre-wrap font-mono font-semibold">{r.answer}</span>
         </p>
       )}
-      <p className="text-meta text-fg-2">{r.explanation}</p>
+      <p className="text-callout text-fg-2">{r.explanation}</p>
       {!r.correct && <p className="text-caption text-fg-3">{t('practice.set.comesBack')}</p>}
     </div>
   );
@@ -185,7 +187,7 @@ function Question({
         </>
       )}
       {error && (
-        <p role="alert" className="text-meta font-medium text-danger">
+        <p role="alert" className="text-callout font-medium text-danger">
           {error}
         </p>
       )}
@@ -222,9 +224,9 @@ function Summary({ set }: { set: PracticeSetView }) {
   return (
     <Card variant="raised" className="grid gap-4 p-4 sm:p-6">
       <div ref={ref} className="grid gap-1">
-        <h2 className="text-title font-semibold">{t('practice.set.doneTitle')}</h2>
+        <h2 className="text-headline font-semibold">{t('practice.set.doneTitle')}</h2>
         <p className="text-body">{t('practice.set.score', { n: set.correct, total: set.items.length })}</p>
-        <p className="text-meta text-fg-2">
+        <p className="text-callout text-fg-2">
           {set.correct === set.items.length ? t('practice.set.allRight') : t('practice.set.missedBack')}
         </p>
       </div>

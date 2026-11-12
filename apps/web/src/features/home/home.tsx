@@ -50,7 +50,7 @@ function NextSession() {
             <b className="block truncate">
               {t(`session.type.${b.sessionType}`)} · {(b.role === 'mentor' ? b.mentee : b.mentor).name}
             </b>
-            <p className="text-meta text-fg-2">
+            <p className="text-callout text-fg-2">
               {formatDay(b.start)}, {formatTime(b.start)}
             </p>
           </div>
@@ -58,12 +58,12 @@ function NextSession() {
       ) : (
         <>
           <CalendarClock className="size-6 flex-none text-accent-ink" aria-hidden />
-          <p className="min-w-0 flex-1 text-meta text-fg-2">{t('home.noSession')}</p>
+          <p className="min-w-0 flex-1 text-callout text-fg-2">{t('home.noSession')}</p>
         </>
       )}
       <Link
         to="/sessions"
-        className="inline-flex min-h-11 items-center rounded-full px-3 text-meta font-semibold text-brand-ink hover:bg-hover"
+        className="inline-flex min-h-11 items-center rounded-full px-3 text-callout font-semibold text-brand-ink hover:bg-hover"
       >
         {t('nav.sessions')}
       </Link>
@@ -91,7 +91,7 @@ function UpNext() {
           <b className="block truncate text-body">
             {t(`session.type.${b.sessionType}`)} · {other.name}
           </b>
-          <p className="text-meta text-fg-2">
+          <p className="text-callout text-fg-2">
             {formatDay(b.start)}, {formatTime(b.start)} ·{' '}
             {Date.parse(b.start) <= now
               ? t('home.happeningNow')
@@ -115,7 +115,7 @@ function ImpactTeaser() {
         <div className="min-w-0 flex-1">
           <b className="block">{t('mentor.helped', { count: q.data.helpedThisMonth })}</b>
           {q.data.pendingRequests > 0 && (
-            <p className="text-meta text-fg-2">{t('mentor.pending', { count: q.data.pendingRequests })}</p>
+            <p className="text-callout text-fg-2">{t('mentor.pending', { count: q.data.pendingRequests })}</p>
           )}
         </div>
       </Card>
@@ -135,7 +135,7 @@ function OneUsefulThing() {
       aria-labelledby="out-title"
       className="aurora-border grid gap-2 rounded-[var(--radius-xl)] bg-[linear-gradient(160deg,color-mix(in_oklch,var(--aurora-1)_16%,var(--surface-1)),var(--surface-1)_60%)] p-2 pt-3 shadow-elev-2"
     >
-      <h2 id="out-title" className="flex items-center gap-2 px-2.5 text-title font-semibold">
+      <h2 id="out-title" className="flex items-center gap-2 px-2.5 text-headline font-semibold">
         <Sparkles className="size-5 text-brand-ink" aria-hidden /> {t('feed.out')}
         {v.curated && <Badge tone="accent">{t('feed.outCurated')}</Badge>}
       </h2>
@@ -199,7 +199,7 @@ function Suggestions() {
         {q.data.people.slice(0, 4).map((p) => (
           <li key={p.userId} className="flex items-center gap-2.5">
             <PersonAvatar name={p.name} fileId={p.avatarFileId} size={36} />
-            <Link to={`/people/${p.userId}`} className="min-w-0 flex-1 text-meta hover:underline">
+            <Link to={`/people/${p.userId}`} className="min-w-0 flex-1 text-callout hover:underline">
               <b className="block truncate">{p.name}</b>
               <span className="block truncate text-caption text-fg-3">{p.headline || p.branch}</span>
             </Link>
@@ -214,7 +214,7 @@ function Suggestions() {
             >
               <Rss className="size-4" />
             </span>
-            <span className="min-w-0 flex-1 text-meta">
+            <span className="min-w-0 flex-1 text-callout">
               <b className="block truncate">{s.name}</b>
               <span className="block truncate text-caption text-fg-3">{s.host}</span>
             </span>
@@ -222,7 +222,7 @@ function Suggestions() {
           </li>
         ))}
       </ul>
-      <Link to="/following" className="text-meta font-semibold text-brand-ink hover:underline">
+      <Link to="/following" className="text-callout font-semibold text-brand-ink hover:underline">
         {t('feed.manageFollows')}
       </Link>
     </Card>
@@ -244,7 +244,7 @@ function RightRail() {
               <Compass className="size-6 flex-none text-brand-ink" aria-hidden />
               <div className="min-w-0 flex-1">
                 <b className="block">{t('home.findMentor')}</b>
-                <p className="text-meta text-fg-2">{t('home.findMentorBody')}</p>
+                <p className="text-callout text-fg-2">{t('home.findMentorBody')}</p>
               </div>
             </Card>
           </Link>
@@ -255,7 +255,7 @@ function RightRail() {
           <MessageCircleQuestion className="size-6 flex-none text-accent-ink" aria-hidden />
           <div className="min-w-0 flex-1">
             <b className="block">{t('qa.teaser')}</b>
-            <p className="text-meta text-fg-2">{t('qa.teaserBody')}</p>
+            <p className="text-callout text-fg-2">{t('qa.teaserBody')}</p>
           </div>
         </Card>
       </Link>
@@ -311,7 +311,7 @@ export function HomePage() {
             <Lock className="mt-0.5 size-5 flex-none text-warning" aria-hidden />
             <div>
               <h2 className="text-body font-semibold">{t('home.unverifiedTitle')}</h2>
-              <p className="text-meta text-fg-2">{t('home.unverifiedBody')}</p>
+              <p className="text-callout text-fg-2">{t('home.unverifiedBody')}</p>
               <Link
                 to="/verify"
                 className={buttonVariants({ variant: 'primary', size: 'sm', className: 'mt-3' })}

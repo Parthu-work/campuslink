@@ -47,7 +47,7 @@ function Timeline({
                 <button
                   type="button"
                   onClick={() => onSeek(c.at)}
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line-strong px-3 text-meta hover:bg-hover"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line-strong px-3 text-callout hover:bg-hover"
                 >
                   <span className="font-mono text-caption text-fg-3">{formatDuration(c.at)}</span> {c.title}
                 </button>
@@ -72,7 +72,7 @@ function Timeline({
                   aria-current={i === active ? 'true' : undefined}
                   onClick={() => onSeek(s.start)}
                   className={cn(
-                    'grid w-full grid-cols-[3.5rem_1fr] gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-meta hover:bg-hover',
+                    'grid w-full grid-cols-[3.5rem_1fr] gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-left text-callout hover:bg-hover',
                     i === active && 'bg-brand-surface',
                     words.some((w) => s.text.toLowerCase().includes(w)) && 'font-semibold',
                   )}
@@ -84,7 +84,7 @@ function Timeline({
             ))}
           </ol>
         ) : (
-          <p className="text-meta text-fg-3">{t('study.viewer.noTranscript')}</p>
+          <p className="text-callout text-fg-3">{t('study.viewer.noTranscript')}</p>
         )}
       </section>
     </div>
@@ -237,7 +237,7 @@ export function LinkPlayer({
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-fit text-meta font-semibold text-brand-ink hover:underline"
+          className="w-fit text-callout font-semibold text-brand-ink hover:underline"
         >
           {t('study.viewer.openOn', { provider: t(`study.provider.${link.provider}`) })}
         </a>
