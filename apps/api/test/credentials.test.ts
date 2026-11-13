@@ -134,8 +134,9 @@ describe('the signed credential and its public page (N33 to N35)', () => {
       role: 'Data Analyst',
       batch: 2026,
     });
-    // Never the CTC, contact details or a student identifier.
-    expect(JSON.stringify(vc)).not.toMatch(/9\.4|8_12|meena@|userId/);
+    // Never the CTC, contact details or a student identifier. The CTC as a figure on its own: a
+    // time such as 39.412Z must not count.
+    expect(JSON.stringify(vc)).not.toMatch(/(?<![\d.])9\.4(?![\d])|8_12|meena@|userId/);
     // A tampered credential fails.
     const [h, p, s] = jwt.split('.');
     const forged = `${h}.${Buffer.from(JSON.stringify({ ...vc, credentialSubject: { ...vc.credentialSubject, company: 'Big Co' } })).toString('base64url')}.${s}`;
@@ -153,7 +154,7 @@ describe('the signed credential and its public page (N33 to N35)', () => {
     expect(page.text).toContain('Valid: signed by the college');
     expect(page.text).toContain('Zephyr Systems');
     expect(page.text).toContain('Meena Kumari Das');
-    expect(page.text).not.toMatch(/9\.4|meena@|8_12/);
+    expect(page.text).not.toMatch(/(?<![\d.])9\.4(?![\d])|meena@|8_12/);
     // The same page on the college's own host; another college's host or slug is a 404.
     expect((await root(`/credt/verify/${cred.id}`, 'credt.localhost')).status).toBe(200);
     expect((await root(`/credt/verify/${cred.id}`, 'credu.localhost')).status).toBe(404);
