@@ -50,6 +50,7 @@ const load = {
   emailLinks: () => import('../features/auth/email-links'),
   join: () => import('../features/join/join'),
   home: () => import('../features/home/home'),
+  spaces: () => import('../features/spaces/space-hub'),
   settings: () => import('../features/settings/settings'),
   dataSettings: () => import('../features/settings/data-settings'),
   notificationSettings: () => import('../features/settings/notification-settings'),
@@ -344,7 +345,7 @@ function collegeRoutes(): RouteObject[] {
       hydrateFallbackElement: <Splash />,
       children: [
         // Lazy like every screen: signed-in members never download it (bundle budget).
-        publicScreen(load.landing, 'LandingPage', '/', '/home'),
+        publicScreen(load.landing, 'LandingPage', '/', '/start'),
         publicScreen(load.signUp, 'SignUpPage', '/sign-up', '/home'),
         // One-tap invites and class codes (B4): signed-in members are already in.
         publicScreen(load.join, 'InvitePage', '/invite/:token', '/home'),
@@ -366,6 +367,11 @@ function collegeRoutes(): RouteObject[] {
             ]
           : []),
         shell(false, [
+          // Spaces (prompt 3, U2): where a member starts, and each space's own list of sections.
+          screen(load.spaces, 'StartPage', undefined, at('/start')),
+          ...['/you', '/students', '/content', '/college', '/space/:spaceId'].map((path) =>
+            screen(load.spaces, 'SpaceHubPage', undefined, at(path)),
+          ),
           screen(load.home, 'HomePage', undefined, at('/home'), (_, url) => [
             qc.ensureInfiniteQueryData(
               q.homeFeed(url.searchParams.get('tab') === 'following' ? 'following' : 'for_you'),

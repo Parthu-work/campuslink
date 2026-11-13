@@ -18,11 +18,12 @@ test('keyboard only: sign in, skip to content, open a page from the navigation',
   await expect(page.getByLabel('Password', { exact: true })).toBeFocused();
   await page.keyboard.type(PASSWORD);
   await page.keyboard.press('Enter');
-  await page.waitForURL(/\/home$/);
+  // Ananya is in her final year: she starts in Career, on Placements (prompt 3, U2).
+  await page.waitForURL(/\/placements$/);
 
   // After the client-side navigation, focus moves to the new screen's heading, and the title follows.
   await expect(page.locator('main#main h1')).toBeFocused();
-  await expect(page).toHaveTitle(/^Hi, Ananya · DPIT$/);
+  await expect(page).toHaveTitle(/^Placements · DPIT$/);
 
   // On a fresh page load, the first Tab reaches the skip link, which moves focus to the main region.
   await page.reload();
@@ -39,7 +40,9 @@ test('keyboard only: sign in, skip to content, open a page from the navigation',
   await page.reload();
   await page.locator('main#main').waitFor();
   await page.waitForLoadState('networkidle');
-  const jobs = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Jobs' });
+  const jobs = page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('link', { name: 'Jobs', exact: true });
   for (let i = 0; i < 40 && !(await jobs.evaluate((el) => el === document.activeElement)); i++) {
     await page.keyboard.press('Tab');
   }

@@ -1,10 +1,9 @@
 import { useLayoutEffect } from 'react';
-import { useLocation, useNavigationType } from 'react-router';
+import { useLocation } from 'react-router';
+import { spaceOf, type NavSpace, type SectionRef, type SpaceId } from '@campuslink/shared';
 
 /** Search params that belong to overlays, not to the screen (never remembered as a sub-route). */
 const OVERLAY_PARAMS = ['sheet', 'compose', 'ask', 'step', 'story'];
-
-const within = (pathname: string, root: string) => pathname === root || pathname.startsWith(`${root}/`);
 
 const screenHref = (pathname: string, search: string) => {
   const p = new URLSearchParams(search);
@@ -13,37 +12,38 @@ const screenHref = (pathname: string, search: string) => {
   return s ? `${pathname}?${s}` : pathname;
 };
 
-// Per page load: which tab owns each history entry, and where each tab was left.
-const owners = new Map<string, string>();
-const lastScreen = new Map<string, string>();
-let currentOwner: string | null = null;
+// Per page load: where each space was left, and the space of the last screen that had one.
+const lastScreen = new Map<SpaceId, string>();
+let lastOwner: SpaceId | null = null;
 
 /**
- * Bottom tabs behave like Instagram's (master prompt §7a): each tab remembers the last screen you
- * opened from it, a detail screen keeps its tab lit (a post opened from Home belongs to Home), and
- * tapping the lit tab goes back to that tab's root.
+ * Which space is lit, and where its tab goes (prompt 3, U2). The lit one is the space that owns
+ * the current URL in the navigation model (`spaceOf`), so a deep link, a notification or Back
+ * always lights the right tab, whatever was pressed before. Each space still remembers the last
+ * screen opened in it; tapping the lit tab returns to that space's first screen.
  */
-export function useTabMemory(tabs: readonly { id: string; to: string }[]) {
+export function useSpaceMemory(spaces: readonly NavSpace[]): {
+  active: SpaceId | null;
+  section: SectionRef | null;
+  hrefFor: (space: { id: SpaceId; to: string }) => string;
+} {
   const location = useLocation();
-  const type = useNavigationType();
-  // The most specific root wins: /platform/billing/… belongs to Billing, not to /platform.
-  const direct = tabs
-    .filter((t) => within(location.pathname, t.to))
-    .sort((a, b) => b.to.length - a.to.length)[0]?.id;
-  const remembered = type === 'POP' ? owners.get(location.key) : undefined;
-  const owner = remembered ?? direct ?? currentOwner ?? tabs[0]?.id ?? null;
+  const owner = spaceOf(spaces, location.pathname)?.space.id ?? null;
+  const section = spaceOf(spaces, location.pathname)?.section?.key ?? null;
+  // A screen no space owns (a legal page opened from Settings) keeps the last space lit, but is
+  // never remembered as that space's screen: its tab must not lead back to it.
+  const stillThere = lastOwner && spaces.some((s) => s.id === lastOwner) ? lastOwner : null;
+  const active = owner ?? stillThere ?? spaces[0]?.id ?? null;
 
   useLayoutEffect(() => {
     if (!owner) return;
-    currentOwner = owner;
-    owners.set(location.key, owner);
+    lastOwner = owner;
     lastScreen.set(owner, screenHref(location.pathname, location.search));
-  }, [owner, location.key, location.pathname, location.search]);
+  }, [owner, location.pathname, location.search]);
 
   return {
-    active: owner,
-    /** Where tapping a tab goes: its root when it is the lit tab, else where you left it. */
-    hrefFor: (tab: { id: string; to: string }) =>
-      tab.id === owner ? tab.to : (lastScreen.get(tab.id) ?? tab.to),
+    active,
+    section,
+    hrefFor: (space) => (space.id === active ? space.to : (lastScreen.get(space.id) ?? space.to)),
   };
 }

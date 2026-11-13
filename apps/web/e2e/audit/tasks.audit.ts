@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
-import { signIn } from '../helpers';
+import { signIn, START } from '../helpers';
 import { lastMailSubject } from '../admin';
 
 /**
@@ -93,7 +93,7 @@ async function coldStart(browser: Browser, email: string) {
   const { ctx, page } = await phone(browser);
   await signIn(page, email);
   await page.goto(`${BASE}/`);
-  await page.waitForURL(/\/home$/);
+  await page.waitForURL(START);
   // The member looks before tapping: the tabs and Home's own content have arrived.
   // (Not "network idle": the app keeps its live connection open.)
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link').first().waitFor();
@@ -138,7 +138,7 @@ const tasks: { name: string; run: (b: Browser) => Promise<{ count: Count; close:
         await c.select(page.getByLabel('Year'), String(new Date().getFullYear() - 20), 'birth year');
         await c.tap(page.getByRole('button', { name: 'Send code' }), 'send code');
         await c.code(page.getByLabel('6-digit code 1'), await smsCode(page, `+91${number}`), 'WhatsApp code');
-        await page.waitForURL(/\/home$/);
+        await page.waitForURL(START);
         await c.tap(page.getByRole('link', { name: 'Verify now' }).first(), 'verify now');
         await c.fill(page.getByLabel('Roll number'), '24DP1A0577', 'roll number');
         await c.tap(page.getByRole('button', { name: 'Find me' }), 'find me');

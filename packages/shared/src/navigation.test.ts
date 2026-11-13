@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ADMIN_SECTIONS,
   buildNav,
   featureShipped,
   homePath,
+  landingPath,
   NAV_DESTINATIONS,
   NAV_FEATURE,
+  PERSONA_SPACES,
   safeReturnPath,
+  SIDEBAR_LIMIT,
+  sidebarEntries,
+  spaceOf,
   type NavId,
+  type NavPersona,
 } from './navigation.js';
 import {
   FEATURE_KEYS,
@@ -298,5 +305,229 @@ describe('the network switch (NETWORK_ENABLED, ADR 0014)', () => {
     expect(ids([Role.SUPER_ADMIN], false)).not.toContain('employers');
     // Nothing else moves.
     expect(ids([Role.STUDENT], false)).toEqual(ids([Role.STUDENT]).filter((id) => id !== 'network'));
+  });
+});
+
+describe('spaces (prompt 3, U2)', () => {
+  const all = new Set<NavId>(Object.keys(NAV_DESTINATIONS) as NavId[]);
+  const model = (
+    roles: Role[],
+    o: { verified?: boolean; gradYear?: number; features?: Partial<Record<Feature, boolean>> } = {},
+  ) =>
+    buildNav(
+      {
+        roles,
+        permissions: perms(roles, o.verified ?? true),
+        verified: o.verified ?? true,
+        ...(o.gradYear ? { gradYear: o.gradYear } : {}),
+        ...(o.features ? { features: o.features } : {}),
+      },
+      o.features ? featureShipped(all, o.features) : all,
+    );
+  const ids = (m: ReturnType<typeof model>) => m.spaces.map((x) => x.id);
+  const keys = (m: ReturnType<typeof model>, space: string) =>
+    m.spaces.find((x) => x.id === space)?.sections.map((x) => x.key) ?? [];
+  const COLLEGE: Role[] = [Role.STUDENT, Role.ALUMNI, Role.FACULTY, Role.TPO, Role.COLLEGE_ADMIN];
+  const year = new Date().getUTCFullYear();
+
+  it('gives each persona its five spaces, in tab order', () => {
+    expect(ids(model([Role.STUDENT]))).toEqual(['home', 'learn', 'mentors', 'career', 'you']);
+    expect(ids(model([Role.ALUMNI]))).toEqual(['home', 'mentoring', 'jobs', 'community', 'you']);
+    for (const role of [Role.FACULTY, Role.TPO, Role.COLLEGE_ADMIN])
+      expect(ids(model([role])), role).toEqual(['today', 'students', 'placements', 'content', 'college']);
+    expect(ids(model([Role.SUPER_ADMIN]))).toEqual(['colleges', 'billing', 'traction', 'health', 'settings']);
+    expect(ids(model([Role.RECRUITER]))).toEqual(['postings', 'settings']);
+  });
+
+  it('puts the sections the brief names in each student space', () => {
+    const m = model([Role.STUDENT]);
+    expect(keys(m, 'learn')).toEqual(expect.arrayContaining(['roadmaps', 'study', 'practice', 'assistant']));
+    expect(keys(m, 'mentors')).toEqual(
+      expect.arrayContaining(['mentors', 'requests', 'sessions', 'messages']),
+    );
+    expect(keys(m, 'career')).toEqual(
+      expect.arrayContaining([
+        'placements',
+        'jobs',
+        'resume',
+        'interviews',
+        'readiness',
+        'companies',
+        'referrals',
+      ]),
+    );
+    expect(keys(m, 'you')).toEqual(expect.arrayContaining(['profile', 'progress', 'settings', 'help']));
+    // The first section is where the tab opens; You opens on its own screen.
+    expect(m.spaces.map((x) => x.path)).toEqual(['/home', '/roadmaps', '/mentors', '/placements', '/you']);
+  });
+
+  it('gives staff the admin sections as sections of their spaces (no second column)', () => {
+    const m = model([Role.COLLEGE_ADMIN]);
+    expect(keys(m, 'today')[0]).toBe('admin');
+    expect(keys(m, 'students')).toEqual(
+      expect.arrayContaining(['admin:onboarding', 'admin:verification', 'admin:readiness']),
+    );
+    expect(keys(m, 'placements')).toEqual(
+      expect.arrayContaining(['admin:placements', 'admin:offers', 'admin:reports']),
+    );
+    expect(keys(m, 'content')).toEqual(expect.arrayContaining(['roadmaps', 'admin:moderation']));
+    expect(keys(m, 'college')).toEqual(
+      expect.arrayContaining(['admin:branding', 'admin:billing', 'admin:analytics', 'settings']),
+    );
+    // Every admin section the member may open is in exactly one space.
+    const open = m.admin.flatMap((g) => g.items.map((x) => `admin:${x.id}`));
+    const listed = m.spaces
+      .flatMap((x) => x.sections.map((y) => y.key))
+      .filter((k) => k.startsWith('admin:'));
+    expect([...listed].sort()).toEqual([...open].sort());
+  });
+
+  it('lists every destination and admin section once per persona, and no path twice', () => {
+    for (const persona of ['student', 'alumni', 'staff', 'admin'] as NavPersona[]) {
+      const refs = PERSONA_SPACES[persona].flatMap((x) => x.sections);
+      expect(new Set(refs).size, persona).toBe(refs.length);
+      for (const id of Object.keys(NAV_DESTINATIONS) as NavId[]) {
+        const dest = NAV_DESTINATIONS[id];
+        if (id === 'create' || dest.group === 'platform' || id === 'recruiter') continue;
+        expect(refs, `${persona} is missing ${id}`).toContain(id);
+      }
+    }
+    for (const persona of ['staff', 'admin'] as NavPersona[]) {
+      const refs = PERSONA_SPACES[persona].flatMap((x) => x.sections);
+      for (const x of ADMIN_SECTIONS)
+        expect(refs, `${persona} is missing ${x.id}`).toContain(`admin:${x.id}`);
+    }
+    for (const role of [...COLLEGE, Role.SUPER_ADMIN]) {
+      const paths = model([role]).spaces.flatMap((x) => x.sections.map((y) => y.path));
+      expect(new Set(paths).size, role).toBe(paths.length);
+    }
+  });
+
+  it('only lists what the member may open; nothing another role owns leaks in', () => {
+    for (const role of COLLEGE) {
+      const p = perms([role]);
+      for (const space of model([role]).spaces)
+        for (const x of space.sections) {
+          expect(x.locked, `${role} ${x.key}`).toBe(false);
+          if (x.key.startsWith('admin:')) {
+            const a = ADMIN_SECTIONS.find((y) => `admin:${y.id}` === x.key);
+            expect(p, x.key).toContain(a?.permission);
+          } else {
+            const wanted = NAV_DESTINATIONS[x.key as NavId].permissions;
+            if (wanted.length)
+              expect(
+                wanted.some((w) => p.includes(w)),
+                `${role} ${x.key}`,
+              ).toBe(true);
+          }
+        }
+    }
+    expect(keys(model([Role.STUDENT]), 'you')).not.toContain('admin');
+  });
+
+  it('keeps all five spaces for a member who is not verified yet, with what waits marked', () => {
+    const m = model([Role.STUDENT], { verified: false });
+    expect(ids(m)).toEqual(['home', 'learn', 'mentors', 'career', 'you']);
+    const mentors = m.spaces.find((x) => x.id === 'mentors');
+    expect(mentors?.sections.find((x) => x.key === 'mentors')?.locked).toBe(true);
+    // Verify is offered first in You, and only until it is done.
+    expect(keys(m, 'you')[0]).toBe('verify');
+    expect(keys(model([Role.STUDENT]), 'you')).not.toContain('verify');
+    // A minor waiting for a guardian has the same permissions as any unverified member: same shape.
+    expect(ids(model([Role.STUDENT], { verified: false, gradYear: year + 4 }))).toEqual(ids(m));
+  });
+
+  it('drops the sections of a switched-off feature, and a space with nothing left', () => {
+    const off = model([Role.STUDENT], { features: { study: false, placements: false, reels: false } });
+    expect(keys(off, 'learn')).not.toContain('study');
+    expect(keys(off, 'learn')).not.toContain('assistant');
+    expect(keys(off, 'career')).not.toContain('placements');
+    expect(keys(off, 'home')).not.toContain('reels');
+    expect(off.spaces.find((x) => x.id === 'career')?.path).toBe('/jobs');
+    const staff = model([Role.TPO], { features: { placements: false } });
+    expect(keys(staff, 'placements')).not.toContain('admin:placements');
+    // Every space a model lists has at least one section.
+    for (const role of COLLEGE)
+      for (const x of model([role]).spaces) expect(x.sections.length).toBeGreaterThan(0);
+    // The recruiter has only what an employer host ships.
+    const recruiter = buildNav(
+      { roles: [Role.RECRUITER], permissions: perms([Role.RECRUITER]), verified: true },
+      new Set<NavId>(['recruiter', 'settings']),
+    );
+    expect(recruiter.spaces.map((x) => x.id)).toEqual(['postings', 'settings']);
+  });
+
+  it('starts final-year students in Career, first-years in Learn and everyone else in their first space', () => {
+    expect(model([Role.STUDENT], { gradYear: year + 1 }).landing).toBe('career');
+    expect(model([Role.STUDENT], { gradYear: year + 4 }).landing).toBe('learn');
+    expect(model([Role.STUDENT], { gradYear: year + 3 }).landing).toBe('home');
+    expect(model([Role.STUDENT]).landing).toBe('home');
+    expect(model([Role.ALUMNI], { gradYear: year - 2 }).landing).toBe('home');
+    expect(model([Role.TPO]).landing).toBe('today');
+    expect(landingPath(model([Role.STUDENT], { gradYear: year + 1 }), '/home')).toBe('/placements');
+    expect(landingPath(model([Role.STUDENT], { gradYear: year + 4 }), '/home')).toBe('/roadmaps');
+    expect(landingPath(model([Role.SUPER_ADMIN]), '/home')).toBe('/platform');
+  });
+
+  it('knows which space owns a URL (the tab that is lit)', () => {
+    const student = model([Role.STUDENT]).spaces;
+    const owner = (path: string, spaces = student) => {
+      const o = spaceOf(spaces, path);
+      return o ? [o.space.id, o.section?.key ?? null] : null;
+    };
+    expect(owner('/home')).toEqual(['home', 'home']);
+    expect(owner('/posts/65f0')).toEqual(['home', 'home']);
+    expect(owner('/roadmaps/sde-dsa')).toEqual(['learn', 'roadmaps']);
+    // The longest section path wins.
+    expect(owner('/study/chat/abc')).toEqual(['learn', 'assistant']);
+    expect(owner('/study/65f0/m/1')).toEqual(['learn', 'study']);
+    // A prefix is a whole segment: /mentorship is Requests, /mentors/… is Mentors.
+    expect(owner('/mentorship')).toEqual(['mentors', 'requests']);
+    expect(owner('/mentors/65f0')).toEqual(['mentors', 'mentors']);
+    expect(owner('/messages/65f0')).toEqual(['mentors', 'messages']);
+    expect(owner('/placements/65f0')).toEqual(['career', 'placements']);
+    expect(owner('/companies/nimbus%20labs')).toEqual(['career', 'companies']);
+    expect(owner('/experiences/new')).toEqual(['career', 'companies']);
+    expect(owner('/jobs/tracker')).toEqual(['career', 'jobs']);
+    expect(owner('/readiness')).toEqual(['career', 'readiness']);
+    expect(owner('/circles/65f0')).toEqual(['home', 'circles']);
+    expect(owner('/settings/privacy')).toEqual(['you', 'settings']);
+    expect(owner('/you')).toEqual(['you', null]);
+    // Every space has a screen that lists all its sections.
+    expect(owner('/space/career')).toEqual(['career', null]);
+    expect(model([Role.STUDENT]).spaces.map((s) => s.browse)).toEqual([
+      '/space/home',
+      '/space/learn',
+      '/space/mentors',
+      '/space/career',
+      '/you',
+    ]);
+    expect(owner('/nowhere')).toBeNull();
+    const admin = model([Role.COLLEGE_ADMIN]).spaces;
+    expect(owner('/admin', admin)).toEqual(['today', 'admin']);
+    expect(owner('/admin/onboarding', admin)).toEqual(['students', 'admin:onboarding']);
+    expect(owner('/admin/placements/65f0', admin)).toEqual(['placements', 'admin:placements']);
+    expect(owner('/admin/billing', admin)).toEqual(['college', 'admin:billing']);
+    expect(owner('/roadmaps/review', admin)).toEqual(['content', 'roadmaps']);
+    const platform = model([Role.SUPER_ADMIN]).spaces;
+    expect(owner('/platform/billing/65f0', platform)).toEqual(['billing', 'billing']);
+    expect(owner('/platform/employers', platform)).toEqual(['colleges', 'employers']);
+  });
+
+  it('never gives a desktop sidebar more than seven entries', () => {
+    for (const role of [...COLLEGE, Role.SUPER_ADMIN, Role.RECRUITER]) {
+      const entries = sidebarEntries(model([role]), role !== Role.SUPER_ADMIN && role !== Role.RECRUITER);
+      expect(entries.length, role).toBeLessThanOrEqual(SIDEBAR_LIMIT);
+      expect(model([role]).spaces.length, role).toBeLessThanOrEqual(5);
+    }
+    expect(sidebarEntries(model([Role.STUDENT]), true)).toEqual([
+      'create',
+      'search',
+      'home',
+      'learn',
+      'mentors',
+      'career',
+      'you',
+    ]);
   });
 });

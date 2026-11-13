@@ -89,3 +89,13 @@ export function inFinalYears(gradYear: number | null | undefined, now = new Date
   const monthsLeft = gradYear * 12 + 5 - (now.getUTCFullYear() * 12 + now.getUTCMonth());
   return monthsLeft >= -6 && monthsLeft <= 24;
 }
+
+/**
+ * The first year of a four-year course: more than three years (36 months) to the May of graduation.
+ * These students start in Learn (prompt 3, U2).
+ */
+export function inFirstYear(gradYear: number | null | undefined, now = new Date()): boolean {
+  if (!gradYear) return false;
+  const monthsLeft = gradYear * 12 + 5 - (now.getUTCFullYear() * 12 + now.getUTCMonth());
+  return monthsLeft > 36 && monthsLeft <= 48;
+}

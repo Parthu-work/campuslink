@@ -110,7 +110,35 @@
     "employers": "Employers",
     "alumni": "Alumni",
     "share": "Share",
-    "captain": "Campus Captain"
+    "captain": "Campus Captain",
+    "spaces": {
+      "home": "Home",
+      "learn": "Learn",
+      "mentors": "Mentors",
+      "career": "Career",
+      "you": "You",
+      "mentoring": "Mentoring",
+      "jobs": "Jobs",
+      "community": "Community",
+      "today": "Today",
+      "students": "Students",
+      "placements": "Placements",
+      "content": "Content",
+      "college": "College",
+      "colleges": "Colleges",
+      "billing": "Billing",
+      "traction": "Traction",
+      "health": "Health",
+      "settings": "Settings",
+      "postings": "Postings"
+    },
+    "inbox": "Inbox",
+    "inboxUnread_one": "Inbox, {{count}} unread",
+    "inboxUnread_other": "Inbox, {{count}} unread",
+    "allIn": "All in {{space}}",
+    "youAreHere": "You are here",
+    "sectionsOf": "{{space}} sections",
+    "locked": "Opens after you verify"
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
@@ -724,7 +752,12 @@
     "questions": "Questions",
     "jobs": "Jobs",
     "roadmaps": "Roadmaps",
-    "events": "Events"
+    "events": "Events",
+    "recent": "Recent",
+    "companies": "Companies",
+    "drives": "Placement drives",
+    "subjects": "Subjects",
+    "actions": "Create"
   },
   "session": {
     "type": {

@@ -1,3 +1,4 @@
+import { InboxSwitch } from '../../components/layout/inbox-switch';
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useParams } from 'react-router';
 import { useTranslation } from '../../i18n/react';
@@ -111,6 +112,7 @@ export function MessagesPage() {
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)] lg:items-start">
       <div className="grid content-start gap-4">
+        <InboxSwitch />
         <PageHeader title={t('nav.messages')} intro={t('messages.intro')} />
         <ConversationList />
       </div>

@@ -1,9 +1,9 @@
 import { lazy, Suspense, useDeferredValue, useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { ImageUp, LayoutDashboard, Search, ScrollText, Trash2 } from 'lucide-react';
+import { ImageUp, Search, ScrollText, Trash2 } from 'lucide-react';
 import {
   contrast,
   ensureContrast,
@@ -30,51 +30,17 @@ import { FormError } from '../../components/layout/auth-layout';
 import { api, apiRequest, ApiError } from '../../lib/api';
 import { useCan, useMe } from '../../lib/me';
 import { applyBranding, useTenant } from '../../lib/tenant-context';
-import { useNav, type AdminNavGroup } from '../../lib/nav';
-import { intentPreload } from '../../lib/preload';
-import { ADMIN_ICONS } from '../../lib/admin-icons';
-import { BackLink } from '../../components/ui/back-link';
+import { useNav } from '../../lib/nav';
 import { cn } from '../../lib/cn';
 import { BillingBanner } from './billing-banner';
 
 /** The legal details form (B14) loads with Branding, after the colours. */
 const LegalDetails = lazy(() => import('./legal-admin').then((m) => ({ default: m.LegalDetails })));
 
-/** One admin section in the side menu: a 44px row with its icon, the current one marked. */
-function AdminMenu({ groups }: { groups: AdminNavGroup[] }) {
-  const { t } = useTranslation();
-  const row =
-    'relative flex min-h-11 items-center gap-3 rounded-[var(--radius-sm)] px-3 text-callout font-semibold text-fg-2 hover:bg-surface-2 hover:text-fg aria-[current=page]:bg-brand-surface aria-[current=page]:text-brand-ink';
-  return (
-    <div className="grid gap-4">
-      <NavLink to="/admin" end className={row} {...intentPreload('/admin')}>
-        <LayoutDashboard className="size-5" aria-hidden /> {t('admin.overview')}
-      </NavLink>
-      {groups.map((g) => (
-        <div key={g.group} className="grid gap-1">
-          <p className="eyebrow px-3 text-fg-3">{g.label}</p>
-          <ul className="grid gap-0.5">
-            {g.items.map((i) => {
-              const Icon = ADMIN_ICONS[i.id];
-              return (
-                <li key={i.id}>
-                  <NavLink to={i.to} className={row} {...intentPreload(i.to)}>
-                    <Icon className="size-5" aria-hidden /> {i.label}
-                  </NavLink>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /**
- * The admin area (audit §7: thirteen tabs in one scrolling row, no overview): a grouped side menu on
- * desktop; on phones the overview lists the sections and each section has a way back. Sections come
- * from `buildNav()` through `useNav()`, so each member sees only what they may open.
+ * The admin area's screens. Its sections are sections of the staff spaces (prompt 3, U2: Today,
+ * Students, Placements, Content, College), listed by the shell from `buildNav()`, so this layout
+ * draws no menu of its own: only each section's title and, for the college admin, the billing notice.
  */
 export function AdminLayout() {
   const { t } = useTranslation();
@@ -86,17 +52,9 @@ export function AdminLayout() {
     .flatMap((g) => g.items)
     .find((i) => pathname === i.to || pathname.startsWith(`${i.to}/`));
   return (
-    <div className="grid gap-5 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start lg:gap-8">
-      <nav aria-label={t('admin.sectionsNav')} className="hidden lg:sticky lg:top-5 lg:block">
-        <AdminMenu groups={admin} />
-      </nav>
+    <>
       {/* One shrinkable column: a wide table scrolls inside its section instead of widening the page. */}
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
-        {!atHome && (
-          <BackLink to="/admin" className="lg:hidden">
-            {t('admin.overview')}
-          </BackLink>
-        )}
         <PageHeader
           eyebrow={atHome ? undefined : t('nav.admin')}
           title={atHome ? t('nav.admin') : (current?.label ?? t('nav.admin'))}
@@ -104,7 +62,7 @@ export function AdminLayout() {
         {billing && <BillingBanner />}
         <Outlet />
       </div>
-    </div>
+    </>
   );
 }
 

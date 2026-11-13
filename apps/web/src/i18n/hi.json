@@ -110,7 +110,35 @@
     "employers": "नियोक्ता",
     "alumni": "पूर्व छात्र",
     "share": "शेयर",
-    "captain": "कैंपस कैप्टन"
+    "captain": "कैंपस कैप्टन",
+    "spaces": {
+      "home": "होम",
+      "learn": "सीखें",
+      "mentors": "मेंटर",
+      "career": "करियर",
+      "you": "आप",
+      "mentoring": "मेंटरिंग",
+      "jobs": "नौकरियाँ",
+      "community": "समुदाय",
+      "today": "आज",
+      "students": "छात्र",
+      "placements": "प्लेसमेंट",
+      "content": "कंटेंट",
+      "college": "कॉलेज",
+      "colleges": "कॉलेज",
+      "billing": "बिलिंग",
+      "traction": "ट्रैक्शन",
+      "health": "हेल्थ",
+      "settings": "सेटिंग्स",
+      "postings": "पोस्टिंग"
+    },
+    "inbox": "इनबॉक्स",
+    "inboxUnread_one": "इनबॉक्स, {{count}} अपठित",
+    "inboxUnread_other": "इनबॉक्स, {{count}} अपठित",
+    "allIn": "{{space}} में सब",
+    "youAreHere": "आप यहाँ हैं",
+    "sectionsOf": "{{space}} के हिस्से",
+    "locked": "वेरिफ़ाई करने के बाद खुलेगा"
   },
   "landing": {
     "eyebrow": "{{app}} · पूर्व छात्र मार्गदर्शन नेटवर्क",
@@ -724,7 +752,12 @@
     "questions": "सवाल",
     "jobs": "नौकरियाँ",
     "roadmaps": "रोडमैप",
-    "events": "इवेंट"
+    "events": "इवेंट",
+    "recent": "हाल के",
+    "companies": "कंपनियाँ",
+    "drives": "प्लेसमेंट ड्राइव",
+    "subjects": "विषय",
+    "actions": "बनाएँ"
   },
   "session": {
     "type": {

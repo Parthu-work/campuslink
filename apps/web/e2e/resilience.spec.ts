@@ -19,17 +19,13 @@ async function ready(page: Page) {
   await expect(page.getByRole('navigation', { name: 'Main' }).first()).toBeVisible();
 }
 
+/** Events is a section of Home: the row under the top bar on phones, the sidebar on desktop. */
 async function openEvents(page: Page, isMobile: boolean) {
-  if (isMobile) {
-    await page.getByRole('button', { name: /Account menu/ }).click();
-    await page.getByRole('dialog').getByRole('link', { name: 'Events' }).click();
-  } else {
-    await page
-      .getByRole('navigation', { name: 'Main' })
-      .first()
-      .getByRole('link', { name: 'Events' })
-      .click();
-  }
+  await page
+    .getByRole('navigation', { name: isMobile ? 'Home sections' : 'Main' })
+    .getByRole('link', { name: 'Events', exact: true })
+    .first()
+    .click();
 }
 
 test('a blocked screen chunk shows a friendly state inside the shell and reloads only once', async ({
@@ -104,7 +100,12 @@ test('offline, an unvisited screen shows the offline state and the shell keeps w
   await expect(page.getByRole('heading', { name: 'You’re offline' })).toBeVisible({ timeout: 15_000 });
   await shellIsAlive(page);
   // Navigation still works for screens already loaded.
-  await page.getByRole('navigation', { name: 'Main' }).last().getByRole('link', { name: 'Home' }).click();
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .last()
+    .getByRole('link', { name: 'Home', exact: true })
+    .first()
+    .click();
   await expect(page).toHaveURL(/\/home$/);
   await context.setOffline(false);
 });
@@ -134,7 +135,7 @@ test('a shell menu whose code cannot load offline leaves the shell working and a
   await page.unroute(menu);
   await context.setOffline(false);
   await page.getByRole('button', { name: /Account menu/ }).click();
-  if (isMobile) await expect(page.getByRole('dialog').getByRole('link', { name: 'Events' })).toBeVisible();
+  if (isMobile) await expect(page.getByRole('dialog').getByRole('link', { name: 'Settings' })).toBeVisible();
   else await expect(page.getByRole('menuitem', { name: 'Settings' })).toBeVisible();
 });
 

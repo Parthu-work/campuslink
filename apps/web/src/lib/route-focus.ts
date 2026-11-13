@@ -40,7 +40,8 @@ export function useRouteFocus(collegeName: string) {
 
     const fresh = firstRender && location.pathname === LOADED_AT;
     firstRender = false;
-    if (fresh || !main || main.contains(document.activeElement)) return;
+    const inside = !!main && main.contains(document.activeElement) && document.activeElement !== main;
+    if (fresh || !main || inside) return;
 
     if (type === 'POP') {
       const href = leftVia.get(location.key);

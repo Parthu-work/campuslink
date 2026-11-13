@@ -2,45 +2,18 @@ import { useMemo } from 'react';
 import { useTranslation } from '../i18n/react';
 import {
   Activity,
-  BadgeCheck,
-  Flag,
-  Share2,
-  Bell,
   BookOpen,
-  Bookmark,
   BriefcaseBusiness,
   Building2,
-  CalendarClock,
-  GraduationCap,
-  CalendarDays,
   ClipboardCheck,
   Compass,
-  FileUser,
-  Film,
-  Gift,
-  HandHelping,
+  GraduationCap,
   HeartHandshake,
   Home,
-  Inbox,
-  LifeBuoy,
-  TrendingUp,
-  ReceiptIndianRupee,
   Library,
-  Medal,
-  MessageCircleQuestion,
-  MessagesSquare,
-  Mic,
-  Gauge,
-  HandHeart,
-  Dumbbell,
-  UsersRound,
-  Orbit,
-  Plus,
-  Rss,
+  ReceiptIndianRupee,
   Settings,
-  Shield,
-  Sparkles,
-  Trophy,
+  TrendingUp,
   User,
   Users,
   type LucideIcon,
@@ -48,71 +21,45 @@ import {
 import {
   buildNav,
   featureShipped,
+  landingPath,
   type AdminGroup,
   type AdminSectionId,
   type SettingsSectionId,
   type CreateActionId,
-  type NavDestination,
-  type NavGroup,
   type NavId,
+  type NavSection,
   type Role,
+  type SectionRef,
+  type SpaceId,
 } from '@campuslink/shared';
 import { useMe } from './me';
 import { useTenant } from './tenant-context';
 import { useUnreadMessages, useUnreadNotifications } from './unread';
 
-export const NAV_ICONS: Record<NavId, LucideIcon> = {
+/**
+ * The five spaces' icons: the only navigation icons in the first load. Every other destination's
+ * icon is in `lib/nav-icons.ts`, for the surfaces that load later.
+ */
+export const SPACE_ICONS: Record<SpaceId, LucideIcon> = {
   home: Home,
-  study: BookOpen,
-  assistant: Sparkles,
-  subjects: Library,
-  create: Plus,
+  learn: BookOpen,
   mentors: Compass,
-  jobs: BriefcaseBusiness,
-  placements: Building2,
-  outcomes: GraduationCap,
-  resume: FileUser,
-  interviews: Mic,
-  readiness: Gauge,
-  practice: Dumbbell,
-  peers: HeartHandshake,
-  circles: UsersRound,
-  share: Share2,
-  captain: Flag,
-  companies: Building2,
-  copilot: Sparkles,
-  // Icons already on the boot path (no new icon in the initial bundle).
-  network: Users,
-  recruiter: Building2,
-  employers: Building2,
-  requests: Inbox,
-  review: ClipboardCheck,
-  roadmaps: Orbit,
-  events: CalendarDays,
-  questions: MessageCircleQuestion,
-  progress: Trophy,
-  sessions: CalendarClock,
-  messages: MessagesSquare,
-  notifications: Bell,
-  people: Users,
-  referrals: HandHelping,
+  career: BriefcaseBusiness,
+  you: User,
   mentoring: HeartHandshake,
-  alumni: HandHeart,
-  reels: Film,
-  following: Rss,
-  saved: Bookmark,
-  leaderboard: Medal,
-  rewards: Gift,
-  profile: User,
-  settings: Settings,
-  admin: Shield,
-  verify: BadgeCheck,
-  platform: Building2,
-  traction: TrendingUp,
+  jobs: BriefcaseBusiness,
+  community: Users,
+  today: ClipboardCheck,
+  students: GraduationCap,
+  placements: Building2,
+  content: Library,
+  college: Settings,
+  colleges: Building2,
   billing: ReceiptIndianRupee,
+  traction: TrendingUp,
   health: Activity,
-  help: LifeBuoy,
-  platformSupport: LifeBuoy,
+  settings: Settings,
+  postings: BriefcaseBusiness,
 };
 
 /** i18n keys under `nav.` (a few ids reuse older keys). */
@@ -176,11 +123,27 @@ const PLATFORM_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'settings',
 ]);
 
-export interface NavEntry {
-  id: NavId;
+/** A section of a space, as the shell lists it. */
+export interface SectionEntry {
+  key: SectionRef;
+  to: string;
+  label: string;
+  /** Opens once the member is verified; the screen says so. */
+  locked: boolean;
+  badge: number;
+}
+
+/** One of the member's spaces: a bottom tab on phones, a sidebar entry on desktop. */
+export interface SpaceEntry {
+  id: SpaceId;
   to: string;
   label: string;
   icon: LucideIcon;
+  /** The space opens on its own screen, which lists its sections. */
+  hub: boolean;
+  /** The screen that lists every section of the space. */
+  browse: string;
+  sections: SectionEntry[];
   badge: number;
 }
 
@@ -202,7 +165,7 @@ export interface AdminNavGroup {
   items: { id: AdminSectionId; to: string; label: string }[];
 }
 
-/** Role-aware navigation for every surface: tabs, rail, avatar menu and the Create sheet. */
+/** Role-aware navigation for every surface: the spaces, the account menu and the Create sheet. */
 export function useNav() {
   const { t } = useTranslation();
   const { data: me } = useMe();
@@ -232,23 +195,47 @@ export function useNav() {
       messages: unreadMessages,
       notifications: unreadNotifications,
     };
-    const entry = (d: NavDestination): NavEntry => ({
-      id: d.id,
-      to: d.path,
-      label: t(`nav.${LABEL_KEY[d.id] ?? d.id}`),
-      icon: NAV_ICONS[d.id],
-      badge: badges[d.id] ?? 0,
-    });
+    const section = (x: NavSection): SectionEntry => {
+      const admin = x.key.startsWith('admin:') ? (x.key.slice(6) as AdminSectionId) : null;
+      const id = x.key as NavId;
+      return {
+        key: x.key,
+        to: x.path,
+        label: admin
+          ? t(`admin.${ADMIN_LABEL[admin] ?? admin}`)
+          : // The admin area's own screen is the staff's overview; "Admin" is the area, not a place.
+            id === 'admin'
+            ? t('admin.overview')
+            : t(`nav.${LABEL_KEY[id] ?? id}`),
+        locked: x.locked,
+        badge: admin ? 0 : (badges[id] ?? 0),
+      };
+    };
+    const fallback =
+      tenant.kind === 'platform' ? '/platform' : tenant.kind === 'employer' ? '/recruiter' : '/home';
     return {
       persona: model.persona,
-      tabs: model.tabs.map(entry),
-      menu: model.menu.map((g) => ({
-        group: g.group as NavGroup,
-        label: t(`nav.groups.${g.group}`),
-        items: g.items.map(entry),
-      })),
+      /** The member's spaces, in tab order (prompt 3, U2). */
+      spaces: model.spaces.map((s): SpaceEntry => {
+        const sections = s.sections.map(section);
+        return {
+          id: s.id,
+          to: s.path,
+          label: t(`nav.spaces.${s.id}`),
+          icon: SPACE_ICONS[s.id],
+          hub: s.hub,
+          browse: s.browse,
+          sections,
+          // The inbox has its own entry in the top bar: a space does not repeat its count.
+          badge: 0,
+        };
+      }),
+      /** The model itself, for `spaceOf()`. */
+      model: model.spaces,
+      /** Where this member starts: Career in the final years, Learn in the first, else the first space. */
+      landing: landingPath(model, fallback),
       create: model.create as CreateActionId[],
-      /** The admin area's sections, grouped (its side menu and overview add the icons). */
+      /** The admin area's sections, grouped (its overview adds the icons). */
       admin: model.admin.map((g): AdminNavGroup => ({
         group: g.group,
         label: t(`admin.groups.${g.group}`),
@@ -258,6 +245,8 @@ export function useNav() {
       settings: model.settings.map((x) => [x.path, t(SETTINGS_LABEL[x.id])] as const),
       unreadMessages,
       unreadNotifications,
+      /** One count for the top bar's inbox: unread notifications and unread conversations. */
+      inbox: unreadMessages + unreadNotifications,
       canMessage: permissions.includes('messages:send'),
     };
   }, [me, platform, tenant.kind, tenant.features, t, unreadMessages, unreadNotifications]);

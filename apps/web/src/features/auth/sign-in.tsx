@@ -65,7 +65,12 @@ export function SignInPage() {
     if (window.location.pathname !== '/sign-in') return;
     // Back to the page that asked for sign-in (a shared post, a push link), else the console or Home.
     const from = safeReturnPath((location.state as { from?: unknown } | null)?.from);
-    navigate(from ?? (tenant.kind === 'platform' ? '/platform' : '/home'), { replace: true });
+    navigate(
+      from ?? (tenant.kind === 'platform' ? '/platform' : tenant.kind === 'college' ? '/start' : '/home'),
+      {
+        replace: true,
+      },
+    );
   };
 
   const onSubmit = form.handleSubmit(async (values) => {

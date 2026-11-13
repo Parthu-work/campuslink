@@ -1,6 +1,6 @@
-import { Role, type Permission } from './roles.js';
+import { Role, ROLE_PERMISSIONS, type Permission } from './roles.js';
 import type { Feature } from './features.js';
-import { inFinalYears } from './constants/placements.js';
+import { inFinalYears, inFirstYear } from './constants/placements.js';
 
 /**
  * One navigation model for every surface (bottom tabs, desktop rail, avatar menu, Create sheet,
@@ -425,8 +425,276 @@ export interface NavSubject {
 export const NETWORK_NAV: readonly NavId[] = ['network', 'recruiter', 'employers'];
 export const NETWORK_ADMIN_SECTIONS: readonly AdminSectionId[] = ['network'];
 
+/**
+ * Spaces (prompt 3, U2): every persona's navigation is at most five spaces, and every destination
+ * and admin section is a section of exactly one of them. The phone's bottom tabs and the desktop
+ * sidebar are the spaces; the tab that is lit is the space that owns the current URL.
+ */
+export type SpaceId =
+  | 'home'
+  | 'learn'
+  | 'mentors'
+  | 'career'
+  | 'you'
+  | 'mentoring'
+  | 'jobs'
+  | 'community'
+  | 'today'
+  | 'students'
+  | 'placements'
+  | 'content'
+  | 'college'
+  | 'colleges'
+  | 'billing'
+  | 'traction'
+  | 'health'
+  | 'settings'
+  | 'postings';
+
+/** A section of a space: a destination, or (`admin:`) one of the admin area's sections. */
+export type SectionRef = NavId | `admin:${AdminSectionId}`;
+
+interface SpaceSpec {
+  id: SpaceId;
+  /** A hub space opens on its own screen, which lists its sections; others open on their first one. */
+  hub?: string;
+  sections: readonly SectionRef[];
+}
+
+const COLLEGE_STAFF_SPACES: readonly SpaceSpec[] = [
+  { id: 'today', sections: ['admin', 'review', 'home', 'events', 'messages', 'notifications'] },
+  {
+    id: 'students',
+    hub: '/students',
+    sections: [
+      'admin:onboarding',
+      'admin:verification',
+      'admin:users',
+      'admin:list',
+      'admin:imports',
+      'admin:growth',
+      'admin:readiness',
+      'admin:peers',
+      'people',
+      'mentors',
+      'leaderboard',
+    ],
+  },
+  {
+    id: 'placements',
+    sections: [
+      'admin:placements',
+      'admin:offers',
+      'admin:reports',
+      'admin:interviewQuestions',
+      'admin:practiceBank',
+      'admin:experiences',
+      'admin:network',
+      'placements',
+      'companies',
+      'jobs',
+      'referrals',
+      'outcomes',
+      'network',
+    ],
+  },
+  {
+    id: 'content',
+    hub: '/content',
+    sections: [
+      'subjects',
+      'study',
+      'assistant',
+      'roadmaps',
+      'questions',
+      'admin:moderation',
+      'admin:mentorship',
+      'admin:sources',
+      'admin:jobSources',
+      'admin:circles',
+      'admin:recognition',
+      'admin:giving',
+      'admin:rewards',
+      'circles',
+      'reels',
+      'following',
+      'requests',
+      'sessions',
+      'mentoring',
+      'alumni',
+      'peers',
+    ],
+  },
+  {
+    id: 'college',
+    hub: '/college',
+    sections: [
+      'admin:analytics',
+      'admin:branding',
+      'admin:features',
+      'admin:signIn',
+      'admin:ai',
+      'admin:billing',
+      'admin:support',
+      'admin:audit',
+      'verify',
+      'profile',
+      'progress',
+      'rewards',
+      'saved',
+      'resume',
+      'interviews',
+      'practice',
+      'readiness',
+      'copilot',
+      'share',
+      'captain',
+      'settings',
+      'help',
+    ],
+  },
+];
+
+/** The spaces of each persona, in tab order, with their sections in the order they are listed. */
+export const PERSONA_SPACES: Record<NavPersona, readonly SpaceSpec[]> = {
+  student: [
+    {
+      id: 'home',
+      sections: [
+        'home',
+        'events',
+        'questions',
+        'circles',
+        'people',
+        'reels',
+        'following',
+        'saved',
+        'leaderboard',
+      ],
+    },
+    { id: 'learn', sections: ['roadmaps', 'study', 'subjects', 'practice', 'assistant', 'copilot'] },
+    {
+      id: 'mentors',
+      sections: ['mentors', 'requests', 'sessions', 'messages', 'alumni', 'peers', 'mentoring'],
+    },
+    {
+      id: 'career',
+      sections: [
+        'placements',
+        'jobs',
+        'resume',
+        'interviews',
+        'readiness',
+        'companies',
+        'referrals',
+        'outcomes',
+        'network',
+      ],
+    },
+    {
+      id: 'you',
+      hub: '/you',
+      sections: [
+        'verify',
+        'profile',
+        'progress',
+        'rewards',
+        'share',
+        'captain',
+        'notifications',
+        'settings',
+        'help',
+        'review',
+        'admin',
+      ],
+    },
+  ],
+  alumni: [
+    { id: 'home', sections: ['home', 'events', 'reels', 'following', 'saved', 'leaderboard'] },
+    {
+      id: 'mentoring',
+      sections: ['mentoring', 'requests', 'sessions', 'messages', 'alumni', 'mentors', 'peers'],
+    },
+    { id: 'jobs', sections: ['jobs', 'referrals', 'companies', 'placements', 'network'] },
+    {
+      id: 'community',
+      sections: ['questions', 'circles', 'people', 'roadmaps', 'study', 'subjects', 'assistant'],
+    },
+    {
+      id: 'you',
+      hub: '/you',
+      sections: [
+        'verify',
+        'profile',
+        'progress',
+        'rewards',
+        'outcomes',
+        'resume',
+        'interviews',
+        'practice',
+        'readiness',
+        'copilot',
+        'share',
+        'captain',
+        'notifications',
+        'settings',
+        'help',
+        'review',
+        'admin',
+      ],
+    },
+  ],
+  staff: COLLEGE_STAFF_SPACES,
+  admin: COLLEGE_STAFF_SPACES,
+  platform: [
+    { id: 'colleges', sections: ['platform', 'employers', 'platformSupport'] },
+    { id: 'billing', sections: ['billing'] },
+    { id: 'traction', sections: ['traction'] },
+    { id: 'health', sections: ['health'] },
+    { id: 'settings', sections: ['settings'] },
+  ],
+  employer: [
+    { id: 'postings', sections: ['recruiter'] },
+    { id: 'settings', sections: ['settings'] },
+  ],
+};
+
+/** Screens without a destination of their own, and the destination whose space owns them. */
+export const NAV_ALSO: Readonly<Record<string, NavId>> = {
+  '/posts': 'home',
+  '/experiences': 'companies',
+  '/study-groups': 'study',
+  '/next-step': 'readiness',
+  '/batch': 'alumni',
+};
+
+export interface NavSection {
+  /** `NavId`, or `admin:` and an admin section's id. Unique within a model. */
+  key: SectionRef;
+  path: string;
+  /**
+   * An unverified member's role opens it, but not yet: it is listed so the app keeps its shape, and
+   * the screen says "verify first" (audit IA-7).
+   */
+  locked: boolean;
+}
+
+export interface NavSpace {
+  id: SpaceId;
+  /** Where the space's tab goes: its hub, or its first section. */
+  path: string;
+  hub: boolean;
+  /** The screen that lists every section: the hub, or `/space/<id>` for a space that opens on content. */
+  browse: string;
+  sections: NavSection[];
+}
+
 export interface NavModel {
   persona: NavPersona;
+  /** At most five, in tab order; a space with no section left is not listed. */
+  spaces: NavSpace[];
+  /** The space a member starts in: Career in the final two years, Learn in the first, else the first. */
+  landing: SpaceId;
   tabs: NavDestination[];
   /** Grouped destinations for the avatar menu and the desktop rail (tabs excluded). */
   menu: { group: NavGroup; items: NavDestination[] }[];
@@ -490,7 +758,101 @@ export function buildNav(subject: NavSubject, shipped: ReadonlySet<NavId>): NavM
         ),
     ),
   })).filter((g) => g.items.length > 0);
-  return { persona, tabs, menu, create, admin, settings: SETTINGS_SECTIONS };
+  // Spaces. A section is listed when the member may open it, or (not yet verified) when their role
+  // will: the screen then says "verify first".
+  const roleGrants = subject.verified
+    ? []
+    : subject.roles.flatMap((r) => (ROLE_PERMISSIONS[r] ?? []) as readonly Permission[]);
+  const adminOpen = new Set(admin.flatMap((g) => g.items.map((x) => x.id)));
+  const sectionOf = (ref: SectionRef): NavSection | null => {
+    if (ref.startsWith('admin:')) {
+      const id = ref.slice(6) as AdminSectionId;
+      const x = ADMIN_SECTIONS.find((a) => a.id === id);
+      return x && adminOpen.has(id) ? { key: ref, path: x.path, locked: false } : null;
+    }
+    const id = ref as NavId;
+    const dest = NAV_DESTINATIONS[id];
+    if (usable(id)) return { key: ref, path: dest.path, locked: false };
+    const hidden =
+      id === 'create' ||
+      id === 'verify' ||
+      !shipped.has(id) ||
+      (subject.networkEnabled === false && NETWORK_NAV.includes(id));
+    return !hidden && dest.permissions.length > 0 && may(roleGrants, dest.permissions)
+      ? { key: ref, path: dest.path, locked: true }
+      : null;
+  };
+  const spaces: NavSpace[] = [];
+  for (const spec of PERSONA_SPACES[persona]) {
+    const seen = new Set<string>();
+    const sections = spec.sections
+      .map(sectionOf)
+      .filter((x): x is NavSection => !!x)
+      // Study and Subjects open the same library: one entry (the staff one when both are open).
+      .filter((x, _i, all) => !(x.key === 'study' && all.some((y) => y.key === 'subjects')))
+      .filter((x) => (seen.has(x.path) ? false : (seen.add(x.path), true)));
+    const first = sections.find((x) => !x.locked) ?? sections[0];
+    if (!first) continue;
+    spaces.push({
+      id: spec.id,
+      path: spec.hub ?? first.path,
+      hub: !!spec.hub,
+      browse: spec.hub ?? `/space/${spec.id}`,
+      sections,
+    });
+  }
+  const has = (id: SpaceId) => spaces.some((x) => x.id === id);
+  const landing: SpaceId =
+    persona === 'student' && inFinalYears(subject.gradYear) && has('career')
+      ? 'career'
+      : persona === 'student' && inFirstYear(subject.gradYear) && has('learn')
+        ? 'learn'
+        : (spaces[0]?.id ?? 'home');
+  return { persona, spaces, landing, tabs, menu, create, admin, settings: SETTINGS_SECTIONS };
+}
+
+const under = (pathname: string, root: string) => pathname === root || pathname.startsWith(`${root}/`);
+
+/**
+ * The space that owns a URL, and the section inside it: the longest section path the URL sits
+ * under wins (`/study/chat` is Ask, not Study), then a hub's own path, then the screens in
+ * `NAV_ALSO`. Null for a URL no space owns (the caller keeps the last one lit).
+ */
+export function spaceOf(
+  spaces: readonly NavSpace[],
+  pathname: string,
+): { space: NavSpace; section: NavSection | null } | null {
+  let best: { space: NavSpace; section: NavSection | null; length: number } | null = null;
+  for (const space of spaces) {
+    for (const section of space.sections)
+      if (under(pathname, section.path) && section.path.length > (best?.length ?? 0))
+        best = { space, section, length: section.path.length };
+    if (under(pathname, space.browse) && space.browse.length > (best?.length ?? 0))
+      best = { space, section: null, length: space.browse.length };
+  }
+  if (best) return { space: best.space, section: best.section };
+  for (const [root, id] of Object.entries(NAV_ALSO))
+    if (under(pathname, root))
+      for (const space of spaces) {
+        const section = space.sections.find((x) => x.key === id);
+        if (section) return { space, section };
+      }
+  return null;
+}
+
+/** Where a member starts: their landing space (after sign-in, and the app's own start URL). */
+export function landingPath(model: Pick<NavModel, 'spaces' | 'landing'>, fallback: string): string {
+  return model.spaces.find((x) => x.id === model.landing)?.path ?? fallback;
+}
+
+/** The desktop sidebar's top level: Create, Search and the spaces. Never more than seven. */
+export const SIDEBAR_LIMIT = 7;
+export function sidebarEntries(model: Pick<NavModel, 'spaces' | 'create'>, search: boolean): string[] {
+  return [
+    ...(model.create.length ? ['create'] : []),
+    ...(search ? ['search'] : []),
+    ...model.spaces.map((x) => x.id),
+  ];
 }
 
 /** Where a member lands after signing in (and the target of the first tab). */

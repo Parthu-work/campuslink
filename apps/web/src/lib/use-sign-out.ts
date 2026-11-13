@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { announceSignOut, api } from './api';
 import { clearDrafts } from './drafts';
 import { useSession } from './session';
+import { clearRecent } from './recent';
 
 export function useSignOut() {
   const qc = useQueryClient();
@@ -14,6 +15,7 @@ export function useSignOut() {
     signedOut(true);
     qc.clear();
     clearDrafts();
+    clearRecent();
     navigate('/sign-in', { replace: true });
   };
 }

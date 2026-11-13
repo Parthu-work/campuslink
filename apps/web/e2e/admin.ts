@@ -55,7 +55,7 @@ export async function adminSignIn(page: Page, host: string, email: string) {
     await page.getByLabel('Enter your 6-digit code 1').click();
     await page.keyboard.type(await freshCode(email, saved.secret));
   }
-  await page.waitForURL(/\/(home|platform|recruiter)$/);
+  await page.waitForURL(/\/(home|admin|platform|recruiter)$/);
 }
 
 /** Latest email to `to` from Mailpit (dev SMTP sink): returns the subject. */

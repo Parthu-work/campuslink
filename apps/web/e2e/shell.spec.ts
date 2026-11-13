@@ -21,18 +21,18 @@ const bottomTabs = async (page: Page) => {
   return page
     .getByRole('navigation', { name: 'Main' })
     .last()
-    .locator(':scope > a, :scope > div > button')
-    .evaluateAll((els) =>
-      els.map((e) => e.getAttribute('aria-label') ?? e.querySelector('.truncate')?.textContent ?? ''),
-    );
+    .getByRole('link')
+    .evaluateAll((els) => els.map((e) => (e.textContent ?? '').trim()));
 };
 
-test.describe('landing route after sign-in', () => {
+test.describe('landing route after sign-in (prompt 3, U2)', () => {
   for (const [email, path] of [
-    ['ananya@dpit.example', '/home'],
+    // Final year: Career, which opens on Placements.
+    ['ananya@dpit.example', '/placements'],
     ['rahul@dpit.example', '/home'],
-    ['faculty@dpit.example', '/home'],
-    ['tpo@dpit.example', '/home'],
+    // Staff start in Today.
+    ['faculty@dpit.example', '/admin'],
+    ['tpo@dpit.example', '/admin'],
   ] as const) {
     test(`${email} lands on ${path}`, async ({ page }) => {
       await signInAs(page, email);
@@ -41,9 +41,9 @@ test.describe('landing route after sign-in', () => {
     });
   }
 
-  test('a college admin lands on Home after 2FA', async ({ page }) => {
+  test('a college admin lands on Today after 2FA', async ({ page }) => {
     await adminSignIn(page, 'dpit', 'admin@dpit.example');
-    await expect(page).toHaveURL(/\/home$/);
+    await expect(page).toHaveURL(/\/admin$/);
   });
 
   test('the platform admin lands on the console, not "page not found" (IA-10)', async ({ page }) => {
@@ -63,33 +63,43 @@ test.describe('landing route after sign-in', () => {
   });
 });
 
-test.describe('role-aware bottom tabs (phones)', () => {
+test.describe('five spaces as bottom tabs (phones)', () => {
   test.skip(({ isMobile }) => !isMobile, 'Bottom tabs are a phone surface');
 
-  test('students and alumni get their own tabs with Create in the middle', async ({ page }) => {
-    // Ananya graduates next year: Placements takes the last tab (B7); Jobs is in the menu.
+  test('students, alumni and staff each get their five spaces', async ({ page }) => {
     await signIn(page, 'ananya@dpit.example');
-    expect(await bottomTabs(page)).toEqual(['Home', 'Study', 'Create', 'Mentors', 'Placements']);
+    expect(await bottomTabs(page)).toEqual(['Home', 'Learn', 'Mentors', 'Career', 'You']);
     await page.context().clearCookies();
 
     await signIn(page, 'rahul@dpit.example');
-    expect(await bottomTabs(page)).toEqual(['Home', 'Requests', 'Create', 'Mentors', 'Jobs']);
+    expect(await bottomTabs(page)).toEqual(['Home', 'Mentoring', 'Jobs', 'Community', 'You']);
+    await page.context().clearCookies();
+
+    await signIn(page, 'tpo@dpit.example', 'dpit', true);
+    expect(await bottomTabs(page)).toEqual(['Today', 'Students', 'Placements', 'Content', 'College']);
   });
 
-  test('profile, settings and sign out live behind the avatar; Back closes the sheet', async ({ page }) => {
+  test('profile, settings, help and sign out live behind the avatar; Back closes the sheet', async ({
+    page,
+  }) => {
     await signIn(page, 'ananya@dpit.example');
     await page.getByRole('button', { name: /Account menu/ }).click();
     const sheet = page.getByRole('dialog', { name: 'Your account' });
     await expect(sheet.getByRole('link', { name: 'Profile' })).toBeVisible();
     await expect(sheet.getByRole('link', { name: 'Settings' })).toBeVisible();
+    await expect(sheet.getByRole('link', { name: 'Help' })).toBeVisible();
     await expect(sheet.getByRole('button', { name: 'Sign out' })).toBeVisible();
     await page.goBack();
     await expect(sheet).toBeHidden();
     await expect(page).toHaveURL(/\/home$/);
   });
 
-  test('Create opens the actions this member may take', async ({ page }) => {
+  test('Create floats on Home only, and opens the actions this member may take', async ({ page }) => {
     await signIn(page, 'ananya@dpit.example');
+    await page.goto(`${BASE}/mentors`);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Create' })).toHaveCount(0);
+    await page.getByRole('navigation', { name: 'Main' }).last().getByRole('link', { name: 'Home' }).click();
     await page.getByRole('button', { name: 'Create' }).click();
     const sheet = page.getByRole('dialog', { name: 'Create something' });
     await expect(sheet.getByRole('link', { name: /Ask a question/ })).toBeVisible();
@@ -102,28 +112,30 @@ test.describe('role-aware bottom tabs (phones)', () => {
   });
 });
 
-test.describe('desktop rail', () => {
-  test.skip(({ isMobile }) => !!isMobile, 'The rail is a desktop surface');
+test.describe('desktop sidebar (prompt 3, U2)', () => {
+  test.skip(({ isMobile }) => !!isMobile, 'The sidebar is a desktop surface');
 
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 1280, height: 720 },
     { width: 1024, height: 768 },
   ]) {
-    test(`every rail item is reachable at ${viewport.width}×${viewport.height}`, async ({ page }) => {
+    test(`the sidebar fits without scrolling at ${viewport.width}×${viewport.height}`, async ({ page }) => {
       await page.setViewportSize(viewport);
       await signIn(page, 'ananya@dpit.example');
-      const rail = page.getByRole('navigation', { name: 'Main' }).first();
-      await expect(rail.getByRole('link', { name: 'Home' })).toBeVisible();
-      const links = rail.getByRole('link');
-      const count = await links.count();
-      expect(count).toBeGreaterThan(10);
-      for (let i = 0; i < count; i++) {
-        const link = links.nth(i);
-        await link.scrollIntoViewIfNeeded();
-        await expect(link).toBeInViewport();
-      }
-      // The account menu stays on screen without scrolling.
+      const bar = page.getByRole('navigation', { name: 'Main' }).first();
+      // Create, Search and the five spaces: never more than seven entries at the top level.
+      const top = await bar.locator(':scope > div > button, :scope > div > ul > li > a').count();
+      expect(top).toBeLessThanOrEqual(7);
+      // The open space (Home, which has the most sections) lists them under it; nothing scrolls.
+      await expect(bar.getByRole('link', { name: 'Events', exact: true })).toBeVisible();
+      // Its list area has room for everything: nothing to scroll.
+      const list = bar.locator(':scope > div').first();
+      const fits = await list.evaluate((el) => el.scrollHeight <= el.clientHeight + 1);
+      expect(fits).toBe(true);
+      const links = bar.getByRole('link');
+      for (let i = 0; i < (await links.count()); i++) await expect(links.nth(i)).toBeInViewport();
+      // The account menu stays on screen.
       const account = page.getByRole('button', { name: /Account menu/ });
       await expect(account).toBeInViewport();
       await account.click();

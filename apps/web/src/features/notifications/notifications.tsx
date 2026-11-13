@@ -1,3 +1,4 @@
+import { InboxSwitch } from '../../components/layout/inbox-switch';
 import { Link } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -34,6 +35,7 @@ export function NotificationsPage() {
   const unread = list.data?.filter((n) => !n.readAt).length ?? 0;
   return (
     <>
+      <InboxSwitch />
       <PageHeader
         title={t('nav.notifications')}
         actions={
