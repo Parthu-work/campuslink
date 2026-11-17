@@ -494,6 +494,8 @@ async function seedFeed(ids: Map<string, Types.ObjectId>) {
       background,
       expiresAt: new Date(Date.now() + 20 * 3600_000),
     });
+  // Strictly newer than those two (same-millisecond inserts would tie), so hers is the first ring.
+  await new Promise((r) => setTimeout(r, 5));
   await StoryModel.create({
     authorId: id('tpo'),
     kind: 'text',

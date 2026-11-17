@@ -31,7 +31,11 @@ function Code({ code, language }: { code: string; language: CodeLanguage | null 
       {language && (
         <figcaption className="text-caption text-fg-3">{t(`practice.language.${language}`)}</figcaption>
       )}
-      <pre className="overflow-x-auto rounded-[var(--radius-md)] bg-surface-2 p-3 font-mono text-callout leading-relaxed">
+      {/* A long line scrolls sideways: focusable, so the keyboard can scroll it too (WCAG 2.1.1). */}
+      <pre
+        tabIndex={0}
+        className="overflow-x-auto rounded-[var(--radius-md)] bg-surface-2 p-3 font-mono text-callout leading-relaxed outline-none focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)]"
+      >
         <code>{code}</code>
       </pre>
     </figure>
