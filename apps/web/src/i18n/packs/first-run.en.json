@@ -1,0 +1,44 @@
+{
+  "signup": {
+    "progress": "Sign-up progress",
+    "aboutTitle": "About you",
+    "aboutSub": "Your seniors see your name when you ask them something.",
+    "useEmail": "Use email instead",
+    "usePhone": "Use your mobile number instead",
+    "reviewChoices": "Review choices",
+    "consentSummary": "We use your data to {{list}}.",
+    "consentNone": "Choose at least the first purpose to create your account.",
+    "consentNever": "We never sell or share it, and you can change this any time in Settings.",
+    "uses": {
+      "account": "run your account",
+      "mentorship_matching": "suggest mentors from your branch and goals",
+      "email_digests": "send you a weekly email",
+      "analytics_aggregate": "count your activity in anonymous college statistics",
+      "whatsapp_updates": "send you updates on WhatsApp"
+    }
+  },
+  "setup": {
+    "title": "Set up your CampusLink",
+    "progress": "{{done}} of {{total}} done",
+    "hide": "Hide set-up steps",
+    "doneLabel": "done",
+    "goal": "Pick your goal",
+    "goalDone": "Mentors are ranked for: {{goal}}",
+    "path": "Follow a career path",
+    "pathDone": "Following {{title}}",
+    "senior": "Find a senior",
+    "seniorDone": "You asked {{name}}",
+    "whatsapp": "Turn on WhatsApp updates",
+    "whatsappDone": "Updates go to {{phone}}",
+    "whatsappOn": "WhatsApp updates are on"
+  },
+  "guardianNext": {
+    "title": "What happens next",
+    "record": "We find you on your college’s list",
+    "recordBody": "It has your parent’s or guardian’s number.",
+    "read": "Your guardian reads what you are joining",
+    "readBody": "We send a code to their number, and they enter it on your phone or theirs.",
+    "done": "Then everything opens",
+    "doneBody": "Until they confirm, only these steps work."
+  }
+}

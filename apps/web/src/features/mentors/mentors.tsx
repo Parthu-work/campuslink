@@ -281,7 +281,9 @@ function MatchView() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [passed, setPassed] = useState<string[]>([]);
-  const [prefsOpen, setPrefsOpen] = useState(false);
+  // ?goals=1: Home's "Set up your CampusLink" opens the goals sheet straight away (prompt 3, U4).
+  const [goalsParam] = useSearchParams();
+  const [prefsOpen, setPrefsOpen] = useState(() => goalsParam.get('goals') === '1');
   const q = useQuery({ ...mentorMatch(), ...SCREEN });
   const deck = (q.data ?? []).filter((m) => !passed.includes(m.mentor.userId));
   const top = deck[0];

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { Link, Navigate, useLocation } from 'react-router';
 import { useTranslation } from '../i18n/react';
+import { loadPack } from '../i18n';
 import { BadgeCheck, CloudOff, Loader2, ShieldAlert, ToggleLeft } from 'lucide-react';
 import { ROLE_PERMISSIONS, safeReturnPath, type Feature, type Permission } from '@campuslink/shared';
 import { useSession } from '../lib/session';
@@ -17,7 +18,10 @@ import { useOnline } from '../lib/pwa';
 const MfaGate = lazy(() => import('../features/auth/mfa-gate').then((m) => ({ default: m.MfaGate })));
 // Only members under 18 waiting for a guardian see it.
 const GuardianGate = lazy(() =>
-  import('../features/guardian/guardian-gate').then((m) => ({ default: m.GuardianGate })),
+  // Prompt 3, U4: its "what happens next" strings are in the firstRun pack.
+  Promise.all([import('../features/guardian/guardian-gate'), loadPack('firstRun')]).then(([m]) => ({
+    default: m.GuardianGate,
+  })),
 );
 const NoticeGate = lazy(() =>
   import('../features/legal/notice-gate').then((m) => ({ default: m.NoticeGate })),

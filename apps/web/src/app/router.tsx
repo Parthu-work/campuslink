@@ -46,7 +46,7 @@ const withPack =
 
 const load = {
   signIn: () => import('../features/auth/sign-in'),
-  signUp: () => import('../features/auth/sign-up'),
+  signUp: withPack('firstRun', () => import('../features/auth/sign-up')),
   emailLinks: () => import('../features/auth/email-links'),
   join: () => import('../features/join/join'),
   home: () => import('../features/home/home'),
@@ -389,6 +389,13 @@ function collegeRoutes(): RouteObject[] {
                       import('../features/habits/lazy-next-step').then((m) => m.preloadNextStepCard()),
                     ])
                   : null,
+              )
+              .catch(() => null),
+            // Prompt 3, U4: "Set up your CampusLink" (code, strings and data) with the page, likewise.
+            qc
+              .ensureQueryData(q.me())
+              .then((me) =>
+                import('../features/home/lazy-setup').then((m) => m.preloadSetupChecklist(qc, me)),
               )
               .catch(() => null),
             // Stories only when the college has them on (Admin › Features).

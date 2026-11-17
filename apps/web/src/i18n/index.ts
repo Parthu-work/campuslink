@@ -109,6 +109,15 @@ const PACKS = {
       hi: () => import('./packs/design.hi.json'),
     },
   },
+  /** The first run (prompt 3, U4): the three-step sign-up, the minor's next steps, Home's set-up list. */
+  firstRun: {
+    sections: ['signup', 'setup', 'guardianNext'],
+    load: {
+      en: () => import('./packs/first-run.en.json'),
+      te: () => import('./packs/first-run.te.json'),
+      hi: () => import('./packs/first-run.hi.json'),
+    },
+  },
   /** The network (prompt 2, G12): alumni across colleges, credentials, the recruiter portal and registry. */
   network: {
     sections: ['network', 'recruiter'],

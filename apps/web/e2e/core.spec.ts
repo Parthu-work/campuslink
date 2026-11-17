@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { expectNoA11yViolations, signIn } from './helpers';
 import { adminSignIn } from './admin';
 
@@ -50,27 +50,56 @@ test.describe('landing', () => {
 });
 
 test.describe('sign-up', () => {
-  test('creates an account by email and asks to confirm it', async ({ page }) => {
+  /** Step 1 by email (prompt 3, U4: "Use email instead"), then Continue to step 2. */
+  const emailFirst = async (page: Page, address: string) => {
     await page.goto('/sign-up');
-    await page.getByRole('button', { name: 'Email', exact: true }).click();
-    await expectNoA11yViolations(page);
-    await page.getByLabel('Full name').fill('E2E Student');
-    await page.getByLabel('Email', { exact: true }).fill(`e2e-${Date.now()}@dpit.example`);
+    await expect(page.getByText('Step 1 of 3')).toBeVisible();
+    await page.getByRole('button', { name: 'Use email instead' }).click();
+    await page.getByLabel('Email', { exact: true }).fill(address);
     await page.getByLabel('Password', { exact: true }).fill('saffron-orbit-meadow-77');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await expect(page.getByText('Step 2 of 3')).toBeVisible();
+  };
+
+  test('creates an account by email and asks to confirm it', async ({ page }) => {
+    await emailFirst(page, `e2e-${Date.now()}@dpit.example`);
+    await page.getByLabel('Full name').fill('E2E Student');
     await page.getByLabel('Month').selectOption({ label: 'April' });
     await page.getByLabel('Year').selectOption('2000');
+    // Consents as one sentence; the full, versioned list one tap away (B2 unchanged).
+    await expect(page.getByText(/We use your data to run your account and suggest mentors/)).toBeVisible();
+    await page.getByRole('button', { name: 'Review choices' }).click();
+    await expect(page.getByRole('checkbox', { name: /Run my account/ })).toBeChecked();
+    await expectNoA11yViolations(page);
     await page.getByRole('button', { name: 'Create account' }).click();
     await expect(page.getByRole('heading', { name: 'Check your email' }).first()).toBeVisible();
+    await expect(page.getByText('Step 3 of 3')).toBeVisible();
   });
 
-  test('asks for the birth month on the client too', async ({ page }) => {
-    await page.goto('/sign-up');
-    await page.getByRole('button', { name: 'Email', exact: true }).click();
+  test('asks for the birth month on the client too, and Back keeps what was typed', async ({ page }) => {
+    await emailFirst(page, 'young@dpit.example');
     await page.getByLabel('Full name').fill('Young Person');
-    await page.getByLabel('Email', { exact: true }).fill('young@dpit.example');
-    await page.getByLabel('Password', { exact: true }).fill('saffron-orbit-meadow-77');
     await page.getByRole('button', { name: 'Create account' }).click();
     await expect(page.getByText('Choose the month and year you were born')).toBeVisible();
+    await page.getByRole('button', { name: 'Back' }).click();
+    await expect(page.getByLabel('Email', { exact: true })).toHaveValue('young@dpit.example');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await expect(page.getByLabel('Full name')).toHaveValue('Young Person');
+  });
+
+  test('the account purpose stays required: unticking it opens the choices with the reason', async ({
+    page,
+  }) => {
+    await emailFirst(page, `e2e-r-${Date.now()}@dpit.example`);
+    await page.getByLabel('Full name').fill('E2E Student');
+    await page.getByLabel('Month').selectOption({ label: 'April' });
+    await page.getByLabel('Year').selectOption('2000');
+    await page.getByRole('button', { name: 'Review choices' }).click();
+    await page.getByRole('checkbox', { name: /Run my account/ }).uncheck();
+    await page.getByRole('button', { name: 'Review choices' }).click();
+    await page.getByRole('button', { name: 'Create account' }).click();
+    await expect(page.getByText('This one is needed to create your account')).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: /Run my account/ })).toBeVisible();
   });
 });
 

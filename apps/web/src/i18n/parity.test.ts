@@ -25,6 +25,11 @@ const PACK_USERS: Record<string, string[]> = {
   copilot: ['/features/copilot/'],
   network: ['/features/network/', '/features/recruiter/'],
   design: ['/features/design/'],
+  'first-run': [
+    '/features/auth/sign-up.tsx',
+    '/features/home/setup-checklist.tsx',
+    '/features/guardian/what-next.tsx',
+  ],
 };
 
 /** Flattens nested strings to "a.b.c" → value. */

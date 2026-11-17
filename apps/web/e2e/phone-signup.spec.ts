@@ -32,18 +32,31 @@ async function codeFor(page: Page, e164: string, count = 1): Promise<string> {
   throw new Error(`no code for ${e164}`);
 }
 
-async function signUpByPhone(page: Page, number: string, year: number) {
-  await page.goto(`${BASE}/sign-up`);
-  await expect(page.getByRole('button', { name: 'Mobile number', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  await page.getByLabel('Full name').fill('Phone Student (demo)');
+/** Steps 1 and 2 of sign-up (prompt 3, U4): number and role, then name, birth month and consents. */
+async function firstSteps(
+  page: Page,
+  base: string,
+  number: string,
+  name: string,
+  month: string,
+  year: number,
+) {
+  await page.goto(`${base}/sign-up`);
+  await expect(page.getByText('Step 1 of 3')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Use email instead' })).toBeVisible();
   await page.getByLabel('Mobile number').fill(number);
-  await page.getByLabel('Month').selectOption({ label: 'June' });
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByText('Step 2 of 3')).toBeVisible();
+  await page.getByLabel('Full name').fill(name);
+  await page.getByLabel('Month').selectOption({ label: month });
   await page.getByLabel('Year').selectOption(String(year));
+}
+
+async function signUpByPhone(page: Page, number: string, year: number) {
+  await firstSteps(page, BASE, number, 'Phone Student (demo)', 'June', year);
   await expectNoA11yViolations(page);
   await page.getByRole('button', { name: 'Send code' }).click();
+  await expect(page.getByText('Step 3 of 3')).toBeVisible();
   await expect(page.getByText(/We sent a 6-digit code on WhatsApp/)).toBeVisible();
   await expectNoA11yViolations(page);
   const code = await codeFor(page, `+91${number}`);
@@ -61,6 +74,9 @@ test('an adult joins with only a mobile number and lands on Home', async ({ page
 
 test('a 16-year-old waits for their guardian, with the reason and the next step', async ({ page }) => {
   const number = newNumber();
+  // The birth month says under 18: sign-up says what happens next before the code is sent.
+  await firstSteps(page, BASE, number, 'Phone Student (demo)', 'June', new Date().getFullYear() - 16);
+  await expect(page.getByRole('heading', { name: 'What happens next' })).toBeVisible();
   await signUpByPhone(page, number, new Date().getFullYear() - 16);
   await expect(page.getByRole('heading', { name: 'Your guardian’s consent' })).toBeVisible();
   // Not on the college's list yet: their record (and the guardian's number) comes first.
@@ -89,11 +105,7 @@ test('a minor on the college list joins, and their guardian consents with a code
   // The seed has this fictional first-year in both colleges; each project uses its own college.
   const host = info.project.name === 'mobile' ? 'mrce' : 'dpit';
   const base = `http://${host}.localhost:4173`;
-  await page.goto(`${base}/sign-up`);
-  await page.getByLabel('Full name').fill('Demo Minor Student');
-  await page.getByLabel('Mobile number').fill('9000000016');
-  await page.getByLabel('Month').selectOption({ label: 'January' });
-  await page.getByLabel('Year').selectOption(String(new Date().getFullYear() - 16));
+  await firstSteps(page, base, '9000000016', 'Demo Minor Student', 'January', new Date().getFullYear() - 16);
   // Both demo colleges use these fictional numbers: wait for this run's message, not an earlier one.
   const minorBefore = (await outbox(page, '+919000000016')).length;
   await page.getByRole('button', { name: 'Send code' }).click();
@@ -101,6 +113,7 @@ test('a minor on the college list joins, and their guardian consents with a code
   for (let i = 0; i < 6; i++) await page.getByLabel(`6-digit code ${i + 1}`).fill(code[i] ?? '');
   // Matched to the record by the proved number, so the guardian's number is known.
   await expect(page.getByRole('heading', { name: 'For your parent or guardian to read' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'What happens next' })).toBeVisible();
   await page.getByRole('button', { name: 'తెలుగు' }).click();
   await expect(page.locator('ul[lang="te"]')).toBeVisible();
   await expectNoA11yViolations(page);

@@ -103,6 +103,8 @@ import type {
   MyPublicPagesView,
   ParentDigestView,
   ReferralImpactView,
+  RequestView,
+  WhatsAppStatus,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -252,6 +254,27 @@ export const roadmapsList = (qs: string) =>
   queryOptions({
     queryKey: ['roadmaps', 'list', qs],
     queryFn: () => api.get<RoadmapSummaryView[]>(`/roadmaps${qs ? `?${qs}` : ''}`),
+  });
+
+/** A student's goals and target companies for mentor matching (Mentors › My goals; Home's checklist). */
+export const matchPreferences = () =>
+  queryOptions({
+    queryKey: ['match-prefs'],
+    queryFn: () => api.get<{ goals: string[]; targetCompanies: string[] }>('/me/match-preferences'),
+  });
+
+/** Mentorship requests the member sent (the Requests screen's "sent" box; Home's checklist). */
+export const sentRequests = () =>
+  queryOptions({
+    queryKey: ['requests', 'sent'],
+    queryFn: () => api.get<RequestView[]>('/mentorship/requests?box=sent'),
+  });
+
+/** Whether WhatsApp updates are available, and on (Settings › Notifications; Home's checklist). */
+export const whatsappStatus = () =>
+  queryOptions({
+    queryKey: ['whatsapp-status'],
+    queryFn: () => api.get<WhatsAppStatus>('/me/whatsapp'),
   });
 
 /** Roadmaps the member follows, shown above the list (members who can track progress). */

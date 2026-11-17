@@ -132,8 +132,10 @@ const tasks: { name: string; run: (b: Browser) => Promise<{ count: Count; close:
         const number = `9${String(Date.now()).slice(-9)}`;
         await page.goto(`${BASE}/`);
         await c.tap(page.getByRole('link', { name: /sign up|join|get started/i }).first(), 'sign up');
-        await c.fill(page.getByLabel('Full name'), 'Task Student (demo)', 'name');
+        // Prompt 3, U4: three steps (number, about you, code).
         await c.fill(page.getByLabel('Mobile number'), number, 'mobile number');
+        await c.tap(page.getByRole('button', { name: 'Continue' }), 'continue');
+        await c.fill(page.getByLabel('Full name'), 'Task Student (demo)', 'name');
         await c.select(page.getByLabel('Month'), { label: 'June' }, 'birth month');
         await c.select(page.getByLabel('Year'), String(new Date().getFullYear() - 20), 'birth year');
         await c.tap(page.getByRole('button', { name: 'Send code' }), 'send code');

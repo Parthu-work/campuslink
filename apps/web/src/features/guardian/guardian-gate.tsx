@@ -22,6 +22,7 @@ import { toE164 } from '../../lib/phone';
 import { useSignOut } from '../../lib/use-sign-out';
 import { PhoneCodeStep, PhoneField } from '../auth/phone-parts';
 import { GUARDIAN_DECLARATION, type DeclarationLanguage } from './declaration';
+import { WhatHappensNext } from './what-next';
 
 /**
  * Members under 18 wait here until a parent or guardian consents (B2, DPDP Rules 2025 Rule 10).
@@ -157,6 +158,7 @@ export function GuardianGate() {
         <ShieldCheck className="mt-0.5 size-4 flex-none text-brand-ink" aria-hidden />
         {t('guardian.why')}
       </p>
+      <WhatHappensNext />
       {body}
       <Button variant="ghost" onClick={() => void signOut()}>
         {t('common.signOut')}

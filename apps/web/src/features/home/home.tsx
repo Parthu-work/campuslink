@@ -31,6 +31,7 @@ import { StoriesRow } from '../feed/stories';
 import { FeedList } from '../feed/feed-list';
 import { firstName } from '../../lib/names';
 import { LazyNextStepCard } from '../habits/lazy-next-step';
+import { LazySetupChecklist, setupWanted } from './lazy-setup';
 
 function NextSession() {
   const { t } = useTranslation();
@@ -321,6 +322,8 @@ export function HomePage() {
             </div>
           </Card>
         )}
+        {/* The first ten minutes (prompt 3, U4): up to four one-tap set-up items. */}
+        {me && setupWanted(me) && <LazySetupChecklist fallback={null} />}
         {/* Data saver (B13) leaves stories out: they are mostly photos. */}
         {!saver && <StoriesRow />}
         {canRequest && <UpNext />}
