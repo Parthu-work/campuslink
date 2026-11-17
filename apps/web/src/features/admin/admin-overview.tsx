@@ -267,7 +267,7 @@ export function AdminOverview() {
         )}
       </section>
 
-      <section aria-labelledby="ov-sections" className="grid gap-4 lg:hidden">
+      <section aria-labelledby="ov-sections" className="grid gap-4">
         <h2 id="ov-sections" className="text-headline font-semibold">
           {t('admin.ov.sections')}
         </h2>

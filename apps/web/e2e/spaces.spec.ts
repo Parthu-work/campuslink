@@ -141,7 +141,10 @@ test('search reaches companies, and remembers what was opened', async ({ page, i
   else await page.keyboard.press('Control+k');
   const palette = page.getByRole('dialog', { name: 'Command palette' });
   await palette.getByRole('combobox').fill('nimbus');
-  const company = palette.getByRole('option', { name: /Nimbus Labs/ }).first();
+  const company = palette
+    .getByRole('group', { name: 'Companies' })
+    .getByRole('option', { name: /Nimbus Labs/ })
+    .first();
   await expect(company).toBeVisible();
   await company.click();
   await page.waitForURL(/\/companies\//);

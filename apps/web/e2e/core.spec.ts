@@ -115,7 +115,9 @@ test.describe('signed-in journeys', () => {
     await expect(page.getByText('Srinivas Murthy')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Members', level: 1 })).toBeVisible();
     await expectNoA11yViolations(page);
-    if (info.project.name === 'mobile') await page.getByRole('link', { name: 'Overview' }).click();
+    // Back to the overview (Today), which lists every section, then the audit log.
+    await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Today' }).click();
+    await page.waitForURL(/\/admin$/);
     await page.getByRole('link', { name: 'Audit log' }).click();
     // Newest first, 50 a page: other specs' audited actions can push the enrolment past the first page.
     const enrolled = page.getByText('auth.mfa_enabled').first();

@@ -48,12 +48,14 @@ export async function signIn(page: Page, email: string, host = 'dpit', stay = fa
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await page.waitForURL(START);
   if (stay || /\/home$/.test(page.url())) return;
-  // Through the app's own Home tab, not a reload: the shell and its history stay as a member's would.
-  await page
-    .getByRole('navigation', { name: 'Main' })
-    .last()
-    .getByRole('link', { name: 'Home', exact: true })
-    .first()
-    .click();
+  // Students and alumni: through their own Home tab (bottom bar or sidebar), not a reload, so the
+  // shell and its history stay as a member's would. Staff have no Home tab (Home is a section of
+  // Today), so they open it directly.
+  const tab = page
+    .locator('nav.chrome-bottom > a[href="/home"], nav.app-rail > div > ul > li > a[href="/home"]')
+    .filter({ visible: true })
+    .first();
+  if (await tab.count()) await tab.click();
+  else await page.goto(`http://${host}.localhost:4173/home`);
   await page.waitForURL(/\/home$/);
 }
