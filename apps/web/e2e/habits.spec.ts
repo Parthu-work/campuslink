@@ -8,9 +8,9 @@ test('a student sees this week\x27s Next Step on Home and opens it', async ({ pa
   const host = hostFor(info.project.name);
   await signIn(page, `ananya@${host}.example`, host);
   await page.goto(`http://${host}.localhost:4173/home`);
-  const card = page.getByRole('heading', { name: 'Your next step this week' });
-  await expect(card).toBeVisible();
-  await page.getByRole('link', { name: 'Open', exact: true }).click();
+  // Prompt 3, U5: the Next Step is Home's Today card and "Your next steps" rows.
+  await expect(page.getByRole('heading', { name: 'Your next steps' })).toBeVisible();
+  await page.getByRole('link', { name: 'See all', exact: true }).click();
   await page.waitForURL(/\/next-step$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Your next step this week' })).toBeVisible();
   await expect(page.getByText('An alumnus to ask')).toBeVisible();

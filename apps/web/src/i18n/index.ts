@@ -109,6 +109,15 @@ const PACKS = {
       hi: () => import('./packs/design.hi.json'),
     },
   },
+  /** Home's Today (prompt 3, U5): the Today card, waiting requests, suggestions and Coming up. */
+  today: {
+    sections: ['today'],
+    load: {
+      en: () => import('./packs/today.en.json'),
+      te: () => import('./packs/today.te.json'),
+      hi: () => import('./packs/today.hi.json'),
+    },
+  },
   /** The first run (prompt 3, U4): the three-step sign-up, the minor's next steps, Home's set-up list. */
   firstRun: {
     sections: ['signup', 'setup', 'guardianNext'],

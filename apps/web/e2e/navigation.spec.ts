@@ -54,12 +54,17 @@ test('Home → post → back lands on the same post', async ({ page }) => {
   await signIn(page, 'ananya@dpit.example');
   const feed = page.getByRole('feed', { name: 'For you' });
   await expect(feed.getByRole('article').first()).toBeVisible();
-  // Home's cards above the feed load after it (the Next Step card, G7). Measure once they have
-  // arrived, or scroll anchoring moves the page after we read the position.
-  await expect(page.getByRole('heading', { name: 'Your next step this week' })).toBeVisible();
-  await expect(page.getByRole('region', { name: 'One useful thing today' })).toBeVisible();
+  // Home's sections above the feed (prompt 3, U5: the next steps, people to follow). Measure once
+  // they have arrived, or scroll anchoring moves the page after we read the position.
+  await expect(page.getByRole('heading', { name: 'Your next steps' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'From your college' })).toBeVisible();
   const max = await page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight);
-  const y = await scrollTo(page, Math.min(900, Math.max(0, max - 50)));
+  // Down into the feed: its first post a little below the top of the screen.
+  const feedTop = await feed
+    .getByRole('article')
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+  const y = await scrollTo(page, Math.min(feedTop + 300, Math.max(0, max - 50)));
   // Open a post that is on screen right now.
   const comments = page.getByRole('link', { name: /comment/i });
   const count = await comments.count();

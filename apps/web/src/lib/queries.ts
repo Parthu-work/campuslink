@@ -22,7 +22,6 @@ import type {
   MessageView,
   MyProgressView,
   NotificationView,
-  OneUsefulThingView,
   PostView,
   PublicTenant,
   RemovalView,
@@ -105,6 +104,9 @@ import type {
   ReferralImpactView,
   RequestView,
   WhatsAppStatus,
+  AuthorRef,
+  FollowState,
+  Topic,
 } from '@campuslink/shared';
 import { api, ApiError, apiRequest } from './api';
 
@@ -158,13 +160,6 @@ export const feedList = (queryKey: readonly unknown[], path: string, posts = fal
 
 export type FeedTab = 'for_you' | 'following';
 export const homeFeed = (tab: FeedTab) => feedList(['feed', tab], `/feed?tab=${tab}&limit=15`);
-
-export const oneUsefulThing = () =>
-  queryOptions({
-    queryKey: ['out'],
-    queryFn: () => api.get<OneUsefulThingView | null>('/feed/one-useful-thing'),
-    staleTime: 10 * 60_000,
-  });
 
 export const stories = () =>
   queryOptions({
@@ -268,6 +263,32 @@ export const sentRequests = () =>
   queryOptions({
     queryKey: ['requests', 'sent'],
     queryFn: () => api.get<RequestView[]>('/mentorship/requests?box=sent'),
+  });
+
+/** Mentorship requests the member received (the Requests screen's box; an alumnus's Home). */
+export const receivedRequests = () =>
+  queryOptions({
+    queryKey: ['requests', 'received'],
+    queryFn: () => api.get<RequestView[]>('/mentorship/requests?box=received'),
+  });
+
+/** People and sources to follow (Home's "Suggested for you"). */
+export const followSuggestions = () =>
+  queryOptions({
+    queryKey: ['suggestions'],
+    queryFn: () =>
+      api.get<{
+        people: AuthorRef[];
+        sources: { id: string; name: string; host: string; topics: Topic[] }[];
+      }>('/feed/suggestions'),
+    staleTime: 5 * 60_000,
+  });
+
+/** Who and what the member follows. */
+export const myFollows = () =>
+  queryOptions({
+    queryKey: ['follows'],
+    queryFn: () => api.get<FollowState>('/me/follows'),
   });
 
 /** Whether WhatsApp updates are available, and on (Settings › Notifications; Home's checklist). */

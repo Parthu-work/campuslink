@@ -361,10 +361,17 @@ function FeedbackDialog({
   );
 }
 
-function BookingCard({ b, now }: { b: BookingView; now: number }) {
+function BookingCard({ b, now, autoJoin = false }: { b: BookingView; now: number; autoJoin?: boolean }) {
   const { t } = useTranslation();
+  // Home's Join (prompt 3, U5) opens the join dialog straight away while the room is open.
   const [dialog, setDialog] = useState<'join' | 'move' | 'cancel' | 'feedback' | 'review' | 'noshow' | null>(
-    null,
+    () =>
+      autoJoin &&
+      b.status === 'scheduled' &&
+      now >= new Date(b.canJoinFrom).getTime() &&
+      now <= new Date(b.canJoinUntil).getTime()
+        ? 'join'
+        : null,
   );
   const opts = useBookingAction(b.id);
   const noShow = useMutation({
@@ -566,7 +573,8 @@ export function SessionsPage() {
   const list = useQuery({ ...SCREEN, ...bookings(when), placeholderData: keepPreviousData });
   const items = (list.data ?? []).filter((b) => when === 'past' || !day || localDateKey(b.start) === day);
   // Opened from a notification: bring that session into view and focus it (audit IA-5).
-  const focusId = params.get('booking');
+  const joinId = params.get('join');
+  const focusId = params.get('booking') ?? joinId;
   useEffect(() => {
     if (!focusId || !list.data?.some((b) => b.id === focusId)) return;
     const el = document.getElementById(`booking-${focusId}`);
@@ -611,7 +619,7 @@ export function SessionsPage() {
               b.id === focusId && 'ring-2 ring-brand ring-offset-2 ring-offset-bg',
             )}
           >
-            <BookingCard b={b} now={now} />
+            <BookingCard b={b} now={now} autoJoin={b.id === joinId} />
           </li>
         ))}
       </ul>

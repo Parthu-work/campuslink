@@ -316,6 +316,42 @@ Design: `docs/design/v2/u4.md` (second half).
 | End-to-end (local)                                 | `landing`, `first-run`, `core`, `phone-signup`, `navigation`, `spaces`, `accessibility`: 70 passed; 6 failed only on this machine's unreseeded database (admins' stored 2FA secrets; the listed demo minor had joined in an earlier run). The student pages, the checklist included, reflow at 320 px |
 | Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                                              |
 
+## U5 · Home: one clear "Today"
+
+Design: `docs/design/v2/u5.md`.
+
+**Shipped.**
+
+- **The Today card** (`features/home/today.tsx`, rules in `today-pick.ts` with unit tests): one large `ActionCard` for the single most urgent thing. A session within 15 minutes or under way gets **Join** and its time (Sessions opens with that session's join dialog, `/sessions?join=<id>`); else a drive closing within 48 hours that the student can still register for gets **Register** and a countdown; else this week's Next Step gets **Continue** (straight to the step). Nothing urgent: no card. Home's route loader fetches the sessions and drives with the page, so the card paints with Home (CLS 0 for a student and an alumnus).
+- **Your next steps**: the Next Step's other items as `ListRow`s (at most three, titles wrap), without the one in the Today card, and "See all" (`/next-step`). The old Next Step card on Home is gone; `/next-step` keeps its page.
+- **Suggested for you**: one sideways row of `PersonCard`s with the reason the suggestion is based on ("Alumnus of your branch (CSE)" or "Alumnus of your college") and one Follow at secondary weight.
+- **From your college**: the feed under that heading, with the composer for those who post; the "One useful thing today" wrapper card is gone (it is a post in the feed, one card style).
+- **Stories** show only with three or more active stories; otherwise "New story" sits by "From your college" for members who post, so the first stories can still be added.
+- **Coming up** on wide screens: upcoming sessions, drives closing in the next 7 days the student can still register for, and upcoming events. The three promotional cards (find a mentor, Q&A, impact) are gone. Phones do not load it.
+- **Alumni**: "Waiting for you" after the Today card: pending mentorship requests (**Accept** in one tap; **Decline…** opens Requests, where the reason is chosen) and micro-asks waiting for a reply (**Accept** or **Decline**, one tap each), loaded with the page. The U4 set-up checklist is now a student's only.
+- Strings: the new `today` pack (loaded with Home); "Your next steps" in the `habits` pack. The landing's pictures were retaken (Home changed).
+- e2e: `today.spec.ts` (new): a student's Today card has exactly one action and it goes where it says, the next steps leave its item out, people to follow say why, no "One useful thing" card, "Coming up" on desktop only, axe; an alumna accepts the seeded pending request from Home in one tap and sees no student checklist. `habits.spec` (See all) and `navigation.spec` (scrolls to the feed itself) follow the new Home.
+
+**Not met: Home LCP ≤ 2.5 s.** Lighthouse (mobile, simulated) on this machine: **6.0 s**, against **6.2 s** for the Home before U5 measured the same way here (the before-3 figure, 3.9 s, came from a faster cloud container). The LCP element is the Today card's title. As with sign-in, what is left is the load path for signed-in screens (the session check, `/me`, then the screen's code and data, one after another), which is U10's work; U5 adds no step to it.
+
+**Decisions.**
+
+- **Accept is one tap; Decline is not.** Declining a mentorship request needs a reason (the API requires one of four kind replies), so Home's Decline opens Requests; micro-asks take Accept and Decline in one tap each, as the API allows.
+- **"Coming up" only on wide screens.** On a phone the Today card carries what is urgent and the rest is one tap away (Sessions, Placements, Events).
+- **The suggestion's reason is what the API used**: alumni of the student's branch first, then of the college. No other reasons are shown until the API computes them.
+
+### Gate results (U5)
+
+| Gate                                               | Result                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                                                                                                                                                       |
+| Web tests                                          | 141 passed (new: `today-pick.test.ts`, the Today card’s rules)                                                                                                                                                                                                                                                                             |
+| API tests                                          | No API change in U5; CI runs the suite                                                                                                                                                                                                                                                                                                     |
+| `pnpm build` and bundle budget                     | Pass: initial 162.0 KB (+0.1 KB); Home adds 54.9 KB; the Telugu strings 69.9 KB                                                                                                                                                                                                                                                            |
+| Lighthouse (home-cold)                             | LCP 6.0 s (6.2 s before U5 on this machine), CLS 0; not met (U10)                                                                                                                                                                                                                                                                          |
+| End-to-end (local)                                 | `today`, `habits`, `navigation`, `spaces`, `shell`, `landing`, `first-run`, `accessibility`, `mentorship`: 74 passed; 10 failed only on this machine’s day-old, unreseeded database (admins’ stored 2FA secrets; the alumna’s seeded request, accepted by an earlier run of the new test; the seeded session, now in the past). CI reseeds |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                                                                                   |
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

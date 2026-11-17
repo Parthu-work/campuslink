@@ -1,0 +1,38 @@
+{
+  "today": {
+    "session": "आपका सेशन",
+    "sessionWith": "{{name}} के साथ {{type}}",
+    "join": "जुड़ें",
+    "driveCloses": "रजिस्ट्रेशन बंद होगा",
+    "driveOn": "ड्राइव {{date}} को",
+    "register": "रजिस्टर करें",
+    "step": "इस हफ़्ते आपका कदम",
+    "stepOn": "{{roadmap}} में अगला",
+    "closesOn": "रजिस्ट्रेशन {{date}} को बंद",
+    "askAlumnus": "{{name}} से पूछें",
+    "continue": "जारी रखें",
+    "waiting": "आपका इंतज़ार",
+    "requestFrom": "{{name}}: {{type}}",
+    "accept": "स्वीकार करें",
+    "decline": "मना करें",
+    "declineMore": "मना करें…",
+    "ask": {
+      "review_resume": "{{name}} रिज़्यूमे की समीक्षा चाहते हैं",
+      "answer_question": "{{name}} एक सवाल का जवाब चाहते हैं",
+      "quick_intro": "{{name}} एक छोटा परिचय चाहते हैं",
+      "feedback_on_project": "{{name}} एक प्रोजेक्ट पर राय चाहते हैं"
+    },
+    "suggested": "आपके लिए सुझाव",
+    "follow": "फ़ॉलो करें",
+    "following": "फ़ॉलो कर रहे हैं",
+    "batch": "{{year}} बैच",
+    "reasonBranch": "आपकी ब्रांच के पूर्व छात्र ({{branch}})",
+    "reasonCollege": "आपके कॉलेज के पूर्व छात्र",
+    "fromCollege": "आपके कॉलेज से",
+    "comingUp": "आने वाला",
+    "nothingComing": "इस हफ़्ते कुछ नहीं आ रहा।",
+    "sessions": "सेशन",
+    "deadlines": "समय-सीमाएँ",
+    "events": "इवेंट"
+  }
+}

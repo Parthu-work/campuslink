@@ -1,0 +1,38 @@
+{
+  "today": {
+    "session": "మీ సెషన్",
+    "sessionWith": "{{name}}తో {{type}}",
+    "join": "చేరండి",
+    "driveCloses": "నమోదు ముగుస్తుంది",
+    "driveOn": "డ్రైవ్ {{date}}న",
+    "register": "నమోదు చేసుకోండి",
+    "step": "ఈ వారం మీ అడుగు",
+    "stepOn": "{{roadmap}}లో తదుపరి",
+    "closesOn": "నమోదు {{date}}న ముగుస్తుంది",
+    "askAlumnus": "{{name}}ను అడగండి",
+    "continue": "కొనసాగించండి",
+    "waiting": "మీ కోసం ఎదురుచూస్తున్నవి",
+    "requestFrom": "{{name}}: {{type}}",
+    "accept": "అంగీకరించండి",
+    "decline": "తిరస్కరించండి",
+    "declineMore": "తిరస్కరించండి…",
+    "ask": {
+      "review_resume": "{{name}} రెజ్యూమే సమీక్ష కోరుతున్నారు",
+      "answer_question": "{{name}} ఒక ప్రశ్నకు సమాధానం కోరుతున్నారు",
+      "quick_intro": "{{name}} చిన్న పరిచయం కోరుతున్నారు",
+      "feedback_on_project": "{{name}} ఒక ప్రాజెక్ట్‌పై అభిప్రాయం కోరుతున్నారు"
+    },
+    "suggested": "మీ కోసం సూచనలు",
+    "follow": "అనుసరించండి",
+    "following": "అనుసరిస్తున్నారు",
+    "batch": "{{year}} బ్యాచ్",
+    "reasonBranch": "మీ బ్రాంచ్ పూర్వ విద్యార్థి ({{branch}})",
+    "reasonCollege": "మీ కళాశాల పూర్వ విద్యార్థి",
+    "fromCollege": "మీ కళాశాల నుండి",
+    "comingUp": "రాబోయేవి",
+    "nothingComing": "ఈ వారం ఏమీ రాబోవడం లేదు.",
+    "sessions": "సెషన్లు",
+    "deadlines": "గడువులు",
+    "events": "ఈవెంట్లు"
+  }
+}

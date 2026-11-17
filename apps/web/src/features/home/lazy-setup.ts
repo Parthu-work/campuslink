@@ -13,9 +13,12 @@ export const LazySetupChecklist = lazyPart(() =>
   Promise.all([import('./setup-checklist'), loadPack('firstRun')]).then(([m]) => m.SetupChecklist),
 );
 
-/** A verified student who has not hidden it on this device. */
+/** A verified student (not an alumnus, who gets "Waiting for you") who has not hidden it on this device. */
 export const setupWanted = (me: MeResponse) =>
-  me.verified && me.permissions.includes('mentorship:request') && prefs.get(`setup-hidden:${me.id}`) !== '1';
+  me.verified &&
+  me.roles.includes('STUDENT') &&
+  me.permissions.includes('mentorship:request') &&
+  prefs.get(`setup-hidden:${me.id}`) !== '1';
 
 /**
  * Home's route loader brings the checklist's code, strings and data with the page, so it paints

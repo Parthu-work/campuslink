@@ -49,7 +49,7 @@ const load = {
   signUp: withPack('firstRun', () => import('../features/auth/sign-up')),
   emailLinks: () => import('../features/auth/email-links'),
   join: () => import('../features/join/join'),
-  home: () => import('../features/home/home'),
+  home: withPack('today', () => import('../features/home/home')),
   spaces: () => import('../features/spaces/space-hub'),
   settings: () => import('../features/settings/settings'),
   dataSettings: () => import('../features/settings/data-settings'),
@@ -376,8 +376,23 @@ function collegeRoutes(): RouteObject[] {
             qc.ensureInfiniteQueryData(
               q.homeFeed(url.searchParams.get('tab') === 'following' ? 'following' : 'for_you'),
             ),
-            qc.ensureQueryData(q.oneUsefulThing()),
-            // Prompt 2, G7: the weekly Next Step card's data and code with the page, so it paints with
+            // Prompt 3, U5: the Today card's data (a session about to start, a drive about to close,
+            // this week's step) with the page, so the card paints with Home instead of moving it.
+            qc
+              .ensureQueryData(q.me())
+              .then((me) =>
+                Promise.all([
+                  me.permissions.includes('sessions:book') ? qc.ensureQueryData(q.upcomingBookings()) : null,
+                  me.permissions.includes('placements:view')
+                    ? qc.ensureQueryData(q.placementDrives('eligible'))
+                    : null,
+                  ...(me.permissions.includes('mentorship:mentor')
+                    ? [qc.ensureQueryData(q.receivedRequests()), qc.ensureQueryData(q.microAsks('received'))]
+                    : []),
+                ]),
+              )
+              .catch(() => null),
+            // Prompt 2, G7: the weekly Next Step's data and code with the page, so it paints with
             // Home instead of pushing the feed down. A widget: a failure here never fails Home.
             qc
               .ensureQueryData(q.me())
@@ -386,7 +401,7 @@ function collegeRoutes(): RouteObject[] {
                   ? Promise.all([
                       qc.ensureQueryData(q.nextStep()),
                       // Imported here, not at the top: the initial bundle has no room to spare.
-                      import('../features/habits/lazy-next-step').then((m) => m.preloadNextStepCard()),
+                      import('../features/habits/lazy-next-step').then((m) => m.preloadNextSteps()),
                     ])
                   : null,
               )

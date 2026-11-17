@@ -12,7 +12,8 @@
       "score": "{{n}} out of 100",
       "scoreDelta": "{{n}} out of 100 ({{delta}} since last week)",
       "why": "Picked from your roadmap, the drives and jobs you are eligible for, and the alumni who match you. A new one comes every Monday evening.",
-      "none": "Nothing to suggest yet. Follow a roadmap or complete your profile, and next week's Next Step will have something for you."
+      "none": "Nothing to suggest yet. Follow a roadmap or complete your profile, and next week's Next Step will have something for you.",
+      "list": "Your next steps"
     },
     "peers": {
       "intro": "Seniors guide juniors here: final-years as peer mentors, and every first-year gets a senior buddy for their first month.",

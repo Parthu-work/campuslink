@@ -1,0 +1,38 @@
+{
+  "today": {
+    "session": "Your session",
+    "sessionWith": "{{type}} with {{name}}",
+    "join": "Join",
+    "driveCloses": "Registration closes",
+    "driveOn": "Drive on {{date}}",
+    "register": "Register",
+    "step": "Your step this week",
+    "stepOn": "Next on {{roadmap}}",
+    "closesOn": "Registration closes {{date}}",
+    "askAlumnus": "Ask {{name}}",
+    "continue": "Continue",
+    "waiting": "Waiting for you",
+    "requestFrom": "{{name}}: {{type}}",
+    "accept": "Accept",
+    "decline": "Decline",
+    "declineMore": "Decline…",
+    "ask": {
+      "review_resume": "{{name}} asks for a résumé review",
+      "answer_question": "{{name}} asks you to answer a question",
+      "quick_intro": "{{name}} asks for a quick introduction",
+      "feedback_on_project": "{{name}} asks for feedback on a project"
+    },
+    "suggested": "Suggested for you",
+    "follow": "Follow",
+    "following": "Following",
+    "batch": "Batch of {{year}}",
+    "reasonBranch": "Alumnus of your branch ({{branch}})",
+    "reasonCollege": "Alumnus of your college",
+    "fromCollege": "From your college",
+    "comingUp": "Coming up",
+    "nothingComing": "Nothing coming up this week.",
+    "sessions": "Sessions",
+    "deadlines": "Deadlines",
+    "events": "Events"
+  }
+}

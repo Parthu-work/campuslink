@@ -25,6 +25,7 @@ const PACK_USERS: Record<string, string[]> = {
   copilot: ['/features/copilot/'],
   network: ['/features/network/', '/features/recruiter/'],
   design: ['/features/design/'],
+  today: ['/features/home/'],
   'first-run': [
     '/features/auth/sign-up.tsx',
     '/features/home/setup-checklist.tsx',

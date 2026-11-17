@@ -5,13 +5,15 @@ import { ArrowRight, Briefcase, Compass, Gauge, Map, Sparkles } from 'lucide-rea
 import type { NextStepView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { ErrorState } from '../../components/ui/error-state';
+import { ListRow, ListSection } from '../../components/ui/list-row';
 import { Card, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { api } from '../../lib/api';
 import { formatDay } from '../../lib/format';
 import * as q from '../../lib/queries';
 
-type Item = 'roadmap' | 'opportunity' | 'alumnus' | 'readiness';
+export type NextStepItem = 'roadmap' | 'opportunity' | 'alumnus' | 'readiness';
+type Item = NextStepItem;
 
 function Row({
   icon,
@@ -113,26 +115,92 @@ export function NextStepItems({ step }: { step: NextStepView }) {
   );
 }
 
-/** Home: this week's Next Step (students only; nothing when there is nothing to suggest). */
-export function NextStepCard() {
+/**
+ * Home's "Your next steps" (prompt 3, U5): this week's Next Step as list rows, at most three, titles
+ * wrapping, without the item the Today card already shows. Each row records its open (G7).
+ */
+export function NextStepsList({ skip }: { skip?: Item | null }) {
   const { t } = useTranslation();
   const s = useQuery(q.nextStep());
-  if (!s.data) return null;
+  const open = useMutation({ mutationFn: (item: Item) => api.post('/me/next-step/open', { item }) });
+  const step = s.data;
+  if (!step) return null;
+  const delta = step.readiness?.delta;
+  const rows: { item: Item; icon: React.ReactNode; label: string; text: string; to: string }[] = [];
+  if (step.roadmapStep)
+    rows.push({
+      item: 'roadmap',
+      icon: <Map className="size-4" />,
+      label: t('habits.next.roadmap', { roadmap: step.roadmapStep.roadmap }),
+      text: step.roadmapStep.title,
+      to: `/roadmaps/${step.roadmapStep.slug}?step=${encodeURIComponent(step.roadmapStep.nodeId)}`,
+    });
+  if (step.opportunity)
+    rows.push({
+      item: 'opportunity',
+      icon: <Briefcase className="size-4" />,
+      label:
+        step.opportunity.kind === 'drive'
+          ? t('habits.next.drive', { date: formatDay(step.opportunity.closesAt) })
+          : t('habits.next.job'),
+      text: `${step.opportunity.company}: ${step.opportunity.title}`,
+      to:
+        step.opportunity.kind === 'drive'
+          ? `/placements/${step.opportunity.id}`
+          : `/jobs/${step.opportunity.id}`,
+    });
+  if (step.alumnus)
+    rows.push({
+      item: 'alumnus',
+      icon: <Compass className="size-4" />,
+      label: t('habits.next.alumnus'),
+      text: [step.alumnus.name, step.alumnus.jobTitle, step.alumnus.company].filter(Boolean).join(' · '),
+      to: `/mentors/${step.alumnus.userId}`,
+    });
+  if (step.readiness)
+    rows.push({
+      item: 'readiness',
+      icon: <Gauge className="size-4" />,
+      label: t('habits.next.readiness'),
+      text:
+        delta === null || delta === undefined
+          ? t('habits.next.score', { n: step.readiness.score })
+          : t('habits.next.scoreDelta', {
+              n: step.readiness.score,
+              delta: delta > 0 ? `+${delta}` : String(delta),
+            }),
+      to: '/readiness',
+    });
+  const shown = rows.filter((r) => r.item !== skip).slice(0, 3);
+  if (!shown.length) return null;
   return (
-    <Card variant="raised" className="grid gap-3 p-4">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-headline font-semibold">
-          <Sparkles className="size-5 text-brand-ink" aria-hidden /> {t('habits.next.title')}
-        </h2>
-        <Link
-          to="/next-step"
-          className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-callout font-semibold text-brand-ink underline"
-        >
-          {t('habits.next.all')}
+    <ListSection
+      title={t('habits.next.list')}
+      action={
+        <Link to="/next-step" className="text-callout font-semibold text-brand-ink hover:underline">
+          {t('ui.seeAll')}
         </Link>
-      </div>
-      <NextStepItems step={s.data} />
-    </Card>
+      }
+    >
+      {shown.map((r) => (
+        <ListRow
+          key={r.item}
+          to={r.to}
+          itemProps={{ onClick: () => open.mutate(r.item) }}
+          leading={
+            <span
+              className="flex size-9 flex-none items-center justify-center rounded-full bg-brand-surface text-brand-ink"
+              aria-hidden
+            >
+              {r.icon}
+            </span>
+          }
+          title={r.text}
+          meta={r.label}
+          chevron
+        />
+      ))}
+    </ListSection>
   );
 }
 

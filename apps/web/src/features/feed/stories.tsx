@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from '../../i18n/react';
 import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
+import { Button } from '../../components/ui/button';
 import { Dialog } from '../../components/ui/dialog';
 import { Skeleton } from '../../components/ui/misc';
 import { PersonAvatar } from '../../components/ui/person-avatar';
@@ -15,6 +16,41 @@ import { firstName } from '../../lib/names';
 
 const StoryViewer = lazyPart(() => import('./story-viewer').then((m) => m.StoryViewer));
 const StoryComposer = lazyPart(() => import('./story-composer').then((m) => m.StoryComposer));
+
+/** The story composer in a dialog: from the row, or from "New story" where the row is hidden. */
+function ComposerDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+  const { t } = useTranslation();
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('stories.new')}
+      description={t('stories.newBody')}
+    >
+      {open && <StoryComposer onDone={() => onOpenChange(false)} fallback={<Skeleton className="h-72" />} />}
+    </Dialog>
+  );
+}
+
+/**
+ * "New story" for members who post, where the row is hidden (prompt 3, U5: Home shows the row only
+ * with three or more active stories), so the first stories can still be added.
+ */
+export function NewStoryButton() {
+  const { t } = useTranslation();
+  const tenant = useTenant();
+  const canPost = useCan('feed:post');
+  const [composing, setComposing] = useState(false);
+  if (tenant.features?.stories === false || !canPost) return null;
+  return (
+    <>
+      <Button variant="tertiary" size="sm" onClick={() => setComposing(true)}>
+        <Plus aria-hidden /> {t('stories.new')}
+      </Button>
+      <ComposerDialog open={composing} onOpenChange={setComposing} />
+    </>
+  );
+}
 
 export function StoriesRow() {
   const { t } = useTranslation();
@@ -84,16 +120,7 @@ export function StoriesRow() {
       {viewing && (
         <StoryViewer groups={viewing.groups} start={viewing.start} onClose={() => setViewing(null)} />
       )}
-      <Dialog
-        open={composing}
-        onOpenChange={setComposing}
-        title={t('stories.new')}
-        description={t('stories.newBody')}
-      >
-        {composing && (
-          <StoryComposer onDone={() => setComposing(false)} fallback={<Skeleton className="h-72" />} />
-        )}
-      </Dialog>
+      <ComposerDialog open={composing} onOpenChange={setComposing} />
     </section>
   );
 }
