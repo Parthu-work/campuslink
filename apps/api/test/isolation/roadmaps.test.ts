@@ -44,7 +44,8 @@ beforeAll(async () => {
   await a(alumA).post(`/roadmaps/${roadmapA}/submit`).send({});
   await a(facA).post(`/roadmaps/${roadmapA}/review`).send({ decision: 'approve' });
   await a(studentA).put(`/roadmaps/${roadmapA}/progress`).send({ nodeId: 'basics', done: true });
-  await a(studentA).put(`/roadmaps/${roadmapA}/goal`).send({ nodesPerWeek: 3 });
+  // A pace well above what one step takes, so the member is behind and the nudge is due.
+  await a(studentA).put(`/roadmaps/${roadmapA}/goal`).send({ hoursPerWeek: 40 });
   commentA = (
     await a(alumA)
       .post(`/roadmaps/${roadmapA}/comments`)
@@ -88,7 +89,7 @@ describe('HTTP: nothing of college A is reachable from college B', () => {
       ['post', `/roadmaps/${roadmapA}/review`, facB, { decision: 'approve' }],
       ['patch', `/roadmaps/${roadmapA}`, facB, { archived: true }],
       ['put', `/roadmaps/${roadmapA}/progress`, studentB, { nodeId: 'basics', done: true }],
-      ['put', `/roadmaps/${roadmapA}/goal`, studentB, { nodesPerWeek: 1 }],
+      ['put', `/roadmaps/${roadmapA}/goal`, studentB, { hoursPerWeek: 1 }],
       ['get', `/roadmaps/${roadmapA}/comments`, alumB, undefined],
       ['post', `/roadmaps/${roadmapA}/comments`, alumB, { nodeId: 'basics', body: 'Hello from B' }],
       ['delete', `/roadmap-comments/${commentA}`, facB, undefined],
@@ -124,7 +125,7 @@ describe('HTTP: nothing of college A is reachable from college B', () => {
     ).toBe(404);
     // A is untouched.
     const view = (await a(studentA).get(`/roadmaps/${slugA}`)).body.data;
-    expect(view).toMatchObject({ status: 'published', myProgress: { done: ['basics'], nodesPerWeek: 3 } });
+    expect(view).toMatchObject({ status: 'published', myProgress: { done: ['basics'], hoursPerWeek: 40 } });
     expect((await a(alumA).get(`/roadmaps/${roadmapA}/comments`)).body.data).toHaveLength(1);
     expect((await a(fac2A).get(`/roadmaps/${draftA}/versions`)).body.data).toHaveLength(1);
   });

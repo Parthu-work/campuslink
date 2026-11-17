@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { CAPABILITIES, TENANT_ROLES, type Capability, type Role } from '../roles.js';
 import { CONSENT_PURPOSE_KEYS, type ConsentPurpose } from '../consent.js';
 import { personName } from './common.js';
+import type { Branch } from '../constants/people.js';
 import { SUPPORTED_LOCALES, type Locale } from '../locales.js';
 
 export const updateRolesBody = z.strictObject({
@@ -49,6 +50,8 @@ export interface MeResponse {
   minor: boolean;
   /** Graduation year from the member's profile (the Placements tab for final-year students, B7). */
   gradYear: number | null;
+  /** Branch from the member's profile ("For your branch" in career paths, prompt 3, U3). */
+  branch: Branch | null;
   roles: Role[];
   capabilities: Capability[];
   verified: boolean;

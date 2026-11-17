@@ -2,51 +2,73 @@ import { test, expect } from '@playwright/test';
 import { expectNoA11yViolations, signIn } from './helpers';
 
 /**
- * Phase 6 done-criteria: a student explores the Career Galaxy, opens a roadmap and marks progress
- * with a weekly goal; an alumnus drafts and submits a roadmap; a faculty reviewer publishes it.
+ * Career paths (prompt 3, U3; phase 6 before it): a student finds a path, starts it, marks the
+ * next step done (and undoes it), sets a pace and opens the map; an alumnus drafts and submits a
+ * path; a faculty reviewer publishes it.
  */
 const hostFor = (project: string) => (project === 'mobile' ? 'mrce' : 'dpit');
 
 test.describe('roadmaps', () => {
-  test('explore the galaxy, open a roadmap and mark progress', async ({ page }, info) => {
+  test('find a path, start it, mark a step done and undo it, set a pace', async ({ page }, info) => {
     test.setTimeout(90_000);
     const host = hostFor(info.project.name);
     const base = `http://${host}.localhost:4173`;
     await signIn(page, `ananya@${host}.example`, host);
     await page.goto(`${base}/roadmaps`);
-    await expect(page.getByRole('heading', { name: 'Roadmaps', level: 1 })).toBeVisible();
-    // Seeded progress: Ananya follows the SDE roadmap.
-    await expect(page.getByRole('heading', { name: 'My roadmaps' })).toBeVisible();
-    await page.getByRole('button', { name: 'Galaxy', exact: true }).click();
-    await expect(page.getByRole('group', { name: /Career Galaxy/ })).toBeVisible();
-    await expect(page.getByRole('link', { name: /^Backend Developer, 10 steps/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Career paths', level: 1 })).toBeVisible();
+    // Seeded progress: Ananya follows the SDE path, so it is first, with its next step.
+    await expect(page.getByRole('heading', { name: 'Continue', level: 2 })).toBeVisible();
+    await expect(page.getByRole('link', { name: /^Continue/ }).first()).toBeVisible();
     await expectNoA11yViolations(page);
-    await page.getByRole('button', { name: 'List', exact: true }).click();
     await page.getByPlaceholder('Search roadmaps').fill('Backend');
-    await page.getByRole('link', { name: 'Backend Developer' }).first().click();
+    await page
+      .getByRole('link', { name: /^Backend Developer/ })
+      .first()
+      .click();
     await expect(page.getByRole('heading', { name: 'Backend Developer', level: 1 })).toBeVisible();
-    await expect(page.getByText('From the researched library')).toBeVisible();
-    await page.getByRole('button', { name: 'List', exact: true }).click();
-    await page.getByRole('button', { name: /One server-side language/ }).click();
+    // Where it comes from is in the About sheet, not above the steps.
+    await page.getByRole('button', { name: 'About this' }).click();
+    await expect(page.getByRole('dialog').getByText('From the researched library')).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    // Start: follows the path and opens its first step.
+    await page.getByRole('button', { name: 'Start this path' }).click();
     const dialog = page.getByRole('dialog', { name: 'One server-side language' });
+    await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('link', { name: /Python/ }).first()).toBeVisible();
     await expectNoA11yViolations(page);
-    await dialog.getByRole('button', { name: 'Mark as done' }).click();
+    // Mark done, then Undo from the toast.
+    await dialog.getByRole('button', { name: 'Mark done' }).click();
     await expect(dialog.getByRole('button', { name: 'Mark as not done' })).toBeVisible();
-    // The step is in the URL: Back (the Android back gesture) closes it and stays on the roadmap.
+    // Undo from the toast, above the open sheet (which stays open).
+    const toastUndo = page.locator('[data-sonner-toast]').getByRole('button', { name: 'Undo' });
+    await expect(toastUndo).toBeVisible();
+    await toastUndo.click({ force: true });
+    await expect(dialog.getByRole('button', { name: 'Mark done' })).toBeVisible();
+    await dialog.getByRole('button', { name: 'Mark done' }).click();
+    await expect(dialog.getByRole('button', { name: 'Mark as not done' })).toBeVisible();
+    // The step is in the URL: Back (the Android back gesture) closes it and stays on the path.
     await expect(page).toHaveURL(/[?&]step=/);
     await page.goBack();
     await expect(dialog).toBeHidden();
     await expect(page.getByRole('heading', { name: 'Backend Developer', level: 1 })).toBeVisible();
     await expect(page).not.toHaveURL(/[?&]step=/);
-    await expect(page.getByText('1 of 10 done')).toBeVisible();
-    await page.getByLabel('Weekly goal').selectOption('2');
-    await expect(page.getByText('Weekly goal saved')).toBeVisible();
-    await expect(page.getByText('This week: 1 of 2.')).toBeVisible();
-    await page.getByRole('button', { name: 'Graph', exact: true }).click();
+    await expect(page.getByText(/^1 of 10 steps · next: /)).toBeVisible();
+    // The pace: one line, a select only while changing it.
+    await page.getByRole('button', { name: 'Set your pace' }).click();
+    await page.getByLabel('Hours a week').selectOption('6');
+    await expect(page.getByText('Your pace: 6 h a week')).toBeVisible();
+    await expect(
+      page.getByRole('status').filter({ hasText: /(On track: |This week: )\d+ of 6 h/ }),
+    ).toBeVisible();
+    // The map is one tap away.
+    await page.getByRole('button', { name: 'Map', exact: true }).click();
     await expect(page.getByRole('button', { name: /One server-side language, Skill, Done/ })).toBeVisible();
     await expectNoA11yViolations(page);
+    await page.getByRole('button', { name: 'Steps', exact: true }).click();
     // Students can't edit or review.
+    await page.getByRole('button', { name: 'More actions' }).click();
+    await expect(page.getByRole('menuitem', { name: 'Suggest an edit' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Suggest an edit' })).toHaveCount(0);
   });
 
@@ -100,9 +122,11 @@ test.describe('roadmaps', () => {
     const student = await studentCtx.newPage();
     await signIn(student, `vikram@${host}.example`, host);
     await student.goto(`${base}/roadmaps?q=${encodeURIComponent('E2E Placement')}`);
-    await student.getByRole('button', { name: 'List', exact: true }).click();
     await student.getByRole('link', { name: title }).click();
-    await expect(student.getByText('By Rahul', { exact: false })).toBeVisible();
+    await expect(student.getByRole('heading', { name: title, level: 1 })).toBeVisible();
+    // Who wrote it is in the path's About sheet.
+    await student.getByRole('button', { name: 'About this' }).click();
+    await expect(student.getByRole('dialog').getByText('By Rahul', { exact: false })).toBeVisible();
     await studentCtx.close();
   });
 });

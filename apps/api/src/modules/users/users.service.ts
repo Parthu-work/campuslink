@@ -143,6 +143,7 @@ export class UsersService {
       guardianPending: u.status === 'guardian_pending',
       minor: isMinor(u.adultOn),
       gradYear: cohort?.gradYear ?? null,
+      branch: (cohort?.branch ?? null) as MeResponse['branch'],
       roles: auth.roles,
       capabilities: auth.capabilities,
       verified: auth.verified,

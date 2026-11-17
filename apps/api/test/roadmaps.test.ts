@@ -351,7 +351,8 @@ describe('progress, goals and nudges', () => {
 
   it('marks steps done, follows, and stops following', async () => {
     const r = await as(student).put(`/roadmaps/${id}/progress`).send({ nodeId: 'language', done: true });
-    expect(r.body.data).toMatchObject({ done: ['language'], doneThisWeek: 1, nodesPerWeek: 0 });
+    expect(r.body.data).toMatchObject({ done: ['language'], doneThisWeek: 1, hoursPerWeek: 0 });
+    expect(r.body.data.hoursThisWeek).toBeGreaterThan(0);
     expect(
       (await as(student).put(`/roadmaps/${id}/progress`).send({ nodeId: 'nope', done: true })).status,
     ).toBe(400);
@@ -361,10 +362,14 @@ describe('progress, goals and nudges', () => {
     await as(student).put(`/roadmaps/${id}/progress`).send({ nodeId: 'language', done: true });
     const view = (await as(student).get('/roadmaps/backend')).body.data;
     expect(view.myProgress.done).toEqual(['language']);
-    expect(view.progress).toEqual({ done: 1, total: view.nodeCount });
-    expect(
-      (await as(student).get('/roadmaps?mine=following')).body.data.map((x: { id: string }) => x.id),
-    ).toEqual([id]);
+    expect(view.progress).toMatchObject({ done: 1, total: view.nodeCount, hoursPerWeek: 0 });
+    const listed = (await as(student).get('/roadmaps?mine=following')).body.data;
+    expect(listed.map((x: { id: string }) => x.id)).toEqual([id]);
+    // The list carries what the Continue card needs: the next step and the pace (prompt 3, U3).
+    expect(listed[0].progress).toMatchObject({ done: 1, total: view.nodeCount, hoursPerWeek: 0 });
+    expect(listed[0].progress.next.id).not.toBe('language');
+    expect(listed[0].hours[1]).toBeGreaterThanOrEqual(listed[0].hours[0]);
+    expect(listed[0].outcome).toBe(view.content.outcomes[0] ?? null);
     expect((await as(alum).get('/roadmaps/backend')).body.data.myProgress).toBeNull();
     const off = await as(student).put(`/roadmaps/${id}/progress`).send({ nodeId: 'language', done: false });
     expect(off.body.data.done).toEqual([]);
@@ -373,9 +378,24 @@ describe('progress, goals and nudges', () => {
   });
 
   it('nudges once a week only when behind the goal', async () => {
-    expect((await as(student).put(`/roadmaps/${id}/goal`).send({ nodesPerWeek: 11 })).status).toBe(400);
-    const g = await as(student).put(`/roadmaps/${id}/goal`).send({ nodesPerWeek: 2 });
-    expect(g.body.data).toMatchObject({ nodesPerWeek: 2, done: [] });
+    expect((await as(student).put(`/roadmaps/${id}/goal`).send({ hoursPerWeek: 41 })).status).toBe(400);
+    expect((await as(student).put(`/roadmaps/${id}/goal`).send({ nodesPerWeek: 2 })).status).toBe(400);
+    // The pace is what the two steps below take, so doing them is being on track.
+    const nodes = (await as(student).get('/roadmaps/backend')).body.data.content.nodes as {
+      id: string;
+      estimateHours: [number, number];
+    }[];
+    // (At most 40 h a week, the most a pace may be.)
+    const pace = Math.min(
+      40,
+      Math.round(
+        nodes
+          .filter((x) => x.id === 'language' || x.id === 'git-cli')
+          .reduce((sum, x) => sum + Math.max(1, (x.estimateHours[0] + x.estimateHours[1]) / 2), 0),
+      ),
+    );
+    const g = await as(student).put(`/roadmaps/${id}/goal`).send({ hoursPerWeek: pace });
+    expect(g.body.data).toMatchObject({ hoursPerWeek: pace, done: [], hoursThisWeek: 0 });
     const due = () =>
       runInTenant(T._id, () =>
         RoadmapProgressModel.updateOne(
@@ -397,7 +417,7 @@ describe('progress, goals and nudges', () => {
     await ctx.queue.drain();
     expect(await notes(student, 'roadmap_nudge')).toHaveLength(1);
     // No goal, no nudges.
-    await as(student).put(`/roadmaps/${id}/goal`).send({ nodesPerWeek: 0 });
+    await as(student).put(`/roadmaps/${id}/goal`).send({ hoursPerWeek: 0 });
     expect(await RoadmapsService.enqueueDueNudges(ctx.queue)).toBe(0);
   });
 });

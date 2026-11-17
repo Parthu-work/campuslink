@@ -217,11 +217,12 @@ const tasks: { name: string; run: (b: Browser) => Promise<{ count: Count; close:
       run: async (browser) => {
         const { ctx, page } = await coldStart(browser, 'ananya@dpit.example');
         const c = count(page);
-        // Home's next-step card opens the followed roadmap; the next step is the first numbered one.
+        // A final-year student opens on Career (U2): Home is a tap away. Home's next-step card opens
+        // the step itself (U3), so Mark done is the next tap.
+        if (!/\/home$/.test(page.url()))
+          await c.tap(page.locator('nav.chrome-bottom > a[href="/home"]'), 'Home tab');
         await c.tap(page.getByRole('link', { name: /^Next on/ }).first(), 'next-step card on Home');
-        const steps = page.getByRole('main').getByRole('button', { name: / about \d+–\d+ h/ });
-        await c.tap(steps.filter({ hasNotText: 'Done' }).first(), 'the next step');
-        await c.tap(page.getByRole('dialog').getByRole('button', { name: 'Mark as done' }), 'mark as done');
+        await c.tap(page.getByRole('dialog').getByRole('button', { name: 'Mark done' }), 'mark as done');
         await expect(
           page.getByRole('dialog').getByRole('button', { name: 'Mark as not done' }),
         ).toBeVisible();

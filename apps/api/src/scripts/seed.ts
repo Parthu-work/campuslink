@@ -537,7 +537,7 @@ async function seedRoadmaps(ids: Map<string, Types.ObjectId>) {
       done: sdeV.content.nodes
         .slice(0, 2)
         .map((n, i) => ({ nodeId: n.id, at: new Date(now - (i + 2) * DAY) })),
-      nodesPerWeek: 2,
+      hoursPerWeek: 6,
       nextNudgeAt: new Date(now + 7 * DAY),
     });
   }

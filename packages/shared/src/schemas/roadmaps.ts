@@ -4,6 +4,7 @@ import { httpsUrl } from './people.js';
 import type { PersonRef } from './mentorship.js';
 import { BRANCHES, type Branch } from '../constants/people.js';
 import {
+  MAX_HOURS_PER_WEEK,
   MAX_NODES,
   NODE_KINDS,
   ROADMAP_CATEGORIES,
@@ -82,7 +83,10 @@ export const progressBody = z.strictObject({
   nodeId: z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/),
   done: z.boolean(),
 });
-export const weeklyGoalBody = z.strictObject({ nodesPerWeek: z.number().int().min(0).max(10) });
+/** A pace in hours a week (prompt 3, U3); 0 follows without a goal or nudges. */
+export const weeklyGoalBody = z.strictObject({
+  hoursPerWeek: z.number().int().min(0).max(MAX_HOURS_PER_WEEK),
+});
 export const nodeCommentBody = z.strictObject({
   nodeId: z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/),
   body: text(2, 1000),
@@ -114,7 +118,19 @@ export interface RoadmapSummaryView {
   lastReviewedAt: string | null;
   fromLibrary: boolean;
   author: PersonRef | null;
-  progress: { done: number; total: number } | null;
+  /** What a member will be able to do: the first of the published version's outcomes. */
+  outcome: string | null;
+  /** The published version's total estimate, in hours. */
+  hours: [number, number];
+  /** Present when the viewer follows the path. */
+  progress: {
+    done: number;
+    total: number;
+    /** The member's pace (0 when they set none). */
+    hoursPerWeek: number;
+    /** The step to do next, with its estimate; null once every step is done. */
+    next: { id: string; title: string; estimateHours: [number, number] } | null;
+  } | null;
   hasPendingReview: boolean;
 }
 export interface VersionView {
@@ -134,7 +150,14 @@ export interface RoadmapView extends RoadmapSummaryView {
   canEdit: boolean;
   canReview: boolean;
   draft: { version: number; status: VersionStatus; reviewNote: string } | null;
-  myProgress: { done: string[]; nodesPerWeek: number; doneThisWeek: number } | null;
+  myProgress: {
+    done: string[];
+    /** The member's pace in hours a week (0: following without a goal). */
+    hoursPerWeek: number;
+    doneThisWeek: number;
+    /** The likely hours of the steps done in the last seven days. */
+    hoursThisWeek: number;
+  } | null;
 }
 export interface NodeCommentView {
   id: string;

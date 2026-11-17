@@ -86,7 +86,10 @@ const progressSchema = new Schema(
       type: [new Schema({ nodeId: String, at: Date }, { _id: false, strict: 'throw' })],
       default: [],
     },
+    /** Before prompt 3 (U3) the goal was steps a week; it reads as hours (hoursFromStepsPerWeek). */
     nodesPerWeek: { type: Number, default: 0, min: 0, max: 10 },
+    /** The member's pace: hours of study a week (0: following without a goal). */
+    hoursPerWeek: { type: Number, default: 0, min: 0, max: 40 },
     /** When the next weekly check (and nudge if behind) is due; null when there is no goal. */
     nextNudgeAt: { type: Date, default: null },
   },

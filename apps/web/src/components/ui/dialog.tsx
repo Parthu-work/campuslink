@@ -67,6 +67,10 @@ function Overlay({
             className,
           )}
           {...(description ? {} : { 'aria-describedby': undefined })}
+          // A toast's action (Undo after Mark done) is pressed without closing the sheet under it.
+          onInteractOutside={(e) => {
+            if ((e.target as Element | null)?.closest?.('[data-sonner-toaster]')) e.preventDefault();
+          }}
         >
           <div className="flex-none touch-none px-5 pt-2 md:touch-auto md:px-6 md:pt-5" {...drag}>
             <span

@@ -85,7 +85,7 @@ const load = {
   postPage: () => import('../features/feed/post-page'),
   collections: () => import('../features/feed/collections'),
   questions: () => import('../features/qa/questions'),
-  galaxy: () => import('../features/roadmaps/galaxy'),
+  paths: () => import('../features/roadmaps/paths'),
   roadmap: () => import('../features/roadmaps/roadmap-page'),
   roadmapHistory: () => import('../features/roadmaps/history'),
   roadmapEditor: () => import('../features/roadmaps/editor'),
@@ -469,7 +469,7 @@ function collegeRoutes(): RouteObject[] {
           ),
           screen(load.questions, 'QuestionsPage', 'feed:read', at('/questions')),
           screen(load.questions, 'QuestionPage', 'feed:read', at('/questions/:questionId')),
-          screen(load.galaxy, 'RoadmapsPage', 'roadmaps:read', at('/roadmaps'), (_, url) => [
+          screen(load.paths, 'PathsPage', 'roadmaps:read', at('/roadmaps'), (_, url) => [
             qc.ensureQueryData(q.roadmapsList(q.roadmapFilterQuery(url.searchParams))),
             // The sections above the list, for members who have them (no layout shift, audit).
             qc

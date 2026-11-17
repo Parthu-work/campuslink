@@ -62,7 +62,8 @@ export function NextStepItems({ step }: { step: NextStepView }) {
           icon={<Map className="size-4" />}
           label={t('habits.next.roadmap', { roadmap: step.roadmapStep.roadmap })}
           text={step.roadmapStep.title}
-          to={`/roadmaps/${step.roadmapStep.slug}`}
+          // Straight to the step (prompt 3, U3): Mark done is the next tap.
+          to={`/roadmaps/${step.roadmapStep.slug}?step=${encodeURIComponent(step.roadmapStep.nodeId)}`}
           onOpen={mark('roadmap')}
         />
       )}

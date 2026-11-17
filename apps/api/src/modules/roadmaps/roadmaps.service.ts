@@ -3,7 +3,11 @@ import { Types } from 'mongoose';
 import type { z } from 'zod';
 import {
   ErrorCode,
+  hoursFromStepsPerWeek,
+  nextStep,
+  pathHours,
   publishProblems,
+  stepHours,
   roadmapContent,
   type NodeCommentView,
   type PersonRef,
@@ -157,7 +161,7 @@ export class RoadmapsService {
   async exportFor(userId: string) {
     const [progress, comments] = await Promise.all([
       RoadmapProgressModel.find({ userId: oid(userId) })
-        .select('roadmapId done nodesPerWeek')
+        .select('roadmapId done nodesPerWeek hoursPerWeek')
         .lean(),
       RoadmapCommentModel.find({ authorId: oid(userId) })
         .select('roadmapId nodeId body createdAt')
@@ -222,13 +226,40 @@ export class RoadmapsService {
   // ── Views ─────────────────────────────
   private async summaries(viewer: AuthState, rows: RoadmapDoc[]): Promise<RoadmapSummaryView[]> {
     const ids = rows.map((r) => r._id);
-    const [progress, refs] = await Promise.all([
+    const live = rows.filter((r) => r.publishedVersion !== null && r.publishedVersion !== undefined);
+    const [progress, refs, versions] = await Promise.all([
       RoadmapProgressModel.find({ userId: oid(viewer.userId), roadmapId: { $in: ids } })
-        .select('roadmapId done')
+        .select('roadmapId done nodesPerWeek hoursPerWeek')
         .lean<ProgressDoc[]>(),
       this.d.profiles.refsFor(rows.flatMap((r) => (r.createdBy ? [r.createdBy] : []))),
+      live.length
+        ? RoadmapVersionModel.find({
+            $or: live.map((r) => ({ roadmapId: r._id, version: r.publishedVersion })),
+          })
+            .select(
+              'roadmapId content.outcomes content.nodes.id content.nodes.title content.nodes.prerequisites content.nodes.estimateHours',
+            )
+            .lean<Pick<VersionDoc, 'roadmapId' | 'content'>[]>()
+        : [],
     ]);
-    const mine = new Map(progress.map((p) => [String(p.roadmapId), p.done.length]));
+    const mine = new Map(progress.map((p) => [String(p.roadmapId), p]));
+    const contentOf = new Map(versions.map((v) => [String(v.roadmapId), v.content]));
+    const followed = (r: RoadmapDoc): RoadmapSummaryView['progress'] => {
+      const p = mine.get(String(r._id));
+      if (!p) return null;
+      const nodes = contentOf.get(String(r._id))?.nodes ?? [];
+      const ids = new Set(nodes.map((n) => n.id));
+      const done = new Set(p.done.map((d) => d.nodeId ?? '').filter((id) => ids.has(id)));
+      const next = nextStep(nodes, done);
+      return {
+        done: nodes.length ? done.size : p.done.length,
+        total: r.nodeCount,
+        hoursPerWeek: p.hoursPerWeek || hoursFromStepsPerWeek(p.nodesPerWeek, nodes),
+        next: next
+          ? { id: next.id, title: next.title, estimateHours: [next.estimateHours[0], next.estimateHours[1]] }
+          : null,
+      };
+    };
     return Promise.all(
       rows.map(async (r) => ({
         id: String(r._id),
@@ -244,7 +275,9 @@ export class RoadmapsService {
         lastReviewedAt: r.lastReviewedAt?.toISOString() ?? null,
         fromLibrary: !!r.libraryKey,
         author: await this.person(r.createdBy, refs),
-        progress: mine.has(String(r._id)) ? { done: mine.get(String(r._id)) ?? 0, total: r.nodeCount } : null,
+        outcome: contentOf.get(String(r._id))?.outcomes[0] ?? null,
+        hours: pathHours(contentOf.get(String(r._id))?.nodes ?? []),
+        progress: followed(r),
         hasPendingReview: r.openVersion !== null && r.openVersion !== undefined,
       })),
     );
@@ -255,10 +288,13 @@ export class RoadmapsService {
     const ids = new Set(content.nodes.map((n) => n.id));
     const done = p.done.filter((d) => ids.has(d.nodeId ?? ''));
     const since = Date.now() - WEEK;
+    const thisWeek = done.filter((d) => (d.at?.getTime() ?? 0) >= since);
+    const hoursOf = new Map(content.nodes.map((n) => [n.id, stepHours(n)]));
     return {
       done: done.map((d) => d.nodeId ?? ''),
-      nodesPerWeek: p.nodesPerWeek,
-      doneThisWeek: done.filter((d) => (d.at?.getTime() ?? 0) >= since).length,
+      hoursPerWeek: p.hoursPerWeek || hoursFromStepsPerWeek(p.nodesPerWeek, content.nodes),
+      doneThisWeek: thisWeek.length,
+      hoursThisWeek: Math.round(thisWeek.reduce((sum, d) => sum + (hoursOf.get(d.nodeId ?? '') ?? 0), 0)),
     };
   }
 
@@ -747,7 +783,7 @@ export class RoadmapsService {
   ): Promise<{ roadmapId: string; slug: string; roadmap: string; nodeId: string; title: string } | null> {
     if (!viewer.permissions.has('roadmaps:progress')) return null;
     const rows = await RoadmapProgressModel.find({ userId: new Types.ObjectId(viewer.userId) })
-      .sort({ nodesPerWeek: -1, updatedAt: -1 })
+      .sort({ hoursPerWeek: -1, nodesPerWeek: -1, updatedAt: -1 })
       .limit(5)
       .lean<ProgressDoc[]>();
     for (const p of rows) {
@@ -759,9 +795,7 @@ export class RoadmapsService {
       }).lean<VersionDoc>();
       if (!v) continue;
       const done = new Set(p.done.map((d) => d.nodeId ?? ''));
-      const next =
-        v.content.nodes.find((n) => !done.has(n.id) && n.prerequisites.every((x) => done.has(x))) ??
-        v.content.nodes.find((n) => !done.has(n.id));
+      const next = nextStep(v.content.nodes, done);
       if (next)
         return {
           roadmapId: String(r._id),
@@ -824,7 +858,10 @@ export class RoadmapsService {
       .limit(100_000)
       .lean<(ProgressDoc & { updatedAt?: Date })[]>();
     const rank = (p: ProgressDoc & { updatedAt?: Date }) =>
-      [p.nodesPerWeek > 0 ? 1 : 0, p.updatedAt ? new Date(p.updatedAt).getTime() : 0] as const;
+      [
+        p.hoursPerWeek > 0 || p.nodesPerWeek > 0 ? 1 : 0,
+        p.updatedAt ? new Date(p.updatedAt).getTime() : 0,
+      ] as const;
     const best = new Map<string, ProgressDoc & { updatedAt?: Date }>();
     for (const p of progress) {
       const u = String(p.userId);
@@ -878,7 +915,7 @@ export class RoadmapsService {
     if (body.done) {
       await RoadmapProgressModel.updateOne(
         key,
-        { $setOnInsert: { nodesPerWeek: 0 } },
+        { $setOnInsert: { hoursPerWeek: 0 } },
         { upsert: true },
       ).catch((e: unknown) => {
         if (!isDuplicate(e)) throw e;
@@ -897,13 +934,20 @@ export class RoadmapsService {
     return mine;
   }
 
-  /** Follow a roadmap with a weekly goal (0 = follow without a goal or nudges). */
-  async setGoal(viewer: AuthState, id: string, nodesPerWeek: number) {
+  /** Follow a roadmap at a pace of hours a week (0 = follow without a goal or nudges). */
+  async setGoal(viewer: AuthState, id: string, hoursPerWeek: number) {
     const { r, content } = await this.liveContent(id);
     const key = { userId: oid(viewer.userId), roadmapId: r._id };
     const p = await RoadmapProgressModel.findOneAndUpdate(
       key,
-      { $set: { nodesPerWeek, nextNudgeAt: nodesPerWeek > 0 ? new Date(Date.now() + WEEK) : null } },
+      {
+        $set: {
+          hoursPerWeek,
+          // The old steps-a-week goal is replaced, never read again for this member.
+          nodesPerWeek: 0,
+          nextNudgeAt: hoursPerWeek > 0 ? new Date(Date.now() + WEEK) : null,
+        },
+      },
       { upsert: true, returnDocument: 'after' },
     ).lean<ProgressDoc>();
     return this.myProgress(p, content);
@@ -939,7 +983,7 @@ export class RoadmapsService {
       { $set: { nextNudgeAt: new Date(now.getTime() + WEEK) } },
       { returnDocument: 'before' },
     ).lean<ProgressDoc>();
-    if (!p || p.nodesPerWeek <= 0) return;
+    if (!p || (p.hoursPerWeek <= 0 && p.nodesPerWeek <= 0)) return;
     const r = await RoadmapModel.findById(p.roadmapId).lean<RoadmapDoc>();
     if (!r || !isLive(r) || r.publishedVersion === null) return;
     const tenant = await findTenantById(requireTenantId());
@@ -955,9 +999,7 @@ export class RoadmapsService {
       await RoadmapProgressModel.updateOne({ _id: p._id }, { $set: { nextNudgeAt: null } });
       return;
     }
-    const since = now.getTime() - WEEK;
-    const thisWeek = p.done.filter((d) => (d.at?.getTime() ?? 0) >= since).length;
-    if (thisWeek >= p.nodesPerWeek) return;
+    if (mine.hoursThisWeek >= mine.hoursPerWeek) return;
     await this.d.notifications.notify(p.userId, 'roadmap_nudge', {
       roadmap: r.title,
       roadmapId: String(r._id),

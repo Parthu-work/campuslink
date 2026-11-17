@@ -176,12 +176,12 @@ export function roadmapRoutes(s: RoadmapsService): AnyRouteSpec[] {
       method: 'put',
       path: '/roadmaps/:id/goal',
       tag,
-      summary: 'Follow a roadmap with a weekly goal (0 = no goal, no nudges)',
+      summary: 'Follow a roadmap at a pace of hours a week (0 = no goal, no nudges)',
       access: PROGRESS,
       params: idParams,
       body: weeklyGoalBody,
       handler: async ({ req, params, body }) => ({
-        data: await s.setGoal(authOf(req), params.id, body.nodesPerWeek),
+        data: await s.setGoal(authOf(req), params.id, body.hoursPerWeek),
       }),
     },
     {

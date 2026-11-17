@@ -1,7 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from './toast';
 import { useTranslation } from '../i18n/react';
-import type { RoadmapContent, RoadmapNode, RoadmapSummaryView, RoadmapView } from '@campuslink/shared';
+import {
+  nextStep,
+  timeAtPace,
+  type RoadmapContent,
+  type RoadmapNode,
+  type RoadmapView,
+} from '@campuslink/shared';
 import { api, ApiError } from './api';
 import { putOrQueue } from './offline-writes';
 
@@ -68,95 +74,6 @@ export function layoutGraph(nodes: RoadmapNode[]): { placed: PlacedNode[]; width
   };
 }
 
-/** Nodes whose prerequisites are all done (what to do next). */
-export function nextSteps(nodes: RoadmapNode[], done: ReadonlySet<string>): RoadmapNode[] {
-  return nodes.filter((n) => !done.has(n.id) && n.prerequisites.every((p) => done.has(p)));
-}
-
-// ── Career Galaxy ─────────────────────────────
-export interface Star {
-  roadmap: RoadmapSummaryView;
-  x: number;
-  y: number;
-  r: number;
-  /** Where the label goes, pointing away from the constellation's centre. */
-  label: { x: number; y: number; anchor: 'start' | 'middle' | 'end' };
-}
-export interface Constellation {
-  category: string;
-  cx: number;
-  cy: number;
-  titleY: number;
-  stars: Star[];
-}
-export const GALAXY_CELL = { w: 500, h: 400 };
-
-/** A star's label on up to two lines (about 16 characters each), cut with an ellipsis after that. */
-export function wrapLabel(title: string, max = 16): string[] {
-  const words = title.split(/\s+/);
-  const lines: string[] = [];
-  let line = '';
-  for (const w of words) {
-    if (!line) line = w;
-    else if (`${line} ${w}`.length <= max) line = `${line} ${w}`;
-    else {
-      lines.push(line);
-      line = w;
-    }
-  }
-  if (line) lines.push(line);
-  if (lines.length <= 2) return lines;
-  const second = lines.slice(1).join(' ');
-  return [lines[0] ?? '', second.length > max ? `${second.slice(0, max - 1).trimEnd()}…` : second];
-}
-
-/**
- * One constellation per category in a grid of cells; its roadmaps sit on an ellipse around the
- * centre with labels pointing outward, so nothing overlaps whatever the count (up to ~12).
- */
-export function layoutGalaxy(
-  roadmaps: RoadmapSummaryView[],
-  categories: readonly string[],
-  columns = 2,
-): { groups: Constellation[]; width: number; height: number } {
-  const present = categories.filter((c) => roadmaps.some((r) => r.category === c));
-  const groups = present.map((category, i) => {
-    const col = i % columns;
-    const row = Math.floor(i / columns);
-    const cx = col * GALAXY_CELL.w + GALAXY_CELL.w / 2;
-    const cy = row * GALAXY_CELL.h + GALAXY_CELL.h / 2 + 18;
-    const mine = roadmaps.filter((r) => r.category === category);
-    const n = mine.length;
-    const stars = mine.map((roadmap, j): Star => {
-      const r = 7 + Math.min(7, roadmap.nodeCount / 2);
-      if (n === 1) return { roadmap, x: cx, y: cy, r, label: { x: cx, y: cy + r + 20, anchor: 'middle' } };
-      // Two stars sit side by side; more go round the ellipse from the top. Big constellations
-      // get a wider ellipse, turned half a step so no two labels meet at the bottom.
-      const big = n > 6;
-      const angle = (n === 2 ? Math.PI : -Math.PI / 2) + ((j + (big ? 0.5 : 0)) / n) * Math.PI * 2;
-      const cos = Math.cos(angle);
-      const sin = Math.sin(angle);
-      const x = cx + cos * (big ? 104 : 72);
-      const y = cy + sin * (big ? 132 : 120);
-      const side = big ? 0.12 : 0.3;
-      const label =
-        cos > side
-          ? { x: x + r + 8, y: y + 5, anchor: 'start' as const }
-          : cos < -side
-            ? { x: x - r - 8, y: y + 5, anchor: 'end' as const }
-            : { x, y: sin > 0 ? y + r + 20 : y - r - 9, anchor: 'middle' as const };
-      return { roadmap, x, y, r, label };
-    });
-    return { category, cx, cy, titleY: row * GALAXY_CELL.h + 30, stars };
-  });
-  const rows = Math.max(1, Math.ceil(present.length / columns));
-  return {
-    groups,
-    width: GALAXY_CELL.w * Math.min(columns, Math.max(1, present.length)),
-    height: rows * GALAXY_CELL.h,
-  };
-}
-
 // ── Version diff ─────────────────────────────
 export type NodeChange =
   | { kind: 'added'; node: RoadmapNode }
@@ -195,23 +112,29 @@ export function diffContent(before: RoadmapContent, after: RoadmapContent) {
   return { roadmap, nodes };
 }
 
-// ── Hours ─────────────────────────────
-export function totalHours(nodes: RoadmapNode[]): [number, number] {
-  return nodes.reduce<[number, number]>(
-    (s, n) => [s[0] + n.estimateHours[0], s[1] + n.estimateHours[1]],
-    [0, 0],
-  );
-}
-
 // ── Mutations ─────────────────────────────
+/** The list-style progress of a path from the member's own progress on it. */
+const summaryProgress = (
+  r: RoadmapView,
+  mine: NonNullable<RoadmapView['myProgress']>,
+): RoadmapView['progress'] => {
+  const next = nextStep(r.content.nodes, new Set(mine.done));
+  return {
+    done: mine.done.length,
+    total: r.nodeCount,
+    hoursPerWeek: mine.hoursPerWeek,
+    next: next
+      ? { id: next.id, title: next.title, estimateHours: [next.estimateHours[0], next.estimateHours[1]] }
+      : null,
+  };
+};
+
 export function useRoadmapProgress(roadmap: Pick<RoadmapView, 'id' | 'slug'>) {
   const qc = useQueryClient();
   const { t } = useTranslation();
   const patch = (myProgress: RoadmapView['myProgress']) => {
     qc.setQueryData<RoadmapView>(['roadmap', roadmap.slug], (old) =>
-      old && myProgress
-        ? { ...old, myProgress, progress: { done: myProgress.done.length, total: old.nodeCount } }
-        : old,
+      old && myProgress ? { ...old, myProgress, progress: summaryProgress(old, myProgress) } : old,
     );
     void qc.invalidateQueries({ queryKey: ['roadmaps'] });
   };
@@ -233,10 +156,11 @@ export function useRoadmapProgress(roadmap: Pick<RoadmapView, 'id' | 'slug'>) {
         const set = new Set(mine.done);
         if (done) set.add(nodeId);
         else set.delete(nodeId);
+        const myProgress = { ...mine, done: [...set] };
         qc.setQueryData<RoadmapView>(['roadmap', roadmap.slug], {
           ...before,
-          myProgress: { ...mine, done: [...set] },
-          progress: { done: set.size, total: before.nodeCount },
+          myProgress,
+          progress: summaryProgress(before, myProgress),
         });
       }
       return { before };
@@ -249,13 +173,11 @@ export function useRoadmapProgress(roadmap: Pick<RoadmapView, 'id' | 'slug'>) {
       onError(e);
     },
   });
+  /** Follows the path at a pace (hours a week; 0 follows without a goal or nudges). */
   const goal = useMutation({
-    mutationFn: (nodesPerWeek: number) =>
-      api.put<RoadmapView['myProgress']>(`/roadmaps/${roadmap.id}/goal`, { nodesPerWeek }),
-    onSuccess: (p) => {
-      patch(p);
-      toast.success(t('roadmaps.goalSaved'));
-    },
+    mutationFn: (hoursPerWeek: number) =>
+      api.put<RoadmapView['myProgress']>(`/roadmaps/${roadmap.id}/goal`, { hoursPerWeek }),
+    onSuccess: (p) => patch(p),
     onError,
   });
   const unfollow = useMutation({
@@ -271,23 +193,30 @@ export function useRoadmapProgress(roadmap: Pick<RoadmapView, 'id' | 'slug'>) {
   return { toggle, goal, unfollow };
 }
 
-/** List view is the default with reduced motion or on small screens; remembered per viewer. */
-export function defaultRoadmapView(): 'graph' | 'list' {
+/** The journey is the default view; the map is for those who ask for it, remembered per viewer. */
+export type PathView = 'journey' | 'map';
+export function defaultPathView(): PathView {
   try {
-    const saved = localStorage.getItem('roadmaps.view');
-    if (saved === 'graph' || saved === 'list') return saved;
+    return localStorage.getItem('roadmaps.view') === 'map' ? 'map' : 'journey';
   } catch {
-    // Storage blocked: fall through to the default.
+    return 'journey';
   }
-  if (typeof matchMedia !== 'function') return 'list';
-  return matchMedia('(prefers-reduced-motion: reduce)').matches || matchMedia('(max-width: 640px)').matches
-    ? 'list'
-    : 'graph';
 }
-export function rememberRoadmapView(v: 'graph' | 'list') {
+export function rememberPathView(v: PathView) {
   try {
     localStorage.setItem('roadmaps.view', v);
   } catch {
     // Not important enough to surface.
   }
+}
+
+/** "about 3–5 h", "about 2 weeks", "about 1–2 weeks": an estimate at a member's pace. */
+export function useTimeText() {
+  const { t } = useTranslation();
+  return (estimate: readonly [number, number] | number[], hoursPerWeek: number) => {
+    const { unit, min, max } = timeAtPace(estimate, hoursPerWeek);
+    return min === max
+      ? t(`roadmaps.time.${unit}`, { count: min })
+      : t(`roadmaps.time.${unit}Range`, { min, max });
+  };
 }

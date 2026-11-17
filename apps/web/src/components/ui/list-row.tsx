@@ -17,6 +17,8 @@ export function ListRow({
   leading,
   trailing,
   to,
+  href,
+  newTabLabel,
   onClick,
   chevron,
   selected,
@@ -29,6 +31,10 @@ export function ListRow({
   trailing?: ReactNode;
   /** The row opens this screen. */
   to?: string;
+  /** The row opens this page of another site, in a new tab (the row says so to screen readers). */
+  href?: string;
+  /** Read after an outside link's title ("opens in a new tab"). */
+  newTabLabel?: string;
   /** The row does this (when it is not a link). */
   onClick?: () => void;
   /** A chevron after the content; default on for link rows without a trailing action. */
@@ -37,7 +43,7 @@ export function ListRow({
   selected?: boolean;
   className?: string;
 }) {
-  const showChevron = chevron ?? (!!to && !trailing);
+  const showChevron = chevron ?? (!!(to || href) && !trailing);
   const body = (
     <>
       {leading && <span className="flex flex-none items-center text-fg-2 [&>svg]:size-5">{leading}</span>}
@@ -53,7 +59,8 @@ export function ListRow({
     <li
       className={cn(
         'relative flex min-h-[var(--row-min-h)] items-center gap-3 px-4 py-[var(--row-py)]',
-        (to || onClick) && 'transition-colors duration-[var(--dur-press)] hover:bg-hover active:bg-press',
+        (to || href || onClick) &&
+          'transition-colors duration-[var(--dur-press)] hover:bg-hover active:bg-press',
         selected && 'bg-brand-surface',
         className,
       )}
@@ -63,6 +70,11 @@ export function ListRow({
         <IntentLink to={to} className={hit}>
           {body}
         </IntentLink>
+      ) : href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className={hit}>
+          {body}
+          {newTabLabel && <span className="sr-only"> ({newTabLabel})</span>}
+        </a>
       ) : onClick ? (
         <button type="button" onClick={onClick} className={hit}>
           {body}
