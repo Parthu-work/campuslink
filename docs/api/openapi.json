@@ -14299,7 +14299,7 @@
         "tags": [
           "Roadmaps"
         ],
-        "summary": "Follow a roadmap with a weekly goal (0 = no goal, no nudges)",
+        "summary": "Follow a roadmap at a pace of hours a week (0 = no goal, no nudges)",
         "description": "Requires permission `roadmaps:progress` (Track personal roadmap progress). Host scope: college.",
         "operationId": "roadmaps_put_roadmaps_id_goal",
         "security": [
@@ -14326,14 +14326,14 @@
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "type": "object",
                 "properties": {
-                  "nodesPerWeek": {
+                  "hoursPerWeek": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 10
+                    "maximum": 40
                   }
                 },
                 "required": [
-                  "nodesPerWeek"
+                  "hoursPerWeek"
                 ],
                 "additionalProperties": false
               }

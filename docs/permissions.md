@@ -359,7 +359,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/roadmaps/:id/versions` | `roadmaps:read` | college | — | Version history (open versions only for editors and reviewers) |
 | `GET /api/v1/roadmaps/:id/versions/:version` | `roadmaps:read` | college | — | One version’s content and its publish checklist |
 | `PUT /api/v1/roadmaps/:id/progress` | `roadmaps:progress` | college | interact | Mark a step done or not done |
-| `PUT /api/v1/roadmaps/:id/goal` | `roadmaps:progress` | college | — | Follow a roadmap with a weekly goal (0 = no goal, no nudges) |
+| `PUT /api/v1/roadmaps/:id/goal` | `roadmaps:progress` | college | — | Follow a roadmap at a pace of hours a week (0 = no goal, no nudges) |
 | `DELETE /api/v1/roadmaps/:id/progress` | `roadmaps:progress` | college | — | Stop following a roadmap and forget my progress on it |
 | `GET /api/v1/roadmaps/:id/comments` | `roadmaps:write` | college | — | Per-step comments for authors and reviewers |
 | `POST /api/v1/roadmaps/:id/comments` | `roadmaps:write` | college | interact | Comment on one step of the current version |
