@@ -14,8 +14,10 @@ import { App } from './app/App';
 import { installPreloadErrorHandler } from './lib/chunk-reload';
 import { startBoot } from './lib/boot';
 import { warmLanding } from './lib/preload';
+import { watchFirstPaint } from './lib/first-paint';
 
 installPreloadErrorHandler();
+watchFirstPaint();
 const boot = startBoot();
 void boot.college.then((college) => warmLanding(college.kind, boot.session)).catch(() => undefined);
 

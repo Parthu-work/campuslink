@@ -1039,6 +1039,14 @@ export const adminGrowth = () =>
     queryFn: ({ signal }) => api.get<GrowthSettingsView>('/admin/growth', signal),
   });
 
+/** The college's published outcomes for its landing page (prompt 3, U4); null while unpublished. */
+export const publicOutcomes = () =>
+  queryOptions({
+    queryKey: ['public-outcomes'],
+    queryFn: ({ signal }) => api.get<CollegeOutcomesView | null>('/public/outcomes', signal),
+    staleTime: 5 * 60_000,
+  });
+
 export const adminOutcomesPreview = () =>
   queryOptions({
     queryKey: ['admin-growth', 'outcomes-preview'],

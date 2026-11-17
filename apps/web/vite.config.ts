@@ -32,25 +32,38 @@ const apiProxy = {
   },
 };
 
-/** Preloads the UI face's Latin file, the one font every first screen needs (ADR 0008). */
-const preloadUiFont = (): Plugin => ({
-  name: 'preload-ui-font',
+/**
+ * The app's files start from public/boot.js (prompt 3, U4): the build moves the entry, its module
+ * preloads and the UI face's Latin file (the one font every first screen needs, ADR 0008) from
+ * index.html onto boot.js's tag, and boot.js loads them at once, except under the landing's first
+ * paint, where they wait for that paint so the stylesheet (and so the headline, which uses only the
+ * display face) does not share a slow connection with them.
+ */
+const bootLoadsApp = (): Plugin => ({
+  name: 'boot-loads-app',
   apply: 'build',
   transformIndexHtml: {
     order: 'post',
-    handler: (_html, ctx) => {
-      const file = Object.keys(ctx.bundle ?? {}).find((f) =>
+    handler: (html, ctx) => {
+      const font = Object.keys(ctx.bundle ?? {}).find((f) =>
         /\/geist-latin-wght-normal-[\w-]+\.woff2$/.test(f),
       );
-      return file
-        ? [
-            {
-              tag: 'link',
-              attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: `/${file}`, crossorigin: '' },
-              injectTo: 'head',
-            },
-          ]
-        : [];
+      if (!font) throw new Error('boot-loads-app: no Geist Latin file in the bundle');
+      const entry = /<script type="module" crossorigin src="([^"]+)"><\/script>\s*/.exec(html);
+      if (!entry?.[1]) throw new Error('boot-loads-app: no entry script in index.html');
+      const preloads: string[] = [];
+      const out = html
+        .replace(entry[0], '')
+        .replace(/<link rel="modulepreload" crossorigin href="([^"]+)">\s*/g, (_tag, href: string) => {
+          preloads.push(href);
+          return '';
+        })
+        .replace(
+          '<script src="/boot.js"></script>',
+          `<script src="/boot.js" data-entry="${entry[1]}" data-preload="${preloads.join(' ')}" data-font="/${font}"></script>`,
+        );
+      if (!out.includes('data-entry=')) throw new Error('boot-loads-app: no boot.js tag in index.html');
+      return out;
     },
   },
 });
@@ -62,7 +75,7 @@ export default defineConfig({
     pureShared(),
     // Android app links (prompt 2, G9): /.well-known/assetlinks.json when the build is told the app.
     assetLinks(),
-    preloadUiFont(),
+    bootLoadsApp(),
     lucideIcons(),
     react(),
     tailwindcss(),

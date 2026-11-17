@@ -13,6 +13,30 @@
     <title>%APP_NAME%</title>
   </head>
   <body>
+    <!--
+      The landing's first paint (prompt 3, U4): its frame and English headline, drawn before any
+      script where boot.js turns it on (index.css). The app renders into this frame and keeps the
+      headline (features/landing/frame.tsx; frame.test.tsx keeps the two identical). It comes
+      before #root, which fills the screen, so nothing can push the headline below the fold.
+    -->
+    <div id="fp" class="landing">
+      <div class="landing-backdrop" data-slot="backdrop"></div>
+      <div class="landing-header" data-slot="header"></div>
+      <main id="main" class="landing-main">
+        <section class="landing-hero" aria-labelledby="landing-h1">
+          <div class="landing-copy">
+            <h1 id="landing-h1" class="landing-h1">
+              Get guidance, referrals and placement help <em>from your college’s seniors.</em>
+            </h1>
+            <div class="landing-copy-rest" data-slot="copy"></div>
+          </div>
+          <div class="landing-figure" data-slot="figure"></div>
+        </section>
+        <div class="landing-below" data-slot="below"></div>
+      </main>
+      <div class="landing-footer" data-slot="footer"></div>
+    </div>
+    <!-- /fp -->
     <div id="root">
       <!-- The launch mark, painted before any script runs; the app's Splash (app/guards.tsx) keeps it. -->
       <div class="launch"><img src="/icons/icon.svg" alt="" width="56" height="56" /></div>

@@ -111,6 +111,17 @@ export function publicPageRoutes(s: PublicPagesService): AnyRouteSpec[] {
       access: settings,
       handler: async () => ({ data: (await s.outcomes(true))?.view ?? null }),
     },
+    {
+      // The landing page's "<college> in numbers" (prompt 3, U4): the published page's aggregates
+      // (small counts already suppressed), or null while the college does not publish it.
+      method: 'get',
+      path: '/public/outcomes',
+      tag,
+      summary: "The college's published outcomes as figures, for its landing page (null while unpublished)",
+      access: PUBLIC,
+      limiter: 'search',
+      handler: async () => ({ data: (await s.outcomes())?.view ?? null }),
+    },
   ];
 }
 

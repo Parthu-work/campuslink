@@ -233,20 +233,55 @@ CI's unit tests failed on the U3a push: the weekly goal's body and summary chang
 | End-to-end (local)                                 | The roadmaps spec, 4 of 4 on phone and desktop: start, Mark done, Undo, pace, the map with axe; draft, submit, review and publish, then an edit approved from the side-by-side diff with axe |
 | Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                     |
 
+## U4a · First run: the landing page
+
+Design: `docs/design/v2/u4.md`. U4 ships in two parts: U4a, the landing and its speed target (this section), then U4b, the three-step sign-up and the first-run checklist on Home.
+
+**Shipped.**
+
+- **Above the fold**: the college's crest and name once (header; on a phone the name may take three lines beside the language names), the outcome headline "Get guidance, referrals and placement help from your college's seniors.", a sub-line naming the college, one primary button and "Already a member? Sign in" as a link. The button says "Join with your mobile number" where the college can send codes and "Join with your college email" where it cannot (`tenant.phoneSignIn`), so it never promises what the next screen does not do.
+- **The product**: the demo student's Home in a phone frame (beside the headline on a wide screen; just below the first screen on a phone, with "See it with demo data ↓" at the foot of that screen), labelled "Demo data". Then three sections, each a heading, a sentence and a crop of the real screen: Find a senior (the first suggested senior), Prepare and register for drives (a drive), Follow a career path (progress and the first phase). All are screenshots of the seeded demo taken by `audit:landing-shots` (new), per theme and language: 24 webp files, 884 KB in the repository; a visitor downloads four (about 140 KB), lazily, and the service worker does not precache them.
+- **The college in numbers**: placement rate for the latest batch, mentoring hours and top recruiters, only while the college publishes its outcomes page (G8). A new public route, `GET /public/outcomes`, returns the published page's aggregates (small counts already suppressed) or `null`; API test in `growth.test.ts` (null while off, also for another college; no names).
+- **The privacy line** in the footer, and the language switcher top right, as before (F5).
+- e2e `landing.spec.ts` (new, phone and desktop): one headline and one main after the app takes over, the college's name once, one primary action and the Sign in link, the picture's file and its "Demo data" label, the three sections, the published numbers; the headline as the LCP element on the phone project and CLS under 0.05 on both; Telugu gets the app's own landing; a member's device skips the first paint; signing in marks the device. `core.spec` and `shell.spec` follow the new headline.
+
+**The speed target: the headline before any script.**
+
+1. `index.html` carries the landing's frame and English headline (`#fp`, before `#root`). `public/boot.js` turns it on before the first paint for `/` in English, outside the installed app, on a device that was not signed in last time (`cl:member`, a display hint set and cleared by the session store; it holds nothing secret and decides nothing).
+2. While the app starts, the frame shows instead of the launch mark; the landing renders into the frame's slots and keeps the headline the browser painted first (`lib/first-paint.ts`), and any other first screen (a redirect home, a college error) removes it. Another language, or leaving the page, gives the app's own landing. `frame.test.tsx` keeps `index.html` and the React frame identical.
+3. The app's files now start from `boot.js`: the build moves the entry script, its 22 module preloads and the UI font's preload from `index.html` onto `boot.js`'s tag (`vite.config.ts`, `bootLoadsApp`, replacing `preloadUiFont`). Everywhere else they start at once, as before; under the landing's first paint they start just after it, so the stylesheet, and so the headline, no longer shares a slow connection with about 190 KB of script and font (gzip). With the frame alone the headline was the LCP element but still measured 4.0 s (first paint 3.4 s); with the scripts moved, 2.0 s (2,007 ms, 7 ms over); with the font moved too, 1.8 s.
+
+| Page    | LCP before (F5) | LCP now              | First paint | LCP element          | CLS   |
+| ------- | --------------- | -------------------- | ----------- | -------------------- | ----- |
+| Landing | 4.2 s           | **1.8 s** (1,817 ms) | 1.4 s       | the headline (`h1`)  | 0.001 |
+| Sign-in | 4.8 s           | 5.0 s (5,047 ms)     | 1.4 s       | a line of text (`p`) | 0     |
+
+Measured with `LH_RUNS=landing,sign-in audit:lighthouse` (Lighthouse 12.8.2, mobile emulation, simulated throttling) on the owner's machine, the same one as F5. Unthrottled in the browser, the headline paints at 0.36–0.58 s at 360 and 412 px and stays the largest paint, with no layout shift.
+
+**Decisions.**
+
+- **The college's name is in the header, not the headline.** The headline is drawn before the app knows which college this is (one `index.html` serves every college), and the brief also asks for the name once.
+- **On a wide screen the product picture is the largest paint.** It sits beside the headline as the brief asks and is larger than it (129,000 px² against 54,500 px² at 1440 × 900), so it becomes the LCP element at about 0.8 s unthrottled. Shrinking it until the headline wins would leave a picture too small to show the product; the 2.0 s target is measured on a phone, where the headline is the LCP element (checked by `landing.spec.ts`).
+- **A display hint, not a session change.** `cl:member` only decides whether `index.html` paints the landing; the session is still checked with the server and the access token stays in memory (rule X10 untouched).
+
+**Not met: sign-in LCP ≤ 2.0 s (5.0 s).** Its largest paint is a line of the app's own text, so it waits for the app's code, the college and the language pack. The same approach (a first paint in `index.html`) does not fit a form that depends on the college's sign-in methods; this stays with U10 (the load path), as F5 recorded.
+
+**Gaps.** The pictures must be retaken (`audit:landing-shots`) when Home, Mentors, a drive or a path changes visibly; U4b (the checklist on Home), U5 (Home) and U6 (the mentors' card) will each need a new set.
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.
 
-| Item                         | Status                               | Where                                                                                                                                     |
-| ---------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| F1 G12 governance            | Done                                 | Prompt 4, P0: the owner accepted ADR 0014 on 11 Nov 2026; `NETWORK_ENABLED` stays as an off switch with its 404 tests                     |
-| F2 Pen-test notes            | Done                                 | Prompt 4, P0: `docs/security-review.md` › Master prompt 4                                                                                 |
-| F3 Dependency advisories     | Done                                 | Prompt 4, P0: `pnpm audit --prod` is clean (`write-excel-file` 4.1.1, `mongoose` 9.12.1, `fast-xml-parser` 5.12.0)                        |
-| F4 Touch targets             | Done here (re-measure due, below)    | This section                                                                                                                              |
-| F5 Landing and sign-in fonts | Fonts done; the 2.0 s target is open | This section                                                                                                                              |
-| F6 Bundle headroom           | 10.1 of 15 KB                        | U0.3 above; the rest comes with U2 (nav icons and the route split)                                                                        |
-| F7 Stale records             | Done                                 | Prompt 4, P0 (ADR, `progress.md`, `report-2.md`, README); `CLAUDE.md` › Git workflow now records the one time parallel sessions were used |
-| F8 Partly met items          | Recorded                             | The table at the end of this section                                                                                                      |
+| Item                         | Status                                                     | Where                                                                                                                                     |
+| ---------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| F1 G12 governance            | Done                                                       | Prompt 4, P0: the owner accepted ADR 0014 on 11 Nov 2026; `NETWORK_ENABLED` stays as an off switch with its 404 tests                     |
+| F2 Pen-test notes            | Done                                                       | Prompt 4, P0: `docs/security-review.md` › Master prompt 4                                                                                 |
+| F3 Dependency advisories     | Done                                                       | Prompt 4, P0: `pnpm audit --prod` is clean (`write-excel-file` 4.1.1, `mongoose` 9.12.1, `fast-xml-parser` 5.12.0)                        |
+| F4 Touch targets             | Done here (re-measure due, below)                          | This section                                                                                                                              |
+| F5 Landing and sign-in fonts | Fonts done; landing 1.8 s (U4a); sign-in 5.0 s, open (U10) | This section and U4a                                                                                                                      |
+| F6 Bundle headroom           | 10.1 of 15 KB                                              | U0.3 above; the rest comes with U2 (nav icons and the route split)                                                                        |
+| F7 Stale records             | Done                                                       | Prompt 4, P0 (ADR, `progress.md`, `report-2.md`, README); `CLAUDE.md` › Git workflow now records the one time parallel sessions were used |
+| F8 Partly met items          | Recorded                                                   | The table at the end of this section                                                                                                      |
 
 ### F4 · Touch targets
 
@@ -279,6 +314,8 @@ Measured with `audit:lighthouse` on the owner's machine (mobile emulation, simul
 | Sign-in | the same three                                                            | 477 → 472 KiB | 4.7 s      | 4.8 s     |
 
 **Not met: landing LCP ≤ 2.0 s.** The fonts were the regression (3.7 s in the first audit, 5.8 s after B12), and removing them takes 1.7 s off, but the page was never at 2.0 s. What is left is the path to the first screen: the headline is drawn by the app after five requests in a row (the page, the script files, the college and the language pack, the screen, then its display font), and the simulated connection charges each step. Sign-in did not change because its largest paint is a line of small text that never used those fonts. Rule X6 sets the same target for the whole prompt, so this is carried to U4 (the landing's headline) and U10 (font preloading and the load path); F5 stays open until landing measures 2.0 s.
+
+**Update (U4a):** landing measures 1.8 s with the headline as the LCP element (U4a, above). Sign-in is still 5.0 s and stays with U10.
 
 ### F8 · Partly met items (each waits on the owner)
 

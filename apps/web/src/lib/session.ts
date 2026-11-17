@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { prefs } from './storage';
 
 /**
  * The access token lives in memory only (never localStorage). On reload we call /auth/refresh,
@@ -27,3 +28,14 @@ export const useSession = create<SessionState>((set) => ({
   signedOut: (byChoice = false) => set({ accessToken: null, status: 'signed-out', byChoice }),
   offline: () => set({ accessToken: null, status: 'offline', byChoice: false }),
 }));
+
+/**
+ * Whether this device was signed in last time (prompt 3, U4): public/boot.js reads it to skip the
+ * landing's first paint for members, whose "/" goes straight to their app. A display hint only:
+ * it holds nothing secret and the session is still checked with the server.
+ */
+useSession.subscribe((s, prev) => {
+  if (s.status === prev.status) return;
+  if (s.status === 'signed-in') prefs.set('member', '1');
+  else if (s.status === 'signed-out') prefs.remove('member');
+});

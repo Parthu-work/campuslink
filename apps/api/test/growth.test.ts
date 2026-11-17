@@ -177,6 +177,9 @@ describe('public pages (prompt 2, G8, E4)', () => {
 describe('the college outcomes page (prompt 2, G8)', () => {
   it('is a 404 until the college publishes it; then aggregates only', async () => {
     expect((await page(T.host, '/p/outcomes')).status).toBe(404);
+    // The landing's figures (prompt 3, U4): nothing while the page is off, for anyone.
+    const figures = (host: string) => page(host, '/api/v1/public/outcomes');
+    expect((await figures(T.host)).body.data).toBeNull();
     expect((await as(tpo).put('/admin/growth/outcomes-page').send({ enabled: true })).status).toBe(403);
     const r = await as(admin).put('/admin/growth/outcomes-page').send({ enabled: true });
     expect(r.status, JSON.stringify(r.body)).toBe(200);
@@ -188,6 +191,12 @@ describe('the college outcomes page (prompt 2, G8)', () => {
     expect(html.text).not.toContain('Divya');
     expect((await page(T.host, '/p/outcomes/og.png')).headers['content-type']).toBe('image/png');
     expect((await page(U.host, '/p/outcomes')).status).toBe(404);
+    const f = await figures(T.host);
+    expect(f.status).toBe(200);
+    expect(f.body.data.college).toBe(`${T.slug.toUpperCase()} College of Engineering`);
+    expect(Array.isArray(f.body.data.years)).toBe(true);
+    expect(JSON.stringify(f.body)).not.toContain('Divya');
+    expect((await figures(U.host)).body.data).toBeNull();
   });
 });
 

@@ -7,7 +7,7 @@ test.describe('landing', () => {
     for (const scheme of ['dark', 'light'] as const) {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto('/');
-      await expect(page.getByRole('heading', { level: 1 })).toContainText('your classrooms');
+      await expect(page.getByRole('heading', { level: 1 })).toContainText('from your college’s seniors.');
       await expect(page.getByText('Deccan Plateau Institute of Technology').first()).toBeVisible();
       await expectNoA11yViolations(page);
     }
@@ -37,7 +37,7 @@ test.describe('landing', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'हिन्दी' }).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'hi');
-    await expect(page.getByText('आपकी ही कक्षाओं में।')).toBeVisible();
+    await expect(page.getByText('मार्गदर्शन, रेफ़रल और प्लेसमेंट में मदद पाएँ।')).toBeVisible();
     await expectNoA11yViolations(page);
     await page.getByRole('button', { name: 'English' }).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');

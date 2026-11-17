@@ -444,6 +444,108 @@
   place-items: center;
 }
 
+/* The landing (prompt 3, U4). index.html draws this frame and the English headline before any
+   script (#fp, turned on by boot.js) and shows it while #root holds only the launch mark; the app
+   renders into the same frame (features/landing/frame.tsx), so the first headline painted is the
+   one that stays. On a phone the first screen is the headline and the button; the product picture
+   starts below it, so the headline stays the largest paint. */
+#fp {
+  display: none;
+}
+@supports selector(:has(*)) {
+  html[data-fp] body:has(#root .launch) #fp {
+    display: grid;
+  }
+  html[data-fp] body:has(#fp) #root .launch {
+    display: none;
+  }
+}
+html[data-fp-claimed] #fp {
+  display: grid;
+}
+/* #root fills the screen (height: 100%); while the frame is the page, it holds only fixed layers. */
+html[data-fp] #root {
+  height: auto;
+}
+.landing {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100dvh;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  overflow: clip;
+}
+.landing-backdrop {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 100svh;
+}
+.landing-header,
+.landing-hero,
+.landing-below,
+.landing-footer {
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
+}
+.landing-header {
+  display: flex;
+  align-items: center;
+  height: calc(4.5rem + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.landing-hero {
+  display: grid;
+  gap: 2.5rem;
+  padding-bottom: 3rem;
+}
+/* The headline sits where it was painted: everything that arrives with the app goes below it or
+   beside it, never above or around it (no layout shift). */
+.landing-copy {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-content: start;
+  gap: 1.25rem;
+  min-height: calc(100svh - 4.5rem - env(safe-area-inset-top, 0px));
+  padding-block: clamp(2rem, 9svh, 5rem) 1.5rem;
+}
+.landing-copy-rest {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+.landing-h1 {
+  max-width: 22ch;
+  font-size: var(--text-display);
+  line-height: var(--lh-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.landing-h1 em {
+  font-style: normal;
+  background: linear-gradient(to right, var(--brand-ink), var(--accent-ink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@media (min-width: 1024px) {
+  .landing-hero {
+    grid-template-columns: minmax(0, 1fr) 16rem;
+    align-items: start;
+    column-gap: 4rem;
+    padding-block: 2rem 5rem;
+  }
+  .landing-copy {
+    min-height: 0;
+    padding-top: 4rem;
+  }
+}
+
 /* A bar that fills from empty to its inline scaleX on first paint (XP and similar meters). */
 @keyframes fill-in {
   from {

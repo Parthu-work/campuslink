@@ -16,6 +16,7 @@
     "audit:journeys": "playwright test -c e2e/audit/playwright.config.ts journeys",
     "audit:extras": "playwright test -c e2e/audit/playwright.config.ts extras",
     "audit:lighthouse": "playwright test -c e2e/audit/playwright.config.ts lighthouse",
+    "audit:landing-shots": "playwright test -c e2e/audit/playwright.config.ts landing-shots",
     "audit:tasks": "playwright test -c e2e/audit/playwright.config.ts tasks"
   },
   "dependencies": {

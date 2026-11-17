@@ -25825,6 +25825,25 @@
         "x-permission": "tenant:settings"
       }
     },
+    "/api/v1/public/outcomes": {
+      "get": {
+        "tags": [
+          "Public pages"
+        ],
+        "summary": "The college's published outcomes as figures, for its landing page (null while unpublished)",
+        "description": "Public. Host scope: college. Rate limit: search.",
+        "operationId": "public-pages_get_public_outcomes",
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "public"
+      }
+    },
     "/api/v1/me/batchmates": {
       "get": {
         "tags": [

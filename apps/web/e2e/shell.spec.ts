@@ -145,9 +145,12 @@ test.describe('desktop sidebar (prompt 3, U2)', () => {
   }
 });
 
+// Prompt 3, U4: the landing's pictures are screenshots of the seeded demo, labelled "Demo data";
+// no names, faces or numbers appear as text unless the college publishes its outcomes page.
 test('the landing page shows no people or invented social proof (D3)', async ({ page }) => {
   await page.goto(`${BASE}/`);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByText('Demo data', { exact: true })).toBeVisible();
   for (const name of ['Rahul Varma', 'Sneha Reddy', 'Meghana Sharma']) {
     await expect(page.getByText(name)).toHaveCount(0);
   }

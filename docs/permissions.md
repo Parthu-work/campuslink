@@ -558,6 +558,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `PUT /api/v1/admin/growth/member-invites` | `onboarding:manage` | college | — | Let members invite their batch on WhatsApp (the college confirms its list opted in) |
 | `PUT /api/v1/admin/growth/outcomes-page` | `tenant:settings` | college | — | Publish (or take down) the college outcomes page |
 | `GET /api/v1/admin/growth/outcomes-preview` | `tenant:settings` | college | — | What the outcomes page shows (also while it is off) |
+| `GET /api/v1/public/outcomes` | public | college | search | The college's published outcomes as figures, for its landing page (null while unpublished) |
 | `GET /api/v1/me/batchmates` | `invites:batchmates` | college | — | How many of my batch are on the college's list but not here yet |
 | `POST /api/v1/me/batchmates/invite` | `invites:batchmates` | college | posting | Invite them on WhatsApp (within my weekly limit and the college's allowance) |
 | `GET /api/v1/captain/class` | `captains:class` | college | — | My class joining CampusLink (Campus Captains; counts only) |

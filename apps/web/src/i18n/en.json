@@ -142,20 +142,37 @@
   },
   "landing": {
     "eyebrow": "{{app}} · alumni guidance network",
-    "h1a": "Guidance from people who sat in ",
-    "h1b": "your classrooms.",
-    "sub": "Verified alumni of {{college}} mentor you, refer you, and show you the exact path from where you are to where they got.",
     "join": "Join with your college email",
     "signIn": "Sign in",
     "foot": "Private to {{college}}. Only verified students, alumni and faculty can see anything here.",
-    "points": {
-      "mentors": "Mentors from your college",
-      "mentorsBody": "Book a call, a mock interview or a resume review with alumni who chose to help.",
-      "roadmaps": "Roadmaps with sources",
-      "roadmapsBody": "Step-by-step career paths your college reviews, every step cited.",
-      "jobs": "Jobs and referrals",
-      "jobsBody": "Openings from alumni and public job boards, and alumni who can refer you."
-    }
+    "h1a": "Get guidance, referrals and placement help ",
+    "h1b": "from your college’s seniors.",
+    "sub": "Verified alumni and senior students of {{college}} mentor you, refer you and help you prepare for drives.",
+    "joinPhone": "Join with your mobile number",
+    "haveAccount": "Already a member?",
+    "seeIt": "See it with demo data",
+    "demoData": "Demo data",
+    "shots": {
+      "home": "The Home screen of a demo student: today’s sessions, drives closing soon and next steps",
+      "mentors": "The list of seniors you can ask, with their company and what they help with",
+      "drives": "A placement drive: what it asks for, its dates and the Register button",
+      "paths": "A career path: its phases, the next step and progress so far"
+    },
+    "sections": {
+      "mentors": "Find a senior",
+      "mentorsBody": "Alumni and senior students of your college who chose to help. Ask a question, book a call or a mock interview.",
+      "drives": "Prepare and register for drives",
+      "drivesBody": "Every drive your college runs, what each one asks for, and the practice that gets you ready.",
+      "paths": "Follow a career path",
+      "pathsBody": "Step-by-step paths your college reviews, with the next step always clear."
+    },
+    "numbers": "{{college}} in numbers",
+    "placed": "placed, batch of {{year}}",
+    "mentoringHours_one": "hour of mentoring",
+    "mentoringHours_other": "hours of mentoring",
+    "recruiters": "Top recruiters:",
+    "numbersNote": "From the college’s published outcomes page; small numbers are hidden.",
+    "numbersLink": "See the outcomes page"
   },
   "auth": {
     "signInTitle": "Welcome back",
