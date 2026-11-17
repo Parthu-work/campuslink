@@ -139,18 +139,6 @@ export function PathHeader({
           r.content.outcomes[0] ? t('roadmaps.leadsTo', { outcome: r.content.outcomes[0] }) : undefined
         }
         primary={primary}
-        actions={
-          live ? (
-            <ContentMenu
-              targetType="roadmap"
-              targetId={r.id}
-              authorId={r.author?.userId ?? ''}
-              authorName={r.author?.name ?? ''}
-              isMine={r.author?.userId === me?.id}
-              blockable={!!r.author && r.author.userId !== me?.id}
-            />
-          ) : undefined
-        }
         overflow={[
           {
             label: r.canReview ? t('roadmaps.reviewChanges') : t('roadmaps.history'),
@@ -206,6 +194,19 @@ export function PathHeader({
               </ListSection>
             )}
             <p className="text-caption text-fg-3">{t('roadmaps.disclaimer')}</p>
+            {live && (
+              <div className="flex items-center justify-between gap-3 border-t border-line pt-3">
+                <p className="text-callout text-fg-2">{t('roadmaps.reportHint')}</p>
+                <ContentMenu
+                  targetType="roadmap"
+                  targetId={r.id}
+                  authorId={r.author?.userId ?? ''}
+                  authorName={r.author?.name ?? ''}
+                  isMine={r.author?.userId === me?.id}
+                  blockable={!!r.author && r.author.userId !== me?.id}
+                />
+              </div>
+            )}
           </div>
         }
       />

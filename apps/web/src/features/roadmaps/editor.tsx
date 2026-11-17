@@ -355,8 +355,8 @@ export function RoadmapEditorPage() {
 
 /**
  * The steps as an outline (prompt 3, U3): in the order the author set, each with the phase it
- * falls in and a warning when it has no source. Drag a row, or use its arrows, to reorder; select
- * it to go to its editor. The phases themselves come from the prerequisites, so order matters only
+ * falls in and a warning when it has no source. Drag a row to reorder (each step's editor has
+ * Move up and Move down for the keyboard); select it to go to its editor. The phases themselves come from the prerequisites, so order matters only
  * between steps of the same depth.
  */
 function Outline({
@@ -389,30 +389,6 @@ function Outline({
               <>
                 {phaseOf.get(n.id)}
                 {unsourced && <span className="text-warning-ink"> · {t('roadmaps.editor.noSource')}</span>}
-              </>
-            }
-            trailing={
-              <>
-                <Button
-                  type="button"
-                  variant="tertiary"
-                  size="icon"
-                  aria-label={t('roadmaps.editor.moveUpN', { n: i + 1 })}
-                  disabled={i === 0}
-                  onClick={() => onReorder(i, i - 1)}
-                >
-                  <ArrowUp aria-hidden />
-                </Button>
-                <Button
-                  type="button"
-                  variant="tertiary"
-                  size="icon"
-                  aria-label={t('roadmaps.editor.moveDownN', { n: i + 1 })}
-                  disabled={i === nodes.length - 1}
-                  onClick={() => onReorder(i, i + 1)}
-                >
-                  <ArrowDown aria-hidden />
-                </Button>
               </>
             }
             selected={dragging === i}

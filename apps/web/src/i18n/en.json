@@ -2327,8 +2327,6 @@
       "outline": "Outline",
       "untitled": "Untitled step",
       "noSource": "no source yet",
-      "moveUpN": "Move step {{n}} up",
-      "moveDownN": "Move step {{n}} down",
       "preview": "What students will see",
       "previewHint": "The journey as students will see it, updated as you edit. Select a step to edit it."
     },
@@ -2395,7 +2393,7 @@
     "noPace": "No weekly goal",
     "changePace": "Change",
     "setPace": "Set your pace",
-    "onTrackHours": "On track: {{done}} of {{goal}} h this week",
+    "onTrackHours": "On track this week",
     "behindHours": "This week: {{done}} of {{goal}} h",
     "phase": {
       "foundations": "Foundations",
@@ -2415,7 +2413,8 @@
       "weekRange": "about {{min}}–{{max}} weeks"
     },
     "mapKey": "Key",
-    "mapKeys": "Drag or scroll to move around. Pinch, Ctrl and the mouse wheel, or the + and − keys zoom; 0 fits the map to the screen."
+    "mapKeys": "Drag or scroll to move around. Pinch, Ctrl and the mouse wheel, or the + and − keys zoom; 0 fits the map to the screen.",
+    "reportHint": "Something wrong or unsafe in this path?"
   },
   "progress": {
     "badge": {

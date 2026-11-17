@@ -59,7 +59,7 @@ test.describe('roadmaps', () => {
     await page.getByLabel('Hours a week').selectOption('6');
     await expect(page.getByText('Your pace: 6 h a week')).toBeVisible();
     await expect(
-      page.getByRole('status').filter({ hasText: /(On track: |This week: )\d+ of 6 h/ }),
+      page.getByRole('status').filter({ hasText: /^(On track this week|This week: \d+ of 6 h)$/ }),
     ).toBeVisible();
     // The map is one tap away.
     await page.getByRole('button', { name: 'Map', exact: true }).click();

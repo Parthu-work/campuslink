@@ -24,7 +24,7 @@ const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.roun
 /**
  * The path as a map of its steps and how they connect (prompt 3, U3): for those who want the whole
  * graph (the journey is the default view), loaded only when chosen. It opens fitted to the screen
- * with the next step in the middle; step titles wrap instead of being cut; it pans by dragging or
+ * (never below three quarters of life size, so titles stay readable) with the next step in the middle; step titles wrap instead of being cut; it pans by dragging or
  * scrolling and zooms by pinching, Ctrl + wheel, the + and − keys or the buttons. A small key
  * replaces the old legend paragraph.
  */
@@ -40,7 +40,7 @@ export function GraphView({ roadmap, onOpen }: { roadmap: RoadmapView; onOpen: (
   const { ref: frame, width: frameWidth } = useWidth<HTMLDivElement>(0);
   const scroller = useRef<HTMLDivElement>(null);
   // Fitted to the frame's width on open (never larger than life); null until measured.
-  const fit = frameWidth > 0 ? clampZoom(Math.min(1, frameWidth / w)) : null;
+  const fit = frameWidth > 0 ? clampZoom(Math.min(1, Math.max(0.75, frameWidth / w))) : null;
   const [zoom, setZoom] = useState<number | null>(null);
   const z = zoom ?? fit ?? 1;
 
