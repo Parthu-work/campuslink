@@ -27,13 +27,13 @@ import { Field, Input, PasswordInput } from '../../components/ui/field';
 import { Chip, EmptyState } from '../../components/ui/misc';
 import { ProgressBar } from '../../components/ui/progress';
 import { api } from '../../lib/api';
-import { useSession } from '../../lib/session';
 import { useTenant } from '../../lib/tenant-context';
 import { applyApiError } from '../../lib/errors';
 import { toE164 } from '../../lib/phone';
 import { WhatHappensNext } from '../guardian/what-next';
 import { BirthMonthField, ConsentFields, PhoneCodeStep, PhoneField } from './phone-parts';
 import { MfaStep } from './sign-in';
+import { startSession } from '../../lib/start-session';
 
 const schema = z
   .object({
@@ -166,7 +166,6 @@ export function SignUpPage() {
   const tenant = useTenant();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const setToken = useSession((s) => s.setToken);
   const [step, setStep] = useState<1 | 2>(1);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [code, setCode] = useState<{ phone: string; sent: CodeSent } | null>(null);
@@ -195,8 +194,7 @@ export function SignUpPage() {
   const locale = toLocale(i18n.language);
 
   const finish = async (accessToken: string) => {
-    setToken(accessToken);
-    await qc.invalidateQueries({ queryKey: ['me'] });
+    await startSession(qc, accessToken);
     navigate('/home', { replace: true });
   };
   const sendCode = (phone: string, channel?: OtpChannel) =>

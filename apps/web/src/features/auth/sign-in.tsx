@@ -19,13 +19,13 @@ import { Button } from '../../components/ui/button';
 import { Field, Input, PasswordInput } from '../../components/ui/field';
 import { OtpInput } from '../../components/ui/otp';
 import { api, ApiError } from '../../lib/api';
-import { useSession } from '../../lib/session';
 import { useTenant } from '../../lib/tenant-context';
 import { applyApiError } from '../../lib/errors';
 import { Segmented } from '../../components/ui/tab-nav';
 import { toE164 } from '../../lib/phone';
 import { PhoneCodeStep, PhoneField } from './phone-parts';
 import { LazySsoButtons } from '../reach/lazy';
+import { startSession } from '../../lib/start-session';
 
 const schema = z.object({ email: emailSchema, password: z.string().min(1, 'Enter your password') });
 type Form = z.infer<typeof schema>;
@@ -36,7 +36,6 @@ export function SignInPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const qc = useQueryClient();
-  const setToken = useSession((s) => s.setToken);
   // After single sign-on (prompt 2, G9), an admin's two-factor step arrives as #mfa=<ticket>.
   const [ticket, setTicket] = useState<string | null>(() => {
     const t = /(?:^#|&)mfa=([^&]+)/.exec(window.location.hash)?.[1] ?? null;
@@ -58,8 +57,8 @@ export function SignInPage() {
   const { errors, isSubmitting } = form.formState;
 
   const finish = async (accessToken: string) => {
-    setToken(accessToken);
-    await qc.invalidateQueries({ queryKey: ['me'] });
+    // The member's own profile first (prompt 3, U5 fix): /start routes by it.
+    await startSession(qc, accessToken);
     // PublicOnly usually redirects as soon as the token lands; only navigate if we are still here,
     // so a late redirect can never undo the member's next tap.
     if (window.location.pathname !== '/sign-in') return;

@@ -1,4 +1,5 @@
 import { matchRoutes, type Params, type RouteObject } from 'react-router';
+import { quietly } from './chunk-reload';
 
 /**
  * Warms a screen's code before the member asks for it: on hover, focus or touch of a link, and for
@@ -46,7 +47,7 @@ export function preloadPath(to: string, { data = true } = {}) {
     warmed.add(pathname);
     for (const m of matches) {
       const preload = (m.route.handle as PreloadHandle | undefined)?.preload;
-      if (preload) void preload().catch(() => warmed.delete(pathname));
+      if (preload) void quietly(preload).catch(() => warmed.delete(pathname));
     }
   }
   const key = `${pathname}${url.search}`;

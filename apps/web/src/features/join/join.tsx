@@ -25,11 +25,11 @@ import { Illustration } from '../../components/ui/illustration';
 import { Switch } from '../../components/ui/switch';
 import { TagInput } from '../../components/ui/tag-input';
 import { api, ApiError } from '../../lib/api';
-import { useSession } from '../../lib/session';
 import { applyApiError } from '../../lib/errors';
 import { celebrate } from '../../lib/celebrate';
 import * as q from '../../lib/queries';
 import { BirthMonthField, ConsentFields, PhoneCodeStep } from '../auth/phone-parts';
+import { startSession } from '../../lib/start-session';
 
 type Joined = { kind: 'student' | 'alumni'; session: { accessToken: string } };
 type ClaimFields = { birthMonth: string; consents: string[]; locale: Locale };
@@ -66,7 +66,6 @@ function ClaimFlow({
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const setToken = useSession((s) => s.setToken);
   const [sent, setSent] = useState<ClaimCodeSent | null>(null);
   const [alumni, setAlumni] = useState(false);
   const locale = toLocale(i18n.language);
@@ -111,8 +110,7 @@ function ClaimFlow({
               consents: v.consents,
               locale,
             });
-            setToken(r.session.accessToken);
-            await qc.invalidateQueries({ queryKey: ['me'] });
+            await startSession(qc, r.session.accessToken);
             // Joining verified is the verification moment ADR 0008 lists, and it happens once.
             celebrate();
             if (r.kind === 'alumni') setAlumni(true);

@@ -261,7 +261,7 @@ export function ComingUp() {
   const canDrives = useCan('placements:view');
   const bookings = useQuery({ ...q.upcomingBookings(), enabled: canBook });
   const drives = useQuery({ ...q.placementDrives('eligible'), enabled: canDrives });
-  const events = useQuery(q.events('upcoming', ''));
+  const events = useQuery(q.comingUpEvents());
   const sessions = (bookings.data ?? []).filter((b) => b.status === 'scheduled').slice(0, 3);
   const deadlines = (drives.data ?? [])
     .filter((d) => openToMe(d) && Date.parse(d.registrationCloseAt) - now <= 7 * 24 * HOUR)

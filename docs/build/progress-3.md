@@ -340,6 +340,15 @@ Design: `docs/design/v2/u5.md`.
 - **"Coming up" only on wide screens.** On a phone the Today card carries what is urgent and the rest is one tap away (Sessions, Placements, Events).
 - **The suggestion's reason is what the API used**: alumni of the student's branch first, then of the college. No other reasons are shown until the API computes them.
 
+### U5 follow-up: what CI's end-to-end run found
+
+CI's run on `c2fd8e5` (fresh seed) failed four tests that this machine's day-old database could not show. All four are fixed and pass again on a freshly reseeded local database (feed, companies, resilience, today, mentorship and shell: 56 of 56 on phone and desktop):
+
+- **A new sign-in was routed by the previous member's profile.** After sign-in, the app marked the cached profile stale without waiting for the new one, and `/start` chose the first screen from whatever was cached: on a device whose last session expired (rather than signed out), the previous member's profile restored from the device's saved copy. The next member landed on the previous member's first screen and briefly saw their navigation. Sign-in, sign-up, invite join and single sign-on now go through `lib/start-session.ts`: the new token, then the member's own profile before anything routes by it; if the member changed, the previous member's cached data, saved copy and unsent actions are dropped.
+- **Warming a link could reload the page.** Links warm their screen's code as they scroll into view; when that code was gone after a deploy, Vite's preload error reloaded the page under a member who had not opened anything. Home's "Coming up" made this visible (event links on desktop). Background warming is now quiet (`quietly` in `lib/chunk-reload.ts`); opening the screen still retries and reloads once.
+- **"Coming up" stood in for the Events screen's data.** It used the Events screen's own query, so Events opened from cache even when its data could not load. It now has its own query (`comingUpEvents`).
+- **The demo college had one story**, so Home's three-story rule hid the row on a fresh seed. The seed adds two DEMO stories (older than the TPO's, which stays first).
+
 ### Gate results (U5)
 
 | Gate                                               | Result                                                                                                                                                                                                                                                                                                                                     |

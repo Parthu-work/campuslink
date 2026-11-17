@@ -8,8 +8,8 @@ import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Chip, Skeleton } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
-import { useSession } from '../../lib/session';
 import { BirthMonthField, ConsentFields } from '../auth/phone-parts';
+import { startSession } from '../../lib/start-session';
 
 /**
  * /sign-up/sso (prompt 2, G9): the first single sign-on of someone without an account. The
@@ -20,7 +20,6 @@ export function SsoCompletePage() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const setToken = useSession((s) => s.setToken);
   const [ticket] = useState(
     () => /(?:^#|&)ticket=([A-Za-z0-9_-]{32,64})/.exec(window.location.hash)?.[1] ?? '',
   );
@@ -47,8 +46,7 @@ export function SsoCompletePage() {
         consents,
         locale: toLocale(i18n.language),
       });
-      setToken(r.session.accessToken);
-      await qc.invalidateQueries({ queryKey: ['me'] });
+      await startSession(qc, r.session.accessToken);
       navigate('/home', { replace: true });
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('errors.generic'));

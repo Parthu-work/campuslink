@@ -93,6 +93,21 @@ export async function importWithRetry<T>(load: () => Promise<T>): Promise<T> {
   }
 }
 
+let quiet = 0;
+/**
+ * Background warming (lib/preload.ts: a link scrolled into view, a hover): a chunk it cannot fetch
+ * is no reason to reload the page under a member who has not asked for that screen. If they open
+ * it, its own import retries and reloads once (`importWithRetry`).
+ */
+export async function quietly<T>(load: () => Promise<T>): Promise<T> {
+  quiet++;
+  try {
+    return await load();
+  } finally {
+    quiet--;
+  }
+}
+
 /**
  * Vite fires this when a lazily imported chunk or one of its dependencies (JS or CSS) fails to load.
  * Cancelling it makes the import resolve with undefined, so only cancel when a reload really starts;
@@ -100,6 +115,8 @@ export async function importWithRetry<T>(load: () => Promise<T>): Promise<T> {
  */
 export function installPreloadErrorHandler() {
   window.addEventListener('vite:preloadError', (event) => {
+    // Warming in the background (prompt 3, U5: Home's "Coming up" warms event pages as they show).
+    if (quiet > 0) return;
     if (navigator.onLine && reloadOnce()) event.preventDefault();
   });
 }

@@ -265,6 +265,13 @@ export const sentRequests = () =>
     queryFn: () => api.get<RequestView[]>('/mentorship/requests?box=sent'),
   });
 
+/** Home's "Coming up" events (prompt 3, U5): its own key, so opening Events still fetches Events. */
+export const comingUpEvents = () =>
+  queryOptions({
+    queryKey: ['events', 'coming-up'],
+    queryFn: () => api.get<EventView[]>('/events?when=upcoming'),
+  });
+
 /** Mentorship requests the member received (the Requests screen's box; an alumnus's Home). */
 export const receivedRequests = () =>
   queryOptions({

@@ -482,6 +482,18 @@ async function seedFeed(ids: Map<string, Types.ObjectId>) {
     },
     { alumni: true, branch: null },
   );
+  // Prompt 3, U5: Home shows stories from three active ones, so the demo has three.
+  for (const [local, text, background] of [
+    ['rahul', 'DEMO: Mock interview practice tonight at 8, two slots left', 'sunset'],
+    ['fatima', 'DEMO: AMA on ML careers this Friday, bring your questions', 'forest'],
+  ] as const)
+    await StoryModel.create({
+      authorId: id(local),
+      kind: 'text',
+      text,
+      background,
+      expiresAt: new Date(Date.now() + 20 * 3600_000),
+    });
   await StoryModel.create({
     authorId: id('tpo'),
     kind: 'text',
