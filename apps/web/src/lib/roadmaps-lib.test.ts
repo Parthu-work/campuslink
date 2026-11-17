@@ -60,7 +60,7 @@ describe('version diff', () => {
     const d = diffContent(base, next);
     expect(d.roadmap).toEqual(['summary']);
     expect(d.nodes).toEqual([
-      { kind: 'changed', node: next.nodes[0], fields: ['title', 'estimateHours'] },
+      { kind: 'changed', node: next.nodes[0], before: base.nodes[0], fields: ['title', 'estimateHours'] },
       { kind: 'added', node: next.nodes[2] },
       { kind: 'removed', node: base.nodes[2] },
     ]);

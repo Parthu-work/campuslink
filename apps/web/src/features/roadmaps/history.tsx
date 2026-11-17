@@ -11,51 +11,11 @@ import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { BackLink } from '../../components/ui/back-link';
 import { api, ApiError } from '../../lib/api';
-import { cn } from '../../lib/cn';
 import { formatDay } from '../../lib/format';
-import { diffContent } from '../../lib/roadmaps';
+import { VersionDiff } from './version-diff';
 import { SCREEN } from '../../lib/query-client';
 
 type VersionDetail = VersionView & { content: RoadmapContent; problems: string[] };
-
-function Diff({ before, after }: { before: RoadmapContent | null; after: RoadmapContent }) {
-  const { t } = useTranslation();
-  if (!before)
-    return (
-      <p className="text-callout text-fg-2">{t('roadmaps.firstVersion', { count: after.nodes.length })}</p>
-    );
-  const d = diffContent(before, after);
-  if (!d.roadmap.length && !d.nodes.length)
-    return <p className="text-callout text-fg-2">{t('roadmaps.noChanges')}</p>;
-  return (
-    <div className="grid gap-2">
-      {!!d.roadmap.length && (
-        <p className="text-callout">
-          <span className="font-semibold">{t('roadmaps.diff.roadmap')}:</span>{' '}
-          {d.roadmap.map((f) => t(`roadmaps.field.${f}`)).join(', ')}
-        </p>
-      )}
-      <ul className="grid gap-1.5">
-        {d.nodes.map((c) => (
-          <li
-            key={`${c.kind}-${c.node.id}`}
-            className={cn(
-              'rounded-[var(--radius-sm)] border-l-4 bg-surface-2 px-3 py-2 text-callout',
-              c.kind === 'added' && 'border-success',
-              c.kind === 'removed' && 'border-danger',
-              c.kind === 'changed' && 'border-warning',
-            )}
-          >
-            <span className="font-semibold">{t(`roadmaps.diff.${c.kind}`)}</span>: {c.node.title}
-            {c.kind === 'changed' && (
-              <span className="text-fg-2"> ({c.fields.map((f) => t(`roadmaps.field.${f}`)).join(', ')})</span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 function ReviewForm({ roadmap }: { roadmap: RoadmapView }) {
   const { t } = useTranslation();
@@ -197,7 +157,7 @@ export function RoadmapHistoryPage() {
                   <span className="font-semibold">{t('roadmaps.reviewNote')}:</span> {cur.data.reviewNote}
                 </p>
               )}
-              <Diff before={before.data?.content ?? null} after={cur.data.content} />
+              <VersionDiff before={before.data?.content ?? null} after={cur.data.content} />
               {(cur.data.status === 'draft' || cur.data.status === 'submitted') && (
                 <div className="grid gap-1">
                   <h3 className="text-callout font-semibold">{t('roadmaps.checklist')}</h3>

@@ -72,8 +72,8 @@ test.describe('roadmaps', () => {
     await expect(page.getByRole('link', { name: 'Suggest an edit' })).toHaveCount(0);
   });
 
-  test('draft, submit, review and publish', async ({ browser }, info) => {
-    test.setTimeout(120_000);
+  test('draft, submit, review and publish; then an edit reviewed side by side', async ({ browser }, info) => {
+    test.setTimeout(180_000);
     const host = hostFor(info.project.name);
     const base = `http://${host}.localhost:4173`;
     const title = `E2E Placement Prep ${info.project.name}`;
@@ -99,6 +99,13 @@ test.describe('roadmaps', () => {
       .fill('Build and publish one small project end to end.');
     await author.getByLabel('Type').selectOption('project');
     await expect(author.getByText('Ready for review.')).toBeVisible();
+    // The outline and the preview of what students will see follow the edits.
+    await expect(author.getByRole('heading', { name: 'Outline' })).toBeVisible();
+    await expect(
+      author
+        .getByRole('navigation', { name: 'What students will see' })
+        .getByText('Build a placement project'),
+    ).toBeVisible();
     await expectNoA11yViolations(author);
     await author.getByRole('button', { name: 'Save and submit' }).click();
     await expect(author.getByRole('heading', { name: title, level: 1 })).toBeVisible();
@@ -116,6 +123,30 @@ test.describe('roadmaps', () => {
     await reviewer.getByRole('button', { name: 'Approve and publish' }).click();
     await expect(reviewer.getByText('Published', { exact: true }).first()).toBeVisible();
     await expectNoA11yViolations(reviewer);
+
+    // The author suggests an edit; the reviewer sees each changed value before and after.
+    const editorCtx = await browser.newContext();
+    const editor = await editorCtx.newPage();
+    await signIn(editor, `rahul@${host}.example`, host);
+    await editor.goto(`${base}/roadmaps?q=${encodeURIComponent('E2E Placement')}`);
+    await editor.getByRole('link', { name: title }).click();
+    await expect(editor.getByRole('heading', { name: title, level: 1 })).toBeVisible();
+    await editor.getByRole('button', { name: 'More actions' }).click();
+    await editor.getByRole('dialog').getByRole('link', { name: 'Suggest an edit' }).click();
+    await expect(editor.getByRole('heading', { name: 'Edit roadmap', level: 1 })).toBeVisible();
+    await editor.getByLabel('Step title').fill('Build and ship a placement project');
+    await editor.getByLabel('What changed (for reviewers)').fill('Clearer step title');
+    await editor.getByRole('button', { name: 'Save and submit' }).click();
+    await expect(editor.getByText('Version 2 is waiting for review.')).toBeVisible();
+    await editorCtx.close();
+
+    await reviewer.goto(`${base}/roadmaps/review`);
+    await reviewer.getByRole('link', { name: `${title} · v2` }).click();
+    await expect(reviewer.locator('del').getByText('Build a placement project')).toBeVisible();
+    await expect(reviewer.locator('ins').getByText('Build and ship a placement project')).toBeVisible();
+    await expectNoA11yViolations(reviewer);
+    await reviewer.getByRole('button', { name: 'Approve and publish' }).click();
+    await expect(reviewer.getByText('Published', { exact: true }).first()).toBeVisible();
     await reviewerCtx.close();
 
     const studentCtx = await browser.newContext();

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { LiHTMLAttributes, ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { IntentLink } from './intent-link';
 import { cn } from '../../lib/cn';
@@ -22,6 +22,7 @@ export function ListRow({
   onClick,
   chevron,
   selected,
+  itemProps,
   className,
 }: {
   title: ReactNode;
@@ -41,6 +42,8 @@ export function ListRow({
   chevron?: boolean;
   /** Marks the row as the one shown beside the list (list and detail on desktop). */
   selected?: boolean;
+  /** Extra attributes for the row's `<li>` (drag and drop in an outline). */
+  itemProps?: LiHTMLAttributes<HTMLLIElement>;
   className?: string;
 }) {
   const showChevron = chevron ?? (!!(to || href) && !trailing);
@@ -65,6 +68,7 @@ export function ListRow({
         className,
       )}
       aria-current={selected || undefined}
+      {...itemProps}
     >
       {to ? (
         <IntentLink to={to} className={hit}>

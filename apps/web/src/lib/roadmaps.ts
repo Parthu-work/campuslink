@@ -20,7 +20,7 @@ export interface PlacedNode {
   y: number;
 }
 export const NODE_W = 188;
-export const NODE_H = 64;
+export const NODE_H = 76;
 const GAP_X = 72;
 const GAP_Y = 28;
 
@@ -78,7 +78,7 @@ export function layoutGraph(nodes: RoadmapNode[]): { placed: PlacedNode[]; width
 export type NodeChange =
   | { kind: 'added'; node: RoadmapNode }
   | { kind: 'removed'; node: RoadmapNode }
-  | { kind: 'changed'; node: RoadmapNode; fields: string[] };
+  | { kind: 'changed'; node: RoadmapNode; before: RoadmapNode; fields: StepField[] };
 
 const FIELDS = [
   'title',
@@ -91,6 +91,8 @@ const FIELDS = [
   'sources',
   'needsReview',
 ] as const;
+export type StepField = (typeof FIELDS)[number];
+export type PathField = 'title' | 'summary' | 'category' | 'branches' | 'outcomes' | 'sources';
 
 /** Node-level diff between two versions, plus which roadmap-level fields changed. */
 export function diffContent(before: RoadmapContent, after: RoadmapContent) {
@@ -102,11 +104,11 @@ export function diffContent(before: RoadmapContent, after: RoadmapContent) {
     if (!o) nodes.push({ kind: 'added', node: n });
     else {
       const fields = FIELDS.filter((f) => JSON.stringify(o[f]) !== JSON.stringify(n[f]));
-      if (fields.length) nodes.push({ kind: 'changed', node: n, fields });
+      if (fields.length) nodes.push({ kind: 'changed', node: n, before: o, fields });
     }
   }
   for (const n of before.nodes) if (!now.has(n.id)) nodes.push({ kind: 'removed', node: n });
-  const roadmap = (['title', 'summary', 'category', 'branches', 'outcomes', 'sources'] as const).filter(
+  const roadmap = (['title', 'summary', 'category', 'branches', 'outcomes', 'sources'] as PathField[]).filter(
     (f) => JSON.stringify(before[f]) !== JSON.stringify(after[f]),
   );
   return { roadmap, nodes };

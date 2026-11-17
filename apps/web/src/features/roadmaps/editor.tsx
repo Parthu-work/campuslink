@@ -3,11 +3,12 @@ import { useNavigate, useParams } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '../../lib/toast';
-import { ArrowDown, ArrowUp, Plus, Send, Trash2, X } from 'lucide-react';
+import { AlertTriangle, ArrowDown, ArrowUp, GripVertical, Plus, Send, Trash2, X } from 'lucide-react';
 import {
   BRANCHES,
   NODE_KINDS,
   ROADMAP_CATEGORIES,
+  journeyPhases,
   publishProblems,
   roadmapContent,
   type RoadmapContent,
@@ -18,7 +19,9 @@ import {
 } from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
+import { ListRow, ListSection } from '../../components/ui/list-row';
 import { Card, Skeleton } from '../../components/ui/misc';
+import { JourneyView } from './journey';
 import { PageHeader } from '../../components/ui/page-header';
 import { BackLink } from '../../components/ui/back-link';
 import { api, ApiError } from '../../lib/api';
@@ -117,6 +120,7 @@ function NodeEditor({
   onChange,
   onMove,
   onRemove,
+  issues = [],
 }: {
   node: RoadmapNode;
   index: number;
@@ -124,12 +128,14 @@ function NodeEditor({
   onChange: (n: RoadmapNode) => void;
   onMove: (d: -1 | 1) => void;
   onRemove: () => void;
+  /** Problems that name this step (an unknown prerequisite, a loop). */
+  issues?: string[];
 }) {
   const { t } = useTranslation();
   const p = `node-${index}`;
   const set = <K extends keyof RoadmapNode>(k: K, v: RoadmapNode[K]) => onChange({ ...node, [k]: v });
   return (
-    <Card className="grid gap-3 p-4">
+    <Card id={`step-editor-${index}`} tabIndex={-1} className="grid scroll-mt-20 gap-3 p-4 outline-none">
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-semibold">
           {t('roadmaps.editor.step', { n: index + 1 })}
@@ -168,6 +174,15 @@ function NodeEditor({
           </Button>
         </div>
       </div>
+      {!!issues.length && (
+        <ul className="grid gap-1 text-callout text-danger-ink">
+          {issues.map((i) => (
+            <li key={i} className="flex gap-1.5">
+              <AlertTriangle className="mt-0.5 size-4 flex-none" aria-hidden /> {i}
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="grid gap-3 sm:grid-cols-[1fr_160px_150px]">
         <Field label={t('roadmaps.editor.stepTitle')}>
           {(f) => (
@@ -338,6 +353,92 @@ export function RoadmapEditorPage() {
   );
 }
 
+/**
+ * The steps as an outline (prompt 3, U3): in the order the author set, each with the phase it
+ * falls in and a warning when it has no source. Drag a row, or use its arrows, to reorder; select
+ * it to go to its editor. The phases themselves come from the prerequisites, so order matters only
+ * between steps of the same depth.
+ */
+function Outline({
+  nodes,
+  category,
+  onReorder,
+  onGo,
+}: {
+  nodes: RoadmapNode[];
+  category: RoadmapContent['category'];
+  onReorder: (from: number, to: number) => void;
+  onGo: (index: number) => void;
+}) {
+  const { t } = useTranslation();
+  const [dragging, setDragging] = useState<number | null>(null);
+  const phaseOf = new Map<string, string>();
+  for (const ph of journeyPhases(nodes, category))
+    for (const s of ph.steps) phaseOf.set(s.id, t(`roadmaps.phase.${ph.key}`));
+  return (
+    <ListSection title={t('roadmaps.editor.outline')}>
+      {nodes.map((n, i) => {
+        const unsourced = !n.sources.length && !n.needsReview;
+        return (
+          <ListRow
+            key={`${n.id}-${i}`}
+            onClick={() => onGo(i)}
+            leading={<GripVertical aria-hidden className="cursor-grab" />}
+            title={`${i + 1}. ${n.title || t('roadmaps.editor.untitled')}`}
+            meta={
+              <>
+                {phaseOf.get(n.id)}
+                {unsourced && <span className="text-warning-ink"> · {t('roadmaps.editor.noSource')}</span>}
+              </>
+            }
+            trailing={
+              <>
+                <Button
+                  type="button"
+                  variant="tertiary"
+                  size="icon"
+                  aria-label={t('roadmaps.editor.moveUpN', { n: i + 1 })}
+                  disabled={i === 0}
+                  onClick={() => onReorder(i, i - 1)}
+                >
+                  <ArrowUp aria-hidden />
+                </Button>
+                <Button
+                  type="button"
+                  variant="tertiary"
+                  size="icon"
+                  aria-label={t('roadmaps.editor.moveDownN', { n: i + 1 })}
+                  disabled={i === nodes.length - 1}
+                  onClick={() => onReorder(i, i + 1)}
+                >
+                  <ArrowDown aria-hidden />
+                </Button>
+              </>
+            }
+            selected={dragging === i}
+            itemProps={{
+              draggable: true,
+              onDragStart: (e) => {
+                setDragging(i);
+                e.dataTransfer.effectAllowed = 'move';
+              },
+              onDragOver: (e) => {
+                if (dragging !== null) e.preventDefault();
+              },
+              onDrop: (e) => {
+                e.preventDefault();
+                if (dragging !== null && dragging !== i) onReorder(dragging, i);
+                setDragging(null);
+              },
+              onDragEnd: () => setDragging(null),
+            }}
+          />
+        );
+      })}
+    </ListSection>
+  );
+}
+
 function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap: RoadmapView | null }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -356,6 +457,30 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
   const set = <K extends keyof RoadmapContent>(k: K, v: RoadmapContent[K]) =>
     setContent({ ...content, [k]: v });
   const setNodes = (nodes: RoadmapNode[]) => set('nodes', nodes);
+  const reorder = (from: number, to: number) => {
+    if (to < 0 || to >= content.nodes.length) return;
+    const nodes = [...content.nodes];
+    const [m] = nodes.splice(from, 1);
+    if (m) nodes.splice(to, 0, m);
+    setNodes(nodes);
+  };
+  /** Moves to a step's editor and focuses it (the outline and the preview). */
+  const go = (index: number) => {
+    const el = document.getElementById(`step-editor-${index}`);
+    el?.scrollIntoView({ block: 'start' });
+    el?.focus({ preventScroll: true });
+  };
+  // Problems that name a step, shown on that step's editor too.
+  const issuesFor = (id: string) =>
+    parsed.success
+      ? []
+      : [
+          ...new Set(
+            parsed.error.issues
+              .filter((i) => i.message.includes(`“${id}”`))
+              .map((i) => roadmapIssueText(t, i)),
+          ),
+        ];
 
   const save = async (submit: boolean) => {
     if (!parsed.success) {
@@ -517,12 +642,8 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
                   ),
                 )
               }
-              onMove={(d) => {
-                const nodes = [...content.nodes];
-                const [m] = nodes.splice(i, 1);
-                if (m) nodes.splice(i + d, 0, m);
-                setNodes(nodes);
-              }}
+              onMove={(d) => reorder(i, i + d)}
+              issues={issuesFor(n.id)}
               onRemove={() =>
                 setNodes(
                   content.nodes
@@ -543,7 +664,7 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
           )}
         </div>
 
-        <aside className="grid content-start gap-3 lg:sticky lg:top-4 lg:self-start">
+        <aside className="relative grid content-start gap-4 [contain:inline-size] lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain">
           <Card className="grid gap-3 p-4">
             <h2 className="font-display text-headline font-semibold">{t('roadmaps.checklist')}</h2>
             {errors.length ? (
@@ -595,6 +716,19 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
               </Button>
             </FormFooter>
           </Card>
+          <Outline nodes={content.nodes} category={content.category} onReorder={reorder} onGo={go} />
+          <section aria-labelledby="journey-preview" className="grid gap-2">
+            <h2 id="journey-preview" className="text-headline font-semibold">
+              {t('roadmaps.editor.preview')}
+            </h2>
+            <p className="text-callout text-fg-2">{t('roadmaps.editor.previewHint')}</p>
+            <JourneyView
+              nodes={content.nodes}
+              category={content.category}
+              label={t('roadmaps.editor.preview')}
+              onOpen={(id) => go(content.nodes.findIndex((n) => n.id === id))}
+            />
+          </section>
         </aside>
       </div>
     </form>

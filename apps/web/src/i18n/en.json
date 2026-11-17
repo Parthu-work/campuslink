@@ -2164,7 +2164,6 @@
     "allBranches": "All branches",
     "viewAs": "View as",
     "graphLabel": "Roadmap steps and how they connect",
-    "graphLegend": "Arrows point to what comes next. Dashed outlines need review; gold outlines are projects. Scroll to pan.",
     "emptyTitle": "No roadmaps match",
     "emptyBody": "Try another category or search.",
     "disclaimer": "Time estimates are about right for part-time study, not promises. Roadmaps link to free resources and official pages; check dates, fees and cut-offs there.",
@@ -2324,7 +2323,14 @@
         "many_other": "at most {{count}}",
         "choose": "choose one of the options",
         "missing": "fill this in"
-      }
+      },
+      "outline": "Outline",
+      "untitled": "Untitled step",
+      "noSource": "no source yet",
+      "moveUpN": "Move step {{n}} up",
+      "moveDownN": "Move step {{n}} down",
+      "preview": "What students will see",
+      "previewHint": "The journey as students will see it, updated as you edit. Select a step to edit it."
     },
     "review": {
       "title": "Review roadmaps",
@@ -2337,7 +2343,10 @@
       "note": "Note for the author",
       "noteHint": "Required when asking for changes",
       "approve": "Approve and publish",
-      "requestChanges": "Ask for changes"
+      "requestChanges": "Ask for changes",
+      "before": "Before",
+      "after": "After",
+      "cited": "Cited"
     },
     "library": {
       "title": "Researched library",
@@ -2404,7 +2413,9 @@
       "week_one": "about {{count}} week",
       "week_other": "about {{count}} weeks",
       "weekRange": "about {{min}}–{{max}} weeks"
-    }
+    },
+    "mapKey": "Key",
+    "mapKeys": "Drag or scroll to move around. Pinch, Ctrl and the mouse wheel, or the + and − keys zoom; 0 fits the map to the screen."
   },
   "progress": {
     "badge": {

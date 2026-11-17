@@ -200,6 +200,39 @@ CI cancelled the U2 push's end-to-end job at its 35-minute limit: 18 staff journ
 | End-to-end (local)                                 | The roadmaps spec, 4 of 4 on phone and desktop (start, Mark done, Undo from the toast above the open sheet, pace, map; draft, submit, review, publish); spaces, shell, navigation, companies, core and people pass. The full suite before U3a: 239 of 264, one Windows-only failure (calendar feed). CI runs everything |
 | Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                                                                |
 
+### U3a follow-up: generated API docs
+
+CI's unit tests failed on the U3a push: the weekly goal's body and summary changed, and the generated `docs/permissions.md` and `docs/api/openapi.json` were not regenerated (only the 26 API test files that touch roadmaps had been run locally, not `test/docs.test.ts`). Regenerated and pushed on their own (`f3e5c4e`).
+
+## U3b · Career paths: the map, authoring and review
+
+**Shipped.**
+
+- **Review side by side** (`version-diff.tsx`, on the history page reviewers open from the queue): the path's own changed details, then each step added, removed or changed, and for every changed value the old and the new one in two columns (stacked on a phone), as a deletion and an insertion so a screen reader says which is which. Prerequisites read as step titles, time as a range, links as their titles. The "nobody approves a version they edited" rule is unchanged (API).
+- **Editor**: an outline of the steps in the author's order, each with the phase it will fall in and "no source yet" when it has no citation and is not marked for review; drag a row or use its arrows to reorder; select it to go to that step's editor. Problems that name a step (an unknown prerequisite, a loop) also show on that step. Under it, "What students will see": the journey drawn live from the draft (the journey became `JourneyView`, used by both). On desktop the column beside the form scrolls on its own; on a phone it follows the form.
+- **The map** (`graph-view.tsx`, still loaded only when chosen): opens fitted to the screen's width with the next step in the middle; titles wrap to three lines inside taller nodes instead of being cut at 24 characters; drag or scroll to pan, pinch, Ctrl + wheel, the + and − keys or the buttons to zoom (0 fits it again); the next step is marked; a small key (done, next, project, needs review) replaces the legend paragraph.
+- Strings: `roadmaps.review.before|after|cited`, `roadmaps.editor.outline|untitled|noSource|moveUpN|moveDownN|preview|previewHint`, `roadmaps.mapKey|mapKeys` in en, te and hi; `graphLegend` removed. `ListRow` passes props to its `<li>` (drag and drop).
+- e2e: the authoring test now also has the author suggest an edit and the reviewer approve it from the side-by-side diff (`del` and `ins` checked), with axe on the diff; the editor's outline and preview are checked as the step is written.
+
+**Decisions.**
+
+- **People and outcomes move to the phases that own their data.** "Seniors on this path" and "Ask a senior" need a query over mentors' profiles and follows (U6, mentors); "Drives that ask for these skills" and "Practise this" need matching against drives and the practice bank (U7, career). Built here they would be guesses; U3 shows nothing rather than invent a signal (X7).
+- **The outline keeps the author's order.** Phases come from the prerequisites, so dragging a step past its prerequisites would not move it to another phase; the outline says which phase each step lands in and the preview shows the result.
+
+**Gaps.** The people and outcomes signals (moved to U6 and U7, above). The index's "4 alumni from your college work as this" waits for the same matching.
+
+### Gate results (U3b)
+
+| Gate                                               | Result                                                                                                                                                                                       |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                         |
+| Shared tests                                       | 215 passed                                                                                                                                                                                   |
+| Web tests                                          | 130 passed (the diff test now checks the earlier version of a changed step)                                                                                                                  |
+| `pnpm build` and bundle budget                     | Pass: initial 161.0 KB, unchanged (the map, the diff and the editor load with their own screens)                                                                                             |
+| API tests                                          | No API change in U3b; CI runs the suite                                                                                                                                                      |
+| End-to-end (local)                                 | The roadmaps spec, 4 of 4 on phone and desktop: start, Mark done, Undo, pace, the map with axe; draft, submit, review and publish, then an edit approved from the side-by-side diff with axe |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                     |
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.
