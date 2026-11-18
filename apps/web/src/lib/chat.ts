@@ -25,9 +25,12 @@ export function parseCommand(input: string): {
   return { command, arg: (m[2] ?? '').trim(), unknown: command ? null : name };
 }
 
-/** Commands for the menu while typing "/…" (prefix match, in menu order). */
+/**
+ * Commands for the menu while typing "/…" (prefix match, in menu order). A space after the word
+ * closes it: a command picked from the menu ("/help ") is sent by Enter, not picked again.
+ */
 export function commandMatches(input: string): SlashCommand[] {
-  const m = /^\/([a-z]*)$/i.exec(input.trim());
+  const m = /^\/([a-z]*)$/i.exec(input.trimStart());
   if (!m) return [];
   const prefix = (m[1] ?? '').toLowerCase();
   return SLASH_COMMANDS.filter((c) => c.startsWith(prefix));

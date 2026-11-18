@@ -8,6 +8,8 @@ import {
   type LoaderFunctionArgs,
   type Params,
   type RouteObject,
+  useParams,
+  useSearchParams,
 } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { useTranslation } from '../i18n/react';
@@ -68,7 +70,9 @@ const load = {
   study: () => import('../features/study/study'),
   subject: () => import('../features/study/subject-page'),
   material: () => import('../features/study/material-page'),
-  chat: () => import('../features/study/chat/chat-page'),
+  // Prompt 3, U8: the study assistant and the Career Copilot behind one Ask screen.
+  ask: () =>
+    Promise.all([import('../features/ask/ask'), loadPack('ask'), loadPack('copilot')]).then(([m]) => m),
   insights: () => import('../features/study/insights-page'),
   directory: () => import('../features/people/directory'),
   landing: () => import('../features/landing/landing'),
@@ -142,7 +146,6 @@ const load = {
   shareExperience: withPack('moat', () => import('../features/companies/share-experience')),
   experiencesAdmin: withPack('moat', () => import('../features/companies/experiences-admin')),
   // Prompt 2, G11: the Career Copilot, strings in the `copilot` pack.
-  copilot: withPack('copilot', () => import('../features/copilot/copilot')),
   // Prompt 2, G12: the network, the recruiter portal and the registry (one module), `network` pack.
   network: withPack('network', () => import('../features/network/screens')),
   reports: () => import('../features/reports/reports'),
@@ -276,6 +279,18 @@ function publicScreen<M>(importer: () => Promise<M>, name: keyof M & string, pat
       };
     },
   } satisfies RouteObject;
+}
+
+/**
+ * The study assistant's and the Career Copilot's old addresses (prompt 3, U8): the same
+ * conversation, in Ask. `/study/chat/:sessionId` and `/copilot?c=<id>`.
+ */
+function OldAskRedirect({ scope }: { scope: 'study' | 'career' }) {
+  const { sessionId } = useParams();
+  const [params] = useSearchParams();
+  const id = scope === 'study' ? sessionId : params.get('c');
+  const s = id && /^[a-f0-9]{24}$/.test(id) ? `&s=${id}` : '';
+  return <Navigate to={`/ask?scope=${scope}${s}`} replace />;
 }
 
 /** An address that matches no screen: a titled screen (its h1 is the message) and the way home. */
@@ -447,25 +462,12 @@ function collegeRoutes(): RouteObject[] {
                 ? [qc.ensureQueryData(q.subject(id)), qc.ensureQueryData(q.studyInsights(id, 30))]
                 : [],
           ),
-          // Conversations with a composer (and a streaming answer) never refetch under a pull.
-          still(
-            screen(load.chat, 'ChatPage', inFeature('study', 'study:read'), at('/study/chat'), () => [
-              qc.ensureQueryData(q.chatSessions()),
-              qc.ensureQueryData(q.aiStatus()),
-            ]),
-          ),
-          still(
-            screen(
-              load.chat,
-              'ChatPage',
-              inFeature('study', 'study:read'),
-              at('/study/chat/:sessionId'),
-              ({ sessionId }) => [
-                qc.ensureQueryData(q.chatSessions()),
-                ...(isId(sessionId) ? [qc.ensureQueryData(q.chatSession(sessionId))] : []),
-              ],
-            ),
-          ),
+          // Ask (prompt 3, U8): a conversation with a composer, so no pull to refresh. Each scope
+          // checks its own feature and permission inside; the old addresses redirect.
+          still(screen(load.ask, 'AskPage', ['study:read', 'copilot:use'], at('/ask'))),
+          { path: '/study/chat', element: <Navigate to="/ask?scope=study" replace /> },
+          { path: '/study/chat/:sessionId', element: <OldAskRedirect scope="study" /> },
+          { path: '/copilot', element: <OldAskRedirect scope="career" /> },
           screen(
             load.material,
             'MaterialPage',
@@ -649,8 +651,6 @@ function collegeRoutes(): RouteObject[] {
             inFeature('placements', 'experiences:share'),
             at('/experiences'),
           ),
-          // The Career Copilot (prompt 2, G11): a conversation, so no pull to refresh.
-          still(screen(load.copilot, 'CopilotPage', inFeature('placements', 'copilot:use'), at('/copilot'))),
           // The network (prompt 2, G12): alumni of other colleges, intros, credentials, sharing with employers.
           screen(load.network, 'NetworkPage', 'network:discover', at('/network')),
           screen(

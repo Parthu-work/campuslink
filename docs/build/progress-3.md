@@ -515,6 +515,38 @@ U7a's CI run failed once on `landing.spec.ts`: Ananya (batch 2027) lands on Care
 
 U7b's CI: green (run 44314839487).
 
+## U8a · Ask: one assistant
+
+**Shipped.**
+
+- **One destination, Ask** (`/ask`, `features/ask/ask.tsx`), in the Learn space where "Study assistant" was; the Career Copilot's own entries (Learn and You) are gone. Ask shows while either of its scopes is on (`featureShipped`: study or placements) and to members with `study:read` or `copilot:use`. `/study/chat`, `/study/chat/:id` and `/copilot?c=<id>` redirect to the same conversation in Ask.
+- **Study and Career as a switch** (`?scope=`), each only where the member has it. The servers are untouched (X8): Study is `ChatService`, Career is the Copilot through `AiTasksService.stream`, with their own rules, limits and budgets.
+- **One history**: both kinds of conversation in one list, newest first, marked Study or Career, beside the chat from 1024 px and in a sheet on phones; delete one or all. Opening one, New, the other scope and a question from search each start a fresh panel as part of the same navigation (`state.fresh`), so the panel and the address always change together.
+- **The career chat in the study chat's frame** (`features/copilot/career-panel.tsx`, from the old Copilot screen): the conversation in a log that follows new text, and a composer docked under it with Send and Stop. Its suggestions are questions ("Which drives can I register for?", "Help me prepare for Nimbus Labs" for the next drive the student can register for, "Make me a plan for the next few weeks", "How can my résumé read better?").
+- **No "/syntax" shown** (A18): a command a member sends reads back in words (`features/ask/said.ts`: "Quiz me on arrays", "Which drives can I register for?"), in both chats, in the history's titles and in the delete buttons' names. Typed commands still work; the study chat's menu appears only after typing "/". The study chat's intro and placeholder no longer advertise commands.
+- **One trust line** under the composer (`features/ask/trust-note.tsx`): where answers come from, **How answers work** in a sheet (sources, refusals and predictions, mistakes, privacy), and the questions left today only when under 5. AI off or the budget spent replaces the line, as before.
+- **Ask about "…"** in the search palette: what was typed opens Ask with it in the composer (in the router's state, not the address), not sent.
+- **Fixed (U12.10)**: after picking a command from the study chat's menu ("/help "), the menu stayed open, so Enter picked it again instead of sending. A space after the command now closes the menu (`commandMatches`, unit-tested). The e2e had passed only because the old empty state showed a "/videos" chip.
+- Phones: History and New as icon buttons beside the title, and the chat ends above the tab bar; suggestions wrap instead of running off the edge; an empty conversation is read from its top.
+- e2e: `copilot.spec.ts` now runs in Ask (the old address redirects; a suggestion reads back as words and "/eligible" appears nowhere; How answers work; the history lists the other conversation); `study.spec.ts` follows the redirect, the new trust line and the fixed menu.
+
+**Decisions.**
+
+- **Suggestions send the commands they stand for**, and the conversation shows them in words: the API's command handling is unchanged, and nothing about a member's question is guessed from free text.
+- **Copy, retry and feedback on career answers, citations as source cards and the refusal card are U8b**: feedback on a Copilot answer needs an API change (the Copilot has no feedback route), and the citation cards are shared by both chats.
+
+### Gate results (U8a)
+
+| Gate                                               | Result                                                                                                                                                                      |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                        |
+| Shared tests                                       | 221 passed (navigation: Ask stays while either scope is on; `/ask` is Learn's)                                                                                              |
+| Web tests                                          | 159 passed (new: the command menu closes after a pick)                                                                                                                      |
+| API tests                                          | No API change in U8a (the API does not use the navigation model); CI runs the whole suite                                                                                   |
+| `pnpm build` and bundle budget                     | Pass: initial 162.2 KB in 22 files; Telugu strings 69.9 KB (new strings in the `ask` pack; `nav.assistant` shorter)                                                         |
+| End-to-end (local, freshly reseeded)               | `copilot`, `study`, `spaces`, `navigation`, `accessibility`, `landing`, `today`, `roadmaps`, `shell`, `features`: 88 passed, 16 skipped (phone-only and desktop-only tests) |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                    |
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

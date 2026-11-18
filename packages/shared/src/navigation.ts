@@ -26,7 +26,6 @@ export type NavId =
   | 'share'
   | 'captain'
   | 'companies'
-  | 'copilot'
   | 'network'
   | 'recruiter'
   | 'employers'
@@ -213,7 +212,8 @@ const d = (
 export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   home: d('home', '/home', 'main'),
   study: d('study', '/study', 'explore', ['study:read']),
-  assistant: d('assistant', '/study/chat', 'explore', ['study:read']),
+  // Ask (prompt 3, U8): the study assistant and the Career Copilot behind one screen, either scope.
+  assistant: d('assistant', '/ask', 'explore', ['study:read', 'copilot:use']),
   // Staff see the same library as "Subjects" (they manage it).
   subjects: d('subjects', '/study', 'explore', ['study:manage']),
   create: d('create', '', 'main'),
@@ -240,8 +240,6 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
   captain: d('captain', '/captain', 'you', ['captains:class']),
   // Company pages from the Placement Graph and the Interview Experience Bank (prompt 2, G10).
   companies: d('companies', '/companies', 'explore', ['companies:view']),
-  // The Career Copilot (prompt 2, G11).
-  copilot: d('copilot', '/copilot', 'explore', ['copilot:use']),
   // The network (prompt 2, G12): alumni across colleges, intros, credentials.
   network: d('network', '/network', 'you', ['network:discover']),
   // The recruiter portal (employer tenants only).
@@ -286,7 +284,6 @@ export const NAV_DESTINATIONS: Record<NavId, NavDestination> = {
 /** Destinations that belong to a feature switch: hidden while the college has it off. */
 export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
   study: 'study',
-  assistant: 'study',
   subjects: 'study',
   reels: 'reels',
   following: 'contentSources',
@@ -296,7 +293,6 @@ export const NAV_FEATURE: Partial<Record<NavId, Feature>> = {
   readiness: 'placements',
   peers: 'peerMentors',
   companies: 'placements',
-  copilot: 'placements',
 };
 
 /** Admin sections that belong to a feature switch. */
@@ -320,6 +316,8 @@ export function featureShipped(
   if (!features) return shipped;
   return new Set(
     [...shipped].filter((id) => {
+      // Ask answers about study or career: it stays while either is on.
+      if (id === 'assistant') return features.study !== false || features.placements !== false;
       const f = NAV_FEATURE[id];
       return !f || features[f] !== false;
     }),
@@ -385,7 +383,6 @@ const MENU_ORDER: readonly NavId[] = [
   'share',
   'captain',
   'companies',
-  'copilot',
   'network',
   'progress',
   'rewards',
@@ -546,7 +543,6 @@ const COLLEGE_STAFF_SPACES: readonly SpaceSpec[] = [
       'interviews',
       'practice',
       'readiness',
-      'copilot',
       'share',
       'captain',
       'settings',
@@ -572,7 +568,7 @@ export const PERSONA_SPACES: Record<NavPersona, readonly SpaceSpec[]> = {
         'leaderboard',
       ],
     },
-    { id: 'learn', sections: ['roadmaps', 'study', 'subjects', 'practice', 'assistant', 'copilot'] },
+    { id: 'learn', sections: ['roadmaps', 'study', 'subjects', 'practice', 'assistant'] },
     {
       id: 'mentors',
       sections: ['mentors', 'requests', 'sessions', 'messages', 'alumni', 'peers', 'mentoring'],
@@ -633,7 +629,6 @@ export const PERSONA_SPACES: Record<NavPersona, readonly SpaceSpec[]> = {
         'interviews',
         'practice',
         'readiness',
-        'copilot',
         'share',
         'captain',
         'notifications',

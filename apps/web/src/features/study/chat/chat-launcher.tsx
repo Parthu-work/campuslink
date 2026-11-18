@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { loadPack } from '../../../i18n';
 import { useTranslation } from '../../../i18n/react';
 import { Sparkles } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
@@ -8,7 +9,9 @@ import type { AskContext } from '../../../lib/chat';
 import { useUrlOverlay } from '../../../lib/use-url-overlay';
 
 // The chat itself (and its answer renderer) loads when the sheet opens.
-const ChatPanel = lazy(() => import('./chat-panel').then((m) => ({ default: m.ChatPanel })));
+const ChatPanel = lazy(() =>
+  Promise.all([import('./chat-panel'), loadPack('ask')]).then(([m]) => ({ default: m.ChatPanel })),
+);
 
 /**
  * The study assistant's floating launcher on subject and material pages: opens the chat in a

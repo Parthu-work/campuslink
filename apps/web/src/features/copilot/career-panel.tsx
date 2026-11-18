@@ -1,9 +1,8 @@
-import { useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowRight, Plus, Sparkles, Trash2, UserRound } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ArrowRight, ArrowUp, Sparkles, Square, UserRound } from 'lucide-react';
 import {
-  COPILOT_COMMANDS,
   COPILOT_QUESTION_MAX,
   type CopilotHandoff,
   type CopilotMessageView,
@@ -12,17 +11,22 @@ import {
 import { useTranslation } from '../../i18n/react';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
-import { ErrorState } from '../../components/ui/error-state';
-import { Field, Textarea } from '../../components/ui/field';
-import { Badge, Card, Skeleton } from '../../components/ui/misc';
-import { PageHeader } from '../../components/ui/page-header';
+import { Textarea } from '../../components/ui/field';
+import { Badge, Card, Chip, Skeleton } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
 import { formatDateTime, formatDay } from '../../lib/format';
-import { SCREEN } from '../../lib/query-client';
+import { useCan } from '../../lib/me';
+import { isRegistered } from '../../lib/placements';
+import { placementDrives } from '../../lib/queries';
+import { useFeature } from '../../lib/tenant-context';
 import { toast } from '../../lib/toast';
+import { careerSaid } from '../ask/said';
+import { TrustNote } from '../ask/trust-note';
 import { AnswerText } from '../study/chat/answer-text';
 import { copilotHome, copilotSession } from './queries';
 import { streamCopilot } from './stream';
+
+const NEAR_BOTTOM = 160;
 
 /** Opening a human next step is recorded (`copilot_handoff`); the link opens either way. */
 function Handoffs({ message }: { message: CopilotMessageView }) {
@@ -142,10 +146,7 @@ function Result({ result }: { result: CopilotResult }) {
 function Answer({ m, q }: { m: CopilotMessageView; q: string }) {
   const { t } = useTranslation();
   return (
-    <Card variant="raised" className="grid gap-3 p-4">
-      <p className="flex items-center gap-2 text-callout font-semibold text-fg-2">
-        <Sparkles className="size-4 text-brand-ink" aria-hidden /> {t('copilot.copilot')}
-      </p>
+    <article className="grid gap-3" aria-label={t('copilot.copilot')}>
       {m.status === 'streaming' && !m.text && (
         <p className="text-callout text-fg-2">{t('copilot.thinking')}</p>
       )}
@@ -172,59 +173,81 @@ function Answer({ m, q }: { m: CopilotMessageView; q: string }) {
         </div>
       )}
       <Handoffs message={m} />
-    </Card>
+    </article>
   );
 }
 
-/** The Career Copilot (prompt 2, G11): cited answers from the college's own data, then a human. */
-export function CopilotPage() {
+/**
+ * The Career Copilot inside Ask (prompt 2, G11; prompt 3, U8): cited answers from the college's own
+ * records, then a person to talk to. The same frame as the study chat: the conversation, and the
+ * composer docked under it. Suggestions are questions; a command is shown back in words.
+ */
+export function CareerPanel({
+  sessionId: initialSession = null,
+  initialInput = '',
+  onSession,
+}: {
+  sessionId?: string | null;
+  /** A question carried in from search ("Ask about…"), placed in the composer, not sent. */
+  initialInput?: string;
+  /** A new conversation got its id (Ask puts it in the address). */
+  onSession?: (id: string) => void;
+}) {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const [params, setParams] = useSearchParams();
-  const sessionId = params.get('c');
-  const home = useQuery({ ...SCREEN, ...copilotHome() });
+  const home = useQuery(copilotHome());
+  const [sessionId, setSessionId] = useState<string | null>(initialSession);
   const loaded = useQuery({ ...copilotSession(sessionId ?? ''), enabled: !!sessionId });
-  // The conversation being written in this tab; otherwise the saved one from the URL.
-  const [live, setLive] = useState<{ key: string | null; messages: CopilotMessageView[] } | null>(null);
-  const messages =
-    live && live.key === sessionId ? live.messages : sessionId ? (loaded.data?.messages ?? []) : [];
-  const setMessages = (f: (ms: CopilotMessageView[]) => CopilotMessageView[]) =>
-    setLive((l) => (l ? { ...l, messages: f(l.messages) } : l));
-  const [question, setQuestion] = useState('');
+  const seesDrives = useCan('placements:view');
+  const placementsOn = useFeature('placements');
+  const canDrives = seesDrives && placementsOn;
+  const drives = useQuery({ ...placementDrives('eligible'), enabled: canDrives, staleTime: 5 * 60_000 });
+  // The conversation being written here; otherwise the saved one.
+  const [live, setLive] = useState<CopilotMessageView[] | null>(null);
+  const messages = live ?? (sessionId ? (loaded.data?.messages ?? []) : []);
+  const [question, setQuestion] = useState(initialInput);
   const [busy, setBusy] = useState(false);
   const stop = useRef<AbortController | null>(null);
+  const thread = useRef<HTMLDivElement>(null);
+  const pinned = useRef(true);
+  // Follow the conversation as it grows and as the last answer streams in.
+  const count = messages.length;
+  const lastText = messages.at(-1)?.text;
+  useEffect(() => {
+    const el = thread.current;
+    if (el && pinned.current && count) el.scrollTop = el.scrollHeight;
+  }, [count, lastText]);
+  useEffect(() => () => stop.current?.abort(), []);
 
-  const remove = useMutation({
-    mutationFn: (id: string) => api.delete(`/copilot/sessions/${id}`),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['copilot'] });
-      setParams({}, { replace: true });
-      toast.success(t('copilot.removed'));
-    },
-  });
-
-  const ask = async () => {
-    const text = question.trim();
+  const ask = async (raw: string) => {
+    const text = raw.trim();
     if (text.length < 2 || busy) return;
     setBusy(true);
     setQuestion('');
+    pinned.current = true;
     const ctrl = new AbortController();
     stop.current = ctrl;
     let current = sessionId;
-    setLive({ key: sessionId, messages });
+    const base = messages;
+    const set = (f: (ms: CopilotMessageView[]) => CopilotMessageView[]) => setLive((l) => f(l ?? base));
+    setLive(base);
     try {
       await streamCopilot(
         { question: text, ...(current ? { sessionId: current } : {}) },
         (e) => {
           if (e.type === 'start') {
             current = e.sessionId;
-            setMessages((ms) => [
+            if (!sessionId) {
+              setSessionId(e.sessionId);
+              onSession?.(e.sessionId);
+            }
+            set((ms) => [
               ...ms,
               e.question,
               { ...e.question, id: e.messageId, role: 'assistant', text: '', status: 'streaming' },
             ]);
           } else if (e.type === 'sources' || e.type === 'delta') {
-            setMessages((ms) =>
+            set((ms) =>
               ms.map((m, i) =>
                 i === ms.length - 1
                   ? e.type === 'delta'
@@ -234,7 +257,7 @@ export function CopilotPage() {
               ),
             );
           } else if (e.type === 'done') {
-            setMessages((ms) => ms.map((m, i) => (i === ms.length - 1 ? e.message : m)));
+            set((ms) => ms.map((m, i) => (i === ms.length - 1 ? e.message : m)));
           } else if (e.type === 'error') toast.error(e.message);
         },
         ctrl.signal,
@@ -245,128 +268,133 @@ export function CopilotPage() {
       setBusy(false);
       stop.current = null;
       void qc.invalidateQueries({ queryKey: ['copilot'], exact: true });
-      if (current && current !== sessionId) {
-        setLive((l) => (l ? { ...l, key: current } : l));
-        setParams({ c: current }, { replace: true });
-      } else if (current) void qc.invalidateQueries({ queryKey: ['copilot', 'session', current] });
+      if (current) void qc.invalidateQueries({ queryKey: ['copilot', 'session', current] });
     }
   };
 
   const lastQuestion = [...messages].reverse().find((m) => m.role === 'user')?.text ?? '';
+  const next = (drives.data ?? []).find((d) => d.registrationOpen && !isRegistered(d));
+  const chips: [string, string][] = [
+    ['/eligible', t('ask.chip.eligible')],
+    ...(next
+      ? [
+          [`/prep ${next.company.name}`, t('ask.chip.prep', { company: next.company.name })] as [
+            string,
+            string,
+          ],
+        ]
+      : []),
+    ['/plan', t('ask.chip.plan')],
+    ['/resume', t('ask.chip.resume')],
+  ];
+  const left = home.data?.ai ? home.data.left : null;
+  const loading = !!sessionId && loaded.isLoading && !live;
+
   return (
-    <div className="mx-auto grid w-full max-w-[860px] gap-5">
-      <PageHeader
-        icon={<Sparkles />}
-        title={t('nav.copilot')}
-        intro={t('copilot.intro')}
-        actions={
-          <Button variant="ghost" onClick={() => setParams({}, { replace: true })} disabled={busy}>
-            <Plus className="size-4" aria-hidden /> {t('copilot.new')}
-          </Button>
-        }
-      />
-      {home.isLoading && <Skeleton className="h-24" />}
-      {home.isError && <ErrorState error={home.error} onRetry={() => void home.refetch()} />}
-      {home.data && (
-        <>
-          <p className="text-callout text-fg-2">
-            {t('copilot.rules')}{' '}
-            {home.data.ai
-              ? home.data.left !== null
-                ? t('copilot.left', { count: home.data.left })
-                : ''
-              : t('copilot.aiOff')}
-          </p>
-          {!!home.data.sessions.length && (
-            <nav aria-label={t('copilot.history')} className="flex flex-wrap items-center gap-2">
-              {home.data.sessions.slice(0, 8).map((s) => (
-                <Link
-                  key={s.id}
-                  to={`?c=${s.id}`}
-                  aria-current={s.id === sessionId ? 'page' : undefined}
-                  className="inline-flex min-h-11 max-w-[16rem] items-center truncate rounded-full border border-line px-3 text-callout aria-[current=page]:border-brand aria-[current=page]:text-brand-ink"
-                >
-                  {s.title}
-                </Link>
-              ))}
-              {sessionId && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={t('copilot.remove')}
-                  onClick={() => remove.mutate(sessionId)}
-                >
-                  <Trash2 className="size-4" aria-hidden />
-                </Button>
-              )}
-            </nav>
-          )}
-        </>
-      )}
-      <ol className="grid gap-3" aria-live="polite">
-        {messages.map((m) =>
-          m.role === 'user' ? (
-            <li
-              key={m.id}
-              className="justify-self-end rounded-[var(--radius-lg)] bg-brand-surface px-4 py-2 text-body text-brand-ink"
-            >
-              <span className="sr-only">{t('copilot.you')}: </span>
-              {m.text}
-            </li>
-          ) : (
-            <li key={m.id}>
-              <Answer m={m} q={lastQuestion} />
-            </li>
-          ),
+    <div className="flex h-full min-h-0 flex-col">
+      <div
+        ref={thread}
+        role="log"
+        aria-label={t('copilot.history')}
+        aria-busy={busy}
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          pinned.current = el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM;
+        }}
+        className="grid min-h-0 flex-1 content-start gap-5 overflow-y-auto overscroll-contain py-4"
+      >
+        {loading ? (
+          <Skeleton className="h-40" />
+        ) : messages.length === 0 ? (
+          <div className="grid gap-4 py-4">
+            <p className="flex items-center gap-2 text-headline font-semibold">
+              <Sparkles className="size-5 text-brand-ink" aria-hidden /> {t('ask.career.hello')}
+            </p>
+            <p className="text-fg-2">{t('ask.career.intro')}</p>
+            <div className="grid gap-2">
+              <p className="text-callout font-semibold text-fg-2">{t('ask.chips')}</p>
+              <div className="flex flex-wrap gap-2">
+                {chips.map(([command, label]) => (
+                  <Chip
+                    key={command}
+                    pressed={false}
+                    disabled={busy}
+                    className="h-auto max-w-full shrink py-2 text-start whitespace-normal"
+                    onClick={() => void ask(command)}
+                  >
+                    {label}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          messages.map((m) =>
+            m.role === 'user' ? (
+              <p
+                key={m.id}
+                className="max-w-[85%] justify-self-end rounded-[var(--radius-lg)] bg-brand-surface px-4 py-2 text-body text-pretty break-words text-brand-ink"
+              >
+                <span className="sr-only">{t('copilot.you')}: </span>
+                {careerSaid(t, m.text)}
+              </p>
+            ) : (
+              <Answer key={m.id} m={m} q={careerSaid(t, lastQuestion)} />
+            ),
+          )
         )}
-      </ol>
+      </div>
       <form
-        className="grid gap-3"
+        className="grid gap-2 border-t border-line pt-3"
         onSubmit={(e) => {
           e.preventDefault();
-          void ask();
+          void ask(question);
         }}
       >
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t('copilot.commands')}>
-          {COPILOT_COMMANDS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              className="inline-flex min-h-11 items-center rounded-full border border-line px-3 text-callout hover:border-line-strong"
-              onClick={() => setQuestion(`/${c} `)}
+        <div className="flex items-end gap-2">
+          <Textarea
+            rows={1}
+            maxLength={COPILOT_QUESTION_MAX}
+            aria-label={t('ask.career.ask')}
+            placeholder={t('ask.career.placeholder')}
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                void ask(question);
+              }
+            }}
+            className="max-h-40 min-h-12 resize-none py-3 text-body"
+          />
+          {busy ? (
+            <Button
+              variant="outline"
+              size="icon"
+              className="flex-none"
+              aria-label={t('copilot.stop')}
+              onClick={() => stop.current?.abort()}
             >
-              {t(`copilot.command.${c}`)}
-            </button>
-          ))}
-        </div>
-        <Field label={t('copilot.question')}>
-          {({ id }) => (
-            <Textarea
-              id={id}
-              rows={3}
-              maxLength={COPILOT_QUESTION_MAX}
-              placeholder={t('copilot.placeholder')}
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  void ask();
-                }
-              }}
-            />
-          )}
-        </Field>
-        <div className="flex justify-end gap-2">
-          {busy && (
-            <Button variant="ghost" onClick={() => stop.current?.abort()}>
-              {t('copilot.stop')}
+              <Square className="size-4" aria-hidden />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              variant="primary"
+              size="icon"
+              className="flex-none"
+              aria-label={t('copilot.send')}
+              disabled={question.trim().length < 2}
+            >
+              <ArrowUp className="size-5" aria-hidden />
             </Button>
           )}
-          <Button type="submit" variant="primary" loading={busy} disabled={question.trim().length < 2}>
-            {t('copilot.send')}
-          </Button>
         </div>
+        <TrustNote
+          scope="career"
+          left={left}
+          note={home.data && !home.data.ai ? t('copilot.aiOff') : undefined}
+        />
       </form>
     </div>
   );

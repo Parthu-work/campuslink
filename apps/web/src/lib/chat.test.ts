@@ -15,6 +15,9 @@ describe('study chat helpers', () => {
     expect(parseCommand('What is a DFA?')).toEqual({ command: null, arg: 'What is a DFA?', unknown: null });
     expect(commandMatches('/s')).toEqual(['summary', 'syllabus', 'subject']);
     expect(commandMatches('/videos x')).toEqual([]);
+    // Picked from the menu (a trailing space): the menu closes, so Enter sends it.
+    expect(commandMatches('/help')).toEqual(['help']);
+    expect(commandMatches('/help ')).toEqual([]);
     expect(quizArgs('regular languages 7')).toEqual({ topic: 'regular languages', count: 7 });
     expect(quizArgs('regular languages')).toEqual({ topic: 'regular languages', count: undefined });
   });

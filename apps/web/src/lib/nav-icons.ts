@@ -69,7 +69,6 @@ export const NAV_ICONS: Record<NavId, LucideIcon> = {
   share: Share2,
   captain: Flag,
   companies: Building2,
-  copilot: Sparkles,
   network: Users,
   recruiter: Building2,
   employers: Building2,

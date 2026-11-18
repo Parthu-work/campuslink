@@ -118,6 +118,15 @@ const PACKS = {
       hi: () => import('./packs/mentoring.hi.json'),
     },
   },
+  /** Ask (prompt 3, U8): one assistant, its scopes, history, suggestions as questions, the trust note. */
+  ask: {
+    sections: ['ask'],
+    load: {
+      en: () => import('./packs/ask.en.json'),
+      te: () => import('./packs/ask.te.json'),
+      hi: () => import('./packs/ask.hi.json'),
+    },
+  },
   /** Drives (prompt 3, U7): the record row, Register on a drive's card, rounds, drives on a path. */
   drives: {
     sections: ['drives'],

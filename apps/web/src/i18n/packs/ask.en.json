@@ -1,0 +1,78 @@
+{
+  "ask": {
+    "scopeLabel": "Ask about",
+    "scope": {
+      "study": "Study",
+      "career": "Career"
+    },
+    "history": "Your conversations",
+    "historyButton": "History",
+    "newChat": "New conversation",
+    "noHistory": "Your conversations will be listed here.",
+    "kind": {
+      "study": "Study",
+      "career": "Career"
+    },
+    "deleteOne": "Delete “{{title}}”",
+    "deleted": "Conversation deleted",
+    "clearAll": "Delete all conversations",
+    "clearTitle": "Delete all your conversations?",
+    "clearBody": "Study and career conversations are deleted for good. This cannot be undone.",
+    "clearYes": "Delete all",
+    "cleared": "All conversations deleted",
+    "none": "Ask is not switched on for your college.",
+    "career": {
+      "hello": "Ask about drives, companies and preparing",
+      "intro": "Answers come from your college’s own records, with the sources, and a senior to talk to.",
+      "placeholder": "Ask about drives, companies or preparing…",
+      "ask": "Your question"
+    },
+    "chips": "Try asking",
+    "chip": {
+      "eligible": "Which drives can I register for?",
+      "plan": "Make me a plan for the next few weeks",
+      "resume": "How can my résumé read better?",
+      "prep": "Help me prepare for {{company}}"
+    },
+    "said": {
+      "eligible": "Which drives can I register for?",
+      "plan": "Make me a plan for the next few weeks",
+      "resume": "How can my résumé read better?",
+      "resumeFor": "How can my résumé read better for {{arg}}?",
+      "prep": "Help me prepare for {{arg}}",
+      "prepAny": "Help me prepare for a company",
+      "mock": "Set up a practice interview for {{arg}}",
+      "mockAny": "Set up a practice interview",
+      "videos": "Videos on {{arg}}",
+      "videosAny": "Videos on this subject",
+      "notes": "Notes on {{arg}}",
+      "notesAny": "Notes for this subject",
+      "summary": "Summarise {{arg}}",
+      "summaryAny": "Summarise this subject",
+      "explain": "Explain {{arg}}",
+      "explainAny": "Explain this",
+      "quiz": "Quiz me on {{arg}}",
+      "quizAny": "Quiz me",
+      "flashcards": "Flashcards on {{arg}}",
+      "flashcardsAny": "Flashcards for this subject",
+      "important": "What matters most in {{arg}}",
+      "importantAny": "What matters most here",
+      "syllabus": "Show me the syllabus",
+      "subject": "Answer from {{arg}}",
+      "subjectAll": "Answer from all my subjects",
+      "help": "What can you do?"
+    },
+    "trust": {
+      "study": "Answers come from your college’s material. Sources are linked.",
+      "career": "Answers come from your college’s records. Sources are linked.",
+      "more": "How answers work",
+      "title": "How answers work",
+      "sources": "Every answer is built from what your college has: subject material for Study; drives, company pages, seniors’ write-ups, career paths and your own record for Career. The numbers in an answer are its sources; open one to check it.",
+      "refuse": "If your college’s material does not cover a question, the answer says so instead of guessing. Predictions (a salary you will get, your chances of selection) are never answered.",
+      "mistakes": "Answers are written by AI and can be wrong. Check the sources, and ask a senior or your teacher when it matters.",
+      "private": "Your conversations are yours: nobody else at your college reads them. You can delete them here."
+    },
+    "left_one": "{{count}} question left today",
+    "left_other": "{{count}} questions left today"
+  }
+}

@@ -34,6 +34,8 @@ import { aiStatus, chatSession, subjects as subjectsQuery, syllabus } from '../.
 import { formatDuration } from '../../../lib/study';
 import { toast } from '../../../lib/toast';
 import { cn } from '../../../lib/cn';
+import { studySaid } from '../../ask/said';
+import { TrustNote } from '../../ask/trust-note';
 import { AnswerText } from './answer-text';
 import { HelpCard, ResultCard, SourceChips, SyllabusCard } from './result-cards';
 
@@ -58,17 +60,10 @@ type Item =
 const NEAR_BOTTOM = 160;
 
 function UserBubble({ text }: { text: string }) {
-  const command = /^\/[a-z]+/i.exec(text)?.[0];
+  const { t } = useTranslation();
   return (
     <div className="ms-auto max-w-[85%] rounded-[var(--radius-lg)] rounded-ee-[var(--radius-xs)] bg-brand-surface px-4 py-2.5 break-words whitespace-pre-wrap">
-      {command ? (
-        <>
-          <span className="font-mono font-semibold text-brand-ink">{command}</span>
-          {text.slice(command.length)}
-        </>
-      ) : (
-        text
-      )}
+      {studySaid(t, text)}
     </div>
   );
 }
@@ -196,11 +191,14 @@ export function ChatPanel({
   sessionId: initialSession = null,
   subjectId: initialSubject = null,
   context: initialContext = null,
+  initialInput = '',
   onSession,
 }: {
   sessionId?: string | null;
   subjectId?: string | null;
   context?: AskContext | null;
+  /** A question carried in from search ("Ask about…"), placed in the composer, not sent. */
+  initialInput?: string;
   /** A new conversation got its id (the page puts it in the URL). */
   onSession?: (id: string) => void;
 }) {
@@ -215,7 +213,7 @@ export function ChatPanel({
   const [scope, setScope] = useState<string | null>(initialSubject);
   const [mode, setMode] = useState<AnswerMode>('simple');
   const [context, setContext] = useState<AskContext | null>(initialContext);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(initialInput);
   const [items, setItems] = useState<Item[]>([]);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
   const [active, setActive] = useState(0);
@@ -248,7 +246,8 @@ export function ChatPanel({
   const pinned = useRef(true);
   useEffect(() => {
     const el = thread.current;
-    if (el && pinned.current) el.scrollTop = el.scrollHeight;
+    // The empty state is read from the top; only a conversation follows its end.
+    if (el && pinned.current && items.length) el.scrollTop = el.scrollHeight;
   }, [items]);
   useEffect(() => () => stop.current?.abort(), []);
 
@@ -478,23 +477,28 @@ export function ChatPanel({
               {scopeName ? t('study.chat.introSubject', { name: scopeName }) : t('study.chat.intro')}
             </p>
             <div className="flex flex-wrap gap-2">
-              {suggestions.length
-                ? suggestions.map((s) => {
-                    const q =
-                      s.kind === 'explain'
-                        ? t('study.chat.explainTopic', { topic: s.topic })
-                        : `/${s.kind} ${s.topic}`;
-                    return (
-                      <Chip key={q} pressed={false} onClick={() => send(q)}>
-                        {q}
-                      </Chip>
-                    );
-                  })
-                : (['/help', '/videos ', '/notes '] as const).map((q) => (
-                    <Chip key={q} pressed={false} onClick={() => (q === '/help' ? send(q) : setInput(q))}>
-                      {q.trim()}
+              {suggestions.length ? (
+                suggestions.map((s) => {
+                  const q =
+                    s.kind === 'explain'
+                      ? t('study.chat.explainTopic', { topic: s.topic })
+                      : `/${s.kind} ${s.topic}`;
+                  return (
+                    <Chip
+                      key={q}
+                      pressed={false}
+                      className="h-auto max-w-full shrink py-2 text-start whitespace-normal"
+                      onClick={() => send(q)}
+                    >
+                      {studySaid(t, q)}
                     </Chip>
-                  ))}
+                  );
+                })
+              ) : (
+                <Chip pressed={false} onClick={() => send('/help')}>
+                  {studySaid(t, '/help')}
+                </Chip>
+              )}
             </div>
           </div>
         ) : (
@@ -669,13 +673,16 @@ export function ChatPanel({
             )}
           </div>
         </div>
-        <p className="text-caption text-fg-3">
-          {status.data?.answers
-            ? t('study.chat.disclaimer')
-            : status.data?.reason === 'budget_exhausted'
-              ? t('study.chat.budgetNote')
-              : t('study.chat.passagesOnly')}
-        </p>
+        <TrustNote
+          scope="study"
+          note={
+            !status.data || status.data.answers
+              ? undefined
+              : status.data.reason === 'budget_exhausted'
+                ? t('study.chat.budgetNote')
+                : t('study.chat.passagesOnly')
+          }
+        />
       </div>
     </div>
   );

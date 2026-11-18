@@ -401,7 +401,7 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
   // J10 (G13): Prompt 2 screens, first visits from the menu, a company page and back.
   for (const [name, slug, path] of [
     ['Companies', 'companies', '^/companies$'],
-    ['Career Copilot', 'copilot', '^/copilot$'],
+    ['Ask', 'assistant', '^/ask'],
     ['Résumé', 'resume', '^/resume$'],
     ['Practice', 'practice', '^/practice$'],
   ] as const)

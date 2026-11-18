@@ -17,6 +17,7 @@ import {
   Newspaper,
   Orbit,
   Plus,
+  Sparkles,
   SunMoon,
   User,
   type LucideIcon,
@@ -129,6 +130,15 @@ export function CommandPalette() {
 
   // "Go to" lists every section of the member's spaces (one navigation model).
   const model = useNav();
+  // "Ask: …" (prompt 3, U8): what was typed, carried to Ask's composer (in the router's state, not
+  // the address), never sent on its own.
+  const askable = model.spaces.some((x) => x.sections.some((c) => c.key === 'assistant' && !c.locked));
+  const askAbout = (question: string) => {
+    setOpen(false);
+    setQ('');
+    const onPaletteEntry = (window.history.state as { usr?: { dialog?: string } } | null)?.usr?.dialog;
+    navigate('/ask', { state: { ask: question, fresh: Date.now() }, replace: onPaletteEntry !== undefined });
+  };
   const iconOf = (key: string): LucideIcon =>
     key.startsWith('admin:') ? ADMIN_ICONS[key.slice(6) as AdminSectionId] : NAV_ICONS[key as NavId];
   const nav = [
@@ -151,6 +161,7 @@ export function CommandPalette() {
   const companyList = (companyHits.data?.items ?? []).slice(0, 5);
   const subjectList = (subjectHits.data ?? []).slice(0, 5);
   const found =
+    (askable && searching) ||
     !!people.data?.people.length ||
     companyList.length > 0 ||
     drives.length > 0 ||
@@ -199,6 +210,16 @@ export function CommandPalette() {
                       </Command.Item>
                     );
                   })}
+                </Command.Group>
+              )}
+              {askable && searching && (
+                <Command.Group heading={t('nav.assistant')} className={group}>
+                  <Command.Item value={`ask-${dq}`} onSelect={() => askAbout(dq)} className={item}>
+                    <Sparkles className={lead} aria-hidden />
+                    <span className="min-w-0 flex-1 truncate">
+                      {t('nav.assistant')}: “{dq}”
+                    </span>
+                  </Command.Item>
                 </Command.Group>
               )}
               {!!people.data?.people.length && (

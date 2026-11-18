@@ -107,7 +107,7 @@ export const SCREENS: Record<AuditRole, AuditScreen[]> = {
     { slug: 'study', path: '/study' },
     { slug: 'study-subject', follow: FLAT },
     { slug: 'study-material', follow: { ...FLAT, then: 'a[href*="/m/"]' }, ready: 'main canvas' },
-    { slug: 'study-chat', path: '/study/chat' },
+    { slug: 'study-chat', path: '/ask?scope=study' },
     // Prompt 2 (G2 to G12).
     { slug: 'placements', path: '/placements' },
     { slug: 'resume', path: '/resume' },
@@ -123,7 +123,7 @@ export const SCREENS: Record<AuditRole, AuditScreen[]> = {
     { slug: 'company', follow: { from: '/companies', link: 'main a[href^="/companies/"]', text: /Nimbus/ } },
     { slug: 'experiences', path: '/experiences' },
     { slug: 'experience-new', path: '/experiences/new' },
-    { slug: 'copilot', path: '/copilot' },
+    { slug: 'copilot', path: '/ask?scope=career' },
     { slug: 'network', path: '/network' },
   ],
   finalyear: [
@@ -139,7 +139,7 @@ export const SCREENS: Record<AuditRole, AuditScreen[]> = {
     { slug: 'placements', path: '/placements' },
     { slug: 'companies', path: '/companies' },
     { slug: 'company', follow: { from: '/companies', link: 'main a[href^="/companies/"]', text: /Kestrel/ } },
-    { slug: 'copilot', path: '/copilot' },
+    { slug: 'copilot', path: '/ask?scope=career' },
     { slug: 'network', path: '/network' },
     { slug: 'mentors-match', path: '/mentors' },
   ],
@@ -255,7 +255,7 @@ export const TELUGU: { slug: string; path: string }[] = [
   { slug: 'share', path: '/share' },
   { slug: 'companies', path: '/companies' },
   { slug: 'experience-new', path: '/experiences/new' },
-  { slug: 'copilot', path: '/copilot' },
+  { slug: 'copilot', path: '/ask?scope=career' },
   { slug: 'network', path: '/network' },
 ];
 /** The languages captured besides English (`cl:lang`). */

@@ -441,6 +441,8 @@ describe('spaces (prompt 3, U2)', () => {
     const off = model([Role.STUDENT], { features: { study: false, placements: false, reels: false } });
     expect(keys(off, 'learn')).not.toContain('study');
     expect(keys(off, 'learn')).not.toContain('assistant');
+    // Ask stays while either of its scopes is on (prompt 3, U8).
+    expect(keys(model([Role.STUDENT], { features: { study: false } }), 'learn')).toContain('assistant');
     expect(keys(off, 'career')).not.toContain('placements');
     expect(keys(off, 'home')).not.toContain('reels');
     expect(off.spaces.find((x) => x.id === 'career')?.path).toBe('/jobs');
@@ -479,7 +481,7 @@ describe('spaces (prompt 3, U2)', () => {
     expect(owner('/posts/65f0')).toEqual(['home', 'home']);
     expect(owner('/roadmaps/sde-dsa')).toEqual(['learn', 'roadmaps']);
     // The longest section path wins.
-    expect(owner('/study/chat/abc')).toEqual(['learn', 'assistant']);
+    expect(owner('/ask')).toEqual(['learn', 'assistant']);
     expect(owner('/study/65f0/m/1')).toEqual(['learn', 'study']);
     // A prefix is a whole segment: /mentorship is Requests, /mentors/… is Mentors.
     expect(owner('/mentorship')).toEqual(['mentors', 'requests']);

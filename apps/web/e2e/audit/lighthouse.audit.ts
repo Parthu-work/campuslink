@@ -37,7 +37,7 @@ const RUNS: { name: string; path: string; signedIn: boolean; warm?: boolean }[] 
   { name: 'study-cold', path: '/study', signedIn: true },
   // Prompt 2 (G13 re-audit).
   { name: 'companies-cold', path: '/companies', signedIn: true },
-  { name: 'copilot-cold', path: '/copilot', signedIn: true },
+  { name: 'copilot-cold', path: '/ask?scope=career', signedIn: true },
   { name: 'resume-cold', path: '/resume', signedIn: true },
   { name: 'practice-cold', path: '/practice', signedIn: true },
   { name: 'readiness-cold', path: '/readiness', signedIn: true },

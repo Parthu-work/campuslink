@@ -122,7 +122,7 @@ for (const [lang, file] of [
       '/practice',
       '/readiness',
       '/companies',
-      '/copilot',
+      '/ask?scope=career',
       '/share',
       '/network',
     ]) {

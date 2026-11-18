@@ -81,12 +81,11 @@ const COLLEGE_SHIPPED: ReadonlySet<NavId> = new Set<NavId>([
   'practice',
   'peers',
   'circles',
-  // Prompt 2: G8's share and Campus Captain screens, G10's company pages, G11's Career Copilot (their
+  // Prompt 2: G8's share and Campus Captain screens, G10's company pages (their
   // screens shipped, but the menu and palette never offered them).
   'share',
   'captain',
   'companies',
-  'copilot',
   'requests',
   'roadmaps',
   'events',
