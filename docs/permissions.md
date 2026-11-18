@@ -599,6 +599,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `POST /api/v1/copilot/chat` | `copilot:use` · feature `placements` | college | aiChat | Ask the Career Copilot or run a command; cited answers stream as server-sent events |
 | `GET /api/v1/copilot/sessions/:id` | `copilot:use` · feature `placements` | college | — | One of my Career Copilot conversations |
 | `DELETE /api/v1/copilot/sessions/:id` | `copilot:use` · feature `placements` | college | — | Delete one of my Career Copilot conversations |
+| `POST /api/v1/copilot/messages/:id/feedback` | `copilot:use` · feature `placements` | college | — | Thumbs up or down on one of my Career Copilot answers (null clears it) |
 | `POST /api/v1/copilot/handoff` | `copilot:use` · feature `placements` | college | — | Record that a human next step under an answer was opened |
 | `GET /api/v1/network/me` | `network:discover` | college | — | My network settings, consents and who opened what I shared |
 | `PUT /api/v1/network/me` | `network:discover` | college | — | What other colleges and employers may see of me (the projection follows at once) |

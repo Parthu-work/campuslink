@@ -1,4 +1,11 @@
-import { ErrorCode, copilotAskBody, copilotHandoffBody, copilotSessionParams } from '@campuslink/shared';
+import {
+  ErrorCode,
+  copilotAskBody,
+  copilotFeedbackBody,
+  copilotHandoffBody,
+  copilotMessageParams,
+  copilotSessionParams,
+} from '@campuslink/shared';
 import type { AnyRouteSpec } from '../../http/registry.js';
 import { authOf } from '../../http/request-context.js';
 import { AppError } from '../../lib/errors.js';
@@ -80,6 +87,18 @@ export function copilotRoutes(copilot: CopilotService, logger: Pick<Logger, 'err
         await copilot.removeSession(authOf(req), params.id);
         return { status: 204, data: null };
       },
+    },
+    {
+      method: 'post',
+      path: '/copilot/messages/:id/feedback',
+      tag,
+      summary: 'Thumbs up or down on one of my Career Copilot answers (null clears it)',
+      access: USE,
+      params: copilotMessageParams,
+      body: copilotFeedbackBody,
+      handler: async ({ req, params, body }) => ({
+        data: await copilot.feedback(authOf(req), params.id, body.rating),
+      }),
     },
     {
       method: 'post',

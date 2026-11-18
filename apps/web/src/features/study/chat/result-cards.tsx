@@ -1,7 +1,16 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from '../../../i18n/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, ChevronLeft, ChevronRight, ExternalLink, Layers, RotateCw, X } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Layers,
+  MessageCircleQuestion,
+  RotateCw,
+  X,
+} from 'lucide-react';
 import {
   SLASH_COMMANDS,
   type ChatCitation,
@@ -12,6 +21,7 @@ import {
   type SyllabusView,
 } from '@campuslink/shared';
 import { Button } from '../../../components/ui/button';
+import { buttonVariants } from '../../../components/ui/button-variants';
 import { ChoiceGroup } from '../../../components/ui/choice-group';
 import { Input } from '../../../components/ui/field';
 import { IntentLink } from '../../../components/ui/intent-link';
@@ -19,6 +29,7 @@ import { Badge, Card, Chip } from '../../../components/ui/misc';
 import { api, ApiError } from '../../../lib/api';
 import { celebrate, firstSighting } from '../../../lib/celebrate';
 import { citationHref } from '../../../lib/chat';
+import { useCan } from '../../../lib/me';
 import { MATERIAL_ICONS } from '../../../lib/material-icons';
 import { formatDuration } from '../../../lib/study';
 import { toast } from '../../../lib/toast';
@@ -27,6 +38,33 @@ import { cn } from '../../../lib/cn';
 type Ask = (input: string) => void;
 
 /** Topic chips that ask about a nearby topic instead. */
+/**
+ * When the college's material does not cover a question (prompt 3, U8): a card with the topics it
+ * does cover nearby and the people to ask, rather than an answer from nowhere.
+ */
+function NotCovered({ topics, onAsk }: { topics: string[]; onAsk: Ask }) {
+  const { t } = useTranslation();
+  const canAsk = useCan('qa:ask');
+  return (
+    <Card className="grid gap-3 p-4">
+      <p className="flex items-start gap-2 text-body">
+        <MessageCircleQuestion className="mt-0.5 size-5 flex-none text-brand-ink" aria-hidden />
+        <span>{t('study.chat.notCovered')}</span>
+      </p>
+      <p className="text-caption text-fg-3">{t('study.chat.notCoveredLogged')}</p>
+      <Nearby topics={topics} onAsk={onAsk} />
+      {canAsk && (
+        <IntentLink
+          to="/questions?ask=1"
+          className={buttonVariants({ variant: 'secondary', className: 'w-fit' })}
+        >
+          {t('ask.refusal.qa')}
+        </IntentLink>
+      )}
+    </Card>
+  );
+}
+
 function Nearby({ topics, onAsk, command }: { topics: string[]; onAsk: Ask; command?: string }) {
   const { t } = useTranslation();
   if (!topics.length) return null;
@@ -454,13 +492,7 @@ export function ResultCard({
     case 'flashcards':
       return <Flashcards m={m} r={r} />;
     case 'not_covered':
-      return (
-        <div className="grid gap-3">
-          <p>{t('study.chat.notCovered')}</p>
-          <p className="text-caption text-fg-3">{t('study.chat.notCoveredLogged')}</p>
-          <Nearby topics={r.nearby} onAsk={onAsk} />
-        </div>
-      );
+      return <NotCovered topics={r.nearby} onAsk={onAsk} />;
     case 'passages': {
       // A limit (the college's monthly budget, or my daily answers) rather than AI being off.
       const limit = r.reason === 'budget_exhausted' || r.reason === 'daily_limit' ? r.reason : null;

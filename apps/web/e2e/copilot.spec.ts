@@ -32,10 +32,26 @@ test('a student gets a cited answer, a refusal for a prediction, and a command r
   await expect(page.getByRole('link', { name: /Kestrel Analytics/ }).first()).toBeVisible();
   await expect(page.getByText('Talk to a person')).toBeVisible();
   await expectNoA11yViolations(page);
+  // Prompt 3, U8: a numbered source opens its card; thumbs on the answer are kept.
+  await page
+    .getByRole('button', { name: /^Source 1: / })
+    .first()
+    .click();
+  const card = page.getByRole('dialog', { name: 'Source 1' });
+  await expect(card.getByRole('link', { name: 'Open it' })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Helpful', exact: true }).last().click();
+  await expect(page.getByRole('button', { name: 'Helpful', exact: true }).last()).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
 
   await box.fill('What salary will I get at Kestrel Analytics?');
   await page.getByRole('button', { name: 'Ask', exact: true }).click();
   await expect(page.getByText(/can’t predict salaries/)).toBeVisible({ timeout: 20_000 });
+  // The refusal is a card with the people to ask in it.
+  await expect(page.getByRole('article').last().getByRole('link', { name: /./ }).first()).toBeVisible();
   await page.waitForURL(/\/ask\?scope=career&s=[a-f0-9]{24}$/);
 
   // A new conversation: a suggestion is a question; it reads back as one, never as "/eligible".

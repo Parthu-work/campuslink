@@ -1,9 +1,8 @@
-import { Fragment, lazy, Suspense, useMemo, type ReactNode } from 'react';
+import { Fragment, lazy, Suspense, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from '../../../i18n/react';
-import type { ChatCitation } from '@campuslink/shared';
-import { IntentLink } from '../../../components/ui/intent-link';
 import { parseAnswer, type AInline, type ABlock } from '../../../lib/answer-markdown';
-import { citationHref } from '../../../lib/chat';
+import { SourceCard, type Cited } from './source-card';
+import { useStudyOrigin } from './source-origin';
 
 // KaTeX and its wrapper load only when an answer has maths.
 const MathTex = lazy(() => import('./math-tex').then((m) => ({ default: m.MathTex })));
@@ -139,40 +138,57 @@ function Block({ b, cite }: { b: ABlock; cite: (n: number) => ReactNode }) {
 }
 
 /**
- * An answer rendered from the answer markdown subset as React elements. `[n]` becomes a small
- * link to that source (the PDF page or the video moment), when it is one of the answer's sources.
+ * An answer rendered from the answer markdown subset as React elements. `[n]` becomes a numbered
+ * marker that opens that source's card (prompt 3, U8): its title, where it is from, the passage the
+ * answer used, and a way to open it (the PDF page, the video moment, the company page…).
  */
 export function AnswerText({
   text,
   citations,
   q,
+  originOf,
 }: {
   text: string;
   /** Study passages, or (prompt 2, G11) Career Copilot sources that carry their own link. */
-  citations: (ChatCitation | { n: number; title: string; href: string })[];
+  citations: Cited[];
   q: string;
+  /** Where a source is from, in words (the Copilot's source kinds); study passages say their page. */
+  originOf?: (c: Cited) => string;
 }) {
   const { t } = useTranslation();
+  const studyOrigin = useStudyOrigin();
+  const [open, setOpen] = useState<Cited | null>(null);
   const blocks = useMemo(() => parseAnswer(text), [text]);
   const byN = useMemo(() => new Map(citations.map((c) => [c.n, c])), [citations]);
   const cite = (n: number) => {
     const c = byN.get(n);
     if (!c) return <span className="text-fg-3">[{n}]</span>;
     return (
-      <IntentLink
-        to={'href' in c ? c.href : citationHref(c, q)}
-        className="mx-0.5 inline-grid min-w-5 place-items-center rounded-full bg-brand-surface px-1 align-super text-caption font-semibold text-brand-ink hover:underline"
+      <button
+        type="button"
+        onClick={() => setOpen(c)}
+        aria-haspopup="dialog"
+        // The marker is small; its hit area is 44 px (prompt 3, F4).
+        className="relative mx-0.5 inline-grid min-w-5 place-items-center rounded-full bg-brand-surface px-1 align-super text-caption font-semibold text-brand-ink after:absolute after:-inset-3 after:content-[''] hover:underline"
         aria-label={t('study.chat.sourceN', { n, title: c.title })}
       >
         {n}
-      </IntentLink>
+      </button>
     );
   };
   return (
-    <div className="grid gap-2 leading-relaxed break-words">
-      {blocks.map((b, i) => (
-        <Block key={i} b={b} cite={cite} />
-      ))}
-    </div>
+    <>
+      <div className="grid gap-2 leading-relaxed break-words">
+        {blocks.map((b, i) => (
+          <Block key={i} b={b} cite={cite} />
+        ))}
+      </div>
+      <SourceCard
+        cited={open}
+        q={q}
+        origin={open ? (originOf?.(open) ?? studyOrigin(open)) : ''}
+        onClose={() => setOpen(null)}
+      />
+    </>
   );
 }

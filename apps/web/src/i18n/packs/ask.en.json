@@ -73,6 +73,13 @@
       "private": "Your conversations are yours: nobody else at your college reads them. You can delete them here."
     },
     "left_one": "{{count}} question left today",
-    "left_other": "{{count}} questions left today"
+    "left_other": "{{count}} questions left today",
+    "source": {
+      "title": "Source {{n}}",
+      "open": "Open it"
+    },
+    "refusal": {
+      "qa": "Ask your seniors in Q&A"
+    }
   }
 }

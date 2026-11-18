@@ -109,6 +109,10 @@ describe('tenant isolation: the Career Copilot (prompt 2, G11)', () => {
     expect(
       (await asB.post('/copilot/handoff').send({ messageId: done.message.id, kind: 'drive' })).status,
     ).toBe(404);
+    // Thumbs on an answer (prompt 3, U8): not from another college.
+    expect(
+      (await asB.post(`/copilot/messages/${done.message.id}/feedback`).send({ rating: 'down' })).status,
+    ).toBe(404);
     expect(JSON.stringify((await asB.get('/copilot')).body.data.sessions)).not.toContain(start.sessionId);
     expect((await api(ctx, B.host, studentA.token).get('/copilot')).status).toBe(401);
     expect(await runInTenant(B._id, () => CopilotMessageModel.countDocuments({ userId: studentA.id }))).toBe(

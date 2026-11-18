@@ -94,6 +94,8 @@ export interface CopilotMessageDoc {
   handoffs: CopilotHandoff[];
   result: CopilotResult | null;
   status: 'streaming' | 'done' | 'failed';
+  /** The member's thumbs on an answer (prompt 3, U8). */
+  feedback?: 'up' | 'down' | null;
   purgeAt: Date;
   createdAt: Date;
 }
@@ -108,6 +110,7 @@ const messageSchema = new Schema(
     handoffs: { type: [Schema.Types.Mixed], default: [] },
     result: { type: Schema.Types.Mixed, default: null },
     status: { type: String, enum: ['streaming', 'done', 'failed'], default: 'done' },
+    feedback: { type: String, enum: ['up', 'down', null], default: null },
     purgeAt: { type: Date, required: true },
   },
   baseSchemaOptions,

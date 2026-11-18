@@ -342,6 +342,34 @@ describe('next steps, conversations and permissions (G11)', () => {
     ).toBe(404);
   });
 
+  it('thumbs on an answer (prompt 3, U8): the member\x27s own answers only, and cleared with null', async () => {
+    const r = await ask(student, 'Which companies hire data analysts from here?');
+    const up = await as(student).post(`/copilot/messages/${r.message.id}/feedback`).send({ rating: 'up' });
+    expect(up.status).toBe(200);
+    expect(up.body.data).toMatchObject({ id: r.message.id, feedback: 'up' });
+    const sid = r.start.sessionId;
+    const kept = await as(student).get(`/copilot/sessions/${sid}`);
+    expect(kept.body.data.messages.at(-1)).toMatchObject({ feedback: 'up' });
+    // Cleared; a question (not an answer) and another member's answer are not found; strict body.
+    const cleared = await as(student)
+      .post(`/copilot/messages/${r.message.id}/feedback`)
+      .send({ rating: null });
+    expect(cleared.body.data.feedback).toBeNull();
+    const question = kept.body.data.messages.at(-2).id;
+    expect(
+      (await as(student).post(`/copilot/messages/${question}/feedback`).send({ rating: 'up' })).status,
+    ).toBe(404);
+    expect(
+      (await as(other).post(`/copilot/messages/${r.message.id}/feedback`).send({ rating: 'down' })).status,
+    ).toBe(404);
+    expect(
+      (await as(student).post(`/copilot/messages/${r.message.id}/feedback`).send({ rating: 'meh' })).status,
+    ).toBe(400);
+    expect(
+      (await as(faculty).post(`/copilot/messages/${r.message.id}/feedback`).send({ rating: 'up' })).status,
+    ).toBe(403);
+  });
+
   it('conversations are private to the member', async () => {
     const r = await ask(student, 'What rounds does Nimbus Labs have?');
     const sid = r.start.sessionId;

@@ -1,7 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowRight, ArrowUp, Sparkles, Square, UserRound } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  ArrowRight,
+  ArrowUp,
+  Copy,
+  MessageCircleQuestion,
+  RefreshCw,
+  Sparkles,
+  Square,
+  ThumbsDown,
+  ThumbsUp,
+  UserRound,
+} from 'lucide-react';
 import {
   COPILOT_QUESTION_MAX,
   type CopilotHandoff,
@@ -14,6 +25,7 @@ import { buttonVariants } from '../../components/ui/button-variants';
 import { Textarea } from '../../components/ui/field';
 import { Badge, Card, Chip, Skeleton } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
+import { answerPlain } from '../../lib/answer-markdown';
 import { formatDateTime, formatDay } from '../../lib/format';
 import { useCan } from '../../lib/me';
 import { isRegistered } from '../../lib/placements';
@@ -143,16 +155,63 @@ function Result({ result }: { result: CopilotResult }) {
   }
 }
 
-function Answer({ m, q }: { m: CopilotMessageView; q: string }) {
+/**
+ * One career answer (prompt 3, U8): a refusal as a card with the people to ask, otherwise the
+ * result, the text with its numbered sources (each opens a card), the sources listed, and a person
+ * to talk to; then copy, ask again and thumbs, as on study answers.
+ */
+function Answer({
+  m,
+  q,
+  last,
+  busy,
+  onRetry,
+  onUpdated,
+}: {
+  m: CopilotMessageView;
+  q: string;
+  last: boolean;
+  busy: boolean;
+  onRetry: () => void;
+  onUpdated: (m: CopilotMessageView) => void;
+}) {
   const { t } = useTranslation();
+  const rate = useMutation({
+    mutationFn: (rating: 'up' | 'down' | null) =>
+      api.post<CopilotMessageView>(`/copilot/messages/${m.id}/feedback`, { rating }),
+    onSuccess: (v) => {
+      onUpdated(v);
+      if (v.feedback) toast.success(t('study.chat.thanks'));
+    },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : t('errors.generic')),
+  });
+  const refusal = m.result?.kind === 'refusal' ? m.result : null;
+  const done = m.status === 'done';
   return (
     <article className="grid gap-3" aria-label={t('copilot.copilot')}>
       {m.status === 'streaming' && !m.text && (
         <p className="text-callout text-fg-2">{t('copilot.thinking')}</p>
       )}
       {m.status === 'failed' && <p className="text-callout text-danger-ink">{t('copilot.failed')}</p>}
-      {m.result && <Result result={m.result} />}
-      {m.text && <AnswerText text={m.text} citations={m.citations} q={q} />}
+      {refusal ? (
+        <Card className="grid gap-3 p-4">
+          <p className="flex items-start gap-2 text-body">
+            <MessageCircleQuestion className="mt-0.5 size-5 flex-none text-brand-ink" aria-hidden />
+            <span>{t(`copilot.refusal.${refusal.reason}`)}</span>
+          </p>
+          <Handoffs message={m} />
+        </Card>
+      ) : (
+        m.result && <Result result={m.result} />
+      )}
+      {m.text && (
+        <AnswerText
+          text={m.text}
+          citations={m.citations}
+          q={q}
+          originOf={(c) => ('kind' in c ? t(`copilot.kind.${c.kind}`) : '')}
+        />
+      )}
       {!!m.citations.length && (
         <div className="grid gap-1">
           <p className="text-callout font-semibold">{t('copilot.sources')}</p>
@@ -172,7 +231,63 @@ function Answer({ m, q }: { m: CopilotMessageView; q: string }) {
           </ol>
         </div>
       )}
-      <Handoffs message={m} />
+      {!refusal && <Handoffs message={m} />}
+      {(done || m.status === 'failed') && (
+        <div className="flex flex-wrap items-center gap-1">
+          {!!m.text && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t('study.chat.copy')}
+              onClick={() =>
+                void navigator.clipboard
+                  ?.writeText(answerPlain(m.text))
+                  .then(() => toast.success(t('study.chat.copied')))
+                  .catch(() => undefined)
+              }
+            >
+              <Copy className="size-4" aria-hidden />
+            </Button>
+          )}
+          {last && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t('study.chat.regenerate')}
+              disabled={busy}
+              onClick={onRetry}
+            >
+              <RefreshCw className="size-4" aria-hidden />
+            </Button>
+          )}
+          {done && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('study.chat.helpful')}
+                aria-pressed={m.feedback === 'up'}
+                className="aria-pressed:text-brand-ink"
+                disabled={rate.isPending}
+                onClick={() => rate.mutate(m.feedback === 'up' ? null : 'up')}
+              >
+                <ThumbsUp className="size-4" aria-hidden />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t('study.chat.notHelpful')}
+                aria-pressed={m.feedback === 'down'}
+                className="aria-pressed:text-brand-ink"
+                disabled={rate.isPending}
+                onClick={() => rate.mutate(m.feedback === 'down' ? null : 'down')}
+              >
+                <ThumbsDown className="size-4" aria-hidden />
+              </Button>
+            </>
+          )}
+        </div>
+      )}
     </article>
   );
 }
@@ -339,7 +454,18 @@ export function CareerPanel({
                 {careerSaid(t, m.text)}
               </p>
             ) : (
-              <Answer key={m.id} m={m} q={careerSaid(t, lastQuestion)} />
+              <Answer
+                key={m.id}
+                m={m}
+                q={careerSaid(t, lastQuestion)}
+                last={m.id === messages.at(-1)?.id}
+                busy={busy}
+                onRetry={() => void ask(lastQuestion)}
+                onUpdated={(v) => {
+                  setLive((l) => (l ?? messages).map((x) => (x.id === v.id ? v : x)));
+                  if (sessionId) void qc.invalidateQueries({ queryKey: ['copilot', 'session', sessionId] });
+                }}
+              />
             ),
           )
         )}

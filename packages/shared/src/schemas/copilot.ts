@@ -21,6 +21,9 @@ export const copilotAskBody = z.strictObject({
 });
 export type CopilotAskInput = z.input<typeof copilotAskBody>;
 export const copilotSessionParams = z.strictObject({ id: objectId });
+/** Thumbs on one of my Copilot's answers (prompt 3, U8: as on study answers); null clears it. */
+export const copilotFeedbackBody = z.strictObject({ rating: z.enum(['up', 'down']).nullable() });
+export const copilotMessageParams = z.strictObject({ id: objectId });
 export const copilotHandoffBody = z.strictObject({
   messageId: objectId,
   kind: z.enum(COPILOT_HANDOFFS),
@@ -79,6 +82,8 @@ export interface CopilotMessageView {
   handoffs: CopilotHandoff[];
   result: CopilotResult | null;
   status: 'streaming' | 'done' | 'failed';
+  /** The member's own thumbs on an answer (prompt 3, U8). */
+  feedback: 'up' | 'down' | null;
   createdAt: string;
 }
 export interface CopilotSessionView {

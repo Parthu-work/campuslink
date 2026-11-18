@@ -547,6 +547,34 @@ U7b's CI: green (run 44314839487).
 | End-to-end (local, freshly reseeded)               | `copilot`, `study`, `spaces`, `navigation`, `accessibility`, `landing`, `today`, `roadmaps`, `shell`, `features`: 88 passed, 16 skipped (phone-only and desktop-only tests) |
 | Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                    |
 
+## U8b · Ask: the answer
+
+**Shipped.**
+
+- **Citations open source cards** (`features/study/chat/source-card.tsx`): the numbered marker in an answer is now a button (a 44 px hit area around the small number) that opens the source's card: its title, where it is from (a study passage's page or moment; a career source's kind: company page, drive, write-up, career path, a senior, your record), the passage the answer used, and **Open it**. Both chats; the sources listed under an answer stay links as before.
+- **Refusals as a card with people to ask**: a career refusal (a prediction, or something the college's records do not cover) is a card with the reason and the human next steps in it; a study question the material does not cover is a card with the nearby topics and **Ask your seniors in Q&A** (for members who can ask).
+- **Copy, ask again and thumbs on career answers**, as on study answers.
+- **API**: `POST /copilot/messages/:id/feedback` (`{ rating: 'up' | 'down' | null }`), the member's own answers only (a question, another member's answer, or another college's are not found); `CopilotMessageView.feedback`; the feedback is in the data export with the message and erased with it. Tests in `copilot.test.ts` and the cross-college suite; `docs:gen` regenerated.
+- e2e `copilot.spec.ts`: a source marker opens its card with Open it; thumbs up stays pressed; the salary refusal is a card with a person to ask.
+
+**Decisions.**
+
+- **Career feedback has no reasons**: the study assistant asks why after a thumbs down because faculty read those reasons to fix material; the Copilot's sources are records the member cannot change, so the thumbs alone are kept (for the college's own quality review later).
+
+### Gate results (U8b)
+
+| Gate                                               | Result                                                                                                                                                                                          |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                            |
+| Shared tests                                       | 221 passed                                                                                                                                                                                      |
+| Web tests                                          | 159 passed                                                                                                                                                                                      |
+| API tests                                          | 1,367 passed, 7 skipped, coverage 90.28% statements and 76.55% branches (the whole suite, 4 workers; new: Copilot feedback, own answers only, and from another college); `docs:gen` regenerated |
+| `pnpm build` and bundle budget                     | Pass: initial 162.2 KB                                                                                                                                                                          |
+| End-to-end (local, freshly reseeded)               | `copilot`, `study`, `accessibility`, `spaces`, `navigation`, `landing`, `roadmaps`: 60 passed, 10 skipped (phone-only and desktop-only tests)                                                   |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                        |
+
+U8a's CI: green (run 44350154611).
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

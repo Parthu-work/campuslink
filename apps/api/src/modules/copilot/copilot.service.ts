@@ -133,6 +133,7 @@ export class CopilotService {
       handoffs: m.handoffs,
       result: m.result,
       status: m.status,
+      feedback: m.feedback ?? null,
       createdAt: m.createdAt.toISOString(),
     };
   }
@@ -176,6 +177,21 @@ export class CopilotService {
     const s = await this.owned(viewer, id);
     await CopilotMessageModel.deleteMany({ sessionId: s._id, userId: oid(viewer.userId) });
     await CopilotSessionModel.deleteOne({ _id: s._id });
+  }
+
+  /** Thumbs on one of the member's own answers (prompt 3, U8); anyone else's is not found. */
+  async feedback(
+    viewer: AuthState,
+    messageId: string,
+    rating: 'up' | 'down' | null,
+  ): Promise<CopilotMessageView> {
+    const m = await CopilotMessageModel.findOneAndUpdate(
+      { _id: oid(messageId), userId: oid(viewer.userId), role: 'assistant' },
+      { $set: { feedback: rating } },
+      { returnDocument: 'after' },
+    ).lean<CopilotMessageDoc>();
+    if (!m) throw notFound('Answer');
+    return this.messageView(m);
   }
 
   /** A human next step was opened (`copilot_handoff`); only the member's own answers count. */
@@ -587,7 +603,7 @@ export class CopilotService {
         .select('title lastMessageAt messageCount')
         .lean(),
       CopilotMessageModel.find({ userId: oid(userId) })
-        .select('sessionId role text command citations handoffs result createdAt')
+        .select('sessionId role text command citations handoffs result feedback createdAt')
         .lean(),
     ]);
     return { copilotConversations: sessions, copilotMessages: messages };

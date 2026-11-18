@@ -27575,6 +27575,72 @@
         "x-permission": "copilot:use"
       }
     },
+    "/api/v1/copilot/messages/{id}/feedback": {
+      "post": {
+        "tags": [
+          "Career Copilot"
+        ],
+        "summary": "Thumbs up or down on one of my Career Copilot answers (null clears it)",
+        "description": "Requires permission `copilot:use` (Ask the Career Copilot: cited answers from the college’s own placement data, then a human to talk to). Host scope: college.",
+        "operationId": "copilot_post_copilot_messages_id_feedback",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "rating": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "up",
+                          "down"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "rating"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "copilot:use"
+      }
+    },
     "/api/v1/copilot/handoff": {
       "post": {
         "tags": [
