@@ -109,6 +109,15 @@ const PACKS = {
       hi: () => import('./packs/design.hi.json'),
     },
   },
+  /** Mentoring (prompt 3, U6): match strength and filters, the request steps, seniors on a path. */
+  mentoring: {
+    sections: ['mentoring'],
+    load: {
+      en: () => import('./packs/mentoring.en.json'),
+      te: () => import('./packs/mentoring.te.json'),
+      hi: () => import('./packs/mentoring.hi.json'),
+    },
+  },
   /** Home's Today (prompt 3, U5): the Today card, waiting requests, suggestions and Coming up. */
   today: {
     sections: ['today'],

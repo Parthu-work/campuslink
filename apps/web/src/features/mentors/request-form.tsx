@@ -1,54 +1,55 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from '../../i18n/react';
-import { useForm, useWatch } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { CalendarClock, Clock, Plus } from 'lucide-react';
+import { ArrowLeft, Clock } from 'lucide-react';
 import {
   isBookable,
   REQUEST_MESSAGE_MAX,
   REQUEST_MESSAGE_MIN,
-  requestMessage,
   type MentorCard,
   type RequestView,
   type SessionType,
   type SlotsView,
 } from '@campuslink/shared';
-import type { z } from 'zod';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { ChoiceGroup } from '../../components/ui/choice-group';
-import { Field, Select, Textarea } from '../../components/ui/field';
+import { Field, Input, Select } from '../../components/ui/field';
 import { EmptyState } from '../../components/ui/misc';
 import { Illustration } from '../../components/ui/illustration';
 import { SlotPicker } from '../../components/ui/slot-picker';
 import { Stepper } from '../../components/ui/stepper';
 import { FormError } from '../../components/layout/auth-layout';
-import { api } from '../../lib/api';
+import { ApiError, api } from '../../lib/api';
 import { useCan } from '../../lib/me';
 import { interviews, resumes } from '../../lib/queries';
 import { focusOnMount } from '../../lib/focus';
-import { applyApiError } from '../../lib/errors';
 import { formatDateTime, newIdempotencyKey } from '../../lib/format';
 import { firstName } from '../../lib/names';
+import { stripDemo } from './mentor-text';
 
-type Message = z.infer<typeof requestMessage>;
-const PROMPTS = ['goal', 'background', 'need'] as const;
+/** Each answer stays short: two sentences, not an essay (the message as a whole keeps the API's limits). */
+const PART_MAX = 600;
 
 /**
- * Asking a mentor for help, in two steps (owner decision Q12): the session type and a time, then
- * one message in the mentee's own words. Optional prompts add "Goal:", "Background:" and "What I
- * need:" headings so mentors still get structure. Loads in its own chunk (the form library and Zod).
+ * Asking a senior for help in three steps (prompt 3, U6): what you need (each session type said in
+ * plain words), your goal (two short answers with examples), then when (the senior's free slots)
+ * with a preview of exactly what they will see. The two answers become the one message the API
+ * takes, headed "Goal:" and "What I need:" as before. Loads in its own chunk.
  */
 export function RequestForm({ mentor }: { mentor: MentorCard }) {
   const { t } = useTranslation();
-  const [step, setStep] = useState<'session' | 'message'>('session');
+  const [step, setStep] = useState<0 | 1 | 2>(0);
   const [type, setType] = useState<SessionType>(mentor.sessionTypes[0]?.type ?? 'quick_chat');
   const [slot, setSlot] = useState<string | null>(null);
+  const [goal, setGoal] = useState('');
+  const [need, setNeed] = useState('');
+  const [short, setShort] = useState(false);
   const [key, setKey] = useState(newIdempotencyKey);
-  const box = useRef<HTMLTextAreaElement | null>(null);
   const bookable = isBookable(type);
+  const name = stripDemo(mentor.name);
+  const first = firstName(name);
   // Prompt 2, G2: a résumé review can carry one of the mentee's résumés (the mentor opens it).
   const canResumes = useCan('resumes:manage');
   const myResumes = useQuery({ ...resumes(), enabled: canResumes && type === 'resume_review' });
@@ -65,20 +66,21 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
     queryFn: () => api.get<SlotsView>(`/mentors/${mentor.userId}/slots?type=${type}&days=14`),
     enabled: bookable,
   });
-  const form = useForm<Message>({
-    mode: 'onTouched',
-    resolver: zodResolver(requestMessage),
-    defaultValues: { message: '' },
-  });
-  const length = useWatch({ control: form.control, name: 'message' }).length;
+  // The one message the senior reads, in the headings they already know.
+  const message = [
+    goal.trim() && `${t('request.prompt.goal')}: ${goal.trim()}`,
+    need.trim() && `${t('request.prompt.need')}: ${need.trim()}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
   const send = useMutation({
-    mutationFn: (text: Message) =>
+    mutationFn: () =>
       api.postOnce<RequestView>(
         '/mentorship/requests',
         {
           mentorId: mentor.userId,
           sessionType: type,
-          ...text,
+          message,
           ...(bookable && slot ? { slotStart: slot } : {}),
           ...(chosenResume ? { resumeId: chosenResume } : {}),
           ...(chosenReport ? { interviewId: chosenReport } : {}),
@@ -86,12 +88,8 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
         key,
       ),
     onSuccess: () => setKey(newIdempotencyKey()),
-    onError: (e) => {
-      applyApiError(e, form.setError, t('errors.generic'));
-      void slots.refetch();
-    },
+    onError: () => void slots.refetch(),
   });
-  const first = firstName(mentor.name);
 
   if (send.isSuccess)
     return (
@@ -107,41 +105,55 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
         >
           <span ref={focusOnMount} tabIndex={-1} className="outline-none">
             {send.data.slotStart
-              ? t('request.sentBodySlot', { name: mentor.name, time: formatDateTime(send.data.slotStart) })
-              : t('request.sentBody', { name: mentor.name })}
+              ? t('request.sentBodySlot', { name, time: formatDateTime(send.data.slotStart) })
+              : t('request.sentBody', { name })}
           </span>
         </EmptyState>
       </div>
     );
 
-  const steps = [t('request.stepSession'), t('request.stepMessage')];
-  if (step === 'session')
+  const steps = [
+    t('mentoring.stepNeed'),
+    t('mentoring.stepGoal'),
+    bookable ? t('mentoring.stepWhen') : t('mentoring.stepCheck'),
+  ];
+  const back = (to: 0 | 1) => (
+    <Button variant="tertiary" className="justify-self-start" onClick={() => setStep(to)}>
+      <ArrowLeft aria-hidden /> {t('common.back')}
+    </Button>
+  );
+  const shared = [
+    chosenResume && myResumes.data?.find((r) => r.id === chosenResume)?.title,
+    chosenReport && t('request.report'),
+  ].filter(Boolean) as string[];
+
+  if (step === 0)
     return (
       <div className="grid gap-5">
         <Stepper label={t('request.steps')} steps={steps} current={0} />
         <p className="text-callout text-fg-2">{t('request.noColdDms')}</p>
-        <fieldset className="grid gap-2">
-          <legend className="mb-2 text-callout font-semibold">{t('request.sessionType')}</legend>
-          <ChoiceGroup
-            label={t('request.sessionType')}
-            value={type}
-            columns={1}
-            options={mentor.sessionTypes.map((s) => ({
-              value: s.type,
-              label: t(`session.type.${s.type}`),
-              detail: (
-                <span className="flex items-center gap-1">
+        <ChoiceGroup
+          label={t('mentoring.stepNeed')}
+          value={type}
+          columns={1}
+          options={mentor.sessionTypes.map((s) => ({
+            value: s.type,
+            label: t(`session.type.${s.type}`),
+            detail: (
+              <span className="grid gap-0.5">
+                <span>{t(`mentoring.about.${s.type}`)}</span>
+                <span className="flex items-center gap-1 text-fg-3">
                   <Clock className="size-3.5" aria-hidden />
                   {s.durationMin ? t('session.minutes', { n: s.durationMin }) : t('session.async')}
                 </span>
-              ),
-            }))}
-            onChange={(v) => {
-              setType(v);
-              setSlot(null);
-            }}
-          />
-        </fieldset>
+              </span>
+            ),
+          }))}
+          onChange={(v) => {
+            setType(v);
+            setSlot(null);
+          }}
+        />
         {type === 'resume_review' && !!myResumes.data?.length && (
           <Field label={t('request.resume')} hint={t('request.resumeHint', { name: first })}>
             {({ id, describedBy }) => (
@@ -185,95 +197,122 @@ export function RequestForm({ mentor }: { mentor: MentorCard }) {
             )}
           </Field>
         )}
-        {bookable && (
-          <SlotPicker
-            label={t('request.pickTime')}
-            slots={slots.data?.slots ?? []}
-            value={slot}
-            onChange={setSlot}
-            loading={slots.isLoading}
-          />
-        )}
-        <Button
-          variant="primary"
-          size="lg"
-          disabled={!mentor.open || (bookable && !slot)}
-          onClick={() => setStep('message')}
-        >
+        <Button variant="primary" size="lg" disabled={!mentor.open} onClick={() => setStep(1)}>
           {t('common.continue')}
         </Button>
-        {bookable && !slot && (
-          <p className="-mt-3 text-center text-caption text-fg-3">{t('request.pickFirst')}</p>
-        )}
       </div>
     );
 
-  const err = form.formState.errors;
-  const { ref: registerRef, ...message } = form.register('message');
-  const addPrompt = (p: (typeof PROMPTS)[number]) => {
-    const now = form.getValues('message').trimEnd();
-    const heading = `${t(`request.prompt.${p}`)}: `;
-    form.setValue('message', now ? `${now}\n\n${heading}` : heading, { shouldDirty: true });
-    const el = box.current;
-    if (el) {
-      el.focus();
-      el.setSelectionRange(el.value.length, el.value.length);
-    }
-  };
-  return (
-    <form className="grid gap-5" onSubmit={form.handleSubmit((v) => send.mutate(v))} noValidate>
-      <Stepper label={t('request.steps')} steps={steps} current={1} />
-      <div className="flex items-center gap-3 rounded-[var(--radius-md)] bg-surface-2 px-4 py-3">
-        <CalendarClock className="size-5 flex-none text-brand-ink" aria-hidden />
-        <p className="min-w-0 flex-1 text-callout">
-          <b>{t(`session.type.${type}`)}</b>
-          {slot ? ` · ${formatDateTime(slot)}` : ''}
-        </p>
-        <Button variant="ghost" size="sm" onClick={() => setStep('session')}>
-          {t('common.change')}
-        </Button>
-      </div>
-      <Field
-        label={t('request.message', { name: first })}
-        hint={t('request.messageHint', { min: REQUEST_MESSAGE_MIN })}
-        error={err.message?.message}
-        aside={<span className="tabular-nums">{`${length}/${REQUEST_MESSAGE_MAX}`}</span>}
+  if (step === 1) {
+    const next = () => {
+      if (message.length < REQUEST_MESSAGE_MIN || !goal.trim() || !need.trim()) setShort(true);
+      else {
+        setShort(false);
+        setStep(2);
+      }
+    };
+    return (
+      <form
+        className="grid gap-5"
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          next();
+        }}
       >
-        {({ id, describedBy, invalid }) => (
-          <>
-            <div role="group" aria-label={t('request.prompts')} className="mb-1 flex flex-wrap gap-2">
-              {PROMPTS.map((p) => (
-                <Button key={p} size="sm" variant="outline" onClick={() => addPrompt(p)}>
-                  <Plus className="size-4" aria-hidden /> {t(`request.prompt.${p}`)}
-                </Button>
-              ))}
-            </div>
-            <Textarea
+        <Stepper label={t('request.steps')} steps={steps} current={1} />
+        {back(0)}
+        <Field
+          label={t('mentoring.goalLabel')}
+          hint={t('mentoring.goalExample')}
+          error={short && !goal.trim() ? t('mentoring.tooShort', { min: REQUEST_MESSAGE_MIN }) : undefined}
+        >
+          {({ id, describedBy, invalid }) => (
+            <Input
               id={id}
               aria-describedby={describedBy}
               aria-invalid={invalid}
-              maxLength={REQUEST_MESSAGE_MAX}
-              rows={6}
+              maxLength={PART_MAX}
               autoFocus
-              enterKeyHint="enter"
-              ref={(el) => {
-                registerRef(el);
-                box.current = el;
-              }}
-              {...message}
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
             />
-          </>
+          )}
+        </Field>
+        <Field
+          label={t('mentoring.needLabel')}
+          hint={t('mentoring.needExample')}
+          error={short && !need.trim() ? t('mentoring.tooShort', { min: REQUEST_MESSAGE_MIN }) : undefined}
+        >
+          {({ id, describedBy, invalid }) => (
+            <Input
+              id={id}
+              aria-describedby={describedBy}
+              aria-invalid={invalid}
+              maxLength={PART_MAX}
+              value={need}
+              onChange={(e) => setNeed(e.target.value)}
+            />
+          )}
+        </Field>
+        {short && goal.trim() && need.trim() && (
+          <p role="alert" className="text-callout font-medium text-danger">
+            {t('mentoring.tooShort', { min: REQUEST_MESSAGE_MIN })}
+          </p>
         )}
-      </Field>
-      <FormError message={err.root?.message} />
-      <div className="grid gap-2 sm:flex sm:flex-row-reverse">
-        <Button type="submit" variant="primary" size="lg" loading={send.isPending} disabled={!mentor.open}>
-          {t('request.send')}
+        <Button type="submit" variant="primary" size="lg">
+          {t('common.continue')}
         </Button>
-        <Button variant="ghost" size="lg" onClick={() => setStep('session')}>
-          {t('common.back')}
-        </Button>
-      </div>
-    </form>
+      </form>
+    );
+  }
+
+  const error =
+    send.error instanceof ApiError ? send.error.message : send.error ? t('errors.generic') : undefined;
+  return (
+    <div className="grid gap-5">
+      <Stepper label={t('request.steps')} steps={steps} current={2} />
+      {back(1)}
+      {bookable && (
+        <SlotPicker
+          label={t('request.pickTime')}
+          slots={slots.data?.slots ?? []}
+          value={slot}
+          onChange={setSlot}
+          loading={slots.isLoading}
+        />
+      )}
+      <section
+        aria-labelledby="request-preview"
+        className="grid gap-2 rounded-[var(--radius-md)] border border-line bg-surface-2 p-4"
+      >
+        <h3 id="request-preview" className="text-headline font-semibold">
+          {t('mentoring.preview', { name: first })}
+        </h3>
+        <p className="text-callout font-semibold">
+          {t(`session.type.${type}`)}
+          {bookable && slot ? ` · ${formatDateTime(slot)}` : ''}
+        </p>
+        <p className="text-body whitespace-pre-line">{message}</p>
+        {shared.length > 0 && (
+          <p className="text-callout text-fg-2">
+            {t('mentoring.previewShared', { what: shared.join(', ') })}
+          </p>
+        )}
+      </section>
+      <FormError message={error} />
+      <Button
+        variant="primary"
+        size="lg"
+        loading={send.isPending}
+        disabled={!mentor.open || (bookable && !slot) || message.length > REQUEST_MESSAGE_MAX}
+        onClick={() => send.mutate()}
+      >
+        {t('request.send')}
+      </Button>
+      {bookable && !slot && (
+        <p className="-mt-3 text-center text-caption text-fg-3">{t('request.pickFirst')}</p>
+      )}
+    </div>
   );
 }

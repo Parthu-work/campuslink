@@ -304,14 +304,15 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
       .first()
       .click(),
   );
-  // The request J6's mentor accepts: session and time, then one message, then Send (timed).
+  // The request J6's mentor accepts (prompt 3, U6): what you need, your goal, when, then Send (timed).
   await page.getByRole('button', { name: 'Request mentorship' }).click();
   const sheet = page.getByRole('dialog', { name: /Ask Sneha for help/ });
   await sheet.getByRole('radio', { name: /1:1 video call/ }).click();
-  await sheet.getByRole('radiogroup', { name: 'Time' }).getByRole('radio').first().click();
   await sheet.getByRole('button', { name: 'Continue' }).click();
-  await sheet.getByRole('button', { name: 'Goal' }).click();
-  await page.keyboard.type('DEMO: practise a system-design round before placements.');
+  await sheet.getByLabel('What are you working towards?').fill('DEMO: a backend role after placements');
+  await sheet.getByLabel('What would help most?').fill('DEMO: practise a system-design round');
+  await sheet.getByRole('button', { name: 'Continue' }).click();
+  await sheet.getByRole('radiogroup', { name: 'Time' }).getByRole('radio').first().click();
   await m('02-mentor', 'send-request', { sel: '[role=dialog] [role=status]', path: '^/mentors/' }, () =>
     page.getByRole('button', { name: 'Send request' }).click(),
   );

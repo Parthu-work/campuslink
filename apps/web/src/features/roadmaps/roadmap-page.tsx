@@ -12,6 +12,8 @@ import { SCREEN } from '../../lib/query-client';
 import { PathHeader } from './path-header';
 import { Journey } from './journey';
 import { StepSheet } from './step-sheet';
+import { LazySeniorsOnPath } from '../mentors/lazy-seniors';
+import { useCan } from '../../lib/me';
 
 // The map of the whole graph loads only when a member chooses it.
 const GraphView = lazy(() => import('./graph-view').then((m) => ({ default: m.GraphView })));
@@ -22,6 +24,7 @@ const GraphView = lazy(() => import('./graph-view').then((m) => ({ default: m.Gr
  * and the next steps; nothing explains the screen above them.
  */
 export function RoadmapPage() {
+  const canAsk = useCan('mentorship:request');
   const { slug = '' } = useParams();
   const { t } = useTranslation();
   const [view, setView] = useState<PathView>(defaultPathView);
@@ -86,6 +89,10 @@ export function RoadmapPage() {
           <Journey roadmap={r} onOpen={step.open} />
         )}
       </div>
+      {/* People on the path (prompt 3, U6): seniors who work as what it leads to. */}
+      {canAsk && r.status === 'published' && r.content.outcomes[0] && (
+        <LazySeniorsOnPath role={r.content.outcomes[0]} fallback={null} />
+      )}
       <StepSheet roadmap={r} nodeId={step.value} onClose={step.close} onOpen={step.open} />
     </div>
   );

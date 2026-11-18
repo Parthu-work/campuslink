@@ -362,6 +362,38 @@ CI's run on `c2fd8e5` (fresh seed) failed four tests that this machine's day-old
 | End-to-end (local)                                 | `today`, `habits`, `navigation`, `spaces`, `shell`, `landing`, `first-run`, `accessibility`, `mentorship`: 74 passed; 10 failed only on this machine’s day-old, unreseeded database (admins’ stored 2FA secrets; the alumna’s seeded request, accepted by an earlier run of the new test; the seeded session, now in the past). CI reseeds |
 | Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                                                                                   |
 
+## U6a · Mentors: finding a senior and asking
+
+Design: `docs/design/v2/u6.md`. U6 ships in two parts: U6a (this section) and U6b (the session page, the mentor's queue, rematch and nudges).
+
+**Shipped.**
+
+- **The match** (`features/mentors/match.tsx`). Wide screens: the ranked list on the left with filters (company, role, branch, language, free in the next two weeks; options come from the list itself, ranking unchanged) and the selected senior on the right with one action, **Request**, which opens the request sheet in place. Phones: one compact card at a time with **Not now** and **Request** (no "Interested"; arrow keys still work; the name opens the full profile), or the same list with the filters (`?show=list`). The duplicate "Requests" button left the page header (it is in the section row and the sidebar).
+- **Strength in words, reasons first** (`mentor-text.ts`, unit-tested): "Good match: same branch (CSE), helped 3 students like you reach interviews or offers and free in the next two weeks". The number shows only beside "Strong match" (60 and up) and never to a minor. The reasons are the API's own (`MatchReason`).
+- **One role line**: "Data Analyst at Kestrel Analytics"; the headline only when it says something else; the seed's "DEMO:" and "(demo)" markers become one "Demo" badge (match, Browse tiles, the mentor page, seniors on a path).
+- **The request sheet in three steps** (`request-form.tsx`): what you need (each session type explained in one line, with its length; résumé or practice report to share as before), your goal (two short answers with examples, "What are you working towards?" and "What would help most?"), then when (the senior's free slots) with **What {name} will see**: the session, the time and the message as the senior will read it, headed "Goal:" and "What I need:" as before, so the API and the mentor's inbox are unchanged.
+- **Seniors on this path** (moved here from U3) on a career path: up to three seniors whose job title is the role the path leads to (the mentor search, checked against the job title on the device), "Works as Software Engineer at Nimbus Labs", and **Ask**, which opens that senior's request sheet (`/mentors/<id>?ask=request`).
+- Strings: the new `mentoring` pack (loaded with Mentors, a mentor's page and the seniors on a path); `match.intro` no longer mentions swiping.
+- e2e: `match.spec.ts` (new): on desktop the reasons panel, a filter that narrows every row and Clear; on a phone Not now and Request with no "Interested"; the three steps with the too-short message caught and the preview; Seniors on this path and Ask. `mentorship.spec` sends its request through the three steps and checks the preview; the tasks and journeys audits walk the new steps.
+
+**Taps (U0.2 rules, a student asks for a mock interview).** Mentors tab, Request on the card, the session type, Continue, Continue, a time, Send: 7 taps and 2 fields, as before (7 and 2), without the detour through the mentor's page; the senior now reads a goal and a need instead of one free-text box.
+
+**Decisions.**
+
+- **Filters on the device.** The match list is the API's ranked list for this student; narrowing it on the device keeps the ranking and needs no API change. The options are taken from the list, so no filter can show nothing by itself.
+- **Seniors on a path by job title.** The only true link between a path and a person today is that they work as what the path leads to; "followed this path" or "finished it" would need new data. Nothing is shown when no job title matches.
+
+### Gate results (U6a)
+
+| Gate                                               | Result                                                                                                                                                                                                                                    |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                                                      |
+| Web tests                                          | 145 passed (new: `mentor-text.test.ts`, the role line, demo label and strength rules)                                                                                                                                                     |
+| API tests                                          | No API change in U6a; CI runs the suite                                                                                                                                                                                                   |
+| `pnpm build` and bundle budget                     | Pass: initial 162.1 KB; the Telugu strings 69.9 KB (new strings in the `mentoring` pack)                                                                                                                                                  |
+| End-to-end (local, freshly reseeded)               | `mentorship`, `match`, `roadmaps`, `navigation`, `today`, `accessibility`, `people`, `core`: 70 of 70 after one fix (the long Alumni Match and dashboard journey ran out of its 30 s; it now has 90 s, like the other mentorship journey) |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                  |
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

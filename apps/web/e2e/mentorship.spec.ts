@@ -20,17 +20,24 @@ test.describe('mentorship', () => {
     await page.getByPlaceholder('Search by name, company or topic').fill('Sneha');
     await page.getByRole('link', { name: /Sneha Reddy/ }).click();
     await expect(page.getByRole('heading', { name: 'Sneha Reddy', level: 1 })).toBeVisible();
-    // Two steps in a sheet (owner decision Q12): session and time, then one message.
+    // Three steps in a sheet (prompt 3, U6): what you need, your goal, when, with a preview.
     await page.getByRole('button', { name: 'Request mentorship' }).click();
     const sheet = page.getByRole('dialog', { name: /Ask Sneha for help/ });
     await sheet.getByRole('radio', { name: /1:1 video call/ }).click();
-    await sheet.getByRole('radiogroup', { name: 'Time' }).getByRole('radio').first().click();
+    await expect(sheet.getByText(/A video call about your plans/)).toBeVisible();
     await sheet.getByRole('button', { name: 'Continue' }).click();
-    await sheet.getByRole('button', { name: 'Goal' }).click();
-    await page.keyboard.type('switch from ECE coursework to a data analyst role.');
-    await sheet.getByRole('button', { name: 'What I need' }).click();
-    await page.keyboard.type('a plan for the next three months and project ideas.');
-    await expect(sheet.getByLabel(/What do you want from this session/)).toHaveValue(/^Goal: switch/);
+    await sheet
+      .getByLabel('What are you working towards?')
+      .fill('switch from ECE coursework to a data analyst role.');
+    await sheet
+      .getByLabel('What would help most?')
+      .fill('a plan for the next three months and project ideas.');
+    await sheet.getByRole('button', { name: 'Continue' }).click();
+    await sheet.getByRole('radiogroup', { name: 'Time' }).getByRole('radio').first().click();
+    // Exactly what Sneha will read, in the headings mentors already know.
+    const preview = sheet.getByRole('region', { name: 'What Sneha will see' });
+    await expect(preview).toContainText('Goal: switch from ECE coursework to a data analyst role.');
+    await expect(preview).toContainText('What I need: a plan for the next three months and project ideas.');
     await expectNoA11yViolations(page);
     await page.getByRole('button', { name: 'Send request' }).click();
     await expect(page.getByRole('heading', { name: 'Request sent' })).toBeVisible();
@@ -96,14 +103,27 @@ test.describe('mentorship', () => {
   test('Alumni Match suggests mentors with reasons, and the mentor dashboard is accessible', async ({
     page,
   }, info) => {
+    // Two members across five screens with three accessibility scans: it took 29 of 30 s locally.
+    test.setTimeout(90_000);
     const host = hostFor(info.project.name);
     const base = `http://${host}.localhost:4173`;
     await signIn(page, `vikram@${host}.example`, host);
     await page.goto(`${base}/mentors`);
-    await expect(page.getByText('Why this match')).toBeVisible();
-    await expectNoA11yViolations(page);
-    await page.getByRole('button', { name: /^Pass on / }).click();
-    await page.getByRole('button', { name: /^Open / }).click();
+    // Prompt 3, U6: a ranked list beside the selected senior on a wide screen; one card on a phone.
+    if (info.project.name === 'desktop') {
+      await expect(page.getByRole('region', { name: 'Why this match' })).toBeVisible();
+      await expectNoA11yViolations(page);
+      await page.getByRole('link', { name: 'View full profile' }).click();
+    } else {
+      await expectNoA11yViolations(page);
+      await page.getByRole('button', { name: /^Not now: / }).click();
+      await page
+        .getByRole('main')
+        .getByRole('region')
+        .getByRole('heading', { level: 2 })
+        .getByRole('link')
+        .click();
+    }
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Request mentorship' })).toBeVisible();
 

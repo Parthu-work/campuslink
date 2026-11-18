@@ -1,38 +1,26 @@
-import { useDeferredValue, useState, type KeyboardEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { useDeferredValue, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  LazyMotion,
-  m as motion,
-  motionFeatures,
-  useAnimationControls,
-  useMotionValue,
-  useTransform,
-  type PanInfo,
-} from '../../lib/motion';
-import { useReducedMotionPref } from '../../lib/preferences';
 import { toast } from '../../lib/toast';
-import { BadgeCheck, Compass, Heart, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
-import { SESSION_TYPES, type MentorCard, type MentorMatch, type MatchReason } from '@campuslink/shared';
+import { BadgeCheck, Compass, Search } from 'lucide-react';
+import { SESSION_TYPES, type MentorCard } from '@campuslink/shared';
 import { IntentLink } from '../../components/ui/intent-link';
 import { Button } from '../../components/ui/button';
-import { buttonVariants } from '../../components/ui/button-variants';
 import { Dialog } from '../../components/ui/dialog';
 import { Field, Input, Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
-import { ProgressRing } from '../../components/ui/progress';
 import { Segmented } from '../../components/ui/tab-nav';
 import { TagInput } from '../../components/ui/tag-input';
 import { api } from '../../lib/api';
-import { mentorMatch } from '../../lib/queries';
 import { useFeature } from '../../lib/tenant-context';
 import { coverOf } from '../../lib/accent';
 import { SCREEN } from '../../lib/query-client';
 import { MentorStatsLine } from './mentor-stats';
-import { LazyOutcomeReason } from '../companies/lazy';
+import { MatchView } from './match';
+import { headlineAdds, isDemoMentor, roleLine, stripDemo } from './mentor-text';
 
 /**
  * A mentor in a list (§8.4): a large face, what they do and where, their batch, a few topics, their
@@ -40,6 +28,7 @@ import { LazyOutcomeReason } from '../companies/lazy';
  */
 export function MentorTile({ m }: { m: MentorCard }) {
   const { t } = useTranslation();
+  const headline = headlineAdds(m);
   return (
     <IntentLink to={`/mentors/${m.userId}`} className="block h-full rounded-[var(--radius-lg)]">
       <Card variant="interactive" className="grid h-full content-start gap-3 overflow-hidden">
@@ -53,13 +42,16 @@ export function MentorTile({ m }: { m: MentorCard }) {
             >
               <PersonAvatar name={m.name} fileId={m.avatarFileId} size={64} verified />
             </span>
-            {!m.open && <Badge tone="warning">{t('mentors.full')}</Badge>}
+            <span className="flex gap-1">
+              {isDemoMentor(m) && <Badge>{t('common.demo')}</Badge>}
+              {!m.open && <Badge tone="warning">{t('mentors.full')}</Badge>}
+            </span>
           </div>
           <div className="min-w-0">
-            <b className="block truncate text-headline">{m.name}</b>
+            <b className="block truncate text-headline">{stripDemo(m.name)}</b>
             {(m.jobTitle || m.company) && (
               <p className="flex min-w-0 items-center gap-1 text-callout text-fg-2">
-                <span className="truncate">{[m.jobTitle, m.company].filter(Boolean).join(' · ')}</span>
+                <span className="truncate">{roleLine(m, t)}</span>
                 {m.company && m.companyVerified && (
                   <BadgeCheck
                     className="size-4 flex-none text-success"
@@ -76,7 +68,7 @@ export function MentorTile({ m }: { m: MentorCard }) {
               </p>
             )}
           </div>
-          {m.headline && <p className="line-clamp-2 text-callout text-fg-2">{m.headline}</p>}
+          {headline && <p className="line-clamp-2 text-callout text-fg-2">{headline}</p>}
           {m.stats && <MentorStatsLine stats={m.stats} />}
           {m.topics.length > 0 && (
             <div className="flex flex-wrap gap-1">
@@ -103,124 +95,6 @@ export function MentorTile({ m }: { m: MentorCard }) {
         </div>
       </Card>
     </IntentLink>
-  );
-}
-
-/** Plain-language strength of an Alumni Match score (0–100). */
-const levelOf = (score: number) => (score >= 60 ? 'strong' : score >= 30 ? 'good' : 'some');
-
-function ReasonList({ reasons }: { reasons: MatchReason[] }) {
-  const { t } = useTranslation();
-  if (!reasons.length) return <p className="text-callout text-fg-3">{t('match.noReasons')}</p>;
-  return (
-    <ul className="grid gap-1.5 text-callout">
-      {reasons.map((r) => (
-        <li key={r.kind} className="flex items-start gap-2">
-          <Sparkles className="mt-0.5 size-4 flex-none text-brand-ink" aria-hidden />
-          <span>
-            {r.kind === 'branch' || r.kind === 'company' ? (
-              t(`match.reason.${r.kind}`, { value: r.value })
-            ) : r.kind === 'available' || r.kind === 'fast_reply' ? (
-              t(`match.reason.${r.kind}`)
-            ) : r.kind === 'outcomes' || r.kind === 'referrals' ? (
-              <LazyOutcomeReason reason={r} />
-            ) : (
-              t(`match.reason.${r.kind}`, { values: r.values.join(', ') })
-            )}
-          </span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function MatchCard({
-  match,
-  onPass,
-  onPick,
-}: {
-  match: MentorMatch;
-  onPass: () => void;
-  onPick: () => void;
-}) {
-  const { t } = useTranslation();
-  const reduce = useReducedMotionPref();
-  const x = useMotionValue(0);
-  const rotate = useTransform(x, [-240, 240], [-10, 10]);
-  const opacity = useTransform(x, [-260, 0, 260], [0.4, 1, 0.4]);
-  // Animating `x` through the controls moves the same motion value the style reads.
-  const controls = useAnimationControls();
-  const m = match.mentor;
-  const settle = (dir: -1 | 0 | 1, done?: () => void) => {
-    if (reduce || dir === 0) {
-      void controls.start({ x: 0, transition: { duration: reduce ? 0 : 0.2 } });
-      done?.();
-      return;
-    }
-    void controls.start({ x: dir * 480, transition: { duration: 0.22 } }).then(() => {
-      x.set(0);
-      done?.();
-    });
-  };
-  const onDragEnd = (_: unknown, info: PanInfo) => {
-    if (info.offset.x > 120) settle(1, onPick);
-    else if (info.offset.x < -120) settle(-1, onPass);
-    else settle(0);
-  };
-  return (
-    <motion.div
-      style={{ x, rotate, opacity }}
-      animate={controls}
-      drag={reduce ? false : 'x'}
-      dragSnapToOrigin
-      onDragEnd={onDragEnd}
-      className="touch-pan-y"
-    >
-      <Card variant="raised" className="relative grid gap-4 overflow-hidden p-5 pt-14">
-        <div aria-hidden className="absolute inset-x-0 top-0 h-20" style={{ background: coverOf(m.name) }} />
-        <div className="relative flex items-end gap-3">
-          <PersonAvatar name={m.name} fileId={m.avatarFileId} size={72} verified />
-          <div className="min-w-0 flex-1">
-            <h2 className="truncate text-headline font-bold">{m.name}</h2>
-            {(m.jobTitle || m.company) && (
-              <p className="truncate text-callout text-fg-2">
-                {[m.jobTitle, m.company].filter(Boolean).join(' · ')}
-              </p>
-            )}
-            {m.headline && <p className="line-clamp-2 text-callout text-fg-2">{m.headline}</p>}
-          </div>
-          {/* A ring and a word, not a bare number (MC-3: "30" read like a bad grade). */}
-          <div className="grid flex-none justify-items-center gap-1">
-            <ProgressRing
-              value={match.score}
-              max={100}
-              size={60}
-              tone="aurora"
-              label={t('match.score', { score: match.score })}
-              valueText={t(`match.level.${levelOf(match.score)}`)}
-            >
-              <span className="text-callout font-bold tabular-nums">{match.score}</span>
-            </ProgressRing>
-            <span className="text-caption font-semibold text-fg-2" aria-hidden>
-              {t(`match.level.${levelOf(match.score)}`)}
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {m.company && <Badge tone={m.companyVerified ? 'success' : 'neutral'}>{m.company}</Badge>}
-          {m.branch && <Badge>{m.branch}</Badge>}
-          {m.topics.map((x) => (
-            <Badge key={x} tone="brand">
-              {x}
-            </Badge>
-          ))}
-        </div>
-        <section aria-label={t('match.why')} className="grid gap-2">
-          <h3 className="eyebrow">{t('match.why')}</h3>
-          <ReasonList reasons={match.reasons} />
-        </section>
-      </Card>
-    </motion.div>
   );
 }
 
@@ -274,80 +148,6 @@ function PrefsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: 
         </div>
       </div>
     </Dialog>
-  );
-}
-
-function MatchView() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const [passed, setPassed] = useState<string[]>([]);
-  // ?goals=1: Home's "Set up your CampusLink" opens the goals sheet straight away (prompt 3, U4).
-  const [goalsParam] = useSearchParams();
-  const [prefsOpen, setPrefsOpen] = useState(() => goalsParam.get('goals') === '1');
-  const q = useQuery({ ...mentorMatch(), ...SCREEN });
-  const deck = (q.data ?? []).filter((m) => !passed.includes(m.mentor.userId));
-  const top = deck[0];
-  const pass = () => top && setPassed((p) => [...p, top.mentor.userId]);
-  const pick = () => top && void navigate(`/mentors/${top.mentor.userId}`);
-  const onKey = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowLeft') pass();
-    if (e.key === 'ArrowRight') pick();
-  };
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-callout text-fg-2">{t('match.intro')}</p>
-        <Button size="sm" onClick={() => setPrefsOpen(true)}>
-          <SlidersHorizontal className="size-4" aria-hidden /> {t('match.prefs')}
-        </Button>
-      </div>
-      <PrefsDialog open={prefsOpen} onOpenChange={setPrefsOpen} />
-      {q.isLoading && <Skeleton className="h-96" />}
-      {q.isSuccess && !top && (
-        <EmptyState
-          icon={<Compass className="size-6" />}
-          title={q.data.length ? t('match.done') : t('match.empty')}
-          action={
-            passed.length ? (
-              <Button onClick={() => setPassed([])}>
-                <RotateCcw className="size-4" aria-hidden /> {t('match.again')}
-              </Button>
-            ) : undefined
-          }
-        >
-          {t('match.emptyBody')}
-        </EmptyState>
-      )}
-      {top && (
-        // Arrow keys mirror the swipe: ← pass, → open the mentor.
-        <div
-          tabIndex={0}
-          onKeyDown={onKey}
-          role="region"
-          aria-roledescription={t('match.deck')}
-          aria-label={t('match.deckLabel', { name: top.mentor.name, left: deck.length })}
-          className="mx-auto grid w-full max-w-[460px] min-w-0 grid-cols-[minmax(0,1fr)] gap-4 rounded-[var(--radius-lg)]"
-        >
-          <LazyMotion features={motionFeatures} strict>
-            <MatchCard key={top.mentor.userId} match={top} onPass={pass} onPick={pick} />
-          </LazyMotion>
-          <div className="flex justify-center gap-4">
-            <Button size="lg" onClick={pass} aria-label={t('match.pass', { name: top.mentor.name })}>
-              <X className="size-5" aria-hidden /> {t('match.passShort')}
-            </Button>
-            <Button
-              size="lg"
-              variant="primary"
-              onClick={pick}
-              aria-label={t('match.view', { name: top.mentor.name })}
-            >
-              <Heart className="size-5" aria-hidden /> {t('match.viewShort')}
-            </Button>
-          </div>
-          <p className="text-center text-caption text-fg-3">{t('match.keys')}</p>
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -421,21 +221,14 @@ function BrowseView() {
 export function MentorsPage() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
+  // ?goals=1: Home's "Set up your CampusLink" opens the goals sheet straight away (prompt 3, U4).
+  const [prefsOpen, setPrefsOpen] = useState(() => params.get('goals') === '1');
   // Without Alumni Match (Admin › Features) the page is the mentor list alone.
   const matching = useFeature('alumniMatch');
   const view = !matching || params.get('view') === 'browse' ? 'browse' : 'match';
   return (
     <>
-      <PageHeader
-        title={t('mentors.title')}
-        actions={
-          <>
-            <Link to="/mentorship" className={buttonVariants({ size: 'sm' })}>
-              {t('nav.requests')}
-            </Link>
-          </>
-        }
-      />
+      <PageHeader title={t('mentors.title')} />
       {matching && (
         <Segmented
           label={t('mentors.title')}
@@ -447,7 +240,8 @@ export function MentorsPage() {
           onChange={(v) => setParams(v === 'browse' ? { view: 'browse' } : {}, { replace: true })}
         />
       )}
-      {view === 'match' ? <MatchView /> : <BrowseView />}
+      <PrefsDialog open={prefsOpen} onOpenChange={setPrefsOpen} />
+      {view === 'match' ? <MatchView onPrefs={() => setPrefsOpen(true)} /> : <BrowseView />}
     </>
   );
 }

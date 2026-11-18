@@ -813,7 +813,7 @@
     "offers": "Sessions offered"
   },
   "match": {
-    "intro": "Suggestions from your college’s alumni, ranked for you. Swipe or use the buttons.",
+    "intro": "Suggestions from your college’s alumni, ranked for you.",
     "prefs": "My goals",
     "prefsTitle": "What are you aiming for?",
     "prefsBody": "Only used to rank mentors for you. Nobody else sees this.",

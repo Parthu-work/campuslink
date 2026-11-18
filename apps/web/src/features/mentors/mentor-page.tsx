@@ -19,6 +19,7 @@ import { SCREEN } from '../../lib/query-client';
 import { firstName } from '../../lib/names';
 import { MentorStatsLine } from './mentor-stats';
 import { MentorReviews } from './mentor-reviews';
+import { headlineAdds, isDemoMentor, roleLine, stripDemo } from './mentor-text';
 
 // The form library and Zod load with the sheet, not before the mentor's header (bundle budget).
 const RequestForm = lazy(() => import('./request-form').then((m) => ({ default: m.RequestForm })));
@@ -67,7 +68,9 @@ export function MentorPage() {
       </div>
     );
   const m = q.data;
-  const role = [m.jobTitle, m.company].filter(Boolean);
+  // One role line and the demo label once (prompt 3, U6).
+  const role = roleLine(m, t);
+  const headline = headlineAdds(m);
   return (
     <div className="mx-auto grid w-full max-w-[760px] gap-4">
       {back}
@@ -84,18 +87,15 @@ export function MentorPage() {
             <SafetyMenu userId={m.userId} name={m.name} />
           </div>
           <div className="grid gap-1">
-            <h1 className="text-title leading-tight font-bold">{m.name}</h1>
-            {role.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-title leading-tight font-bold">{stripDemo(m.name)}</h1>
+              {isDemoMentor(m) && <Badge>{t('common.demo')}</Badge>}
+            </div>
+            {role && (
               <p className="flex flex-wrap items-center gap-x-1.5 text-body text-fg-2">
-                {m.jobTitle && <span>{m.jobTitle}</span>}
-                {m.jobTitle && m.company && <span aria-hidden>·</span>}
-                {m.company && (
-                  <span className="inline-flex items-center gap-1 font-semibold text-fg">
-                    {m.company}
-                    {m.companyVerified && (
-                      <BadgeCheck className="size-4 text-success" aria-label={t('people.companyVerified')} />
-                    )}
-                  </span>
+                <span>{role}</span>
+                {m.company && m.companyVerified && (
+                  <BadgeCheck className="size-4 text-success" aria-label={t('people.companyVerified')} />
                 )}
               </p>
             )}
@@ -107,7 +107,7 @@ export function MentorPage() {
               </p>
             )}
           </div>
-          {m.headline && <p className="max-w-[62ch] text-body">{m.headline}</p>}
+          {headline && <p className="max-w-[62ch] text-body">{headline}</p>}
           {m.stats && <MentorStatsLine stats={m.stats} layout="list" />}
           {(m.topics.length > 0 || m.skills.length > 0 || m.languages.length > 0) && (
             <ul className="flex flex-wrap gap-1.5" aria-label={t('mentors.topics')}>
@@ -168,7 +168,7 @@ export function MentorPage() {
       <Sheet
         open={sheet.value === 'request'}
         onOpenChange={(o) => !o && sheet.close()}
-        title={t('request.title', { name: firstName(m.name) })}
+        title={t('request.title', { name: firstName(stripDemo(m.name)) })}
         history={false}
       >
         <Suspense fallback={<Skeleton className="h-96" />}>

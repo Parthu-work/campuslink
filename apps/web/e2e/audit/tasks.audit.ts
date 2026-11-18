@@ -170,14 +170,18 @@ const tasks: { name: string; run: (b: Browser) => Promise<{ count: Count; close:
         await c.tap(page.getByRole('main').getByRole('link', { name: /Batch/ }).first(), 'a mentor');
         await c.tap(page.getByRole('button', { name: 'Request mentorship' }), 'request');
         const sheet = page.getByRole('dialog');
+        // Prompt 3, U6: what you need, your goal (two short answers), then when.
         await c.choose(sheet.getByRole('radio', { name: /Mock interview/ }), 'mock interview');
+        await c.tap(sheet.getByRole('button', { name: 'Continue' }), 'continue');
+        await c.fill(
+          sheet.getByLabel('What are you working towards?'),
+          'a backend role at a product company',
+          'goal',
+        );
+        await c.fill(sheet.getByLabel('What would help most?'), 'a practice round with feedback', 'need');
+        await c.tap(sheet.getByRole('button', { name: 'Continue' }), 'continue');
         // A mock interview has a slot: the day is preselected, a time is the member's choice.
         await c.choose(sheet.getByRole('radiogroup', { name: 'Time' }).getByRole('radio').first(), 'time');
-        await c.tap(sheet.getByRole('button', { name: 'Continue' }), 'continue');
-        await c.tap(sheet.getByRole('button', { name: 'Goal' }), 'goal starter');
-        await page.keyboard.type('practise for product company interviews.');
-        c.fields += 1;
-        c.log.push('field goal');
         await c.tap(page.getByRole('button', { name: 'Send request' }), 'send');
         await expect(page.getByRole('heading', { name: 'Request sent' })).toBeVisible();
         return { count: c, close: () => ctx.close() };

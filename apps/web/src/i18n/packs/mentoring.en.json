@@ -1,0 +1,64 @@
+{
+  "mentoring": {
+    "summary": "{{level}}: {{reasons}}",
+    "reason": {
+      "branch": "same branch ({{value}})",
+      "company": "works at {{value}}, one of your target companies",
+      "goals": "guides on {{values}}",
+      "skills": "shares your skills ({{values}})",
+      "languages": "speaks {{values}}",
+      "available": "free in the next two weeks",
+      "fast_reply": "replies within a day",
+      "outcomes_one": "helped {{count}} student like you reach an interview or offer",
+      "outcomes_other": "helped {{count}} students like you reach interviews or offers",
+      "referrals_one": "referred {{count}} student",
+      "referrals_other": "referred {{count}} students"
+    },
+    "roleAt": "{{title}} at {{company}}",
+    "notNow": "Not now",
+    "notNowFor": "Not now: {{name}}",
+    "request": "Request",
+    "requestFor": "Request {{name}}",
+    "viewAs": "Show suggestions as",
+    "card": "Card",
+    "list": "List",
+    "filters": {
+      "label": "Narrow the list",
+      "company": "Company",
+      "role": "Role",
+      "branch": "Branch",
+      "language": "Language",
+      "any": "Any",
+      "free": "Free in the next two weeks",
+      "count_one": "{{count}} senior",
+      "count_other": "{{count}} seniors",
+      "none": "No one matches these filters.",
+      "clear": "Clear filters"
+    },
+    "pick": "Pick a senior from the list to see why they match.",
+    "stepNeed": "What you need",
+    "stepGoal": "Your goal",
+    "stepWhen": "When",
+    "stepCheck": "Check and send",
+    "about": {
+      "quick_chat": "A few messages back and forth, for one question that needs a senior’s view",
+      "video_1on1": "A video call about your plans, choices or a decision you are stuck on",
+      "mock_interview": "A practice interview, with feedback on what to improve before the real one",
+      "resume_review": "Your résumé read line by line, with changes to make it stronger"
+    },
+    "goalLabel": "What are you working towards?",
+    "goalExample": "For example: a backend role at a product company by next July",
+    "needLabel": "What would help most?",
+    "needExample": "For example: feedback on my two projects and what to learn next",
+    "tooShort": "A little more, please: at least {{min}} characters across both answers.",
+    "preview": "What {{name}} will see",
+    "previewShared": "Shared with it: {{what}}",
+    "seniors": {
+      "title": "Seniors on this path",
+      "worksAt": "Works as {{title}} at {{company}}",
+      "worksAs": "Works as {{title}}",
+      "ask": "Ask",
+      "askName": "Ask {{name}}"
+    }
+  }
+}
