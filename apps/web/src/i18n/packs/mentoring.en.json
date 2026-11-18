@@ -59,6 +59,39 @@
       "worksAs": "Works as {{title}}",
       "ask": "Ask",
       "askName": "Ask {{name}}"
+    },
+    "session": {
+      "title": "{{type}} with {{name}}",
+      "open": "Open session",
+      "agenda": "What it’s for",
+      "noAgenda": "No message came with this request.",
+      "notes": "Shared notes",
+      "notesHint": "You both see and edit these: an agenda, links, what you agreed.",
+      "save": "Save notes",
+      "saved": "Notes saved",
+      "savedBy": "Last saved by {{who}}, {{when}}",
+      "you": "you",
+      "readOnly": "This session was cancelled; its notes can be read but not changed.",
+      "notFound": "This session isn’t yours, or it no longer exists."
+    },
+    "queue": {
+      "title": "Requests waiting",
+      "week": "This week: {{count}} of {{cap}} requests",
+      "decline": "Decline…",
+      "declineLabel": "Decline {{name}}’s request with a reply",
+      "as": {
+        "not_my_area": "Not my area",
+        "fully_booked": "Fully booked",
+        "try_later": "Ask me again later",
+        "suggest_other": "Someone else fits better"
+      },
+      "more": "Offer another time, or reply with a note, in Requests.",
+      "none": "Nothing waiting. New requests appear here."
+    },
+    "rematch": {
+      "offer_one": "{{name}} hasn’t replied yet. Here is {{count}} senior who usually replies within a day.",
+      "offer_other": "{{name}} hasn’t replied yet. Here are {{count}} seniors who usually reply within a day.",
+      "offerNone": "{{name}} hasn’t replied yet. You can wait, or ask someone else."
     }
   }
 }

@@ -29,6 +29,8 @@ import { SCREEN } from '../../lib/query-client';
 import { cn } from '../../lib/cn';
 import { firstName } from '../../lib/names';
 import { RematchSheet } from './rematch-sheet';
+import { requestAlternatives } from '../../lib/queries';
+import { AvatarStack } from '../../components/ui/avatar-stack';
 
 const STATUS_TONE = {
   pending: 'warning',
@@ -193,6 +195,36 @@ function DeclineDialog({
 const justAccepted = (r: RequestView) =>
   r.status === 'accepted' && !!r.respondedAt && Date.now() - Date.parse(r.respondedAt) < 3 * 86_400_000;
 
+/**
+ * A request waiting two days (B5), said calmly (prompt 3, U6): who has not replied, and the seniors
+ * who usually reply within a day, with their faces; the button below opens them.
+ */
+function RematchNote({ r }: { r: RequestView }) {
+  const { t } = useTranslation();
+  const alts = useQuery(requestAlternatives(r.id));
+  const people = alts.data ?? [];
+  const name = firstName(r.mentor.name);
+  return (
+    <div
+      className="flex flex-wrap items-center gap-3 rounded-[var(--radius-sm)] bg-surface-2 p-3"
+      role="status"
+    >
+      {people.length > 0 && (
+        <AvatarStack
+          people={people.map((p) => ({ name: p.mentor.name, fileId: p.mentor.avatarFileId }))}
+          label={people.map((p) => p.mentor.name).join(', ')}
+          max={3}
+        />
+      )}
+      <p className="min-w-0 flex-1 text-callout">
+        {people.length
+          ? t('mentoring.rematch.offer', { name, count: people.length })
+          : t('mentoring.rematch.offerNone', { name })}
+      </p>
+    </div>
+  );
+}
+
 function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -238,11 +270,7 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
           {r.declineNote && <span className="mt-1 block text-fg-2">“{r.declineNote}”</span>}
         </p>
       )}
-      {box === 'sent' && r.rematchOffered && (
-        <p className="rounded-[var(--radius-sm)] bg-surface-2 p-3 text-callout" role="status">
-          {t('rematch.offer', { name: firstName(r.mentor.name) })}
-        </p>
-      )}
+      {box === 'sent' && r.rematchOffered && pending && <RematchNote r={r} />}
       <p className="text-caption text-fg-3">
         {t('request.sentAgo', { when: formatRelative(r.createdAt) })}
         {pending && ` · ${t('request.expires', { when: formatRelative(r.expiresAt) })}`}
@@ -296,7 +324,8 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
           </Link>
         )}
         {r.status === 'accepted' && r.bookingId && (
-          <Link to="/sessions" className={buttonVariants({ size: 'sm' })}>
+          // Straight to that session's page (prompt 3, U6).
+          <Link to={`/sessions/${r.bookingId}`} className={buttonVariants({ size: 'sm' })}>
             <Video className="size-4" aria-hidden /> {t('request.viewSession')}
           </Link>
         )}

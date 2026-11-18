@@ -25,6 +25,7 @@ import { api, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
 import { useCan } from '../../lib/me';
 import { IntentLink } from '../../components/ui/intent-link';
+import { RequestsQueue } from './requests-queue';
 
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
 const TIMES = Array.from(
@@ -529,6 +530,8 @@ export function MentorDashboard() {
   return (
     <>
       <PageHeader title={t('nav.mentor')} />
+      {/* What is waiting first (prompt 3, U6), then the impact and the settings. */}
+      <RequestsQueue weeklyCap={q.data?.weeklyCap ?? null} />
       <ImpactCard />
       <QuickAsks />
       {q.isLoading && <Skeleton className="h-80" />}

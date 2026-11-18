@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { bookingsQuery, cancelBody, feedbackBody, rescheduleBody } from '@campuslink/shared';
+import {
+  bookingNotesBody,
+  bookingsQuery,
+  cancelBody,
+  feedbackBody,
+  rescheduleBody,
+} from '@campuslink/shared';
 import type { AnyRouteSpec } from '../../http/registry.js';
 import { idParams } from '../../http/validation.js';
 import { authOf, tenantOf } from '../../http/request-context.js';
@@ -30,6 +36,19 @@ export function sessionRoutes(svc: SessionsService): AnyRouteSpec[] {
       access: BOOK,
       params: idParams,
       handler: async ({ req, params }) => ({ data: await svc.get(authOf(req), params.id) }),
+    },
+    {
+      method: 'put',
+      path: '/bookings/:id/notes',
+      tag,
+      summary: 'Save the notes both participants share on a session',
+      access: BOOK,
+      limiter: 'posting',
+      params: idParams,
+      body: bookingNotesBody,
+      handler: async ({ req, params, body }) => ({
+        data: await svc.saveNotes(authOf(req), params.id, body.notes),
+      }),
     },
     {
       method: 'get',

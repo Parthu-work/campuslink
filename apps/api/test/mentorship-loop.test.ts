@@ -194,6 +194,42 @@ describe('mentor stats (B5)', () => {
   });
 });
 
+describe('the session page: agenda and shared notes (prompt 3, U6)', () => {
+  it('shows the request as the agenda; both participants share notes, and nobody else reads them', async () => {
+    const m = await makeMentor(ctx, T);
+    const s = await makeUser(ctx, T, { roles: ['STUDENT'] });
+    const b = (await acceptedSession(ctx, T, s, m)).bookingId as string;
+    const view = await as(s).get(`/bookings/${b}`);
+    expect(view.status, JSON.stringify(view.body)).toBe(200);
+    expect(typeof view.body.data.agenda).toBe('string');
+    expect(view.body.data.agenda.length).toBeGreaterThan(0);
+    expect(view.body.data.notes).toBe('');
+    expect(view.body.data.notesBy).toBeNull();
+
+    const saved = await as(m)
+      .put(`/bookings/${b}/notes`)
+      .send({ notes: 'Two projects first, then questions.' });
+    expect(saved.status, JSON.stringify(saved.body)).toBe(200);
+    expect(saved.body.data.notesBy).toBe('mentor');
+    const read = await as(s).get(`/bookings/${b}`);
+    expect(read.body.data.notes).toBe('Two projects first, then questions.');
+    expect(read.body.data.notesBy).toBe('mentor');
+    expect(read.body.data.notesUpdatedAt).not.toBeNull();
+
+    const other = await makeUser(ctx, T, { roles: ['STUDENT'] });
+    expect((await as(other).get(`/bookings/${b}`)).status).toBe(404);
+    expect((await as(other).put(`/bookings/${b}/notes`).send({ notes: 'Not mine' })).status).toBe(404);
+    expect(
+      (
+        await as(s)
+          .put(`/bookings/${b}/notes`)
+          .send({ notes: 'x'.repeat(4001) })
+      ).status,
+    ).toBe(400);
+    expect((await as(s).put(`/bookings/${b}/notes`).send({ notes: 'ok', extra: 1 })).status).toBe(400);
+  });
+});
+
 describe('public reviews (B5)', () => {
   async function completed(m: TestUser, s: TestUser) {
     const acc = await acceptedSession(ctx, T, s, m);

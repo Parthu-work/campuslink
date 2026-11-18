@@ -6221,6 +6221,62 @@
         "x-permission": "sessions:book"
       }
     },
+    "/api/v1/bookings/{id}/notes": {
+      "put": {
+        "tags": [
+          "Sessions"
+        ],
+        "summary": "Save the notes both participants share on a session",
+        "description": "Requires permission `sessions:book` (Book mentoring sessions). Host scope: college. Rate limit: posting.",
+        "operationId": "sessions_put_bookings_id_notes",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "notes": {
+                    "type": "string",
+                    "maxLength": 4000
+                  }
+                },
+                "required": [
+                  "notes"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Success envelope { ok: true, data }"
+          },
+          "4XX": {
+            "description": "Error envelope { ok: false, error: { code, message, requestId } }"
+          }
+        },
+        "x-permission": "sessions:book"
+      }
+    },
     "/api/v1/bookings/{id}/slots": {
       "get": {
         "tags": [

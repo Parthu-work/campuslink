@@ -8,6 +8,7 @@ import {
   LATE_CANCEL_HOURS,
   MAX_RESCHEDULES,
   NO_SHOW_WINDOW_HOURS,
+  type BookingDetailView,
   type BookingView,
   type FeedbackView,
   type ImpactView,
@@ -66,22 +67,31 @@ export type SlotList = (
 export class SessionsService {
   /** Set by the app (B5 reviews live in the mentorship module): which bookings have a review. */
   reviewedOf: ((bookingIds: Types.ObjectId[]) => Promise<Set<string>>) | null = null;
+  /** Set by the app (requests live in the mentorship module): a session's agenda, its request's message. */
+  agendaOf: ((requestId: string) => Promise<string | null>) | null = null;
 
   // ── Privacy ─────────────────────────────
   async exportFor(userId: string) {
     const u = new Types.ObjectId(userId);
     const [bookings, feedbackGiven] = await Promise.all([
       BookingModel.find({ $or: [{ menteeId: u }, { mentorId: u }] })
-        .select('mentorId menteeId sessionType start end status')
+        .select('mentorId menteeId sessionType start end status notes notesUpdatedAt')
         .lean(),
       FeedbackModel.find({ menteeId: u }).select('bookingId rating tags comment createdAt').lean(),
     ]);
     return { bookings, feedbackGiven };
   }
 
-  /** Future sessions are cancelled; feedback I wrote is deleted. Past bookings stay, pseudonymous. */
+  /**
+   * Future sessions are cancelled; feedback I wrote is deleted. Past bookings stay, pseudonymous.
+   * Shared notes are cleared on every session I was part of (they may hold what I wrote).
+   */
   async eraseFor(userId: string) {
     const u = new Types.ObjectId(userId);
+    await BookingModel.updateMany(
+      { $or: [{ menteeId: u }, { mentorId: u }], notes: { $ne: '' } },
+      { $set: { notes: '', notesUpdatedAt: null, notesBy: null } },
+    );
     await BookingModel.updateMany(
       { $or: [{ menteeId: u }, { mentorId: u }], status: 'scheduled', start: { $gt: new Date() } },
       { $set: { status: 'cancelled' }, $inc: { version: 1 } },
@@ -269,9 +279,34 @@ export class SessionsService {
     };
   }
 
-  async get(viewer: AuthState, id: string): Promise<BookingView> {
-    const [v] = await this.views(viewer, [await this.mine(viewer, id)]);
-    return v as BookingView;
+  /** One session with its agenda and shared notes (prompt 3, U6), for its participants only. */
+  private async detail(viewer: AuthState, b: BookingDoc): Promise<BookingDetailView> {
+    const [v] = await this.views(viewer, [b]);
+    const agenda = (await this.agendaOf?.(String(b.requestId))) ?? null;
+    return {
+      ...(v as BookingView),
+      agenda,
+      notes: b.notes ?? '',
+      notesUpdatedAt: b.notesUpdatedAt ? b.notesUpdatedAt.toISOString() : null,
+      notesBy: b.notesBy ? (String(b.notesBy) === String(b.mentorId) ? 'mentor' : 'mentee') : null,
+    };
+  }
+
+  async get(viewer: AuthState, id: string): Promise<BookingDetailView> {
+    return this.detail(viewer, await this.mine(viewer, id));
+  }
+
+  /** Shared notes (prompt 3, U6): either participant saves them; a cancelled session keeps its last notes. */
+  async saveNotes(viewer: AuthState, id: string, notes: string): Promise<BookingDetailView> {
+    const b = await this.mine(viewer, id);
+    if (b.status === 'cancelled') throw conflict('This session was cancelled');
+    const updated = await BookingModel.findOneAndUpdate(
+      { _id: b._id, participants: viewer.userId },
+      { $set: { notes, notesUpdatedAt: new Date(), notesBy: new Types.ObjectId(viewer.userId) } },
+      { new: true },
+    ).lean<BookingDoc>();
+    if (!updated) throw notFound('Session');
+    return this.detail(viewer, updated);
   }
 
   private async notifyOther(

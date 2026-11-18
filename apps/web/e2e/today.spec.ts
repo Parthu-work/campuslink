@@ -14,7 +14,7 @@ test('a student’s Home: one Today card, the next steps, people with reasons, t
   const action = page.getByRole('main').getByRole('link', { name: /^(Join|Register|Continue)$/ });
   await expect(action).toHaveCount(1);
   const href = (await action.getAttribute('href')) ?? '';
-  expect(href).toMatch(/^\/(sessions\?join=|placements\/|roadmaps\/[^?]+\?step=)/);
+  expect(href).toMatch(/^\/(sessions\/[a-f0-9]{24}\?join=1|placements\/|roadmaps\/[^?]+\?step=)/);
   // The Next Step's other items, without the one in the Today card.
   await expect(page.getByRole('heading', { name: 'Your next steps' })).toBeVisible();
   if (href.startsWith('/roadmaps/'))

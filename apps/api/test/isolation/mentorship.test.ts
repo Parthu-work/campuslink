@@ -152,6 +152,7 @@ describe('HTTP: nothing of college A is reachable from college B', () => {
       ['get', `/bookings/${bookingA}/ics`, undefined],
       ['post', `/bookings/${bookingA}/join`, {}],
       ['post', `/bookings/${bookingA}/cancel`, {}],
+      ['put', `/bookings/${bookingA}/notes`, { notes: 'From college B' }],
       ['post', `/bookings/${bookingA}/no-show`, {}],
       [
         'post',

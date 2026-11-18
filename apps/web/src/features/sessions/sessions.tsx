@@ -361,7 +361,18 @@ function FeedbackDialog({
   );
 }
 
-function BookingCard({ b, now, autoJoin = false }: { b: BookingView; now: number; autoJoin?: boolean }) {
+export function BookingCard({
+  b,
+  now,
+  autoJoin = false,
+  onPage = false,
+}: {
+  b: BookingView;
+  now: number;
+  autoJoin?: boolean;
+  /** On the session's own page (prompt 3, U6): no link to it. */
+  onPage?: boolean;
+}) {
   const { t } = useTranslation();
   // Home's Join (prompt 3, U5) opens the join dialog straight away while the room is open.
   const [dialog, setDialog] = useState<'join' | 'move' | 'cancel' | 'feedback' | 'review' | 'noshow' | null>(
@@ -454,6 +465,11 @@ function BookingCard({ b, now, autoJoin = false }: { b: BookingView; now: number
           <span className="self-center text-caption text-fg-3">
             {t('sessions.joinOpens', { time: formatTime(b.canJoinFrom) })}
           </span>
+        )}
+        {!onPage && (
+          <Link to={`/sessions/${b.id}`} className={buttonVariants({ size: 'sm' })}>
+            {t('mentoring.session.open')}
+          </Link>
         )}
         {b.conversationId && (
           <Link to={`/messages/${b.conversationId}`} className={buttonVariants({ size: 'sm' })}>

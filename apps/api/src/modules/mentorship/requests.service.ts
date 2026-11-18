@@ -49,6 +49,15 @@ export interface RequestsDeps {
 
 /** Structured mentorship requests. No cold DMs: messaging opens only when a mentor accepts. */
 export class RequestsService {
+  /** A session's agenda (prompt 3, U6): its request's message, or the older three parts. */
+  async agendaOf(requestId: string): Promise<string | null> {
+    const r = await MentorshipRequestModel.findById(requestId).select('message goal background need').lean();
+    if (!r) return null;
+    if (r.message) return r.message;
+    const parts = [r.goal, r.background, r.need].filter(Boolean);
+    return parts.length ? parts.join('\n\n') : null;
+  }
+
   /** Set by the app: does this member own this résumé (prompt 2, G2)? */
   resumeOwned: (userId: string, resumeId: string) => Promise<boolean> = async () => false;
   /** Set by the app (prompt 2, G3): the interview is the mentee's own, completed practice session. */

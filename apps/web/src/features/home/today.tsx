@@ -40,7 +40,10 @@ export function TodayCard({ pick }: { pick: TodayPick }) {
         title={t('today.sessionWith', { type: t(`session.type.${b.sessionType}`), name: other.name })}
         meta={`${formatTime(b.start)}–${formatTime(b.end)}`}
         action={
-          <Link to={`/sessions?join=${b.id}`} className={buttonVariants({ variant: 'primary', size: 'lg' })}>
+          <Link
+            to={`/sessions/${b.id}?join=1`}
+            className={buttonVariants({ variant: 'primary', size: 'lg' })}
+          >
             <Video aria-hidden /> {t('today.join')}
           </Link>
         }

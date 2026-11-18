@@ -563,6 +563,7 @@ export function createApp({
     profiles: profilesService,
   });
   sessionsService.reviewedOf = (ids) => reviewsService.reviewedOf(ids);
+  sessionsService.agendaOf = (requestId) => requestsService.agendaOf(requestId);
   // WhatsApp quick replies (B3) act through the owning services, as the member, with current rights.
   channelService.registerAction('request_accept', (viewer, id) =>
     requestsService.respond(viewer, id, { action: 'accept' }),

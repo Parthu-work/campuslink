@@ -77,10 +77,11 @@ const load = {
   verify: () => import('../features/verify/verify'),
   mentors: withPack('mentoring', () => import('../features/mentors/mentors')),
   mentorPage: withPack('mentoring', () => import('../features/mentors/mentor-page')),
-  requests: () => import('../features/mentorship/requests'),
-  sessions: () => import('../features/sessions/sessions'),
+  requests: withPack('mentoring', () => import('../features/mentorship/requests')),
+  sessions: withPack('mentoring', () => import('../features/sessions/sessions')),
+  sessionPage: withPack('mentoring', () => import('../features/sessions/session-page')),
   messages: () => import('../features/messages/messages'),
-  mentorDashboard: () => import('../features/mentor/mentor-dashboard'),
+  mentorDashboard: withPack('mentoring', () => import('../features/mentor/mentor-dashboard')),
   notifications: () => import('../features/notifications/notifications'),
   postPage: () => import('../features/feed/post-page'),
   collections: () => import('../features/feed/collections'),
@@ -673,6 +674,8 @@ function collegeRoutes(): RouteObject[] {
             isId(userId) ? [qc.ensureQueryData(q.mentor(userId))] : [],
           ),
           screen(load.requests, 'RequestsPage', 'mentorship:request', at('/mentorship')),
+          // One session (prompt 3, U6): its time, Join, agenda, shared notes and feedback.
+          screen(load.sessionPage, 'SessionPage', 'sessions:book', at('/sessions/:id')),
           screen(load.sessions, 'SessionsPage', 'sessions:book', at('/sessions'), (_, url) => [
             qc.ensureQueryData(q.bookings(url.searchParams.get('when') === 'past' ? 'past' : 'upcoming')),
           ]),

@@ -319,6 +319,18 @@ export interface BookingView {
   reviewGiven: boolean;
   conversationId: string | null;
 }
+/** Shared notes on a session (prompt 3, U6): both participants read and edit them. */
+export const BOOKING_NOTES_MAX = 4000;
+export const bookingNotesBody = z.strictObject({ notes: z.string().max(BOOKING_NOTES_MAX) });
+/** One session, for its page (prompt 3, U6). */
+export interface BookingDetailView extends BookingView {
+  /** What it is for: the request's message, as the mentor received it. */
+  agenda: string | null;
+  notes: string;
+  notesUpdatedAt: string | null;
+  /** Who saved the notes last. */
+  notesBy: 'mentor' | 'mentee' | null;
+}
 export interface ImpactView {
   helpedThisMonth: number;
   sessionsThisMonth: number;

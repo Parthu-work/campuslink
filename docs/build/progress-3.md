@@ -394,6 +394,33 @@ Design: `docs/design/v2/u6.md`. U6 ships in two parts: U6a (this section) and U6
 | End-to-end (local, freshly reseeded)               | `mentorship`, `match`, `roadmaps`, `navigation`, `today`, `accessibility`, `people`, `core`: 70 of 70 after one fix (the long Alumni Match and dashboard journey ran out of its 30 s; it now has 90 s, like the other mentorship journey) |
 | Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                  |
 
+## U6b · Mentors: after asking
+
+**Shipped.**
+
+- **A session's own page** (`/sessions/:id`, `features/sessions/session-page.tsx`): the session and the other person, the same card as Sessions (Join opens 10 minutes before; move, cancel, calendar, message; after it, feedback and the public review prompt), **What it's for** (the request's message, or its older three parts), and **Shared notes** both participants read and edit (up to 4,000 characters, "Last saved by you, 2 minutes ago"; read-only once cancelled). Sessions link to it ("Open session"), an accepted request's "View session" opens it, and Home's Join goes there with its join dialog open.
+- **API**: `GET /bookings/:id` now returns the agenda and the notes (`BookingDetailView`; participants only, as before); `PUT /bookings/:id/notes` saves them (participants only; 404 for anyone else and from another college; strict body). The member's data export includes the notes; erasing either participant's account clears the notes on their sessions. API tests in `mentorship-loop.test.ts` and the cross-college list in `isolation/mentorship.test.ts`; `docs:gen` regenerated.
+- **The mentor's queue** leads the mentoring dashboard (`features/mentor/requests-queue.tsx`): requests waiting, each with **Accept** in one tap and **Decline** offering the four kind replies by name (Not my area, Fully booked, Ask me again later, Someone else fits better), "This week: 2 of 5 requests" against the mentor's cap, and a link to Requests for another time or a personal note. The impact card follows.
+- **Rematch as a calm message** (B5): "Rahul hasn't replied yet. Here are 3 seniors who usually reply within a day.", with their faces; the button to see them is unchanged.
+- e2e `session-page.spec.ts` (new): a student asks Arjun through the three steps; Arjun sees it in the queue with the week's count, checks the decline replies, accepts in one tap, opens the session from the accepted request, reads the agenda and saves notes; the student sees the same notes and who saved them. Axe on the queue and the session page.
+
+**Decisions.**
+
+- **Notes are cleared, not kept, when either person's account is erased**: they may hold what the erased person wrote, and a shared note cannot be split by author.
+- **The agenda is the request itself**, as the mentor received it; there is no second place to write it before the session, so it never disagrees with the request.
+
+### Gate results (U6b)
+
+| Gate                                               | Result                                                                                                                                             |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                               |
+| Shared tests                                       | 215 passed                                                                                                                                         |
+| Web tests                                          | 145 passed                                                                                                                                         |
+| API tests                                          | 1,363 passed, 7 skipped (the whole suite; new: shared notes and the agenda, and the notes route in the cross-college list); `docs:gen` regenerated |
+| `pnpm build` and bundle budget                     | Pass: initial 162.2 KB; the Telugu strings 69.9 KB (new strings in the `mentoring` pack)                                                           |
+| End-to-end (local, freshly reseeded)               | `mentorship`, `session-page`, `match`, `today`, `accessibility`, `navigation`, `people`, `resilience`: 60 of 60                                    |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                           |
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

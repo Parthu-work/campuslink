@@ -237,6 +237,7 @@ Every permission-guarded endpoint is exercised for every role by `apps/api/test/
 | `GET /api/v1/admin/mentorship/feedback` | `mentorship:oversee` | college | — | All session feedback (private to mentors and admins) |
 | `GET /api/v1/bookings` | `sessions:book` | college | — | My upcoming or past sessions (as mentor or mentee) |
 | `GET /api/v1/bookings/:id` | `sessions:book` | college | — | One session (participants only) |
+| `PUT /api/v1/bookings/:id/notes` | `sessions:book` | college | posting | Save the notes both participants share on a session |
 | `GET /api/v1/bookings/:id/slots` | `sessions:book` | college | — | Times this session can move to (both calendars considered) |
 | `POST /api/v1/bookings/:id/reschedule` | `sessions:book` | college | — | Move a session to another free slot (at most twice) |
 | `POST /api/v1/bookings/:id/cancel` | `sessions:book` | college | — | Cancel an upcoming session (late cancellations are recorded) |

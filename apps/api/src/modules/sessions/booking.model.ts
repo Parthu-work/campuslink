@@ -28,6 +28,10 @@ const bookingSchema = new Schema(
     noShowBy: { type: String, enum: ['mentor', 'mentee', null], default: null },
     completedAt: { type: Date, default: null },
     conversationId: { type: Schema.Types.ObjectId, default: null },
+    // Prompt 3, U6: notes both participants share (cleared when either one's account is erased).
+    notes: { type: String, default: '', maxlength: 4000 },
+    notesUpdatedAt: { type: Date, default: null },
+    notesBy: { type: Schema.Types.ObjectId, default: null },
   },
   baseSchemaOptions,
 );
