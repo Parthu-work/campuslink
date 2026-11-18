@@ -128,7 +128,26 @@
       "matched": "Your résumé shows",
       "missing": "Not on your résumé yet",
       "gaps": "Worth showing, if true",
-      "disclaimer": "Add a word only if it is true of you. Recruiters ask about everything on a résumé."
+      "disclaimer": "Add a word only if it is true of you. Recruiters ask about everything on a résumé.",
+      "live": "Your score as you edit",
+      "liveNote": "It moves as you type. Run the check for your saved PDF’s exact score.",
+      "last": "Last check: {{n}}, {{when}}, {{pages}}",
+      "toFix": "To fix",
+      "passedTitle": "Done",
+      "points": "+{{n}}",
+      "pointsLabel_one": "adds {{count}} point",
+      "pointsLabel_other": "adds {{count}} points",
+      "fix": {
+        "name": "Add your full name under Basics.",
+        "contact": "Add an email or a phone number under Basics.",
+        "education": "Add your degree under Education.",
+        "skills": "Add a group of skills with a few keywords.",
+        "experience": "Add an internship, a job or a project.",
+        "dates": "Give every entry a start date, and an end date after it.",
+        "length": "Keep it to two pages: shorten older points first.",
+        "images": "Keep it to text: no pictures or tables.",
+        "bullets": "Start most points with what you did and add a number: “Built…”, “Cut load time by 30%”."
+      }
     },
     "rewrite": {
       "title": "Improve this point",
@@ -143,7 +162,11 @@
       "none": "No changes to suggest: this point already reads well.",
       "tips": "Tips",
       "facts": "Check each suggestion is still true before you use it.",
-      "diffNote": "Highlighted words are new or changed."
+      "diffNote": "Highlighted words are new or changed.",
+      "suggested": "Suggestion",
+      "suggestedN": "Suggestion {{n}} of {{total}}",
+      "another": "Another version",
+      "keep": "Keep mine"
     },
     "comments": {
       "title": "Review comments",
@@ -156,7 +179,18 @@
       "about": "About",
       "add": "Comment",
       "send": "Post comment"
-    }
+    },
+    "step": {
+      "basics": "Basics",
+      "education": "Education",
+      "work": "Experience",
+      "projects": "Projects",
+      "skills": "Skills",
+      "more": "Certificates and awards",
+      "check": "Check"
+    },
+    "stepsLabel": "Parts of your résumé",
+    "views": "Résumé views"
   },
   "interviews": {
     "intro": "Practise an interview any time, in English, Telugu or Hindi, by typing or speaking. You get honest feedback on each answer, then book a mock with an alumnus.",

@@ -485,6 +485,36 @@ Design: `docs/design/v2/u6.md`. U6 ships in two parts: U6a (this section) and U6
 
 U7a's CI run failed once on `landing.spec.ts`: Ananya (batch 2027) lands on Career's Placements since U2, and the test only passed while it caught the brief `/start` redirect. Fixed in `4695f2b` (CI green, run 44302381354).
 
+## U7c · Career: the résumé
+
+**Shipped.**
+
+- **Split view on a wide screen** (`features/resume/resume-page.tsx`): the editor on the left, and beside it Preview (the live layout of what is on screen), Check and Comments. **A stepper on a phone**: Basics (with links), Education, Experience, Projects, Skills, Certificates and awards, Check (with the reviewers' comments), one at a time with Back and Next named by the next part; Preview opens in a sheet from the save bar; Download and Ask an alumnus go behind "More actions". The part and the side view are in the address (`?part=`, `?view=`), because saving remounts the editor at the new version and would otherwise send a phone back to Basics.
+- **The check as a checklist with a live score** (`ats-panel.tsx`): "Your score as you edit" moves as the student types; what is left **To fix** comes first, each with how to fix it and the points it adds, then what is **Done**. The words of a role (from the last check against a job description or a drive) are matched live too. Run the check still reads the saved PDF for the exact score ("Last check: 64, 2 days ago, 1 page").
+- **The scoring is shared**: `atsScore`, `parseability`, `extractKeywords`, `words` and `resumeText` moved from the API to `packages/shared/src/resume-ats.ts` (the API re-exports them), with `atsScoreFor` (the same score against a list of keywords). A test checks the live score equals the server's for the same input and rises when a missing keyword is added.
+- **AI rewrites inline** (`rewrite-sheet.tsx` → `InlineRewrite`): Improve opens a suggestion right under the point, the new or changed words marked, with **Use this**, **Another version** (when there are several) and **Keep mine**. The guard is unchanged: no number, tool or result the student did not write.
+- The Basics fields no longer stretch to their neighbour's height.
+- e2e `resumes.spec.ts`: the preview beside the editor (wide) or in its sheet (phone), a new project point, Improve with Keep mine, the live score and the check, the download from More actions on a phone.
+
+**Decisions.**
+
+- **The live score is an estimate on the saved check's terms**: it uses the last check's page count and keywords, because pages come from the rendered PDF and keywords from a description the student pasted once. The exact score stays one tap away and is what the list and readiness use.
+- **The preview is the on-screen layout, not the PDF**: rendering the PDF on every keystroke would cost the server and the bundle; the preview uses the PDF's template and date style, and Download gives the real file.
+
+### Gate results (U7c)
+
+| Gate                                               | Result                                                                                                                                                                                                                                                   |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                                                                     |
+| Shared tests                                       | 221 passed (new: the live score against the server's)                                                                                                                                                                                                    |
+| Web tests                                          | 157 passed                                                                                                                                                                                                                                               |
+| API tests                                          | 1,366 passed, 7 skipped, coverage 90.27% statements and 76.54% branches (the whole suite, 4 workers; the résumé tests run on the shared scoring); `docs:gen`: no change                                                                                  |
+| `pnpm build` and bundle budget                     | Pass: initial 162.3 KB; the résumé screen 62.2 KB of 70                                                                                                                                                                                                  |
+| End-to-end (local, freshly reseeded)               | `resumes`, `practice`, `companies`, `interviews`, `roadmaps`, `placements`, `readiness`, `today`, `accessibility`, `mentorship`, `match`, `session-page`, `first-run`, `landing`, `navigation`: 82 passed, 6 skipped (phone-only and desktop-only tests) |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                 |
+
+U7b's CI: green (run 44314839487).
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

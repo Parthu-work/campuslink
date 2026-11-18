@@ -23,22 +23,49 @@ test('a student builds, checks and downloads a résumé', async ({ page }, info)
   await expect(page.getByLabel('Full name')).not.toHaveValue('');
   await expectNoA11yViolations(page);
 
-  // Edit, save, and the change shows in the preview.
+  // Edit, save, and the change shows in the preview: beside the editor on a wide screen (prompt 3,
+  // U7), in a sheet on a phone.
+  const wide = info.project.name === 'desktop';
   await page.getByLabel('Headline').fill('Final-year CSE student, backend');
   await expect(page.getByText('Unsaved changes')).toBeVisible();
   await page.getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByText('All changes saved')).toBeVisible();
-  await page.getByRole('tab', { name: 'Preview' }).click();
+  if (!wide) await page.getByRole('button', { name: 'Preview', exact: true }).click();
   await expect(page.getByLabel('Résumé preview').getByText('Final-year CSE student, backend')).toBeVisible();
+  if (!wide) await page.keyboard.press('Escape');
 
-  // The check reads the saved PDF.
-  await page.getByRole('tab', { name: 'Check' }).click();
+  // A point gets an inline suggestion under it, with Keep mine to leave it as it is.
+  if (!wide)
+    for (const step of ['Education', 'Experience', 'Projects'])
+      await page.getByRole('button', { name: step, exact: true }).click();
+  await page.getByRole('button', { name: 'Add to Projects' }).click();
+  const project = page.getByLabel('Project', { exact: true }).last();
+  await project.fill('Library management app');
+  const point = page.getByLabel('Point 1', { exact: true }).last();
+  await point.fill('Worked on a REST API that served 200 students every day');
+  await page.getByRole('button', { name: 'Save changes' }).click();
+  await expect(page.getByText('All changes saved')).toBeVisible();
+  await page.getByRole('button', { name: 'Improve' }).last().click();
+  const suggestion = page.getByRole('group', { name: 'Improve this point' });
+  await expect(suggestion.getByRole('button', { name: 'Keep mine' })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await suggestion.getByRole('button', { name: 'Keep mine' }).click();
+  await expect(suggestion).toHaveCount(0);
+
+  // The checklist and a score that moves as the student types; the check reads the saved PDF.
+  if (wide)
+    await page.getByRole('group', { name: 'Résumé views' }).getByRole('button', { name: 'Check' }).click();
+  else
+    for (const step of ['Skills', 'Certificates and awards', 'Check'])
+      await page.getByRole('button', { name: step, exact: true }).click();
+  await expect(page.getByRole('progressbar', { name: 'Your score as you edit' })).toBeVisible();
   await page.getByRole('button', { name: 'Run the check' }).click();
-  await expect(page.getByText(/out of 100/).first()).toBeVisible();
+  await expect(page.getByText(/^Last check: \d+/)).toBeVisible();
   await expectNoA11yViolations(page);
 
   // The download is a PDF.
   const download = page.waitForEvent('download');
+  if (!wide) await page.getByRole('button', { name: 'More actions' }).click();
   await page.getByRole('button', { name: 'Download PDF' }).click();
   expect((await download).suggestedFilename()).toMatch(/\.pdf$/);
 

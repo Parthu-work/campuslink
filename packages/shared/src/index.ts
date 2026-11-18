@@ -47,6 +47,7 @@ export * from './schemas/resumes.js';
 export * from './schemas/interviews.js';
 export * from './schemas/practice.js';
 export * from './practice-match.js';
+export * from './resume-ats.js';
 export * from './schemas/habits.js';
 export * from './schemas/growth.js';
 export * from './schemas/reach.js';

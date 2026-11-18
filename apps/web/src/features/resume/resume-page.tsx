@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, FileUser, Plus, Sparkles, Trash2, UserRoundSearch } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, Eye, Plus, Sparkles, Trash2, UserRoundSearch } from 'lucide-react';
 import {
   RESUME_TEMPLATES,
   resumeContent,
@@ -13,22 +13,29 @@ import { useTranslation } from '../../i18n/react';
 import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
+import { Sheet } from '../../components/ui/dialog';
 import { ErrorState } from '../../components/ui/error-state';
 import { Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Card, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
-import { TabPanel, Tabs } from '../../components/ui/tabs';
+import { Stepper } from '../../components/ui/stepper';
+import { Segmented } from '../../components/ui/tab-nav';
 import { TagInput } from '../../components/ui/tag-input';
 import { api, apiBlob, ApiError, saveBlob } from '../../lib/api';
 import * as q from '../../lib/queries';
 import { SCREEN } from '../../lib/query-client';
 import { toast } from '../../lib/toast';
+import { useMedia } from '../../lib/use-media';
 import { AtsPanel } from './ats-panel';
 import { ResumeComments } from './resume-comments';
 import { ResumePreview } from './resume-preview';
-import { RewriteSheet, type RewriteTarget } from './rewrite-sheet';
+import { InlineRewrite, type RewriteTarget } from './rewrite-sheet';
 
-type Tab = 'edit' | 'preview' | 'check' | 'comments';
+/** The editor's parts: one at a time on a phone (a stepper), all at once beside the preview on a wide screen. */
+const STEPS = ['basics', 'education', 'work', 'projects', 'skills', 'more', 'check'] as const;
+type Step = (typeof STEPS)[number];
+type Side = 'preview' | 'check' | 'comments';
+const WIDE = '(min-width: 1024px)';
 
 function useDownload(r: ResumeView) {
   const { t } = useTranslation();
@@ -139,38 +146,44 @@ function BulletsEditor({
   items,
   onChange,
   improve,
+  suggestion,
 }: {
   label: string;
   items: string[];
   onChange: (v: string[]) => void;
   improve: ((bullet: number) => void) | null;
+  /** An inline rewrite under one bullet (prompt 3, U7). */
+  suggestion?: { bullet: number; node: ReactNode } | undefined;
 }) {
   const { t } = useTranslation();
   return (
     <fieldset className="grid gap-2">
       <legend className="mb-1 text-callout font-semibold">{label}</legend>
       {items.map((b, i) => (
-        <div key={i} className="grid gap-2 sm:grid-cols-[1fr_auto_auto] sm:items-start">
-          <Textarea
-            aria-label={t('resume.bulletN', { n: i + 1 })}
-            rows={2}
-            maxLength={220}
-            value={b}
-            onChange={(e) => onChange(items.map((x, j) => (j === i ? e.target.value : x)))}
-          />
-          {improve && (
-            <Button size="sm" disabled={!b.trim()} onClick={() => improve(i)}>
-              <Sparkles className="size-4" aria-hidden /> {t('resume.improve')}
+        <div key={i} className="grid gap-2">
+          <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto] sm:items-start">
+            <Textarea
+              aria-label={t('resume.bulletN', { n: i + 1 })}
+              rows={2}
+              maxLength={220}
+              value={b}
+              onChange={(e) => onChange(items.map((x, j) => (j === i ? e.target.value : x)))}
+            />
+            {improve && (
+              <Button size="sm" disabled={!b.trim()} onClick={() => improve(i)}>
+                <Sparkles className="size-4" aria-hidden /> {t('resume.improve')}
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              aria-label={t('resume.removeBullet', { n: i + 1 })}
+              onClick={() => onChange(items.filter((_, j) => j !== i))}
+            >
+              <Trash2 className="size-4" aria-hidden />
             </Button>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
-            aria-label={t('resume.removeBullet', { n: i + 1 })}
-            onClick={() => onChange(items.filter((_, j) => j !== i))}
-          >
-            <Trash2 className="size-4" aria-hidden />
-          </Button>
+          </div>
+          {suggestion?.bullet === i && suggestion.node}
         </div>
       ))}
       {items.length < 6 && (
@@ -209,7 +222,25 @@ function Editor({ resume: r }: { resume: ResumeView }) {
   const [content, setContent] = useState<ResumeContent>(r.content);
   const [dirty, setDirty] = useState(false);
   const [problem, setProblem] = useState('');
-  const [tab, setTab] = useState<Tab>('edit');
+  const wide = useMedia(WIDE);
+  // In the address, so saving (which remounts the editor at the new version) keeps the place.
+  const [params, setParams] = useSearchParams();
+  const step = Math.max(0, STEPS.indexOf(params.get('part') as Step));
+  const asked = params.get('view') as Side | null;
+  const side: Side = asked === 'check' || asked === 'comments' ? asked : 'preview';
+  const setPlace = (patch: { part?: Step; view?: Side }) =>
+    setParams(
+      (p) => {
+        if (patch.part) p.set('part', patch.part);
+        if (patch.view) p.set('view', patch.view);
+        return p;
+      },
+      { replace: true },
+    );
+  const setStep = (next: (x: number) => number) => setPlace({ part: STEPS[next(step)] ?? 'basics' });
+  const setSide = (view: Side) => setPlace({ view });
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const show = (id: Step) => wide || STEPS[step] === id;
   const [rewriting, setRewriting] = useState<(RewriteTarget & { apply: (s: string) => void }) | null>(null);
   const download = useDownload(r);
   const edit = (c: ResumeContent) => {
@@ -253,23 +284,53 @@ function Editor({ resume: r }: { resume: ResumeView }) {
             },
           });
 
+  const suggestionFor = (section: 'work' | 'projects', entry: number) =>
+    rewriting && rewriting.section === section && rewriting.entry === entry
+      ? {
+          bullet: rewriting.bullet,
+          node: (
+            <InlineRewrite
+              key={`${section}-${entry}-${rewriting.bullet}`}
+              resumeId={r.id}
+              target={{ section, entry, bullet: rewriting.bullet }}
+              onClose={() => setRewriting(null)}
+              onPick={(text) => {
+                rewriting.apply(text);
+                setRewriting(null);
+              }}
+            />
+          ),
+        }
+      : undefined;
+  const checkPanel = <AtsPanel resume={r} content={content} dirty={dirty} />;
+
   return (
     <div className="grid gap-5">
       <PageHeader
-        icon={<FileUser />}
         title={r.title}
+        // On a phone the two go behind "More actions", so Save and the first part lead (U7).
+        overflow={
+          wide
+            ? []
+            : [
+                { label: t('resume.download'), onSelect: () => download.mutate() },
+                { label: t('resume.askReview'), to: '/mentors?view=browse&type=resume_review' },
+              ]
+        }
         actions={
-          <>
-            <Button loading={download.isPending} disabled={dirty} onClick={() => download.mutate()}>
-              <Download className="size-4" aria-hidden /> {t('resume.download')}
-            </Button>
-            <Link
-              to="/mentors?view=browse&type=resume_review"
-              className={buttonVariants({ variant: 'outline' })}
-            >
-              <UserRoundSearch className="size-4" aria-hidden /> {t('resume.askReview')}
-            </Link>
-          </>
+          wide ? (
+            <>
+              <Button loading={download.isPending} disabled={dirty} onClick={() => download.mutate()}>
+                <Download className="size-4" aria-hidden /> {t('resume.download')}
+              </Button>
+              <Link
+                to="/mentors?view=browse&type=resume_review"
+                className={buttonVariants({ variant: 'outline' })}
+              >
+                <UserRoundSearch className="size-4" aria-hidden /> {t('resume.askReview')}
+              </Link>
+            </>
+          ) : null
         }
       />
       <div className="sticky top-0 z-10 -mx-4 flex flex-wrap items-center gap-3 border-b border-line bg-bg/95 px-4 py-2 backdrop-blur">
@@ -279,6 +340,11 @@ function Editor({ resume: r }: { resume: ResumeView }) {
         <span className="text-callout text-fg-2" aria-live="polite">
           {dirty ? t('resume.unsaved') : t('resume.allSaved')}
         </span>
+        {!wide && (
+          <Button size="sm" variant="ghost" className="ms-auto" onClick={() => setPreviewOpen(true)}>
+            <Eye className="size-4" aria-hidden /> {t('resume.tab.preview')}
+          </Button>
+        )}
       </div>
       {problem && (
         <p
@@ -288,120 +354,122 @@ function Editor({ resume: r }: { resume: ResumeView }) {
           {problem}
         </p>
       )}
-      <Tabs
-        label={t('resume.tabs')}
-        idBase="resume"
-        value={tab}
-        onChange={setTab}
-        tabs={[
-          { id: 'edit', label: t('resume.tab.edit') },
-          { id: 'preview', label: t('resume.tab.preview') },
-          { id: 'check', label: t('resume.tab.check') },
-          { id: 'comments', label: t('resume.tab.comments') },
-        ]}
-      />
-      {tab === 'edit' && (
-        <TabPanel idBase="resume" id="edit">
-          <div className="grid gap-8">
-            <p className="text-callout text-fg-2">{t('resume.english')}</p>
-            <section className="grid gap-3 sm:grid-cols-2" aria-label={t('resume.section.basics')}>
-              <Text
-                label={t('resume.name')}
-                value={title}
-                max={60}
-                onChange={(v) => {
-                  setTitle(v);
-                  setDirty(true);
-                }}
-              />
-              <Field label={t('resume.template')}>
-                {({ id }) => (
-                  <Select
-                    id={id}
-                    value={template}
-                    onChange={(e) => {
-                      setTemplate(e.target.value as ResumeTemplate);
-                      setDirty(true);
-                    }}
-                  >
-                    {RESUME_TEMPLATES.map((v) => (
-                      <option key={v} value={v}>
-                        {t(`resume.templates.${v}`)}
-                      </option>
-                    ))}
-                  </Select>
-                )}
-              </Field>
-              <Text
-                label={t('resume.f.fullName')}
-                value={b.name}
-                max={80}
-                onChange={(v) => setBasics({ name: v })}
-              />
-              <Text
-                label={t('resume.f.headline')}
-                value={b.label}
-                max={80}
-                hint={t('resume.f.headlineHint')}
-                onChange={(v) => setBasics({ label: v })}
-              />
-              <Text
-                label={t('resume.f.email')}
-                value={b.email}
-                max={120}
-                inputMode="email"
-                onChange={(v) => setBasics({ email: v })}
-              />
-              <Text
-                label={t('resume.f.phone')}
-                value={b.phone}
-                max={30}
-                inputMode="tel"
-                onChange={(v) => setBasics({ phone: v })}
-              />
-              <Text
-                label={t('resume.f.location')}
-                value={b.location}
-                max={80}
-                onChange={(v) => setBasics({ location: v })}
-              />
-              <div className="sm:col-span-2">
+      {!wide && (
+        <Stepper
+          steps={STEPS.map((x) => t(`resume.step.${x}`))}
+          current={step}
+          label={t('resume.stepsLabel')}
+        />
+      )}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-start">
+        <div className="grid min-w-0 gap-8">
+          {show('basics') && (
+            <>
+              <p className="text-callout text-fg-2">{t('resume.english')}</p>
+              <section
+                className="grid gap-3 sm:grid-cols-2 sm:items-start"
+                aria-label={t('resume.section.basics')}
+              >
                 <Text
-                  label={t('resume.f.summary')}
-                  value={b.summary}
-                  max={600}
-                  multiline
-                  hint={t('resume.f.summaryHint')}
-                  onChange={(v) => setBasics({ summary: v })}
+                  label={t('resume.name')}
+                  value={title}
+                  max={60}
+                  onChange={(v) => {
+                    setTitle(v);
+                    setDirty(true);
+                  }}
                 />
-              </div>
-            </section>
-            <Entries
-              title={t('resume.section.profiles')}
-              items={b.profiles}
-              max={4}
-              blank={{ network: '', url: '' }}
-              onChange={(profiles) => setBasics({ profiles })}
-              render={(p, set) => (
-                <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
+                <Field label={t('resume.template')}>
+                  {({ id }) => (
+                    <Select
+                      id={id}
+                      value={template}
+                      onChange={(e) => {
+                        setTemplate(e.target.value as ResumeTemplate);
+                        setDirty(true);
+                      }}
+                    >
+                      {RESUME_TEMPLATES.map((v) => (
+                        <option key={v} value={v}>
+                          {t(`resume.templates.${v}`)}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </Field>
+                <Text
+                  label={t('resume.f.fullName')}
+                  value={b.name}
+                  max={80}
+                  onChange={(v) => setBasics({ name: v })}
+                />
+                <Text
+                  label={t('resume.f.headline')}
+                  value={b.label}
+                  max={80}
+                  hint={t('resume.f.headlineHint')}
+                  onChange={(v) => setBasics({ label: v })}
+                />
+                <Text
+                  label={t('resume.f.email')}
+                  value={b.email}
+                  max={120}
+                  inputMode="email"
+                  onChange={(v) => setBasics({ email: v })}
+                />
+                <Text
+                  label={t('resume.f.phone')}
+                  value={b.phone}
+                  max={30}
+                  inputMode="tel"
+                  onChange={(v) => setBasics({ phone: v })}
+                />
+                <Text
+                  label={t('resume.f.location')}
+                  value={b.location}
+                  max={80}
+                  onChange={(v) => setBasics({ location: v })}
+                />
+                <div className="sm:col-span-2">
                   <Text
-                    label={t('resume.f.network')}
-                    value={p.network}
-                    max={30}
-                    placeholder="LinkedIn"
-                    onChange={(v) => set({ network: v })}
-                  />
-                  <Text
-                    label={t('resume.f.url')}
-                    value={p.url}
-                    max={200}
-                    inputMode="url"
-                    placeholder="https://"
-                    onChange={(v) => set({ url: v })}
+                    label={t('resume.f.summary')}
+                    value={b.summary}
+                    max={600}
+                    multiline
+                    hint={t('resume.f.summaryHint')}
+                    onChange={(v) => setBasics({ summary: v })}
                   />
                 </div>
-              )}
-            />
+              </section>
+              <Entries
+                title={t('resume.section.profiles')}
+                items={b.profiles}
+                max={4}
+                blank={{ network: '', url: '' }}
+                onChange={(profiles) => setBasics({ profiles })}
+                render={(p, set) => (
+                  <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
+                    <Text
+                      label={t('resume.f.network')}
+                      value={p.network}
+                      max={30}
+                      placeholder="LinkedIn"
+                      onChange={(v) => set({ network: v })}
+                    />
+                    <Text
+                      label={t('resume.f.url')}
+                      value={p.url}
+                      max={200}
+                      inputMode="url"
+                      placeholder="https://"
+                      onChange={(v) => set({ url: v })}
+                    />
+                  </div>
+                )}
+              />
+            </>
+          )}
+          {show('education') && (
             <Entries
               title={t('resume.section.education')}
               items={content.education}
@@ -454,6 +522,8 @@ function Editor({ resume: r }: { resume: ResumeView }) {
                 </div>
               )}
             />
+          )}
+          {show('work') && (
             <Entries
               title={t('resume.section.work')}
               items={content.work}
@@ -496,10 +566,13 @@ function Editor({ resume: r }: { resume: ResumeView }) {
                     items={w.highlights}
                     onChange={(highlights) => set({ highlights })}
                     improve={improve('work', i)}
+                    suggestion={suggestionFor('work', i)}
                   />
                 </div>
               )}
             />
+          )}
+          {show('projects') && (
             <Entries
               title={t('resume.section.projects')}
               items={content.projects}
@@ -536,10 +609,13 @@ function Editor({ resume: r }: { resume: ResumeView }) {
                     items={p.highlights}
                     onChange={(highlights) => set({ highlights })}
                     improve={improve('projects', i)}
+                    suggestion={suggestionFor('projects', i)}
                   />
                 </div>
               )}
             />
+          )}
+          {show('skills') && (
             <Entries
               title={t('resume.section.skills')}
               items={content.skills}
@@ -564,95 +640,133 @@ function Editor({ resume: r }: { resume: ResumeView }) {
                 </div>
               )}
             />
-            <Entries
-              title={t('resume.section.certificates')}
-              items={content.certificates}
-              max={10}
-              blank={{ name: '', issuer: '', date: '' }}
-              onChange={(certificates) => edit({ ...content, certificates })}
-              render={(x, set) => (
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <Text
-                    label={t('resume.f.certificate')}
-                    value={x.name}
-                    max={120}
-                    onChange={(v) => set({ name: v })}
-                  />
-                  <Text
-                    label={t('resume.f.issuer')}
-                    value={x.issuer}
-                    max={80}
-                    onChange={(v) => set({ issuer: v })}
-                  />
-                  <Text
-                    label={t('resume.f.date')}
-                    value={x.date}
-                    max={7}
-                    placeholder="2025-03"
-                    onChange={(v) => set({ date: v })}
-                  />
-                </div>
+          )}
+          {show('more') && (
+            <>
+              <Entries
+                title={t('resume.section.certificates')}
+                items={content.certificates}
+                max={10}
+                blank={{ name: '', issuer: '', date: '' }}
+                onChange={(certificates) => edit({ ...content, certificates })}
+                render={(x, set) => (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <Text
+                      label={t('resume.f.certificate')}
+                      value={x.name}
+                      max={120}
+                      onChange={(v) => set({ name: v })}
+                    />
+                    <Text
+                      label={t('resume.f.issuer')}
+                      value={x.issuer}
+                      max={80}
+                      onChange={(v) => set({ issuer: v })}
+                    />
+                    <Text
+                      label={t('resume.f.date')}
+                      value={x.date}
+                      max={7}
+                      placeholder="2025-03"
+                      onChange={(v) => set({ date: v })}
+                    />
+                  </div>
+                )}
+              />
+              <Entries
+                title={t('resume.section.awards')}
+                items={content.awards}
+                max={10}
+                blank={{ title: '', awarder: '', date: '' }}
+                onChange={(awards) => edit({ ...content, awards })}
+                render={(x, set) => (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <Text
+                      label={t('resume.f.award')}
+                      value={x.title}
+                      max={120}
+                      onChange={(v) => set({ title: v })}
+                    />
+                    <Text
+                      label={t('resume.f.awarder')}
+                      value={x.awarder}
+                      max={80}
+                      onChange={(v) => set({ awarder: v })}
+                    />
+                    <Text
+                      label={t('resume.f.date')}
+                      value={x.date}
+                      max={7}
+                      placeholder="2025"
+                      onChange={(v) => set({ date: v })}
+                    />
+                  </div>
+                )}
+              />
+            </>
+          )}
+          {dirty && (show('work') || show('projects')) && (
+            <p className="text-callout text-fg-2">{t('resume.improveAfterSave')}</p>
+          )}
+          {!wide && STEPS[step] === 'check' && (
+            <>
+              {checkPanel}
+              <ResumeComments resume={r} />
+            </>
+          )}
+          {!wide && (
+            <div className="flex flex-wrap justify-between gap-2">
+              <Button
+                variant="ghost"
+                disabled={step === 0}
+                onClick={() => {
+                  setStep((x) => Math.max(0, x - 1));
+                  window.scrollTo({ top: 0 });
+                }}
+              >
+                <ArrowLeft className="size-4" aria-hidden /> {t('common.back')}
+              </Button>
+              {step < STEPS.length - 1 && (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setStep((x) => Math.min(STEPS.length - 1, x + 1));
+                    window.scrollTo({ top: 0 });
+                  }}
+                >
+                  {t(`resume.step.${STEPS[step + 1] ?? 'check'}`)}{' '}
+                  <ArrowRight className="size-4" aria-hidden />
+                </Button>
               )}
+            </div>
+          )}
+        </div>
+        {wide && (
+          <aside className="sticky top-4 grid max-h-[calc(100dvh-2rem)] gap-3 overflow-y-auto">
+            <Segmented
+              label={t('resume.views')}
+              value={side}
+              onChange={setSide}
+              options={[
+                ['preview', t('resume.tab.preview')],
+                ['check', t('resume.tab.check')],
+                ['comments', t('resume.tab.comments')],
+              ]}
             />
-            <Entries
-              title={t('resume.section.awards')}
-              items={content.awards}
-              max={10}
-              blank={{ title: '', awarder: '', date: '' }}
-              onChange={(awards) => edit({ ...content, awards })}
-              render={(x, set) => (
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <Text
-                    label={t('resume.f.award')}
-                    value={x.title}
-                    max={120}
-                    onChange={(v) => set({ title: v })}
-                  />
-                  <Text
-                    label={t('resume.f.awarder')}
-                    value={x.awarder}
-                    max={80}
-                    onChange={(v) => set({ awarder: v })}
-                  />
-                  <Text
-                    label={t('resume.f.date')}
-                    value={x.date}
-                    max={7}
-                    placeholder="2025"
-                    onChange={(v) => set({ date: v })}
-                  />
-                </div>
-              )}
-            />
-            {dirty && <p className="text-callout text-fg-2">{t('resume.improveAfterSave')}</p>}
-          </div>
-        </TabPanel>
-      )}
-      {tab === 'preview' && (
-        <TabPanel idBase="resume" id="preview">
+            {side === 'preview' ? (
+              <ResumePreview content={content} template={template} />
+            ) : side === 'check' ? (
+              checkPanel
+            ) : (
+              <ResumeComments resume={r} />
+            )}
+          </aside>
+        )}
+      </div>
+      {!wide && (
+        <Sheet open={previewOpen} onOpenChange={setPreviewOpen} title={t('resume.tab.preview')}>
           <ResumePreview content={content} template={template} />
-        </TabPanel>
-      )}
-      {tab === 'check' && (
-        <TabPanel idBase="resume" id="check">
-          <AtsPanel resume={r} dirty={dirty} />
-        </TabPanel>
-      )}
-      {tab === 'comments' && (
-        <TabPanel idBase="resume" id="comments">
-          <ResumeComments resume={r} />
-        </TabPanel>
-      )}
-      {rewriting && (
-        <RewriteSheet
-          resumeId={r.id}
-          target={{ section: rewriting.section, entry: rewriting.entry, bullet: rewriting.bullet }}
-          onClose={() => setRewriting(null)}
-          onPick={(s) => {
-            rewriting.apply(s);
-            setRewriting(null);
-          }}
-        />
+        </Sheet>
       )}
     </div>
   );
@@ -665,7 +779,6 @@ function Review({ resume: r }: { resume: ResumeView }) {
   return (
     <div className="grid gap-5">
       <PageHeader
-        icon={<FileUser />}
         title={t('resume.reviewTitle', { name: r.owner.name })}
         intro={t('resume.reviewIntro')}
         actions={
@@ -688,7 +801,7 @@ export function ResumePage() {
   const { id = '' } = useParams();
   const r = useQuery({ ...SCREEN, ...q.resume(id) });
   return (
-    <div className="mx-auto grid w-full max-w-[960px] gap-4">
+    <div className="mx-auto grid w-full max-w-[1200px] gap-4">
       <BackLink to={r.data && !r.data.mine ? '/mentorship' : '/resume'}>
         {r.data && !r.data.mine ? t('nav.requests') : t('nav.resume')}
       </BackLink>
