@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { AdminOverviewView } from '@campuslink/shared';
+import { ctcBand, type AdminOverviewView } from '@campuslink/shared';
+import { runInTenant } from '../src/lib/context.js';
+import { OfferModel } from '../src/modules/placements/placements.model.js';
 import { api, makeTenant, makeUser, testApp, type TestTenant, type TestUser } from './helpers.js';
 import { makeSubject } from './study-fixtures.js';
 
@@ -39,9 +41,10 @@ describe('Admin › Overview', () => {
     const v = r.body.data as AdminOverviewView;
     expect(v.members).toEqual({ active: 5, unverified: 0, suspended: 0 });
     expect(v.activity).not.toBeNull();
-    expect(v.verification).toEqual({ pending: 0 });
-    expect(v.moderation).toEqual({ reports: 0, pendingQuestions: 0, appeals: 0, heldItems: 0 });
-    expect(v.roadmapReviews).toEqual({ pending: 0 });
+    // Prompt 3, U9: each queue says when its oldest item arrived (none waiting: null).
+    expect(v.verification).toEqual({ pending: 0, since: null });
+    expect(v.moderation).toEqual({ reports: 0, pendingQuestions: 0, appeals: 0, heldItems: 0, since: null });
+    expect(v.roadmapReviews).toEqual({ pending: 0, since: null });
     expect(v.materialReviews).toEqual({ pending: 1 });
     expect(v.imports).toEqual({ running: 0, failedThisWeek: 0 });
     expect(v.ai).toMatchObject({ status: { answers: false }, budgetPercent: null });
@@ -64,6 +67,66 @@ describe('Admin › Overview', () => {
     expect(t.activity).not.toBeNull();
     expect(t.materialReviews).toEqual({ pending: 0 });
     expect((await as(student).get('/admin/overview')).status).toBe(403);
+  });
+
+  it('Today (prompt 3, U9): the drive closing first, the next drive, and the oldest offer waiting', async () => {
+    const DAY = 86_400_000;
+    const drive = async (title: string, closesInHours: number, heldInDays: number) => {
+      const c = await as(tpo)
+        .post('/admin/placements/drives')
+        .send({
+          companyName: `Overview Corp ${title} (demo)`,
+          title,
+          roles: [{ title: 'Analyst', ctcMinLpa: 5, ctcMaxLpa: 6, location: 'Hyderabad', type: 'full_time' }],
+          mode: 'virtual',
+          venue: '',
+          driveDate: new Date(Date.now() + heldInDays * DAY).toISOString(),
+          registrationCloseAt: new Date(Date.now() + closesInHours * 3_600_000).toISOString(),
+          eligibility: { branches: [], gradYears: [] },
+          questions: [],
+          rounds: [{ name: 'Interview', kind: 'technical' }],
+          resumeRequired: false,
+        });
+      expect(c.status, JSON.stringify(c.body)).toBe(201);
+      expect(
+        (await as(tpo).post(`/admin/placements/drives/${c.body.data.id}/status`).send({ status: 'open' }))
+          .status,
+      ).toBe(200);
+      return c.body.data.id as string;
+    };
+    const later = await drive('Later drive', 30, 2);
+    const first = await drive('First drive', 6, 4);
+    await drive('Next week drive', 24 * 6, 8);
+    const reportedAt = new Date(Date.now() - 2 * DAY);
+    await runInTenant(T._id, () =>
+      OfferModel.create({
+        userId: student.id,
+        companyKey: 'overview offer co',
+        companyName: 'Overview Offer Co (demo)',
+        role: 'Analyst',
+        ctcLpa: 6,
+        ctcBand: ctcBand(6),
+        offerDate: reportedAt,
+        type: 'full_time',
+        source: 'off_campus',
+        status: 'reported',
+        createdAt: reportedAt,
+      }),
+    );
+    const t = (await as(tpo).get('/admin/overview')).body.data as AdminOverviewView;
+    expect(t.placements?.closingSoon).toBe(2);
+    expect(t.placements?.soonest).toMatchObject({
+      id: first,
+      title: 'First drive',
+      company: 'Overview Corp First drive (demo)',
+    });
+    // The next drive to be held is the one in two days, whichever closes first.
+    expect(t.placements?.next).toMatchObject({ id: later, title: 'Later drive' });
+    expect(t.offers).toMatchObject({ pending: 1 });
+    expect(Date.parse(t.offers?.since ?? '')).toBeLessThanOrEqual(Date.now() - DAY);
+    // Another college sees none of it.
+    const u = (await as(otherAdmin, U).get('/admin/overview')).body.data as AdminOverviewView;
+    expect(JSON.stringify(u)).not.toContain('Overview Corp');
   });
 
   it('counts never cross colleges', async () => {

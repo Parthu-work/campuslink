@@ -57,7 +57,8 @@ export function AdminLayout() {
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
         <PageHeader
           eyebrow={atHome ? undefined : t('nav.admin')}
-          title={atHome ? t('nav.admin') : (current?.label ?? t('nav.admin'))}
+          // Staff Today (prompt 3, U9) is the admin home.
+          title={atHome ? t('nav.spaces.today') : (current?.label ?? t('nav.admin'))}
         />
         {billing && <BillingBanner />}
         <Outlet />

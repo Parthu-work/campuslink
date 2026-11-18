@@ -1,0 +1,42 @@
+{
+  "staff": {
+    "today": {
+      "waiting": "आपके लिए इंतज़ार में",
+      "drives_one": "अगले 2 दिनों में {{count}} ड्राइव बंद होगी",
+      "drives_other": "अगले 2 दिनों में {{count}} ड्राइव बंद होंगी",
+      "driveNamed": "{{company}}: {{title}}",
+      "offers_one": "सत्यापित करने के लिए {{count}} ऑफ़र",
+      "offers_other": "सत्यापित करने के लिए {{count}} ऑफ़र",
+      "verification_one": "सत्यापन के इंतज़ार में {{count}} छात्र",
+      "verification_other": "सत्यापन के इंतज़ार में {{count}} छात्र",
+      "moderation_one": "जाँचने के लिए {{count}} रिपोर्ट या पोस्ट",
+      "moderation_other": "जाँचने के लिए {{count}} रिपोर्ट और पोस्ट",
+      "support_one": "जवाब देने के लिए {{count}} समस्या रिपोर्ट",
+      "support_other": "जवाब देने के लिए {{count}} समस्या रिपोर्ट",
+      "roadmaps_one": "समीक्षा के लिए {{count}} करियर पाथ",
+      "roadmaps_other": "समीक्षा के लिए {{count}} करियर पाथ",
+      "material_one": "समीक्षा के लिए {{count}} स्टडी अपलोड",
+      "material_other": "समीक्षा के लिए {{count}} स्टडी अपलोड",
+      "queue": "{{name}}: समीक्षा के लिए {{count}}",
+      "notJoined_one": "{{count}} छात्र अभी तक नहीं जुड़ा",
+      "notJoined_other": "{{count}} छात्र अभी तक नहीं जुड़े",
+      "imports_one": "इस हफ़्ते {{count}} इंपोर्ट विफल हुआ",
+      "imports_other": "इस हफ़्ते {{count}} इंपोर्ट विफल हुए",
+      "ai": "AI स्टडी असिस्टेंट पर ध्यान देना है",
+      "whatsapp": "WhatsApp: इस महीने {{allowance}} में से {{sent}} संदेश इस्तेमाल हुए",
+      "since": "{{date}} से इंतज़ार में",
+      "action": {
+        "open": "खोलें",
+        "verify": "सत्यापित करें",
+        "review": "समीक्षा करें",
+        "answer": "जवाब दें",
+        "invite": "आमंत्रित करें"
+      },
+      "clear": "कुछ भी इंतज़ार में नहीं।",
+      "next": "अगली ड्राइव: {{date}} को {{company}}",
+      "week": "इस हफ़्ते: {{members}} सदस्य, {{active}} सक्रिय",
+      "members": "{{members}} सदस्य",
+      "active": "इस हफ़्ते {{active}} सक्रिय"
+    }
+  }
+}

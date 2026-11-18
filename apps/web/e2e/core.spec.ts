@@ -132,22 +132,22 @@ test.describe('signed-in journeys', () => {
     // Enrols on first sign-in (or answers the TOTP prompt if another spec enrolled first).
     await adminSignIn(page, host, `admin@${host}.example`);
 
-    // Admin opens on what is waiting; the sections are a side menu (desktop) or a list (phones).
+    // Admin opens on Today (prompt 3, U9): what is waiting, most urgent first, each with one
+    // action, then one line about the week. The sections live in the staff spaces.
     await page.goto(`http://${host}.localhost:4173/admin`);
-    await expect(page.getByRole('heading', { name: 'What’s waiting' })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Active members/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Today', level: 1 })).toBeVisible();
+    await expect(page.getByRole('link', { name: /^This week: / })).toBeVisible();
     await expectNoA11yViolations(page);
-    await page.getByRole('link', { name: 'Members', exact: true }).click();
-    await page.waitForURL(/\/admin\/users$/);
+    await page.goto(`http://${host}.localhost:4173/admin/users`);
     // The demo year (G13) fills the first pages, so find the placement officer by name.
     await page.getByLabel('Search by name or email').fill('Srinivas');
     await expect(page.getByText('Srinivas Murthy')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Members', level: 1 })).toBeVisible();
     await expectNoA11yViolations(page);
-    // Back to the overview (Today), which lists every section, then the audit log.
+    // Back to Today from the navigation, then the audit log.
     await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Today' }).click();
     await page.waitForURL(/\/admin$/);
-    await page.getByRole('link', { name: 'Audit log' }).click();
+    await page.goto(`http://${host}.localhost:4173/admin/audit`);
     // Newest first, 50 a page: other specs' audited actions can push the enrolment past the first page.
     const enrolled = page.getByText('auth.mfa_enabled').first();
     const rows = page.getByRole('region', { name: 'Audit log' }).getByRole('row');

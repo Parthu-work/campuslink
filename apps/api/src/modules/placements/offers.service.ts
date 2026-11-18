@@ -276,6 +276,18 @@ export class OffersService {
     return OfferModel.countDocuments({ status: 'reported' });
   }
 
+  /** Staff Today (prompt 3, U9): when the oldest offer waiting for verification was reported. */
+  async oldestPending(): Promise<string | null> {
+    return (
+      (
+        await OfferModel.findOne({ status: 'reported' })
+          .sort({ createdAt: 1 })
+          .select('createdAt')
+          .lean<{ createdAt?: Date | null }>()
+      )?.createdAt?.toISOString() ?? null
+    );
+  }
+
   /** Verified offers of these batches, for reports (B8; aggregated and suppressed there). */
   /** Prompt 2, G8 (public pages): a member's verified offers, company and role only (never the CTC). */
   async verifiedOf(

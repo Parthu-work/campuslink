@@ -57,7 +57,8 @@ const load = {
   dataSettings: () => import('../features/settings/data-settings'),
   notificationSettings: () => import('../features/settings/notification-settings'),
   admin: () => import('../features/admin/admin'),
-  adminOverview: () => import('../features/admin/admin-overview'),
+  // Prompt 3, U9: staff Today (it replaced Admin › Overview).
+  adminOverview: withPack('staff', () => import('../features/admin/today')),
   imports: () => import('../features/admin/imports'),
   onboardingAdmin: () => import('../features/admin/onboarding-admin'),
   listAdmin: () => import('../features/admin/list-admin'),
@@ -708,7 +709,7 @@ function collegeRoutes(): RouteObject[] {
           ),
           settingsRoutes,
           layout(load.admin, 'AdminLayout', ADMIN_PERMISSIONS, 'admin', [
-            screen(load.adminOverview, 'AdminOverview', undefined, index, () => [
+            screen(load.adminOverview, 'StaffToday', undefined, index, () => [
               qc.ensureQueryData(q.adminOverview()),
             ]),
             screen(load.admin, 'UsersAdmin', 'users:read_admin', at('users')),

@@ -1,0 +1,42 @@
+{
+  "staff": {
+    "today": {
+      "waiting": "Waiting for you",
+      "drives_one": "{{count}} drive closes in the next 2 days",
+      "drives_other": "{{count}} drives close in the next 2 days",
+      "driveNamed": "{{company}}: {{title}}",
+      "offers_one": "{{count}} offer to verify",
+      "offers_other": "{{count}} offers to verify",
+      "verification_one": "{{count}} student waiting to be verified",
+      "verification_other": "{{count}} students waiting to be verified",
+      "moderation_one": "{{count}} report or post to check",
+      "moderation_other": "{{count}} reports and posts to check",
+      "support_one": "{{count}} problem report to answer",
+      "support_other": "{{count}} problem reports to answer",
+      "roadmaps_one": "{{count}} career path to review",
+      "roadmaps_other": "{{count}} career paths to review",
+      "material_one": "{{count}} study upload to review",
+      "material_other": "{{count}} study uploads to review",
+      "queue": "{{name}}: {{count}} to review",
+      "notJoined_one": "{{count}} student hasn’t joined yet",
+      "notJoined_other": "{{count}} students haven’t joined yet",
+      "imports_one": "{{count}} import failed this week",
+      "imports_other": "{{count}} imports failed this week",
+      "ai": "The AI study assistant needs attention",
+      "whatsapp": "WhatsApp: {{sent}} of {{allowance}} messages used this month",
+      "since": "Waiting since {{date}}",
+      "action": {
+        "open": "Open",
+        "verify": "Verify",
+        "review": "Review",
+        "answer": "Answer",
+        "invite": "Invite"
+      },
+      "clear": "Nothing waiting.",
+      "next": "Next drive: {{company}} on {{date}}",
+      "week": "This week: {{members}} members, {{active}} active",
+      "members": "{{members}} members",
+      "active": "{{active}} active this week"
+    }
+  }
+}

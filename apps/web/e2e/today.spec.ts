@@ -54,3 +54,24 @@ test('an alumna’s Home leads with who is waiting, and Accept takes one tap', a
   await row.getByRole('button', { name: 'Accept' }).click();
   await expect(waiting.getByRole('listitem').filter({ hasText: /Vikram/ })).toHaveCount(0);
 });
+
+test('a placement officer’s Today: the waiting work, nothing at zero, one tap to where it is done', async ({
+  page,
+}, info) => {
+  const host = info.project.name === 'mobile' ? 'mrce' : 'dpit';
+  await signIn(page, `tpo@${host}.example`, host);
+  await page.goto(`http://${host}.localhost:4173/admin`);
+  // Prompt 3, U9: Today replaces the tiles of the admin overview.
+  await expect(page.getByRole('heading', { name: 'Today', level: 1 })).toBeVisible();
+  const waiting = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'Waiting for you' }) });
+  // The seed's roster has students who have not joined yet.
+  const invite = waiting.getByRole('listitem').filter({ hasText: /joined yet/ });
+  await expect(invite).toBeVisible();
+  await expect(waiting.getByText(/^0 /)).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'All sections' })).toHaveCount(0);
+  await expectNoA11yViolations(page);
+  await invite.getByRole('link', { name: 'Invite' }).click();
+  await page.waitForURL(/\/admin\/onboarding$/);
+});

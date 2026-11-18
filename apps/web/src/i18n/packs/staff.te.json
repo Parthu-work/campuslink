@@ -1,0 +1,42 @@
+{
+  "staff": {
+    "today": {
+      "waiting": "మీ కోసం వేచి ఉన్నవి",
+      "drives_one": "రాబోయే 2 రోజుల్లో {{count}} డ్రైవ్ ముగుస్తుంది",
+      "drives_other": "రాబోయే 2 రోజుల్లో {{count}} డ్రైవ్‌లు ముగుస్తాయి",
+      "driveNamed": "{{company}}: {{title}}",
+      "offers_one": "ధృవీకరించాల్సిన {{count}} ఆఫర్",
+      "offers_other": "ధృవీకరించాల్సిన {{count}} ఆఫర్లు",
+      "verification_one": "ధృవీకరణ కోసం {{count}} విద్యార్థి వేచి ఉన్నారు",
+      "verification_other": "ధృవీకరణ కోసం {{count}} మంది విద్యార్థులు వేచి ఉన్నారు",
+      "moderation_one": "తనిఖీ చేయాల్సిన {{count}} రిపోర్ట్ లేదా పోస్ట్",
+      "moderation_other": "తనిఖీ చేయాల్సిన {{count}} రిపోర్టులు, పోస్టులు",
+      "support_one": "జవాబివ్వాల్సిన {{count}} సమస్య రిపోర్ట్",
+      "support_other": "జవాబివ్వాల్సిన {{count}} సమస్య రిపోర్టులు",
+      "roadmaps_one": "సమీక్షించాల్సిన {{count}} కెరీర్ పాత్",
+      "roadmaps_other": "సమీక్షించాల్సిన {{count}} కెరీర్ పాత్‌లు",
+      "material_one": "సమీక్షించాల్సిన {{count}} స్టడీ అప్‌లోడ్",
+      "material_other": "సమీక్షించాల్సిన {{count}} స్టడీ అప్‌లోడ్‌లు",
+      "queue": "{{name}}: సమీక్షించాల్సినవి {{count}}",
+      "notJoined_one": "{{count}} విద్యార్థి ఇంకా చేరలేదు",
+      "notJoined_other": "{{count}} మంది విద్యార్థులు ఇంకా చేరలేదు",
+      "imports_one": "ఈ వారం {{count}} ఇంపోర్ట్ విఫలమైంది",
+      "imports_other": "ఈ వారం {{count}} ఇంపోర్ట్‌లు విఫలమయ్యాయి",
+      "ai": "AI స్టడీ అసిస్టెంట్‌ను చూడాలి",
+      "whatsapp": "WhatsApp: ఈ నెల {{allowance}}లో {{sent}} సందేశాలు వాడారు",
+      "since": "{{date}} నుండి వేచి ఉంది",
+      "action": {
+        "open": "తెరవండి",
+        "verify": "ధృవీకరించండి",
+        "review": "సమీక్షించండి",
+        "answer": "జవాబివ్వండి",
+        "invite": "ఆహ్వానించండి"
+      },
+      "clear": "ఏదీ వేచి లేదు.",
+      "next": "తదుపరి డ్రైవ్: {{date}}న {{company}}",
+      "week": "ఈ వారం: {{members}} సభ్యులు, {{active}} మంది యాక్టివ్",
+      "members": "{{members}} సభ్యులు",
+      "active": "ఈ వారం {{active}} మంది యాక్టివ్"
+    }
+  }
+}

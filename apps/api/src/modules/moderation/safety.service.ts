@@ -121,6 +121,18 @@ export class SafetyService {
     return ReportModel.countDocuments({ status: 'open' });
   }
 
+  /** Staff Today (prompt 3, U9): when the oldest open report was made. */
+  async oldestOpenReport(): Promise<string | null> {
+    return (
+      (
+        await ReportModel.findOne({ status: 'open' })
+          .sort({ createdAt: 1 })
+          .select('createdAt')
+          .lean<{ createdAt?: Date | null }>()
+      )?.createdAt?.toISOString() ?? null
+    );
+  }
+
   async listReports(q: z.output<typeof reportsQuery>) {
     const rows = await ReportModel.find({
       status: q.status,

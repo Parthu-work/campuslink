@@ -118,6 +118,15 @@ const PACKS = {
       hi: () => import('./packs/mentoring.hi.json'),
     },
   },
+  /** Staff (prompt 3, U9): Today's queue, the staff tables and dashboards. */
+  staff: {
+    sections: ['staff'],
+    load: {
+      en: () => import('./packs/staff.en.json'),
+      te: () => import('./packs/staff.te.json'),
+      hi: () => import('./packs/staff.hi.json'),
+    },
+  },
   /** Ask (prompt 3, U8): one assistant, its scopes, history, suggestions as questions, the trust note. */
   ask: {
     sections: ['ask'],

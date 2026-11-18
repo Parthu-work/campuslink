@@ -8,12 +8,27 @@ import type { AdminSectionId } from '../navigation.js';
  * items themselves are visible to them), so they are exact; counts of members and activity are
  * analytics and go through `suppress()`.
  */
+/** A drive named on Today: the company, the drive and a time (closing, or the drive's date). */
+export interface DriveRef {
+  id: string;
+  company: string;
+  title: string;
+  at: string;
+}
+
 export interface AdminOverviewView {
   members: { active: Count; unverified: Count; suspended: Count } | null;
   activity: { last7: Count; last30: Count } | null;
-  verification: { pending: number } | null;
-  moderation: { reports: number; pendingQuestions: number; appeals: number; heldItems: number } | null;
-  roadmapReviews: { pending: number } | null;
+  /** `since` (prompt 3, U9): when the oldest waiting item arrived (ISO), for Today's "oldest waiting". */
+  verification: { pending: number; since?: string | null } | null;
+  moderation: {
+    reports: number;
+    pendingQuestions: number;
+    appeals: number;
+    heldItems: number;
+    since?: string | null;
+  } | null;
+  roadmapReviews: { pending: number; since?: string | null } | null;
   materialReviews: { pending: number } | null;
   imports: { running: number; failedThisWeek: number } | null;
   ai: { status: AiStatusView; budgetPercent: number | null } | null;
@@ -22,9 +37,14 @@ export interface AdminOverviewView {
   /** B6: students on the list who have not joined yet (onboarding:manage). */
   onboarding?: { notJoined: number } | null;
   /** B7: drives whose registration closes within 48 hours (placements:manage). */
-  placements?: { closingSoon: number } | null;
+  placements?: {
+    closingSoon: number;
+    /** Prompt 3, U9: the drive closing first, and the next drive to be held (the all-clear line). */
+    soonest?: DriveRef | null;
+    next?: DriveRef | null;
+  } | null;
   /** B7: offers reported by members and waiting for verification (outcomes:verify). */
-  offers?: { pending: number } | null;
+  offers?: { pending: number; since?: string | null } | null;
   /** B14: problem reports sent to the college and not answered yet (support:manage). */
   support?: { open: number } | null;
   /** Prompt 2: review queues by admin section (interview questions, practice items, write-ups). */

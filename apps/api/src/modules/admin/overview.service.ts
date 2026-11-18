@@ -53,6 +53,9 @@ export interface OverviewDeps {
  * Admin › Overview (audit §7: staff and admin home): what is waiting for this member, from the
  * services that own each queue. A part is computed only when the member holds its permission.
  */
+/** The earlier of two ISO times (either may be missing). */
+const earliest = (a: string | null, b: string | null) => (a && b ? (a < b ? a : b) : (a ?? b));
+
 export class AdminOverviewService {
   constructor(private readonly d: OverviewDeps) {}
 
@@ -89,14 +92,21 @@ export class AdminOverviewService {
           };
         }),
         when(can('analytics:tenant'), () => this.d.analytics.activity()),
-        when(can('verification:review'), async () => ({ pending: await this.d.verification.pendingCount() })),
+        when(can('verification:review'), async () => ({
+          pending: await this.d.verification.pendingCount(),
+          since: await this.d.verification.oldestPending(),
+        })),
         when(can('moderation:act'), async () => ({
           reports: await this.d.safety.openReportCount(),
           pendingQuestions: await this.d.qa.pendingCount(),
           appeals: await this.d.moderation.openAppealCount(),
           heldItems: await this.d.sources.heldCount(),
+          since: await this.d.safety.oldestOpenReport(),
         })),
-        when(can('roadmaps:review'), async () => ({ pending: await this.d.roadmaps.reviewCount() })),
+        when(can('roadmaps:review'), async () => ({
+          pending: await this.d.roadmaps.reviewCount(),
+          since: await this.d.roadmaps.oldestReview(),
+        })),
         when(study && can('study:manage'), async () => ({
           pending: await this.d.materials.reviewCount(viewer),
         })),
@@ -123,13 +133,21 @@ export class AdminOverviewService {
     const placementsOn = await featureEnabled('placements');
     const placements =
       placementsOn && this.d.placements && can('placements:manage')
-        ? { closingSoon: await this.d.placements.closingSoon() }
+        ? {
+            closingSoon: await this.d.placements.closingSoon(),
+            soonest: await this.d.placements.soonestClosing(),
+            next: await this.d.placements.nextDrive(),
+          }
         : null;
     const offers =
       placementsOn && this.d.offers && can('outcomes:verify')
         ? {
             // B8: higher studies, exams and ventures wait in the same queue.
             pending: (await this.d.offers.pendingCount()) + ((await this.d.outcomes?.pendingCount()) ?? 0),
+            since: earliest(
+              await this.d.offers.oldestPending(),
+              (await this.d.outcomes?.oldestPending()) ?? null,
+            ),
           }
         : null;
     const support =

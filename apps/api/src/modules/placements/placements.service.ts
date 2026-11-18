@@ -1356,4 +1356,47 @@ export class PlacementsService {
       registrationCloseAt: { $gt: new Date(), $lte: new Date(Date.now() + DRIVE_CLOSING_SOON_HOURS * HOUR) },
     });
   }
+
+  /**
+   * Staff Today (prompt 3, U9): the open drive whose registration closes first (within the window
+   * when `within` is given), and the next drive to be held, for the all-clear line.
+   */
+  async soonestClosing(withinHours = DRIVE_CLOSING_SOON_HOURS) {
+    const d = await PlacementDriveModel.findOne({
+      status: 'open',
+      registrationCloseAt: { $gt: new Date(), $lte: new Date(Date.now() + withinHours * HOUR) },
+    })
+      .sort({ registrationCloseAt: 1 })
+      .select('companyId title registrationCloseAt')
+      .lean<{ _id: Types.ObjectId; companyId: Types.ObjectId; title: string; registrationCloseAt: Date }>();
+    if (!d) return null;
+    return {
+      id: String(d._id),
+      company: await this.companyNameOf(d.companyId),
+      title: d.title,
+      at: d.registrationCloseAt.toISOString(),
+    };
+  }
+
+  async nextDrive() {
+    const d = await PlacementDriveModel.findOne({
+      status: { $in: ['open', 'closed', 'in_progress'] },
+      driveDate: { $gt: new Date() },
+    })
+      .sort({ driveDate: 1 })
+      .select('companyId title driveDate')
+      .lean<{ _id: Types.ObjectId; companyId: Types.ObjectId; title: string; driveDate: Date }>();
+    if (!d) return null;
+    return {
+      id: String(d._id),
+      company: await this.companyNameOf(d.companyId),
+      title: d.title,
+      at: d.driveDate.toISOString(),
+    };
+  }
+
+  private async companyNameOf(id: Types.ObjectId): Promise<string> {
+    const c = await PlacementCompanyModel.findById(id).select('name').lean<{ name: string } | null>();
+    return c?.name ?? '';
+  }
 }

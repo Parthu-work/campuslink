@@ -655,6 +655,18 @@ export class RoadmapsService {
     return RoadmapVersionModel.countDocuments({ status: 'submitted' });
   }
 
+  /** Staff Today (prompt 3, U9): when the oldest version waiting for review was submitted. */
+  async oldestReview(): Promise<string | null> {
+    return (
+      (
+        await RoadmapVersionModel.findOne({ status: 'submitted' })
+          .sort({ submittedAt: 1 })
+          .select('submittedAt')
+          .lean<{ submittedAt?: Date | null }>()
+      )?.submittedAt?.toISOString() ?? null
+    );
+  }
+
   async reviewQueue(viewer: AuthState): Promise<ReviewQueueItem[]> {
     const open = await RoadmapVersionModel.find({ status: 'submitted' })
       .select('-content')

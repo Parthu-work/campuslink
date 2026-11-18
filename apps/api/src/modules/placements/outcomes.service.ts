@@ -433,6 +433,21 @@ export class OutcomesService {
     return counts.reduce((a, b) => a + b, 0);
   }
 
+  /** Staff Today (prompt 3, U9): when the oldest outcome waiting for verification was reported. */
+  async oldestPending(): Promise<string | null> {
+    const firsts = await Promise.all(
+      Object.values(KINDS).map((k) =>
+        k.model
+          .findOne({ status: 'reported' } as never)
+          .sort({ createdAt: 1 })
+          .select('createdAt')
+          .lean<{ createdAt?: Date } | null>(),
+      ),
+    );
+    const times = firsts.flatMap((d) => (d?.createdAt ? [d.createdAt.getTime()] : []));
+    return times.length ? new Date(Math.min(...times)).toISOString() : null;
+  }
+
   // ── Reports (B8) ─────────────────────────────
   /**
    * Verified outcomes for reports (aggregated there through `suppress()`): by batch, or for exams

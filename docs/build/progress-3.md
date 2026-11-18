@@ -575,6 +575,36 @@ U7b's CI: green (run 44314839487).
 
 U8a's CI: green (run 44350154611).
 
+## U9a · Staff: Today
+
+**Shipped.**
+
+- **Today** (`features/admin/today.tsx`, `/admin`; it replaced Admin › Overview and its tiles): what is waiting for this member, most urgent first, as rows with the work in a sentence ("3 offers to verify", "9 students haven't joined yet"), its age ("Waiting since Wed, 18 Nov") or deadline (the soonest drive with a `Countdown`), and one action that opens where the work is done (Open, Verify, Review, Answer, Invite). The order (`today-items.ts`, unit-tested): drives closing within 48 hours, offers and outcomes to verify, verification requests, reports and posts to moderate, problem reports, career paths, study uploads and the review queues, students not joined, failed imports, the AI assistant near its budget or with a bad key, WhatsApp near its allowance. Nothing at zero (A19). All clear: "Nothing waiting." and the next drive with its date. Members and activity are one quiet line, "This week: …", linking to analytics. The page title is Today.
+- **API** (`GET /admin/overview`, permissions unchanged): verification, offers and outcomes, reports and career-path reviews carry `since` (the oldest item's time, from new `oldestPending`/`oldestOpenReport`/`oldestReview` methods on their own services); placements carry the soonest closing drive and the next drive. Tests in `admin-overview.test.ts` (the drive closing first, the next drive, the oldest offer, nothing across colleges).
+- The section list under the old tiles is gone: the staff spaces list their sections (U2).
+- e2e: `today.spec.ts` adds a placement officer's Today (the not-joined row with Invite opens onboarding; no row at zero; no section list); `core.spec.ts` reads Today's title and the week line.
+
+**Tap counts.** (f) TPO sees who has not joined and nudges them: 4 → **4**. Staff now open on Today, so there is no tab to tap, but the opt-in tick (B4) is counted: Invite → Send invites on WhatsApp → tick that the students agreed → Send invites. The before count did not include the tick.
+
+**Decisions.**
+
+- **One tap opens the work, it does not do it.** Inviting on WhatsApp keeps its per-branch opt-in confirmation (B4), and verifying an offer needs its proof read, so Today's action takes the member to that place rather than acting blindly.
+- **Age where the owning service has it.** Verification, offers, reports and career paths say since when; the counts that are not a queue of items (students not joined) say how many.
+
+### Gate results (U9a)
+
+| Gate                                               | Result                                                                                                                                                                                              |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                |
+| Shared tests                                       | 221 passed                                                                                                                                                                                          |
+| Web tests                                          | 164 passed (new: Today's order and nothing at zero)                                                                                                                                                 |
+| API tests                                          | 1,368 passed, 7 skipped, coverage 90.29% statements and 76.56% branches (the whole suite, 4 workers; new: the soonest and next drive, the oldest offer, not across colleges); `docs:gen`: no change |
+| `pnpm build` and bundle budget                     | Pass: initial 162.2 KB; new strings in the `staff` pack                                                                                                                                             |
+| End-to-end (local, freshly reseeded)               | `today`, `core`, `invites`, `tpo-console`, `accessibility`, `navigation`, `spaces`, `shell`, `placements`: 98 passed, 16 skipped (phone-only and desktop-only tests)                                |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                            |
+
+U8b's CI: green (run 44368112705).
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.
