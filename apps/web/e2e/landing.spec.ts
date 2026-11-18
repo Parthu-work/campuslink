@@ -100,7 +100,11 @@ test.describe('landing (prompt 3, U4)', () => {
     await signIn(page, 'ananya@dpit.example');
     expect(await page.evaluate(() => localStorage.getItem('cl:member'))).toBe('1');
     await page.goto(`${BASE}/`);
-    await expect(page).toHaveURL(/\/(home|start)$/);
+    // "/" goes to /start, which opens the member's landing space (prompt 3, U2): Career's
+    // Placements for Ananya while she is in her final years (batch 2027), Home after that. The
+    // old pattern only passed when it caught /start before the redirect finished.
+    await expect(page).toHaveURL(/\/(home|placements)$/);
+    await expect(page.locator('main h1')).toBeVisible();
     await expect(page.locator('#fp')).toHaveCount(0);
   });
 });
