@@ -18,7 +18,7 @@ import { BookingModel } from '../src/modules/sessions/booking.model.js';
 import { NotificationModel } from '../src/modules/notifications/notification.model.js';
 import { AuditModel } from '../src/modules/audit/audit.model.js';
 import { ProductEventModel } from '../src/modules/insights/insights.model.js';
-import { ReadinessNudgeModel } from '../src/modules/readiness/readiness.model.js';
+import { ReadinessNudgeModel, ReadinessSnapshotModel } from '../src/modules/readiness/readiness.model.js';
 import type { ReadinessService } from '../src/modules/readiness/readiness.service.js';
 import { TenantModel } from '../src/modules/tenants/tenant.model.js';
 import { invalidateTenant } from '../src/modules/tenants/tenant.cache.js';
@@ -227,6 +227,41 @@ describe('the student’s own score', () => {
   });
 });
 
+describe('momentum (prompt 3, U7)', () => {
+  it('keeps the score the student saw today and compares it with one at least a week old', async () => {
+    const day = (n: number) => new Date(Date.now() - n * DAY).toISOString().slice(0, 10);
+    await inT(() => ReadinessSnapshotModel.deleteMany({ userId: low.id }));
+    const first = (await as(low).get('/me/readiness')).body.data as ReadinessView;
+    // Nothing a week old yet: no momentum, but today's score is now kept.
+    expect(first.momentum).toBeNull();
+    const today = await inT(() => ReadinessSnapshotModel.find({ userId: low.id }).lean());
+    expect(today.map((x) => [x.day, x.score])).toEqual([[day(0), first.score]]);
+
+    // Only a score from 3 days ago: still none (it is not a week old).
+    await inT(() => ReadinessSnapshotModel.create({ userId: low.id, day: day(3), score: 0 }));
+    expect(((await as(low).get('/me/readiness')).body.data as ReadinessView).momentum).toBeNull();
+
+    // The latest at least a week old counts (9 days beats 20).
+    await inT(() =>
+      ReadinessSnapshotModel.create([
+        { userId: low.id, day: day(20), score: 1 },
+        { userId: low.id, day: day(9), score: Math.max(0, first.score - 6) },
+      ]),
+    );
+    const again = (await as(low).get('/me/readiness')).body.data as ReadinessView;
+    expect(again.momentum).toEqual({ delta: again.score - Math.max(0, first.score - 6), since: day(9) });
+    // Opening it again the same day keeps one score for the day.
+    expect(await inT(() => ReadinessSnapshotModel.countDocuments({ userId: low.id, day: day(0) }))).toBe(1);
+  });
+
+  it('is the student’s own: the board shows no momentum and no daily scores', async () => {
+    const b = await as(tpo).get('/admin/readiness');
+    expect(b.status).toBe(200);
+    expect(JSON.stringify(b.body)).not.toContain('momentum');
+    expect(JSON.stringify(b.body)).not.toContain('dailyScores');
+  });
+});
+
 describe('the readiness board', () => {
   it('faculty and the TPO see it; only the TPO changes weights, nudges and exports', async () => {
     expect((await as(faculty).get('/admin/readiness')).status).toBe(200);
@@ -384,12 +419,18 @@ describe('export', () => {
 });
 
 describe('privacy and the feature switch', () => {
-  it('exports and erases the nudges a member was sent', async () => {
+  it('exports and erases the nudges a member was sent and their daily scores', async () => {
+    await as(low).get('/me/readiness');
     const out = await inT(() => services.readiness.exportFor(low.id));
     expect(out.nudges).toHaveLength(1);
     expect(out.nudges[0]?.driveId).toBe(driveId);
+    expect(out.dailyScores[0]).toEqual({
+      day: new Date().toISOString().slice(0, 10),
+      score: expect.any(Number),
+    });
     await inT(() => services.readiness.eraseFor(low.id));
     expect(await inT(() => ReadinessNudgeModel.countDocuments({ userId: low.id }))).toBe(0);
+    expect(await inT(() => ReadinessSnapshotModel.countDocuments({ userId: low.id }))).toBe(0);
   });
 
   it('is off with placements', async () => {

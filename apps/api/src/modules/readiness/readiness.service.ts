@@ -7,6 +7,7 @@ import {
   DEFAULT_READINESS_WEIGHTS,
   READINESS_BANDS,
   READINESS_COMPONENTS,
+  READINESS_MOMENTUM_DAYS,
   READINESS_NUDGE_COOLDOWN_DAYS,
   SMALL_CELL,
   bandOf,
@@ -18,6 +19,7 @@ import {
   type ReadinessComponentId,
   type ReadinessConfigView,
   type ReadinessGroupView,
+  type ReadinessMomentum,
   type ReadinessNudgeResult,
   type ReadinessView,
   type ReadinessWeights,
@@ -35,8 +37,10 @@ import { compose } from './score.js';
 import {
   ReadinessConfigModel,
   ReadinessNudgeModel,
+  ReadinessSnapshotModel,
   type ReadinessConfigDoc,
   type ReadinessNudgeDoc,
+  type ReadinessSnapshotDoc,
 } from './readiness.model.js';
 
 const DAY = 86_400_000;
@@ -78,8 +82,8 @@ const median = (xs: number[]) => {
 /**
  * Placement readiness (prompt 2, G5, docs/specs/readiness.md): one honest number per student, the
  * sum of weighted components registered here (each in `components/`, reading through its owning
- * module's service), with each component's points and next step. Scores are computed on read and
- * never stored. The score is the student's own: the board shows it only to the placement cell and
+ * module's service), with each component's points and next step. Scores are computed on read; the
+ * student's own is kept once a day only for their momentum (prompt 3, U7). The score is the student's own: the board shows it only to the placement cell and
  * faculty, never to other students or employers, and never ranks a minor.
  */
 export class ReadinessService {
@@ -182,9 +186,34 @@ export class ReadinessService {
       branch: cohort?.branch ?? null,
       gradYear: cohort?.gradYear ?? null,
     };
-    const view = (await this.scores([member])).get(viewer.userId);
+    const now = new Date();
+    const view = (await this.scores([member], now)).get(viewer.userId);
     if (!view) throw forbidden();
-    return view;
+    return { ...view, momentum: await this.momentum(viewer.userId, view.score, now) };
+  }
+
+  /**
+   * "+6 this week" (prompt 3, U7): today's score is kept (one per day, the last seen), and compared
+   * with the latest one at least READINESS_MOMENTUM_DAYS old. Null when there is none yet.
+   */
+  private async momentum(userId: string, score: number, now: Date): Promise<ReadinessMomentum | null> {
+    const u = new Types.ObjectId(userId);
+    const today = now.toISOString().slice(0, 10);
+    const weekAgo = new Date(now.getTime() - READINESS_MOMENTUM_DAYS * DAY).toISOString().slice(0, 10);
+    const [base] = await Promise.all([
+      ReadinessSnapshotModel.findOne({ userId: u, day: { $lte: weekAgo } })
+        .sort({ day: -1 })
+        .lean<ReadinessSnapshotDoc>(),
+      ReadinessSnapshotModel.updateOne(
+        { userId: u, day: today },
+        { $set: { score } },
+        { upsert: true },
+      ).catch((e: unknown) => {
+        // Two reads at once on a new day: the other one stored it.
+        if ((e as { code?: number }).code !== 11000) throw e;
+      }),
+    ]);
+    return base ? { delta: score - base.score, since: base.day } : null;
   }
 
   // ── The board (TPO and faculty) ─────────────────────────────
@@ -434,15 +463,24 @@ export class ReadinessService {
 
   // ── Privacy ─────────────────────────────
 
-  /** What is stored about the member: the nudges they were sent (scores are never stored). */
+  /** What is stored about the member: the nudges they were sent and their recent daily scores. */
   async exportFor(userId: string) {
-    const nudges = await ReadinessNudgeModel.find({ userId: new Types.ObjectId(userId) })
-      .sort({ createdAt: -1 })
-      .lean<ReadinessNudgeDoc[]>();
-    return { nudges: nudges.map((n) => ({ driveId: String(n.driveId), at: n.createdAt.toISOString() })) };
+    const u = new Types.ObjectId(userId);
+    const [nudges, scores] = await Promise.all([
+      ReadinessNudgeModel.find({ userId: u }).sort({ createdAt: -1 }).lean<ReadinessNudgeDoc[]>(),
+      ReadinessSnapshotModel.find({ userId: u }).sort({ day: -1 }).lean<ReadinessSnapshotDoc[]>(),
+    ]);
+    return {
+      nudges: nudges.map((n) => ({ driveId: String(n.driveId), at: n.createdAt.toISOString() })),
+      dailyScores: scores.map((x) => ({ day: x.day, score: x.score })),
+    };
   }
 
   async eraseFor(userId: string) {
-    await ReadinessNudgeModel.deleteMany({ userId: new Types.ObjectId(userId) });
+    const u = new Types.ObjectId(userId);
+    await Promise.all([
+      ReadinessNudgeModel.deleteMany({ userId: u }),
+      ReadinessSnapshotModel.deleteMany({ userId: u }),
+    ]);
   }
 }

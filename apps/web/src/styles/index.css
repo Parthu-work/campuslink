@@ -45,6 +45,10 @@
   --color-aurora-2: var(--aurora-2);
   --color-aurora-3: var(--aurora-3);
   --color-success: var(--success);
+  --color-success-ink: var(--success-ink);
+  --color-warning-ink: var(--warning-ink);
+  --color-danger-ink: var(--danger-ink);
+  --color-info-ink: var(--info-ink);
   --color-success-fg: var(--success-fg);
   --color-success-surface: var(--success-surface);
   --color-success-border: var(--success-border);

@@ -79,6 +79,14 @@ export interface ReadinessComponentView {
   next: ReadinessAction | null;
 }
 
+/** The change since the score the student last saw at least a week ago (prompt 3, U7). */
+export interface ReadinessMomentum {
+  /** Points gained (or lost) since then. */
+  delta: number;
+  /** The day of that earlier score (YYYY-MM-DD, UTC). */
+  since: string;
+}
+
 export interface ReadinessView {
   score: number;
   components: ReadinessComponentView[];
@@ -87,6 +95,8 @@ export interface ReadinessView {
   /** Some components were skipped and the rest scaled up to 100. */
   renormalised: boolean;
   computedAt: string;
+  /** The student's own view only: null until there is a score from a week ago. */
+  momentum?: ReadinessMomentum | null;
 }
 
 export interface ReadinessConfigView {

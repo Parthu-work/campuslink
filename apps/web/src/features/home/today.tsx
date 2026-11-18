@@ -59,7 +59,10 @@ export function TodayCard({ pick }: { pick: TodayPick }) {
         title={`${d.company.name}: ${d.title}`}
         meta={t('today.driveOn', { date: formatDay(d.driveDate) })}
         action={
-          <Link to={`/placements/${d.id}`} className={buttonVariants({ variant: 'primary', size: 'lg' })}>
+          <Link
+            to={`/placements/${d.id}?register=1`}
+            className={buttonVariants({ variant: 'primary', size: 'lg' })}
+          >
             {t('today.register')} <ArrowRight aria-hidden />
           </Link>
         }

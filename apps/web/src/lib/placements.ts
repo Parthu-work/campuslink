@@ -61,3 +61,42 @@ export const closesSoon = (d: Pick<DriveView, 'registrationCloseAt' | 'registrat
 
 /** Keys of every cached query that holds drive views. */
 export const DRIVE_KEYS = [['placement-drives'], ['placement-drive'], ['admin-drives']] as const;
+
+/**
+ * The round a registered student is in (prompt 3, U7): the first without a result, or still
+ * pending; the last one once every round has a result.
+ */
+export function currentRound(d: Pick<DriveView, 'rounds' | 'myRegistration'>): number {
+  const done = new Map((d.myRegistration?.roundResults ?? []).map((r) => [r.round, r.result]));
+  const i = d.rounds.findIndex((_, n) => (done.get(n) ?? 'pending') === 'pending');
+  return i < 0 ? Math.max(0, d.rounds.length - 1) : i;
+}
+
+const roleKey = (s: string) =>
+  s
+    .replace(/^\s*DEMO:\s*|\s*\(demo\)\s*$/gi, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/**
+ * "Drives for this role" on a career path (prompt 3, U7; moved from U3): open drives with a role
+ * whose title is one the path leads to (one contains the other, ignoring case and the demo
+ * marker), soonest closing first. The role that matched comes with each.
+ */
+export function drivesForRoles<
+  D extends Pick<DriveView, 'roles' | 'registrationOpen' | 'registrationCloseAt'>,
+>(drives: D[], roles: string[], max = 3): { drive: D; role: string }[] {
+  const want = roles.map(roleKey).filter((w) => w.length > 1);
+  return drives
+    .filter((d) => d.registrationOpen)
+    .flatMap((drive) => {
+      const role = drive.roles.find((r) => {
+        const title = roleKey(r.title);
+        return !!title && want.some((w) => title.includes(w) || w.includes(title));
+      });
+      return role ? [{ drive, role: role.title }] : [];
+    })
+    .sort((a, b) => Date.parse(a.drive.registrationCloseAt) - Date.parse(b.drive.registrationCloseAt))
+    .slice(0, max);
+}

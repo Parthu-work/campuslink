@@ -1,50 +1,41 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Gauge, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import type { ReadinessAction, ReadinessComponentView } from '@campuslink/shared';
+import type { TFunction } from '../../i18n/core';
 import { useTranslation } from '../../i18n/react';
 import { ErrorState } from '../../components/ui/error-state';
 import { IntentLink } from '../../components/ui/intent-link';
-import { Badge, Card, Skeleton } from '../../components/ui/misc';
+import { ListRow, ListSection } from '../../components/ui/list-row';
+import { Badge, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
-import { ProgressBar, ProgressRing } from '../../components/ui/progress';
+import { ProgressBar } from '../../components/ui/progress';
+import { ScoreRing } from '../../components/ui/score-ring';
 import { readinessActionHref, readinessFactKey } from '../../lib/readiness';
 import * as q from '../../lib/queries';
 import { SCREEN } from '../../lib/query-client';
+import { momentumText } from './momentum';
 
-function ActionLink({ a }: { a: ReadinessAction }) {
-  const { t } = useTranslation();
-  const href = readinessActionHref(a);
-  const text = t(`readiness.action.${a.id}`, {
+const keyOf = (a: ReadinessAction) => `${a.component}-${a.id}`;
+
+const actionText = (t: TFunction, a: ReadinessAction) =>
+  t(`readiness.action.${a.id}`, {
     count: a.count ?? 1,
     cgpa: a.target ?? '',
     dimension: a.target ? t(`readiness.dimension.${a.target}`) : '',
   });
-  const body = (
-    <>
-      <span className="min-w-0 flex-1 font-semibold">{text}</span>
-      {a.gain !== null && (
-        <Badge tone="success" aria-label={t('readiness.gainLabel', { count: a.gain })}>
-          {t('readiness.gain', { n: a.gain })}
-        </Badge>
-      )}
-      {href && <ArrowRight className="size-4 flex-none text-fg-3" aria-hidden />}
-    </>
-  );
-  return href ? (
-    <IntentLink
-      to={href}
-      className="flex min-h-11 items-center gap-3 rounded-[var(--radius-md)] bg-surface-2 px-4 py-3 hover:bg-surface-3"
-    >
-      {body}
-    </IntentLink>
-  ) : (
-    <div className="flex min-h-11 items-center gap-3 rounded-[var(--radius-md)] bg-surface-2 px-4 py-3">
-      {body}
-    </div>
+
+function GainBadge({ a }: { a: ReadinessAction }) {
+  const { t } = useTranslation();
+  if (a.gain === null) return null;
+  return (
+    <Badge tone="success" aria-label={t('readiness.gainLabel', { count: a.gain })}>
+      {t('readiness.gain', { n: a.gain })}
+    </Badge>
   );
 }
 
-function ComponentCard({ c }: { c: ReadinessComponentView }) {
+/** One part of the score as a row: points, a bar, the fact, and its step when it is not in the top three. */
+function PartRow({ c, top }: { c: ReadinessComponentView; top: Set<string> }) {
   const { t } = useTranslation();
   const scored = c.status === 'scored';
   const f = c.facts;
@@ -62,98 +53,111 @@ function ComponentCard({ c }: { c: ReadinessComponentView }) {
     drives: f.drives ?? 0,
   });
   const name = t(`readiness.component.${c.id}`);
+  const next = c.next && !top.has(keyOf(c.next)) ? c.next : null;
+  const href = next ? readinessActionHref(next) : null;
   return (
-    <li>
-      <Card className="grid gap-3 p-4">
-        <div className="flex items-baseline justify-between gap-3">
-          <h3 className="text-body font-semibold">{name}</h3>
-          {scored ? (
-            <span className="text-callout font-semibold tabular-nums">
-              {t('readiness.points', { points: c.points, max: c.max })}
-            </span>
-          ) : (
-            <Badge>{t(`readiness.status.${c.status}`)}</Badge>
-          )}
-        </div>
-        {scored && (
-          <ProgressBar
-            value={c.points}
-            max={c.max || 1}
-            label={name}
-            valueText={t('readiness.points', { points: c.points, max: c.max })}
-          />
+    <li className="grid gap-2 px-4 py-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className="text-body font-semibold">{name}</h3>
+        {scored ? (
+          <span className="text-callout font-semibold whitespace-nowrap tabular-nums">
+            {t('readiness.points', { points: c.points, max: c.max })}
+          </span>
+        ) : (
+          <Badge>{t(`readiness.status.${c.status}`)}</Badge>
         )}
-        <p className="text-callout text-fg-2">{fact}</p>
-        {c.next && <ActionLink a={c.next} />}
-      </Card>
+      </div>
+      {scored && (
+        <ProgressBar
+          value={c.points}
+          max={c.max || 1}
+          label={name}
+          valueText={t('readiness.points', { points: c.points, max: c.max })}
+        />
+      )}
+      <p className="text-callout text-pretty text-fg-2">{fact}</p>
+      {next && href && (
+        <IntentLink
+          to={href}
+          className="inline-flex min-h-11 w-fit items-center gap-2 text-callout font-semibold text-brand-ink hover:underline"
+        >
+          {actionText(t, next)} <GainBadge a={next} />
+        </IntentLink>
+      )}
     </li>
   );
 }
 
 /**
- * The student's readiness (prompt 2, G5): one number, the points behind it and what to do next.
- * Only the student (and the placement cell) ever sees it.
+ * The student's readiness (prompt 2, G5; prompt 3, U7): momentum first, the score as a large ring,
+ * the top three steps once, then what the score is made of. Only the student (and the placement
+ * cell) ever sees it.
  */
 export function ReadinessPage() {
   const { t } = useTranslation();
   const r = useQuery({ ...SCREEN, ...q.readiness() });
   const v = r.data;
   const skipped = v?.components.filter((c) => c.status === 'not_available' || c.status === 'not_applicable');
+  const top = new Set((v?.next ?? []).map(keyOf));
+  const known = (v?.next ?? []).filter((a) => a.gain !== null && a.gain > 0);
+  const gain = known.reduce((n, a) => n + (a.gain ?? 0), 0);
+  const momentum = momentumText(t, v?.momentum);
   return (
     <div className="mx-auto grid w-full max-w-[960px] gap-6">
-      <PageHeader icon={<Gauge />} title={t('nav.readiness')} intro={t('readiness.intro')} />
-      {r.isLoading && <Skeleton className="h-80 rounded-[var(--radius-lg)]" />}
+      <PageHeader title={t('nav.readiness')} about={t('readiness.how')} />
+      {r.isLoading && (
+        <div className="grid gap-6 md:grid-cols-[auto_minmax(0,1fr)]">
+          <Skeleton className="size-[168px] justify-self-center rounded-full" />
+          <Skeleton className="h-56 rounded-[var(--radius-md)]" />
+        </div>
+      )}
       {r.isError && <ErrorState error={r.error} onRetry={() => void r.refetch()} />}
       {v && (
         <>
-          <Card className="grid gap-5 p-5 sm:grid-cols-[auto_1fr] sm:items-center">
-            <ProgressRing
-              value={v.score}
-              max={100}
-              size={112}
-              stroke={10}
-              label={t('readiness.scoreLabel')}
-              valueText={t('readiness.outOf', { score: v.score })}
-              className="justify-self-center"
-            >
-              <span className="text-title font-bold tabular-nums">{v.score}</span>
-            </ProgressRing>
-            <div className="grid gap-3">
-              <h2 className="text-headline font-semibold">{t('readiness.headline', { score: v.score })}</h2>
-              {v.next.length ? (
-                <>
-                  <p className="text-callout text-fg-2">{t('readiness.nextIntro')}</p>
-                  <ol className="grid gap-2">
-                    {v.next.map((a) => (
-                      <li key={`${a.component}-${a.id}`}>
-                        <ActionLink a={a} />
-                      </li>
-                    ))}
-                  </ol>
-                </>
-              ) : (
-                <p className="text-fg-2">{t('readiness.allDone')}</p>
-              )}
+          <section
+            aria-label={t('readiness.scoreLabel')}
+            className="grid gap-6 md:grid-cols-[auto_minmax(0,1fr)] md:items-start"
+          >
+            <div className="justify-self-center md:justify-self-start">
+              <ScoreRing score={v.score} label={t('readiness.scoreLabel')} delta={momentum || undefined} />
             </div>
-          </Card>
+            {v.next.length ? (
+              <ListSection
+                title={
+                  known.length
+                    ? t('readiness.stepsAdd', { count: known.length, n: gain })
+                    : t('readiness.nextTitle')
+                }
+              >
+                {v.next.map((a) => {
+                  const href = readinessActionHref(a);
+                  return (
+                    <ListRow
+                      key={keyOf(a)}
+                      title={actionText(t, a)}
+                      trailing={<GainBadge a={a} />}
+                      chevron={!!href}
+                      {...(href ? { to: href } : {})}
+                    />
+                  );
+                })}
+              </ListSection>
+            ) : (
+              <p className="self-center text-fg-2">{t('readiness.allDone')}</p>
+            )}
+          </section>
           {v.renormalised && skipped && skipped.length > 0 && (
-            <p className="rounded-[var(--radius-md)] bg-surface-2 px-4 py-3 text-callout text-fg-2">
+            <p className="text-callout text-fg-2">
               {t('readiness.renormalised', {
                 parts: skipped.map((c) => t(`readiness.component.${c.id}`)).join(', '),
               })}
             </p>
           )}
-          <section aria-labelledby="readiness-parts" className="grid gap-3">
-            <h2 id="readiness-parts" className="text-headline font-semibold">
-              {t('readiness.parts')}
-            </h2>
-            <p className="text-callout text-fg-2">{t('readiness.how')}</p>
-            <ul className="grid gap-3 md:grid-cols-2">
-              {v.components.map((c) => (
-                <ComponentCard key={c.id} c={c} />
-              ))}
-            </ul>
-          </section>
+          <ListSection title={t('readiness.parts')}>
+            {v.components.map((c) => (
+              <PartRow key={c.id} c={c} top={top} />
+            ))}
+          </ListSection>
           <p className="flex items-start gap-2 text-callout text-fg-2">
             <Lock className="mt-0.5 size-4 flex-none" aria-hidden />
             {t('readiness.private')}

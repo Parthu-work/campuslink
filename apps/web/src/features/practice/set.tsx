@@ -50,7 +50,7 @@ function Result({ entry }: { entry: PracticeSetItemView }) {
   return (
     <div
       role="status"
-      className={`grid gap-2 rounded-[var(--radius-md)] border p-3 ${r.correct ? 'border-success-line bg-success-surface' : 'border-warning-line bg-warning-surface'}`}
+      className={`grid gap-2 rounded-[var(--radius-md)] border p-3 ${r.correct ? 'border-success-border bg-success-surface' : 'border-warning-border bg-warning-surface'}`}
     >
       <p
         className={`flex items-center gap-2 font-semibold ${r.correct ? 'text-success-ink' : 'text-warning-ink'}`}

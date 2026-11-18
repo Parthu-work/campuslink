@@ -1,21 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarClock, CheckCircle2, CircleAlert, FileText, MapPin } from 'lucide-react';
 import type { DriveView, MyRegistrationView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
+import { Countdown } from '../../components/ui/countdown';
 import { Dialog, Sheet } from '../../components/ui/dialog';
 import { Field, Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { RichText } from '../../components/ui/rich-text';
+import { Timeline, type TimelineItem } from '../../components/ui/timeline';
 import { api, ApiError } from '../../lib/api';
 import { celebrate, firstSighting } from '../../lib/celebrate';
-import { formatDateTime, formatRelative, newIdempotencyKey } from '../../lib/format';
+import { formatDateTime, newIdempotencyKey } from '../../lib/format';
 import { useCan } from '../../lib/me';
-import { ctcRange, DRIVE_KEYS, isRegistered, reasonText } from '../../lib/placements';
+import { ctcRange, currentRound, DRIVE_KEYS, isRegistered, reasonText } from '../../lib/placements';
 import { placementDrive, resumes } from '../../lib/queries';
 import { findCached, hasId } from '../../lib/query-seed';
 import { SCREEN } from '../../lib/query-client';
@@ -230,11 +232,17 @@ function RegistrationPanel({ drive: d }: { drive: DriveView }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const canRegister = useCan('placements:register');
-  const [sheet, setSheet] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const asked = params.get('register') === '1';
+  const registered = isRegistered(d);
+  const oneTap = !d.resumeRequired && !d.questions.length;
+  const canAct = canRegister && !registered && d.registrationOpen && (d.eligible || d.overridden);
+  // Register on a card or Home's Today (U7): the sheet opens here, or Register takes focus.
+  const [sheet, setSheet] = useState(() => asked && canAct && !oneTap);
   const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const registerRef = useRef<HTMLButtonElement>(null);
   const reg = d.myRegistration;
-  const registered = isRegistered(d);
   const update = (r: MyRegistrationView) => {
     qc.setQueryData<DriveView>(['placement-drive', d.id], (v) => (v ? { ...v, myRegistration: r } : v));
     for (const queryKey of DRIVE_KEYS) void qc.invalidateQueries({ queryKey });
@@ -262,7 +270,17 @@ function RegistrationPanel({ drive: d }: { drive: DriveView }) {
   useEffect(() => {
     if (selectedId && firstSighting('drive-selected', [selectedId])) celebrate(panelRef.current);
   }, [selectedId]);
-  const oneTap = !d.resumeRequired && !d.questions.length;
+  useEffect(() => {
+    if (!asked) return;
+    setParams(
+      (p) => {
+        p.delete('register');
+        return p;
+      },
+      { replace: true },
+    );
+    if (canAct && oneTap) registerRef.current?.focus();
+  }, [asked, canAct, oneTap, setParams]);
   return (
     <div ref={panelRef}>
       <Card variant="raised" className="grid gap-3 p-4">
@@ -303,12 +321,13 @@ function RegistrationPanel({ drive: d }: { drive: DriveView }) {
                   ? t('placements.letInCanRegister')
                   : t('placements.youAreEligible')}
               </p>
-              <p className="text-callout text-fg-2">
-                {t('placements.closesAt', { when: formatDateTime(d.registrationCloseAt) })} ·{' '}
-                {formatRelative(d.registrationCloseAt)}
+              <p className="flex flex-wrap items-center gap-2 text-callout text-fg-2">
+                <span>{t('placements.closesAt', { when: formatDateTime(d.registrationCloseAt) })}</span>
+                <Countdown at={d.registrationCloseAt} urgentWithinMs={48 * 3600_000} />
               </p>
               {canRegister && (
                 <Button
+                  ref={registerRef}
                   variant="primary"
                   loading={quick.isPending}
                   onClick={() => (oneTap ? quick.mutate() : setSheet(true))}
@@ -415,6 +434,31 @@ export function DrivePage() {
   if (!d) return null;
   const results = new Map((d.myRegistration?.roundResults ?? []).map((r) => [r.round, r.result]));
   const tone = { pending: 'neutral', cleared: 'success', not_cleared: 'danger', absent: 'warning' } as const;
+  const mine = isRegistered(d);
+  const ended = d.status === 'completed' || d.status === 'cancelled';
+  // The current round: the student's (first without a result) once the drive runs; else none.
+  const current = mine && d.status === 'in_progress' ? currentRound(d) : -1;
+  const roundItems: TimelineItem[] = d.rounds.map((r, i) => {
+    const result = mine ? results.get(i) : undefined;
+    const kind = t(`placements.roundKind.${r.kind}`);
+    const past =
+      ended ||
+      (result !== undefined && result !== 'pending') ||
+      (r.at !== null && new Date(r.at) < new Date());
+    return {
+      id: String(i),
+      time: r.at ? formatDateTime(r.at) : t('drives.rounds.round', { n: i + 1 }),
+      title: r.name,
+      meta: [
+        kind.toLowerCase() === r.name.trim().toLowerCase() ? '' : kind,
+        r.at ? '' : t('drives.rounds.later'),
+      ]
+        .filter(Boolean)
+        .join(' · '),
+      state: i === current ? 'current' : past ? 'past' : 'future',
+      badge: result ? <Badge tone={tone[result]}>{t(`placements.result.${result}`)}</Badge> : undefined,
+    };
+  });
   return (
     <div className="mx-auto grid w-full max-w-[960px] gap-5">
       <BackLink to="/placements">{t('placements.back')}</BackLink>
@@ -425,7 +469,7 @@ export function DrivePage() {
           className="min-w-0 flex-1"
           eyebrow={d.company.name}
           title={d.title}
-          intro={
+          subtitle={
             <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span>{t(`placements.mode.${d.mode}`)}</span>
               {d.venue && (
@@ -441,7 +485,18 @@ export function DrivePage() {
         />
       </header>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
-        <div className="grid min-w-0 gap-6">
+        <aside className="grid gap-3 lg:sticky lg:top-5 lg:col-start-2 lg:row-start-1">
+          <RegistrationPanel drive={d} />
+          {d.linkedEventId && (
+            <Link
+              to={`/events/${d.linkedEventId}`}
+              className="text-callout font-semibold text-brand-ink hover:underline"
+            >
+              {t('placements.seeEvent')}
+            </Link>
+          )}
+        </aside>
+        <div className="grid min-w-0 gap-6 lg:col-start-1 lg:row-start-1">
           <section aria-labelledby="drive-roles" className="grid gap-2">
             <h2 id="drive-roles" className="text-headline font-semibold">
               {t('placements.roles')}
@@ -472,48 +527,14 @@ export function DrivePage() {
           )}
           <Criteria drive={d} />
           {d.rounds.length > 0 && (
-            <section aria-labelledby="drive-rounds" className="grid gap-2">
+            <section aria-labelledby="drive-rounds" className="grid gap-3">
               <h2 id="drive-rounds" className="text-headline font-semibold">
                 {t('placements.rounds')}
               </h2>
-              <ol className="grid gap-2">
-                {d.rounds.map((r, i) => {
-                  const mine = results.get(i);
-                  return (
-                    <li
-                      key={i}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-md)] bg-surface-2 p-3"
-                    >
-                      <span className="min-w-0">
-                        <b className="font-semibold">
-                          {i + 1}. {r.name}
-                        </b>{' '}
-                        <span className="text-callout text-fg-2">
-                          · {t(`placements.roundKind.${r.kind}`)}
-                          {r.at ? ` · ${formatDateTime(r.at)}` : ''}
-                        </span>
-                      </span>
-                      {mine && isRegistered(d) && (
-                        <Badge tone={tone[mine]}>{t(`placements.result.${mine}`)}</Badge>
-                      )}
-                    </li>
-                  );
-                })}
-              </ol>
+              <Timeline label={t('drives.rounds.label')} items={roundItems} />
             </section>
           )}
         </div>
-        <aside className="grid gap-3 lg:sticky lg:top-5">
-          <RegistrationPanel drive={d} />
-          {d.linkedEventId && (
-            <Link
-              to={`/events/${d.linkedEventId}`}
-              className="text-callout font-semibold text-brand-ink hover:underline"
-            >
-              {t('placements.seeEvent')}
-            </Link>
-          )}
-        </aside>
       </div>
     </div>
   );

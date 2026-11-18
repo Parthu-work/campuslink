@@ -40,6 +40,10 @@ export const bandOf = (score: number) => Math.min(READINESS_BANDS.length - 1, Ma
 
 /** A student is nudged at most once in this many days, whoever sends it (plus WhatsApp's own caps). */
 export const READINESS_NUDGE_COOLDOWN_DAYS = 7;
+/** Momentum (prompt 3, U7): the change since the score the student saw at least this many days ago. */
+export const READINESS_MOMENTUM_DAYS = 7;
+/** The daily score kept for momentum is deleted after this many days. */
+export const READINESS_SNAPSHOT_KEEP_DAYS = 35;
 /** At most this many students in one bulk nudge. */
 export const READINESS_NUDGE_BATCH_MAX = 200;
 

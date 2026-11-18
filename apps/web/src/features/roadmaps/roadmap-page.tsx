@@ -13,7 +13,9 @@ import { PathHeader } from './path-header';
 import { Journey } from './journey';
 import { StepSheet } from './step-sheet';
 import { LazySeniorsOnPath } from '../mentors/lazy-seniors';
+import { LazyDrivesOnPath } from '../placements/lazy-drives';
 import { useCan } from '../../lib/me';
+import { useFeature } from '../../lib/tenant-context';
 
 // The map of the whole graph loads only when a member chooses it.
 const GraphView = lazy(() => import('./graph-view').then((m) => ({ default: m.GraphView })));
@@ -25,6 +27,9 @@ const GraphView = lazy(() => import('./graph-view').then((m) => ({ default: m.Gr
  */
 export function RoadmapPage() {
   const canAsk = useCan('mentorship:request');
+  const canSeeDrives = useCan('placements:view');
+  const placementsOn = useFeature('placements');
+  const canDrives = canSeeDrives && placementsOn;
   const { slug = '' } = useParams();
   const { t } = useTranslation();
   const [view, setView] = useState<PathView>(defaultPathView);
@@ -92,6 +97,10 @@ export function RoadmapPage() {
       {/* People on the path (prompt 3, U6): seniors who work as what it leads to. */}
       {canAsk && r.status === 'published' && r.content.outcomes[0] && (
         <LazySeniorsOnPath role={r.content.outcomes[0]} fallback={null} />
+      )}
+      {/* Outcomes (prompt 3, U7): open drives for a role the path leads to. */}
+      {canDrives && r.status === 'published' && r.content.outcomes.length > 0 && (
+        <LazyDrivesOnPath roles={r.content.outcomes} fallback={null} />
       )}
       <StepSheet roadmap={r} nodeId={step.value} onClose={step.close} onOpen={step.open} />
     </div>

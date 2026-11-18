@@ -77,7 +77,7 @@ The placement cell selects students on the "needs help" list and nudges them (at
 
 ## Data and privacy
 
-Scores are computed on every read and never stored, so they cannot go stale or outlive the data behind them. Stored per member: `ReadinessNudge` (`userId`, `driveId`, `createdAt`), exported with the member's data and deleted on erasure (`privacyService.register('readiness', …)`). `ReadinessConfig` holds no member data.
+Scores are computed on every read, so the score shown cannot go stale or outlive the data behind it. Stored per member: `ReadinessNudge` (`userId`, `driveId`, `createdAt`) and, since prompt 3 U7, `ReadinessSnapshot` (`userId`, `day`, `score`: the score the student saw that day, written when they open their own Readiness, deleted after 35 days by a TTL index). The snapshot exists only for the student's momentum ("+6 this week": today's score against the latest one at least 7 days old); the board, the export and nudges never read it. Both are exported with the member's data (`readiness.nudges`, `readiness.dailyScores`) and deleted on erasure (`privacyService.register('readiness', …)`). `ReadinessConfig` holds no member data.
 
 ## Product events
 
@@ -92,9 +92,9 @@ Scores are computed on every read and never stored, so they cannot go stale or o
 ## Tests
 
 - `test/readiness-score.test.ts`: composition (points add up to the score, maxima to 100), skipping and re-normalising, weight 0, gains and their caps, every component's rule.
-- `test/readiness.test.ts`: the student's own score; permissions (student, alumni, faculty, TPO); suppression and minors on the board; the "needs help" list; nudges, the cool-off and two nudges at once; the batch limit; weights and validation; export; privacy export and erasure; the feature switch.
+- `test/readiness.test.ts`: the student's own score; momentum (a score a week old, one per day, never on the board); permissions (student, alumni, faculty, TPO); suppression and minors on the board; the "needs help" list; nudges, the cool-off and two nudges at once; the batch limit; weights and validation; export; privacy export and erasure; the feature switch.
 - `test/isolation/readiness.test.ts`: scores, board, export, nudges, weights and erasure stay in their college.
-- `test/privacy.test.ts`: the `readiness` exporter, export and erasure of nudges.
+- `test/privacy.test.ts`: the `readiness` exporter, export and erasure of nudges and daily scores.
 - `packages/shared/src/navigation.test.ts`, `apps/web/src/lib/readiness.test.ts`, `apps/web/e2e/readiness.spec.ts` (student view, board, weights dialog, faculty read-only; axe).
 
 ## Practice mastery (G4)

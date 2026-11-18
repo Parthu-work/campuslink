@@ -1,0 +1,30 @@
+{
+  "drives": {
+    "record": {
+      "cgpa": "CGPA {{cgpa}}",
+      "backlogs_one": "{{count}} backlog",
+      "backlogs_other": "{{count}} backlogs",
+      "none": "Your marks aren’t here yet",
+      "noneMeta": "The placement cell adds them",
+      "view": "View",
+      "viewLabel": "View your academic record",
+      "fromCell": "Your placement cell adds these from the college’s records. Drives with CGPA or backlog rules use them.",
+      "selfIntro": "If your placement cell asks you to, add your marks here. They count once the cell checks them."
+    },
+    "card": {
+      "more_one": "+{{count}} more",
+      "more_other": "+{{count}} more",
+      "round": "Round {{n}} of {{total}}: {{name}}",
+      "registerLabel": "Register for {{company}}, {{title}}",
+      "withdrawn": "Registration withdrawn"
+    },
+    "rounds": {
+      "label": "Rounds of this drive",
+      "round": "Round {{n}}",
+      "later": "Date to be announced"
+    },
+    "path": {
+      "title": "Drives for this role"
+    }
+  }
+}

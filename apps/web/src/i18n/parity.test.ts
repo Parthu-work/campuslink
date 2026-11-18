@@ -15,7 +15,11 @@ const pack = (name: string, l: string) => packFiles[`./packs/${name}.${l}.json`]
 /** Where each pack's sections may be used: only screens that load the pack (app/router.tsx, withPack). */
 const PACK_USERS: Record<string, string[]> = {
   career: ['/features/resume/', '/features/interviews/', '/features/admin/interview-questions.tsx'],
-  readiness: ['/features/progress/readiness.tsx', '/features/admin/readiness-admin.tsx'],
+  readiness: [
+    '/features/progress/readiness.tsx',
+    '/features/progress/momentum.ts',
+    '/features/admin/readiness-admin.tsx',
+  ],
   alumni: ['/features/alumni/', '/features/admin/recognition-admin.tsx', '/features/admin/giving-admin.tsx'],
   practice: ['/features/practice/', '/features/admin/practice-bank.tsx'],
   habits: ['/features/habits/'],
@@ -26,6 +30,7 @@ const PACK_USERS: Record<string, string[]> = {
   network: ['/features/network/', '/features/recruiter/'],
   design: ['/features/design/'],
   today: ['/features/home/'],
+  drives: ['/features/placements/'],
   mentoring: [
     '/features/mentors/',
     '/features/roadmaps/',

@@ -9,7 +9,11 @@ import { runInTenant } from '../../src/lib/context.js';
 import { ProfileModel } from '../../src/modules/profiles/profile.model.js';
 import { ResumeModel } from '../../src/modules/resumes/resume.model.js';
 import { NotificationModel } from '../../src/modules/notifications/notification.model.js';
-import { ReadinessConfigModel, ReadinessNudgeModel } from '../../src/modules/readiness/readiness.model.js';
+import {
+  ReadinessConfigModel,
+  ReadinessNudgeModel,
+  ReadinessSnapshotModel,
+} from '../../src/modules/readiness/readiness.model.js';
 
 const ctx = testApp();
 let A: TestTenant, B: TestTenant;
@@ -55,6 +59,13 @@ describe('tenant isolation: readiness (prompt 2, G5)', () => {
     expect(theirs.body.data.components.find((c: { id: string }) => c.id === 'resume').facts.resumes).toBe(0);
     // A's student's token at B's host.
     expect((await api(ctx, B.host, studentA.token).get('/me/readiness')).status).toBe(401);
+    // Each college keeps its own student's daily score (prompt 3, U7), and only there.
+    expect(
+      await runInTenant(A._id, () => ReadinessSnapshotModel.countDocuments({ userId: studentA.id })),
+    ).toBe(1);
+    expect(
+      await runInTenant(B._id, () => ReadinessSnapshotModel.countDocuments({ userId: studentA.id })),
+    ).toBe(0);
   });
 
   it("college B's board, export and search never include college A's students", async () => {
@@ -102,5 +113,8 @@ describe('tenant isolation: readiness (prompt 2, G5)', () => {
     expect(await runInTenant(A._id, () => ReadinessNudgeModel.countDocuments({ userId: studentA.id }))).toBe(
       1,
     );
+    expect(
+      await runInTenant(A._id, () => ReadinessSnapshotModel.countDocuments({ userId: studentA.id })),
+    ).toBe(1);
   });
 });

@@ -9,9 +9,14 @@ test('a student sees their score, what it is made of and their next steps', asyn
   await signIn(page, `ananya@${host}.example`, host);
   await page.goto(`http://${host}.localhost:4173/readiness`);
   await expect(page.getByRole('heading', { level: 1, name: 'Readiness' })).toBeVisible();
-  await expect(page.getByRole('heading', { level: 2, name: /^You’re at \d+\.$/ })).toBeVisible();
+  // Prompt 3, U7: the score as a large ring, the next steps once (no deficit headline).
+  await expect(page.getByRole('progressbar', { name: 'Your readiness score' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: /^\d+ steps? adds? \d+ more$|^Your next steps$/ }),
+  ).toBeVisible();
+  await expect(page.getByText(/^You’re at/)).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'What your score is made of' })).toBeVisible();
-  // Practice (G4) counts: its card shows points like every other part.
+  // Practice (G4) counts: its row shows points like every other part.
   const practice = page
     .getByRole('listitem')
     .filter({ has: page.getByRole('heading', { name: 'Practice' }) });

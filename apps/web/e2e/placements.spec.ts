@@ -45,15 +45,20 @@ test('the placement cell runs a drive from draft to a selection the student sees
   await toast(page, /Registration is open/);
   await expectNoA11yViolations(page);
 
-  // Ananya (CSE) is eligible: the drive is under For you and registers in one tap.
+  // Ananya (CSE) is eligible: the drive is under For you, with its countdown, and (prompt 3,
+  // U7) registers from the card in one tap.
   const ctx = await browser.newContext();
   const student = await ctx.newPage();
   await signIn(student, `ananya@${host}.example`, host);
   await student.goto(`http://${host}.localhost:4173/placements`);
-  await student.getByRole('link', { name: new RegExp(company.replace(/[()]/g, '\\$&')) }).click();
-  await expect(student.getByText('You are eligible')).toBeVisible();
+  const card = student.getByRole('listitem').filter({ hasText: company });
+  await expect(card.getByText('You are eligible')).toBeVisible();
+  await expect(card.locator('time')).toHaveText(/^Closes in /);
   await expectNoA11yViolations(student);
-  await student.getByRole('button', { name: 'Register in one tap' }).click();
+  await card.getByRole('button', { name: `Register for ${company}, Graduate engineer drive` }).click();
+  await toast(student, `Registered for ${company}`);
+  await expect(card.getByText('Registered', { exact: true })).toBeVisible();
+  await card.getByRole('link', { name: company }).click();
   await expect(student.getByText('You are registered')).toBeVisible();
 
   // The cell starts the drive, enters the round result and records the selection.
@@ -113,4 +118,30 @@ test('an offer a student reports with proof is verified by the placement cell', 
 
   await page.reload();
   await expect(page.getByRole('listitem').filter({ hasText: company }).getByText('Verified')).toBeVisible();
+});
+
+test('a student reads their record in one row and sees drives for a path they follow', async ({
+  page,
+}, info) => {
+  const host = hostFor(info.project.name);
+  await signIn(page, `ananya@${host}.example`, host);
+  await page.goto(`http://${host}.localhost:4173/placements`);
+  // Prompt 3, U7: the record as the college gave it, one row; nothing on the screen asks for marks.
+  await expect(page.getByText('CGPA 8.2 · 0 backlogs')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Add your marks' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'View your academic record' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Your academic record' });
+  await expect(sheet.getByText('From the college')).toBeVisible();
+  await expect(sheet.getByText('Something wrong? Ask the placement cell to correct it.')).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.keyboard.press('Escape');
+
+  // The seeded software engineer drive is open: the path that leads to the role lists it.
+  await page.goto(`http://${host}.localhost:4173/roadmaps/sde-dsa`);
+  const drives = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'Drives for this role' }) });
+  await expect(drives.getByRole('link', { name: /Nimbus Labs/ })).toBeVisible();
+  await expect(drives.getByText('Software Engineer', { exact: true })).toBeVisible();
+  await expectNoA11yViolations(page);
 });

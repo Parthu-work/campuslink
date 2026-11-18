@@ -118,6 +118,15 @@ const PACKS = {
       hi: () => import('./packs/mentoring.hi.json'),
     },
   },
+  /** Drives (prompt 3, U7): the record row, Register on a drive's card, rounds, drives on a path. */
+  drives: {
+    sections: ['drives'],
+    load: {
+      en: () => import('./packs/drives.en.json'),
+      te: () => import('./packs/drives.te.json'),
+      hi: () => import('./packs/drives.hi.json'),
+    },
+  },
   /** Home's Today (prompt 3, U5): the Today card, waiting requests, suggestions and Coming up. */
   today: {
     sections: ['today'],

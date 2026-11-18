@@ -1,10 +1,7 @@
 {
   "readiness": {
-    "intro": "One number that tells you what to do next before placements. It is the sum of the parts below, and your college sets how much each part counts.",
     "scoreLabel": "Your readiness score",
     "outOf": "{{score}} out of 100",
-    "headline": "You’re at {{score}}.",
-    "nextIntro": "Next, the steps that add the most:",
     "allDone": "Every part is as high as it goes. Keep practising before each drive.",
     "renormalised": "Not counted for you yet: {{parts}}. Your score counts the other parts, scaled to 100.",
     "parts": "What your score is made of",
@@ -73,7 +70,12 @@
       "noPractice": "No practice sets yet.",
       "practice_one": "{{count}} daily practice set in the last 90 days, {{accuracy}}% of answers right.",
       "practice_other": "{{count}} daily practice sets in the last 90 days, {{accuracy}}% of answers right."
-    }
+    },
+    "momentumWeek": "+{{n}} this week",
+    "momentumSince": "+{{n}} since {{date}}",
+    "stepsAdd_one": "{{count}} step adds {{n}} more",
+    "stepsAdd_other": "{{count}} steps add {{n}} more",
+    "nextTitle": "Your next steps"
   },
   "readinessBoard": {
     "intro": "How ready each batch and branch is, and who needs help before a drive closes. Counts under five are hidden; minors are never listed.",
