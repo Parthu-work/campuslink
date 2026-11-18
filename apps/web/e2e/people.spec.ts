@@ -27,10 +27,8 @@ test.describe('people', () => {
     await expect(tile('Problems')).toHaveText('3');
     await expect(page.getByRole('button', { name: 'Download problem report' })).toBeVisible();
 
-    // The other sections are a tap away on the overview (Today).
-    await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Today' }).click();
-    await page.waitForURL(/\/admin$/);
-    await page.getByRole('link', { name: 'College list' }).click();
+    // The college list, in the Students space (prompt 3, U9: Today no longer lists every section).
+    await page.goto(`http://${host}.localhost:4173/admin/list`);
     await page.getByPlaceholder('Search roll number or name').fill('25DP1A0501');
     await expect(page.getByRole('cell', { name: /Akhil Varma/ })).toBeVisible();
     await expect(page.getByText('a••••••@dpit.example')).toBeVisible();
