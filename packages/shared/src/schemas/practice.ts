@@ -301,10 +301,14 @@ export const practiceDraftBody = z.strictObject({
   count: z.number().int().min(1).max(PRACTICE_DRAFTS_MAX).default(3),
   companies: z.array(companyName).max(10).default([]),
 });
-export const practiceStartBody = z.strictObject({
-  /** A company's comparable key: a "Preparing for <company>" set instead of today's set. */
-  company: z.string().trim().min(1).max(120).optional(),
-});
+export const practiceStartBody = z
+  .strictObject({
+    /** A company's comparable key: a "Preparing for <company>" set instead of today's set. */
+    company: z.string().trim().min(1).max(120).optional(),
+    /** One topic (prompt 3, U7: "Practise this" on a career path's step) instead of today's set. */
+    topic: z.enum(PRACTICE_TOPICS as [PracticeTopic, ...PracticeTopic[]]).optional(),
+  })
+  .refine((b) => !(b.company && b.topic), 'Choose a company or a topic, not both');
 export const practiceSetIdParams = z.strictObject({ id: objectId });
 export const practiceAnswerBody = z.strictObject({
   index: z
@@ -351,8 +355,10 @@ export interface PracticeSetItemView {
 }
 export interface PracticeSetView {
   id: string;
-  kind: 'daily' | 'company';
+  kind: 'daily' | 'company' | 'topic';
   company: { key: string; name: string } | null;
+  /** A topic set's topic (prompt 3, U7). */
+  topic: PracticeTopic | null;
   day: string;
   items: PracticeSetItemView[];
   answered: number;
@@ -381,7 +387,10 @@ export interface PracticeHomeView {
   days: string[];
   topics: PracticeTopicStat[];
   companies: PracticeCompanyView[];
+  /** Extra sets left today: company sets and topic sets share the limit. */
   companySetsLeft: number;
+  /** Topics the bank has questions for (prompt 3, U7: "Practise this" shows only for these). */
+  bankTopics: PracticeTopic[];
   /** Real code runs (self-hosted Judge0) are on for this platform. */
   runner: boolean;
   /** Items this member wrote that are waiting for review. */

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Building2, Dumbbell, Flame, PenLine, PlayCircle } from 'lucide-react';
+import { Building2, Flame, PenLine, PlayCircle } from 'lucide-react';
 import { PRACTICE_SET_SIZE, type PracticeHomeView, type PracticeSetView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
+import { ActionCard } from '../../components/ui/action-card';
 import { Button } from '../../components/ui/button';
+import { buttonVariants } from '../../components/ui/button-variants';
 import { ErrorState } from '../../components/ui/error-state';
 import { Illustration } from '../../components/ui/illustration';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
@@ -43,45 +45,33 @@ function useStart() {
   });
 }
 
+/** Today's set as the one thing to do (prompt 3, U7): start, continue, or look back once done. */
 function Today({ home, start }: { home: PracticeHomeView; start: ReturnType<typeof useStart> }) {
   const { t } = useTranslation();
   const { today } = home;
   const started = !!today.setId;
   return (
-    <Card variant="raised" className="grid gap-4 p-4 sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="grid gap-1">
-          <h2 className="text-headline font-semibold">{t('practice.today.title')}</h2>
-          <p className="max-w-[60ch] text-callout text-fg-2">
-            {t('practice.today.body', { count: PRACTICE_SET_SIZE })}
-          </p>
-        </div>
-        {home.streak > 0 && (
+    <ActionCard
+      title={t('practice.today.title')}
+      meta={
+        today.completed
+          ? t('practice.today.done')
+          : started
+            ? t('practice.answeredOf', { n: today.answered, total: today.size })
+            : t('practice.today.body', { count: PRACTICE_SET_SIZE })
+      }
+      deadline={
+        home.streak > 0 ? (
           <Badge tone="accent" className="gap-1">
             <Flame className="size-4" aria-hidden /> {t('practice.streak', { count: home.streak })}
           </Badge>
-        )}
-      </div>
-      {started && (
-        <ProgressBar
-          value={today.answered}
-          max={today.size}
-          label={t('practice.today.progress')}
-          valueText={t('practice.answeredOf', { n: today.answered, total: today.size })}
-          tone={today.completed ? 'success' : 'brand'}
-        />
-      )}
-      <div className="flex flex-wrap items-center gap-3">
-        {today.completed && today.setId ? (
-          <>
-            <p className="font-semibold text-success-ink">{t('practice.today.done')}</p>
-            <Link
-              className="inline-flex min-h-11 items-center text-callout font-semibold text-brand-ink underline"
-              to={`/practice/sets/${today.setId}`}
-            >
-              {t('practice.today.review')}
-            </Link>
-          </>
+        ) : undefined
+      }
+      action={
+        today.completed && today.setId ? (
+          <Link to={`/practice/sets/${today.setId}`} className={buttonVariants({ variant: 'secondary' })}>
+            {t('practice.today.review')}
+          </Link>
         ) : (
           <Button
             variant="primary"
@@ -92,10 +82,9 @@ function Today({ home, start }: { home: PracticeHomeView; start: ReturnType<type
             <PlayCircle className="size-5" aria-hidden />{' '}
             {started ? t('practice.today.continue') : t('practice.today.start')}
           </Button>
-        )}
-      </div>
-      <p className="text-caption text-fg-3">{t('practice.english')}</p>
-    </Card>
+        )
+      }
+    />
   );
 }
 
@@ -235,9 +224,8 @@ export function PracticePage() {
   return (
     <div className="mx-auto grid w-full max-w-[960px] gap-6">
       <PageHeader
-        icon={<Dumbbell />}
         title={t('nav.practice')}
-        intro={t('practice.intro')}
+        about={t('practice.intro')}
         actions={
           canWrite ? (
             <Button variant="secondary" onClick={() => setWriting(true)}>
@@ -251,6 +239,7 @@ export function PracticePage() {
       {home.data && (
         <>
           <Today home={home.data} start={start} />
+          <p className="-mt-3 text-caption text-fg-3">{t('practice.english')}</p>
           {home.data.mineWaiting > 0 && (
             <p className="text-callout text-fg-2">
               {t('practice.mineWaiting', { count: home.data.mineWaiting })}

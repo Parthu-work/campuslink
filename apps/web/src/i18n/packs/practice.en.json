@@ -75,7 +75,8 @@
       "score": "{{n}} of {{total}} right",
       "allRight": "All right. New questions tomorrow.",
       "missedBack": "The ones you missed come back tomorrow, so they stick.",
-      "backHome": "Back to practice"
+      "backHome": "Back to practice",
+      "topicTitle": "Practising {{topic}}"
     },
     "answerLabel": {
       "mcq": "Choose one answer",
@@ -250,6 +251,12 @@
       "practised": "Students",
       "suppressed": "Groups of fewer than five show as “<5”, without accuracy, so no one can be singled out.",
       "emptyTitle": "No one has practised yet"
+    },
+    "this": {
+      "title": "Practise this",
+      "topic": "{{topic}} questions",
+      "meta": "Up to 10 questions from your college’s practice bank",
+      "later": "You’ve done today’s extra sets. More tomorrow."
     }
   }
 }

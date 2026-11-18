@@ -58,7 +58,8 @@
       "worksAt": "Works as {{title}} at {{company}}",
       "worksAs": "Works as {{title}}",
       "ask": "Ask",
-      "askName": "Ask {{name}}"
+      "askName": "Ask {{name}}",
+      "atTitle": "Seniors there who mentor"
     },
     "session": {
       "title": "{{type}} with {{name}}",

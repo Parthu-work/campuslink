@@ -8,3 +8,8 @@ import { lazyPart } from '../../lib/lazy-part';
 export const LazySeniorsOnPath = lazyPart(() =>
   Promise.all([import('./seniors-on-path'), loadPack('mentoring')]).then(([m]) => m.SeniorsOnPath),
 );
+
+/** A company page's "Seniors there who mentor" (prompt 3, U7), with the same pack. */
+export const LazySeniorsAt = lazyPart(() =>
+  Promise.all([import('./seniors-on-path'), loadPack('mentoring')]).then(([m]) => m.SeniorsAt),
+);

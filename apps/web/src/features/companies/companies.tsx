@@ -1,21 +1,28 @@
 import { useDeferredValue, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { Building2, MessageSquareQuote, PenLine, Search } from 'lucide-react';
-import type { CompanyGraphView, Count } from '@campuslink/shared';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { MessageSquareQuote, PenLine, Search } from 'lucide-react';
+import type { CompanyGraphView, CompanyListItem, Count } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { BackLink } from '../../components/ui/back-link';
+import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { ErrorState } from '../../components/ui/error-state';
 import { Field, Input } from '../../components/ui/field';
 import { Illustration } from '../../components/ui/illustration';
 import { IntentLink } from '../../components/ui/intent-link';
-import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { ListRow, ListSection } from '../../components/ui/list-row';
+import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { StatCard, StatGrid } from '../../components/ui/stat-card';
 import { Table, Td, TdNum, Th, THead } from '../../components/ui/table';
+import { api } from '../../lib/api';
 import { formatDay } from '../../lib/format';
-import { useCan } from '../../lib/me';
+import { useCan, useMe } from '../../lib/me';
+import { prefs } from '../../lib/storage';
+import { useFeature } from '../../lib/tenant-context';
+import { toast } from '../../lib/toast';
+import { LazySeniorsAt } from '../mentors/lazy-seniors';
 import * as q from '../../lib/queries';
 import { SCREEN } from '../../lib/query-client';
 import { ExperienceCard } from './experience-card';
@@ -38,20 +45,111 @@ function ShareActions() {
   );
 }
 
+const ASKED = 'targets-asked';
+const sameCompany = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+/**
+ * Which companies the student is aiming for, asked when Companies first opens (prompt 3, U7:
+ * progressive profiling, moved from U4). The answer is the Alumni Match input it always was (private
+ * to the student); "Not now" is remembered on this device.
+ */
+function TargetsQuestion({
+  companies,
+  current,
+  goals,
+}: {
+  companies: CompanyListItem[];
+  current: string[];
+  goals: string[];
+}) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const [asked, setAsked] = useState(() => prefs.get(ASKED) === '1');
+  const [picked, setPicked] = useState<string[]>([]);
+  const save = useMutation({
+    mutationFn: () => api.put('/me/match-preferences', { goals, targetCompanies: picked }),
+    onSuccess: () => {
+      prefs.set(ASKED, '1');
+      void qc.invalidateQueries({ queryKey: ['match-prefs'] });
+      void qc.invalidateQueries({ queryKey: ['match'] });
+      toast.success(t('moat.targets.saved'));
+    },
+    onError: () => toast.error(t('errors.generic')),
+  });
+  if (asked || current.length || !companies.length) return null;
+  const options = companies.slice(0, 8);
+  return (
+    <Card className="grid gap-3 p-4">
+      <div className="grid gap-1">
+        <h2 id="targets-title" className="text-headline font-semibold">
+          {t('moat.targets.title')}
+        </h2>
+        <p className="text-callout text-fg-2">{t('moat.targets.body')}</p>
+      </div>
+      <div role="group" aria-labelledby="targets-title" className="flex flex-wrap gap-2">
+        {options.map((c) => {
+          const on = picked.some((x) => sameCompany(x, c.name));
+          return (
+            <Chip
+              key={c.key}
+              pressed={on}
+              onClick={() =>
+                setPicked((p) =>
+                  on ? p.filter((x) => !sameCompany(x, c.name)) : [...p, c.name].slice(0, 10),
+                )
+              }
+            >
+              {c.name}
+            </Chip>
+          );
+        })}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="primary"
+          disabled={!picked.length}
+          loading={save.isPending}
+          onClick={() => save.mutate()}
+        >
+          {t('moat.targets.save')}
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            prefs.set(ASKED, '1');
+            setAsked(true);
+          }}
+        >
+          {t('moat.targets.notNow')}
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 /** Companies from the Placement Graph (prompt 2, G10): where seniors went and who is there. */
 export function CompaniesPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const term = useDeferredValue(search.trim());
   const list = useQuery({ ...SCREEN, ...q.companies(term), placeholderData: keepPreviousData });
+  const me = useMe();
+  const matchOn = useFeature('alumniMatch');
+  const canAsk = useCan('mentorship:request');
+  const student = !!me.data?.roles.includes('STUDENT');
+  const targetsOn = matchOn && canAsk && student;
+  const prefsQ = useQuery({ ...q.matchPreferences(), enabled: targetsOn });
+  const targets = prefsQ.data?.targetCompanies ?? [];
+  const isTarget = (name: string) => targets.some((x) => sameCompany(x, name));
+  const items = [...(list.data?.items ?? [])].sort(
+    (a, b) => Number(isTarget(b.name)) - Number(isTarget(a.name)),
+  );
   return (
     <div className="mx-auto grid w-full max-w-[960px] gap-5">
-      <PageHeader
-        icon={<Building2 />}
-        title={t('nav.companies')}
-        intro={t('moat.intro')}
-        actions={<ShareActions />}
-      />
+      <PageHeader title={t('nav.companies')} about={t('moat.intro')} actions={<ShareActions />} />
+      {targetsOn && prefsQ.data && list.data && !term && (
+        <TargetsQuestion companies={list.data.items} current={targets} goals={prefsQ.data.goals} />
+      )}
       <Field label={t('moat.search')}>
         {({ id }) => (
           <div className="relative">
@@ -90,15 +188,18 @@ export function CompaniesPage() {
             )
           ) : (
             <ul className="grid gap-2 sm:grid-cols-2">
-              {list.data.items.map((c) => (
+              {items.map((c) => (
                 <li key={c.key}>
                   <Card variant="interactive" className="relative grid h-full gap-1.5 p-4">
-                    <IntentLink
-                      to={`/companies/${encodeURIComponent(c.key)}`}
-                      className="font-semibold after:absolute after:inset-0"
-                    >
-                      {c.name}
-                    </IntentLink>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <IntentLink
+                        to={`/companies/${encodeURIComponent(c.key)}`}
+                        className="font-semibold text-pretty break-words after:absolute after:inset-0"
+                      >
+                        {c.name}
+                      </IntentLink>
+                      {isTarget(c.name) && <Badge tone="brand">{t('moat.targets.badge')}</Badge>}
+                    </span>
                     <p className="flex flex-wrap gap-x-3 gap-y-1 text-callout text-fg-2">
                       {c.offers !== 0 && <span>{t('moat.placed', { n: shown(c.offers) })}</span>}
                       {!!c.batches.length && (
@@ -127,17 +228,17 @@ function Figures({ g }: { g: CompanyGraphView }) {
   const { t } = useTranslation();
   return (
     <StatGrid>
-      <StatCard label={t('moat.stat.placed')} value={shown(g.offers)} />
-      {g.yourBranch && (
+      {g.offers !== 0 && <StatCard label={t('moat.stat.placed')} value={shown(g.offers)} />}
+      {g.yourBranch && g.yourBranch.offers !== 0 && (
         <StatCard
           label={t('moat.stat.yourBranch', { branch: g.yourBranch.branch })}
           value={shown(g.yourBranch.offers)}
         />
       )}
-      <StatCard label={t('moat.stat.alumni')} value={shown(g.alumni)} />
-      <StatCard label={t('moat.stat.mentors')} value={shown(g.mentors)} />
-      <StatCard label={t('moat.stat.drives')} value={shown(g.drives)} />
-      <StatCard label={t('moat.stat.sessions')} value={shown(g.sessions)} />
+      {g.alumni !== 0 && <StatCard label={t('moat.stat.alumni')} value={shown(g.alumni)} />}
+      {g.mentors !== 0 && <StatCard label={t('moat.stat.mentors')} value={shown(g.mentors)} />}
+      {g.drives !== 0 && <StatCard label={t('moat.stat.drives')} value={shown(g.drives)} />}
+      {g.sessions !== 0 && <StatCard label={t('moat.stat.sessions')} value={shown(g.sessions)} />}
     </StatGrid>
   );
 }
@@ -198,32 +299,34 @@ function Rounds({ g }: { g: CompanyGraphView }) {
           <h2 id="company-rounds" className="text-headline font-semibold">
             {t('moat.rounds')}
           </h2>
-          <ol className="grid gap-2 sm:grid-cols-2">
+          <ListSection>
             {g.rounds.map((r) => (
-              <li key={r.kind}>
-                <Card className="grid gap-1 p-3">
-                  <p className="font-semibold">{t(`placements.roundKind.${r.kind}`)}</p>
-                  <p className="text-callout text-fg-2">
-                    {t('moat.sat', { n: shown(r.appeared) })} ·{' '}
-                    {r.passRate === null ? t('moat.rateHidden') : t('moat.cleared', { pct: r.passRate })}
-                  </p>
-                </Card>
-              </li>
+              <ListRow
+                key={r.kind}
+                title={t(`placements.roundKind.${r.kind}`)}
+                meta={`${t('moat.sat', { n: shown(r.appeared) })} · ${
+                  r.passRate === null ? t('moat.rateHidden') : t('moat.cleared', { pct: r.passRate })
+                }`}
+              />
             ))}
-          </ol>
+          </ListSection>
         </>
       )}
       {g.referrals.referred !== 0 && (
-        <Card className="grid gap-1 p-3">
-          <p className="font-semibold">{t('moat.referrals')}</p>
-          <p className="text-callout text-fg-2">
-            {t('moat.referralLine', {
-              referred: shown(g.referrals.referred),
-              converted: shown(g.referrals.converted),
-            })}
-            {g.referrals.rate !== null && <> {t('moat.referralRate', { pct: g.referrals.rate })}</>}
-          </p>
-        </Card>
+        <ListSection>
+          <ListRow
+            title={t('moat.referrals')}
+            meta={
+              <>
+                {t('moat.referralLine', {
+                  referred: shown(g.referrals.referred),
+                  converted: shown(g.referrals.converted),
+                })}
+                {g.referrals.rate !== null && <> {t('moat.referralRate', { pct: g.referrals.rate })}</>}
+              </>
+            }
+          />
+        </ListSection>
       )}
     </section>
   );
@@ -246,19 +349,21 @@ export function CompanyPage() {
       {g && (
         <>
           <PageHeader
-            icon={<Building2 />}
             title={g.name}
-            intro={`${t('moat.source')} ${g.computedAt ? t('moat.updated', { date: formatDay(g.computedAt) }) : t('moat.notYet')}`}
+            subtitle={g.computedAt ? t('moat.updated', { date: formatDay(g.computedAt) }) : t('moat.notYet')}
+            about={t('moat.source')}
+            primary={
+              canAsk && g.mentors !== 0 ? (
+                <Link
+                  to={`/mentors?view=browse&q=${encodeURIComponent(g.name)}`}
+                  className={buttonVariants({ variant: 'primary' })}
+                >
+                  {t('moat.askAlumni')}
+                </Link>
+              ) : undefined
+            }
           />
           <div className="flex flex-wrap gap-2">
-            {canAsk && (
-              <Link
-                to={`/mentors?view=browse&q=${encodeURIComponent(g.name)}`}
-                className={buttonVariants({ variant: 'primary' })}
-              >
-                {t('moat.askAlumni')}
-              </Link>
-            )}
             {canPractise && (
               <Link to="/practice" className={buttonVariants({ variant: 'secondary' })}>
                 {t('moat.practise', { company: g.name })}
@@ -275,6 +380,7 @@ export function CompanyPage() {
           </div>
           <Figures g={g} />
           <p className="text-callout text-fg-3">{t('moat.small')}</p>
+          {canAsk && g.mentors !== 0 && <LazySeniorsAt company={g.name} fallback={null} />}
           <Batches g={g} />
           <Rounds g={g} />
           <section aria-labelledby="company-writeups" className="grid gap-3">

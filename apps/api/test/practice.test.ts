@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   PRACTICE_COMPANY_SETS_PER_DAY,
+  PRACTICE_TOPICS,
   PRACTICE_SET_SIZE,
   type PracticeHomeView,
   type PracticeItemView,
@@ -272,6 +273,35 @@ describe('company prep and coding (prompt 2, G4)', () => {
       await startSet(coder, { company: 'nimbus labs' });
     expect((await as(coder).post('/practice/sets').send({ company: 'nimbus labs' })).status).toBe(429);
     expect((await as(student).post('/practice/sets').send({ company: 'nobody here' })).status).toBe(404);
+  });
+});
+
+describe('topic sets: "Practise this" (prompt 3, U7)', () => {
+  it('serves one topic, lists the topics in the bank, and shares the daily limit with company sets', async () => {
+    const learner = await makeUser(ctx, T, { roles: ['STUDENT'] });
+    const home = (await as(learner).get('/practice')).body.data as PracticeHomeView;
+    expect(home.bankTopics.length).toBeGreaterThan(0);
+    const topic = home.bankTopics[0] ?? 'arrays';
+    const s = await startSet(learner, { topic });
+    expect(s).toMatchObject({ kind: 'topic', topic, company: null });
+    expect(s.items.length).toBeGreaterThan(0);
+    expect(s.items.every((e) => e.item.topic === topic)).toBe(true);
+    // A topic set is not today's set: the daily one is still to start.
+    const after = (await as(learner).get('/practice')).body.data as PracticeHomeView;
+    expect(after.today.setId).toBeNull();
+    expect(after.companySetsLeft).toBe(home.companySetsLeft - 1);
+
+    // Both at once, an unknown topic, or a topic with no questions are refused.
+    expect((await as(learner).post('/practice/sets').send({ topic, company: 'nimbus labs' })).status).toBe(
+      400,
+    );
+    expect((await as(learner).post('/practice/sets').send({ topic: 'astrology' })).status).toBe(400);
+    const empty = PRACTICE_TOPICS.find((x) => !home.bankTopics.includes(x));
+    if (empty) expect((await as(learner).post('/practice/sets').send({ topic: empty })).status).toBe(404);
+
+    for (let i = 1; i < PRACTICE_COMPANY_SETS_PER_DAY; i++) await startSet(learner, { topic });
+    expect((await as(learner).post('/practice/sets').send({ topic })).status).toBe(429);
+    expect((await as(learner).post('/practice/sets').send({ company: 'nimbus labs' })).status).toBe(429);
   });
 });
 

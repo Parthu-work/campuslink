@@ -59,3 +59,21 @@ test('faculty add a practice question to the bank', async ({ page }, info) => {
   await page.getByRole('tab', { name: 'In use' }).click();
   await expect(page.getByText(marker)).toBeVisible();
 });
+
+test('Practise this: a career path\x27s step starts a short set on the topics it names', async ({
+  page,
+}, info) => {
+  const host = hostFor(info.project.name);
+  await signIn(page, `ananya@${host}.example`, host);
+  // Prompt 3, U7: "Arrays, hashing, stacks, queues and linked lists" names practice topics.
+  await page.goto(`http://${host}.localhost:4173/roadmaps/sde-dsa?step=core-structures`);
+  const sheet = page.getByRole('dialog', { name: 'Arrays, hashing, stacks, queues and linked lists' });
+  await expect(sheet.getByRole('heading', { name: 'Practise this' })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await sheet.getByRole('button', { name: /^Arrays questions/ }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Practising Arrays' })).toBeVisible();
+  await expect(page.getByRole('progressbar', { name: 'Progress' })).toBeVisible();
+  await page.getByRole('button', { name: 'Show the answer' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Here is the answer' })).toBeVisible();
+  await expectNoA11yViolations(page);
+});

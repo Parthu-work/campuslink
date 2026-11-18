@@ -58,7 +58,8 @@
       "worksAt": "{{company}}లో {{title}}గా పనిచేస్తున్నారు",
       "worksAs": "{{title}}గా పనిచేస్తున్నారు",
       "ask": "అడగండి",
-      "askName": "{{name}}ను అడగండి"
+      "askName": "{{name}}ను అడగండి",
+      "atTitle": "అక్కడ మెంటార్‌గా ఉన్న సీనియర్లు"
     },
     "session": {
       "title": "{{name}}తో {{type}}",

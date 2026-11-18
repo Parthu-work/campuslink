@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowRight, CheckCircle2, Dumbbell, XCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Flame, XCircle } from 'lucide-react';
 import {
   CODE_LANGUAGES,
   PRACTICE_CODE_MAX,
@@ -17,11 +17,11 @@ import { ErrorState } from '../../components/ui/error-state';
 import { Field, Input, Select, Textarea } from '../../components/ui/field';
 import { Badge, Card, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
-import { ProgressBar } from '../../components/ui/progress';
 import { api, ApiError } from '../../lib/api';
 import { celebrate, firstSighting } from '../../lib/celebrate';
 import * as q from '../../lib/queries';
 import { SCREEN } from '../../lib/query-client';
+import { cn } from '../../lib/cn';
 
 function Code({ code, language }: { code: string; language: CodeLanguage | null }) {
   const { t } = useTranslation();
@@ -217,9 +217,48 @@ function Question({
   );
 }
 
+/**
+ * Progress as one segment per question (prompt 3, U7): right, missed, the one on screen, and the
+ * rest. One progressbar for screen readers; the segments are drawing only.
+ */
+function Segments({ set, current }: { set: PracticeSetView; current: number | null }) {
+  const { t } = useTranslation();
+  return (
+    <div
+      role="progressbar"
+      aria-label={t('practice.today.progress')}
+      aria-valuemin={0}
+      aria-valuemax={set.items.length}
+      aria-valuenow={set.answered}
+      aria-valuetext={t('practice.answeredOf', { n: set.answered, total: set.items.length })}
+      className="flex gap-1"
+    >
+      {set.items.map((e) => (
+        <span
+          key={e.index}
+          aria-hidden
+          className={cn(
+            'h-2 flex-1 rounded-full transition-colors duration-[var(--dur-enter)]',
+            e.result
+              ? e.result.correct
+                ? 'bg-success'
+                : 'bg-warning'
+              : e.index === current
+                ? 'bg-brand'
+                : 'bg-surface-3',
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
 function Summary({ set }: { set: PracticeSetView }) {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
+  // The streak at the end of the day's set (prompt 3, U7), from the practice home's own count.
+  const home = useQuery({ ...q.practice(), enabled: set.kind === 'daily' && !!set.completedAt });
+  const streak = home.data?.streak ?? 0;
   useEffect(() => {
     // A finished daily set is a "quiz complete" moment (ADR 0008), once per device.
     if (set.kind === 'daily' && set.completedAt && firstSighting('practice-daily', [set.id]))
@@ -230,6 +269,11 @@ function Summary({ set }: { set: PracticeSetView }) {
       <div ref={ref} className="grid gap-1">
         <h2 className="text-headline font-semibold">{t('practice.set.doneTitle')}</h2>
         <p className="text-body">{t('practice.set.score', { n: set.correct, total: set.items.length })}</p>
+        {streak > 0 && (
+          <p className="flex items-center gap-1.5 text-callout font-semibold text-accent-ink">
+            <Flame className="size-4" aria-hidden /> {t('practice.streak', { count: streak })}
+          </p>
+        )}
         <p className="text-callout text-fg-2">
           {set.correct === set.items.length ? t('practice.set.allRight') : t('practice.set.missedBack')}
         </p>
@@ -287,18 +331,15 @@ export function PracticeSetPage() {
   const entry = shown !== null ? set.items.find((e) => e.index === shown) : open;
   const title = set.company
     ? t('practice.set.companyTitle', { company: set.company.name })
-    : t('practice.today.title');
+    : set.topic
+      ? t('practice.set.topicTitle', { topic: t(`practice.topic.${set.topic}`) })
+      : t('practice.today.title');
   const position = entry ? set.items.indexOf(entry) + 1 : set.items.length;
   return (
     <div className="mx-auto grid w-full max-w-[760px] gap-5">
       <BackLink to="/practice">{t('nav.practice')}</BackLink>
-      <PageHeader icon={<Dumbbell />} title={title} />
-      <ProgressBar
-        value={set.answered}
-        max={set.items.length}
-        label={t('practice.today.progress')}
-        valueText={t('practice.answeredOf', { n: set.answered, total: set.items.length })}
-      />
+      <PageHeader title={title} size="headline" />
+      <Segments set={set} current={entry?.index ?? null} />
       {entry ? (
         <Card variant="raised" className="grid gap-4 p-4 sm:p-6">
           <div className="flex flex-wrap items-center gap-2">

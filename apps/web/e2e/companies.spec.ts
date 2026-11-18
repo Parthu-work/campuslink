@@ -20,11 +20,28 @@ test('a placed student shares an interview, faculty publish it, juniors read it 
   await page.goto(`http://${host}.localhost:4173/companies`);
   await expect(page.getByRole('heading', { level: 1, name: 'Companies' })).toBeVisible();
   await expect(page.getByRole('link', { name: COMPANY })).toBeVisible();
+  // Prompt 3, U7: the first visit asks which companies the student is aiming for (private);
+  // the answer puts them first, marked.
+  const targets = page.getByRole('group', { name: 'Which companies are you aiming for?' });
+  await expect(targets).toBeVisible();
   await expectNoA11yViolations(page);
+  await targets.getByRole('button', { name: COMPANY }).click();
+  await expect(targets.getByRole('button', { name: COMPANY })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByText('Your target companies are saved').first()).toBeVisible();
+  await expect(targets).toBeHidden();
+  const first = page.getByRole('main').getByRole('listitem').first();
+  await expect(first.getByRole('link', { name: COMPANY })).toBeVisible();
+  await expect(first.getByText('Your target')).toBeVisible();
 
   await page.getByRole('link', { name: COMPANY }).click();
   await expect(page.getByRole('heading', { level: 1, name: COMPANY })).toBeVisible();
   await expect(page.getByText('Placed (verified)')).toBeVisible();
+  // Seniors who work there and mentor, from the mentor list (the seed's Kestrel data analyst).
+  const seniors = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'Seniors there who mentor' }) });
+  await expect(seniors.getByRole('link', { name: /^Ask / }).first()).toBeVisible();
   // The demo year (G13) clears the five-record threshold: counts, a median band per batch and pass
   // rates show; small cells read "<5"; pay appears only as a band, never an exact CTC.
   await expect(page.getByText('Median CTC band').first()).toBeVisible();

@@ -131,6 +131,14 @@
       "outcomes_target_other": "Helped {{count}} students reach interviews or offers at companies you’re aiming for",
       "referrals_one": "Their referrals led to {{count}} interview or offer",
       "referrals_other": "Their referrals led to {{count}} interviews or offers"
+    },
+    "targets": {
+      "title": "Which companies are you aiming for?",
+      "body": "They come first here, and Alumni Match uses them to find seniors there. Only you see them.",
+      "notNow": "Not now",
+      "saved": "Your target companies are saved",
+      "badge": "Your target",
+      "save": "Save"
     }
   }
 }

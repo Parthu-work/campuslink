@@ -20,6 +20,7 @@ import { ProgressBar } from '../../components/ui/progress';
 import { api, ApiError } from '../../lib/api';
 import { focusOnMount } from '../../lib/focus';
 import * as q from '../../lib/queries';
+import { useNow } from '../../lib/use-now';
 import { SCREEN } from '../../lib/query-client';
 import { toast } from '../../lib/toast';
 import { useRecorder } from './use-recorder';
@@ -47,10 +48,13 @@ function Feedback({ turn: t }: { turn: InterviewTurnView }) {
         })}
       </ul>
       {Object.entries(t.evidence).length > 0 && (
-        <ul className="grid gap-1 text-callout text-fg-2">
+        <ul className="grid gap-2">
           {RUBRIC_DIMENSIONS.filter((d) => t.evidence[d]).map((d) => (
-            <li key={d}>
-              <span className="font-semibold">{tr(`interviews.dimension.${d}`)}:</span> “{t.evidence[d]}”
+            <li key={d} className="grid gap-0.5">
+              <span className="text-caption font-semibold text-fg-2">{tr(`interviews.dimension.${d}`)}</span>
+              <blockquote className="border-l-2 border-line-strong pl-3 text-callout text-pretty text-fg-2">
+                “{t.evidence[d]}”
+              </blockquote>
             </li>
           ))}
         </ul>
@@ -89,12 +93,15 @@ function TurnCard({ turn: t, n }: { turn: InterviewTurnView; n: number }) {
   );
 }
 
+/** Mentors who offer mock interviews (at the drive's company when the session was for one). */
+const humanMockLink = (s: Pick<InterviewView, 'drive'>) =>
+  `/mentors?view=browse&type=mock_interview${s.drive ? `&q=${encodeURIComponent(s.drive.company)}` : ''}`;
+
 /** The finished session: the summary, then every question with its answer and feedback. */
 function Report({ s }: { s: InterviewView }) {
   const { t } = useTranslation();
   let n = 0;
   const numbered = s.turns.map((turn) => ({ turn, n: turn.kind === 'question' ? ++n : n }));
-  const mockLink = `/mentors?view=browse&type=mock_interview${s.drive ? `&q=${encodeURIComponent(s.drive.company)}` : ''}`;
   return (
     <div className="grid gap-5">
       {s.summary && (
@@ -103,16 +110,27 @@ function Report({ s }: { s: InterviewView }) {
             {t('interviews.summary')}
           </h2>
           <p>{s.summary.overall}</p>
-          <ul className="flex flex-wrap gap-1.5">
+          <ul className="grid gap-3 sm:grid-cols-2 sm:gap-x-6">
             {RUBRIC_DIMENSIONS.map((d) => {
               const v = s.summary?.averages[d];
-              return typeof v === 'number' ? (
-                <li key={d}>
-                  <Badge tone={tone(v)}>
-                    {t(`interviews.dimension.${d}`)} {t('interviews.outOf5', { n: v.toFixed(1) })}
-                  </Badge>
+              if (typeof v !== 'number') return null;
+              const name = t(`interviews.dimension.${d}`);
+              const out = t('interviews.outOf5', { n: v.toFixed(1) });
+              return (
+                <li key={d} className="grid gap-1.5">
+                  <span className="flex items-baseline justify-between gap-3 text-callout">
+                    <span className="font-semibold">{name}</span>
+                    <span className="tabular-nums text-fg-2">{out}</span>
+                  </span>
+                  <ProgressBar
+                    value={v}
+                    max={5}
+                    label={name}
+                    valueText={out}
+                    tone={tone(v) === 'danger' ? 'warning' : tone(v)}
+                  />
                 </li>
-              ) : null;
+              );
             })}
           </ul>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -152,10 +170,7 @@ function Report({ s }: { s: InterviewView }) {
               : t('interviews.human.body')}
           </p>
           <div className="flex flex-wrap gap-2">
-            <Link to={mockLink} className={buttonVariants({ variant: 'primary' })}>
-              <UserRoundSearch className="size-4" aria-hidden /> {t('interviews.human.book')}
-            </Link>
-            <Link to="/interviews" className={buttonVariants({ variant: 'outline' })}>
+            <Link to="/interviews" className={buttonVariants({ variant: 'ghost' })}>
               {t('interviews.again')}
             </Link>
           </div>
@@ -170,6 +185,17 @@ function Report({ s }: { s: InterviewView }) {
         ))}
       </ol>
     </div>
+  );
+}
+
+/** How long this question has been on screen (prompt 3, U7): pacing, not a limit; never announced. */
+function QuestionTimer() {
+  const [start] = useState(() => Date.now());
+  const now = useNow(1000);
+  return (
+    <span aria-hidden className="tabular-nums">
+      {seconds(Math.max(0, now - start))}
+    </span>
   );
 }
 
@@ -245,15 +271,18 @@ function Live({ s }: { s: InterviewView }) {
         </details>
       )}
       <Card variant="raised" className="grid gap-4 p-4 sm:p-6">
-        <p className="text-caption text-fg-3">
-          {turn.kind === 'follow_up'
-            ? t('interviews.followUp')
-            : t('interviews.questionOf', {
-                n: s.turns.slice(0, current + 1).filter((x) => x.kind === 'question').length,
-                total: s.planned,
-              })}
-          {' · '}
-          {turn.topic}
+        <p className="flex flex-wrap items-center justify-between gap-2 text-caption text-fg-3">
+          <span>
+            {turn.kind === 'follow_up'
+              ? t('interviews.followUp')
+              : t('interviews.questionOf', {
+                  n: s.turns.slice(0, current + 1).filter((x) => x.kind === 'question').length,
+                  total: s.planned,
+                })}
+            {' · '}
+            {turn.topic}
+          </span>
+          <QuestionTimer key={current} />
         </p>
         <h2
           ref={heading}
@@ -389,7 +418,13 @@ export function InterviewSessionPage() {
       {d && (
         <>
           <PageHeader
-            icon={<Mic />}
+            primary={
+              d.mine && d.status === 'completed' ? (
+                <Link to={humanMockLink(d)} className={buttonVariants({ variant: 'primary' })}>
+                  <UserRoundSearch className="size-4" aria-hidden /> {t('interviews.human.book')}
+                </Link>
+              ) : undefined
+            }
             title={
               d.mine
                 ? d.drive
@@ -397,7 +432,7 @@ export function InterviewSessionPage() {
                   : t(`interviews.track.${d.track}`)
                 : t('interviews.reportOf', { name: d.owner.name })
             }
-            intro={
+            subtitle={
               <span
                 ref={d.status === 'completed' ? focusOnMount : undefined}
                 tabIndex={-1}

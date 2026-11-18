@@ -58,7 +58,8 @@
       "worksAt": "{{company}} में {{title}} के रूप में काम करते हैं",
       "worksAs": "{{title}} के रूप में काम करते हैं",
       "ask": "पूछें",
-      "askName": "{{name}} से पूछें"
+      "askName": "{{name}} से पूछें",
+      "atTitle": "वहाँ मेंटर करने वाले सीनियर"
     },
     "session": {
       "title": "{{name}} के साथ {{type}}",

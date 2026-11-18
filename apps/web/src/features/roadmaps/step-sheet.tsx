@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, ArrowRight, Check, CircleCheck, Trash2 } from 'lucide-react';
-import { nextStep, type NodeCommentView, type RoadmapView, type SourceRef } from '@campuslink/shared';
+import {
+  nextStep,
+  topicsInTitle,
+  type NodeCommentView,
+  type RoadmapView,
+  type SourceRef,
+} from '@campuslink/shared';
 import { Button } from '../../components/ui/button';
 import { Sheet } from '../../components/ui/dialog';
 import { Textarea } from '../../components/ui/field';
@@ -15,6 +21,7 @@ import { celebrate } from '../../lib/celebrate';
 import { formatRelative } from '../../lib/format';
 import { useRoadmapProgress, useTimeText } from '../../lib/roadmaps';
 import { KindIcon } from './kind-icon';
+import { LazyPractiseThis } from '../practice/lazy-practise-this';
 
 /** Links to other sites as rows: the title, the site it is on, and that it opens a new tab. */
 function LinkRows({ items, title }: { items: SourceRef[]; title: string }) {
@@ -149,6 +156,7 @@ export function StepSheet({
 }) {
   const { t } = useTranslation();
   const canWrite = useCan('roadmaps:write');
+  const canPractise = useCan('practice:use');
   const canProgress = useCan('roadmaps:progress') && roadmap.status === 'published' && !!roadmap.version;
   const { toggle } = useRoadmapProgress(roadmap);
   const time = useTimeText();
@@ -161,6 +169,8 @@ export function StepSheet({
   // The step after this one, counting this one as done.
   const after = nextStep(roadmap.content.nodes, new Set([...doneIds, node.id]));
   const proof = proofItems(node.proof);
+  // Practise this (prompt 3, U7): the practice topics the step names, if the bank has questions.
+  const topics = canPractise && roadmap.status === 'published' ? topicsInTitle(node.title) : [];
 
   const markDone = (from: HTMLElement) =>
     toggle.mutate(
@@ -253,6 +263,7 @@ export function StepSheet({
           </section>
         )}
         <LinkRows items={node.resources} title={t('roadmaps.resources')} />
+        {topics.length > 0 && <LazyPractiseThis topics={topics} fallback={null} />}
         <LinkRows items={node.sources} title={t('roadmaps.sources')} />
         {canWrite && <Comments roadmap={roadmap} nodeId={node.id} />}
       </div>

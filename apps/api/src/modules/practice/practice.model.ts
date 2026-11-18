@@ -123,16 +123,17 @@ export interface PracticeAnswerDoc {
   at: Date;
 }
 /**
- * A set of up to ten items: the day's set (one per member per day, earns XP once) or a company
- * prep set. Answers keep the topic so mastery is counted without reading the bank.
+ * A set of up to ten items: the day's set (one per member per day, earns XP once), a company
+ * prep set, or a topic set ("Practise this" from a career path's step, prompt 3 U7). Answers keep the topic so mastery is counted without reading the bank.
  */
 export interface PracticeSetDoc {
   _id: Types.ObjectId;
   userId: Types.ObjectId;
-  kind: 'daily' | 'company';
+  kind: 'daily' | 'company' | 'topic';
   day: string;
   companyKey: string | null;
   companyName: string | null;
+  topic: PracticeTopic | null;
   itemIds: Types.ObjectId[];
   topics: PracticeTopic[];
   answers: PracticeAnswerDoc[];
@@ -142,10 +143,11 @@ export interface PracticeSetDoc {
 const setSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, required: true },
-    kind: { type: String, enum: ['daily', 'company'], required: true },
+    kind: { type: String, enum: ['daily', 'company', 'topic'], required: true },
     day: { type: String, required: true },
     companyKey: { type: String, default: null },
     companyName: { type: String, default: null },
+    topic: { type: String, enum: [...PRACTICE_TOPICS, null], default: null },
     itemIds: {
       type: [Schema.Types.ObjectId],
       validate: (v: unknown[]) => v.length <= PRACTICE_SET_SIZE,

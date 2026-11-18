@@ -243,9 +243,14 @@ export class PracticeService {
         .lean<{ day: string }[]>(),
       this.topicStats(viewer.userId),
       this.companyList(),
-      PracticeSetModel.countDocuments({ userId: oid(viewer.userId), kind: 'company', day: today }),
+      PracticeSetModel.countDocuments({
+        userId: oid(viewer.userId),
+        kind: { $in: ['company', 'topic'] },
+        day: today,
+      }),
       PracticeItemModel.countDocuments({ createdBy: oid(viewer.userId), status: 'pending' }),
     ]);
+    const bankTopics = new Set<string>(await PracticeItemModel.distinct('topic', this.servable()));
     const days = finished.map((s) => s.day);
     const cutoff = addDays(today, -29);
     return {
@@ -260,6 +265,7 @@ export class PracticeService {
       topics,
       companies,
       companySetsLeft: Math.max(0, PRACTICE_COMPANY_SETS_PER_DAY - companySetsToday),
+      bankTopics: PRACTICE_TOPICS.filter((t) => bankTopics.has(t)),
       runner: this.d.runner.enabled,
       mineWaiting,
     };
@@ -297,6 +303,7 @@ export class PracticeService {
       id: String(s._id),
       kind: s.kind,
       company: s.companyKey ? { key: s.companyKey, name: s.companyName ?? s.companyKey } : null,
+      topic: s.topic ?? null,
       day: s.day,
       items: out,
       answered: s.answers.length,
@@ -305,10 +312,18 @@ export class PracticeService {
     };
   }
 
-  /** Chooses up to ten items for a member (spaced repetition), optionally from one company's tags. */
-  private async plan(userId: string, company: string | null): Promise<PracticeItemDoc[]> {
+  /** Chooses up to ten items for a member (spaced repetition), optionally from one company's tags or one topic. */
+  private async plan(
+    userId: string,
+    company: string | null,
+    topic: PracticeTopic | null = null,
+  ): Promise<PracticeItemDoc[]> {
     const today = this.today();
-    const filter = { ...this.servable(), ...(company ? { 'companies.key': company } : {}) };
+    const filter = {
+      ...this.servable(),
+      ...(company ? { 'companies.key': company } : {}),
+      ...(topic ? { topic } : {}),
+    };
     const [pool, cards, stats] = await Promise.all([
       PracticeItemModel.find(filter)
         .select('_id topic')
@@ -339,11 +354,33 @@ export class PracticeService {
     return ids.map((id) => docs.get(id)).filter((i): i is PracticeItemDoc => !!i);
   }
 
-  /** Today's set (made once, then resumed), or a "Preparing for <company>" set. */
+  /** Today's set (made once, then resumed), a "Preparing for <company>" set, or a topic set. */
   async start(viewer: AuthState, body: z.output<typeof practiceStartBody>): Promise<PracticeSetView> {
     await this.ensureStarter();
     const today = this.today();
     const userId = oid(viewer.userId);
+    const topic = body.topic ?? null;
+    if (topic) {
+      // "Practise this" (prompt 3, U7): shares the day's limit of extra sets with company sets.
+      const made = await PracticeSetModel.countDocuments({
+        userId,
+        kind: { $in: ['company', 'topic'] },
+        day: today,
+      });
+      if (made >= PRACTICE_COMPANY_SETS_PER_DAY)
+        throw tooMany('You have done all of today\x27s extra practice. More tomorrow.');
+      const items = await this.plan(viewer.userId, null, topic);
+      if (!items.length) throw notFound('There are no practice questions for this topic yet');
+      const s = await PracticeSetModel.create({
+        userId,
+        kind: 'topic',
+        day: today,
+        topic,
+        itemIds: items.map((i) => i._id),
+        topics: items.map((i) => i.topic),
+      });
+      return this.setView(s.toObject() as PracticeSetDoc);
+    }
     if (!body.company) {
       const existing = await PracticeSetModel.findOne({
         userId,
@@ -352,7 +389,11 @@ export class PracticeService {
       }).lean<PracticeSetDoc>();
       if (existing) return this.setView(existing);
     } else {
-      const made = await PracticeSetModel.countDocuments({ userId, kind: 'company', day: today });
+      const made = await PracticeSetModel.countDocuments({
+        userId,
+        kind: { $in: ['company', 'topic'] },
+        day: today,
+      });
       if (made >= PRACTICE_COMPANY_SETS_PER_DAY)
         throw tooMany('You have done all of today\x27s company practice. More tomorrow.');
     }

@@ -454,6 +454,37 @@ Design: `docs/design/v2/u6.md`. U6 ships in two parts: U6a (this section) and U6
 | End-to-end (local, freshly reseeded)               | `placements`, `readiness`, `today`, `roadmaps`, `accessibility`, `navigation`, `people`, `practice`, `mentorship`, `match`, `session-page`, `spaces`: 80 passed, 10 skipped (phone-only and desktop-only tests)                                                                                                                                                                                                            |
 | Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
+## U7b · Career: preparing
+
+**Shipped.**
+
+- **Practise this** on a career path's step (`features/practice/practise-this.tsx`, moved from U3): the practice topics a step's title names (`topicsInTitle` in `packages/shared`: a closed list of words per topic, deliberately narrow, unit-tested on the library's titles), each as a row that starts a short set from the college's bank. Shown only for topics the bank has questions for (`PracticeHomeView.bankTopics`) and only to members who practise; loaded with the step, with the `practice` pack.
+- **API, topic sets**: `POST /practice/sets` takes `topic` (not with `company`): up to ten servable items of that topic, spaced repetition as for every set, kind `topic`. Topic sets and company sets share the day's limit of extra sets (5); a topic set is never today's set and earns no daily XP. Tests in `practice.test.ts`; `docs:gen` regenerated.
+- **Practice** (`practice.tsx`, `set.tsx`): today's set is one `ActionCard` (start, continue with "3 of 10 answered", or look back once done) with the streak beside it; the intro is in "About this". A set shows one segment per question (right, missed, the one on screen, still to come; one progressbar for screen readers), a topic set is titled "Practising Arrays", and the end of the day's set shows the streak under the score, with the "quiz complete" celebration as before.
+- **Interviews** (`session.tsx`): the live question shows how long it has been on screen (pacing, never announced). The report's averages are bars ("Clarity 4.0 of 5"), what each score was based on is quoted as the student said it, and **Book a mock interview** is the page's one primary action (at the drive's company when the session was for one); difficulty, language and status are back under the title (U1's header had moved them into "About this").
+- **Companies** (`companies.tsx`): progressive profiling (moved from U4). The first visit asks a student "Which companies are you aiming for?" with the college's companies as chips; Save keeps them as the student's private Alumni Match targets (`/me/match-preferences`, unchanged), and they come first in the list, marked "Your target". "Not now" is remembered on the device. A company page has one primary action (Ask an alumnus there, only when there are mentors there), the update date under the title, figures at zero hidden (X3), rounds and referrals as rows, and **Seniors there who mentor** (up to three from the mentor list whose company is this one, with Ask). Every number keeps its suppression.
+- e2e: `practice.spec.ts` adds Practise this from the data-structures step; `companies.spec.ts` answers the targets question and checks the target comes first and the seniors there.
+
+**Decisions.**
+
+- **Topic sets share the extra-sets limit with company sets** instead of adding a second allowance: the bank is the same, and the limit protects the same thing (the daily set staying the habit).
+- **The live interview stays inside the app's frame.** A chrome-less mode would be a shell feature; the shell's bars already slide away while scrolling (U2), and the question card holds the question, the timer, record or type, and the next step.
+- **Targets live where they always did** (the Alumni Match inputs): the Companies question only asks for them at a better moment, and the Mentors screen's dialog edits the same list.
+
+### Gate results (U7b)
+
+| Gate                                               | Result                                                                                                                                                                                                                                        |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                                                          |
+| Shared tests                                       | 218 passed (new: `topicsInTitle`)                                                                                                                                                                                                             |
+| Web tests                                          | 157 passed                                                                                                                                                                                                                                    |
+| API tests                                          | 1,366 passed, 7 skipped, coverage 90.3% statements and 76.57% branches (the whole suite, 4 workers; new: topic sets); `docs:gen` regenerated (`topic` on starting a set)                                                                      |
+| `pnpm build` and bundle budget                     | Pass: initial 162.3 KB; new strings in the `practice`, `moat` and `mentoring` packs                                                                                                                                                           |
+| End-to-end (local, freshly reseeded)               | `practice`, `companies`, `interviews`, `roadmaps`, `placements`, `readiness`, `today`, `accessibility`, `mentorship`, `match`, `session-page`, `first-run`, `landing`, `navigation`: 80 passed, 6 skipped (phone-only and desktop-only tests) |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                      |
+
+U7a's CI run failed once on `landing.spec.ts`: Ananya (batch 2027) lands on Career's Placements since U2, and the test only passed while it caught the brief `/start` redirect. Fixed in `4695f2b` (CI green, run 44302381354).
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.
