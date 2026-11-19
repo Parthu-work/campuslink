@@ -18,7 +18,11 @@ import { BookingModel } from '../src/modules/sessions/booking.model.js';
 import { NotificationModel } from '../src/modules/notifications/notification.model.js';
 import { AuditModel } from '../src/modules/audit/audit.model.js';
 import { ProductEventModel } from '../src/modules/insights/insights.model.js';
-import { ReadinessNudgeModel, ReadinessSnapshotModel } from '../src/modules/readiness/readiness.model.js';
+import {
+  ReadinessBoardDayModel,
+  ReadinessNudgeModel,
+  ReadinessSnapshotModel,
+} from '../src/modules/readiness/readiness.model.js';
 import type { ReadinessService } from '../src/modules/readiness/readiness.service.js';
 import { TenantModel } from '../src/modules/tenants/tenant.model.js';
 import { invalidateTenant } from '../src/modules/tenants/tenant.cache.js';
@@ -317,6 +321,64 @@ describe('the readiness board', () => {
       lastNudgedAt: null,
     });
     expect(row?.score).toBeLessThan(b.threshold);
+  });
+
+  it('compares its four numbers with its own totals a week ago, never a name (prompt 3, U9c)', async () => {
+    const day = (n: number) => new Date(Date.now() - n * DAY).toISOString().slice(0, 10);
+    await inT(() => ReadinessBoardDayModel.deleteMany({}));
+    const first = (await as(tpo).get('/admin/readiness')).body.data as ReadinessBoardView;
+    // Nothing a week old: no earlier figures, and today's totals are now kept.
+    expect(first.kpis.students).toEqual({ value: 8, previous: null });
+    expect(first.kpis.needsHelp).toEqual({ value: first.needsHelp.length, previous: null });
+    const kept = await inT(() => ReadinessBoardDayModel.find({}).lean());
+    expect(kept.map((d) => [d.scope, d.day, d.students])).toEqual([['|', day(0), 8]]);
+    expect(JSON.stringify(kept)).not.toContain(low.id);
+    expect(JSON.stringify(kept)).not.toContain('Low Student');
+
+    // The latest day at least a week old counts (8 days beats 20).
+    await inT(() =>
+      ReadinessBoardDayModel.create([
+        {
+          scope: '|',
+          day: day(20),
+          students: 50,
+          ready: 40,
+          median: 90,
+          needsHelp: 0,
+          threshold: first.threshold,
+        },
+        {
+          scope: '|',
+          day: day(8),
+          students: 3,
+          ready: 6,
+          median: 40,
+          needsHelp: 9,
+          threshold: first.threshold,
+        },
+      ]),
+    );
+    const b = (await as(tpo).get('/admin/readiness')).body.data as ReadinessBoardView;
+    // Suppressed like every count: no change is shown from "<5" (kpiChange).
+    expect(b.kpis.students).toEqual({ value: 8, previous: '<5' });
+    expect(b.kpis.ready.previous).toBe(6);
+    expect(b.kpis.median.previous).toBe(40);
+    expect(b.kpis.needsHelp.previous).toBe(9);
+    // Opening it again the same day keeps one day's totals.
+    expect(await inT(() => ReadinessBoardDayModel.countDocuments({ scope: '|', day: day(0) }))).toBe(1);
+    // Each filter keeps its own totals.
+    const ece = (await as(tpo).get('/admin/readiness?branch=ECE')).body.data as ReadinessBoardView;
+    expect(ece.kpis.students.previous).toBeNull();
+    // "Ready" counted against another threshold is not compared.
+    await inT(() =>
+      ReadinessBoardDayModel.updateOne(
+        { scope: '|', day: day(8) },
+        { $set: { threshold: first.threshold + 1 } },
+      ),
+    );
+    const moved = (await as(tpo).get('/admin/readiness')).body.data as ReadinessBoardView;
+    expect(moved.kpis.ready.previous).toBeNull();
+    expect(moved.kpis.students.previous).toBe('<5');
   });
 });
 

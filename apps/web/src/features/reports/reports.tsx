@@ -13,6 +13,7 @@ import {
 import { useTranslation } from '../../i18n/react';
 import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
+import { Change } from '../../components/ui/change';
 import { ColumnChart } from '../../components/ui/column-chart';
 import { ErrorState } from '../../components/ui/error-state';
 import { Field, Select } from '../../components/ui/field';
@@ -25,6 +26,7 @@ import { useCan } from '../../lib/me';
 import * as q from '../../lib/queries';
 import { SCREEN } from '../../lib/query-client';
 import { toast } from '../../lib/toast';
+import { KpiChange } from '../admin/kpi-change';
 
 const NOW = currentGradYear();
 const BATCHES = [NOW + 1, NOW, NOW - 1, NOW - 2, NOW - 3, NOW - 4];
@@ -86,6 +88,7 @@ export function ReportsDashboard() {
   const dash = useQuery({ ...SCREEN, ...q.reportsDashboard(p.qs), placeholderData: (prev) => prev });
   const defs = useQuery(q.reportDefinitions());
   const d = dash.data;
+  const against = t('staff.kpi.batch', { batch: gradYearLabel(p.gradYear - 1) });
   return (
     <div className="grid gap-6">
       <p className="max-w-[70ch] text-fg-2">{t('reports.intro')}</p>
@@ -94,21 +97,58 @@ export function ReportsDashboard() {
       {dash.isError && !d && <ErrorState error={dash.error} onRetry={() => void dash.refetch()} />}
       {d && (
         <>
+          {/* Four numbers for the batch, each against the batch before (prompt 3, U9c). */}
           <StatGrid>
             <StatCard
               label={t('reports.placementPct')}
               value={d.placementPct === null ? '—' : `${d.placementPct}%`}
-              hint={t('reports.placementPctHint')}
+              hint={
+                <KpiChange
+                  k={{ value: d.placementPct, previous: d.previous.placementPct }}
+                  against={against}
+                  unit="points"
+                />
+              }
             />
-            <StatCard label={t('reports.placed')} value={shownCount(d.placed)} />
-            <StatCard label={t('reports.seeking')} value={shownCount(d.seeking)} />
-            <StatCard label={t('reports.finalYear')} value={shownCount(d.finalYear)} />
+            <StatCard
+              label={t('reports.placed')}
+              value={shownCount(d.placed)}
+              hint={<KpiChange k={{ value: d.placed, previous: d.previous.placed }} against={against} />}
+            />
             <StatCard
               label={t('reports.medianBand')}
               value={d.medianBand ? t(`reports.band.${d.medianBand}`) : '—'}
+              hint={
+                <Change
+                  delta={null}
+                  text={
+                    d.previous.medianBand
+                      ? t('staff.kpi.bandWas', { band: t(`reports.band.${d.previous.medianBand}`), against })
+                      : t('staff.kpi.noEarlier')
+                  }
+                />
+              }
             />
-            <StatCard label={t('reports.higherStudies')} value={shownCount(d.higherStudies)} />
+            <StatCard
+              label={t('reports.higherStudies')}
+              value={shownCount(d.higherStudies)}
+              hint={
+                <KpiChange
+                  k={{ value: d.higherStudies, previous: d.previous.higherStudies }}
+                  against={against}
+                />
+              }
+            />
           </StatGrid>
+          <p className="text-callout text-fg-2">
+            {t('reports.finalYear')}:{' '}
+            <span className="font-semibold tabular-nums">{shownCount(d.finalYear)}</span>
+            {' · '}
+            {t('reports.seeking')}:{' '}
+            <span className="font-semibold tabular-nums">{shownCount(d.seeking)}</span>
+            {' · '}
+            {t('reports.placementPct')}: {t('reports.placementPctHint')}
+          </p>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <Card className="p-4">
               <ColumnChart

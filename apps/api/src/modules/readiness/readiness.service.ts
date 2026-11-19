@@ -11,6 +11,7 @@ import {
   READINESS_NUDGE_COOLDOWN_DAYS,
   SMALL_CELL,
   bandOf,
+  kpi,
   suppress,
   type Branch,
   type Count,
@@ -35,9 +36,11 @@ import type { NotificationsService } from '../notifications/notifications.servic
 import type { ReadinessComponent, ReadinessMember } from './component.js';
 import { compose } from './score.js';
 import {
+  ReadinessBoardDayModel,
   ReadinessConfigModel,
   ReadinessNudgeModel,
   ReadinessSnapshotModel,
+  type ReadinessBoardDayDoc,
   type ReadinessConfigDoc,
   type ReadinessNudgeDoc,
   type ReadinessSnapshotDoc,
@@ -263,18 +266,59 @@ export class ReadinessService {
             : null,
       };
     });
+    const needsHelp = await this.needsHelp(students, scores, config, now);
+    const list = students.map((s) => scores.get(s.userId)?.score ?? 0);
+    const today = {
+      students: list.length,
+      ready: list.filter((x) => x >= config.threshold).length,
+      median: list.length >= SMALL_CELL ? median(list) : null,
+      needsHelp: needsHelp.length,
+      threshold: config.threshold,
+    };
+    const base = await this.boardDay(`${q.gradYear ?? ''}|${q.branch ?? ''}`, today, now);
     return {
       threshold: config.threshold,
       closingDays: config.closingDays,
       students: suppress(students.length) as Count,
       components,
       groups: groupViews,
-      needsHelp: await this.needsHelp(students, scores, config, now),
+      needsHelp: needsHelp.slice(0, NEEDS_HELP_MAX),
       computedAt: now.toISOString(),
+      kpis: {
+        students: kpi(today.students, base?.students ?? null),
+        ready: kpi(today.ready, base && base.threshold === today.threshold ? base.ready : null),
+        median: { value: today.median, previous: base?.median ?? null },
+        needsHelp: { value: today.needsHelp, previous: base?.needsHelp ?? null },
+      },
     };
   }
 
-  /** Students below the threshold whose next eligible drive closes within the window. */
+  /**
+   * Keeps today's totals for this filter (the last the staff saw) and returns the latest at least
+   * READINESS_MOMENTUM_DAYS old, or null when the board is younger than that (prompt 3, U9c).
+   */
+  private async boardDay(
+    scope: string,
+    totals: Omit<ReadinessBoardDayDoc, '_id' | 'tenantId' | 'scope' | 'day' | 'createdAt'>,
+    now: Date,
+  ): Promise<ReadinessBoardDayDoc | null> {
+    const day = now.toISOString().slice(0, 10);
+    const weekAgo = new Date(now.getTime() - READINESS_MOMENTUM_DAYS * DAY).toISOString().slice(0, 10);
+    const [base] = await Promise.all([
+      ReadinessBoardDayModel.findOne({ scope, day: { $lte: weekAgo } })
+        .sort({ day: -1 })
+        .lean<ReadinessBoardDayDoc>(),
+      ReadinessBoardDayModel.updateOne({ scope, day }, { $set: totals }, { upsert: true }).catch(
+        (e: unknown) => {
+          // Two staff on the board at once on a new day: the other one stored it.
+          if ((e as { code?: number }).code !== 11000) throw e;
+        },
+      ),
+    ]);
+    return base ?? null;
+  }
+
+  /** Students below the threshold whose next eligible drive closes within the window, all of them. */
   private async needsHelp(
     students: Student[],
     scores: Map<string, ReadinessView>,
@@ -315,8 +359,7 @@ export class ReadinessService {
           nudgeable: !at || at.getTime() < cooled,
         };
       })
-      .sort((a, b) => a.drive.closesAt.localeCompare(b.drive.closesAt) || a.score - b.score)
-      .slice(0, NEEDS_HELP_MAX);
+      .sort((a, b) => a.drive.closesAt.localeCompare(b.drive.closesAt) || a.score - b.score);
   }
 
   private async lastNudges(userIds: string[]): Promise<Map<string, Date>> {

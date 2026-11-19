@@ -50,6 +50,8 @@ test('the principal’s reports: this batch at a glance, a report and its downlo
   await signIn(page, `tpo@${host}.example`, host);
   await page.goto(`http://${host}.localhost:4173/admin/reports?gradYear=2026`);
   await expect(page.getByText('Placement %').first()).toBeVisible();
+  // Prompt 3, U9c: each headline number against the batch before.
+  await expect(page.getByText(/the 2024.25 batch/).first()).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Top recruiters' })).toBeVisible();
   await expect(page.getByText('Kestrel Analytics (demo)')).toBeVisible();
   await expectNoA11yViolations(page);

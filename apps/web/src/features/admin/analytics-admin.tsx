@@ -20,6 +20,7 @@ import { analytics, ANALYTICS_DEFAULTS } from '../../lib/queries';
 import { toast } from '../../lib/toast';
 import { TabPanel, Tabs } from '../../components/ui/tabs';
 import type { InsightTab } from './insights-tabs';
+import { KpiChange } from './kpi-change';
 
 const InsightsTab = lazy(() => import('./insights-tabs').then((m) => ({ default: m.InsightsTab })));
 
@@ -89,28 +90,34 @@ function AnalyticsOverview() {
   const years = Array.from({ length: 12 }, (_, i) => new Date().getFullYear() + 4 - i);
   return (
     <div className="grid gap-5 print:gap-3">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="max-w-[65ch] text-callout text-fg-2">{t('analytics.intro')}</p>
-        <Button variant="outline" size="sm" className="print:hidden" onClick={() => window.print()}>
-          <Printer className="size-4" aria-hidden /> {t('analytics.print')}
-        </Button>
-      </div>
-      {/* Filters in one row above the charts, each with a visible label. */}
-      <div className="grid gap-3 sm:grid-cols-3 print:hidden">
-        <Field label={t('analytics.period')}>
-          {({ id }) => (
-            <Select id={id} value={filters.months} onChange={(e) => set({ months: Number(e.target.value) })}>
-              {[3, 6, 12, 24].map((m) => (
-                <option key={m} value={m}>
-                  {t('analytics.lastMonths', { count: m })}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
+      {/* Compact filters first, so the four numbers are on a phone's first screen (prompt 3, U9c). */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 print:hidden">
+        <div className="col-span-2 sm:col-span-1">
+          <Field label={t('analytics.period')}>
+            {({ id }) => (
+              <Select
+                id={id}
+                size="sm"
+                value={filters.months}
+                onChange={(e) => set({ months: Number(e.target.value) })}
+              >
+                {[3, 6, 12, 24].map((m) => (
+                  <option key={m} value={m}>
+                    {t('analytics.lastMonths', { count: m })}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        </div>
         <Field label={t('analytics.branch')}>
           {({ id }) => (
-            <Select id={id} value={filters.branch} onChange={(e) => set({ branch: e.target.value })}>
+            <Select
+              id={id}
+              size="sm"
+              value={filters.branch}
+              onChange={(e) => set({ branch: e.target.value })}
+            >
               <option value="">{t('analytics.allBranches')}</option>
               {BRANCHES.map((b) => (
                 <option key={b} value={b}>
@@ -122,7 +129,12 @@ function AnalyticsOverview() {
         </Field>
         <Field label={t('analytics.batch')}>
           {({ id }) => (
-            <Select id={id} value={filters.gradYear} onChange={(e) => set({ gradYear: e.target.value })}>
+            <Select
+              id={id}
+              size="sm"
+              value={filters.gradYear}
+              onChange={(e) => set({ gradYear: e.target.value })}
+            >
               <option value="">{t('analytics.allBatches')}</option>
               {years.map((y) => (
                 <option key={y} value={y}>
@@ -145,54 +157,34 @@ function AnalyticsOverview() {
           <p className="text-caption text-fg-3">
             {t('analytics.meta', { year: v.academicYear })} · {t('analytics.suppressed')}
           </p>
-          <StatGrid className="md:grid-cols-3 lg:grid-cols-4">
-            <StatCard label={t('analytics.students')} value={shown(v.members.students)} />
-            <StatCard label={t('analytics.alumni')} value={shown(v.members.alumni)} />
-            {v.scope === 'college' && (
+          {/* Four numbers for the period, each with its change (prompt 3, U9c). */}
+          <StatGrid>
+            {(
+              [
+                ['sessions', v.kpis.sessions],
+                ['referred', v.kpis.referred],
+                ['jobsPosted', v.kpis.jobsPosted],
+                ['eventsHeld', v.kpis.eventsHeld],
+              ] as const
+            ).map(([id, k]) => (
               <StatCard
-                label={t('analytics.active30')}
-                value={shown(v.active.last30)}
-                hint={t('analytics.active7', { value: shown(v.active.last7) })}
+                key={id}
+                label={t(`staff.dash.${id}`)}
+                value={shown(k.value)}
+                hint={<KpiChange k={k} against={t('staff.kpi.monthsBefore', { count: filters.months })} />}
               />
-            )}
-            <StatCard
-              label={t('analytics.participation')}
-              value={v.alumniParticipation.rate === null ? '—' : `${v.alumniParticipation.rate}%`}
-              hint={t('analytics.participationHint', {
-                active: shown(v.alumniParticipation.active),
-                total: shown(v.alumniParticipation.total),
-              })}
-            />
-            <StatCard
-              label={t('analytics.sessionsTotal')}
-              value={shown(v.sessions.total)}
-              hint={
-                v.sessions.averageRating
-                  ? t('analytics.rating', { rating: v.sessions.averageRating })
-                  : undefined
-              }
-            />
-            <StatCard label={t('analytics.openJobs')} value={shown(v.jobs.open)} />
-            <StatCard
-              label={t('analytics.eventsHeld')}
-              value={shown(v.events.held)}
-              hint={t('analytics.attended', {
-                rsvps: shown(v.events.rsvps),
-                attended: shown(v.events.attended),
-              })}
-            />
-            {v.scope === 'college' && (
-              <StatCard
-                label={t('analytics.pending')}
-                value={shown(v.members.pendingVerification)}
-                tone={num(v.members.pendingVerification) ? 'warning' : 'default'}
-              />
-            )}
+            ))}
           </StatGrid>
+          {/* Then one chart per question. */}
           <div className="grid gap-5 lg:grid-cols-2">
             <Card variant="raised" className="p-5">
               <ColumnChart
-                title={t('analytics.sessionsByMonth')}
+                title={t('staff.dash.qSessions')}
+                description={
+                  v.sessions.averageRating
+                    ? t('analytics.rating', { rating: v.sessions.averageRating })
+                    : undefined
+                }
                 points={columns(v.sessions.completed)}
                 labelHeader={t('analytics.month')}
                 valueHeader={t('analytics.count')}
@@ -200,7 +192,8 @@ function AnalyticsOverview() {
             </Card>
             <Card variant="raised" className="p-5">
               <ColumnChart
-                title={t('analytics.jobsByMonth')}
+                title={t('staff.dash.qJobs')}
+                description={t('staff.dash.openJobs', { n: shown(v.jobs.open) })}
                 points={columns(v.jobs.posted)}
                 labelHeader={t('analytics.month')}
                 valueHeader={t('analytics.count')}
@@ -208,7 +201,7 @@ function AnalyticsOverview() {
             </Card>
           </div>
           <OutcomeBars
-            title={t('analytics.referrals')}
+            title={t('staff.dash.qReferrals')}
             rows={(['requested', 'referred', 'declined', 'expired', 'pending'] as const).map((k) => [
               t(`analytics.ref.${k}`),
               v.referrals[k],
@@ -216,7 +209,7 @@ function AnalyticsOverview() {
           />
           <section aria-labelledby="engagement" className="grid gap-3">
             <h3 id="engagement" className="font-semibold">
-              {t('analytics.engagement')}
+              {t('staff.dash.qEngagement')}
             </h3>
             {v.engagement.length ? (
               <Table label={t('analytics.engagement')}>
@@ -247,6 +240,39 @@ function AnalyticsOverview() {
               <p className="text-callout text-fg-2">{t('analytics.noEngagement')}</p>
             )}
           </section>
+          {/* Who is here now: context, not the period's work (verification waiting is on Today). */}
+          <section aria-labelledby="who" className="grid gap-3">
+            <h3 id="who" className="font-semibold">
+              {t('staff.dash.who')}
+            </h3>
+            <StatGrid className="sm:grid-cols-3 lg:grid-cols-5">
+              <StatCard size="sm" label={t('analytics.students')} value={shown(v.members.students)} />
+              <StatCard size="sm" label={t('analytics.alumni')} value={shown(v.members.alumni)} />
+              {v.scope === 'college' && (
+                <StatCard
+                  size="sm"
+                  label={t('analytics.active30')}
+                  value={shown(v.active.last30)}
+                  hint={t('analytics.active7', { value: shown(v.active.last7) })}
+                />
+              )}
+              <StatCard
+                size="sm"
+                label={t('analytics.participation')}
+                value={v.alumniParticipation.rate === null ? '—' : `${v.alumniParticipation.rate}%`}
+                hint={t('analytics.participationHint', {
+                  active: shown(v.alumniParticipation.active),
+                  total: shown(v.alumniParticipation.total),
+                })}
+              />
+              <StatCard
+                size="sm"
+                label={t('staff.dash.rsvps')}
+                value={shown(v.events.rsvps)}
+                hint={t('staff.dash.attended', { n: shown(v.events.attended) })}
+              />
+            </StatGrid>
+          </section>
           {canExport && (
             <section aria-labelledby="exports" className="grid gap-3 print:hidden">
               <h3 id="exports" className="font-semibold">
@@ -264,6 +290,12 @@ function AnalyticsOverview() {
           )}
         </div>
       )}
+      <div className="flex flex-wrap items-start justify-between gap-3 border-t border-line pt-4">
+        <p className="max-w-[65ch] text-callout text-fg-2">{t('analytics.intro')}</p>
+        <Button variant="outline" size="sm" className="print:hidden" onClick={() => window.print()}>
+          <Printer className="size-4" aria-hidden /> {t('analytics.print')}
+        </Button>
+      </div>
     </div>
   );
 }

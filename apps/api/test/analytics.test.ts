@@ -4,7 +4,8 @@ import { api, makeTenant, makeUser, testApp, type TestTenant, type TestUser } fr
 import { runInTenant } from '../src/lib/context.js';
 import { ProfileModel } from '../src/modules/profiles/profile.model.js';
 import { AuditModel } from '../src/modules/audit/audit.model.js';
-import { csvCell, toCsv } from '../src/modules/analytics/analytics.service.js';
+import { AnalyticsService, csvCell, toCsv } from '../src/modules/analytics/analytics.service.js';
+import type { AuthState } from '../src/types.js';
 
 const ctx = testApp();
 let T: TestTenant;
@@ -86,6 +87,59 @@ describe('dashboard', () => {
     expect(v.engagement).toHaveLength(1);
     expect((await as(tpo).get('/admin/analytics?months=99')).status).toBe(400);
     expect((await as(tpo).get('/admin/analytics?branch=XYZ')).status).toBe(400);
+  });
+});
+
+describe('headline numbers (prompt 3, U9c)', () => {
+  it('counts the period and the same length of time before it, suppressed', async () => {
+    const DAY = 86_400_000;
+    const ago = (days: number) => new Date(Date.now() - days * DAY);
+    // Six months back: 10 days ago is in the period, 200 days ago in the six months before it.
+    const sessions = [
+      ...Array.from({ length: 7 }, () => ago(10)),
+      ...Array.from({ length: 5 }, () => ago(200)),
+      ago(400), // before both
+    ].map((at) => ({ mentorId: 'm1', menteeId: 's1', at }));
+    const jobs = [...Array.from({ length: 6 }, () => ago(10)), ...Array.from({ length: 2 }, () => ago(200))];
+    const ref = (n: number) => ({
+      requested: n,
+      referred: n,
+      declined: 0,
+      expired: 0,
+      pending: 0,
+      referrerIds: [],
+    });
+    const since = (d: Date, list: Date[]) => list.filter((x) => x >= d).length;
+    const service = new AnalyticsService({
+      cohorts: async () => [
+        { userId: 's1', roles: ['STUDENT'], verified: true, branch: 'CSE', gradYear: 2027 },
+      ],
+      pendingVerification: async () => 0,
+      activeSince: async () => 0,
+      postsByAuthor: async () => new Map(),
+      answersByAuthor: async () => new Map(),
+      stepsByUser: async () => new Map(),
+      sessions: async (d) => ({ sessions: sessions.filter((s) => s.at >= d), averageRating: null }),
+      referrals: async (d) => ref(since(d, [ago(10), ago(10), ago(10), ago(10), ago(10), ago(10), ago(200)])),
+      jobs: async (d) => ({ posted: jobs.filter((j) => j >= d), open: 0 }),
+      events: async (d) => ({
+        held: since(d, [ago(10), ago(200), ago(200), ago(200), ago(200), ago(200)]),
+        rsvps: 0,
+        attended: 0,
+      }),
+      eventHosts: async () => [],
+    });
+    const viewer = { userId: tpo.id, permissions: new Set(['analytics:tenant']) } as unknown as AuthState;
+    const v = await runInTenant(T._id, () => service.dashboard(viewer, { months: 6 }));
+    expect(v.kpis).toEqual({
+      sessions: { value: 7, previous: 5 },
+      referred: { value: 6, previous: '<5' },
+      jobsPosted: { value: 6, previous: '<5' },
+      eventsHeld: { value: '<5', previous: 5 },
+    });
+    // The period's own figures are unchanged by the earlier window.
+    expect(v.sessions.total).toBe(7);
+    expect(v.referrals.referred).toBe(6);
   });
 });
 

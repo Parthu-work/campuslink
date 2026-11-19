@@ -634,6 +634,38 @@ U8b's CI: green (run 44368112705).
 
 U9a's CI: the first run failed (run 44384268399): the import test went back to Today and clicked "College list", a section link the old overview listed and Today shows only when the list has work waiting. The test now opens the college list directly (`204fdfa`); green (run 44394504403).
 
+## U9c · Dashboards: four numbers and their change
+
+**Shipped.**
+
+- **The rule, shared** (`packages/shared`, `Kpi`, `kpi()`, `kpiChange()`): a headline number travels with the same measure for the period before, both through `suppress()`; a change is computed only when both are shown, so a difference never reveals a count under 5. Tested in `kpi.test.ts`.
+- **`Change`** (`components/ui/change.tsx`, new primitive) and `KpiChange` (`features/admin/kpi-change.tsx`): the change under a number as an arrow and words ("Up 12 on the 6 months before", "Same as last week", "Was under 5 for the 2024–25 batch", "No earlier figure yet"); which way is good sets only the colour (`success-ink`, `danger-ink`).
+- **Analytics**: mentorship sessions, students referred, jobs posted and events held, each against the same number of days just before the period (`AnalyticsView.kpis`); then one chart per question ("Are mentorship sessions happening every month?", "Are jobs being posted every month?", "What happens to referral requests?", "Who takes part, by branch and batch?"); members, activity, alumni taking part and event RSVPs below as context. The filters are compact (period across, branch and batch side by side on a phone), so the four numbers are on a phone's first screen; the intro and Print move to the foot.
+- **Reports**: placement %, placed, the median offer band and higher studies, each against the batch before (`ReportsDashboardView.previous`; placement % in points); final-year and seeking counts in a line under them.
+- **Readiness board**: students, ready (at or above the threshold), the median score and students needing help (fewer is good), each against the board a week ago. The board keeps its own daily totals per filter (`ReadinessBoardDay`: counts and a median, no member; 35 days); the threshold and closing window move into a sentence.
+- Tests: API `analytics.test.ts` (the period and the one before from stub sources, suppressed), `readiness.test.ts` (today's totals kept once a day, the latest at least a week old counts, each filter its own, a changed threshold not compared, no names stored), `isolation/readiness.test.ts` (one college's totals never reach another's board), `reports.test.ts` (the batch before); e2e `insights` (the four numbers, a change, a question-titled chart, axe in both themes), `readiness`, `reports`.
+
+**Decisions.**
+
+- **Equal lengths of time, not calendar periods.** "Last 6 months" starts on the first of the month five months back; the period before is the same number of days just before it, so a month in progress is never set against a whole one. The referral outcome bars now cover the period itself (they used 90 days when the period was shorter), so they agree with the headline number; alumni participation keeps its 90 days.
+- **The board's week-ago figures are stored totals.** Readiness is computed on every read, so there is no history to recompute; the student's own daily scores (U7) are theirs and never read by the board. The board stores only its own totals, and a new board says "No earlier figure yet" for its first week rather than inventing one.
+- **Pending verification left Analytics**: it is waiting work, and Today (U9a) leads with it.
+
+### Gate results (U9c)
+
+| Gate                                               | Result                                                                                                                                                                                                                                                                            |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                                                                                              |
+| Shared tests                                       | 223 passed (new: `kpi.test.ts`)                                                                                                                                                                                                                                                   |
+| Web tests                                          | 165 passed (the parity test covers the new `staff.kpi.*` and `staff.dash.*` strings in en, te and hi)                                                                                                                                                                             |
+| API tests                                          | 1,370 passed, 7 skipped, coverage 90.33% statements and 76.62% branches (the whole suite, 4 workers). A first full run timed out once in the permissions route sweep (60 s, under load); it passed on its own (15 tests, 34 s) and in this second full run. `docs:gen`: no change |
+| `pnpm build` and bundle budget                     | Pass: initial 162.3 KB; the new strings in the `staff` pack, which Analytics, Reports and the readiness board now load                                                                                                                                                            |
+| End-to-end (local, freshly reseeded)               | `insights`, `readiness`, `reports`, `phase7`, `core`, `today`, `accessibility`, `navigation`, `shell`, `tpo-console`: 95 passed, 13 skipped (phone-only and desktop-only tests)                                                                                                   |
+| Screens checked                                    | Analytics, Reports and the readiness board at 412 px and 1280 px, light and dark, in en, te and hi: the four numbers on a phone's first screen, the changes wrap under the numbers, the charts' labels readable in dark mode                                                      |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                          |
+
+U9b's CI: green (run 44474965197).
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

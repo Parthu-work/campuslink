@@ -13,6 +13,7 @@ import {
   ReadinessConfigModel,
   ReadinessNudgeModel,
   ReadinessSnapshotModel,
+  ReadinessBoardDayModel,
 } from '../../src/modules/readiness/readiness.model.js';
 
 const ctx = testApp();
@@ -78,6 +79,23 @@ describe('tenant isolation: readiness (prompt 2, G5)', () => {
       .data as ReadinessBoardView;
     expect(filtered.groups).toEqual([]);
     expect((await api(ctx, A.host, tpoB.token).get('/admin/readiness')).status).toBe(401);
+    // The board's daily totals (prompt 3, U9c) are each college's own: A's week-old figures never
+    // reach B's board.
+    const weekOld = new Date(Date.now() - 8 * 86_400_000).toISOString().slice(0, 10);
+    await runInTenant(A._id, () =>
+      ReadinessBoardDayModel.create({
+        scope: '|',
+        day: weekOld,
+        students: 77,
+        ready: 0,
+        median: null,
+        needsHelp: 77,
+        threshold: 60,
+      }),
+    );
+    const again = (await asB(tpoB).get('/admin/readiness')).body.data as ReadinessBoardView;
+    expect(again.kpis.needsHelp.previous).toBeNull();
+    expect(await runInTenant(B._id, () => ReadinessBoardDayModel.countDocuments({ day: weekOld }))).toBe(0);
   });
 
   it("college B cannot nudge college A's students or change college A's weights", async () => {

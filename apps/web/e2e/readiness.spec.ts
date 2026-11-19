@@ -32,6 +32,10 @@ test('the placement cell reads the board and opens the weights', async ({ page }
   await expect(page.getByRole('heading', { name: 'Distribution' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Needs help' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Average points by part' })).toBeVisible();
+  // Prompt 3, U9c: four numbers, each against the board a week ago; a fresh board has none yet.
+  await expect(page.getByText(/^Ready \(\d+ or above\)$/)).toBeVisible();
+  await expect(page.getByText('Median score', { exact: true })).toBeVisible();
+  await expect(page.getByText('No earlier figure yet').first()).toBeVisible();
   await expectNoA11yViolations(page);
   await page.getByRole('button', { name: 'Weights' }).click();
   const d = page.getByRole('dialog');

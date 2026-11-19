@@ -148,4 +148,12 @@ export interface ReportsDashboardView {
   higherStudies: Count;
   topRecruiters: { company: string; students: Count }[];
   trend: { gradYear: number; placementPct: number | null }[];
+  /** The batch before, for the headline numbers' change (prompt 3, U9c). */
+  previous: {
+    gradYear: number;
+    placementPct: number | null;
+    placed: Count;
+    medianBand: CtcBand | null;
+    higherStudies: Count;
+  };
 }

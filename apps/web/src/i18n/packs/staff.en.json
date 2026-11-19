@@ -48,6 +48,39 @@
       "notOnList": "Not on the list",
       "verified": "Verified",
       "clear": "Clear"
+    },
+    "kpi": {
+      "up": "Up {{n}} on {{against}}",
+      "down": "Down {{n}} on {{against}}",
+      "upPoints": "Up {{n}} points on {{against}}",
+      "downPoints": "Down {{n}} points on {{against}}",
+      "same": "Same as {{against}}",
+      "was": "Was {{n}} for {{against}}",
+      "wasSmall": "Was under 5 for {{against}}",
+      "noEarlier": "No earlier figure yet",
+      "bandWas": "{{band}} for {{against}}",
+      "monthsBefore_one": "the month before",
+      "monthsBefore_other": "the {{count}} months before",
+      "batch": "the {{batch}} batch",
+      "lastWeek": "last week"
+    },
+    "dash": {
+      "sessions": "Mentorship sessions",
+      "referred": "Students referred",
+      "jobsPosted": "Jobs posted",
+      "eventsHeld": "Events held",
+      "qSessions": "Are mentorship sessions happening every month?",
+      "qJobs": "Are jobs being posted every month?",
+      "openJobs": "{{n}} open now",
+      "qReferrals": "What happens to referral requests?",
+      "qEngagement": "Who takes part, by branch and batch?",
+      "who": "Members and events",
+      "rsvps": "Event RSVPs",
+      "attended": "{{n}} attended",
+      "ready": "Ready ({{n}} or above)",
+      "median": "Median score",
+      "readyRule_one": "Ready means a score of {{n}} or above. Needs help means below that, with a drive closing within {{count}} day.",
+      "readyRule_other": "Ready means a score of {{n}} or above. Needs help means below that, with a drive closing within {{count}} days."
     }
   }
 }

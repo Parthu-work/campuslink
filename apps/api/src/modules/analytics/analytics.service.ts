@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 import {
   academicYear,
+  kpi,
   suppress,
   type AnalyticsView,
   type Branch,
@@ -101,26 +102,48 @@ export class AnalyticsService {
     const now = new Date();
     const keys = this.months(q.months, now);
     const since = new Date(`${keys[0]}-01T00:00:00Z`);
+    // The same length of time just before the period, for the headline numbers' change (U9c).
+    const before = new Date(since.getTime() - (now.getTime() - since.getTime()));
     const since90 = new Date(now.getTime() - 90 * DAY);
     const allMembers = await this.s.cohorts();
     const inCohort = (m: { branch: Branch | null; gradYear: number | null }) =>
       (!q.branch || m.branch === q.branch) && (!q.gradYear || m.gradYear === q.gradYear);
     const members = allMembers.filter(inCohort);
     const ids = new Set(members.map((m) => m.userId));
-    const [posts, answers, steps, sessions, referrals, jobs, events, hosts, active7, active30, pending] =
-      await Promise.all([
-        this.s.postsByAuthor(since),
-        this.s.answersByAuthor(since),
-        this.s.stepsByUser(since),
-        this.s.sessions(since),
-        this.s.referrals(since90 < since ? since90 : since),
-        this.s.jobs(since),
-        this.s.events(since),
-        this.s.eventHosts(since90),
-        scope === 'college' ? this.s.activeSince(new Date(now.getTime() - 7 * DAY)) : Promise.resolve(0),
-        scope === 'college' ? this.s.activeSince(new Date(now.getTime() - 30 * DAY)) : Promise.resolve(0),
-        scope === 'college' ? this.s.pendingVerification() : Promise.resolve(0),
-      ]);
+    const [
+      posts,
+      answers,
+      steps,
+      sessions,
+      sessionsBefore,
+      referrals,
+      referralsBefore,
+      referrals90,
+      jobs,
+      events,
+      eventsBefore,
+      hosts,
+      active7,
+      active30,
+      pending,
+    ] = await Promise.all([
+      this.s.postsByAuthor(since),
+      this.s.answersByAuthor(since),
+      this.s.stepsByUser(since),
+      this.s.sessions(since),
+      this.s.sessions(before),
+      this.s.referrals(since),
+      this.s.referrals(before),
+      this.s.referrals(since90),
+      this.s.jobs(before),
+      this.s.events(since),
+      this.s.events(before),
+      this.s.eventHosts(since90),
+      scope === 'college' ? this.s.activeSince(new Date(now.getTime() - 7 * DAY)) : Promise.resolve(0),
+      scope === 'college' ? this.s.activeSince(new Date(now.getTime() - 30 * DAY)) : Promise.resolve(0),
+      scope === 'college' ? this.s.pendingVerification() : Promise.resolve(0),
+    ]);
+    const inPeriod = (d: Date) => d >= since;
 
     // Engagement by branch and batch (students and alumni).
     const groups = new Map<string, EngagementRow & { raw: number[] }>();
@@ -169,13 +192,17 @@ export class AnalyticsService {
     const alumni = members.filter((m) => m.verified && m.roles.includes('ALUMNI'));
     const activeAlumni = new Set<string>();
     for (const s of sessions.sessions) if (s.at >= since90) activeAlumni.add(s.mentorId);
-    for (const id of referrals.referrerIds) activeAlumni.add(id);
+    for (const id of referrals90.referrerIds) activeAlumni.add(id);
     for (const id of hosts) activeAlumni.add(id);
     const answered = await this.s.answersByAuthor(since90);
     for (const id of answered.keys()) activeAlumni.add(id);
     const participating = alumni.filter((a) => activeAlumni.has(a.userId)).length;
 
-    const cohortSessions = sessions.sessions.filter((s) => ids.has(s.menteeId) || ids.has(s.mentorId));
+    const inCohortSession = (s: { menteeId: string; mentorId: string }) =>
+      ids.has(s.menteeId) || ids.has(s.mentorId);
+    const cohortSessions = sessions.sessions.filter(inCohortSession);
+    const cohortSessionsBoth = sessionsBefore.sessions.filter(inCohortSession);
+    const jobsPosted = jobs.posted.filter(inPeriod);
     const count = (pred: (m: (typeof members)[number]) => boolean) => suppress(members.filter(pred).length);
     return {
       generatedAt: now.toISOString(),
@@ -204,7 +231,7 @@ export class AnalyticsService {
         expired: suppress(referrals.expired),
         pending: suppress(referrals.pending),
       },
-      jobs: { posted: this.series(keys, jobs.posted), open: suppress(jobs.open) },
+      jobs: { posted: this.series(keys, jobsPosted), open: suppress(jobs.open) },
       events: {
         held: suppress(events.held),
         rsvps: suppress(events.rsvps),
@@ -216,6 +243,13 @@ export class AnalyticsService {
         rate: alumni.length >= 5 ? Math.round((participating / alumni.length) * 100) : null,
       },
       engagement,
+      // Counts since `before` include the period, so the period before is the difference.
+      kpis: {
+        sessions: kpi(cohortSessions.length, cohortSessionsBoth.length - cohortSessions.length),
+        referred: kpi(referrals.referred, referralsBefore.referred - referrals.referred),
+        jobsPosted: kpi(jobsPosted.length, jobs.posted.length - jobsPosted.length),
+        eventsHeld: kpi(events.held, eventsBefore.held - events.held),
+      },
     };
   }
 

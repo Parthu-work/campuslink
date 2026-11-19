@@ -87,10 +87,6 @@
     "allBatches": "All batches",
     "students": "Students",
     "needsHelp": "Need help now",
-    "threshold": "Help below",
-    "closing": "Drives closing within",
-    "days_one": "{{count}} day",
-    "days_other": "{{count}} days",
     "privacy": "Scores are visible only to the placement cell and faculty, never to other students or employers. Exports are recorded in the audit log.",
     "weights": {
       "open": "Weights",

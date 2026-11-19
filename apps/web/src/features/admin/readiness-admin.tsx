@@ -27,6 +27,7 @@ import { useCan } from '../../lib/me';
 import * as q from '../../lib/queries';
 import { SCREEN } from '../../lib/query-client';
 import { toast } from '../../lib/toast';
+import { KpiChange } from './kpi-change';
 
 const fail = (t: (k: string) => string) => (e: unknown) =>
   toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
@@ -350,6 +351,7 @@ export function ReadinessAdmin() {
     }
   };
   const b = board.data;
+  const lastWeek = t('staff.kpi.lastWeek');
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -402,15 +404,32 @@ export function ReadinessAdmin() {
       {board.isError && <ErrorState error={board.error} onRetry={() => void board.refetch()} />}
       {b && (
         <>
+          {/* Four numbers, each against the board a week ago (prompt 3, U9c). */}
           <StatGrid>
-            <StatCard label={t('readinessBoard.students')} value={b.students} />
-            <StatCard label={t('readinessBoard.needsHelp')} value={b.needsHelp.length} />
-            <StatCard label={t('readinessBoard.threshold')} value={b.threshold} />
             <StatCard
-              label={t('readinessBoard.closing')}
-              value={t('readinessBoard.days', { count: b.closingDays })}
+              label={t('readinessBoard.students')}
+              value={b.kpis.students.value}
+              hint={<KpiChange k={b.kpis.students} against={lastWeek} />}
+            />
+            <StatCard
+              label={t('staff.dash.ready', { n: b.threshold })}
+              value={b.kpis.ready.value}
+              hint={<KpiChange k={b.kpis.ready} against={lastWeek} />}
+            />
+            <StatCard
+              label={t('staff.dash.median')}
+              value={b.kpis.median.value ?? '—'}
+              hint={<KpiChange k={b.kpis.median} against={lastWeek} unit="points" />}
+            />
+            <StatCard
+              label={t('readinessBoard.needsHelp')}
+              value={b.kpis.needsHelp.value}
+              hint={<KpiChange k={b.kpis.needsHelp} against={lastWeek} better="down" />}
             />
           </StatGrid>
+          <p className="text-callout text-fg-2">
+            {t('staff.dash.readyRule', { n: b.threshold, count: b.closingDays })}
+          </p>
           <NeedsHelp board={b} canManage={canManage} />
           <section aria-labelledby="readiness-dist" className="grid gap-3">
             <h2 id="readiness-dist" className="text-headline font-semibold">

@@ -10,7 +10,7 @@ import {
   type ReadinessWeights,
 } from '../constants/readiness.js';
 import { objectId } from './common.js';
-import type { Count } from './analytics.js';
+import type { Count, Kpi } from './analytics.js';
 
 // ── Bodies ─────────────────────────────
 
@@ -146,6 +146,17 @@ export interface ReadinessBoardView {
   /** Below the threshold with a drive closing soon; minors are never listed (they are not ranked). */
   needsHelp: NeedsHelpRow[];
   computedAt: string;
+  /**
+   * The four headline numbers (prompt 3, U9c), each against the board's own totals a week ago
+   * (null when the board is not yet a week old): students, ready (at or above the threshold),
+   * the median score, and students needing help.
+   */
+  kpis: {
+    students: Kpi;
+    ready: Kpi;
+    median: { value: number | null; previous: number | null };
+    needsHelp: { value: number; previous: number | null };
+  };
 }
 
 export interface ReadinessNudgeResult {

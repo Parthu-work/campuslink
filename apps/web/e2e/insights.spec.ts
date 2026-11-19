@@ -11,6 +11,23 @@ test('the placement cell reads activation, retention, mentorship and placement m
   const host = hostFor(info.project.name);
   await signIn(page, `tpo@${host}.example`, host);
   await page.goto(`http://${host}.localhost:4173/admin/analytics`);
+  // Prompt 3, U9c: four numbers for the period, each with its change, then one chart per question.
+  for (const label of ['Mentorship sessions', 'Students referred', 'Jobs posted', 'Events held'])
+    await expect(page.getByText(label, { exact: true })).toBeVisible();
+  await expect(
+    page
+      .getByText(
+        /^((Up|Down) \d+ on|Same as|Was (under 5|\d+) for) the 6 months before$|^No earlier figure yet$/,
+      )
+      .first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('figure', { name: 'Are mentorship sessions happening every month?' }),
+  ).toBeVisible();
+  for (const scheme of ['dark', 'light'] as const) {
+    await page.emulateMedia({ colorScheme: scheme });
+    await expectNoA11yViolations(page);
+  }
   const tabs = page.getByRole('tablist', { name: 'Analytics' });
   await tabs.getByRole('tab', { name: 'Activation' }).click();
   await expect(page.getByText('Active in their first week')).toBeVisible();

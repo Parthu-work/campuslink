@@ -63,7 +63,7 @@ const load = {
   onboardingAdmin: () => import('../features/admin/onboarding-admin'),
   listAdmin: withPack('staff', () => import('../features/admin/list-admin')),
   mentorshipAdmin: () => import('../features/admin/mentorship-admin'),
-  analyticsAdmin: () => import('../features/admin/analytics-admin'),
+  analyticsAdmin: withPack('staff', () => import('../features/admin/analytics-admin')),
   jobSourcesAdmin: () => import('../features/admin/job-sources-admin'),
   moderationAdmin: () => import('../features/admin/moderation-admin'),
   sourcesAdmin: () => import('../features/admin/sources-admin'),
@@ -119,7 +119,10 @@ const load = {
   interviewSession: withPack('career', () => import('../features/interviews/session')),
   interviewQuestions: withPack('career', () => import('../features/admin/interview-questions')),
   readiness: withPack('readiness', () => import('../features/progress/readiness')),
-  readinessAdmin: withPack('readiness', () => import('../features/admin/readiness-admin')),
+  readinessAdmin: withPack(
+    'readiness',
+    withPack('staff', () => import('../features/admin/readiness-admin')),
+  ),
   alumni: withPack('alumni', () => import('../features/alumni/alumni')),
   batch: withPack('alumni', () => import('../features/alumni/batch')),
   verifyCertificate: withPack('alumni', () => import('../features/alumni/verify-certificate')),
@@ -149,7 +152,7 @@ const load = {
   // Prompt 2, G11: the Career Copilot, strings in the `copilot` pack.
   // Prompt 2, G12: the network, the recruiter portal and the registry (one module), `network` pack.
   network: withPack('network', () => import('../features/network/screens')),
-  reports: () => import('../features/reports/reports'),
+  reports: withPack('staff', () => import('../features/reports/reports')),
   platform: () => import('../features/platform/platform'),
   traction: () => import('../features/platform/traction'),
   platformBilling: () => import('../features/platform/billing'),

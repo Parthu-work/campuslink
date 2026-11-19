@@ -7,7 +7,8 @@ import { baseSchemaOptions, defineTenantModel } from '../../db/models.js';
  * shown cannot go stale or outlive the data behind it. Three things are stored: the college's
  * weights (one document per college, no member in it), the nudges sent (per member, for the
  * cool-off), and the student's own score once a day for their momentum (prompt 3, U7; kept 35
- * days). The last two are exported and erased with the member.
+ * days). The last two are exported and erased with the member. The board's own daily totals
+ * (prompt 3, U9c) hold counts and a median only, no member.
  */
 export interface ReadinessConfigDoc {
   _id: Types.ObjectId;
@@ -82,3 +83,40 @@ const snapshotSchema = new Schema(
 snapshotSchema.index({ tenantId: 1, userId: 1, day: -1 }, { unique: true });
 snapshotSchema.index({ createdAt: 1 }, { expireAfterSeconds: READINESS_SNAPSHOT_KEEP_DAYS * 86_400 });
 export const ReadinessSnapshotModel = defineTenantModel('ReadinessSnapshot', snapshotSchema);
+
+export interface ReadinessBoardDayDoc {
+  _id: Types.ObjectId;
+  tenantId: Types.ObjectId;
+  /** The board's filter: "gradYear|branch", empty parts for "all". */
+  scope: string;
+  /** YYYY-MM-DD (UTC): one per filter per day, the last the staff saw that day. */
+  day: string;
+  students: number;
+  ready: number;
+  median: number | null;
+  needsHelp: number;
+  /** The threshold "ready" was counted against: a changed threshold is not compared. */
+  threshold: number;
+  createdAt: Date;
+}
+
+/**
+ * The board's totals for a day (prompt 3, U9c), for "Up 3 on last week" on its four numbers:
+ * counts and a median for one filter, never a name or a student's score. Shown only through
+ * `suppress()`; deleted after READINESS_SNAPSHOT_KEEP_DAYS.
+ */
+const boardDaySchema = new Schema(
+  {
+    scope: { type: String, default: '', maxlength: 40 },
+    day: { type: String, required: true, match: /^\d{4}-\d{2}-\d{2}$/ },
+    students: { type: Number, min: 0, required: true },
+    ready: { type: Number, min: 0, required: true },
+    median: { type: Number, min: 0, max: 100, default: null },
+    needsHelp: { type: Number, min: 0, required: true },
+    threshold: { type: Number, min: 0, max: 100, required: true },
+  },
+  baseSchemaOptions,
+);
+boardDaySchema.index({ tenantId: 1, scope: 1, day: -1 }, { unique: true });
+boardDaySchema.index({ createdAt: 1 }, { expireAfterSeconds: READINESS_SNAPSHOT_KEEP_DAYS * 86_400 });
+export const ReadinessBoardDayModel = defineTenantModel('ReadinessBoardDay', boardDaySchema);

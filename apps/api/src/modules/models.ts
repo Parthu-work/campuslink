@@ -107,6 +107,7 @@ export {
   ReadinessConfigModel,
   ReadinessNudgeModel,
   ReadinessSnapshotModel,
+  ReadinessBoardDayModel,
 } from './readiness/readiness.model.js';
 export {
   MicroAskModel,

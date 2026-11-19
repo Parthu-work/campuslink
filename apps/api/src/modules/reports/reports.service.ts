@@ -236,17 +236,21 @@ export class ReportsService {
   async dashboard(q: Query): Promise<ReportsDashboardView> {
     const gradYear = q.gradYear ?? currentGradYear();
     const p = { branch: q.branch ?? null };
-    const [now, trend, higher] = await Promise.all([
-      placementFigures(this.data, gradYear, p),
-      Promise.all(
-        [4, 3, 2, 1, 0].map(async (back) => {
-          const y = gradYear - back;
-          const f = await placementFigures(this.data, y, p);
-          return { gradYear: y, placementPct: pct(f.all.placed, f.all.seeking) };
-        }),
-      ),
-      this.data.higherStudies([gradYear]),
+    const [figures, higher] = await Promise.all([
+      Promise.all([4, 3, 2, 1, 0].map((back) => placementFigures(this.data, gradYear - back, p))),
+      this.data.higherStudies([gradYear, gradYear - 1]),
     ]);
+    const [now, before] = [figures[4], figures[3]];
+    if (!now || !before) throw new Error('placement figures missing');
+    const trend = figures.map((f, i) => ({
+      gradYear: gradYear - 4 + i,
+      placementPct: pct(f.all.placed, f.all.seeking),
+    }));
+    const higherIn = (y: number) =>
+      distinct(
+        higher.filter((r) => r.gradYear === y && (!p.branch || r.branch === p.branch)),
+        (r) => r.subject,
+      );
     const recruiters = [...groupBy(jobOffers(now.all.offersRows), (r) => r.companyKey).values()]
       .map((g) => ({ company: g[0]?.companyName ?? '', students: distinct(g, (r) => r.subject) }))
       .sort((a, b) => b.students - a.students || a.company.localeCompare(b.company))
@@ -258,14 +262,16 @@ export class ReportsService {
       placed: suppress(now.all.placed),
       placementPct: pct(now.all.placed, now.all.seeking),
       medianBand: now.all.band,
-      higherStudies: suppress(
-        distinct(
-          higher.filter((r) => !p.branch || r.branch === p.branch),
-          (r) => r.subject,
-        ),
-      ),
+      higherStudies: suppress(higherIn(gradYear)),
       topRecruiters: recruiters.map((r) => ({ company: r.company, students: suppress(r.students) })),
       trend,
+      previous: {
+        gradYear: gradYear - 1,
+        placementPct: pct(before.all.placed, before.all.seeking),
+        placed: suppress(before.all.placed),
+        medianBand: before.all.band,
+        higherStudies: suppress(higherIn(gradYear - 1)),
+      },
     };
   }
 }

@@ -375,6 +375,14 @@ describe('report definitions (B8)', () => {
     });
     expect(d.trend.map((t: { gradYear: number }) => t.gradYear)).toEqual([2022, 2023, 2024, 2025, 2026]);
     expect(d.trend.at(-2)).toEqual({ gradYear: 2025, placementPct: 100 });
+    // The batch before, for the headline numbers' change (prompt 3, U9c), suppressed the same way.
+    expect(d.previous).toEqual({
+      gradYear: 2025,
+      placementPct: 100,
+      placed: 5,
+      medianBand: '5_8',
+      higherStudies: '<5',
+    });
   });
 });
 
