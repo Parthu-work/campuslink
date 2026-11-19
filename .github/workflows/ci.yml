@@ -15,7 +15,9 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # The API suite runs twice here (tests, then coverage): 13 to 19 minutes on a slow runner, so
+    # 20 cancelled two runs of three in prompt 3 (U9c, U10a) that passed on a re-run.
+    timeout-minutes: 30
     services:
       redis:
         image: redis:7.4-alpine

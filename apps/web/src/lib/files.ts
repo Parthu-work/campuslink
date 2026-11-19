@@ -12,12 +12,19 @@ export function useFileUrl(
   fileId: string | null | undefined,
   /** The width the image is shown at: with data saver on, a smaller copy that size is fetched (B13). */
   width?: DataSaverWidth,
+  opts: {
+    /** Always fetch the copy at `width`, data saver or not (prompt 3, U10: avatars are never large). */
+    sized?: boolean;
+    /** False until the image is about to be seen (`useNearViewport`); a cached copy shows anyway. */
+    enabled?: boolean;
+  } = {},
 ): string | undefined {
-  const w = useDataSaver() && width ? width : null;
+  const saver = useDataSaver();
+  const w = width && (saver || opts.sized) ? width : null;
   const { data } = useQuery({
     queryKey: ['file', fileId, w],
     queryFn: async () => URL.createObjectURL(await apiBlob(`/files/${fileId}${w ? `?w=${w}` : ''}`)),
-    enabled: !!fileId,
+    enabled: !!fileId && opts.enabled !== false,
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
   });

@@ -23,6 +23,7 @@ import { ProgressBar } from '../../components/ui/progress';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, ApiError } from '../../lib/api';
+import { useNearViewport } from '../../lib/use-near-viewport';
 import { useFileUrl, useStreamedFile } from '../../lib/files';
 import { useDataSaver } from '../../lib/data-saver';
 import { formatDateTime, formatRelative } from '../../lib/format';
@@ -98,9 +99,12 @@ function PostImage({
   single: boolean;
   onDoubleTap?: () => void;
 }) {
-  const url = useFileUrl(fileId, 640);
+  // Fetched only when about to be seen (prompt 3, U10); the box keeps its shape meanwhile.
+  const [ref, near] = useNearViewport<HTMLDivElement>();
+  const url = useFileUrl(fileId, 640, { enabled: near });
   return (
     <div
+      ref={ref}
       onDoubleClick={onDoubleTap}
       className={cn(
         'overflow-hidden rounded-[var(--radius-md)] bg-surface-2 [touch-action:manipulation]',

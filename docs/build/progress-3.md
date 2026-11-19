@@ -732,6 +732,52 @@ U9c's CI: the first run's `verify` job hit its 20-minute limit while building (i
 
 U9d's CI: green (run 44489282544).
 
+## U10b · Speed: the first load, the mesh, images
+
+**Shipped.**
+
+- **The app's first load is one file** (`vite.config.ts`): Rolldown's `codeSplitting` group for everything statically reachable from the entry (`$initial`). Initial JS **162.6 → 155.0 KB** gzipped (the same modules compress better together), in **2 files instead of 22**, each of which was a round trip before anything could paint. F6's 154.8 KB target is 0.4 KB away (155.2 KB with U10b's own code).
+- **The mesh background** (`mesh.tsx`, auth screens and the landing) no longer calls `getComputedStyle` five times a frame (it forced style work on every frame); it reads the colours once and on a theme change, paints one still frame at once, and animates after 2.5 s at about 24 frames a second.
+- **Avatars and feed photos** (`useFileUrl`, `useNearViewport`): avatars always fetch the 160 px copy (320 px above 56 px; before, the full photo unless data saver was on), and avatars and feed photos are fetched only when within about a screen of the viewport, instead of all at once for a long list. Their boxes keep their size (initials; the photo's aspect box), so nothing shifts.
+- **Fonts checked, unchanged**: Geist's Latin file is preloaded by `boot.js`; the display face loads with the first heading that uses it; no Telugu or Devanagari file is requested in an English session (Lighthouse request lists).
+
+**Measured** (Lighthouse 12.8.2, mobile, simulated throttling, `vite preview` on this machine; the U10a build first, then the final U10b build, two runs each unless noted):
+
+| Page                        | Before (U10a build)                 | After (U10b build)    | Target |
+| --------------------------- | ----------------------------------- | --------------------- | ------ |
+| Landing LCP                 | 1.9 s (1.7–2.8 s across later runs) | 1.6–1.7 s (four runs) | 2.0 s  |
+| Sign-in LCP                 | 4.8 s                               | 4.3 s (four runs)     | 2.0 s  |
+| Home LCP (cold)             | 6.7 s                               | 5.6–5.9 s (four runs) | 2.5 s  |
+| Script files: sign-in, Home | 49, 150                             | 29, 129               |        |
+
+**Not met: sign-in ≤ 2.0 s and Home ≤ 2.5 s.** On both, the largest paint is a line of the app's own text (sign-in: "Sign in to … on CampusLink."; Home: a Next steps row), so it waits for the app's code (155 KB), its strings (53 KB), the college and the screen's code to download over a simulated 1.6 Mbps link and run on a 4×-slowed processor. `vite preview` serves HTTP/1.1, so the simulation also charges each of a screen's files a turn on one of six connections; production's HTTP/2 does not, so these figures are pessimistic for a first visit, and a returning member's copy comes from the service worker. Closing the rest of the gap needs a different first load: a first paint in `index.html` for sign-in like the landing's (U4a), or first screens rendered by the server. Both change how the app starts; they are recorded for U13 (which re-measures) and the owner, not done here.
+
+**The landing's start race, fixed** (`public/boot.js`). Under the landing's first paint (U4a), the app's files start just after that paint. A frame callback stood for "after the paint", but it could run before the paint itself while the stylesheet or the font held it, and the app's 155 KB then shared the connection with the headline: the landing measured 1.7 s or 2.7 s by turns with the same build (first paint 1.3 s or 2.0 s). The files now start when the browser reports the first paint (`PerformanceObserver`, `first-contentful-paint`; a frame callback where that is missing; the 1.5 s fallback for a hidden tab stays): 1.6–1.7 s in every run.
+
+**Tried and taken out** (each measured, none kept):
+
+- Merging screens' small shared chunks (at 4, 8 and 16 KB) cut files but pulled large neighbours into some screens (one sheet to 176 KB), past the 70 KB per-screen budget.
+- `boot.js` preloading the strings and the code of `/sign-in` and `/home` with the app: no gain in five runs (sign-in 4.1–4.4 s against 4.2 s), and under the landing's first paint the strings shared the line with the headline's font.
+- Mounting the toast and celebration code after idle: sign-in unchanged, and it moved the landing's screenshots ahead of the headline's paint (+0.7 s).
+- Rendering Home's lower sections (people to follow, the feed) after idle: one larger task later (TBT 0.6 → 1.1 s) and a later LCP.
+
+One Home run showed a layout shift of 0.387 (sections moving down when Next steps arrived after the feed); the other three showed 0. Next steps' placeholder takes its final shape in U10c.
+
+### Gate results (U10b)
+
+| Gate                                               | Result                                                                                                                                                                                                                                                                                                                       |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                                                                                                                                         |
+| Shared tests                                       | 223 passed                                                                                                                                                                                                                                                                                                                   |
+| Web tests                                          | 168 passed                                                                                                                                                                                                                                                                                                                   |
+| API tests                                          | U10b changes no API code; the whole suite on this API code is U9c's run (1,370 passed, 7 skipped); `docs:gen`: no change                                                                                                                                                                                                     |
+| `pnpm build` and bundle budget                     | Pass: initial 155.2 KB in 2 files (was 162.6 KB in 22)                                                                                                                                                                                                                                                                       |
+| End-to-end (local, freshly reseeded)               | `core`, `landing`, `today`, `feed`, `people`, `match`, `network`, `shell`, `navigation`, `accessibility`, `offline`, `pwa`, `resilience`, `first-run`: 132 passed, 12 skipped (phone-only and desktop-only tests); after the `boot.js` change, `landing`, `pwa` and `core`'s landing tests again without a reseed: 20 passed |
+| Lighthouse                                         | As in the table above                                                                                                                                                                                                                                                                                                        |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                                                                     |
+
+U10a's CI (run 44500401737): `verify` hit its 20-minute limit again in the coverage step (tests 450 s on that runner); e2e, adapters and security passed. Twice in three runs, so `verify`'s limit is now 30 minutes (`.github/workflows/ci.yml`; the job runs the API suite twice). U10b's run, which carries U10a's code, is its check.
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

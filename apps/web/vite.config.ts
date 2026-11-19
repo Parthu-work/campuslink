@@ -128,5 +128,19 @@ export default defineConfig({
     sourcemap: true,
     // The manifest feeds the bundle budget check (scripts/bundle-budget.mjs).
     manifest: true,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            // Prompt 3, U10: everything the app loads before its first screen, in one file: the
+            // same code, one request instead of twenty-two (each a round trip on a slow connection
+            // before anything paints), and 7.6 KB smaller gzipped together. Screens' shared code
+            // keeps Rolldown's own split: merging its small pieces (tried at 4, 8 and 16 KB) pulled
+            // large neighbours into some screens, past their budget.
+            { name: 'app', tags: ['$initial'], priority: 20 },
+          ],
+        },
+      },
+    },
   },
 });

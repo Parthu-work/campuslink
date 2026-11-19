@@ -71,10 +71,21 @@
     else run();
   };
   if ('fp' in root.dataset) {
-    // Just after the first paint (a hidden tab paints nothing: start anyway after a moment).
-    requestAnimationFrame(function () {
-      setTimeout(start, 0);
-    });
+    // Just after the first paint, as the browser reports it (prompt 3, U10: a frame callback could
+    // run before the paint itself while the stylesheet or the font held it, and the app's files
+    // then shared the connection with the headline: the landing measured 1.7 s or 2.7 s by turns).
+    // A hidden tab paints nothing: start anyway after a moment.
+    try {
+      new PerformanceObserver(function (list, observer) {
+        if (!list.getEntriesByName('first-contentful-paint').length) return;
+        observer.disconnect();
+        setTimeout(start, 0);
+      }).observe({ type: 'paint', buffered: true });
+    } catch {
+      requestAnimationFrame(function () {
+        setTimeout(start, 0);
+      });
+    }
     setTimeout(start, 1500);
   } else start();
 })();
