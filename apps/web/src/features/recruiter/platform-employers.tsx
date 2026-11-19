@@ -5,6 +5,7 @@ import { EMPLOYER_STATUSES, type EmployerReviewView, type RevenueStatementView }
 import { useTranslation } from '../../i18n/react';
 import { Button } from '../../components/ui/button';
 import { ChoiceGroup } from '../../components/ui/choice-group';
+import { DataTable } from '../../components/ui/data-table';
 import { Dialog } from '../../components/ui/dialog';
 import { ErrorState } from '../../components/ui/error-state';
 import { Checkbox, Field, Input } from '../../components/ui/field';
@@ -238,28 +239,47 @@ export function PlatformEmployers() {
       {v.isError && <ErrorState error={v.error} onRetry={() => void v.refetch()} />}
       {!v.data && !v.isError && <Skeleton className="h-32" />}
       {v.data?.length === 0 && <EmptyState icon={<Building2 />} title={t('recruiter.platform.none')} />}
-      <ul className="grid gap-3">
-        {v.data?.map((e) => (
-          <li key={e.id}>
-            <Card variant="raised" className="flex flex-wrap items-center justify-between gap-2 p-4">
-              <span className="grid gap-1 text-callout">
-                <b>{e.name}</b>
-                <span className="text-fg-2">
-                  {e.domain} · {formatDay(e.createdAt)}
+      {/* One table pattern (prompt 3, U9): oldest application first; a row opens its review. */}
+      {!!v.data?.length && (
+        <DataTable
+          label={t('recruiter.platform.title')}
+          rows={v.data}
+          rowKey={(e) => e.id}
+          onOpen={(e) => setOpen(e.id)}
+          openLabel={(e) => `${t('recruiter.platform.review')}: ${e.name}`}
+          initialSort={{ key: 'applied', dir: 'asc' }}
+          columns={[
+            {
+              key: 'employer',
+              header: t('recruiter.table.employer'),
+              sort: (e) => e.name.toLowerCase(),
+              cell: (e) => (
+                <span className="grid min-w-0 gap-0.5">
+                  <span className="font-semibold text-pretty break-words text-fg">{e.name}</span>
+                  <span className="text-caption break-all text-fg-2">{e.domain}</span>
                 </span>
-              </span>
-              <span className="flex items-center gap-2">
+              ),
+            },
+            {
+              key: 'applied',
+              header: t('recruiter.table.applied'),
+              wide: true,
+              sort: (e) => e.createdAt,
+              cell: (e) => <span className="text-fg-2">{formatDay(e.createdAt)}</span>,
+            },
+            {
+              key: 'status',
+              header: t('recruiter.table.status'),
+              sort: (e) => e.status,
+              cell: (e) => (
                 <Badge tone={e.status === 'approved' ? 'success' : 'info'}>
                   {t(`recruiter.employerStatus.${e.status}`)}
                 </Badge>
-                <Button size="sm" variant="outline" onClick={() => setOpen(e.id)}>
-                  {t('recruiter.platform.review')}
-                </Button>
-              </span>
-            </Card>
-          </li>
-        ))}
-      </ul>
+              ),
+            },
+          ]}
+        />
+      )}
       <Clusters />
       <Revenue />
       {open && <Review id={open} onClose={() => setOpen(null)} />}

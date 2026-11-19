@@ -47,7 +47,12 @@
       "onList": "On the list",
       "notOnList": "Not on the list",
       "verified": "Verified",
-      "clear": "Clear"
+      "clear": "Clear",
+      "college": "College",
+      "members": "Members",
+      "status": "Status",
+      "subject": "Subject",
+      "updated": "Updated"
     },
     "kpi": {
       "up": "Up {{n}} on {{against}}",

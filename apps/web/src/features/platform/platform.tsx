@@ -12,10 +12,12 @@ import { Field, Input, Select } from '../../components/ui/field';
 import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { StatCard, StatGrid } from '../../components/ui/stat-card';
-import { Dialog } from '../../components/ui/dialog';
+import { DataTable } from '../../components/ui/data-table';
+import { Dialog, Sheet } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { api } from '../../lib/api';
 import { applyApiError } from '../../lib/errors';
+import { formatNumber } from '../../lib/numbers';
 import { SCREEN } from '../../lib/query-client';
 
 interface TenantRow {
@@ -28,11 +30,28 @@ interface TenantRow {
   active30d: number;
 }
 
+/** The college's own colours (data), with readable text picked for them. */
+function Monogram({ tn }: { tn: TenantRow }) {
+  return (
+    <span
+      className="grid size-11 flex-none place-items-center rounded-[var(--radius-md)] font-display font-bold"
+      style={{
+        background: `linear-gradient(135deg, ${tn.branding.primary}, ${tn.branding.secondary})`,
+        color: onColor(tn.branding.primary),
+      }}
+      aria-hidden
+    >
+      {tn.branding.monogram}
+    </span>
+  );
+}
+
 export function PlatformTenants() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [confirm, setConfirm] = useState<TenantRow | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const tenants = useQuery({
     ...SCREEN,
     queryKey: ['platform-tenants'],
@@ -47,6 +66,7 @@ export function PlatformTenants() {
       void qc.invalidateQueries({ queryKey: ['platform-tenants'] });
     },
   });
+  const opened = tenants.data?.find((x) => x.id === openId) ?? null;
   return (
     <>
       <PageHeader
@@ -64,62 +84,114 @@ export function PlatformTenants() {
       {tenants.data?.length === 0 && (
         <EmptyState icon={<Building2 className="size-6" />} title={t('platform.create')} />
       )}
-      <ul className="grid gap-3 md:grid-cols-2">
-        {tenants.data?.map((tn) => (
-          <li key={tn.id}>
-            <Card className="grid gap-3 p-4">
-              <div className="flex items-center gap-3">
-                <span
-                  className="grid size-11 flex-none place-items-center rounded-[var(--radius-md)] font-display font-bold"
-                  style={{
-                    // The college's own colours (data), with readable text picked for them.
-                    background: `linear-gradient(135deg, ${tn.branding.primary}, ${tn.branding.secondary})`,
-                    color: onColor(tn.branding.primary),
-                  }}
-                  aria-hidden
-                >
-                  {tn.branding.monogram}
+      {!!tenants.data?.length && (
+        <DataTable
+          label={t('platform.title')}
+          rows={tenants.data}
+          rowKey={(tn) => tn.id}
+          onOpen={(tn) => setOpenId(tn.id)}
+          initialSort={{ key: 'college', dir: 'asc' }}
+          columns={[
+            {
+              key: 'college',
+              header: t('staff.table.college'),
+              sort: (tn) => tn.branding.displayName.toLowerCase(),
+              cell: (tn) => (
+                <span className="flex items-center gap-3">
+                  <Monogram tn={tn} />
+                  <span className="grid min-w-0 gap-0.5">
+                    <span className="font-semibold text-pretty break-words text-fg">
+                      {tn.branding.displayName}
+                    </span>
+                    <span className="font-mono text-caption text-fg-2">{tn.slug}</span>
+                  </span>
                 </span>
-                <div className="min-w-0 flex-1">
-                  <b className="block truncate">{tn.branding.displayName}</b>
-                  <span className="font-mono text-caption text-fg-2">{tn.slug}</span>
-                </div>
+              ),
+            },
+            {
+              key: 'plan',
+              header: t('platform.plan'),
+              wide: true,
+              sort: (tn) => tn.subscription.plan,
+              cell: (tn) => `${t(`billing.plan.${tn.subscription.plan}`)} · ${tn.subscription.seats}`,
+            },
+            {
+              key: 'members',
+              header: t('staff.table.members'),
+              numeric: true,
+              wide: true,
+              sort: (tn) => tn.users,
+              cell: (tn) => (
+                <span className="grid gap-0.5">
+                  <span>{formatNumber(tn.users)}</span>
+                  <span className="text-caption text-fg-3">
+                    {t('platform.active30d', { count: tn.active30d })}
+                  </span>
+                </span>
+              ),
+            },
+            {
+              key: 'status',
+              header: t('staff.table.status'),
+              sort: (tn) => tn.status,
+              cell: (tn) => (
                 <Badge tone={tn.status === 'active' ? 'success' : 'danger'}>
                   {t(`platform.status.${tn.status}`)}
                 </Badge>
+              ),
+            },
+          ]}
+        />
+      )}
+      {/* The college's side panel (prompt 3, U9): its plan, members and the one action. */}
+      <Sheet
+        open={!!opened}
+        onOpenChange={(o) => !o && setOpenId(null)}
+        title={opened?.branding.displayName ?? ''}
+        description={opened?.slug ?? ''}
+        history={false}
+      >
+        {opened && (
+          <div className="grid gap-4">
+            <div className="flex items-center gap-3">
+              <Monogram tn={opened} />
+              <Badge tone={opened.status === 'active' ? 'success' : 'danger'}>
+                {t(`platform.status.${opened.status}`)}
+              </Badge>
+            </div>
+            <dl className="grid grid-cols-2 gap-2 text-callout">
+              <div>
+                <dt className="eyebrow">{t('platform.plan')}</dt>
+                <dd className="font-mono">
+                  {t(`billing.plan.${opened.subscription.plan}`)} · {opened.subscription.seats}
+                </dd>
               </div>
-              <dl className="grid grid-cols-2 gap-2 text-callout">
-                <div>
-                  <dt className="eyebrow">{t('platform.plan')}</dt>
-                  <dd className="font-mono">
-                    {t(`billing.plan.${tn.subscription.plan}`)} · {tn.subscription.seats}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="eyebrow">{t('admin.users')}</dt>
-                  <dd className="font-mono tabular">
-                    {tn.users} · {t('platform.active30d', { count: tn.active30d })}
-                  </dd>
-                </div>
-              </dl>
-              {/* A clearly separate, clearly destructive action (it asks first), not a text link. */}
-              <div className="flex justify-end border-t border-line pt-3">
-                <Button
-                  size="sm"
-                  variant={tn.status === 'active' ? 'outline' : 'primary'}
-                  className={tn.status === 'active' ? 'text-danger-ink' : undefined}
-                  onClick={() =>
-                    tn.status === 'active' ? setConfirm(tn) : update.mutate({ id: tn.id, status: 'active' })
-                  }
-                >
-                  <Power className="size-4" aria-hidden />
-                  {tn.status === 'active' ? t('platform.suspend') : t('platform.resume')}
-                </Button>
+              <div>
+                <dt className="eyebrow">{t('admin.users')}</dt>
+                <dd className="font-mono tabular">
+                  {opened.users} · {t('platform.active30d', { count: opened.active30d })}
+                </dd>
               </div>
-            </Card>
-          </li>
-        ))}
-      </ul>
+            </dl>
+            {/* A clearly separate, clearly destructive action (it asks first), not a text link. */}
+            <div className="flex justify-end border-t border-line pt-3">
+              <Button
+                size="sm"
+                variant={opened.status === 'active' ? 'outline' : 'primary'}
+                className={opened.status === 'active' ? 'text-danger-ink' : undefined}
+                onClick={() =>
+                  opened.status === 'active'
+                    ? setConfirm(opened)
+                    : update.mutate({ id: opened.id, status: 'active' })
+                }
+              >
+                <Power className="size-4" aria-hidden />
+                {opened.status === 'active' ? t('platform.suspend') : t('platform.resume')}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Sheet>
       {confirm && (
         <Dialog
           open

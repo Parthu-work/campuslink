@@ -65,7 +65,16 @@ test('the demo employer writes a posting, counts the pool and manages its recrui
   await expectNoA11yViolations(page);
   await dialog.getByRole('button', { name: 'Save draft' }).click();
   await expect(dialog).toBeHidden();
-  await expect(page.getByRole('heading', { name: 'DEMO Graduate Engineer Trainee' }).first()).toBeVisible();
+  // Prompt 3, U9: postings are a table; a row opens the posting with its actions.
+  const row = page.getByRole('row').filter({ hasText: 'DEMO Graduate Engineer Trainee' }).first();
+  await expect(row).toBeVisible();
+  await row.getByRole('button').first().click();
+  const panel = page.getByRole('dialog', { name: 'DEMO Graduate Engineer Trainee' }).first();
+  await expect(panel.getByRole('button', { name: 'Offer to colleges' })).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Close posting' })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.keyboard.press('Escape');
+  await expect(panel).toBeHidden();
 
   await page.getByRole('tab', { name: 'Pool' }).click();
   await page.getByRole('button', { name: 'Count', exact: true }).click();
@@ -95,4 +104,9 @@ test('a company applies on the platform host, and the platform reviews employers
   await page.getByRole('radio', { name: 'Approved' }).click();
   await expect(page.getByText('Demo Employer (demo)')).toBeVisible();
   await expectNoA11yViolations(page);
+  // Prompt 3, U9: the registry is a table; a row opens the employer's review.
+  await page.getByRole('row').filter({ hasText: 'Demo Employer (demo)' }).getByRole('button').first().click();
+  await expect(page.getByRole('dialog', { name: 'Demo Employer (demo)' })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.keyboard.press('Escape');
 });

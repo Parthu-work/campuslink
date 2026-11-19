@@ -47,5 +47,27 @@ test('the platform sees every college side by side', async ({ page }, info) => {
   const table = page.getByRole('region', { name: 'Traction' });
   await expect(table.getByRole('cell', { name: /dpit/ })).toBeVisible();
   await expect(table.getByRole('cell', { name: /mrce/ })).toBeVisible();
+  // Prompt 3, U9: one table pattern on the platform too. Traction sorts by every column.
+  const active = table.getByRole('columnheader', { name: 'Active, 7 days' });
+  await expect(active).toHaveAttribute('aria-sort', 'descending');
+  await table.getByRole('columnheader', { name: 'College' }).getByRole('button').click();
+  await expect(table.getByRole('columnheader', { name: 'College' })).toHaveAttribute(
+    'aria-sort',
+    'ascending',
+  );
+  await expectNoA11yViolations(page);
+
+  // Colleges: a row opens the college's panel with its one action (it asks before suspending).
+  await page.goto('http://admin.localhost:4173/platform');
+  await expect(page.getByRole('heading', { name: 'Colleges', level: 1 })).toBeVisible();
+  await page.getByRole('row').filter({ hasText: 'mrce' }).getByRole('button').first().click();
+  const panel = page.getByRole('dialog', { name: 'Musi Riverfront College of Engineering' });
+  await expect(panel.getByRole('button', { name: 'Suspend college' })).toBeVisible();
+  await expectNoA11yViolations(page);
+  await page.keyboard.press('Escape');
+
+  // Support: the reports from every college as the same table.
+  await page.goto('http://admin.localhost:4173/platform/support');
+  await expect(page.getByRole('heading', { name: 'Support', level: 1 })).toBeVisible();
   await expectNoA11yViolations(page);
 });

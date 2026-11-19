@@ -39,6 +39,8 @@ const PACK_USERS: Record<string, string[]> = {
     '/features/admin/kpi-change.tsx',
     '/features/admin/readiness-admin.tsx',
     '/features/reports/reports.tsx',
+    '/features/platform/platform.tsx',
+    '/features/platform/support.tsx',
   ],
   ask: ['/features/ask/', '/features/copilot/', '/features/study/chat/'],
   mentoring: [

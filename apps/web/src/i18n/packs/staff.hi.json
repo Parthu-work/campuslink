@@ -47,7 +47,12 @@
       "onList": "सूची में है",
       "notOnList": "सूची में नहीं",
       "verified": "सत्यापित",
-      "clear": "हटाएँ"
+      "clear": "हटाएँ",
+      "college": "कॉलेज",
+      "members": "सदस्य",
+      "status": "स्थिति",
+      "subject": "विषय",
+      "updated": "अपडेट"
     },
     "kpi": {
       "up": "{{against}} से {{n}} ज़्यादा",

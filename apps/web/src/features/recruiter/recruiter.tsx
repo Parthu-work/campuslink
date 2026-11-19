@@ -17,7 +17,8 @@ import { useTranslation } from '../../i18n/react';
 import { BackLink } from '../../components/ui/back-link';
 import { Button } from '../../components/ui/button';
 import { ChoiceGroup } from '../../components/ui/choice-group';
-import { Dialog } from '../../components/ui/dialog';
+import { DataTable } from '../../components/ui/data-table';
+import { Dialog, Sheet } from '../../components/ui/dialog';
 import { ErrorState } from '../../components/ui/error-state';
 import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/field';
 import { IntentLink } from '../../components/ui/intent-link';
@@ -38,6 +39,8 @@ const useFail = () => {
   return (e: unknown) => toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
 };
 const rupees = (paise: number) => `₹${(paise / 100).toLocaleString('en-IN')}`;
+/** Students who applied and shared, across the colleges that approved the posting. */
+const candidatesOf = (p: PostingView) => p.colleges.reduce((n, c) => n + c.candidates, 0);
 
 function NewPosting({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -316,7 +319,9 @@ function Postings({ approved }: { approved: boolean }) {
   const fail = useFail();
   const [creating, setCreating] = useState(false);
   const [publishing, setPublishing] = useState<PostingView | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const v = useQuery(nq.employerPostings());
+  const opened = v.data?.find((p) => p.id === openId) ?? null;
   const close = useMutation({
     mutationFn: (id: string) => api.post(`/employer/postings/${id}/close`),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['employer', 'postings'] }),
@@ -332,65 +337,117 @@ function Postings({ approved }: { approved: boolean }) {
         </Button>
       </div>
       {v.data.length === 0 && <EmptyState icon={<Briefcase />} title={t('recruiter.postings.none')} />}
-      <ul className="grid gap-3">
-        {v.data.map((p) => (
-          <li key={p.id}>
-            <Card variant="raised" className="grid gap-2 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-body font-semibold">{p.title}</h3>
+      {/* One table pattern (prompt 3, U9): a row opens the posting with its actions. */}
+      {v.data.length > 0 && (
+        <DataTable
+          label={t('recruiter.tabs.postings')}
+          rows={v.data}
+          rowKey={(p) => p.id}
+          onOpen={(p) => setOpenId(p.id)}
+          initialSort={{ key: 'closes', dir: 'asc' }}
+          columns={[
+            {
+              key: 'posting',
+              header: t('recruiter.table.posting'),
+              sort: (p) => p.title.toLowerCase(),
+              cell: (p) => (
+                <span className="grid min-w-0 gap-0.5">
+                  <span className="font-semibold text-pretty break-words text-fg">{p.title}</span>
+                  <span className="text-caption text-fg-2">
+                    {[p.role, p.location, p.ctcRange].filter(Boolean).join(' · ')}
+                  </span>
+                </span>
+              ),
+            },
+            {
+              key: 'closes',
+              header: t('recruiter.table.closes'),
+              wide: true,
+              sort: (p) => p.closesAt,
+              cell: (p) => <span className="text-fg-2">{formatDay(p.closesAt)}</span>,
+            },
+            {
+              key: 'candidates',
+              header: t('recruiter.table.candidates'),
+              numeric: true,
+              sort: (p) => candidatesOf(p),
+              cell: (p) => candidatesOf(p),
+            },
+            {
+              key: 'status',
+              header: t('recruiter.table.status'),
+              sort: (p) => p.status,
+              cell: (p) => (
                 <Badge tone={p.status === 'published' ? 'success' : 'neutral'}>
                   {t(`recruiter.status.${p.status}`)}
                 </Badge>
-              </div>
-              <p className="text-callout text-fg-2">
-                {[p.role, p.location, p.ctcRange].filter(Boolean).join(' · ')}
-              </p>
-              <p className="text-caption text-fg-3">
-                {t('network.admin.closes', { date: formatDay(p.closesAt) })}
-              </p>
-              {p.colleges.length > 0 && (
-                <ul className="flex flex-wrap gap-1.5" aria-label={t('recruiter.postings.colleges')}>
-                  {p.colleges.map((c) => (
-                    <li key={c.id}>
-                      <Badge
-                        tone={
-                          c.decision === 'approved'
-                            ? 'success'
-                            : c.decision === 'pending'
-                              ? 'info'
-                              : 'neutral'
-                        }
-                      >
-                        {c.name}: {t(`network.decisions.${c.decision}`)}
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
+              ),
+            },
+          ]}
+        />
+      )}
+      <Sheet
+        open={!!opened}
+        onOpenChange={(o) => !o && setOpenId(null)}
+        title={opened?.title ?? ''}
+        description={
+          opened ? [opened.role, opened.location, opened.ctcRange].filter(Boolean).join(' · ') : ''
+        }
+        history={false}
+      >
+        {opened && (
+          <div className="grid gap-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone={opened.status === 'published' ? 'success' : 'neutral'}>
+                {t(`recruiter.status.${opened.status}`)}
+              </Badge>
+              <span className="text-callout text-fg-2">
+                {t('network.admin.closes', { date: formatDay(opened.closesAt) })}
+              </span>
+            </div>
+            {opened.colleges.length > 0 && (
+              <ul className="flex flex-wrap gap-1.5" aria-label={t('recruiter.postings.colleges')}>
+                {opened.colleges.map((c) => (
+                  <li key={c.id}>
+                    <Badge
+                      tone={
+                        c.decision === 'approved' ? 'success' : c.decision === 'pending' ? 'info' : 'neutral'
+                      }
+                    >
+                      {c.name}: {t(`network.decisions.${c.decision}`)}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="flex flex-wrap gap-2 border-t border-line pt-3">
+              {opened.status !== 'closed' && (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  disabled={!approved}
+                  onClick={() => setPublishing(opened)}
+                >
+                  <Send className="size-4" aria-hidden /> {t('recruiter.publish.open')}
+                </Button>
               )}
-              <div className="flex flex-wrap gap-2">
-                {p.status !== 'closed' && (
-                  <Button size="sm" variant="primary" disabled={!approved} onClick={() => setPublishing(p)}>
-                    <Send className="size-4" aria-hidden /> {t('recruiter.publish.open')}
-                  </Button>
-                )}
-                {p.colleges.some((c) => c.decision === 'approved') && (
-                  <IntentLink
-                    to={`/recruiter/postings/${p.id}`}
-                    className="inline-flex min-h-11 items-center gap-1.5 text-callout font-semibold text-brand-ink underline"
-                  >
-                    <Users className="size-4" aria-hidden /> {t('recruiter.postings.candidates')}
-                  </IntentLink>
-                )}
-                {p.status !== 'closed' && (
-                  <Button size="sm" variant="ghost" onClick={() => close.mutate(p.id)}>
-                    {t('recruiter.postings.close')}
-                  </Button>
-                )}
-              </div>
-            </Card>
-          </li>
-        ))}
-      </ul>
+              {opened.colleges.some((c) => c.decision === 'approved') && (
+                <IntentLink
+                  to={`/recruiter/postings/${opened.id}`}
+                  className="inline-flex min-h-11 items-center gap-1.5 text-callout font-semibold text-brand-ink underline"
+                >
+                  <Users className="size-4" aria-hidden /> {t('recruiter.postings.candidates')}
+                </IntentLink>
+              )}
+              {opened.status !== 'closed' && (
+                <Button size="sm" variant="ghost" onClick={() => close.mutate(opened.id)}>
+                  {t('recruiter.postings.close')}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </Sheet>
       {creating && <NewPosting onClose={() => setCreating(false)} />}
       {publishing && <PublishDialog p={publishing} onClose={() => setPublishing(null)} />}
     </div>
@@ -713,7 +770,9 @@ export function RecruiterPostingPage() {
   const qc = useQueryClient();
   const fail = useFail();
   const [readiness, setReadiness] = useState<CandidateView | null>(null);
+  const [openRef, setOpenRef] = useState<string | null>(null);
   const v = useQuery({ ...SCREEN, ...nq.employerCandidates(id) });
+  const candidate = v.data?.items.find((c) => c.ref === openRef) ?? null;
   const resume = useMutation({
     mutationFn: async (ref: string) => {
       const link = await api.post<{ url: string }>(`/employer/candidates/${ref}/resume-link`);
@@ -746,55 +805,103 @@ export function RecruiterPostingPage() {
           {t('recruiter.candidates.withdrawn', { n: v.data.withdrawn })}
         </p>
       )}
-      <ul className="grid gap-3">
-        {v.data?.items.map((c) => (
-          <li key={c.ref}>
-            <Card variant="raised" className="grid gap-2 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-body font-semibold">{c.name}</h3>
+      {/* One table pattern (prompt 3, U9): a row opens the candidate with résumé, readiness and stage. */}
+      {!!v.data?.items.length && (
+        <DataTable
+          label={t('recruiter.candidates.title')}
+          rows={v.data.items}
+          rowKey={(c) => c.ref}
+          onOpen={(c) => setOpenRef(c.ref)}
+          initialSort={{ key: 'shared', dir: 'desc' }}
+          columns={[
+            {
+              key: 'candidate',
+              header: t('recruiter.table.candidate'),
+              sort: (c) => c.name.toLowerCase(),
+              cell: (c) => (
+                <span className="grid min-w-0 gap-0.5">
+                  <span className="font-semibold text-pretty break-words text-fg">{c.name}</span>
+                  <span className="text-caption text-fg-2">
+                    {[c.college, c.branch, c.gradYear].filter(Boolean).join(' · ')}
+                  </span>
+                </span>
+              ),
+            },
+            {
+              key: 'shared',
+              header: t('recruiter.table.shared'),
+              wide: true,
+              sort: (c) => c.sharedAt,
+              cell: (c) => <span className="text-fg-2">{formatDay(c.sharedAt)}</span>,
+            },
+            {
+              key: 'stage',
+              header: t('recruiter.table.stage'),
+              sort: (c) => c.stage,
+              cell: (c) => (
                 <Badge tone={c.stage === 'selected' ? 'success' : 'info'}>
                   {t(`network.stages.${c.stage}`)}
                 </Badge>
-              </div>
-              <p className="text-caption text-fg-3">
-                {[c.college, c.branch, c.gradYear].filter(Boolean).join(' · ')}
-              </p>
-              <div className="flex flex-wrap gap-2">
+              ),
+            },
+          ]}
+        />
+      )}
+      <Sheet
+        open={!!candidate}
+        onOpenChange={(o) => !o && setOpenRef(null)}
+        title={candidate?.name ?? ''}
+        description={
+          candidate
+            ? [candidate.college, candidate.branch, candidate.gradYear].filter(Boolean).join(' · ')
+            : ''
+        }
+        history={false}
+      >
+        {candidate && (
+          <div className="grid gap-4">
+            <span>
+              <Badge tone={candidate.stage === 'selected' ? 'success' : 'info'}>
+                {t(`network.stages.${candidate.stage}`)}
+              </Badge>
+            </span>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!candidate.hasResume}
+                loading={resume.isPending}
+                onClick={() => resume.mutate(candidate.ref)}
+              >
+                <FileText className="size-4" aria-hidden /> {t('recruiter.candidates.resume')}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setReadiness(candidate)}>
+                <Gauge className="size-4" aria-hidden /> {t('recruiter.candidates.readiness')}
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2 border-t border-line pt-3">
+              {(candidate.stage === 'shared' || candidate.stage === 'not_selected') && (
                 <Button
                   size="sm"
-                  variant="outline"
-                  disabled={!c.hasResume}
-                  loading={resume.isPending}
-                  onClick={() => resume.mutate(c.ref)}
+                  variant="primary"
+                  onClick={() => stage.mutate({ ref: candidate.ref, stage: 'shortlisted' })}
                 >
-                  <FileText className="size-4" aria-hidden /> {t('recruiter.candidates.resume')}
+                  {t('recruiter.candidates.shortlist')}
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setReadiness(c)}>
-                  <Gauge className="size-4" aria-hidden /> {t('recruiter.candidates.readiness')}
+              )}
+              {(candidate.stage === 'shared' || candidate.stage === 'shortlisted') && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => stage.mutate({ ref: candidate.ref, stage: 'not_selected' })}
+                >
+                  {t('recruiter.candidates.notSelected')}
                 </Button>
-                {(c.stage === 'shared' || c.stage === 'not_selected') && (
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={() => stage.mutate({ ref: c.ref, stage: 'shortlisted' })}
-                  >
-                    {t('recruiter.candidates.shortlist')}
-                  </Button>
-                )}
-                {(c.stage === 'shared' || c.stage === 'shortlisted') && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => stage.mutate({ ref: c.ref, stage: 'not_selected' })}
-                  >
-                    {t('recruiter.candidates.notSelected')}
-                  </Button>
-                )}
-              </div>
-            </Card>
-          </li>
-        ))}
-      </ul>
+              )}
+            </div>
+          </div>
+        )}
+      </Sheet>
       {readiness && <ReadinessDialog c={readiness} onClose={() => setReadiness(null)} />}
     </div>
   );

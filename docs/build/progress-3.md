@@ -666,6 +666,40 @@ U9a's CI: the first run failed (run 44384268399): the import test went back to T
 
 U9b's CI: green (run 44474965197).
 
+## U9d · The recruiter portal and the platform console
+
+**Shipped.** U9's last item, allowed by Step 0.2 (ADR 0014 accepted, F1): the same `DataTable` and side panel on the employer and platform screens.
+
+- **Platform › Colleges** (`platform.tsx`): the two-column cards are a table (college with its monogram and slug, plan and seats, members with those active in 30 days, status), sorted by name; a row opens the college's panel with Suspend (confirmed, as before) or Resume.
+- **Platform › Support** (`support.tsx`): the queue is a table (subject, college, updated, status), newest first; a row opens the report and its thread as before.
+- **Platform › Employers** (`platform-employers.tsx`): the registry is a table (employer with domain, applied, status), oldest application first; a row opens the review.
+- **Platform › Traction** (`traction.tsx`): the plain table sorts by every column, most active first.
+- **Recruiter › Postings** and **a posting's candidates** (`recruiter.tsx`): tables (posting with role, place and pay, closing date, candidates, status; candidate with college, branch and batch, shared, stage), each row opening a panel with the actions the card carried (offer to colleges, candidates, close; résumé, readiness, shortlist or not selected).
+- Strings: `recruiter.table.*` in the `network` pack, `staff.table.*` in the `staff` pack, which the platform's Colleges and Support screens now load.
+- On a phone the tables keep the columns that decide (Colleges: the college and its status; members and plan are in the panel), and Traction's college names keep a minimum width while the measures scroll.
+- e2e: `recruiter` (a posting's row opens its panel with its actions; an employer's row opens the review), `insights` (Traction sorted with `aria-sort`, by default and on a header press; a college's row opens its panel with Suspend; Support with axe).
+
+**Decisions.**
+
+- **"Close posting", not "Close".** In the posting's panel, the action that closes the posting sat beside the panel's own close button with the same name (the recruiter e2e caught it); it now says what it closes, in en, te and hi.
+- **The pool stays a count.** Recruiter › Pool shows how many students match, by college, never a list of people, so it has no table.
+- **The platform's billing tables** (`billing.tsx`) were rebuilt in B11 with their own filters and exports; they keep their layout, and U12 moves them if it touches them.
+
+### Gate results (U9d)
+
+| Gate                                               | Result                                                                                                                                                                                                                                                                      |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                                                                                        |
+| Shared tests                                       | 223 passed                                                                                                                                                                                                                                                                  |
+| Web tests                                          | 165 passed (the parity test covers `recruiter.table.*` and the new `staff.table.*` strings in en, te and hi)                                                                                                                                                                |
+| API tests                                          | U9d changes no API code; the whole suite on this API code is U9c's run (1,370 passed, 7 skipped); `docs:gen`: no change                                                                                                                                                     |
+| `pnpm build` and bundle budget                     | Pass: initial 162.3 KB                                                                                                                                                                                                                                                      |
+| End-to-end (local, freshly reseeded)               | `recruiter`, `insights`, `accessibility`, `core`, `navigation`, `shell`, `billing`, `help`: 80 passed, 16 skipped (phone-only and desktop-only tests). The first run failed `recruiter` on both projects (two buttons named "Close" in the posting's panel), fixed as above |
+| Screens checked                                    | Platform Colleges (and a college's panel at 390 px), Traction and Employers, light and dark                                                                                                                                                                                 |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                    |
+
+U9c's CI: the first run's `verify` job hit its 20-minute limit while building (its two API suite steps took 8 minutes each on that runner, against 5 on U9b's; e2e, adapters and security passed); the failed job was re-run.
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

@@ -8,7 +8,8 @@ import { Segmented } from '../../components/ui/tab-nav';
 import { Sheet } from '../../components/ui/dialog';
 import { ErrorState } from '../../components/ui/error-state';
 import { Illustration } from '../../components/ui/illustration';
-import { Badge, Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { DataTable } from '../../components/ui/data-table';
+import { Badge, EmptyState, Skeleton } from '../../components/ui/misc';
 import { api, apiBlob, ApiError } from '../../lib/api';
 import { formatRelative } from '../../lib/format';
 import * as q from '../../lib/queries';
@@ -42,24 +43,46 @@ export function PlatformSupport() {
       {list.isSuccess && !list.data.length && (
         <EmptyState art={<Illustration kind="empty" />} title={t('help.queueEmpty')} />
       )}
+      {/* One table pattern (prompt 3, U9): newest first; a row opens the report in its panel. */}
       {!!list.data?.length && (
-        <ul className="grid gap-2">
-          {list.data.map((tk) => (
-            <li key={`${tk.college?.id}-${tk.id}`}>
-              <button type="button" className="block w-full text-left" onClick={() => setOpen(tk)}>
-                <Card variant="interactive" className="flex items-center justify-between gap-3 p-4">
-                  <span className="min-w-0">
-                    <span className="block truncate font-semibold">{tk.subject}</span>
-                    <span className="text-callout text-fg-2">
-                      {tk.college?.name} · {formatRelative(tk.updatedAt)}
-                    </span>
-                  </span>
-                  <Badge tone={SUPPORT_STATUS_TONE[tk.status]}>{t(`help.status.${tk.status}`)}</Badge>
-                </Card>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <DataTable
+          label={t('nav.platformSupport')}
+          rows={list.data}
+          rowKey={(tk) => `${tk.college?.id}-${tk.id}`}
+          onOpen={setOpen}
+          initialSort={{ key: 'updated', dir: 'desc' }}
+          columns={[
+            {
+              key: 'subject',
+              header: t('staff.table.subject'),
+              sort: (tk) => tk.subject.toLowerCase(),
+              cell: (tk) => (
+                <span className="font-semibold text-pretty break-words text-fg">{tk.subject}</span>
+              ),
+            },
+            {
+              key: 'college',
+              header: t('staff.table.college'),
+              wide: true,
+              sort: (tk) => tk.college?.name ?? '',
+              cell: (tk) => tk.college?.name ?? '',
+            },
+            {
+              key: 'updated',
+              header: t('staff.table.updated'),
+              sort: (tk) => tk.updatedAt,
+              cell: (tk) => <span className="text-fg-2">{formatRelative(tk.updatedAt)}</span>,
+            },
+            {
+              key: 'status',
+              header: t('staff.table.status'),
+              sort: (tk) => tk.status,
+              cell: (tk) => (
+                <Badge tone={SUPPORT_STATUS_TONE[tk.status]}>{t(`help.status.${tk.status}`)}</Badge>
+              ),
+            },
+          ]}
+        />
       )}
       {open?.college && (
         <PlatformTicket

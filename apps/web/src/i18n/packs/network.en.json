@@ -284,7 +284,7 @@
       "none": "No postings yet",
       "colleges": "Colleges",
       "candidates": "Candidates",
-      "close": "Close"
+      "close": "Close posting"
     },
     "publish": {
       "open": "Offer to colleges",
@@ -389,6 +389,17 @@
       "month": "Month",
       "noRevenue": "Nothing billed this month.",
       "revenueRow": "{{name}}: {{postings}} postings, {{drives}} drives, {{hires}} hires; share {{share}}"
+    },
+    "table": {
+      "posting": "Posting",
+      "closes": "Closes",
+      "candidates": "Candidates",
+      "status": "Status",
+      "candidate": "Candidate",
+      "shared": "Shared",
+      "stage": "Stage",
+      "employer": "Employer",
+      "applied": "Applied"
     }
   }
 }

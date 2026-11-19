@@ -284,7 +284,7 @@
       "none": "अभी कोई पोस्टिंग नहीं",
       "colleges": "कॉलेज",
       "candidates": "उम्मीदवार",
-      "close": "बंद करें"
+      "close": "पोस्टिंग बंद करें"
     },
     "publish": {
       "open": "कॉलेजों को भेजें",
@@ -389,6 +389,17 @@
       "month": "महीना",
       "noRevenue": "इस महीने कुछ बिल नहीं हुआ।",
       "revenueRow": "{{name}}: {{postings}} पोस्टिंग, {{drives}} ड्राइव, {{hires}} भर्तियाँ; हिस्सा {{share}}"
+    },
+    "table": {
+      "posting": "पोस्टिंग",
+      "closes": "बंद होगी",
+      "candidates": "उम्मीदवार",
+      "status": "स्थिति",
+      "candidate": "उम्मीदवार",
+      "shared": "साझा किया",
+      "stage": "चरण",
+      "employer": "नियोक्ता",
+      "applied": "आवेदन किया"
     }
   }
 }

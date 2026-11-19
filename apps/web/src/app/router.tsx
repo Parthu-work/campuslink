@@ -153,13 +153,13 @@ const load = {
   // Prompt 2, G12: the network, the recruiter portal and the registry (one module), `network` pack.
   network: withPack('network', () => import('../features/network/screens')),
   reports: withPack('staff', () => import('../features/reports/reports')),
-  platform: () => import('../features/platform/platform'),
+  platform: withPack('staff', () => import('../features/platform/platform')),
   traction: () => import('../features/platform/traction'),
   platformBilling: () => import('../features/platform/billing'),
   adminBilling: () => import('../features/admin/billing'),
   help: () => import('../features/help/help'),
   supportAdmin: () => import('../features/admin/support-admin'),
-  platformSupport: () => import('../features/platform/support'),
+  platformSupport: withPack('staff', () => import('../features/platform/support')),
   legal: () => import('../features/legal/legal-page'),
 };
 

@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Count, PlatformInsightRow } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
+import { DataTable } from '../../components/ui/data-table';
 import { ErrorState } from '../../components/ui/error-state';
 import { Skeleton } from '../../components/ui/misc';
 import { PageHeader } from '../../components/ui/page-header';
 import { StatCard, StatGrid } from '../../components/ui/stat-card';
-import { Table, THead, Td, TdNum, Th } from '../../components/ui/table';
 import { formatNumber } from '../../lib/numbers';
 import { platformInsights } from '../../lib/queries';
 import { SCREEN } from '../../lib/query-client';
@@ -44,31 +44,34 @@ export function PlatformTraction() {
             <StatCard label={t('traction.col.sessions')} value={shown(v.totals.sessions)} />
           </StatGrid>
           <p className="text-caption text-fg-3">{t('traction.window', { weeks: v.weeks })}</p>
-          <Table label={t('traction.title')}>
-            <THead>
-              <tr>
-                <Th>{t('traction.college')}</Th>
-                {COLUMNS.map((c) => (
-                  <Th key={c} className="text-right">
-                    {t(`traction.col.${c}`)}
-                  </Th>
-                ))}
-              </tr>
-            </THead>
-            <tbody>
-              {v.colleges.map((c) => (
-                <tr key={c.tenantId}>
-                  <Td>
+          {/* One table pattern (prompt 3, U9): every column sorts. */}
+          <DataTable
+            label={t('traction.title')}
+            rows={v.colleges}
+            rowKey={(c) => c.tenantId}
+            initialSort={{ key: 'active7d', dir: 'desc' }}
+            columns={[
+              {
+                key: 'college',
+                header: t('traction.college'),
+                sort: (c) => c.name.toLowerCase(),
+                cell: (c) => (
+                  <span className="block min-w-44">
                     {c.name}
                     <span className="block font-mono text-caption text-fg-3">{c.slug}</span>
-                  </Td>
-                  {COLUMNS.map((k) => (
-                    <TdNum key={k}>{shown(c[k])}</TdNum>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+                  </span>
+                ),
+              },
+              ...COLUMNS.map((k) => ({
+                key: k,
+                header: t(`traction.col.${k}`),
+                numeric: true,
+                // "<5" sorts between 0 and 5: its place reveals nothing more than "<5" does.
+                sort: (c: PlatformInsightRow) => (c[k] === '<5' ? 2.5 : c[k]),
+                cell: (c: PlatformInsightRow) => shown(c[k]),
+              })),
+            ]}
+          />
         </>
       )}
     </div>
