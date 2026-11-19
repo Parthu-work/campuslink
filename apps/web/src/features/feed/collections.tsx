@@ -11,7 +11,7 @@ import { PageHeader } from '../../components/ui/page-header';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { RichText } from '../../components/ui/rich-text';
 import { api, apiRequest } from '../../lib/api';
-import { useFollow } from '../../lib/follows';
+import { followPerson, useFollow } from '../../lib/follows';
 import { prefersReducedMotion } from '../../lib/preferences';
 import { AuthorLine, ReelVideo } from './post-card';
 import { FeedList } from './feed-list';
@@ -215,7 +215,10 @@ export function FollowingPage() {
                 >
                   {d?.name ?? t('feed.memberHidden')}
                 </Link>
-                <Button size="sm" onClick={() => follow.mutate({ type: 'user', id, on: false })}>
+                <Button
+                  size="sm"
+                  onClick={() => followPerson(follow, id, d?.name ?? t('feed.memberHidden'), false)}
+                >
                   {t('feed.unfollow')}
                   <span className="sr-only"> {d?.name}</span>
                 </Button>

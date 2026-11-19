@@ -233,7 +233,7 @@ function LinkPreview({ link }: { link: NonNullable<PostView['link']> }) {
 function ActionBar({ post }: { post: PostView }) {
   const { t } = useTranslation();
   const canInteract = useCan('feed:interact');
-  const { react, save, share } = usePostActions(post);
+  const { react, toggleSave, share } = usePostActions(post);
   const live = post.status === 'published';
   return (
     <div className="-mx-1.5 -mb-1.5 flex flex-wrap items-center gap-0.5 border-t border-line pt-1.5">
@@ -280,7 +280,7 @@ function ActionBar({ post }: { post: PostView }) {
           disabled={!canInteract || !live}
           onClick={(e) => {
             if (!post.saved) pop(e.currentTarget);
-            save.mutate(!post.saved);
+            toggleSave(!post.saved);
           }}
           aria-label={post.saved ? t('feed.unsave') : t('feed.save')}
           className="react-pop grid size-11 place-items-center rounded-full text-fg-2 transition-[scale] duration-[var(--dur-fast)] ease-snappy hover:bg-hover active:scale-90 disabled:opacity-60 aria-pressed:text-brand-ink"

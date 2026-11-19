@@ -18,6 +18,7 @@ import { useCan } from '../../lib/me';
 import { cn } from '../../lib/cn';
 import { accentOf } from '../../lib/accent';
 import { pop } from '../../lib/celebrate';
+import { toast } from '../../lib/toast';
 
 export function SaveJobButton({ job, className }: { job: JobView; className?: string }) {
   const { t } = useTranslation();
@@ -32,7 +33,19 @@ export function SaveJobButton({ job, className }: { job: JobView; className?: st
       aria-label={saved ? t('jobs.unsave', { title: job.title }) : t('jobs.save', { title: job.title })}
       onClick={(e) => {
         if (!saved) pop(e.currentTarget);
-        track.mutate({ status: saved ? null : 'saved' });
+        // Prompt 3, U10: said with Undo, which puts back what was there (an applied status and its note too).
+        const before = job.track;
+        track.mutate(
+          { status: saved ? null : 'saved', quiet: true },
+          {
+            onSuccess: () =>
+              toast.undo(t(saved ? 'jobs.unsavedToast' : 'jobs.savedToast'), t('ui.undo'), () =>
+                track.mutate(
+                  before ? { status: before.status, note: before.note, quiet: true } : { status: null },
+                ),
+              ),
+          },
+        );
       }}
       className={cn(
         'react-pop grid size-11 flex-none place-items-center rounded-full text-fg-2 transition-[scale] duration-[var(--dur-fast)] ease-snappy hover:bg-hover active:scale-90 aria-pressed:text-brand-ink',

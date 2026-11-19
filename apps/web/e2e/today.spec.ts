@@ -51,8 +51,29 @@ test('an alumna’s Home leads with who is waiting, and Accept takes one tap', a
   // The student set-up checklist is a student's.
   await expect(page.getByRole('heading', { name: 'Set up your CampusLink' })).toHaveCount(0);
   await expectNoA11yViolations(page);
+  // Prompt 3, U10: the answer shows at once and waits 6 s for Undo; Undo sends nothing.
+  const sent: string[] = [];
+  page.on('request', (r) => {
+    if (r.method() === 'POST' && r.url().includes('/respond')) sent.push(r.url());
+  });
   await row.getByRole('button', { name: 'Accept' }).click();
   await expect(waiting.getByRole('listitem').filter({ hasText: /Vikram/ })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(waiting.getByRole('listitem').filter({ hasText: /Vikram/ })).toBeVisible();
+  expect(sent).toHaveLength(0);
+  // Accepted again and left alone: sent once, when the Undo window closes.
+  const [res] = await Promise.all([
+    page.waitForResponse((r) => r.request().method() === 'POST' && r.url().includes('/respond'), {
+      timeout: 15_000,
+    }),
+    waiting
+      .getByRole('listitem')
+      .filter({ hasText: /Vikram/ })
+      .getByRole('button', { name: 'Accept' })
+      .click(),
+  ]);
+  expect(res.ok()).toBe(true);
+  expect(sent).toHaveLength(1);
 });
 
 test('a placement officer’s Today: the waiting work, nothing at zero, one tap to where it is done', async ({

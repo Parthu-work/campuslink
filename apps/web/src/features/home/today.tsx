@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowRight, CalendarClock, CalendarDays, Clock, Video } from 'lucide-react';
-import type { FollowState, RequestView } from '@campuslink/shared';
+import type { MicroAskView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { ActionCard } from '../../components/ui/action-card';
 import { Button } from '../../components/ui/button';
@@ -10,7 +10,10 @@ import { Countdown } from '../../components/ui/countdown';
 import { ListRow, ListSection } from '../../components/ui/list-row';
 import { PersonAvatar } from '../../components/ui/person-avatar';
 import { PersonCard } from '../../components/ui/person-card';
+import { answerMicroAsk, answerRequest } from '../../lib/answers';
 import { api } from '../../lib/api';
+import { followPerson, useFollow } from '../../lib/follows';
+import { firstName } from '../../lib/names';
 import { formatDay, formatTime } from '../../lib/format';
 import { useCan, useMe } from '../../lib/me';
 import { useNow } from '../../lib/use-now';
@@ -121,20 +124,18 @@ export function TodayCard({ pick }: { pick: TodayPick }) {
 /** Alumni: who is waiting for them, first (prompt 3, U5). Accept in one tap; a decline's reason is chosen on Requests. */
 export function WaitingForYou() {
   const { t } = useTranslation();
-  const qc = useQueryClient();
   const canMentor = useCan('mentorship:mentor');
   const requests = useQuery({ ...q.receivedRequests(), enabled: canMentor });
   const asks = useQuery({ ...q.microAsks('received'), enabled: canMentor });
-  const respond = useMutation({
-    mutationFn: (id: string) =>
-      api.post<RequestView>(`/mentorship/requests/${id}/respond`, { action: 'accept' }),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['requests'] }),
-  });
-  const reply = useMutation({
-    mutationFn: ({ id, action }: { id: string; action: 'accept' | 'decline' }) =>
-      api.post(`/micro-asks/${id}/reply`, { action }),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['micro-asks'] }),
-  });
+  // Prompt 3, U10: the answer shows at once and waits 6 s for Undo before it is sent.
+  const answerAsk = (a: MicroAskView, action: 'accept' | 'decline') =>
+    answerMicroAsk(
+      a,
+      action,
+      t(action === 'accept' ? 'answers.askAccepted' : 'answers.askDeclined', {
+        name: firstName(a.asker.name),
+      }),
+    );
   if (!canMentor) return null;
   const pending = (requests.data ?? []).filter((r) => r.status === 'pending');
   const waiting = (asks.data?.asks ?? []).filter((a) => a.role === 'helper' && a.status === 'assigned');
@@ -155,8 +156,7 @@ export function WaitingForYou() {
               <Button
                 size="sm"
                 variant="secondary"
-                loading={respond.isPending && respond.variables === r.id}
-                onClick={() => respond.mutate(r.id)}
+                onClick={(e) => answerRequest(r, { action: 'accept' }, e.currentTarget)}
               >
                 {t('today.accept')}
               </Button>
@@ -172,20 +172,10 @@ export function WaitingForYou() {
           meta={a.note}
           trailing={
             <span className="flex flex-wrap justify-end gap-2">
-              <Button
-                size="sm"
-                variant="tertiary"
-                disabled={reply.isPending}
-                onClick={() => reply.mutate({ id: a.id, action: 'decline' })}
-              >
+              <Button size="sm" variant="tertiary" onClick={() => answerAsk(a, 'decline')}>
                 {t('today.decline')}
               </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={reply.isPending}
-                onClick={() => reply.mutate({ id: a.id, action: 'accept' })}
-              >
+              <Button size="sm" variant="secondary" onClick={() => answerAsk(a, 'accept')}>
                 {t('today.accept')}
               </Button>
             </span>
@@ -196,25 +186,15 @@ export function WaitingForYou() {
   );
 }
 
-function FollowPerson({ id, following }: { id: string; following: boolean }) {
+/** Follow from Home: at once (optimistic), with Undo (prompt 3, U10). */
+function FollowPerson({ id, name, following }: { id: string; name: string; following: boolean }) {
   const { t } = useTranslation();
-  const qc = useQueryClient();
-  const m = useMutation({
-    mutationFn: () =>
-      following
-        ? api.delete<FollowState>(`/follows/user/${id}`)
-        : api.post<FollowState>('/follows', { targetType: 'user', targetId: id }),
-    onSuccess: (state) => {
-      qc.setQueryData(['follows'], state);
-      void qc.invalidateQueries({ queryKey: ['feed'] });
-    },
-  });
+  const follow = useFollow();
   return (
     <Button
       size="sm"
       variant={following ? 'tertiary' : 'secondary'}
-      loading={m.isPending}
-      onClick={() => m.mutate()}
+      onClick={() => followPerson(follow, id, firstName(name), !following)}
     >
       {following ? t('today.following') : t('today.follow')}
     </Button>
@@ -250,7 +230,13 @@ export function Suggested() {
                   : t('today.reasonCollege')
               }
               to={`/people/${p.userId}`}
-              action={<FollowPerson id={p.userId} following={!!follows.data?.users.includes(p.userId)} />}
+              action={
+                <FollowPerson
+                  id={p.userId}
+                  name={p.name}
+                  following={!!follows.data?.users.includes(p.userId)}
+                />
+              }
             />
           </li>
         ))}

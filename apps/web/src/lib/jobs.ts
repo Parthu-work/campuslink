@@ -60,7 +60,8 @@ export function useTrack(job: Pick<JobView, 'id'>) {
   return useMutation({
     // Runs offline too (the default would pause it), so saving can wait in the outbox (B13).
     networkMode: 'always',
-    mutationFn: (v: { status: TrackStatus | null; note?: string }) =>
+    // `quiet`: the caller says it itself (with Undo: the job card's bookmark, prompt 3 U10).
+    mutationFn: (v: { status: TrackStatus | null; note?: string; quiet?: boolean }) =>
       v.status === null
         ? api.delete(`/jobs/${job.id}/track`)
         : // Saving and tracking wait in the outbox when offline (B13); unsaving needs a connection.
@@ -86,7 +87,7 @@ export function useTrack(job: Pick<JobView, 'id'>) {
     onSuccess: (d, v) => {
       // Queued offline: the change stays on screen and the outbox says it will be sent.
       if (d === undefined && v.status !== null) return;
-      if (v.status === 'saved') toast.success(t('jobs.savedToast'));
+      if (v.status === 'saved' && !v.quiet) toast.success(t('jobs.savedToast'));
       void qc.invalidateQueries({ queryKey: ['job-tracker'] });
     },
   });

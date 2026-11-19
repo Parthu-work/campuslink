@@ -81,11 +81,15 @@ export function usePostActions(post: PostView) {
       c?.rollback();
       toast.error(errorText(e, t('errors.generic')));
     },
-    onSuccess: (_d, on) => {
-      toast.success(on ? t('feed.savedToast') : t('feed.unsavedToast'));
-      void qc.invalidateQueries({ queryKey: ['posts', 'saved'] });
-    },
+    // The caller says it with Undo (`toggleSave`): the reverse runs through here quietly.
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['posts', 'saved'] }),
   });
+  /** Save or unsave, said with Undo (prompt 3, U10). */
+  const toggleSave = (on: boolean) =>
+    save.mutate(on, {
+      onSuccess: () =>
+        toast.undo(t(on ? 'feed.savedToast' : 'feed.unsavedToast'), t('ui.undo'), () => save.mutate(!on)),
+    });
   const share = useMutation({
     mutationFn: async () => {
       const url = `${location.origin}/posts/${post.id}`;
@@ -113,5 +117,5 @@ export function usePostActions(post: PostView) {
     },
     onError: (e) => toast.error(errorText(e, t('errors.generic'))),
   });
-  return { react, save, share, remove };
+  return { react, save, toggleSave, share, remove };
 }

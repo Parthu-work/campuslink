@@ -310,19 +310,27 @@ export function EventPage() {
       if (v === undefined) return;
       qc.setQueryData(['event', id], v);
       void qc.invalidateQueries({ queryKey: ['events'] });
-      toast.success(
-        v.myRsvp === 'going'
-          ? t('events.youreGoing')
-          : v.myRsvp === 'waitlist'
-            ? t('events.youreWaitlisted')
-            : t('events.rsvpCancelled'),
-      );
     },
     onError: (e, _going, ctx) => {
       if (ctx?.before) qc.setQueryData(['event', id], ctx.before);
       fail(e);
     },
   });
+  /** RSVP at once (optimistic), said with Undo (prompt 3, U10); queued offline, it says so instead. */
+  const setGoing = (going: boolean) =>
+    rsvp.mutate(going, {
+      onSuccess: (v) =>
+        v &&
+        toast.undo(
+          v.myRsvp === 'going'
+            ? t('events.youreGoing')
+            : v.myRsvp === 'waitlist'
+              ? t('events.youreWaitlisted')
+              : t('events.rsvpCancelled'),
+          t('ui.undo'),
+          () => rsvp.mutate(!going),
+        ),
+    });
   const cancel = useMutation({
     mutationFn: () => api.post<EventView>(`/events/${id}/cancel`, {}),
     onSuccess: (v) => {
@@ -434,16 +442,9 @@ export function EventPage() {
             {live &&
               !e.isHost &&
               (e.myRsvp ? (
-                <Button loading={rsvp.isPending} onClick={() => rsvp.mutate(false)}>
-                  {t('events.cancelRsvp')}
-                </Button>
+                <Button onClick={() => setGoing(false)}>{t('events.cancelRsvp')}</Button>
               ) : (
-                <Button
-                  variant="primary"
-                  size="lg"
-                  loading={rsvp.isPending}
-                  onClick={() => rsvp.mutate(true)}
-                >
+                <Button variant="primary" size="lg" onClick={() => setGoing(true)}>
                   {e.capacity && e.going >= e.capacity ? t('events.joinWaitlist') : t('events.rsvpGoing')}
                 </Button>
               ))}

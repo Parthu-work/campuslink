@@ -1,15 +1,13 @@
 import { Link } from 'react-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { DECLINE_TEMPLATES, type DeclineTemplate, type RequestView } from '@campuslink/shared';
+import { useQuery } from '@tanstack/react-query';
+import { DECLINE_TEMPLATES } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
 import { Button } from '../../components/ui/button';
 import { ListRow, ListSection } from '../../components/ui/list-row';
 import { OverflowMenu } from '../../components/ui/overflow-menu';
 import { PersonAvatar } from '../../components/ui/person-avatar';
-import { api } from '../../lib/api';
+import { answerRequest } from '../../lib/answers';
 import { receivedRequests } from '../../lib/queries';
-import { toast } from '../../lib/toast';
-import { firstName } from '../../lib/names';
 
 /** Monday 00:00 this week, on the device (the cap is a weekly count). */
 const weekStart = () => {
@@ -26,26 +24,7 @@ const weekStart = () => {
  */
 export function RequestsQueue({ weeklyCap }: { weeklyCap: number | null }) {
   const { t } = useTranslation();
-  const qc = useQueryClient();
   const q = useQuery(receivedRequests());
-  const respond = useMutation({
-    mutationFn: ({
-      r,
-      body,
-    }: {
-      r: RequestView;
-      body: { action: 'accept' } | { action: 'decline'; template: DeclineTemplate };
-    }) => api.post<RequestView>(`/mentorship/requests/${r.id}/respond`, body),
-    onSuccess: (_, { r, body }) => {
-      void qc.invalidateQueries({ queryKey: ['requests'] });
-      void qc.invalidateQueries({ queryKey: ['impact'] });
-      toast.success(
-        body.action === 'accept'
-          ? t('request.acceptedToast', { name: firstName(r.mentee.name) })
-          : t('request.declinedToast', { name: firstName(r.mentee.name) }),
-      );
-    },
-  });
   if (!q.data) return null;
   const pending = q.data.filter((r) => r.status === 'pending');
   const since = weekStart();
@@ -74,12 +53,7 @@ export function RequestsQueue({ weeklyCap }: { weeklyCap: number | null }) {
                   <Button
                     size="sm"
                     variant="secondary"
-                    loading={
-                      respond.isPending &&
-                      respond.variables?.r.id === r.id &&
-                      respond.variables.body.action === 'accept'
-                    }
-                    onClick={() => respond.mutate({ r, body: { action: 'accept' } })}
+                    onClick={(e) => answerRequest(r, { action: 'accept' }, e.currentTarget)}
                   >
                     {t('request.accept')}
                   </Button>
@@ -87,7 +61,7 @@ export function RequestsQueue({ weeklyCap }: { weeklyCap: number | null }) {
                     label={t('mentoring.queue.declineLabel', { name: r.mentee.name })}
                     items={DECLINE_TEMPLATES.map((template) => ({
                       label: t(`mentoring.queue.as.${template}`),
-                      onSelect: () => respond.mutate({ r, body: { action: 'decline', template } }),
+                      onSelect: () => answerRequest(r, { action: 'decline', template }),
                     }))}
                   />
                 </span>

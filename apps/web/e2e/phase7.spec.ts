@@ -22,6 +22,10 @@ test.describe('events, progress, rewards and analytics', () => {
     await expect(
       page.getByRole('heading', { name: 'DEMO: AMA on backend careers with Rahul', level: 1 }),
     ).toBeVisible();
+    // RSVP at once, with Undo (prompt 3, U10): Undo cancels it; then going for real.
+    await page.getByRole('button', { name: 'I’m going' }).click();
+    await page.getByRole('button', { name: 'Undo' }).click();
+    await expect(page.getByRole('button', { name: 'I’m going' })).toBeVisible();
     await page.getByRole('button', { name: 'I’m going' }).click();
     await expect(page.getByText('You’re going').first()).toBeVisible();
     await expect(page.getByText('The online link appears here 15 minutes before the start.')).toBeVisible();

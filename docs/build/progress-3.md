@@ -700,6 +700,38 @@ U9b's CI: green (run 44474965197).
 
 U9c's CI: the first run's `verify` job hit its 20-minute limit while building (its two API suite steps took 8 minutes each on that runner, against 5 on U9b's; e2e, adapters and security passed); the re-run of that job passed (the tests in 286 s against 481 s), so run 44482844426 is green. The job runs the API suite twice; at 481 s a step it is within a few minutes of its limit on a slow runner.
 
+## U10a · Feedback: Undo, one error pattern, no spinner on a load
+
+**Shipped.**
+
+- **Answers wait for Undo** (`lib/undoable.ts`, `lib/answers.ts`): accepting or declining a mentorship request (Home, Requests, the mentor's queue) and accepting or passing on a micro-ask (Home, Alumni) show at once, offer Undo for 6 s and are then sent once. Undo puts the screen back and sends nothing. If the page is hidden or closed first, whatever is waiting is sent then, as a `keepalive` request, and its toast closes. A failure puts the card back and says why. One function per kind of answer, outside components, so leaving the screen inside the window still sends it. Tests: `undoable.test.ts` (fake timers), e2e `today` (Undo restores the row and nothing is sent; accepted again, sent once when the window closes).
+- **Undo on what was already optimistic**: saving or unsaving a post (`toggleSave`), saving a job from its bookmark (Undo restores what was there, an applied status and its note too), RSVP (Undo cancels or re-sends), following or no longer following a person (`followPerson`: Home's suggestions, the Following page). Home's Follow is now optimistic too, through `useFollow`, which also says why when it fails. Roadmap steps and drive registration already had Undo.
+- **One error pattern** (`ErrorState`): a single line wherever a read fails, "Couldn't load this" (or the offline line), Retry, and the request's reference behind "Details" (`ErrorDetails`, also on the route error screen). The illustrated error block is gone; `compact` only tightens the padding.
+- **No spinner on a load**: the email-link check shows the shape of its answer instead. The boot mark's spinner goes with U10c's shell skeleton.
+- **Room in the main strings**: 88 strings no screen used any more (left by the screens U5, U6, U8 and U9 rebuilt) removed from `en`, `te` and `hi`: Telugu 70.0 → 68.6 KB, so feedback strings fit (`feed.followedToast`, `answers.*`, `jobs.unsavedToast`, `common.details`).
+- `haptic()` stays behind the member's own setting (off by default); no sounds.
+
+**Decisions.**
+
+- **Two kinds of Undo.** Where the server can take a change back (a save, an RSVP, a follow), it is sent at once and Undo sends the opposite. Where the other person is told and the server cannot (accepting a request notifies the mentee and opens a chat; passing on a micro-ask routes it to someone else), the answer waits 6 s and Undo cancels it outright. A celebration still plays at the tap.
+- **Topic and source chips keep no toast**: the chip is its own undo, and choosing several interests would stack toasts.
+- **Undo cancels; leaving sends.** An answer is sent when the page is hidden (switching apps), not only when closed, so a phone never holds an answer the member believes was given.
+- **The flag the API client needs is its own module** (`lib/page-leaving.ts`), so the toast and Undo code stay out of the first load (initial JS 162.6 KB, 0.3 KB over U9).
+
+### Gate results (U10a)
+
+| Gate                                               | Result                                                                                                                                                                                                                    |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                                      |
+| Shared tests                                       | 223 passed                                                                                                                                                                                                                |
+| Web tests                                          | 168 passed (new: `undoable.test.ts`, three: sent after 6 s and once, Undo sends nothing, a hidden page sends at once and closes the toast)                                                                                |
+| API tests                                          | U10a changes no API code; the whole suite on this API code is U9c's run (1,370 passed, 7 skipped); `docs:gen`: no change                                                                                                  |
+| `pnpm build` and bundle budget                     | Pass: initial 162.6 KB (+0.3 KB); Telugu strings 68.4 KB                                                                                                                                                                  |
+| End-to-end (local, freshly reseeded)               | `today`, `session-page`, `mentorship`, `mentorship-loop`, `phase7`, `offline`, `jobs`, `feed`, `alumni`, `resilience`, `accessibility`, `shell`, `navigation`: 108 passed, 12 skipped (phone-only and desktop-only tests) |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                  |
+
+U9d's CI: green (run 44489282544).
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

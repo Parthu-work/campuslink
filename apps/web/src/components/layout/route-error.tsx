@@ -10,6 +10,7 @@ import { useOnline } from '../../lib/pwa';
 import { buttonVariants } from '../ui/button-variants';
 import { Button } from '../ui/button';
 import { EmptyState } from '../ui/misc';
+import { ErrorDetails } from '../ui/error-state';
 
 /**
  * Every route's error screen. Inside the shell it replaces only the content area, so navigation and
@@ -51,7 +52,6 @@ export function RouteError({ fullPage = false, error: given }: { fullPage?: bool
     (isRouteErrorResponse(error) && error.status === 404) ||
     (error instanceof ApiError && error.status === 404);
   const chunk = isChunkLoadError(error);
-  const requestId = error instanceof ApiError ? error.requestId : undefined;
 
   const homeLink = (
     <Link to={home} className={buttonVariants({ variant: 'ghost' })}>
@@ -107,9 +107,7 @@ export function RouteError({ fullPage = false, error: given }: { fullPage?: bool
         }
       >
         <p>{online ? t('errors.screenBody') : t('errors.offlineBody')}</p>
-        {requestId && (
-          <p className="mt-2 font-mono text-caption text-fg-3">{t('errors.reference', { id: requestId })}</p>
-        )}
+        <ErrorDetails error={error} />
       </EmptyState>
     );
   }

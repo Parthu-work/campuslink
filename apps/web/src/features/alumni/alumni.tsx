@@ -26,6 +26,8 @@ import { ProgressBar } from '../../components/ui/progress';
 import { Switch } from '../../components/ui/switch';
 import { Segmented } from '../../components/ui/tab-nav';
 import { TabPanel, Tabs } from '../../components/ui/tabs';
+import { answerMicroAsk } from '../../lib/answers';
+import { firstName } from '../../lib/names';
 import { api, ApiError, apiBlob, saveBlob } from '../../lib/api';
 import { rupees, toPaise } from '../../lib/billing';
 import { formatDay, newIdempotencyKey } from '../../lib/format';
@@ -202,6 +204,15 @@ function AskCard({ a }: { a: MicroAskView }) {
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['micro-asks'] }),
     onError: fail(t),
   });
+  // Accepting or passing waits 6 s for Undo before it is sent (prompt 3, U10).
+  const answer = (action: 'accept' | 'decline') =>
+    answerMicroAsk(
+      a,
+      action,
+      t(action === 'accept' ? 'answers.askAccepted' : 'answers.askDeclined', {
+        name: firstName(a.asker.name),
+      }),
+    );
   const open = a.status === 'assigned' || a.status === 'accepted';
   const who = [a.audience.company, a.audience.branch, a.audience.topic].filter(Boolean).join(' · ');
   return (
@@ -239,7 +250,7 @@ function AskCard({ a }: { a: MicroAskView }) {
         )}
         <div className="flex flex-wrap gap-2">
           {a.role === 'helper' && a.status === 'assigned' && (
-            <Button size="sm" variant="primary" loading={act.isPending} onClick={() => act.mutate('accept')}>
+            <Button size="sm" variant="primary" onClick={() => answer('accept')}>
               {t('alumni.asks.accept')}
             </Button>
           )}
@@ -248,7 +259,7 @@ function AskCard({ a }: { a: MicroAskView }) {
               <Button size="sm" loading={act.isPending} onClick={() => act.mutate('done')}>
                 {t('alumni.asks.done')}
               </Button>
-              <Button size="sm" variant="ghost" loading={act.isPending} onClick={() => act.mutate('decline')}>
+              <Button size="sm" variant="ghost" onClick={() => answer('decline')}>
                 {t('alumni.asks.pass')}
               </Button>
             </>

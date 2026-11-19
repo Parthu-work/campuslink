@@ -3,6 +3,7 @@ import { useSession } from './session';
 import { botCheckEnabled } from './bot-check-config';
 import { createRefreshCoordinator } from './refresh-coordinator';
 import { hasOfflineCopy } from './offline-probe';
+import { isLeaving } from './page-leaving';
 
 export class ApiError extends Error {
   constructor(
@@ -115,6 +116,8 @@ export async function apiRequest<T>(
         ? { body: isForm ? (opts.body as FormData) : JSON.stringify(opts.body) }
         : {}),
       ...(opts.signal ? { signal: opts.signal } : {}),
+      // An answer sent as the page closes (lib/undoable.ts) must outlive it.
+      ...(isLeaving() ? { keepalive: true } : {}),
     });
   } catch {
     throw new ApiError(0, 'NETWORK', 'You seem to be offline. Check your connection and try again.');

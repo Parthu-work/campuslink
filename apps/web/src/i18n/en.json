@@ -14,22 +14,19 @@
     "password": "Password",
     "name": "Full name",
     "signOut": "Sign out",
-    "search": "Search",
     "loadMore": "Load more",
     "copy": "Copy",
-    "copied": "Copied",
     "demo": "Demo",
     "skipToContent": "Skip to content",
     "offline": "You’re offline. Changes will need a connection.",
     "open": "Open",
-    "breadcrumb": "Breadcrumb",
     "plusN": "+{{n}}",
     "stepDone": "done",
-    "change": "Change",
     "optional": "Optional",
     "showTable": "Show as a table",
     "removeTag": "Remove {{tag}}",
-    "refreshing": "Refreshing…"
+    "refreshing": "Refreshing…",
+    "details": "Details"
   },
   "nav": {
     "home": "Home",
@@ -188,7 +185,6 @@
     "useRecovery": "Use a recovery code instead",
     "useTotp": "Use my authenticator app",
     "recoveryCode": "Recovery code",
-    "notVerified": "Confirm your email first.",
     "resend": "Send a new link",
     "resent": "If that email has an account, a new link is on its way.",
     "signUpTitle": "Join {{college}}",
@@ -197,7 +193,6 @@
     "student": "A student",
     "alumnus": "An alumnus",
     "passwordHint": "At least 10 characters. A few unusual words work well.",
-    "adult": "I am 18 or older.",
     "consentTitle": "How we use your data",
     "consent": {
       "account": "Run my account: sign-in, security and showing my profile to verified members of my college. Required.",
@@ -235,21 +230,13 @@
     "codesConfirm": "I’ve saved these codes",
     "on": "On",
     "off": "Off",
-    "disable": "Turn off 2FA",
     "requiredBadge": "Required for admins"
   },
   "home": {
     "greeting": "Hi, {{name}}",
     "unverifiedTitle": "Your account is read-only for now",
     "unverifiedBody": "Your college still needs to confirm you’re a student or alumnus. Verify with your roll number to post, ask and request mentoring; until then you can browse.",
-    "verifyCta": "Verify now",
-    "nextSession": "Next session",
-    "noSession": "No sessions booked yet.",
-    "findMentor": "Find a mentor from your college",
-    "findMentorBody": "Alumni Match suggests people who fit your goals, and explains why.",
-    "rail": "Shortcuts and suggestions",
-    "startsIn": "Starts {{when}}",
-    "happeningNow": "Happening now"
+    "verifyCta": "Verify now"
   },
   "settings": {
     "title": "Settings",
@@ -582,12 +569,10 @@
     "slugHint": "Lowercase letters, numbers and hyphens: {{slug}}.campuslink",
     "plan": "Plan",
     "seats": "Seat limit",
-    "renewal": "Renewal date",
     "firstAdmin": "First administrator",
     "adminName": "Administrator’s name",
     "adminEmail": "Administrator’s email",
     "created": "College created. The administrator has been emailed an invite.",
-    "users": "{{count}} people",
     "active30d": "{{count}} active in 30 days",
     "suspend": "Suspend college",
     "resume": "Resume college",
@@ -632,7 +617,6 @@
     "forbiddenBody": "This page is for other roles in your college. Everything you can use is in your menu.",
     "verifyFirstTitle": "Verify your account to open this",
     "verifyFirstBody": "Your college confirms students and alumni by roll number. It takes about a minute, and then mentors, messages and posting open up.",
-    "loadFailed": "This didn’t load. It’s usually a moment’s hiccup; try again.",
     "loadFailedTitle": "Couldn’t load this",
     "offlineShort": "You’re offline. This will load when you reconnect.",
     "featureOffTitle": "Your college has switched this off",
@@ -663,7 +647,6 @@
     "rejectedTitle": "Your last request wasn’t approved",
     "rejectedBody": "Reason: {{reason}}. You can try again.",
     "useRoll": "Use my roll number instead",
-    "goHome": "Go to home",
     "steps": {
       "label": "Verification steps",
       "find": "Find you",
@@ -694,8 +677,6 @@
     "tpo": "Placement cell",
     "branch": "Branch",
     "anyBranch": "Any branch",
-    "batchFrom": "Batch from",
-    "batchTo": "to",
     "empty": "No one matches these filters",
     "emptyBody": "Try fewer filters, or search for a skill like “SQL”.",
     "batch": "Batch {{year}}",
@@ -824,22 +805,10 @@
     "why": "Why this match",
     "noReasons": "No strong overlap yet. Add your goals to get better matches.",
     "reason": {
-      "branch": "Same branch ({{value}})",
-      "company": "Works at {{value}}, one of your target companies",
-      "goals": "Guides on your goals: {{values}}",
-      "skills": "Shares your skills: {{values}}",
-      "languages": "Speaks {{values}}",
-      "available": "Has free time in the next two weeks",
       "fast_reply": "Replies within a day"
     },
-    "score": "Match score {{score}} out of 100",
     "deck": "mentor suggestions",
     "deckLabel": "{{name}}, {{left}} suggestions left. Left arrow to pass, right arrow to open.",
-    "pass": "Pass on {{name}}",
-    "passShort": "Pass",
-    "view": "Open {{name}}",
-    "viewShort": "Interested",
-    "keys": "Tip: ← pass · → open",
     "done": "You’ve seen everyone for now",
     "empty": "No suggestions yet",
     "emptyBody": "Mentors appear as alumni switch on requests. Browse the full list meanwhile.",
@@ -853,15 +822,8 @@
   "request": {
     "title": "Ask {{name}} for help",
     "noColdDms": "No cold messages: a short, structured request helps mentors say yes. Chat opens once they accept.",
-    "sessionType": "Session type",
     "pickTime": "Pick a time",
     "pickFirst": "Pick a time to send the request.",
-    "goal": "Your goal",
-    "goalHint": "One or two sentences. What do you want to achieve?",
-    "background": "Your background",
-    "backgroundHint": "Year, branch, what you have tried so far.",
-    "need": "What you need from this session",
-    "needHint": "Be specific: a mock round, resume feedback, a career decision…",
     "send": "Send request",
     "sentTitle": "Request sent",
     "sentBody": "{{name}} will see it in their inbox. You’ll be notified when they reply.",
@@ -909,14 +871,8 @@
     "acceptedToast": "Accepted. {{name}} can message you now.",
     "declinedToast": "Declined. {{name}} will see your note.",
     "steps": "Request steps",
-    "stepSession": "Session and time",
-    "stepMessage": "Your message",
-    "message": "What do you want from this session with {{name}}?",
-    "messageHint": "At least {{min}} characters. The prompts add a heading if you’d like some structure.",
-    "prompts": "Add a heading",
     "prompt": {
       "goal": "Goal",
-      "background": "Background",
       "need": "What I need"
     },
     "resume": "Résumé to review",
@@ -1606,8 +1562,6 @@
     "tabs": "Feed view",
     "forYou": "For you",
     "followingTab": "Following",
-    "out": "One useful thing today",
-    "outCurated": "Picked by staff",
     "composerPrompt": "Share something useful with your college…",
     "newPost": "New post",
     "kind": "Post type",
@@ -1687,8 +1641,6 @@
     "emptyFollowing": "Nothing from your follows yet",
     "emptyFollowingBody": "Follow people, topics or sources to fill this tab. It shows the newest first.",
     "findThingsToFollow": "Find things to follow",
-    "suggestions": "Suggested for you",
-    "manageFollows": "Manage what you follow",
     "follow": "Follow",
     "following": "Following",
     "unfollow": "Unfollow",
@@ -1722,8 +1674,8 @@
     "noSources": "Your college hasn’t added any sources yet.",
     "peopleTitle": "People",
     "noPeople": "You don’t follow anyone yet. Find alumni in",
-    "openPost": "Open the post",
-    "doubleTapHint": "Double-tap a photo to mark the post helpful"
+    "followedToast": "Following {{name}}",
+    "unfollowedToast": "You stopped following {{name}}"
   },
   "stories": {
     "title": "Stories",
@@ -1810,9 +1762,7 @@
     "acceptedToast": "Marked as the best answer",
     "yourAnswer": "Your answer",
     "answerHint": "Share what worked for you. At least 10 characters.",
-    "postAnswer": "Post answer",
-    "teaser": "Ask alumni",
-    "teaserBody": "Moderated Q&A for placements, GATE, higher studies and more"
+    "postAnswer": "Post answer"
   },
   "mod": {
     "intro": "Every removal tells the author why, and they can appeal once. A different moderator reviews appeals against your own decisions.",
@@ -2066,7 +2016,8 @@
     "columnEmpty": "Nothing here yet",
     "filters": "Filters",
     "filtersCount": "Filters ({{count}})",
-    "showOpenings": "Show openings"
+    "showOpenings": "Show openings",
+    "unsavedToast": "Removed from My applications"
   },
   "referrals": {
     "title": "Referrals",
@@ -2177,24 +2128,18 @@
     "search": "Search roadmaps",
     "category": "Category",
     "branch": "Branch",
-    "allCategories": "All categories",
     "allBranches": "All branches",
     "viewAs": "View as",
     "graphLabel": "Roadmap steps and how they connect",
     "emptyTitle": "No roadmaps match",
     "emptyBody": "Try another category or search.",
     "disclaimer": "Time estimates are about right for part-time study, not promises. Roadmaps link to free resources and official pages; check dates, fees and cut-offs there.",
-    "featured": "Featured",
     "steps_one": "{{count}} step",
     "steps_other": "{{count}} steps",
-    "needsReviewCount_one": "{{count}} needs review",
-    "needsReviewCount_other": "{{count}} need review",
     "needsReview": "Needs review",
     "needsReviewNote": "This step rests on editorial judgement rather than a confirmed source. Treat it as a suggestion.",
     "progressOf": "Progress on {{title}}",
-    "doneOf": "{{done}} of {{total}} done",
     "aboutHours": "about {{min}}–{{max}} h",
-    "aboutHoursTotal": "about {{min}}–{{max}} hours in all",
     "byLibrary": "From the researched library",
     "byAuthor": "By {{name}}",
     "libraryAuthor": "Researched library",
@@ -2372,12 +2317,6 @@
       "installed": "Installed",
       "proposed": "Update proposed for review"
     },
-    "zoom": {
-      "in": "Zoom in",
-      "out": "Zoom out",
-      "reset": "Show the whole galaxy"
-    },
-    "legend": "The lit ring is your progress",
     "pathsTitle": "Career paths",
     "newPath": "New path",
     "continue": "Continue",
@@ -2724,7 +2663,6 @@
     "unfollowHost": "Following"
   },
   "analytics": {
-    "title": "Analytics",
     "intro": "Aggregated counts only: no one’s individual activity is shown, and groups smaller than five appear as “<5”.",
     "print": "Print or save as PDF",
     "period": "Period",
@@ -2741,15 +2679,7 @@
     "active30": "Active in 30 days",
     "participation": "Alumni participation",
     "participationHint": "{{active}} of {{total}} alumni mentored, referred, answered or hosted in 90 days",
-    "sessionsTotal": "Mentorship sessions",
     "rating": "Average rating {{rating}} / 5",
-    "openJobs": "Open jobs",
-    "eventsHeld": "Events held",
-    "attended": "{{rsvps}} RSVPs · {{attended}} attended",
-    "pending": "Waiting for verification",
-    "sessionsByMonth": "Mentorship sessions by month",
-    "jobsByMonth": "Openings posted by members, by month",
-    "referrals": "Referral requests by outcome",
     "engagement": "Engagement by branch and batch",
     "notSet": "Not set",
     "exports": "Download reports (CSV)",
@@ -2837,7 +2767,6 @@
     "noSyllabusManage": "Paste it from the university’s document and review the units and topics we suggest.",
     "noSyllabusBody": "Your teachers haven’t added it yet.",
     "library": "Library",
-    "noMaterial": "No material yet",
     "noMaterialBody": "Notes, slides, videos and past papers for this subject will appear here.",
     "unit": "Unit {{n}}",
     "noTopics": "No topics in this unit yet.",
@@ -3064,16 +2993,6 @@
     "chat": {
       "title": "Study assistant",
       "launcher": "Ask",
-      "history": "Conversations",
-      "newChat": "New chat",
-      "noHistory": "No conversations yet.",
-      "deleteOne": "Delete “{{title}}”",
-      "deleted": "Conversation deleted",
-      "clearAll": "Delete all my chats",
-      "clearTitle": "Delete all your chats?",
-      "clearBody": "Every conversation with the study assistant is deleted for good. Kept flashcard decks stay.",
-      "clearYes": "Delete all",
-      "cleared": "Your chat history is deleted",
       "scope": "Answer from",
       "allSubjects": "All my subjects",
       "mode": "Answer style",
@@ -3141,7 +3060,6 @@
       },
       "thanks": "Thanks for the feedback",
       "ungrounded": "No sources cited: check it",
-      "disclaimer": "Answers are generated by AI from your college’s material and may contain mistakes. Check the sources.",
       "passagesOnly": "AI answers are not on for your college yet: you’ll see the passages from your material that match.",
       "about": "About {{title}} {{where}}",
       "removeContext": "Stop asking about this",
@@ -3583,7 +3501,6 @@
     "stars_other": "{{count}} stars out of 5"
   },
   "rematch": {
-    "offer": "{{name}} hasn’t replied in two days. Some mentors usually reply quickly; you can send them the same message.",
     "cta": "See mentors likely to reply",
     "title": "Mentors likely to reply",
     "intro": "Sending to one of them withdraws your request to {{name}}. It doesn’t count against your weekly requests.",
@@ -3631,7 +3548,6 @@
     },
     "registered": "Registered",
     "notEligible": "Not eligible",
-    "closes": "Closes {{when}}",
     "lpa": "₹{{range}} LPA",
     "privacyNote": "Your exact CTC is seen only by you and the placement cell. Others only ever see bands and totals.",
     "mode": {
@@ -3689,7 +3605,6 @@
     "recordFromCollege": "From the college",
     "recordVerified": "Verified",
     "recordPending": "Waiting for the placement cell",
-    "recordNone": "The college has not shared your marks yet. Drives with CGPA or backlog rules need them; add yours and the placement cell will check them.",
     "recordAdd": "Add your marks",
     "recordEdit": "Update your marks",
     "recordCorrections": "Something wrong? Ask the placement cell to correct it.",
@@ -4164,7 +4079,6 @@
     }
   },
   "billing": {
-    "title": "Billing",
     "intro": "Your plan, what you use against it, and your invoices. Students and alumni never pay.",
     "plan": {
       "pilot": "Pilot",
@@ -4530,9 +4444,12 @@
     "steps_one": "{{count}} step",
     "steps_other": "{{count}} steps",
     "proof": "Proof",
-    "now": "Now",
     "seeAll": "See all",
     "opensNewTab": "Opens in a new tab",
     "scoreOutOf": "{{score}} out of {{max}}"
+  },
+  "answers": {
+    "askAccepted": "You’ll help {{name}}",
+    "askDeclined": "Passed on. {{name}}’s ask goes to someone else."
   }
 }

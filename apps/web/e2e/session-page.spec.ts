@@ -42,7 +42,13 @@ test('a request accepted from the mentor’s queue becomes a session page with i
   await expect(mentor.getByRole('dialog').getByText('Fully booked')).toBeVisible();
   await mentor.keyboard.press('Escape');
   await expectNoA11yViolations(mentor);
-  await row.getByRole('button', { name: 'Accept', exact: true }).click();
+  // The row resolves at once; the answer goes when its Undo window closes (prompt 3, U10).
+  await Promise.all([
+    mentor.waitForResponse((r) => r.request().method() === 'POST' && r.url().includes('/respond'), {
+      timeout: 15_000,
+    }),
+    row.getByRole('button', { name: 'Accept', exact: true }).click(),
+  ]);
   await expect(mentor.getByRole('listitem').filter({ hasText: goal })).toHaveCount(0);
 
   // The session's page: Join, what it is for, and notes both of them share.

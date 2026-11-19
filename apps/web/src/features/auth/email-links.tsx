@@ -4,12 +4,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from '../../i18n/react';
-import { CheckCircle2, Loader2, MailCheck } from 'lucide-react';
+import { CheckCircle2, MailCheck } from 'lucide-react';
 import { email, password } from '@campuslink/shared';
 import { AuthLayout, FormError } from '../../components/layout/auth-layout';
 import { Button } from '../../components/ui/button';
 import { Field, Input, PasswordInput } from '../../components/ui/field';
-import { EmptyState } from '../../components/ui/misc';
+import { EmptyState, Skeleton } from '../../components/ui/misc';
 import { api, ApiError } from '../../lib/api';
 import { applyApiError } from '../../lib/errors';
 
@@ -43,10 +43,12 @@ export function VerifyEmailPage() {
   return (
     <AuthLayout title={state === 'done' ? t('auth.verifiedTitle') : t('auth.verifyTitle')}>
       {state === 'working' && (
-        <Loader2
-          className="size-8 animate-spin text-brand-ink motion-reduce:animate-none"
-          aria-label={t('common.loading')}
-        />
+        // The shape of the answer while the link is checked, not a spinner (prompt 3, U10).
+        <div role="status" className="grid justify-items-center gap-3">
+          <Skeleton className="size-12 rounded-full" />
+          <Skeleton className="h-4 w-56" />
+          <span className="sr-only">{t('common.loading')}</span>
+        </div>
       )}
       {state === 'done' && (
         <EmptyState

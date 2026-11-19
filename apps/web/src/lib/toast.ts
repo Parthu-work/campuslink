@@ -18,6 +18,9 @@ const later =
     void loadSonner().then(({ toast: t }) => show(t, ...args));
   };
 
+/** How long an Undo is offered (prompt 3, U10). */
+export const UNDO_MS = 6000;
+
 export const toast = Object.assign(
   later((t, ...args: Parameters<Toast>) => t(...args)),
   {
@@ -25,10 +28,16 @@ export const toast = Object.assign(
     error: later((t, ...args: Parameters<Toast['error']>) => t.error(...args)),
     /**
      * A reversible action's confirmation with an Undo button (ADR 0015: mark done, pass on a
-     * mentor, withdraw). `undoLabel` is `t('ui.undo')`; the toast stays 6 s so Undo is reachable.
+     * mentor, withdraw). `undoLabel` is `t('ui.undo')`; the toast stays UNDO_MS so Undo is
+     * reachable. An `id` lets the caller close it (`toast.dismiss`) once Undo no longer applies.
      */
-    undo: later((t, message: string, undoLabel: string, onUndo: () => void) =>
-      t(message, { duration: 6000, action: { label: undoLabel, onClick: onUndo } }),
+    undo: later((t, message: string, undoLabel: string, onUndo: () => void, id?: string) =>
+      t(message, {
+        duration: UNDO_MS,
+        action: { label: undoLabel, onClick: onUndo },
+        ...(id ? { id } : {}),
+      }),
     ),
+    dismiss: later((t, id: string) => t.dismiss(id)),
   },
 );

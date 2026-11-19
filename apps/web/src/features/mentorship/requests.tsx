@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useTranslation } from '../../i18n/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from '../../lib/toast';
 import { FileUser, Inbox, MessageSquare, Mic, Video } from 'lucide-react';
 import {
   DECLINE_TEMPLATES,
@@ -21,12 +20,13 @@ import { PersonAvatar } from '../../components/ui/person-avatar';
 import { SlotPicker } from '../../components/ui/slot-picker';
 import { Segmented } from '../../components/ui/tab-nav';
 import { SafetyMenu } from '../../components/layout/safety-menu';
-import { api, ApiError } from '../../lib/api';
+import { api } from '../../lib/api';
 import { celebrate, firstSighting } from '../../lib/celebrate';
 import { useCan } from '../../lib/me';
-import { formatDateTime, formatRelative, newIdempotencyKey } from '../../lib/format';
+import { formatDateTime, formatRelative } from '../../lib/format';
 import { SCREEN } from '../../lib/query-client';
 import { cn } from '../../lib/cn';
+import { answerRequest } from '../../lib/answers';
 import { firstName } from '../../lib/names';
 import { RematchSheet } from './rematch-sheet';
 import { requestAlternatives } from '../../lib/queries';
@@ -39,41 +39,6 @@ const STATUS_TONE = {
   withdrawn: 'neutral',
   expired: 'neutral',
 } as const;
-
-function useRespond(id: string) {
-  const { t } = useTranslation();
-  const qc = useQueryClient();
-  const [key] = useState(newIdempotencyKey);
-  return useMutation({
-    mutationFn: (body: Record<string, unknown>) =>
-      api.postOnce<RequestView>(`/mentorship/requests/${id}/respond`, body, key),
-    // Optimistic: the card resolves at once and rolls back if the answer fails (audit ST-4, B7).
-    onMutate: async (body) => {
-      await qc.cancelQueries({ queryKey: ['requests'] });
-      const before = qc.getQueriesData<RequestView[]>({ queryKey: ['requests'] });
-      const status: RequestView['status'] = body.action === 'decline' ? 'declined' : 'accepted';
-      qc.setQueriesData<RequestView[]>({ queryKey: ['requests'] }, (list) =>
-        list?.map((r) => (r.id === id ? { ...r, status } : r)),
-      );
-      return { before };
-    },
-    onSuccess: (r) => {
-      if (r.status === 'accepted') celebrate();
-      toast.success(
-        r.status === 'declined'
-          ? t('request.declinedToast', { name: firstName(r.mentee.name) })
-          : t('request.acceptedToast', { name: firstName(r.mentee.name) }),
-      );
-      void qc.invalidateQueries({ queryKey: ['requests'] });
-      void qc.invalidateQueries({ queryKey: ['bookings'] });
-      void qc.invalidateQueries({ queryKey: ['conversations'] });
-    },
-    onError: (e, _body, ctx) => {
-      for (const [k, v] of ctx?.before ?? []) qc.setQueryData(k, v);
-      toast.error(e instanceof ApiError ? e.message : t('errors.generic'));
-    },
-  });
-}
 
 function OtherTimeDialog({
   r,
@@ -91,7 +56,6 @@ function OtherTimeDialog({
     queryFn: () => api.get<SlotsView>(`/mentorship/requests/${r.id}/slots?days=14`),
     enabled: open,
   });
-  const respond = useRespond(r.id);
   return (
     <Dialog
       open={open}
@@ -111,14 +75,11 @@ function OtherTimeDialog({
         <Button
           variant="primary"
           disabled={!slot}
-          loading={respond.isPending}
-          onClick={() =>
-            slot &&
-            respond.mutate(
-              { action: 'accept_other', slotStart: slot },
-              { onSuccess: () => onOpenChange(false) },
-            )
-          }
+          onClick={(e) => {
+            if (!slot) return;
+            answerRequest(r, { action: 'accept_other', slotStart: slot }, e.currentTarget);
+            onOpenChange(false);
+          }}
         >
           {t('request.acceptAt')}
         </Button>
@@ -139,7 +100,6 @@ function DeclineDialog({
   const { t } = useTranslation();
   const [template, setTemplate] = useState<DeclineTemplate>('fully_booked');
   const [note, setNote] = useState('');
-  const respond = useRespond(r.id);
   return (
     <Dialog
       open={open}
@@ -176,13 +136,10 @@ function DeclineDialog({
         <Button onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
         <Button
           variant="primary"
-          loading={respond.isPending}
-          onClick={() =>
-            respond.mutate(
-              { action: 'decline', template, ...(note.trim() ? { note: note.trim() } : {}) },
-              { onSuccess: () => onOpenChange(false) },
-            )
-          }
+          onClick={() => {
+            answerRequest(r, { action: 'decline', template, ...(note.trim() ? { note: note.trim() } : {}) });
+            onOpenChange(false);
+          }}
         >
           {t('request.sendReply')}
         </Button>
@@ -230,7 +187,6 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
   const qc = useQueryClient();
   const [dialog, setDialog] = useState<'other' | 'decline' | 'rematch' | null>(null);
   const other = box === 'received' ? r.mentee : r.mentor;
-  const respond = useRespond(r.id);
   const withdraw = useMutation({
     mutationFn: () => api.post(`/mentorship/requests/${r.id}/withdraw`, {}),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['requests'] }),
@@ -280,8 +236,7 @@ function RequestCard({ r, box }: { r: RequestView; box: 'received' | 'sent' }) {
           <>
             <Button
               variant="primary"
-              loading={respond.isPending}
-              onClick={() => respond.mutate({ action: 'accept' })}
+              onClick={(e) => answerRequest(r, { action: 'accept' }, e.currentTarget)}
             >
               {t('request.accept')}
             </Button>
