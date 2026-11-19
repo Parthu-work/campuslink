@@ -698,7 +698,7 @@ U9b's CI: green (run 44474965197).
 | Screens checked                                    | Platform Colleges (and a college's panel at 390 px), Traction and Employers, light and dark                                                                                                                                                                                 |
 | Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                    |
 
-U9c's CI: the first run's `verify` job hit its 20-minute limit while building (its two API suite steps took 8 minutes each on that runner, against 5 on U9b's; e2e, adapters and security passed); the failed job was re-run.
+U9c's CI: the first run's `verify` job hit its 20-minute limit while building (its two API suite steps took 8 minutes each on that runner, against 5 on U9b's; e2e, adapters and security passed); the re-run of that job passed (the tests in 286 s against 481 s), so run 44482844426 is green. The job runs the API suite twice; at 481 s a step it is within a few minutes of its limit on a slow runner.
 
 ## Part F · The open issues (F1–F8)
 
