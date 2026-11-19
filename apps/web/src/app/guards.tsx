@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { Link, Navigate, useLocation } from 'react-router';
 import { useTranslation } from '../i18n/react';
 import { loadPack } from '../i18n';
-import { BadgeCheck, CloudOff, Loader2, ShieldAlert, ToggleLeft } from 'lucide-react';
+import { BadgeCheck, CloudOff, ShieldAlert, ToggleLeft } from 'lucide-react';
 import { ROLE_PERMISSIONS, safeReturnPath, type Feature, type Permission } from '@campuslink/shared';
 import { useSession } from '../lib/session';
 import { refreshSession } from '../lib/api';
@@ -29,19 +29,22 @@ const NoticeGate = lazy(() =>
 
 /**
  * Boot only (college lookup, session): the launch mark index.html painted, so the hand-over is
- * seamless; a spinner fades in under it after 200 ms.
+ * seamless; a thin progress line fades in under it after 200 ms (prompt 3, U10: no spinner on a
+ * load), the same line as a slow navigation's.
  */
 export function Splash() {
   const { t } = useTranslation();
   return (
     <div className="launch" role="status">
-      {/* The spinner hangs below the icon, so the icon stays exactly where index.html put it. */}
+      {/* The line hangs below the icon, so the icon stays exactly where index.html put it. */}
       <span className="relative grid">
         <img src="/icons/icon.svg" alt="" width={56} height={56} />
-        <Loader2
-          className="delayed-in absolute top-full left-1/2 mt-5 -ml-3 size-6 animate-spin text-brand-ink motion-reduce:animate-none"
+        <span
           aria-hidden
-        />
+          className="delayed-in absolute top-full left-1/2 mt-6 h-1 w-16 -translate-x-1/2 overflow-hidden rounded-full bg-surface-2"
+        >
+          <span className="nav-progress block h-full w-full origin-left rounded-full bg-[linear-gradient(90deg,var(--brand),var(--accent))]" />
+        </span>
       </span>
       <span className="sr-only">{t('common.loading')}</span>
     </div>

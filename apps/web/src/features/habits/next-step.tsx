@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { RowsSkeleton } from '../../components/ui/skeleton-shapes';
 import { ArrowRight, Briefcase, Compass, Gauge, Map, Sparkles } from 'lucide-react';
 import type { NextStepView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
@@ -124,7 +125,7 @@ export function NextStepsList({ skip }: { skip?: Item | null }) {
   const s = useQuery(q.nextStep());
   const open = useMutation({ mutationFn: (item: Item) => api.post('/me/next-step/open', { item }) });
   const step = s.data;
-  if (!step) return null;
+  if (!step) return s.isLoading ? <RowsSkeleton title rows={2} leading="icon" /> : null;
   const delta = step.readiness?.delta;
   const rows: { item: Item; icon: React.ReactNode; label: string; text: string; to: string }[] = [];
   if (step.roadmapStep)

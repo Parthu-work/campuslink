@@ -85,7 +85,16 @@ export function JobFacts({ job }: { job: JobView }) {
  * The company's initials in its own accent: a stand-in for a logo, since listings carry none
  * (we never fetch or guess logos).
  */
-export function CompanyMark({ name, size = 'md' }: { name: string; size?: 'md' | 'lg' }) {
+export function CompanyMark({
+  name,
+  size = 'md',
+  transitionName,
+}: {
+  name: string;
+  size?: 'md' | 'lg';
+  /** Morphs into the same mark on the next screen (a view transition; unique per item, prompt 3 U10). */
+  transitionName?: string;
+}) {
   const n = accentOf(name);
   const initials = name
     .replace(/\(.*?\)/g, '')
@@ -101,7 +110,11 @@ export function CompanyMark({ name, size = 'md' }: { name: string; size?: 'md' |
         'grid flex-none place-items-center rounded-[var(--radius-md)] font-display font-bold',
         size === 'lg' ? 'size-14 text-headline' : 'size-11 text-body',
       )}
-      style={{ background: `var(--subject-${n}-surface)`, color: `var(--subject-${n}-ink)` }}
+      style={{
+        background: `var(--subject-${n}-surface)`,
+        color: `var(--subject-${n}-ink)`,
+        ...(transitionName ? { viewTransitionName: transitionName } : {}),
+      }}
     >
       {initials || <Building2 className="size-5" />}
     </span>

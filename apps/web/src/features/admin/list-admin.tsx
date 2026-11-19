@@ -10,6 +10,7 @@ import { ErrorState } from '../../components/ui/error-state';
 import { Illustration } from '../../components/ui/illustration';
 import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
 import { DataTable, type Column } from '../../components/ui/data-table';
+import { TableSkeleton } from '../../components/ui/skeleton-shapes';
 import { Dialog, Sheet } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { api, apiRequest, ApiError } from '../../lib/api';
@@ -96,7 +97,7 @@ export function ListAdmin() {
           </Chip>
         ))}
       </div>
-      {list.isLoading && <Skeleton className="h-48" />}
+      {list.isLoading && <TableSkeleton columns={4} />}
       {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
       {list.isSuccess && !rows.length && (
         <EmptyState art={<Illustration kind="people" />} title={t('admin.noUsers')} />
@@ -468,7 +469,7 @@ export function VerificationAdmin() {
           </Chip>
         ))}
       </div>
-      {q.isLoading && <Skeleton className="h-48" />}
+      {q.isLoading && <TableSkeleton columns={4} />}
       {q.isError && <ErrorState error={q.error} onRetry={() => void q.refetch()} />}
       {q.isSuccess && !rows.length && (
         <EmptyState art={<Illustration kind="done" />} title={t('admin.queueEmpty')} />

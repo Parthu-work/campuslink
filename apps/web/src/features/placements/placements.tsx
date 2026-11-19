@@ -147,7 +147,7 @@ function DriveCard({ drive: d }: { drive: DriveView }) {
     <li>
       <Card variant="interactive" className="relative grid h-full content-start gap-3 p-4">
         <div className="flex items-start gap-3">
-          <CompanyMark name={d.company.name} />
+          <CompanyMark name={d.company.name} transitionName={`drive-${d.id}`} />
           <div className="grid min-w-0 flex-1 gap-0.5">
             <h3 className="text-body leading-snug font-semibold text-pretty break-words">
               <IntentLink to={`/placements/${d.id}`} className={STRETCHED}>

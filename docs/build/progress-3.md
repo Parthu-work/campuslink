@@ -778,6 +778,34 @@ One Home run showed a layout shift of 0.387 (sections moving down when Next step
 
 U10a's CI (run 44500401737): `verify` hit its 20-minute limit again in the coverage step (tests 450 s on that runner); e2e, adapters and security passed. Twice in three runs, so `verify`'s limit is now 30 minutes (`.github/workflows/ci.yml`; the job runs the API suite twice). U10b's run, which carries U10a's code, is its check.
 
+## U10c · Polish: skeletons in shape, the boot mark, cards into screens
+
+**Shipped.**
+
+- **Skeletons shaped like their content** (`skeleton-shapes.tsx`): `RowsSkeleton` matches a `ListSection` of `ListRow`s (heading, face or icon, two lines, the row's own height tokens) and `TableSkeleton` a `DataTable` (header, compact rows, the first column wider). They replace plain grey blocks on Home's Next steps (shown while its code loads and while its data loads; before, nothing was shown and the rows pushed the feed down on arrival), Members, the verification queue, the college list, Notifications and Mentors' match list. Screens already shaped (messages, the feed, Job Radar, drives) keep theirs.
+- **The boot mark has no spinner**: a thin progress line fades in under it after 200 ms (the navigation progress line's own animation; a still line under reduced motion). The email-link spinner went in U10a, so no screen's load shows a spinner.
+- **Cards that become the next screen**: the company mark on a drive card morphs into the drive page's (`drive-<id>`), and the mentor in Match (the deck's card on phones, the panel on wide screens; never both) into their page's photo (`mentor-<id>`), joining the job, post and mentor-list morphs already there. `CompanyMark` and `PersonAvatar` take a `transitionName`; the page transitions themselves are unchanged (`animateScreens()` still turns them off on slow devices).
+
+**Decisions.**
+
+- **Per-item names, not one "hero".** A single shared name set on tap would clash wherever a list and its detail are on screen together (two-pane layouts); a name per item never does, and the browser simply skips a morph whose partner is not on the next screen.
+- **Fixed shapes, not every placeholder.** About ninety screens draw their own placeholder; the shared shapes cover the lists and tables that had a plain block, and the rest are moved as U12 touches them.
+
+### Gate results (U10c)
+
+| Gate                                               | Result                                                                                                                                                                                                   |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                     |
+| Shared tests                                       | 223 passed                                                                                                                                                                                               |
+| Web tests                                          | 168 passed                                                                                                                                                                                               |
+| API tests                                          | U10c changes no API code; the whole suite on this API code is U9c's run (1,370 passed, 7 skipped); `docs:gen`: no change                                                                                 |
+| `pnpm build` and bundle budget                     | Pass: initial 155.3 KB in 2 files                                                                                                                                                                        |
+| End-to-end (local, freshly reseeded)               | `core`, `today`, `match`, `mentorship`, `placements`, `jobs`, `readiness`, `accessibility`, `shell`, `navigation`, `first-run`, `resilience`: 118 passed, 12 skipped (phone-only and desktop-only tests) |
+| Lighthouse (two runs)                              | Home: CLS 0 and 0 (one of four U10b runs had shown 0.387), LCP 5.8 s and 6.2 s; landing 1.7 s both; accessibility 100                                                                                    |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                 |
+
+**U10 in all.** Feedback: answers wait for Undo, saves, RSVPs and follows offer it, one error line, no spinner on a load. Speed: the first load is one file (155 KB, from 162.6 KB in 22), session images load near the screen and small, the landing measures 1.6–1.7 s every run; sign-in (4.3 s) and Home (5.6–6.2 s) remain above their targets, for the reasons in U10b. Polish: placeholders in their content's shape, cards that become the next screen.
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

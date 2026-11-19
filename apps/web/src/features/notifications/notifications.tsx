@@ -7,7 +7,8 @@ import { IntentLink } from '../../components/ui/intent-link';
 import { Button } from '../../components/ui/button';
 import { buttonVariants } from '../../components/ui/button-variants';
 import { Illustration } from '../../components/ui/illustration';
-import { Card, EmptyState, Skeleton } from '../../components/ui/misc';
+import { Card, EmptyState } from '../../components/ui/misc';
+import { RowsSkeleton } from '../../components/ui/skeleton-shapes';
 import { PageHeader } from '../../components/ui/page-header';
 import { api } from '../../lib/api';
 import { notifications } from '../../lib/queries';
@@ -54,7 +55,7 @@ export function NotificationsPage() {
           </>
         }
       />
-      {list.isLoading && <Skeleton className="h-40" />}
+      {list.isLoading && <RowsSkeleton rows={4} />}
       {list.isSuccess && !list.data.length && (
         <EmptyState
           art={<Illustration kind="done" />}

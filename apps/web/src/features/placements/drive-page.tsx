@@ -463,7 +463,7 @@ export function DrivePage() {
     <div className="mx-auto grid w-full max-w-[960px] gap-5">
       <BackLink to="/placements">{t('placements.back')}</BackLink>
       <header className="flex items-start gap-4">
-        <CompanyMark name={d.company.name} size="lg" />
+        <CompanyMark name={d.company.name} size="lg" transitionName={`drive-${d.id}`} />
         <PageHeader
           as="div"
           className="min-w-0 flex-1"

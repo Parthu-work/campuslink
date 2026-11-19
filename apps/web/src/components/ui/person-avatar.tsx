@@ -12,16 +12,24 @@ export function PersonAvatar({
   fileId,
   size = 44,
   verified = false,
+  transitionName,
 }: {
   name: string;
   fileId?: string | null;
   size?: number;
   verified?: boolean;
+  /** Morphs into the same avatar on the next screen (a view transition; unique per person). */
+  transitionName?: string;
 }) {
   const [ref, near] = useNearViewport<HTMLSpanElement>();
   const url = useFileUrl(fileId, size <= 56 ? 160 : 320, { sized: true, enabled: near });
   return (
-    <span ref={ref} className="relative flex-none" style={{ width: size, height: size }} aria-hidden>
+    <span
+      ref={ref}
+      className="relative flex-none"
+      style={{ width: size, height: size, ...(transitionName ? { viewTransitionName: transitionName } : {}) }}
+      aria-hidden
+    >
       {url ? (
         <>
           <img

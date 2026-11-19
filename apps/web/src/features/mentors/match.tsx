@@ -1,6 +1,7 @@
 import { lazy, Suspense, useMemo, useState, type KeyboardEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
+import { RowsSkeleton } from '../../components/ui/skeleton-shapes';
 import { BadgeCheck, Compass, RotateCcw, Send, SlidersHorizontal, X } from 'lucide-react';
 import { LOCALE_TAGS, toLocale, type MentorCard, type MentorMatch } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
@@ -238,7 +239,13 @@ function MentorPanel({
   return (
     <Card variant="raised" className="grid content-start gap-4 p-5">
       <div className="flex items-start gap-3">
-        <PersonAvatar name={m.name} fileId={m.avatarFileId} size={72} verified />
+        <PersonAvatar
+          name={m.name}
+          fileId={m.avatarFileId}
+          size={72}
+          verified
+          transitionName={`mentor-${m.userId}`}
+        />
         <div className="grid min-w-0 gap-0.5">
           <Name m={m} />
           <RoleLines m={m} />
@@ -295,7 +302,13 @@ function MatchCard({
     >
       <Card variant="raised" className="grid gap-3 p-4">
         <div className="flex items-start gap-3">
-          <PersonAvatar name={m.name} fileId={m.avatarFileId} size={56} verified />
+          <PersonAvatar
+            name={m.name}
+            fileId={m.avatarFileId}
+            size={56}
+            verified
+            transitionName={`mentor-${m.userId}`}
+          />
           <div className="grid min-w-0 gap-0.5">
             <Name m={m} link />
             <RoleLines m={m} />
@@ -355,7 +368,7 @@ export function MatchView({ onPrefs }: { onPrefs: () => void }) {
     sheet.open('request');
   };
 
-  if (q.isLoading) return <Skeleton className="h-96" />;
+  if (q.isLoading) return <RowsSkeleton rows={4} />;
   if (q.isSuccess && !all.length)
     return (
       <EmptyState icon={<Compass className="size-6" />} title={t('match.empty')}>
