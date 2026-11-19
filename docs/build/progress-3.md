@@ -845,6 +845,27 @@ One commit for the phase (its three planned parts were small once the audits ran
 
 U10c's CI: green (run 44517097612).
 
+## U12 · The audit's defects
+
+Every item checked against today's code; table and tests in `docs/design/v2/u12.md`.
+
+- **Already fixed when their screens were rebuilt, now each with a test**: the tab a deep link lights (A2, U2; `defects.spec` over seven deep links), bottom-tab labels whole in en, te and hi at 360 px (U2; `defects.spec`), Join on Home for a session about to start (A10, U5; `today-pick.test.ts`), the mentor card (A15, U6: no score under 60, one role line, Request; `mentor-text.test.ts`), the admin tiles (A19, gone with U9a's Today; `today.spec`), the map's first view (A13, U3; `defects.spec`: the next step whole inside the frame), the landing's join button (A8, U4; `landing.spec`).
+- **Fixed here**: students no longer see "needs review" on a path (A12): the flag shows only to people who write or review paths (`useSeesReview`), in the steps, the map (legend, dashed outline, spoken label) and the step sheet; `journey.test.tsx`. A filled button, disabled, turns neutral (surface, muted ink, opacity 1) instead of fading to half, so the disabled Ask button stays readable (A18); `defects.spec` measures 3:1 or more. The mentor deck's arrow-key tip said "right arrow to open" while the arrow requests; it now says so, in en, te and hi (`defects.spec`).
+
+### Gate results (U12)
+
+| Gate                                               | Result                                                                                                                                                                                                                                                                              |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                                                                                                                                                |
+| Shared tests                                       | 223 passed                                                                                                                                                                                                                                                                          |
+| Web tests                                          | 172 passed (new: `journey.test.tsx`)                                                                                                                                                                                                                                                |
+| API tests                                          | U12 changes no API code; the whole suite on this API code is U9c's run (1,370 passed, 7 skipped)                                                                                                                                                                                    |
+| `pnpm build` and bundle budget                     | Pass: initial 155.7 KB in 2 files                                                                                                                                                                                                                                                   |
+| End-to-end (local, freshly reseeded)               | `roadmaps`, `match`, `copilot`, `core`, `accessibility`, `navigation`, `today`, `landing`: all passed (74 passed, 8 skipped, with the new spec's first version failing on its own locators); then `defects` after its fix, without a reseed: 7 passed, 3 skipped (phone-only tests) |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                            |
+
+U11's CI: green (run 44558872784).
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

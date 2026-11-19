@@ -15,15 +15,21 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'border-transparent bg-brand text-on-brand hover:bg-brand-hover',
+        // Filled buttons, disabled, turn neutral instead of fading: their label stays readable (prompt 3,
+        // U12, audit A18: the disabled Ask button at half opacity).
+        primary:
+          'border-transparent bg-brand text-on-brand hover:bg-brand-hover disabled:border-line disabled:bg-surface-2 disabled:text-fg-3 disabled:opacity-100 disabled:shadow-none',
         secondary: 'border-line-strong bg-surface-1 text-fg hover:bg-surface-2',
         tertiary: 'border-transparent bg-transparent text-brand-ink hover:bg-hover',
-        danger: 'border-transparent bg-danger-fill text-on-danger hover:brightness-90',
-        accent: 'border-transparent bg-accent text-on-accent hover:bg-accent-hover',
+        danger:
+          'border-transparent bg-danger-fill text-on-danger hover:brightness-90 disabled:border-line disabled:bg-surface-2 disabled:text-fg-3 disabled:opacity-100 disabled:shadow-none',
+        accent:
+          'border-transparent bg-accent text-on-accent hover:bg-accent-hover disabled:border-line disabled:bg-surface-2 disabled:text-fg-3 disabled:opacity-100 disabled:shadow-none',
         outline: 'border-line-strong bg-transparent text-fg hover:bg-hover',
         ghost: 'border-transparent bg-transparent text-fg hover:bg-hover',
         /** The signature moments only (Create, Ask): never for ordinary actions. */
-        aurora: 'border-transparent bg-aurora text-on-aurora shadow-elev-2 hover:brightness-105',
+        aurora:
+          'border-transparent bg-aurora text-on-aurora shadow-elev-2 hover:brightness-105 disabled:bg-none disabled:border-line disabled:bg-surface-2 disabled:text-fg-3 disabled:opacity-100 disabled:shadow-none',
       },
       size: {
         // The hit area reaches 44 px from inside the 1 px border (prompt 3, U11: 4 px each way left 42).

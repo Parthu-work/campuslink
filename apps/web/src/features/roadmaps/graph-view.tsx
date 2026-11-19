@@ -10,6 +10,7 @@ import {
 import { Check, Minus, Plus, Scan } from 'lucide-react';
 import { nextStep, type RoadmapView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
+import { useSeesReview } from './sees-review';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/misc';
 import { NODE_H, NODE_W, layoutGraph } from '../../lib/roadmaps';
@@ -30,6 +31,7 @@ const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.roun
  */
 export function GraphView({ roadmap, onOpen }: { roadmap: RoadmapView; onOpen: (id: string) => void }) {
   const { t } = useTranslation();
+  const showReview = useSeesReview();
   const nodes = roadmap.content.nodes;
   const { placed, width, height } = useMemo(() => layoutGraph(nodes), [nodes]);
   const done = useMemo(() => new Set(roadmap.myProgress?.done ?? []), [roadmap.myProgress]);
@@ -132,7 +134,7 @@ export function GraphView({ roadmap, onOpen }: { roadmap: RoadmapView; onOpen: (
     ['done', t('roadmaps.done')],
     ['next', t('ui.stepNext')],
     ['project', t('roadmaps.kind.project')],
-    ['review', t('roadmaps.needsReview')],
+    ...(showReview ? ([['review', t('roadmaps.needsReview')]] as [string, string][]) : []),
   ];
 
   return (
@@ -251,7 +253,7 @@ export function GraphView({ roadmap, onOpen }: { roadmap: RoadmapView; onOpen: (
                   <g
                     role="button"
                     tabIndex={0}
-                    aria-label={`${p.node.title}, ${t(`roadmaps.kind.${p.node.kind}`)}${isDone ? `, ${t('roadmaps.done')}` : ''}${isNext ? `, ${t('ui.stepNext')}` : ''}${p.node.needsReview ? `, ${t('roadmaps.needsReview')}` : ''}`}
+                    aria-label={`${p.node.title}, ${t(`roadmaps.kind.${p.node.kind}`)}${isDone ? `, ${t('roadmaps.done')}` : ''}${isNext ? `, ${t('ui.stepNext')}` : ''}${showReview && p.node.needsReview ? `, ${t('roadmaps.needsReview')}` : ''}`}
                     onClick={() => onOpen(p.node.id)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -282,7 +284,7 @@ export function GraphView({ roadmap, onOpen }: { roadmap: RoadmapView; onOpen: (
                               : 'var(--line-strong)'
                       }
                       strokeWidth={isDone || isNext || p.node.kind === 'project' ? 2.5 : 1.5}
-                      strokeDasharray={p.node.needsReview ? '6 4' : undefined}
+                      strokeDasharray={showReview && p.node.needsReview ? '6 4' : undefined}
                       className="transition-[stroke] group-hover:stroke-[var(--brand)]"
                     />
                     <rect

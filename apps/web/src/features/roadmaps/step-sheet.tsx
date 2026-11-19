@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from '../../i18n/react';
+import { useSeesReview } from './sees-review';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, ArrowRight, Check, CircleCheck, Trash2 } from 'lucide-react';
 import {
@@ -155,6 +156,7 @@ export function StepSheet({
   onOpen: (id: string) => void;
 }) {
   const { t } = useTranslation();
+  const seesReview = useSeesReview();
   const canWrite = useCan('roadmaps:write');
   const canPractise = useCan('practice:use');
   const canProgress = useCan('roadmaps:progress') && roadmap.status === 'published' && !!roadmap.version;
@@ -229,7 +231,7 @@ export function StepSheet({
             </Badge>
           )}
         </div>
-        {node.needsReview && (
+        {seesReview && node.needsReview && (
           <p className="flex gap-2 rounded-[var(--radius-sm)] bg-warning-surface p-3 text-callout text-warning-ink">
             <AlertTriangle className="mt-0.5 size-4 flex-none" aria-hidden />
             {t('roadmaps.needsReviewNote')}

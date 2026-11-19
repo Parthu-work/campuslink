@@ -808,7 +808,7 @@
       "fast_reply": "Replies within a day"
     },
     "deck": "mentor suggestions",
-    "deckLabel": "{{name}}, {{left}} suggestions left. Left arrow to pass, right arrow to open.",
+    "deckLabel": "{{name}}, {{left}} suggestions left. Left arrow for Not now, right arrow to request.",
     "done": "You’ve seen everyone for now",
     "empty": "No suggestions yet",
     "emptyBody": "Mentors appear as alumni switch on requests. Browse the full list meanwhile.",

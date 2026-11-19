@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from '../../i18n/react';
+import { useSeesReview } from './sees-review';
 import { ChevronDown } from 'lucide-react';
 import {
   journeyPhases,
@@ -27,6 +28,7 @@ export function JourneyView({
   pace = 0,
   onOpen,
   label,
+  showReview = false,
 }: {
   nodes: readonly RoadmapNode[];
   category: RoadmapCategory;
@@ -35,6 +37,8 @@ export function JourneyView({
   pace?: number;
   onOpen: (id: string) => void;
   label?: string;
+  /** Show "needs review" on steps that have it (writers and reviewers only). */
+  showReview?: boolean;
 }) {
   const { t } = useTranslation();
   const time = useTimeText();
@@ -50,7 +54,7 @@ export function JourneyView({
       meta: (
         <>
           <span>{time(s.estimateHours, pace)}</span>
-          {s.needsReview && <span>· {t('roadmaps.needsReview')}</span>}
+          {showReview && s.needsReview && <span>· {t('roadmaps.needsReview')}</span>}
         </>
       ),
       badge: s.kind === 'project' ? <Badge tone="accent">{t('ui.proof')}</Badge> : undefined,
@@ -77,8 +81,10 @@ export function JourneyView({
 
 /** A published path's journey, with the member's progress and pace. */
 export function Journey({ roadmap, onOpen }: { roadmap: RoadmapView; onOpen: (id: string) => void }) {
+  const showReview = useSeesReview();
   return (
     <JourneyView
+      showReview={showReview}
       nodes={roadmap.content.nodes}
       category={roadmap.category}
       done={new Set(roadmap.myProgress?.done ?? [])}

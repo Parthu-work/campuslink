@@ -699,6 +699,7 @@ function EditorForm({ initial, roadmap: r }: { initial: RoadmapContent; roadmap:
             </h2>
             <p className="text-callout text-fg-2">{t('roadmaps.editor.previewHint')}</p>
             <JourneyView
+              showReview
               nodes={content.nodes}
               category={content.category}
               label={t('roadmaps.editor.preview')}
