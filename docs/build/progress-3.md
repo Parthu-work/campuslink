@@ -782,7 +782,7 @@ U10a's CI (run 44500401737): `verify` hit its 20-minute limit again in the cover
 
 **Shipped.**
 
-- **Skeletons shaped like their content** (`skeleton-shapes.tsx`): `RowsSkeleton` matches a `ListSection` of `ListRow`s (heading, face or icon, two lines, the row's own height tokens) and `TableSkeleton` a `DataTable` (header, compact rows, the first column wider). They replace plain grey blocks on Home's Next steps (shown while its code loads and while its data loads; before, nothing was shown and the rows pushed the feed down on arrival), Members, the verification queue, the college list, Notifications and Mentors' match list. Screens already shaped (messages, the feed, Job Radar, drives) keep theirs.
+- **Skeletons shaped like their content** (first in `skeleton-shapes.tsx`; in U11 moved into U1's `skeletons.tsx` as `SkeletonRows` and `SkeletonTable`): `RowsSkeleton` matches a `ListSection` of `ListRow`s (heading, face or icon, two lines, the row's own height tokens) and `TableSkeleton` a `DataTable` (header, compact rows, the first column wider). They replace plain grey blocks on Home's Next steps (shown while its code loads and while its data loads; before, nothing was shown and the rows pushed the feed down on arrival), Members, the verification queue, the college list, Notifications and Mentors' match list. Screens already shaped (messages, the feed, Job Radar, drives) keep theirs.
 - **The boot mark has no spinner**: a thin progress line fades in under it after 200 ms (the navigation progress line's own animation; a still line under reduced motion). The email-link spinner went in U10a, so no screen's load shows a spinner.
 - **Cards that become the next screen**: the company mark on a drive card morphs into the drive page's (`drive-<id>`), and the mentor in Match (the deck's card on phones, the panel on wide screens; never both) into their page's photo (`mentor-<id>`), joining the job, post and mentor-list morphs already there. `CompanyMark` and `PersonAvatar` take a `transitionName`; the page transitions themselves are unchanged (`animateScreens()` still turns them off on slow devices).
 
@@ -805,6 +805,45 @@ U10a's CI (run 44500401737): `verify` hit its 20-minute limit again in the cover
 | Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                 |
 
 **U10 in all.** Feedback: answers wait for Undo, saves, RSVPs and follows offer it, one error line, no spinner on a load. Speed: the first load is one file (155 KB, from 162.6 KB in 22), session images load near the screen and small, the landing measures 1.6–1.7 s every run; sign-in (4.3 s) and Home (5.6–6.2 s) remain above their targets, for the reasons in U10b. Polish: placeholders in their content's shape, cards that become the next screen.
+
+## U11 · Accessibility and language
+
+One commit for the phase (its three planned parts were small once the audits ran). Design: `docs/design/v2/u11.md`.
+
+**What the audits found, and what changed.**
+
+- **axe, every screen, both themes: 0.** The capture audit (`audit:capture`, 360 px, light and dark, both colleges, every role, plus Telugu and Hindi) checked 598 screens; all 598 were clean before any U11 change, and stay clean.
+- **Targets under 44 px: 47 screens → 0.** Nearly all were the small button: its hit area reached 4 px above and below, but from inside its 1 px border, so 42 px. It now reaches 5 px (`button-variants.ts`), which fixes every screen using it. Three links were small on their own and take the `hit` utility: Next steps' "See all", the mentor's name in Match, and the mentor queue's "Offer another time, or reply with a note".
+- **Meaning cut short at 360 px (X5): a new check, 9 → 0.** `e2e/audit/language.audit.ts` reads every title, name, button, link, tab and label drawn with an ellipsis and longer than its box (`truncations` in `probes.ts`), on the student screens the audit captures in Telugu and Hindi and the placement cell's five screens, in English, Telugu and Hindi. The Next step page cut its three items (the roadmap, the drive, the alumnus) in all three languages; they now wrap. The bottom tabs are not cut in any language (U12's item 2 is already met).
+- **Focus ring**: the brand ink, now tested at 3:1 or more against the canvas and both surfaces, for every college hue in both themes (`palette.test.ts`).
+- **Charts in words**: `ColumnChart` reads its highest and its latest value ("Highest: 12 in Aug. Latest: 7 in Nov."), from shown values only (a "<5" stays "<5"); every value is still in its table view. Unit test.
+- **The roadmap journey** was already an ordered list numbered across phases, each step's state spoken and the next one `aria-current` (U3, `step-track.tsx`); its unit test stands.
+- **Keyboard paths**: the task audit gains a keyboard mode (`KEYBOARD=1`): each step's control is reached by Tab (Shift+Tab if behind), a radio group by Tab and then the arrow keys, and pressed with Enter or Space; fields are typed into. All six in-app journeys finish with the keyboard alone: (a) sign-up and verification 76 key presses, (b) a mock-interview request 102, (c) registering for a drive 7, (d) marking a roadmap step done 28, (e) asking the assistant and opening a source 168, (f) a placement officer nudging students 13; (g) happens in WhatsApp. The first run also showed that three tasks still followed screens rebuilt in U2, U5 and U7 (Study is under Learn; a drive registers from its card; Home's next step is a row or the Today card); their steps now follow today's screens, which U13's tap counts need too.
+- **Reduced motion and 200% text** (`e2e/motion-size.spec.ts`): under reduced motion no animation runs on seven main screens; at 200% text (type is in rem) and at 200% page zoom, no screen scrolls sideways and nothing that carries meaning is cut. The first runs found the stories row cutting first names at 200% text ("Srini…"; the button already carried the full name for screen readers) and the desktop rail cutting its section names ("Placements", "Mock interviews"); both now wrap.
+- **Tidy-up from U10c**: its new skeleton shapes moved into U1's `skeletons.tsx` beside `SkeletonRow`, as `SkeletonRows` and `SkeletonTable`; `skeleton-shapes.tsx` is gone.
+- **Faster audit loops**: `WIDTHS=360` captures phones only (axe and targets are measured there), half the run; U13's re-audit keeps both widths.
+
+**Decisions.**
+
+- **A cut preview is not a defect, a cut title is.** The check counts headings, names, buttons, links, tabs and labels (and bold text, how names are set), not a regular-weight preview line meant to end in an ellipsis.
+- **Arrow keys inside a radio group are part of the keyboard path.** A group is one Tab stop by design; the harness moves within it with the arrows, as a keyboard user does.
+
+### Gate results (U11)
+
+| Gate                                                                      | Result                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck`                        | Pass                                                                                                                                                                                                     |
+| Shared tests                                                              | 223 passed (the focus ring against both surfaces)                                                                                                                                                        |
+| Web tests                                                                 | 170 passed (new: the chart summary, the loading rows and table)                                                                                                                                          |
+| API tests                                                                 | U11 changes no API code; the whole suite on this API code is U9c's run (1,370 passed, 7 skipped)                                                                                                         |
+| `pnpm build` and bundle budget                                            | Pass: initial 155.7 KB in 2 files                                                                                                                                                                        |
+| Capture audit (360 px, both themes, both colleges, every role, te and hi) | 598 screens, 0 axe violations; 0 targets under 44 px (was 47 screens)                                                                                                                                    |
+| Language audit (en, te, hi at 360 px)                                     | Nothing cut short (was 9)                                                                                                                                                                                |
+| Keyboard task run                                                         | All six in-app journeys finished                                                                                                                                                                         |
+| End-to-end (local, freshly reseeded)                                      | `core`, `today`, `accessibility`, `shell`, `navigation`, `mentorship`, `match`, `placements`, `insights`, `readiness`, `feed`, `motion-size`: 108 passed, 14 skipped (phone-only and desktop-only tests) |
+| Secret scan (gitleaks v8.30.1)                                            | No leaks                                                                                                                                                                                                 |
+
+U10c's CI: green (run 44517097612).
 
 ## Part F · The open issues (F1–F8)
 

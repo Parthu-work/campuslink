@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { RowsSkeleton } from '../../components/ui/skeleton-shapes';
+import { SkeletonRows } from '../../components/ui/skeletons';
 import { ArrowRight, Briefcase, Compass, Gauge, Map, Sparkles } from 'lucide-react';
 import type { NextStepView } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
@@ -44,7 +44,7 @@ function Row({
         </span>
         <span className="grid min-w-0 flex-1">
           <span className="text-caption text-fg-3">{label}</span>
-          <span className="truncate font-semibold">{text}</span>
+          <span className="font-semibold text-pretty break-words">{text}</span>
         </span>
         <ArrowRight className="size-4 flex-none text-fg-3" aria-hidden />
       </Link>
@@ -125,7 +125,7 @@ export function NextStepsList({ skip }: { skip?: Item | null }) {
   const s = useQuery(q.nextStep());
   const open = useMutation({ mutationFn: (item: Item) => api.post('/me/next-step/open', { item }) });
   const step = s.data;
-  if (!step) return s.isLoading ? <RowsSkeleton title rows={2} leading="icon" /> : null;
+  if (!step) return s.isLoading ? <SkeletonRows title rows={2} leading="icon" /> : null;
   const delta = step.readiness?.delta;
   const rows: { item: Item; icon: React.ReactNode; label: string; text: string; to: string }[] = [];
   if (step.roadmapStep)
@@ -178,7 +178,7 @@ export function NextStepsList({ skip }: { skip?: Item | null }) {
     <ListSection
       title={t('habits.next.list')}
       action={
-        <Link to="/next-step" className="text-callout font-semibold text-brand-ink hover:underline">
+        <Link to="/next-step" className="hit text-callout font-semibold text-brand-ink hover:underline">
           {t('ui.seeAll')}
         </Link>
       }

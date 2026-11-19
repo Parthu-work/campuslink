@@ -26,7 +26,7 @@ import { ErrorState } from '../../components/ui/error-state';
 import { Illustration } from '../../components/ui/illustration';
 import { Switch } from '../../components/ui/switch';
 import { DataTable } from '../../components/ui/data-table';
-import { TableSkeleton } from '../../components/ui/skeleton-shapes';
+import { SkeletonTable } from '../../components/ui/skeletons';
 import { Dialog, Sheet } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { api, apiRequest, ApiError } from '../../lib/api';
@@ -158,7 +158,7 @@ export function UsersAdmin() {
           </Select>
         </label>
       </div>
-      {users.isLoading && <TableSkeleton columns={3} />}
+      {users.isLoading && <SkeletonTable columns={3} />}
       {users.isError && <ErrorState error={users.error} onRetry={() => void users.refetch()} />}
       {users.isSuccess && rows.length === 0 && (
         <EmptyState art={<Illustration kind="people" />} title={t('admin.noUsers')} />

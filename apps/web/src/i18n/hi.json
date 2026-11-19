@@ -4451,5 +4451,8 @@
   "answers": {
     "askAccepted": "आप {{name}} की मदद करेंगे",
     "askDeclined": "ठीक है। {{name}} का अनुरोध किसी और को जाएगा।"
+  },
+  "charts": {
+    "summary": "सबसे ज़्यादा: {{maxLabel}} में {{max}}। सबसे हाल का: {{lastLabel}} में {{last}}।"
   }
 }

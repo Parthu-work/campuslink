@@ -26,7 +26,8 @@ export const buttonVariants = cva(
         aurora: 'border-transparent bg-aurora text-on-aurora shadow-elev-2 hover:brightness-105',
       },
       size: {
-        sm: 'min-h-9 rounded-[var(--radius-sm)] px-3.5 text-callout before:absolute before:inset-x-0 before:-inset-y-1 before:content-[""] [&_svg]:size-4',
+        // The hit area reaches 44 px from inside the 1 px border (prompt 3, U11: 4 px each way left 42).
+        sm: 'min-h-9 rounded-[var(--radius-sm)] px-3.5 text-callout before:absolute before:inset-x-0 before:-inset-y-[5px] before:content-[""] [&_svg]:size-4',
         md: 'min-h-11 rounded-[var(--radius-md)] px-4 text-body',
         lg: 'min-h-13 rounded-[var(--radius-md)] px-6 text-body',
         icon: 'size-11 rounded-[var(--radius-md)] p-0',

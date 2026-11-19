@@ -4451,5 +4451,8 @@
   "answers": {
     "askAccepted": "మీరు {{name}}కి సహాయం చేస్తారు",
     "askDeclined": "సరే. {{name}} అడిగినది వేరొకరికి వెళ్తుంది."
+  },
+  "charts": {
+    "summary": "అత్యధికం: {{maxLabel}}లో {{max}}. తాజాది: {{lastLabel}}లో {{last}}."
   }
 }

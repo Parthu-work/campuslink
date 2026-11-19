@@ -17,31 +17,106 @@ const OUT = process.env.AUDIT_OUT ?? 'audit-out';
 const DATA = join(OUT, 'data-after');
 const BASE = 'http://dpit.localhost:4173';
 
+/**
+ * Prompt 3, U11: `KEYBOARD=1` walks the same tasks with the keyboard alone. Each control is reached
+ * the way a keyboard user reaches it, by Tab (then Shift+Tab) from wherever focus is, and pressed
+ * with Enter (Space for a checkbox, radio or switch); fields are typed into once reached. A control
+ * Tab cannot reach fails the task. Key presses are counted (`keys`) and written to
+ * `tasks-keyboard.json`.
+ */
+const KEYBOARD = process.env.KEYBOARD === '1';
+const MAX_TABS = 150;
+
 /** The task being counted, so a failure can say which step and what was on screen. */
 let current: Count | null = null;
 
 class Count {
   taps = 0;
   fields = 0;
+  keys = 0;
   log: string[] = [];
   pending = '';
   constructor(readonly page: Page) {}
+  /**
+   * Keyboard mode: Tab (then Shift+Tab) until the control, or something inside it, has focus. A
+   * radio is one Tab stop for its whole group (the checked one, or the first), and the arrow keys
+   * move within it, as the WAI-ARIA radio group pattern and native radios both work: so for a
+   * radio, Tab reaches the group and the arrows the option.
+   */
+  private async reach(target: Locator) {
+    await target.waitFor();
+    const focused = () =>
+      target.evaluate((el) => el === document.activeElement || el.contains(document.activeElement));
+    const radio = await target.evaluate(
+      (el) => el.getAttribute('role') === 'radio' || (el as HTMLInputElement).type === 'radio',
+    );
+    // For a radio: is focus on any option of the same group?
+    const inGroup = () =>
+      target.evaluate((el) => {
+        const a = document.activeElement;
+        if (!a) return false;
+        if (el instanceof HTMLInputElement && a instanceof HTMLInputElement && el.type === 'radio')
+          return a.type === 'radio' && a.name === el.name && a.form === el.form;
+        const group = el.closest('[role=radiogroup]');
+        return !!group && group.contains(a);
+      });
+    const arrived = radio ? inGroup : focused;
+    let found = false;
+    for (const key of ['Tab', 'Shift+Tab']) {
+      for (let i = 0; i < MAX_TABS && !found; i++) {
+        if (await arrived().catch(() => false)) found = true;
+        else {
+          await this.page.keyboard.press(key);
+          this.keys += 1;
+        }
+      }
+      if (found) break;
+    }
+    if (!found) throw new Error(`keyboard: Tab never reached "${this.pending}"`);
+    if (!radio) return;
+    for (let i = 0; i < 20; i++) {
+      if (await focused().catch(() => false)) return;
+      await this.page.keyboard.press('ArrowDown');
+      this.keys += 1;
+    }
+    throw new Error(`keyboard: the arrow keys never reached "${this.pending}"`);
+  }
+  /** Keyboard mode: reach the control, then press it as its kind is pressed. */
+  private async press(target: Locator) {
+    if (!KEYBOARD) return target.click();
+    await this.reach(target);
+    const toggle = await target.evaluate((el) =>
+      /^(checkbox|radio|switch)$/.test(el.getAttribute('role') ?? (el as HTMLInputElement).type ?? ''),
+    );
+    await this.page.keyboard.press(toggle ? 'Space' : 'Enter');
+    this.keys += 1;
+  }
   async tap(target: Locator, what: string) {
     this.pending = what;
-    await target.click();
+    await this.press(target);
     this.taps += 1;
     this.log.push(`tap ${what}`);
   }
   async fill(target: Locator, value: string, what: string) {
     this.pending = what;
-    await target.click();
-    await target.fill(value);
+    if (KEYBOARD) {
+      await this.reach(target);
+      await this.page.keyboard.press('ControlOrMeta+A');
+      await this.page.keyboard.type(value);
+      this.keys += 1 + value.length;
+    } else {
+      await target.click();
+      await target.fill(value);
+    }
     this.taps += 1;
     this.fields += 1;
     this.log.push(`field ${what}`);
   }
   async select(target: Locator, option: Parameters<Locator['selectOption']>[0], what: string) {
     this.pending = what;
+    // A native select is chosen from the keyboard with the arrow keys once focused; reaching it is
+    // what the keyboard path has to prove.
+    if (KEYBOARD) await this.reach(target);
     await target.selectOption(option);
     this.taps += 2;
     this.fields += 1;
@@ -49,15 +124,17 @@ class Count {
   }
   async choose(target: Locator, what: string) {
     this.pending = what;
-    await target.click();
+    await this.press(target);
     this.taps += 1;
     this.fields += 1;
     this.log.push(`choose ${what}`);
   }
   async code(first: Locator, code: string, what: string) {
     this.pending = what;
-    await first.click();
+    if (KEYBOARD) await this.reach(first);
+    else await first.click();
     await this.page.keyboard.type(code);
+    this.keys += code.length;
     this.taps += 1;
     this.fields += 1;
     this.log.push(`code ${what}`);
@@ -74,6 +151,8 @@ interface TaskResult {
   task: string;
   taps: number | null;
   fields: number | null;
+  /** Keyboard mode: key presses (Tab, Enter, Space and the characters typed). */
+  keys?: number | null;
   steps: string[];
   error: string | null;
 }
@@ -192,19 +271,17 @@ const tasks: { name: string; run: (b: Browser) => Promise<{ count: Count; close:
       run: async (browser) => {
         const { ctx, page } = await coldStart(browser, 'ananya@dpit.example');
         const c = count(page);
-        // Home's next-step card names the drive (the shortest path on screen); else the Placements tab.
-        const card = page.getByRole('link', { name: /A drive you can register for/ }).first();
-        if (await card.isVisible().catch(() => false)) await c.tap(card, 'drive card on Home');
-        else {
-          await c.tap(page.getByRole('link', { name: 'Placements', exact: true }).last(), 'Placements tab');
-          await c.tap(page.getByRole('main').getByRole('link', { name: /DEMO/ }).first(), 'an open drive');
-        }
+        // A final-year student opens on Placements (U2), where each eligible drive's card registers
+        // in one tap (U7); a drive with questions opens its page with the form (a link, not a button).
+        if (!/\/placements$/.test(page.url()))
+          await c.tap(page.getByRole('link', { name: 'Placements', exact: true }).last(), 'Placements');
+        const main = page.getByRole('main');
         await c.tap(
-          page
-            .getByRole('main')
-            .getByRole('button', { name: /^Register/ })
+          main
+            .getByRole('button', { name: /^Register for/ })
+            .or(main.getByRole('link', { name: /^Register for/ }))
             .first(),
-          'register',
+          'register on the card',
         );
         // The company's questions, if the drive has any (each a select here), then Register.
         const dialog = page.getByRole('dialog');
@@ -227,7 +304,9 @@ const tasks: { name: string; run: (b: Browser) => Promise<{ count: Count; close:
         // the step itself (U3), so Mark done is the next tap.
         if (!/\/home$/.test(page.url()))
           await c.tap(page.locator('nav.chrome-bottom > a[href="/home"]'), 'Home tab');
-        await c.tap(page.getByRole('link', { name: /^Next on/ }).first(), 'next-step card on Home');
+        // "Next on <path>": the Today card when the step is the week's most urgent thing, else the
+        // step's row in Your next steps (U5); either opens the step itself.
+        await c.tap(page.getByRole('link', { name: /Next on/ }).first(), 'the next step on Home');
         await c.tap(page.getByRole('dialog').getByRole('button', { name: 'Mark done' }), 'mark as done');
         await expect(
           page.getByRole('dialog').getByRole('button', { name: 'Mark as not done' }),
@@ -240,7 +319,15 @@ const tasks: { name: string; run: (b: Browser) => Promise<{ count: Count; close:
       run: async (browser) => {
         const { ctx, page } = await coldStart(browser, 'ananya@dpit.example');
         const c = count(page);
-        await c.tap(page.getByRole('link', { name: 'Study', exact: true }).last(), 'Study tab');
+        // Study lives in the Learn space (U2): its tab, then the Study section.
+        await c.tap(
+          page
+            .getByRole('navigation', { name: 'Main' })
+            .getByRole('link', { name: 'Learn', exact: true })
+            .last(),
+          'Learn tab',
+        );
+        await c.tap(page.getByRole('link', { name: 'Study', exact: true }).first(), 'Study');
         await c.fill(page.getByPlaceholder('Search by name or code'), 'Formal Languages', 'search');
         await c.tap(
           page.getByRole('link', { name: /Formal Languages and Automata Theory/ }).first(),
@@ -266,13 +353,20 @@ const tasks: { name: string; run: (b: Browser) => Promise<{ count: Count; close:
       run: async (browser) => {
         const { ctx, page } = await coldStart(browser, 'tpo@dpit.example');
         const c = count(page);
-        const admin = page.getByRole('link', { name: 'Admin', exact: true }).last();
-        if (await admin.isVisible()) await c.tap(admin, 'Admin tab');
-        else {
-          await c.tap(page.getByRole('button', { name: /Account menu/ }), 'account menu');
-          await c.tap(page.getByRole('link', { name: 'Admin', exact: true }).last(), 'Admin');
-        }
-        await c.tap(page.getByRole('link', { name: /Not joined yet/ }).first(), 'not joined');
+        // Prompt 3, U9: staff open on Today, where the students who have not joined are a row with
+        // its one action; anywhere else, Today is the first tab.
+        if (!/\/admin$/.test(page.url()))
+          await c.tap(
+            page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Today' }).last(),
+            'Today',
+          );
+        await c.tap(
+          page
+            .getByRole('listitem')
+            .filter({ hasText: /joined yet/ })
+            .getByRole('link', { name: 'Invite' }),
+          'invite (not joined)',
+        );
         await c.tap(page.getByRole('button', { name: 'Nudge' }).first(), 'nudge');
         // Messages on WhatsApp need the college's word that the students agreed (one tick), then Send.
         const dialog = page.getByRole('dialog');
@@ -306,7 +400,14 @@ test('tasks: taps and fields (U0.2)', async ({ browser }) => {
     current = null;
     try {
       const { count, close } = await t.run(browser);
-      rows.push({ task: t.name, taps: count.taps, fields: count.fields, steps: count.log, error: null });
+      rows.push({
+        task: t.name,
+        taps: count.taps,
+        fields: count.fields,
+        ...(KEYBOARD ? { keys: count.keys } : {}),
+        steps: count.log,
+        error: null,
+      });
       await close();
     } catch (e) {
       const c = current as Count | null;
@@ -342,11 +443,16 @@ test('tasks: taps and fields (U0.2)', async ({ browser }) => {
         .catch(() => undefined);
     }
   }
-  rows.push(TASK_G);
+  if (!KEYBOARD) rows.push(TASK_G);
   mkdirSync(DATA, { recursive: true });
-  writeFileSync(join(DATA, 'tasks.json'), `${JSON.stringify(rows, null, 1)}\n`);
+  writeFileSync(
+    join(DATA, KEYBOARD ? 'tasks-keyboard.json' : 'tasks.json'),
+    `${JSON.stringify(rows, null, 1)}\n`,
+  );
   for (const r of rows)
     console.warn(
-      `${r.task}: ${r.taps ?? '—'} taps, ${r.fields ?? '—'} fields${r.error ? ` (${r.error})` : ''}`,
+      `${r.task}: ${r.taps ?? '—'} taps, ${r.fields ?? '—'} fields${KEYBOARD ? `, ${r.keys ?? '—'} keys` : ''}${r.error ? ` (${r.error})` : ''}`,
     );
+  // Prompt 3, U11: every journey can be finished with the keyboard alone.
+  if (KEYBOARD) expect(rows.filter((r) => r.error).map((r) => `${r.task}: ${r.error}`)).toEqual([]);
 });

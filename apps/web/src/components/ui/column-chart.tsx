@@ -56,6 +56,21 @@ export function ColumnChart({
   const showLabel = labelEvery(points.length, Math.max(2, Math.floor((W - pad.l - pad.r) / 56)));
   const y = (v: number) => pad.t + plotH - (plotH * v) / top;
   const cur = active !== null ? points[active] : undefined;
+  // Prompt 3, U11: what the chart shows, in words, for screen readers (the table view has every value).
+  const shownValue = (p: ColumnPoint) => p.display ?? format(p.value);
+  const peak = points
+    .filter((p) => p.display === undefined)
+    .reduce<ColumnPoint | undefined>((m, p) => (!m || p.value > m.value ? p : m), undefined);
+  const last = points.at(-1);
+  const summary =
+    peak && last
+      ? t('charts.summary', {
+          max: shownValue(peak),
+          maxLabel: peak.label,
+          last: shownValue(last),
+          lastLabel: last.label,
+        })
+      : null;
 
   return (
     <figure className={cn('grid gap-2', className)} aria-labelledby={`${id}-t`}>
@@ -64,6 +79,7 @@ export function ColumnChart({
           {title}
         </span>
         {description && <span className="text-callout text-fg-2">{description}</span>}
+        {summary && <span className="sr-only">{summary}</span>}
       </figcaption>
       <div ref={ref} className="relative">
         <svg

@@ -73,7 +73,7 @@ export function RequestsQueue({ weeklyCap }: { weeklyCap: number | null }) {
         )}
       </ListSection>
       <p className="text-callout text-fg-2">
-        <Link to="/mentorship" className="font-semibold text-brand-ink hover:underline">
+        <Link to="/mentorship" className="hit font-semibold text-brand-ink hover:underline">
           {t('mentoring.queue.more')}
         </Link>
       </p>

@@ -154,7 +154,7 @@ export function AppShell({ platform = false }: { platform?: boolean }) {
                   {...intentPreload(x.to)}
                   className="flex min-h-8 items-center gap-2 rounded-sm px-2.5 text-callout text-fg-2 hover:bg-hover hover:text-fg aria-[current=page]:bg-brand-surface aria-[current=page]:font-semibold aria-[current=page]:text-brand-ink"
                 >
-                  <span className="min-w-0 flex-1 truncate">{x.label}</span>
+                  <span className="min-w-0 flex-1 py-1 [overflow-wrap:anywhere]">{x.label}</span>
                   <Count n={x.badge} />
                 </Link>
               </li>

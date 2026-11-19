@@ -4451,5 +4451,8 @@
   "answers": {
     "askAccepted": "You’ll help {{name}}",
     "askDeclined": "Passed on. {{name}}’s ask goes to someone else."
+  },
+  "charts": {
+    "summary": "Highest: {{max}} in {{maxLabel}}. Latest: {{last}} in {{lastLabel}}."
   }
 }

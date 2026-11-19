@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useState, type KeyboardEvent } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { RowsSkeleton } from '../../components/ui/skeleton-shapes';
+import { SkeletonRows } from '../../components/ui/skeletons';
 import { BadgeCheck, Compass, RotateCcw, Send, SlidersHorizontal, X } from 'lucide-react';
 import { LOCALE_TAGS, toLocale, type MentorCard, type MentorMatch } from '@campuslink/shared';
 import { useTranslation } from '../../i18n/react';
@@ -170,7 +170,7 @@ function Name({ m, level = 2, link = false }: { m: MentorCard; level?: 2 | 3; li
     <div className="flex flex-wrap items-center gap-2">
       <H className="text-headline font-semibold text-pretty">
         {link ? (
-          <Link to={`/mentors/${m.userId}`} className="hover:underline">
+          <Link to={`/mentors/${m.userId}`} className="hit hover:underline">
             {stripDemo(m.name)}
           </Link>
         ) : (
@@ -368,7 +368,7 @@ export function MatchView({ onPrefs }: { onPrefs: () => void }) {
     sheet.open('request');
   };
 
-  if (q.isLoading) return <RowsSkeleton rows={4} />;
+  if (q.isLoading) return <SkeletonRows rows={4} />;
   if (q.isSuccess && !all.length)
     return (
       <EmptyState icon={<Compass className="size-6" />} title={t('match.empty')}>

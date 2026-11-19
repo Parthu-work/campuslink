@@ -12,7 +12,8 @@ import { PageHeader } from './page-header';
 import { Toolbar } from './toolbar';
 import { DataTable, type Column } from './data-table';
 import { EmptyState, Chip } from './misc';
-import { Kbd, SkeletonRow } from './skeletons';
+import { Kbd, SkeletonRow, SkeletonRows, SkeletonTable } from './skeletons';
+import { ColumnChart } from './column-chart';
 import { ActionCard } from './action-card';
 import { PersonCard } from './person-card';
 import { Countdown } from './countdown';
@@ -252,6 +253,45 @@ describe('primitives are accessible (ADR 0015)', () => {
     );
     expect(host.querySelector('a')?.getAttribute('href')).toBe('/drives/1');
     expect(host.querySelectorAll('li button')).toHaveLength(1);
+  });
+
+  it('a column chart says what it shows in words (prompt 3, U11), never from a suppressed count', async () => {
+    // The chart lays itself out at its width; jsdom has no layout, so a still observer will do.
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    const host = await render(
+      <ColumnChart
+        title="Sessions each month"
+        labelHeader="Month"
+        valueHeader="Count"
+        points={[
+          { key: 'a', label: 'Jun', value: 0, display: '<5' },
+          { key: 'b', label: 'Aug', value: 12 },
+          { key: 'c', label: 'Nov', value: 7 },
+        ]}
+      />,
+    );
+    expect(host.querySelector('figcaption .sr-only')?.textContent).toBe(
+      'Highest: 12 in Aug. Latest: 7 in Nov.',
+    );
+    expect(await violations(host)).toEqual([]);
+  });
+
+  it('loading rows and tables are hidden from screen readers and keep the content’s frame', async () => {
+    const host = await render(
+      <>
+        <SkeletonRows rows={2} title leading="icon" />
+        <SkeletonTable rows={2} columns={3} />
+      </>,
+    );
+    for (const el of Array.from(host.children)) expect(el.getAttribute('aria-hidden')).toBe('true');
+    expect(await violations(host)).toEqual([]);
   });
 
   it('the step track is an ordered list numbered across phases, with each state spoken', async () => {

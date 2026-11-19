@@ -3,7 +3,7 @@ import { useDataSaver } from '../../lib/data-saver';
 import { useTranslation } from '../../i18n/react';
 import { Lock, Rss } from 'lucide-react';
 import { Card, EmptyState, Skeleton } from '../../components/ui/misc';
-import { RowsSkeleton } from '../../components/ui/skeleton-shapes';
+import { SkeletonRows } from '../../components/ui/skeletons';
 import { Segmented } from '../../components/ui/tab-nav';
 import { useCan, useMe } from '../../lib/me';
 import { formatDay } from '../../lib/format';
@@ -85,7 +85,7 @@ export function HomePage() {
                     : 'alumnus'
                 : null
             }
-            fallback={<RowsSkeleton title rows={2} leading="icon" />}
+            fallback={<SkeletonRows title rows={2} leading="icon" />}
           />
         )}
         <Suggested />

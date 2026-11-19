@@ -23,6 +23,49 @@ export interface AxeResult {
   violations: { id: string; impact: string | null; help: string; nodes: string[] }[];
 }
 
+/** One piece of meaning cut short on screen (prompt 3, U11, X5). */
+export interface Truncation {
+  screen: string;
+  text: string;
+  /** The element that says what the text is: a heading, a button, a link, a label, a name. */
+  role: string;
+}
+
+/**
+ * Prompt 3, U11 (X5): text the screen cuts short where it carries meaning. A title, a name or a
+ * button's label drawn with an ellipsis (`text-overflow: ellipsis`, or a line clamp) and actually
+ * longer than its box. "Meaning" is a heading, a button, a link, a tab, a label, a table header,
+ * a term, or bold text (names and titles are set semibold); a preview line in regular weight (a
+ * message's first words, a post's opening) may be cut on purpose and is not counted.
+ */
+export function truncations(page: Page, screen: string): Promise<Truncation[]> {
+  return page.evaluate((screen) => {
+    const meaning = 'h1,h2,h3,h4,h5,[role=heading],button,a,[role=button],[role=tab],label,th,dt,legend';
+    const out: { screen: string; text: string; role: string }[] = [];
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>('body *'))) {
+      const s = getComputedStyle(el);
+      const ellipsis = s.textOverflow === 'ellipsis' && s.overflowX !== 'visible';
+      const clamp = s.getPropertyValue('-webkit-line-clamp') !== 'none' && s.overflowY !== 'visible';
+      if (!ellipsis && !clamp) continue;
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height || s.visibility === 'hidden') continue;
+      const cut = ellipsis ? el.scrollWidth > el.clientWidth + 1 : el.scrollHeight > el.clientHeight + 1;
+      if (!cut) continue;
+      const owner = el.closest<HTMLElement>(meaning);
+      const bold = Number(s.fontWeight) >= 600;
+      if (!owner && !bold) continue;
+      const text = (el.textContent ?? '').replace(/\s+/g, ' ').trim();
+      if (!text) continue;
+      out.push({
+        screen,
+        text: text.slice(0, 80),
+        role: owner ? (owner.getAttribute('role') ?? owner.tagName.toLowerCase()) : 'bold',
+      });
+    }
+    return out;
+  }, screen);
+}
+
 export async function axe(page: Page, screen: string): Promise<AxeResult> {
   const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
   return {

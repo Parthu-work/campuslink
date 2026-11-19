@@ -24,6 +24,13 @@ const DEVICES = {
   1440: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, isMobile: false, hasTouch: false },
 } as const;
 type Width = keyof typeof DEVICES;
+/**
+ * `WIDTHS=360` captures phones only (prompt 3, U11): axe and the target measurements are taken
+ * at 360 px, so a fix-and-check loop needs only those; the full run keeps both widths.
+ */
+const WIDTHS = (process.env.WIDTHS?.split(',').map(Number) ?? [360, 1440]).filter(
+  (w): w is Width => w === 360 || w === 1440,
+);
 const THEMES = ['light', 'dark'] as const;
 const COLLEGES = ['dpit', 'mrce'] as const;
 
@@ -91,7 +98,7 @@ async function captureRole(browser: Browser, role: AuditRole, host: string, labe
   const failures: { screen: string; error: string }[] = [];
   const metrics: Record<string, unknown> = {};
   const urls = new Map<string, string>();
-  for (const width of [360, 1440] as const) {
+  for (const width of WIDTHS) {
     const { ctx, page } = await context(browser, width, host, role);
     for (const theme of THEMES) {
       await page.emulateMedia({ colorScheme: theme });

@@ -122,8 +122,10 @@ describe.each(Object.entries(COLLEGES))('palette for a %s college', (_, hex) => 
       expect(contrastRatio(color(t, '--on-space'), color(t, bg)), bg).toBeGreaterThanOrEqual(INK_RATIO);
       expect(contrastRatio(color(t, '--on-space-2'), color(t, bg)), bg).toBeGreaterThanOrEqual(TEXT_RATIO);
     }
-    // The focus ring is the brand ink: 3:1 against the canvas is the WCAG bar for indicators.
-    expect(contrastRatio(color(t, '--brand-ink'), color(t, '--bg'))).toBeGreaterThanOrEqual(3);
+    // The focus ring is the brand ink: 3:1 against the canvas is the WCAG bar for indicators, and
+    // (prompt 3, U11) against every surface a focused control can sit on.
+    for (const bg of ['--bg', '--surface-1', '--surface-2'])
+      expect(contrastRatio(color(t, '--brand-ink'), color(t, bg)), bg).toBeGreaterThanOrEqual(3);
   });
 
   it.each(THEMES)('subject accents are readable as text and on their own chip (%s)', (theme) => {

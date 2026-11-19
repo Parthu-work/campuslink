@@ -110,7 +110,12 @@ export function StoriesRow() {
                   <PersonAvatar name={gr.author.name || '?'} fileId={gr.author.avatarFileId} size={58} />
                 </span>
               </span>
-              <span className={cn('w-full truncate text-center', gr.seen ? 'text-fg-3' : 'text-fg')}>
+              <span
+                className={cn(
+                  'w-full text-center leading-tight [overflow-wrap:anywhere]',
+                  gr.seen ? 'text-fg-3' : 'text-fg',
+                )}
+              >
                 {gr.mine ? t('stories.yours') : firstName(gr.author.name)}
               </span>
             </button>
