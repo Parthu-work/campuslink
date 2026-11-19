@@ -25,7 +25,8 @@ import { PageHeader } from '../../components/ui/page-header';
 import { ErrorState } from '../../components/ui/error-state';
 import { Illustration } from '../../components/ui/illustration';
 import { Switch } from '../../components/ui/switch';
-import { Dialog } from '../../components/ui/dialog';
+import { DataTable } from '../../components/ui/data-table';
+import { Dialog, Sheet } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { api, apiRequest, ApiError } from '../../lib/api';
 import { useCan, useMe } from '../../lib/me';
@@ -90,6 +91,7 @@ export function UsersAdmin() {
   const [role, setRole] = useState('');
   const dq = useDeferredValue(q);
   const [editing, setEditing] = useState<AdminUser | null>(null);
+  const [openUser, setOpenUser] = useState<AdminUser | null>(null);
   const [confirming, setConfirming] = useState<{ kind: 'suspend' | 'unverify'; user: AdminUser } | null>(
     null,
   );
@@ -160,29 +162,92 @@ export function UsersAdmin() {
       {users.isSuccess && rows.length === 0 && (
         <EmptyState art={<Illustration kind="people" />} title={t('admin.noUsers')} />
       )}
-      <ul className="grid gap-2">
-        {rows.map((u) => (
-          <li key={u.id}>
-            <Card className="flex flex-wrap items-center gap-3 p-3">
-              <Avatar name={u.name} verified={u.verified} />
-              <div className="min-w-0 flex-1">
-                <b className="block truncate text-callout">{u.name}</b>
-                <span className="block truncate text-caption text-fg-2">{u.email}</span>
-                <div className="mt-1.5 flex flex-wrap gap-1">
+      {rows.length > 0 && (
+        <DataTable
+          label={t('admin.users')}
+          rows={rows}
+          rowKey={(u) => u.id}
+          onOpen={setOpenUser}
+          columns={[
+            {
+              key: 'name',
+              header: t('staff.table.member'),
+              sort: (u) => u.name.toLowerCase(),
+              cell: (u) => (
+                <span className="flex items-center gap-3">
+                  <Avatar name={u.name} verified={u.verified} />
+                  <span className="grid min-w-0 gap-0.5">
+                    <span className="font-semibold text-pretty break-words text-fg">{u.name}</span>
+                    <span className="text-caption break-all text-fg-2">{u.email}</span>
+                  </span>
+                </span>
+              ),
+            },
+            {
+              key: 'roles',
+              header: t('admin.roles'),
+              sort: (u) => u.roles.map((r) => t(`role.${r}`)).join(', '),
+              cell: (u) => (
+                <span className="flex flex-wrap gap-1">
                   {u.roles.map((r) => (
                     <Badge key={r} tone="brand">
                       {t(`role.${r}`)}
                     </Badge>
                   ))}
+                </span>
+              ),
+            },
+            {
+              key: 'status',
+              header: t('admin.status'),
+              sort: (u) => (u.status === 'suspended' ? 2 : u.verified ? 0 : 1),
+              wide: true,
+              cell: (u) => (
+                <span className="flex flex-wrap gap-1">
+                  {u.status === 'suspended' ? (
+                    <Badge tone="danger">{t('admin.suspended')}</Badge>
+                  ) : u.verified ? (
+                    <Badge tone="success">{t('staff.table.verified')}</Badge>
+                  ) : (
+                    <Badge tone="warning">{t('admin.unverified')}</Badge>
+                  )}
                   {u.capabilities.includes('CERTIFIED_CONTRIBUTOR') && (
                     <Badge tone="accent">{t('admin.contributor')}</Badge>
                   )}
                   {u.capabilities.includes('CAMPUS_CAPTAIN') && (
                     <Badge tone="accent">{t('admin.captain')}</Badge>
                   )}
-                  {!u.verified && <Badge tone="warning">{t('admin.unverified')}</Badge>}
-                  {u.status === 'suspended' && <Badge tone="danger">{t('admin.suspended')}</Badge>}
-                </div>
+                </span>
+              ),
+            },
+          ]}
+        />
+      )}
+      {/* A member's side panel (prompt 3, U9): who they are and what may be changed. */}
+      <Sheet
+        open={!!openUser}
+        onOpenChange={(o) => !o && setOpenUser(null)}
+        title={openUser?.name ?? ''}
+        description={openUser?.email ?? ''}
+        history={false}
+      >
+        {openUser &&
+          ((u: AdminUser) => (
+            <div className="grid gap-4">
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {u.roles.map((r) => (
+                  <Badge key={r} tone="brand">
+                    {t(`role.${r}`)}
+                  </Badge>
+                ))}
+                {u.capabilities.includes('CERTIFIED_CONTRIBUTOR') && (
+                  <Badge tone="accent">{t('admin.contributor')}</Badge>
+                )}
+                {u.capabilities.includes('CAMPUS_CAPTAIN') && (
+                  <Badge tone="accent">{t('admin.captain')}</Badge>
+                )}
+                {!u.verified && <Badge tone="warning">{t('admin.unverified')}</Badge>}
+                {u.status === 'suspended' && <Badge tone="danger">{t('admin.suspended')}</Badge>}
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {canRoles && (
@@ -248,10 +313,9 @@ export function UsersAdmin() {
                   </Button>
                 )}
               </div>
-            </Card>
-          </li>
-        ))}
-      </ul>
+            </div>
+          ))(rows.find((x) => x.id === openUser.id) ?? openUser)}
+      </Sheet>
       {/* Taking something away from a member is confirmed, with what it does (audit DS-7). */}
       <Dialog
         open={!!confirming}

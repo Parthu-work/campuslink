@@ -9,10 +9,12 @@ import { Checkbox, Field, Input, Select, Textarea } from '../../components/ui/fi
 import { ErrorState } from '../../components/ui/error-state';
 import { Illustration } from '../../components/ui/illustration';
 import { Badge, Card, Chip, EmptyState, Skeleton } from '../../components/ui/misc';
-import { Dialog } from '../../components/ui/dialog';
+import { DataTable, type Column } from '../../components/ui/data-table';
+import { Dialog, Sheet } from '../../components/ui/dialog';
 import { FormError } from '../../components/layout/auth-layout';
 import { api, apiRequest, ApiError } from '../../lib/api';
 import { useFileUrl } from '../../lib/files';
+import { formatRelative } from '../../lib/format';
 import { useCan } from '../../lib/me';
 
 interface ListRow {
@@ -365,6 +367,11 @@ interface Request {
   listMatch: { name: string; gradYear: number | null; kind: string; status: string } | null;
 }
 
+/**
+ * Verification requests (B6; prompt 3, U9: the staff table pattern): one compact row per request,
+ * sortable, selected rows decided together from a sticky bar, and a row opening the request in a
+ * side panel with the ID photo and its own Approve and Reject.
+ */
 export function VerificationAdmin() {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -372,6 +379,7 @@ export function VerificationAdmin() {
   const [selected, setSelected] = useState<string[]>([]);
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState('');
+  const [open, setOpen] = useState<Request | null>(null);
   const q = useQuery({
     queryKey: ['verification-queue', status],
     queryFn: () => api.get<Request[]>(`/admin/verification?status=${status}`),
@@ -395,70 +403,127 @@ export function VerificationAdmin() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-  const pending = status === 'pending' ? (q.data ?? []) : [];
-  const toggle = (id: string, on: boolean) =>
-    setSelected((s) => (on ? [...new Set([...s, id])] : s.filter((x) => x !== id)));
+  const rows = q.data ?? [];
+  const pending = status === 'pending';
+  const name = (r: Request) => r.user?.name ?? r.rollNumber;
+  const columns: Column<Request>[] = [
+    {
+      key: 'name',
+      header: t('staff.table.student'),
+      sort: (r) => name(r).toLowerCase(),
+      cell: (r) => (
+        <span className="grid gap-0.5">
+          <span className="font-semibold text-fg">{name(r)}</span>
+          {r.user?.email && <span className="text-caption break-all text-fg-2">{r.user.email}</span>}
+        </span>
+      ),
+    },
+    {
+      key: 'roll',
+      header: t('staff.table.roll'),
+      sort: (r) => r.rollNumber,
+      cell: (r) => (
+        <span className="font-mono">
+          {r.rollNumber}
+          {r.gradYear ? ` · ${r.gradYear}` : ''}
+        </span>
+      ),
+    },
+    {
+      key: 'list',
+      header: t('staff.table.list'),
+      sort: (r) => (r.listMatch ? 0 : 1),
+      cell: (r) =>
+        r.listMatch ? (
+          <span className="inline-flex items-center gap-1 text-success-ink">
+            <Check className="size-4" aria-hidden /> {t('staff.table.onList')}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 text-warning-ink">
+            <X className="size-4" aria-hidden /> {t('staff.table.notOnList')}
+          </span>
+        ),
+    },
+    {
+      key: 'sent',
+      header: t('staff.table.sent'),
+      sort: (r) => Date.parse(r.createdAt),
+      wide: true,
+      cell: (r) => formatRelative(r.createdAt),
+    },
+  ];
   return (
     <div className="grid gap-4">
       <div role="group" aria-label={t('admin.status')} className="flex flex-wrap gap-2">
-        {(['pending', 'approved', 'rejected'] as const).map((s) => (
+        {(['pending', 'approved', 'rejected'] as const).map((st) => (
           <Chip
-            key={s}
-            pressed={status === s}
+            key={st}
+            pressed={status === st}
             onClick={() => {
-              setStatus(s);
+              setStatus(st);
               setSelected([]);
             }}
           >
-            {t(`admin.${s}`)}
+            {t(`admin.${st}`)}
           </Chip>
         ))}
       </div>
-      {pending.length > 1 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-[var(--radius-md)] bg-surface-2 p-3">
-          <Checkbox
-            id="select-all-requests"
-            checked={selected.length === pending.length}
-            onChange={(on) => setSelected(on ? pending.slice(0, 100).map((r) => r.id) : [])}
-          >
-            {t('admin.selectAll')}
-          </Checkbox>
-          <span className="text-callout text-fg-2" role="status">
-            {t('admin.selectedCount', { count: selected.length })}
-          </span>
-          <div className="ml-auto flex flex-wrap gap-2">
-            <Button
-              variant="primary"
-              size="sm"
-              disabled={!selected.length}
-              loading={bulk.isPending && !rejecting}
-              onClick={() => bulk.mutate('approve')}
-            >
-              {t('admin.approveSelected')}
-            </Button>
-            <Button size="sm" disabled={!selected.length} onClick={() => setRejecting(true)}>
-              {t('admin.rejectSelected')}
-            </Button>
-          </div>
-        </div>
-      )}
       {q.isLoading && <Skeleton className="h-48" />}
       {q.isError && <ErrorState error={q.error} onRetry={() => void q.refetch()} />}
-      {q.isSuccess && !q.data.length && (
+      {q.isSuccess && !rows.length && (
         <EmptyState art={<Illustration kind="done" />} title={t('admin.queueEmpty')} />
       )}
-      <ul className="grid gap-3">
-        {q.data?.map((r) => (
-          <li key={r.id}>
-            <RequestCard
-              r={r}
-              {...(status === 'pending' && pending.length > 1
-                ? { selected: selected.includes(r.id), onSelect: (on: boolean) => toggle(r.id, on) }
-                : {})}
-            />
-          </li>
-        ))}
-      </ul>
+      {rows.length > 0 && (
+        <DataTable
+          label={t('admin.ov.verification')}
+          rows={rows}
+          rowKey={(r) => r.id}
+          columns={columns}
+          initialSort={{ key: 'sent', dir: 'asc' }}
+          onOpen={setOpen}
+          {...(pending
+            ? {
+                selection: {
+                  selected,
+                  onChange: (ids: string[]) => setSelected(ids.slice(0, 100)),
+                  rowLabel: (r: Request) => t('admin.selectRequest', { name: name(r) }),
+                  allLabel: t('admin.selectAll'),
+                },
+              }
+            : {})}
+          bar={
+            <>
+              <span className="text-callout font-semibold" role="status">
+                {t('admin.selectedCount', { count: selected.length })}
+              </span>
+              <div className="ms-auto flex flex-wrap gap-2">
+                <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+                  {t('staff.table.clear')}
+                </Button>
+                <Button size="sm" onClick={() => setRejecting(true)}>
+                  {t('admin.rejectSelected')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={bulk.isPending && !rejecting}
+                  onClick={() => bulk.mutate('approve')}
+                >
+                  {t('admin.approveSelected')}
+                </Button>
+              </div>
+            </>
+          }
+        />
+      )}
+      <Sheet
+        open={!!open}
+        onOpenChange={(o) => !o && setOpen(null)}
+        title={open ? name(open) : ''}
+        history={false}
+      >
+        {open && <RequestCard r={open} onDecided={() => setOpen(null)} />}
+      </Sheet>
       <Dialog
         open={rejecting}
         onOpenChange={setRejecting}
@@ -489,11 +554,14 @@ function RequestCard({
   r,
   selected,
   onSelect,
+  onDecided,
 }: {
   r: Request;
   /** B6 bulk decisions: present only in the pending list. */
   selected?: boolean;
   onSelect?: (on: boolean) => void;
+  /** The side panel closes once the request is decided (prompt 3, U9). */
+  onDecided?: () => void;
 }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
@@ -509,6 +577,7 @@ function RequestCard({
     onSuccess: () => {
       toast.success(t('admin.decided'));
       setRejecting(false);
+      onDecided?.();
       void qc.invalidateQueries({ queryKey: ['verification-queue'] });
     },
     onError: (e: Error) => toast.error(e.message),

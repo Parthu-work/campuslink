@@ -143,7 +143,16 @@ test.describe('signed-in journeys', () => {
     await page.getByLabel('Search by name or email').fill('Srinivas');
     await expect(page.getByText('Srinivas Murthy')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Members', level: 1 })).toBeVisible();
+    // Prompt 3, U9: one table pattern. A header sorts and says so; a row opens the member's panel.
+    const sortByName = page.getByRole('columnheader', { name: 'Member' });
+    await sortByName.getByRole('button').click();
+    await expect(sortByName).toHaveAttribute('aria-sort', 'ascending');
     await expectNoA11yViolations(page);
+    await page.getByRole('row').filter({ hasText: 'Srinivas Murthy' }).getByRole('button').first().click();
+    const panel = page.getByRole('dialog', { name: 'Srinivas Murthy' });
+    await expect(panel.getByRole('button', { name: 'Edit roles' })).toBeVisible();
+    await expectNoA11yViolations(page);
+    await page.keyboard.press('Escape');
     // Back to Today from the navigation, then the audit log.
     await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Today' }).click();
     await page.waitForURL(/\/admin$/);

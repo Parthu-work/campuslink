@@ -37,6 +37,17 @@
       "week": "This week: {{members}} members, {{active}} active",
       "members": "{{members}} members",
       "active": "{{active}} active this week"
+    },
+    "table": {
+      "student": "Student",
+      "member": "Member",
+      "roll": "Roll number",
+      "list": "College list",
+      "sent": "Sent",
+      "onList": "On the list",
+      "notOnList": "Not on the list",
+      "verified": "Verified",
+      "clear": "Clear"
     }
   }
 }

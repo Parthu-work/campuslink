@@ -31,7 +31,7 @@ const PACK_USERS: Record<string, string[]> = {
   design: ['/features/design/'],
   today: ['/features/home/'],
   drives: ['/features/placements/'],
-  staff: ['/features/admin/today'],
+  staff: ['/features/admin/today', '/features/admin/list-admin.tsx', '/features/admin/admin.tsx'],
   ask: ['/features/ask/', '/features/copilot/', '/features/study/chat/'],
   mentoring: [
     '/features/mentors/',

@@ -10,6 +10,7 @@ import { Button } from './button';
 import { ListRow, ListSection } from './list-row';
 import { PageHeader } from './page-header';
 import { Toolbar } from './toolbar';
+import { DataTable, type Column } from './data-table';
 import { EmptyState, Chip } from './misc';
 import { Kbd, SkeletonRow } from './skeletons';
 import { ActionCard } from './action-card';
@@ -185,7 +186,48 @@ const SPECIMENS: Record<string, ReactNode> = {
   ),
 };
 
+type Row = { id: string; name: string; roll: string };
+const tableRows: Row[] = [
+  { id: 'b', name: 'Vikram Shetty', roll: '22DP1A0519' },
+  { id: 'a', name: 'Ananya K', roll: '23DP1A0542' },
+];
+const tableColumns: Column<Row>[] = [
+  { key: 'name', header: 'Student', sort: (r) => r.name, cell: (r) => r.name },
+  { key: 'roll', header: 'Roll number', cell: (r) => r.roll },
+];
+const table = (selected: string[] = []) => (
+  <DataTable
+    label="Verification requests"
+    rows={tableRows}
+    rowKey={(r) => r.id}
+    columns={tableColumns}
+    onOpen={() => undefined}
+    selection={{
+      selected,
+      onChange: () => undefined,
+      rowLabel: (r) => `Select ${r.name}`,
+      allLabel: 'Select all',
+    }}
+    bar={<span>{selected.length} selected</span>}
+  />
+);
+
 describe('primitives are accessible (ADR 0015)', () => {
+  it('a data table (prompt 3, U9) sorts by a header, says so, labels each checkbox and opens a row by keyboard', async () => {
+    const host = await render(table(['a']));
+    expect(await violations(host)).toEqual([]);
+    const th = host.querySelector('th[aria-sort]');
+    expect(th?.getAttribute('aria-sort')).toBe('none');
+    await act(async () => th?.querySelector('button')?.click());
+    expect(host.querySelector('th[aria-sort]')?.getAttribute('aria-sort')).toBe('ascending');
+    const firstCells = [...host.querySelectorAll('tbody tr td:nth-child(2)')].map((c) => c.textContent);
+    expect(firstCells).toEqual(['Ananya K', 'Vikram Shetty']);
+    expect(host.querySelector('input[aria-label="Select Ananya K"]')).not.toBeNull();
+    expect(host.querySelectorAll('tbody tr td:nth-child(2) button')).toHaveLength(2);
+    // The bulk bar shows only while something is selected.
+    expect(host.textContent).toContain('1 selected');
+  });
+
   it.each(Object.entries(SPECIMENS))('%s has no axe violations', async (_, ui) => {
     const host = await render(ui);
     expect(await violations(host)).toEqual([]);

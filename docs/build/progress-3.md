@@ -605,6 +605,35 @@ U8a's CI: green (run 44350154611).
 
 U8b's CI: green (run 44368112705).
 
+## U9b · Staff: one table pattern
+
+**Shipped.**
+
+- **`DataTable`** (`components/ui/data-table.tsx`, new primitive): compact rows (`data-density="compact"`) under the sticky header, sort by any column that allows it (`aria-sort` says which and which way), select rows (a labelled checkbox per row and "Select all") with a sticky bar of bulk actions while anything is selected (above the phone's tab bar), and a row that opens its detail: the first cell is a button, so the keyboard reaches it, and a click elsewhere on the row does the same (not on a checkbox or a button). Columns marked `wide` hide under 640 px. Labels come from the screen, so no strings are added to the main language files. Tested in `primitives.a11y.test.tsx` (axe, sorting, labels, the bar).
+- **Verification requests** (`list-admin.tsx`): the queue is the table (student, roll number and batch, on the college list or not, sent), oldest first; selected requests are approved or rejected together from the bar (B6's bulk decision, unchanged); a row opens the request in a side panel with the ID photo and its own Approve and Reject, which close the panel once decided.
+- **Members** (`admin.tsx`): the list of cards with up to five buttons each is now the table (member with email, roles, status and capabilities); a row opens the member's panel with their roles, badges and the actions (edit roles, contributor and captain, unverify, suspend or reactivate), each confirmed as before.
+- e2e `core.spec.ts`: Members sorts by name (`aria-sort`), a row opens the member's panel with Edit roles; axe on both.
+
+**Decisions.**
+
+- **Sorting is over the rows loaded**: Members pages 20 at a time, so a sort orders what is on the screen; the search and the role filter still go to the server.
+- **Bulk actions only where the API has them**: verification has a bulk decision (B6); Members has none, so its table has no selection (a loop of single changes would not be one audited action).
+- **The pattern reaches the other staff lists as they are rebuilt**: drive registrants (with their export) and the offers queue keep their current layouts in U9b; U9c (dashboards) and U12 (remaining defects) move further lists when they touch them.
+
+### Gate results (U9b)
+
+| Gate                                               | Result                                                                                                                                                            |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass                                                                                                                                                              |
+| Shared tests                                       | 221 passed                                                                                                                                                        |
+| Web tests                                          | 165 passed (new: `DataTable` with axe, sorting, labels and the bulk bar)                                                                                          |
+| API tests                                          | 1,368 passed, 7 skipped, coverage 90.29% statements and 76.57% branches (the whole suite, 4 workers; U9b changes no API code); `docs:gen`: no change              |
+| `pnpm build` and bundle budget                     | Pass: initial 162.3 KB; the table strings in the `staff` pack                                                                                                     |
+| End-to-end (local, freshly reseeded)               | `core`, `today`, `people`, `accessibility`, `navigation`, `spaces`, `shell`, `tpo-console`, `invites`: 100 passed, 16 skipped (phone-only and desktop-only tests) |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                          |
+
+U9a's CI: the first run failed (run 44384268399): the import test went back to Today and clicked "College list", a section link the old overview listed and Today shows only when the list has work waiting. The test now opens the college list directly (`204fdfa`); green (run 44394504403).
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

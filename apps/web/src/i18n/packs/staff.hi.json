@@ -37,6 +37,17 @@
       "week": "इस हफ़्ते: {{members}} सदस्य, {{active}} सक्रिय",
       "members": "{{members}} सदस्य",
       "active": "इस हफ़्ते {{active}} सक्रिय"
+    },
+    "table": {
+      "student": "छात्र",
+      "member": "सदस्य",
+      "roll": "रोल नंबर",
+      "list": "कॉलेज सूची",
+      "sent": "भेजा",
+      "onList": "सूची में है",
+      "notOnList": "सूची में नहीं",
+      "verified": "सत्यापित",
+      "clear": "हटाएँ"
     }
   }
 }
