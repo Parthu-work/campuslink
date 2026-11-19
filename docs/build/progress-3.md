@@ -776,7 +776,7 @@ One Home run showed a layout shift of 0.387 (sections moving down when Next step
 | Lighthouse                                         | As in the table above                                                                                                                                                                                                                                                                                                        |
 | Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                                                                     |
 
-U10a's CI (run 44500401737): `verify` hit its 20-minute limit again in the coverage step (tests 450 s on that runner); e2e, adapters and security passed. Twice in three runs, so `verify`'s limit is now 30 minutes (`.github/workflows/ci.yml`; the job runs the API suite twice). U10b's run, which carries U10a's code, is its check.
+U10a's CI (run 44500401737): `verify` hit its 20-minute limit again in the coverage step (tests 450 s on that runner); e2e, adapters and security passed. Twice in three runs, so `verify`'s limit is now 30 minutes (`.github/workflows/ci.yml`; the job runs the API suite twice). U10b's run, which carries U10a's code, is its check: green (run 44513066806), `verify` well inside the new limit.
 
 ## U10c · Polish: skeletons in shape, the boot mark, cards into screens
 
