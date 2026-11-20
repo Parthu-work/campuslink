@@ -951,6 +951,8 @@ The before set's Lighthouse figures came from a cloud container far faster than 
 
 U12's CI: green (run 44580483768).
 
+U13's CI: green on `0b5f1e8` (run 44714138849: verify, e2e, adapters, security and deploy-config). Prompt 3 is complete; what is left is in `report-3.md` › Gaps and Next.
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

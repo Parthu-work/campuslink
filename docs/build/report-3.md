@@ -317,7 +317,7 @@ Every phase was pushed to `main` after the full gate, and each phase's CI run is
 - **Build:** initial JS 155.7 KB of 170.
 - **End-to-end:** the specs this phase touches pass on a fresh seed. One failure, the sidebar's fit at 1280×720, came from this phase's first account-button change, and was fixed and run again.
 - **Audits:** every audit, as above. Secret scan clean.
-- **CI:** U12's CI is green (run 44580483768). This phase's CI run is in `progress-3.md` once it finishes.
+- **CI:** green for U12 (run 44580483768) and for this phase, `0b5f1e8` (run 44714138849: verify, e2e, adapters, security and deploy-config).
 
 ## Next
 
