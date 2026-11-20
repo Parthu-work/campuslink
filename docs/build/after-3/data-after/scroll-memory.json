@@ -1,0 +1,48 @@
+{
+ "homeBefore": 600,
+ "placementsOnArrival": 0,
+ "homeAfterTabRoundTrip": 450,
+ "afterTappingActiveTab": 0,
+ "placementsTabRemembersDetail": true,
+ "placementsTabUrl": "/placements/6aff75c2eeeb7d0a64097dea",
+ "barsAtTop": {
+  "headerTop": 0,
+  "headerHeight": 61,
+  "navTop": 715,
+  "navHeight": 65,
+  "vh": 780,
+  "chrome": "shown"
+ },
+ "barsAfterScrollDown": {
+  "headerTop": -62,
+  "headerHeight": 61,
+  "navTop": 781,
+  "navHeight": 65,
+  "vh": 780,
+  "chrome": "hidden"
+ },
+ "barsAfterScrollUp": {
+  "headerTop": 0,
+  "headerHeight": 61,
+  "navTop": 715,
+  "navHeight": 65,
+  "vh": 780,
+  "chrome": "shown"
+ },
+ "overflowRows": [
+  {
+   "tag": "DIV",
+   "cls": "relative flex snap-x gap-1 overflow-x-auto overscroll-x-contain [contain:inline-",
+   "scrollWidth": 663,
+   "clientWidth": 318,
+   "maskOrFade": false
+  },
+  {
+   "tag": "UL",
+   "cls": "-mx-1 flex snap-x gap-3 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollba",
+   "scrollWidth": 1156,
+   "clientWidth": 336,
+   "maskOrFade": false
+  }
+ ]
+}

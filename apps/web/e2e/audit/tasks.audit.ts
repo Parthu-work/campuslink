@@ -319,7 +319,9 @@ const tasks: { name: string; run: (b: Browser) => Promise<{ count: Count; close:
       run: async (browser) => {
         const { ctx, page } = await coldStart(browser, 'ananya@dpit.example');
         const c = count(page);
-        // Study lives in the Learn space (U2): its tab, then the Study section.
+        // One assistant, Ask, in the Learn space (U2, U8): its tab, then the Ask section. Its study
+        // scope answers from every subject the student takes, so no subject is picked first (the
+        // before set went Study → search → the subject → Ask).
         await c.tap(
           page
             .getByRole('navigation', { name: 'Main' })
@@ -327,14 +329,13 @@ const tasks: { name: string; run: (b: Browser) => Promise<{ count: Count; close:
             .last(),
           'Learn tab',
         );
-        await c.tap(page.getByRole('link', { name: 'Study', exact: true }).first(), 'Study');
-        await c.fill(page.getByPlaceholder('Search by name or code'), 'Formal Languages', 'search');
         await c.tap(
-          page.getByRole('link', { name: /Formal Languages and Automata Theory/ }).first(),
-          'subject',
+          page
+            .getByRole('navigation', { name: 'Learn sections' })
+            .getByRole('link', { name: 'Ask', exact: true }),
+          'Ask',
         );
-        await c.tap(page.getByRole('button', { name: 'Ask', exact: true }), 'ask');
-        const chat = page.getByRole('dialog', { name: 'Study assistant' });
+        const chat = page.getByRole('main');
         await c.fill(
           chat.getByRole('combobox', { name: 'Your question' }),
           'What does the pumping lemma show?',

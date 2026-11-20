@@ -44,7 +44,7 @@ function AccountButtonPlaceholder({ name }: { name: string }) {
   return (
     <div aria-hidden className="flex min-h-12 items-center gap-3 px-2">
       <PersonAvatar name={name || '?'} fileId={null} size={36} />
-      <span className="truncate text-callout font-bold">{name}</span>
+      <span className="min-w-0 text-callout font-bold [overflow-wrap:anywhere]">{name}</span>
     </div>
   );
 }

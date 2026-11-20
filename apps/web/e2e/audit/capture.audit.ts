@@ -202,12 +202,22 @@ test('summary', () => {
   // own bar); targets WCAG exempts (links in running text, chart columns) are listed but allowed.
   const touch = JSON.parse(readFileSync(join(DATA, 'touch-targets-360.json'), 'utf8')) as Record<
     string,
-    { under44NotExempt: number; under44Examples: { label: string; w: number; h: number }[] }
+    {
+      under44NotExempt: number;
+      under44Examples: { label: string; w: number; h: number }[];
+      docScrollWidth: number;
+      viewportWidth: number;
+    }
   >;
   const small = Object.entries(touch)
     .filter(([, m]) => m.under44NotExempt > 0)
     .map(
       ([screen, m]) => `${screen}: ${m.under44Examples.map((x) => `"${x.label}" ${x.w}×${x.h}`).join(', ')}`,
     );
+  // Prompt 3, U13: no screen scrolls sideways on a 360 px phone (Admin › AI assistant did, by 16 px).
+  const wide = Object.entries(touch)
+    .filter(([, m]) => m.docScrollWidth > m.viewportWidth)
+    .map(([screen, m]) => `${screen}: ${m.docScrollWidth} px`);
+  expect.soft(wide, 'screens wider than the phone').toEqual([]);
   expect(small, 'targets under 44 × 44 px').toEqual([]);
 });

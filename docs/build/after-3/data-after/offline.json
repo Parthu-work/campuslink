@@ -1,0 +1,15 @@
+{
+ "swControlled": false,
+ "events-allow": {
+  "url": "/events",
+  "h1": null,
+  "text": "HomeEventsQ&ACirclesPeopleTips reelsFollowingSavedYou’re offlineThis screen isn’t saved on your phone yet. Reconnect and it will open.Try againGo home",
+  "shell": true
+ },
+ "events-block": {
+  "url": "/events",
+  "h1": null,
+  "text": "HomeEventsQ&ACirclesPeopleTips reelsFollowingSavedYou’re offlineThis screen isn’t saved on your phone yet. Reconnect and it will open.Try againGo home",
+  "shell": true
+ }
+}

@@ -866,6 +866,91 @@ Every item checked against today's code; table and tests in `docs/design/v2/u12.
 
 U11's CI: green (run 44558872784).
 
+## U13 · Usability check, re-audit and final report
+
+The last phase. The owner's summary is [`report-3.md`](report-3.md), with the before/after pairs for A1–A19 and U12. The usability check the owner runs is [`usability-script.md`](usability-script.md). The after set is in [`after-3/`](after-3/), and its README lists the commands.
+
+**Re-audit** (`after-3/`, every script, one at a time, each run that changes data on a fresh seed):
+
+- **Capture.** 1,152 screenshots at 360 and 1440, light and dark, both colleges, every role, plus Telugu and Hindi.
+  - axe: 598 scans, 0 violations.
+  - Targets under 44 px: 0 (90 on 23 screens before F4).
+  - **One screen wider than the phone: fixed** (below).
+- **Language.**
+  - Nothing that carries meaning is cut short in en, te or hi.
+  - Now also at 1440 px, where it **found the member's own name cut in the sidebar: fixed** (below).
+- **Tasks.** All seven U0.2 tasks pass by tap and by keyboard. Tap counts are below.
+- **Journeys, extras and Lighthouse.** Below, with the before build measured again on this machine.
+
+**Fixed here** (each now guarded):
+
+1. **Admin › AI assistant was 16 px wider than a 360 px phone.**
+   - Cause: its period switch was sized to its content (`w-fit`). `Segmented` now never grows past its container (`max-w-full`).
+   - Guard: the capture audit's summary now fails on any screen wider than the phone.
+2. **The sidebar's account button cut the member's name and roles** ("Demo St…", "College ad…" at 1440 px). They wrap now, in the button, its loading placeholder and the menu's header.
+   - Guard: the language audit now also checks 1440 px.
+3. **Companies shifted its list on a student's first visit** (Lighthouse CLS 0.29).
+   - Cause: the targets question (U7b) arrived after the list and pushed it down.
+   - Fix: the route loader now brings the student's targets with the page, and the list waits for them, so both paint together (CLS 0 in two runs).
+   - Test: a new `companies.spec` check that the first visit shifts less than 0.05.
+
+**Audit scripts on the new navigation:**
+
+- **Journeys.**
+  - J3 switches Home, Learn, Mentors and Career.
+  - J4, J5, J8 and J10 open screens from their space's tab and section row (a lit tab returns to the space's first screen when the section is not on screen).
+  - J6 opens notifications from the inbox.
+  - J9's history follows the spaces.
+- **Extras.** The offline probe uses Home's section row, and the scroll test uses the Career tab.
+- **Tasks.** Task e asks through Ask (U8), with no subject picked first.
+- **New script:** `audit:language`.
+
+**Tap counts** (the task audit's rules, the same script as the before set's; before → after, taps/fields):
+
+| Task | Taps and fields |
+| ---- | --------------- |
+| a    | 13/7 → **14/7** |
+| b    | 11/4 → **13/5** |
+| c    | 5/1 → **1/0**   |
+| d    | 3/0 → **3/0**   |
+| e    | 7/2 → **5/1**   |
+| f    | 5/1 → **4/1**   |
+| g    | 2/0 → **2/0**   |
+
+Two exceptions, both the brief's own designs:
+
+- **a** adds sign-up's Continue between its steps (U4: three steps).
+- **b** adds the request sheet's step and its second goal field (U6: "two short fields with examples").
+
+**Lighthouse and journeys against the before build on this machine.**
+
+The before set's Lighthouse figures came from a cloud container far faster than this machine. So `094acfc` was built from a `git archive` copy in the session's scratch folder (nothing added to the repository), served on 4173 with the same API, and measured twice with the same script (Copilot at `/copilot`). The current build was measured twice too, and the journeys were run with each commit's own script. The full table is in `report-3.md` › The numbers.
+
+- **LCP** is better on every cold screen. Landing 6.1 → 1.7 s (met); sign-in 4.9 → 4.2 s; Home 6.6 → 6.0 s; the rest 0.3–0.9 s better.
+- **Companies and Readiness** now report the launch mark as their largest paint (2.4 s), not their content: their intro paragraph went into "About this" in U1.
+- **First paint** about 2.8 → 1.5 s everywhere.
+- **The score** is up on 12 of 15 pages. Exceptions:
+  - Home 57 → 53, with blocking time up. A CPU profile shows the app's script time unchanged; the feed's virtual list measuring posts is the largest single cost (0.31 → 0.51 s).
+  - Warm Home 1.4 → 1.7 s (within 2.5 s).
+- **Blocking time** swings up to 3× between runs of the same build here, so it is reported as ranges.
+- **Journeys** (40 steps): throttled 25.5 → 20.0 s, unthrottled 5.7 → 4.7 s. Frames with an empty main 132 → 25. Home to a sent request 1.7 → 1.1 s throttled.
+- **A spoiled run, discarded.** The first after-run of the journeys came out under machine load (7.2 minutes, Back at 4 s). A diagnostic showed Back to Home at 0.5–1.0 s on both builds, so it was discarded and everything was measured again after the restart.
+
+### Gate results (U13)
+
+| Gate                                               | Result                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | Pass (the after set's raw data is ignored by Prettier, as the before set's is)                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Shared tests                                       | 223 passed                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Web tests                                          | 172 passed                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| API tests                                          | U13 changes no API code; the whole suite on this API code is U9c's run (1,370 passed, 7 skipped)                                                                                                                                                                                                                                                                                                                                                                                         |
+| `pnpm build` and bundle budget                     | Pass: initial 155.7 KB in 2 files; every screen within 70 KB                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| End-to-end (local, freshly reseeded)               | `companies` (with the new layout-shift check), `navigation`, `shell`, `spaces`, `accessibility`, `core`, `defects`, `today`, `landing`, `insights`, `tpo-console`, `match`: 113 passed, 20 skipped, 1 failed. The failure was the sidebar fitting at 1280×720, broken by this phase's first version of the account button (padding that made it 5 px taller). It was fixed, and `shell` passed again (the 2FA sign-ins excepted, which need a fresh seed and passed in the reseeded run) |
+| Audits                                             | capture, language (360 and 1440), tasks (tap and keyboard), journeys, extras, Lighthouse: as above                                                                                                                                                                                                                                                                                                                                                                                       |
+| Secret scan (gitleaks v8.30.1)                     | No leaks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+
+U12's CI: green (run 44580483768).
+
 ## Part F · The open issues (F1–F8)
 
 Worked in a second session on the owner's machine while U0, U1 and prompt 4 were in progress on a cloud branch; its fixes were moved onto `main` after those merged, so each row says where the item was done.

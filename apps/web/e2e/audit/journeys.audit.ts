@@ -229,6 +229,42 @@ const fromMenu = async (page: Page, name: string) => {
   await page.getByRole('button', { name: /Account menu/ }).click();
   await page.getByRole('dialog').getByRole('link', { name, exact: true }).click();
 };
+/** Prompt 3, U2: every screen sits in one of five spaces; the account menu holds only the person's own. */
+const SPACE: Record<string, string> = {
+  Jobs: 'Career',
+  Companies: 'Career',
+  Résumé: 'Career',
+  Roadmaps: 'Learn',
+  Practice: 'Learn',
+  Ask: 'Learn',
+  Events: 'Home',
+  People: 'Home',
+  Progress: 'You',
+};
+/**
+ * A screen as a member reaches it: its space's tab (unless that space is open), then the section. A
+ * space reopens where it was left; from a screen deep inside it (a path, the profile) the sections
+ * are not on screen, and tapping the lit tab returns to the space's first screen, where they are.
+ */
+const open = async (page: Page, name: string) => {
+  const space = SPACE[name] ?? 'Home';
+  const tab = tabs(page).getByRole('link', { name: space, exact: true });
+  // The space's sections: the row under the top bar, or the space's own list (You).
+  const section = page
+    .getByRole('navigation', { name: `${space} sections` })
+    .getByRole('link', { name, exact: true })
+    .or(page.getByRole('main').getByRole('link', { name, exact: true }))
+    .first();
+  if ((await tab.getAttribute('aria-current')) === null) await tapTab(page, space);
+  if (
+    !(await section.waitFor({ timeout: 5000 }).then(
+      () => true,
+      () => false,
+    ))
+  )
+    await tapTab(page, space);
+  await section.click();
+};
 const scroll = async (page: Page, y: number) => {
   await page.evaluate((to) => window.scrollTo(0, to), y);
   await page.waitForTimeout(300);
@@ -321,25 +357,26 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
     page.goBack(),
   );
 
-  // J3: tab switching (first visits, second visits, then four taps in quick succession). Study took
-  // Roadmaps' tab (Roadmaps moved to the account menu). Ananya (batch 2027) is in her final year
-  // from June 2026, so Placements (B7) has taken Jobs' tab; Jobs is in the account menu.
-  const TABS = ['Home', 'Study', 'Mentors', 'Placements'];
+  // J3: tab switching (first visits, second visits, then four taps in quick succession). Prompt 3
+  // (U2): the tabs are the five spaces; Learn opens on career paths, and Career on Placements for
+  // Ananya (batch 2027, in her final year from June 2026). The before set's tabs were Home, Study,
+  // Mentors and Placements.
+  const TABS = ['Home', 'Learn', 'Mentors', 'Career'];
   const TAB_READY: Record<string, { sel: string; path: string }> = {
     Home: FEED,
-    Study: { sel: 'main h1', path: '^/study$' },
-    Mentors: { sel: 'main a[href^="/mentors/"]', path: '^/mentors$' },
-    Placements: { sel: 'main h1', path: '^/placements$' },
+    Learn: { sel: 'main h1', path: '^/roadmaps$' },
+    Mentors: { sel: 'main h1', path: '^/mentors$' },
+    Career: { sel: 'main h1', path: '^/placements$' },
   };
   for (const round of ['r0', 'r1'])
     for (const name of TABS)
       await m('03-tabs', `${round}-${name.toLowerCase()}`, TAB_READY[name] ?? FEED, () => tapTab(page, name));
   await m('03-tabs', 'rapid-fire', TAB_READY.Mentors ?? FEED, async () => {
-    for (const name of ['Home', 'Study', 'Placements', 'Mentors']) await tapTab(page, name);
+    for (const name of ['Home', 'Learn', 'Career', 'Mentors']) await tapTab(page, name);
   });
 
   // J4: Jobs (scrolled) → job → back.
-  await fromMenu(page, 'Jobs');
+  await open(page, 'Jobs');
   await page.locator(JOBS_LINK).first().waitFor();
   await scroll(page, 1400);
   await m('04-jobs', 'open-job', { sel: 'main h1', path: '^/jobs/[a-f0-9]{24}$' }, async () => {
@@ -355,7 +392,7 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
 
   // J5: Roadmaps → a roadmap → a step → Back closes the step (and stays on the roadmap).
   await m('05-roadmaps', 'open-roadmaps', { sel: 'main h1', path: '^/roadmaps$' }, () =>
-    fromMenu(page, 'Roadmaps'),
+    open(page, 'Roadmaps'),
   );
   // In the app, as a member would (a full page load would also reset this probe).
   await m('05-roadmaps', 'open-roadmap', { sel: 'main h1', path: '^/roadmaps/sde-dsa$' }, () =>
@@ -387,16 +424,14 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
     ['Progress', '^/progress$'],
     ['People', '^/people$'],
   ] as const)
-    await m('08-lazy', `${name.toLowerCase()}-first-visit`, { sel: 'main h1', path }, () =>
-      fromMenu(page, name),
-    );
+    await m('08-lazy', `${name.toLowerCase()}-first-visit`, { sel: 'main h1', path }, () => open(page, name));
 
-  // J9: browser back and forward.
-  await m('09-history', 'back-to-progress', { sel: 'main h1', path: '^/progress$' }, () => page.goBack());
+  // J9: browser back and forward. People's space (Home) reopens where it was left, Events, so the
+  // history ends Events, You, Progress, Events, People (the before set's menu gave Events, Progress,
+  // People).
   await m('09-history', 'back-to-events', { sel: 'main h1', path: '^/events$' }, () => page.goBack());
-  await m('09-history', 'forward-to-progress', { sel: 'main h1', path: '^/progress$' }, () =>
-    page.goForward(),
-  );
+  await m('09-history', 'back-to-progress', { sel: 'main h1', path: '^/progress$' }, () => page.goBack());
+  await m('09-history', 'forward-to-events', { sel: 'main h1', path: '^/events$' }, () => page.goForward());
 
   // J10 (G13): Prompt 2 screens, first visits from the menu, a company page and back.
   for (const [name, slug, path] of [
@@ -405,8 +440,8 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
     ['Résumé', 'resume', '^/resume$'],
     ['Practice', 'practice', '^/practice$'],
   ] as const)
-    await m('10-prompt2', `${slug}-first-visit`, { sel: 'main h1', path }, () => fromMenu(page, name));
-  await fromMenu(page, 'Companies');
+    await m('10-prompt2', `${slug}-first-visit`, { sel: 'main h1', path }, () => open(page, name));
+  await open(page, 'Companies');
   await page.locator('main a[href^="/companies/"]').first().waitFor();
   await m('10-prompt2', 'open-company', { sel: 'main h1', path: '^/companies/.+' }, () =>
     page.locator('main a[href^="/companies/"]').first().click(),
@@ -433,10 +468,10 @@ async function run(browser: Browser, throttled: boolean): Promise<Step[]> {
   if (throttled) await throttle(mp);
   const mm = (...a: Parameters<typeof measure> extends [Page, ...infer R] ? R : never) =>
     measure(mp, ...a).then((s) => out.push(s));
-  // Notifications is a top-bar icon now (with the unread count in its name).
+  // Notifications sit behind the top bar's inbox (prompt 3, U2), with the unread count in its name.
   await mm('06-notifications', 'open-notifications', { sel: 'main h1', path: '^/notifications$' }, () =>
     mp
-      .getByRole('link', { name: /^Notifications/ })
+      .getByRole('link', { name: /^Inbox/ })
       .first()
       .click(),
   );

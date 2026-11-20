@@ -1,0 +1,93 @@
+[
+ {
+  "task": "a · a new student signs up and is verified",
+  "taps": 14,
+  "fields": 7,
+  "keys": 76,
+  "steps": [
+   "tap sign up",
+   "field mobile number",
+   "tap continue",
+   "field name",
+   "select birth month",
+   "select birth year",
+   "tap send code",
+   "code WhatsApp code",
+   "tap verify now",
+   "field roll number",
+   "tap find me",
+   "code email code"
+  ],
+  "error": null
+ },
+ {
+  "task": "b · a student asks an alumnus for a mock interview",
+  "taps": 13,
+  "fields": 5,
+  "keys": 102,
+  "steps": [
+   "tap Mentors tab",
+   "tap Browse",
+   "select type",
+   "tap a mentor",
+   "tap request",
+   "choose mock interview",
+   "tap continue",
+   "field goal",
+   "field need",
+   "tap continue",
+   "choose time",
+   "tap send"
+  ],
+  "error": null
+ },
+ {
+  "task": "c · a student registers for an eligible drive",
+  "taps": 1,
+  "fields": 0,
+  "keys": 7,
+  "steps": [
+   "tap register on the card"
+  ],
+  "error": null
+ },
+ {
+  "task": "d · a student marks the next roadmap step done",
+  "taps": 3,
+  "fields": 0,
+  "keys": 28,
+  "steps": [
+   "tap Home tab",
+   "tap the next step on Home",
+   "tap mark as done"
+  ],
+  "error": null
+ },
+ {
+  "task": "e · a student asks the assistant a question and opens a source",
+  "taps": 5,
+  "fields": 1,
+  "keys": 150,
+  "steps": [
+   "tap Learn tab",
+   "tap Ask",
+   "field question",
+   "tap send",
+   "tap source"
+  ],
+  "error": null
+ },
+ {
+  "task": "f · a TPO sees who has not joined and nudges them",
+  "taps": 4,
+  "fields": 1,
+  "keys": 13,
+  "steps": [
+   "tap invite (not joined)",
+   "tap nudge",
+   "choose consent",
+   "tap send"
+  ],
+  "error": null
+ }
+]

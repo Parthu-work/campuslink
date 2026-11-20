@@ -58,11 +58,12 @@ test('desktop rail', async ({ browser }) => {
 });
 
 test('offline: an unvisited screen', async ({ browser }) => {
-  // Open Events from the account menu with the network gone: the menu is opened first (online), so
-  // what is measured is the screen's own code, not the menu's.
+  // Open Events from Home's section row (prompt 3, U2) with the network gone: Home is open first
+  // (online), so what is measured is the screen's own code, not the shell's.
   const probe = async (page: Page, setOffline: (o: boolean) => Promise<void>) => {
-    await page.getByRole('button', { name: /Account menu/ }).click();
-    const events = page.getByRole('dialog').getByRole('link', { name: 'Events', exact: true });
+    const events = page
+      .getByRole('navigation', { name: 'Home sections' })
+      .getByRole('link', { name: 'Events', exact: true });
     await events.waitFor();
     await setOffline(true);
     await events.click();
@@ -205,8 +206,8 @@ test('scroll memory and scroll-aware bars', async ({ browser }) => {
   await page.mouse.wheel(0, -150);
   await page.waitForTimeout(600);
   const barsAfterScrollUp = await bars(page);
-  // Ananya is a final-year since June 2026, so her fourth tab is Placements (B7), not Jobs.
-  await tap('Placements');
+  // Ananya is a final-year since June 2026, so Career opens on Placements (prompt 3, U2).
+  await tap('Career');
   const placementsOnArrival = await y();
   const drive = page.locator('main a[href^="/placements/"]').first();
   await drive.click();
@@ -216,7 +217,7 @@ test('scroll memory and scroll-aware bars', async ({ browser }) => {
   const homeAfterTabRoundTrip = await y();
   await tap('Home');
   const afterTappingActiveTab = await y();
-  await tap('Placements');
+  await tap('Career');
   const placementsTabUrl = new URL(page.url()).pathname;
   await page.goto(`${BASE}/home`);
   await page.getByRole('feed').getByRole('article').first().waitFor();

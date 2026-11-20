@@ -11,6 +11,7 @@ docs/api/openapi.json
 docs/design/revamp/data-after
 docs/build/after-2/data-after
 docs/build/before-3/data-after
+docs/build/after-3/data-after
 # Verbatim copies of the owner's brief; formatting must not change them
 docs/design/revamp/master-prompt.md
 docs/build/master-prompt-1.md

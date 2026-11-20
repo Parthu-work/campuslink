@@ -632,7 +632,21 @@ function collegeRoutes(): RouteObject[] {
             'CompaniesPage',
             inFeature('placements', 'companies:view'),
             at('/companies'),
-            () => [qc.ensureQueryData(q.companies())],
+            () => [
+              qc.ensureQueryData(q.companies()),
+              // Prompt 3, U13: a student's target companies with the page, so the first visit's
+              // question paints with the list instead of pushing it down (CLS 0.29 without it).
+              qc
+                .ensureQueryData(q.me())
+                .then((me) =>
+                  me.roles.includes('STUDENT') &&
+                  me.permissions.includes('mentorship:request') &&
+                  qc.getQueryData<PublicTenant>(q.tenant().queryKey)?.features.alumniMatch !== false
+                    ? qc.ensureQueryData(q.matchPreferences())
+                    : null,
+                )
+                .catch(() => null),
+            ],
           ),
           screen(
             load.companies,

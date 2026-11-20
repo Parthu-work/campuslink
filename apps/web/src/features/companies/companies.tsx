@@ -144,6 +144,9 @@ export function CompaniesPage() {
   const items = [...(list.data?.items ?? [])].sort(
     (a, b) => Number(isTarget(b.name)) - Number(isTarget(a.name)),
   );
+  // The first visit's question sits above the list: hold the list until the student's targets are
+  // known, so the two paint together and nothing is pushed down (U13: CLS 0.29 when it came later).
+  const waitingForTargets = targetsOn && prefsQ.isPending;
   return (
     <div className="mx-auto grid w-full max-w-[960px] gap-5">
       <PageHeader title={t('nav.companies')} about={t('moat.intro')} actions={<ShareActions />} />
@@ -168,9 +171,9 @@ export function CompaniesPage() {
           </div>
         )}
       </Field>
-      {list.isLoading && <Skeleton className="h-48" />}
+      {(list.isLoading || (list.data && waitingForTargets)) && <Skeleton className="h-48" />}
       {list.isError && <ErrorState error={list.error} onRetry={() => void list.refetch()} />}
-      {list.data && (
+      {list.data && !waitingForTargets && (
         <>
           <p className="text-callout text-fg-3">
             {list.data.computedAt

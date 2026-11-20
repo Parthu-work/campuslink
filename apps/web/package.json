@@ -17,7 +17,8 @@
     "audit:extras": "playwright test -c e2e/audit/playwright.config.ts extras",
     "audit:lighthouse": "playwright test -c e2e/audit/playwright.config.ts lighthouse",
     "audit:landing-shots": "playwright test -c e2e/audit/playwright.config.ts landing-shots",
-    "audit:tasks": "playwright test -c e2e/audit/playwright.config.ts tasks"
+    "audit:tasks": "playwright test -c e2e/audit/playwright.config.ts tasks",
+    "audit:language": "playwright test -c e2e/audit/playwright.config.ts language"
   },
   "dependencies": {
     "@campuslink/shared": "workspace:*",

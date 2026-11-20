@@ -87,3 +87,31 @@ test('a placed student shares an interview, faculty publish it, juniors read it 
   await expect(published.getByText('Verified offer')).toBeVisible();
   await expectNoA11yViolations(page);
 });
+
+test('a student’s first visit paints the targets question with the list, not after it', async ({
+  page,
+}, info) => {
+  // Prompt 3, U13: the question ("Which companies are you aiming for?") arrived after the list and
+  // pushed it down (Lighthouse CLS 0.29); now both wait for the student's targets and paint together.
+  const host = hostFor(info.project.name);
+  await signIn(page, `ananya@${host}.example`, host);
+  await page.evaluate(() => localStorage.removeItem('cl:targets-asked'));
+  await page.goto(`http://${host}.localhost:4173/companies`);
+  await expect(page.getByRole('link', { name: COMPANY })).toBeVisible();
+  await page.waitForTimeout(1000);
+  const cls = await page.evaluate(
+    () =>
+      new Promise<number>((resolve) => {
+        let total = 0;
+        new PerformanceObserver((list) => {
+          for (const e of list.getEntries() as (PerformanceEntry & {
+            value: number;
+            hadRecentInput: boolean;
+          })[])
+            if (!e.hadRecentInput) total += e.value;
+        }).observe({ type: 'layout-shift', buffered: true });
+        setTimeout(() => resolve(total), 300);
+      }),
+  );
+  expect(cls).toBeLessThan(0.05);
+});

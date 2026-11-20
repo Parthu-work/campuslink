@@ -80,7 +80,8 @@ export function TabNav({ label, tabs }: { label: string; tabs: readonly (readonl
  * In-page view switch (buttons with aria-pressed), such as For you / Following. A tinted highlight
  * slides to the chosen option (route tabs use the solid brand fill, so "where you are" and "how you
  * view it" read differently); when the options don't fit (Telugu, four options on a phone) the row
- * scrolls instead of wrapping (DS-4).
+ * scrolls instead of wrapping (DS-4). It never grows past its container, even when a caller sizes it
+ * to its content (`w-fit`): that pushed Admin › AI assistant 16 px wider than a 360 px phone (U13).
  */
 export function Segmented<T extends string>({
   label,
@@ -103,7 +104,7 @@ export function Segmented<T extends string>({
       role="group"
       aria-label={label}
       className={cn(
-        'relative flex gap-1 overflow-x-auto rounded-full border border-line bg-surface-1 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+        'relative flex max-w-full gap-1 overflow-x-auto rounded-full border border-line bg-surface-1 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
         className,
       )}
     >

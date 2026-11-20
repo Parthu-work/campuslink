@@ -27,9 +27,10 @@ export function AccountMenu({ platform }: { platform: boolean }) {
         title={me.name}
       >
         <PersonAvatar name={me.name} fileId={null} size={36} />
-        <span className="min-w-0 flex-1">
-          <b className="block truncate text-callout">{me.name}</b>
-          <span className="block truncate text-caption text-fg-3">{roles}</span>
+        {/* The member's own name and roles wrap rather than end in an ellipsis (X5, U13). */}
+        <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">
+          <b className="block text-callout">{me.name}</b>
+          <span className="block text-caption text-fg-3">{roles}</span>
         </span>
         <ChevronsUpDown className="size-4 flex-none text-fg-3" aria-hidden />
       </DropdownMenu.Trigger>
@@ -40,9 +41,9 @@ export function AccountMenu({ platform }: { platform: boolean }) {
           sideOffset={8}
           className="z-[80] grid min-w-60 gap-0.5 rounded-[var(--radius-md)] border border-line-strong bg-surface-1 p-1.5 shadow-[var(--shadow)]"
         >
-          <div className="px-3 py-2">
-            <b className="block truncate text-callout">{me.name}</b>
-            <span className="block truncate text-caption text-fg-3">{me.email}</span>
+          <div className="px-3 py-2 [overflow-wrap:anywhere]">
+            <b className="block text-callout">{me.name}</b>
+            <span className="block text-caption text-fg-3">{me.email}</span>
           </div>
           <DropdownMenu.Separator className="my-1 h-px bg-line" />
           {!platform && (
