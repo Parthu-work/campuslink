@@ -78,7 +78,7 @@ Roadmap sources:
 - [OWASP Top 10 API Security Risks – 2023](https://owasp.org/API-Security/editions/2023/en/0x11-t10/)
 - [Build and share a containerized application – Docker Docs](https://docs.docker.com/get-started/introduction/)
 - [Get started – Docker Docs](https://docs.docker.com/get-started/)
-- [What is Docker? – Docker Docs](https://docs.docker.com/get-started/docker-overview/)
+- [What is a container? – Docker Docs](https://docs.docker.com/learn/content/what-is-a-container/)
 - [System Design Roadmap (PDF) – roadmap.sh](https://roadmap.sh/pdfs/roadmaps/system-design.pdf)
 - [E-Commerce API Project Idea – roadmap.sh](https://roadmap.sh/projects/ecommerce-api)
 - [Backend Projects – roadmap.sh](https://roadmap.sh/backend/projects)

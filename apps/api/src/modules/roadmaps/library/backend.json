@@ -230,8 +230,8 @@
           "url": "https://docs.docker.com/get-started/"
         },
         {
-          "title": "What is Docker? – Docker Docs",
-          "url": "https://docs.docker.com/get-started/docker-overview/"
+          "title": "What is a container? – Docker Docs",
+          "url": "https://docs.docker.com/learn/content/what-is-a-container/"
         },
         {
           "title": "Learn Node.js (includes testing) – nodejs.org",

@@ -39,6 +39,9 @@ test('a college joins the network and a student asks an alumnus of another colle
   page,
   browser,
 }, info) => {
+  // Four sign-ins (two admins with 2FA, an alumnus, a student), four accessibility scans and eight
+  // screens: 24–30 s on a slower machine against the 30 s default, so it failed there by chance.
+  test.slow();
   const host = hostFor(info.project.name);
   const other = otherOf(host);
   await switchOn(page, host);

@@ -11,6 +11,41 @@ the pilot preset and the launch checklist. The production compose came up on thi
 generated secrets and passed the full smoke test. What remains needs the owner: an Oracle account and
 a domain (P10, P12) and the provider accounts (§4 of the brief). ADR 0014 was accepted on 11 Nov 2026.
 
+## Pre-deployment check (23 Nov 2026, after prompt 3)
+
+`main` with all of prompt 3 was checked again before the first deployment, on the owner's machine.
+
+**Gate.**
+
+- format, lint and typecheck pass.
+- Unit tests: shared 223, web 172.
+- API suite: 1,370 passed with the coverage gate, isolation and permission suites included.
+- Generated API docs: current.
+- Build: initial JS 155.7 KB of 170.
+- End-to-end, fresh seed: 285 passed, 1 timed out. The timeout is fixed below.
+
+**Audits.**
+
+- `pnpm audit --prod`: no known vulnerabilities. Two moderate advisories sit in build tools only, `glob` (PWA build) and `minimatch` (ESLint), neither shipped. Their fixes need major versions the tools do not support yet.
+- gitleaks over the whole history of `main` (207 commits): no leaks.
+
+**The production stack, rehearsed.**
+
+- The three images were built from `main`, and `compose.yml` was brought up from `gen-secrets.sh` with a self-signed certificate and `cloudflare-ips.sh --local`.
+- `smoke.sh` passed all 8 steps, embeddings included this time (Ollama with `nomic-embed-text`, 768 dimensions).
+- Idle memory: about 2.4 GB with the embedding model loaded (ClamAV 1.0 GB, Ollama 0.5 GB, the API and worker 230–260 MB each).
+
+**Fixed on the way.**
+
+1. **`mongo-init` failed on the very first `up`.** The mongo image's first start runs a temporary server on 127.0.0.1 while it creates the root user, and the health check passes inside the container, so `mongo-init` was refused over the network.
+   - It now waits until MongoDB answers on `mongo:27017` (up to 3 minutes).
+   - This was a timing race on any machine. The 11 Nov rehearsal missed it by luck.
+2. **`gen-secrets.sh` run on Windows wrote `\r` into three secret files** (openssl's line endings), and MongoDB's root login then failed. openssl output is now stripped of `\r`.
+3. **One end-to-end test timed out at random.** "A college joins the network…" is four sign-ins and four accessibility scans, and took 24–30 s against the 30 s default. It now has `test.slow()`; every check is unchanged.
+4. **A dead link.** A Backend path step cited Docker's "What is Docker?", which no longer exists (the weekly link check failed on it). It now cites "What is a container?" on Docker's site.
+
+**Not a fault: the Release workflow's red deploy step.** It builds and publishes all six images (amd64 and arm64), then stops on purpose because the `production` environment has no `DEPLOY_HOST`, `DEPLOY_SSH_KEY` and `DEPLOY_KNOWN_HOSTS`. Those come from `docs/deploy-oracle.md` once the server exists. What is left for the first deployment is the owner's list below.
+
 ## Built, per phase
 
 | Phase | What                                                                                                                                                                                                             |

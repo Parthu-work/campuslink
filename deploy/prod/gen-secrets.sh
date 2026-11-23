@@ -46,7 +46,9 @@ done
 EXAMPLE=$HERE/.env.production.example
 [[ -f $EXAMPLE ]] || { echo "error: $EXAMPLE is missing" >&2; exit 2; }
 
-hex() { openssl rand -hex "$1"; }
+# openssl on Windows (Git Bash) ends its output with \r\n; a \r left in a secret file broke MongoDB's
+# root login (rehearsal, 23 Nov 2026). Strip it wherever openssl output is written.
+hex() { openssl rand -hex "$1" | tr -d '\r'; }
 b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
 
 # VAPID (web push): a P-256 key pair, the private scalar and the uncompressed public point, base64url.
@@ -96,7 +98,7 @@ hex 32 >"$DIR/secrets/mongo-root-password"
 MONGO_BACKUP_PASSWORD=$(hex 24)
 printf '%s\n' "$MONGO_BACKUP_PASSWORD" >"$DIR/secrets/mongo-backup-password"
 # The replica set keyfile: 756 base64 characters, as MongoDB documents.
-openssl rand -base64 756 >"$DIR/secrets/mongo-keyfile"
+openssl rand -base64 756 | tr -d '\r' >"$DIR/secrets/mongo-keyfile"
 # Encryption at rest for objects written with SSE-S3 (256-bit key, hex).
 hex 32 >"$DIR/secrets/seaweedfs-kek"
 # The object store accepts only these keys: the application's (read, write, list in its bucket)
