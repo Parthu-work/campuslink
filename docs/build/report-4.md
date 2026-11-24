@@ -177,8 +177,9 @@ Then the launch checklist (roster import with a dry run, legal details, one coho
 ## P12 checks to run on the server (record the results here)
 
 1. `./smoke.sh` on a college host and on `admin.`; Lighthouse from India on a college host (LCP, INP).
-2. Load: `pnpm loadtest` from another machine against the demo college, 300 concurrent members
-   (p95, error rate) while `docker stats` records the peak per container.
+2. Load: not possible against the server yet. `pnpm loadtest` seeds its own database (`campuslink_load`)
+   and starts its own API on the machine it runs on (`docs/performance.md`); it has no mode that targets
+   a live server. On the server, record the peak per container with `docker stats` during step 3 instead.
 3. Embeddings: upload a 50-page PDF to the demo college; time it from the worker log; `docker stats`
    for Ollama's peak; 20 questions against the seeded study material, compared with `mock`.
 4. Backup to R2, then the restore drill with the key (times are in the drill's email).
